@@ -1877,6 +1877,15 @@ void ProjectManager::_notification(int p_what) {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			search_box->set_clear_button_enabled(true);
 
+			create_btn->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			import_btn->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
+			scan_btn->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			open_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			run_btn->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			rename_btn->set_icon(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")));
+			erase_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			erase_missing_btn->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
 
@@ -2644,40 +2653,48 @@ ProjectManager::ProjectManager() {
 		tree_vb->set_custom_minimum_size(Size2(120, 120));
 		local_projects_hb->add_child(tree_vb);
 
-		Button *create = memnew(Button);
-		create->set_text(TTR("New Project"));
-		create->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
-		create->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
-		tree_vb->add_child(create);
+		const int btn_h_separation = int(6 * EDSCALE);
 
-		Button *import = memnew(Button);
-		import->set_text(TTR("Import"));
-		import->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
-		import->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
-		tree_vb->add_child(import);
+		create_btn = memnew(Button);
+		create_btn->set_text(TTR("New Project"));
+		create_btn->add_theme_constant_override("h_separation", btn_h_separation);
+		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
+		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+		tree_vb->add_child(create_btn);
 
-		Button *scan = memnew(Button);
-		scan->set_text(TTR("Scan"));
-		scan->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
-		scan->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
-		tree_vb->add_child(scan);
+		import_btn = memnew(Button);
+		import_btn->set_text(TTR("Import"));
+		import_btn->add_theme_constant_override("h_separation", btn_h_separation);
+		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
+		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+		tree_vb->add_child(import_btn);
+
+		scan_btn = memnew(Button);
+		scan_btn->set_text(TTR("Scan"));
+		scan_btn->add_theme_constant_override("h_separation", btn_h_separation);
+		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
+		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+		tree_vb->add_child(scan_btn);
 
 		tree_vb->add_child(memnew(HSeparator));
 
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
+		open_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD | Key::E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
+		run_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD | Key::R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 
 		rename_btn = memnew(Button);
 		rename_btn->set_text(TTR("Rename"));
+		rename_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
@@ -2685,12 +2702,14 @@ ProjectManager::ProjectManager() {
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
+		erase_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
 		erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
 		tree_vb->add_child(erase_btn);
 
 		erase_missing_btn = memnew(Button);
 		erase_missing_btn->set_text(TTR("Remove Missing"));
+		erase_missing_btn->add_theme_constant_override("h_separation", btn_h_separation);
 		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
 

@@ -73,7 +73,7 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.size() <= 0);
+	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
@@ -89,6 +89,95 @@ Array LightmapGIData::_get_user_data() const {
 		ret.push_back(users[i].slice_index);
 		ret.push_back(users[i].sub_instance);
 	}
+	return ret;
+}
+
+void LightmapGIData::_set_light_textures_data(const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+
+	if (p_data.size() == 1) {
+		set_light_texture(p_data[0]);
+	} else {
+		Vector<Ref<Image>> images;
+		for (int i = 0; i < p_data.size(); i++) {
+			Ref<TextureLayered> texture = p_data[i];
+			for (int j = 0; j < texture->get_layers(); j++) {
+				images.push_back(texture->get_layer_data(j));
+			}
+		}
+
+		Ref<Texture2DArray> combined_texture;
+		combined_texture.instantiate();
+
+		combined_texture->create_from_images(images);
+		set_light_texture(combined_texture);
+	}
+}
+
+Array LightmapGIData::_get_light_textures_data() const {
+	Array ret;
+	if (light_texture.is_null()) {
+		return ret;
+	}
+
+	Vector<Ref<Image>> images;
+	for (int i = 0; i < light_texture->get_layers(); i++) {
+		images.push_back(light_texture->get_layer_data(i));
+	}
+
+	int slice_count = images.size();
+	int slice_width = images[0]->get_width();
+	int slice_height = images[0]->get_height();
+
+	int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+
+	ret.resize(texture_count);
+
+	String base_name = get_path().get_basename();
+
+	int last_count = slice_count % slices_per_texture;
+	for (int i = 0; i < texture_count; i++) {
+		int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
+
+		Ref<Image> texture_image;
+		texture_image.instantiate();
+
+		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+
+		for (int j = 0; j < texture_slice_count; j++) {
+			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2(0, 0, slice_width, slice_height), Point2(0, slice_height * j));
+		}
+
+		String texture_path = texture_count > 1 ? base_name + "_" + itos(i) + ".exr" : base_name + ".exr";
+
+		Ref<ConfigFile> config;
+		config.instantiate();
+
+		if (FileAccess::exists(texture_path + ".import")) {
+			config->load(texture_path + ".import");
+		}
+
+		config->set_value("remap", "importer", "2d_array_texture");
+		config->set_value("remap", "type", "CompressedTexture2DArray");
+		if (!config->has_section_key("params", "compress/mode")) {
+			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+		}
+		config->set_value("params", "compress/channel_pack", 1);
+		config->set_value("params", "mipmaps/generate", false);
+		config->set_value("params", "slices/horizontal", 1);
+		config->set_value("params", "slices/vertical", texture_slice_count);
+
+		config->save(texture_path + ".import");
+
+		Error err = texture_image->save_exr(texture_path, false);
+		ERR_FAIL_COND_V(err, ret);
+		ResourceLoader::import(texture_path);
+		Ref<TextureLayered> t = ResourceLoader::load(texture_path); //if already loaded, it will be updated on refocus?
+		ERR_FAIL_COND_V(t.is_null(), ret);
+		ret[i] = t;
+	}
+
 	return ret;
 }
 
@@ -188,6 +277,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
 	ClassDB::bind_method(D_METHOD("get_light_texture"), &LightmapGIData::get_light_texture);
 
+	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
+	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
+
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
@@ -199,7 +291,8 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered"), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK), "set_light_texture", "get_light_texture"); // property usage default but no save
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
@@ -953,53 +1046,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		return BAKE_ERROR_MESHES_INVALID;
 	}
 
-	/* POSTBAKE: Save Textures */
-
-	Ref<TextureLayered> texture;
-	{
-		Vector<Ref<Image>> images;
-		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
-			images.push_back(lightmapper->get_bake_texture(i));
-		}
-		//we assume they are all the same, so let's create a large one for saving
-		Ref<Image> large_image;
-		large_image.instantiate();
-
-		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
-
-		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
-			large_image->blit_rect(images[i], Rect2(0, 0, images[i]->get_width(), images[i]->get_height()), Point2(0, images[i]->get_height() * i));
-		}
-
-		String base_path = p_image_data_path.get_basename() + ".exr";
-
-		Ref<ConfigFile> config;
-
-		config.instantiate();
-		if (FileAccess::exists(base_path + ".import")) {
-			config->load(base_path + ".import");
-		}
-
-		config->set_value("remap", "importer", "2d_array_texture");
-		config->set_value("remap", "type", "CompressedTexture2DArray");
-		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
-		}
-		config->set_value("params", "compress/channel_pack", 1);
-		config->set_value("params", "mipmaps/generate", false);
-		config->set_value("params", "slices/horizontal", 1);
-		config->set_value("params", "slices/vertical", images.size());
-
-		config->save(base_path + ".import");
-
-		Error err = large_image->save_exr(base_path, false);
-		ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
-		ResourceLoader::import(base_path);
-		Ref<Texture> t = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
-		ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
-		texture = t;
-	}
-
 	/* POSTBAKE: Save Light Data */
 
 	Ref<LightmapGIData> data;
@@ -1009,6 +1055,17 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		data->clear();
 	} else {
 		data.instantiate();
+	}
+
+	Ref<Texture2DArray> texture;
+	{
+		Vector<Ref<Image>> images;
+		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
+			images.push_back(lightmapper->get_bake_texture(i));
+		}
+
+		texture.instantiate();
+		texture->create_from_images(images);
 	}
 
 	data->set_light_texture(texture);
@@ -1161,8 +1218,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	Error err = ResourceSaver::save(p_image_data_path, data);
 	data->set_path(p_image_data_path);
+	Error err = ResourceSaver::save(p_image_data_path, data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;

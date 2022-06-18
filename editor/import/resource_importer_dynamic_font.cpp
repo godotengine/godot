@@ -50,7 +50,9 @@ void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *p_exte
 	if (p_extensions) {
 #ifdef MODULE_FREETYPE_ENABLED
 		p_extensions->push_back("ttf");
+		p_extensions->push_back("ttc");
 		p_extensions->push_back("otf");
+		p_extensions->push_back("otc");
 		p_extensions->push_back("woff");
 		p_extensions->push_back("woff2");
 		p_extensions->push_back("pfb");
@@ -100,6 +102,8 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 
 void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	bool msdf = p_preset == PRESET_MSDF;
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "face_index"), 0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
@@ -179,6 +183,8 @@ void ResourceImporterDynamicFont::show_advanced_options(const String &p_path) {
 Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing dynamic font from: " + p_source_file);
 
+	int face_index = p_options["face_index"];
+
 	bool antialiased = p_options["antialiased"];
 	bool generate_mipmaps = p_options["generate_mipmaps"];
 	bool msdf = p_options["multichannel_signed_distance_field"];
@@ -200,6 +206,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	Ref<FontData> font;
 	font.instantiate();
 	font->set_data(data);
+	font->set_face_index(face_index);
 	font->set_antialiased(antialiased);
 	font->set_generate_mipmaps(generate_mipmaps);
 	font->set_multichannel_signed_distance_field(msdf);

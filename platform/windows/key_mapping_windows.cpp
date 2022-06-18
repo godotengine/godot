@@ -179,7 +179,14 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ Key::F14, VK_F14 }, // (0x7D)
 	{ Key::F15, VK_F15 }, // (0x7E)
 	{ Key::F16, VK_F16 }, // (0x7F)
-	// We have no mappings for F17-F24. (0x80-87)
+	{ Key::F17, VK_F17 }, // (0x80)
+	{ Key::F18, VK_F18 }, // (0x81)
+	{ Key::F19, VK_F19 }, // (0x82)
+	{ Key::F20, VK_F20 }, // (0x83)
+	{ Key::F21, VK_F21 }, // (0x84)
+	{ Key::F22, VK_F22 }, // (0x85)
+	{ Key::F23, VK_F23 }, // (0x86)
+	{ Key::F24, VK_F24 }, // (0x87)
 	// 0x88-8F are reserved for UI navigation.
 	{ Key::NUMLOCK, VK_NUMLOCK }, // (0x90)
 	{ Key::SCROLLLOCK, VK_SCROLL }, // (0x91)
@@ -409,6 +416,14 @@ static _WinTranslatePair _scancode_to_keycode[] = {
 	{ Key::F14, 0x65 },
 	{ Key::F15, 0x66 },
 	{ Key::F16, 0x67 },
+	{ Key::F17, 0x68 },
+	{ Key::F18, 0x69 },
+	{ Key::F19, 0x6A },
+	{ Key::F20, 0x6B },
+	{ Key::F21, 0x6C },
+	{ Key::F22, 0x6D },
+	{ Key::F23, 0x6E },
+	{ Key::F24, 0x76 },
 	{ Key::UNKNOWN, 0 }
 };
 

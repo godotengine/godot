@@ -36,19 +36,19 @@
 
 #include "servers/text_server.h"
 
-void Label::set_autowrap_mode(Label::AutowrapMode p_mode) {
+void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
 		lines_dirty = true;
 	}
 	update();
 
-	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
+	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
 }
 
-Label::AutowrapMode Label::get_autowrap_mode() const {
+TextServer::AutowrapMode Label::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
@@ -96,7 +96,7 @@ void Label::_shape() {
 		int font_size = get_theme_font_size(SNAME("font_size"));
 		ERR_FAIL_COND(font.is_null());
 		String text = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
-		if (visible_chars >= 0 && visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			text = text.substr(0, visible_chars);
 		}
 		if (dirty) {
@@ -121,16 +121,16 @@ void Label::_shape() {
 
 		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
-			case AUTOWRAP_WORD_SMART:
+			case TextServer::AUTOWRAP_WORD_SMART:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_WORD:
+			case TextServer::AUTOWRAP_WORD:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_ARBITRARY:
+			case TextServer::AUTOWRAP_ARBITRARY:
 				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_OFF:
+			case TextServer::AUTOWRAP_OFF:
 				break;
 		}
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
@@ -146,7 +146,7 @@ void Label::_shape() {
 		return;
 	}
 
-	if (autowrap_mode == AUTOWRAP_OFF) {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
 		minsize.width = 0.0f;
 		for (int i = 0; i < lines_rid.size(); i++) {
 			if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
@@ -156,31 +156,31 @@ void Label::_shape() {
 	}
 
 	if (lines_dirty) {
-		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIMMING;
+		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		switch (overrun_behavior) {
-			case OVERRUN_TRIM_WORD_ELLIPSIS:
+			case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 				overrun_flags |= TextServer::OVERRUN_TRIM;
 				overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
 				overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
 				break;
-			case OVERRUN_TRIM_ELLIPSIS:
+			case TextServer::OVERRUN_TRIM_ELLIPSIS:
 				overrun_flags |= TextServer::OVERRUN_TRIM;
 				overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
 				break;
-			case OVERRUN_TRIM_WORD:
+			case TextServer::OVERRUN_TRIM_WORD:
 				overrun_flags |= TextServer::OVERRUN_TRIM;
 				overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
 				break;
-			case OVERRUN_TRIM_CHAR:
+			case TextServer::OVERRUN_TRIM_CHAR:
 				overrun_flags |= TextServer::OVERRUN_TRIM;
 				break;
-			case OVERRUN_NO_TRIMMING:
+			case TextServer::OVERRUN_NO_TRIMMING:
 				break;
 		}
 
 		// Fill after min_size calculation.
 
-		if (autowrap_mode != AUTOWRAP_OFF) {
+		if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
 			int visible_lines = get_visible_line_count();
 			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
 			if (lines_hidden) {
@@ -215,7 +215,7 @@ void Label::_shape() {
 
 	_update_visible();
 
-	if (autowrap_mode == AUTOWRAP_OFF || !clip || overrun_behavior == OVERRUN_NO_TRIMMING) {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
 }
@@ -326,9 +326,9 @@ void Label::_notification(int p_what) {
 			}
 
 			int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
-			bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == VC_CHARS_AFTER_SHAPING);
-			bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == VC_GLYPHS_LTR) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && !rtl_layout));
-			bool trim_glyphs_rtl = (visible_chars >= 0) && ((visible_chars_behavior == VC_GLYPHS_RTL) || ((visible_chars_behavior == VC_GLYPHS_AUTO) && rtl_layout));
+			bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
+			bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !rtl_layout));
+			bool trim_glyphs_rtl = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && rtl_layout));
 
 			// Get real total height.
 			int total_glyphs = 0;
@@ -377,7 +377,7 @@ void Label::_notification(int p_what) {
 				ofs.y += TS->shaped_text_get_ascent(lines_rid[i]) + font->get_spacing(TextServer::SPACING_TOP);
 				switch (horizontal_alignment) {
 					case HORIZONTAL_ALIGNMENT_FILL:
-						if (rtl && autowrap_mode != AUTOWRAP_OFF) {
+						if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
 							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
 						} else {
 							ofs.x = style->get_offset().x;
@@ -554,10 +554,10 @@ Size2 Label::get_minimum_size() const {
 	min_size.height = MAX(min_size.height, font->get_height(get_theme_font_size(SNAME("font_size"))) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
 
 	Size2 min_style = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
-	if (autowrap_mode != AUTOWRAP_OFF) {
-		return Size2(1, (clip || overrun_behavior != OVERRUN_NO_TRIMMING) ? 1 : min_size.height) + min_style;
+	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
+		return Size2(1, (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? 1 : min_size.height) + min_style;
 	} else {
-		if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
+		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			min_size.width = 1;
 		}
 		return min_size + min_style;
@@ -719,18 +719,18 @@ bool Label::is_clipping_text() const {
 	return clip;
 }
 
-void Label::set_text_overrun_behavior(Label::OverrunBehavior p_behavior) {
+void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (overrun_behavior != p_behavior) {
 		overrun_behavior = p_behavior;
 		lines_dirty = true;
 	}
 	update();
-	if (clip || overrun_behavior != OVERRUN_NO_TRIMMING) {
+	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
 }
 
-Label::OverrunBehavior Label::get_text_overrun_behavior() const {
+TextServer::OverrunBehavior Label::get_text_overrun_behavior() const {
 	return overrun_behavior;
 }
 
@@ -746,7 +746,7 @@ void Label::set_visible_characters(int p_amount) {
 		} else {
 			percent_visible = 1.0;
 		}
-		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}
 		update();
@@ -766,7 +766,7 @@ void Label::set_percent_visible(float p_percent) {
 			visible_chars = get_total_character_count() * p_percent;
 			percent_visible = p_percent;
 		}
-		if (visible_chars_behavior == VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
 		}
 		update();
@@ -777,11 +777,11 @@ float Label::get_percent_visible() const {
 	return percent_visible;
 }
 
-Label::VisibleCharactersBehavior Label::get_visible_characters_behavior() const {
+TextServer::VisibleCharactersBehavior Label::get_visible_characters_behavior() const {
 	return visible_chars_behavior;
 }
 
-void Label::set_visible_characters_behavior(Label::VisibleCharactersBehavior p_behavior) {
+void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior) {
 	if (visible_chars_behavior != p_behavior) {
 		visible_chars_behavior = p_behavior;
 		dirty = true;
@@ -908,23 +908,6 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label::get_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &Label::set_structured_text_bidi_override_options);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &Label::get_structured_text_bidi_override_options);
-
-	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
-	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
-
-	BIND_ENUM_CONSTANT(OVERRUN_NO_TRIMMING);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_CHAR);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
-	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
-
-	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
-	BIND_ENUM_CONSTANT(VC_CHARS_AFTER_SHAPING);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_AUTO);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_LTR);
-	BIND_ENUM_CONSTANT(VC_GLYPHS_RTL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");

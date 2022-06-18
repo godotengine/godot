@@ -60,6 +60,7 @@ name is available.
     Carter Anderson (cart)
     Chris Bradfield (cbscribe)
     Clay John (clayjohn)
+    ConteZero
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
@@ -86,6 +87,7 @@ name is available.
     Fabio Alessandrelli (Faless)
     fabriceci
     Ferenc Arn (tagcup)
+    FireForge (fire-forge)
     follower
     foxydevloper
     François Belair (Razoric480)
@@ -109,6 +111,7 @@ name is available.
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
     Ignacio Etcheverry (neikeq)
+    Igor Kordiukiewicz (IgorKordiukiewicz)
     Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
     J08nY
@@ -150,6 +153,7 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Marios Staikopoulos (marstaik)
+    Mark Riedesel (klowner)
     Markus Sauermann (Sauermann)
     Martin Capitanio (capnm)
     Martin Liška (marxin)
@@ -163,6 +167,7 @@ name is available.
     merumelu
     Meru Patel (Janglee123)
     Michael Alexsander (YeldhamDev)
+    Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
     Morris "Tabor" Arroad (mortarroad)
     mrezai
@@ -182,6 +187,7 @@ name is available.
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
     Paul Trojahn (ptrojahn)
+    Paweł Fertyk (pfertyk)
     Pawel Kowal (pkowal1982)
     Pawel Lampe (Scony)
     Pedro J. Estébanez (RandomShaper)
@@ -212,6 +218,7 @@ name is available.
     Shiqing (kawa-yoiko)
     Silc 'Tokage' Renew (TokageItLab)
     Simon Wenner (swenner)
+    smix8
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     TC (floppyhammer)
@@ -234,7 +241,7 @@ name is available.
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
     Yuri Rubinsky (Chaosus)
-    Yuri Sizov (pycbouh)
+    Yuri Sizov (YuriSizov)
     Zae Chao (zaevi)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)

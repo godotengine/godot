@@ -1200,6 +1200,10 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 1.0f);
+	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
+	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 1.0f);
+	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
 
 	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
@@ -1246,6 +1250,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
+
+	GLOBAL_DEF("rendering/textures/vram_compression/minimum_size", 512);
+	custom_prop_info["rendering/textures/vram_compression/minimum_size"] = PropertyInfo(Variant::INT, "rendering/textures/vram_compression/minimum_size", PROPERTY_HINT_RANGE, "16,16384,1");
 }
 
 ProjectSettings::~ProjectSettings() {

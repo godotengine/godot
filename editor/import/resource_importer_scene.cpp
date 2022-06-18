@@ -658,6 +658,44 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				}
 			}
 		}
+	} else if (_teststr(name, "vehicle")) {
+		if (isroot) {
+			return p_node;
+		}
+
+		Node *owner = p_node->get_owner();
+		Node3D *s = Object::cast_to<Node3D>(p_node);
+		VehicleBody3D *bv = memnew(VehicleBody3D);
+		String n = _fixstr(p_node->get_name(), "vehicle");
+		bv->set_name(n);
+		p_node->replace_by(bv);
+		p_node->set_name(n);
+		bv->add_child(p_node);
+		bv->set_owner(owner);
+		p_node->set_owner(owner);
+		bv->set_transform(s->get_transform());
+		s->set_transform(Transform3D());
+
+		p_node = bv;
+	} else if (_teststr(name, "wheel")) {
+		if (isroot) {
+			return p_node;
+		}
+
+		Node *owner = p_node->get_owner();
+		Node3D *s = Object::cast_to<Node3D>(p_node);
+		VehicleWheel3D *bv = memnew(VehicleWheel3D);
+		String n = _fixstr(p_node->get_name(), "wheel");
+		bv->set_name(n);
+		p_node->replace_by(bv);
+		p_node->set_name(n);
+		bv->add_child(p_node);
+		bv->set_owner(owner);
+		p_node->set_owner(owner);
+		bv->set_transform(s->get_transform());
+		s->set_transform(Transform3D());
+
+		p_node = bv;
 	} else if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		//last attempt, maybe collision inside the mesh data
 

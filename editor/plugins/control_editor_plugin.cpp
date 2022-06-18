@@ -120,7 +120,7 @@ ControlPositioningWarning::ControlPositioningWarning() {
 	grid->add_child(title_icon);
 
 	title_label = memnew(Label);
-	title_label->set_autowrap_mode(Label::AutowrapMode::AUTOWRAP_WORD);
+	title_label->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD);
 	title_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 	grid->add_child(title_label);
@@ -135,7 +135,7 @@ ControlPositioningWarning::ControlPositioningWarning() {
 	grid->add_child(hint_filler_left);
 
 	hint_label = memnew(Label);
-	hint_label->set_autowrap_mode(Label::AutowrapMode::AUTOWRAP_WORD);
+	hint_label->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD);
 	hint_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hint_label->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 	hint_label->hide();

@@ -414,7 +414,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
 		}
 	}
 	{
@@ -476,6 +476,10 @@ void Control::_validate_property(PropertyInfo &property) const {
 		if (data.mouse_filter != MOUSE_FILTER_STOP) {
 			property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
+	}
+
+	if (property.name == "scale") {
+		property.hint = PROPERTY_HINT_LINK;
 	}
 
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.

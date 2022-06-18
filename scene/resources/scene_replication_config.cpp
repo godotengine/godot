@@ -52,11 +52,19 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 		ReplicationProperty &prop = properties[idx];
 		if (what == "sync") {
 			prop.sync = p_value;
-			sync_props.push_back(prop.name);
+			if (prop.sync) {
+				sync_props.push_back(prop.name);
+			} else {
+				sync_props.erase(prop.name);
+			}
 			return true;
 		} else if (what == "spawn") {
 			prop.spawn = p_value;
-			spawn_props.push_back(prop.name);
+			if (prop.spawn) {
+				spawn_props.push_back(prop.name);
+			} else {
+				spawn_props.erase(prop.name);
+			}
 			return true;
 		}
 	}

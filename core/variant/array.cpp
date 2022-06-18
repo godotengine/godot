@@ -260,7 +260,9 @@ void Array::push_back(const Variant &p_value) {
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
+	for (int i = 0; i < p_array.size(); ++i) {
+		ERR_FAIL_COND(!_p->typed.validate(p_array[i], "append_array"));
+	}
 	_p->array.append_array(p_array._p->array);
 }
 

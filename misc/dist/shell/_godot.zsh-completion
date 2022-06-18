@@ -78,6 +78,8 @@ _arguments \
   '--export[export the project using the given preset and matching release template]:export preset name then path' \
   '--export-debug[same as --export, but using the debug template]:export preset name then path' \
   '--export-pack[same as --export, but only export the game pack for the given preset]:export preset name then path' \
+  '--convert-3to4[converts project from Godot 3.x to Godot 4.x]' \
+  '--validate-conversion-3to4[shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x]' \
   '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory (optional):_dirs' \
   '--no-docbase[disallow dumping the base types (used with --doctool)]' \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \

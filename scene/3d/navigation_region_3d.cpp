@@ -65,12 +65,12 @@ bool NavigationRegion3D::is_enabled() const {
 	return enabled;
 }
 
-void NavigationRegion3D::set_layers(uint32_t p_layers) {
-	NavigationServer3D::get_singleton()->region_set_layers(region, p_layers);
+void NavigationRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
+	NavigationServer3D::get_singleton()->region_set_navigation_layers(region, p_navigation_layers);
 }
 
-uint32_t NavigationRegion3D::get_layers() const {
-	return NavigationServer3D::get_singleton()->region_get_layers(region);
+uint32_t NavigationRegion3D::get_navigation_layers() const {
+	return NavigationServer3D::get_singleton()->region_get_navigation_layers(region);
 }
 
 void NavigationRegion3D::set_enter_cost(real_t p_enter_cost) {
@@ -239,8 +239,8 @@ void NavigationRegion3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationRegion3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationRegion3D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &NavigationRegion3D::set_layers);
-	ClassDB::bind_method(D_METHOD("get_layers"), &NavigationRegion3D::get_layers);
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationRegion3D::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationRegion3D::get_navigation_layers);
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion3D::get_region_rid);
 
@@ -255,7 +255,7 @@ void NavigationRegion3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"), "set_navigation_mesh", "get_navigation_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_layers", "get_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 

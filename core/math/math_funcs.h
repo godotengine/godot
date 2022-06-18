@@ -302,11 +302,19 @@ public:
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		double result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		float result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 
 	static _ALWAYS_INLINE_ float fract(float value) {

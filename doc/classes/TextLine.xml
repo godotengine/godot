@@ -161,28 +161,11 @@
 		<member name="preserve_invalid" type="bool" setter="set_preserve_invalid" getter="get_preserve_invalid" default="true">
 			If set to [code]true[/code] text will display invalid characters.
 		</member>
-		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextLine.OverrunBehavior" default="3">
-			Sets the clipping behavior when the text exceeds the text line's set width. See [enum OverrunBehavior] for a description of all modes.
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
+			Sets the clipping behavior when the text exceeds the text line's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
 			Text line width.
 		</member>
 	</members>
-	<constants>
-		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
-			No text trimming is performed.
-		</constant>
-		<constant name="OVERRUN_TRIM_CHAR" value="1" enum="OverrunBehavior">
-			Trims the text per character.
-		</constant>
-		<constant name="OVERRUN_TRIM_WORD" value="2" enum="OverrunBehavior">
-			Trims the text per word.
-		</constant>
-		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
-			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
-		</constant>
-		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
-			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
-		</constant>
-	</constants>
 </class>

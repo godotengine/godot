@@ -1196,7 +1196,7 @@ Array Object::_get_signal_list() const {
 	return ret;
 }
 
-Array Object::_get_signal_connection_list(const String &p_signal) const {
+Array Object::_get_signal_connection_list(const StringName &p_signal) const {
 	List<Connection> conns;
 	get_all_signal_connections(&conns);
 
@@ -1422,11 +1422,11 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 }
 
-void Object::_set_bind(const String &p_set, const Variant &p_value) {
+void Object::_set_bind(const StringName &p_set, const Variant &p_value) {
 	set(p_set, p_value);
 }
 
-Variant Object::_get_bind(const String &p_name) const {
+Variant Object::_get_bind(const StringName &p_name) const {
 	return get(p_name);
 }
 

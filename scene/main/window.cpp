@@ -111,31 +111,19 @@ Size2i Window::get_real_size() const {
 
 void Window::set_max_size(const Size2i &p_max_size) {
 	max_size = p_max_size;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_max_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		max_size = DisplayServer::get_singleton()->window_get_max_size(window_id);
-	}
 	return max_size;
 }
 
 void Window::set_min_size(const Size2i &p_min_size) {
 	min_size = p_min_size;
-	if (!wrap_controls && window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_min_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		min_size = DisplayServer::get_singleton()->window_get_min_size(window_id);
-	}
 	return min_size;
 }
 
@@ -165,14 +153,26 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
+		}
+#else
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
+#endif
 	}
 }
 
 bool Window::get_flag(Flags p_flag) const {
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
+		}
+#else
 		flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
+#endif
 	}
 	return flags[p_flag];
 }
@@ -255,7 +255,15 @@ void Window::_make_window() {
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+#ifdef TOOLS_ENABLED
+	if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+	} else {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+	}
+#else
 	DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+#endif
 
 	_update_window_size();
 
@@ -441,6 +449,8 @@ void Window::set_visible(bool p_visible) {
 				ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
 				transient_parent->exclusive_child = this;
 			}
+#else
+			transient_parent->exclusive_child = this;
 #endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
@@ -488,7 +498,13 @@ void Window::_make_transient() {
 		window->transient_children.insert(this);
 		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
+#ifdef TOOLS_ENABLED
+				if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+					transient_parent->exclusive_child = this;
+				}
+#else
 				transient_parent->exclusive_child = this;
+#endif
 			} else if (transient_parent->exclusive_child != this) {
 				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
 			}
@@ -531,13 +547,27 @@ void Window::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 
 	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+		} else {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+		}
+#else
 		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+#endif
 	}
 
 	if (transient_parent) {
 		if (p_exclusive && is_inside_tree() && is_visible()) {
 			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+#ifdef TOOLS_ENABLED
+			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
+				transient_parent->exclusive_child = this;
+			}
+#else
 			transient_parent->exclusive_child = this;
+#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -579,6 +609,7 @@ void Window::_update_window_size() {
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	}
 
 	//update the viewport
@@ -1591,8 +1622,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
 
@@ -1609,8 +1640,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 
 	ADD_GROUP("Limits", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size", PROPERTY_HINT_NONE, "suffix:px"), "set_max_size", "get_max_size");
 
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");

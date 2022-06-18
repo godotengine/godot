@@ -1108,7 +1108,7 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 		Ref<Image> img = r->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
-			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);
+			Color c = img->get_pixel(ofs.x, ofs.y);
 
 			set_pick_color(c);
 		}
@@ -1135,6 +1135,8 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
 		// It immediately toggles off in the first press otherwise.
 		screen->call_deferred(SNAME("connect"), "hidden", Callable(btn_pick, "set_pressed"), varray(false));
+	} else {
+		screen->show();
 	}
 	screen->raise();
 #ifndef _MSC_VER

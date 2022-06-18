@@ -71,13 +71,14 @@
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
 # Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
 # inci <incialien@gmail.com>, 2022.
+# Ramazan Aslan <legendraslan@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-27 16:15+0000\n"
-"Last-Translator: inci <incialien@gmail.com>\n"
+"PO-Revision-Date: 2022-06-12 13:19+0000\n"
+"Last-Translator: Ramazan Aslan <legendraslan@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -92,7 +93,6 @@ msgid "Tablet Driver"
 msgstr "Tablet Sürücüsü"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
 msgstr "Pano"
 
@@ -125,7 +125,6 @@ msgid "Low Processor Usage Mode Sleep (µsec)"
 msgstr "Düşük İşlemci Kullanımı Uyku Modu (μsn)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Keep Screen On"
 msgstr "Ekranı Açık Tut"
 
@@ -160,11 +159,11 @@ msgstr "Tam Ekran"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Maksimize edilmiş"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr "Küçültülmüş"
+msgstr "Minimize edilmiş"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
@@ -193,11 +192,11 @@ msgstr "Boyut"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Endian Değişimi"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
-msgstr "Düzenleyici İpucu"
+msgstr "Düzenleyici İpucusu"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
@@ -216,9 +215,8 @@ msgid "Time Scale"
 msgstr "Zaman Ölçeği"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Physics Jitter Fix"
-msgstr "Fizik Kare %"
+msgstr "Fizik Titreşim Düzeltmesi"
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
@@ -226,7 +224,7 @@ msgstr "Hata"
 
 #: core/bind/core_bind.cpp
 msgid "Error String"
-msgstr "Hata Dizesi"
+msgstr "Hata yazısı"
 
 #: core/bind/core_bind.cpp
 msgid "Error Line"
@@ -238,7 +236,7 @@ msgstr "Sonuç"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr "Bellek"
+msgstr "Hafıza"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -272,16 +270,16 @@ msgid "Data"
 msgstr "Veri"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
-#: editor/editor_settings.cpp main/main.cpp
+#: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
+#: scene/gui/file_dialog.cpp
 msgid "Network"
 msgstr "Ağ"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Uzak "
+msgstr "Uzaktan Dosyalama Sistemi"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
@@ -289,11 +287,11 @@ msgstr "Sayfa Boyutu"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Sayfayı Önceden Okuma"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr "Engelleme Modu Etkin"
+msgstr "Engelleme Modu Etkinleştirildi"
 
 #: core/io/http_client.cpp
 msgid "Connection"
@@ -308,33 +306,28 @@ msgid "Object ID"
 msgstr "Nesne Kimliği"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Araları Doldurmayı Etkinleştir"
+msgstr "Nesne Çözümlemelerine İzin Ver"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Yeni Bağlantılar Kurmayı Reddet"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Network Peer"
 msgstr "Ağ Profilcisi"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Kök düğüm adı"
+msgstr "Kök Düğüm Adı"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Bağla"
+msgstr "Yeni Bağlantıları Reddet"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "Dönüştürme Türü"
+msgstr "Transfer Modu"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
@@ -365,9 +358,8 @@ msgid "Blocking Handshake"
 msgstr ""
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "Bağlantıyı Düzenle:"
+msgstr "Bekletilebilecek Maks. Bağlantı Sayısı"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -385,15 +377,16 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Baytları çözümlemek için yetersiz miktarda bayt ya da geçersiz format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "İfadede geçersiz giriş %i (geçersiz)"
+msgstr "İfadede geçersiz giriş %d"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
 msgstr "self kullanılamaz çünkü örnek boş (geçilmedi)"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "\"%s\" işlecinde geçersiz terimler, '%s' ve '%s'."
 
@@ -419,17 +412,26 @@ msgid "Seed"
 msgstr ""
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Durum"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Mesaj Sırası"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "En Büyük Boyut (KB)"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Mouse Mode"
+msgstr "Biçimi Taşı"
+
+#: core/os/input.cpp
+#, fuzzy
+msgid "Use Accumulated Input"
+msgstr "Girişi Sil"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -437,62 +439,58 @@ msgid "Device"
 msgstr "Aygıt"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Hepsi"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Control"
-msgstr "Sürüm Kontrol"
-
-#: core/os/input_event.cpp
-msgid "Meta"
-msgstr ""
+msgstr "Ctrl"
 
 #: core/os/input_event.cpp
 #, fuzzy
+msgid "Meta"
+msgstr "Meta"
+
+#: core/os/input_event.cpp
 msgid "Command"
-msgstr "Topluluk"
+msgstr "Komut"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Ön ayar"
+msgstr "Basılmış"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Tara"
+msgstr "Tuş Kodu"
+
+#: core/os/input_event.cpp
+msgid "Physical Scancode"
+msgstr "Fiziksel Tuş Kodu"
 
 #: core/os/input_event.cpp
 #, fuzzy
-msgid "Physical Scancode"
-msgstr "Fiziksel Anahtar"
-
-#: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Echo"
-msgstr ""
+msgstr "Eko"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
-#, fuzzy
 msgid "Button Mask"
-msgstr "Düğme"
+msgstr "Tuş Maskesi"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Genel Sabit"
+msgstr "Global Pozisyon"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -500,35 +498,31 @@ msgid "Factor"
 msgstr "Vektör"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Fare Düğmesi İndeksi:"
+msgstr "Tuş İndeksi"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Çift Tıklama"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr ""
+msgstr "Eğim"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Ön ayar"
+msgstr "Baskı"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Göreceli Yapış"
+msgstr "Göreceli"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Hız:"
+msgstr "Hız"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -536,14 +530,12 @@ msgid "Axis"
 msgstr "Eksen"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "İğneleme değeri"
+msgstr "Eksen Değeri"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "İndeks:"
+msgstr "İndeks"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -554,37 +546,35 @@ msgstr "Eylem"
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Güç"
 
 #: core/os/input_event.cpp
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Değiştir"
+msgstr "Kanal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "İşleme Mesajı"
+msgstr "Mesaj"
 
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Pitch"
-msgstr "Perde:"
+msgstr "Perde"
 
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Velocity"
-msgstr "Yörünge Görünümü Sağ"
+msgstr "Hız"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Instrument"
-msgstr ""
+msgstr "Alet"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -598,19 +588,16 @@ msgstr ""
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Eylem"
+msgstr "Uygulama"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Yapışmayı Yapılandır"
+msgstr "Yapılandırma"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Proje Ayarları..."
+msgstr "Proje Ayarlarını Bastır"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -633,7 +620,8 @@ msgstr "Açıklama"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
-#: main/main.cpp
+#: main/main.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp
 msgid "Run"
 msgstr "Çalıştır"
 
@@ -643,39 +631,36 @@ msgid "Main Scene"
 msgstr "Ana Sahne"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Oto-döşemeleri Pasifleştir"
+msgstr "Stdout'u devre dışı bırak"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stderr"
-msgstr "Pasif Öge"
+msgstr "Stderr'i devre dışı bırak"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Gizlenmiş Proje Verileri Dizinini Kullan"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Özelleştirilmiş Kullanıcı Dizinini Kullan"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Özelleştirilmiş Kullanıcı Dizini Adı"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Hepsini Görüntüle"
+msgstr "Görüntüle"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Genişlik"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -683,23 +668,20 @@ msgstr ""
 #: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Işık"
+msgstr "Yükseklik"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Her Zaman Üstte"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Soldan Görünüm"
+msgstr "Test Genişliği"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Deneme"
+msgstr "Test Yüksekliği"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -707,9 +689,8 @@ msgid "Audio"
 msgstr "Ses"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Default Bus Layout"
-msgstr "Varsayılan Bus Yerleşim Düzenini Yükle."
+msgstr "Varsayılan Bus Yerleşim Düzeni"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -725,11 +706,11 @@ msgstr "Ana Sahne Değiştirgenleri:"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Dosya Uzantılarında Ara"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Script Dosyalarını Aramak İçin Dosya Yolu"
 
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -737,80 +718,70 @@ msgid "Version Control"
 msgstr "Sürüm Kontrol"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Autoload On Startup"
-msgstr ""
+msgstr "Başlangıçta Otomatik Yükleme"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Plugin Name"
-msgstr "Eklentinin Adı:"
+msgstr "Eklenti Adı"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Giriş Ekle"
+msgstr "Giriş"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "Kullanıcı Arayüzü Kabul Et"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Seç"
+msgstr "Kullanıcı Arayüzü Seç"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Vazgeç"
+msgstr "Kullanıcı Arayüzünü İptal Et"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Yola Odaklan"
+msgstr "Kullanıcı Arayüzü Sonrakine Odaklan"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Yola Odaklan"
+msgstr "Kullanıcı Arayüzü Öncekine Odaklan"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "Sol Üst"
+msgstr "Kullanıcı Arayüzü Sol"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "Sağ Üst"
+msgstr "Kullanıcı Arayüzü Sağ"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "Kullanıcı Arayüzü Yukarı"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Aşağı"
+msgstr "Kullanıcı Arayüzü Aşağı"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Page Up"
-msgstr "Sayfa: "
+msgstr "Kullanıcı Arayüzü Sayfa Yukarı"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "Kullanıcı Arayüzü Sayfa Aşağı"
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "Kullanıcı Arayüzü Home"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI End"
-msgstr "Sonunda"
+msgstr "Kullanıcı Arayüzü End"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -820,9 +791,8 @@ msgstr "Sonunda"
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Physics"
-msgstr " (Fiziksel)"
+msgstr "Fizik"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -832,12 +802,11 @@ msgstr " (Fiziksel)"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Smooth Trimesh Collision"
-msgstr "Üçlü Örüntü Çarpışma Kardeşi Oluştur"
+msgstr "Akıcı Trimesh Çarpışması"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -848,9 +817,8 @@ msgstr "Üçlü Örüntü Çarpışma Kardeşi Oluştur"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "Oluşturucu:"
+msgstr "Oluşturucu"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -860,17 +828,17 @@ msgstr "Oluşturucu:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Kalite"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
-#: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
+#: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
+#: servers/visual_server.cpp
 msgid "Filters"
-msgstr "Süzgeçler:"
+msgstr "Filtreler"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Keskinleştirme Yoğunluğu"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -886,70 +854,66 @@ msgstr "Hata Ayıklama"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Ayarlar:"
+msgstr "Ayarlar"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
 msgid "Profiler"
 msgstr "Kesitçi"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "İşlev Yap"
+msgstr "Maks. Fonksiyon Sayısı"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "İfade"
+msgstr "Sıkıştırma"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Formats"
-msgstr "Biçem"
+msgstr "Biçim"
 
 #: core/project_settings.cpp
 msgid "Zstd"
-msgstr ""
+msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "Uzun Mesafe Eşleşme"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Sıkıştırma Seviyesi"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "Pencere Günlük Boyutu"
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Modüller"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "Metotlara bağlantılar:"
+msgstr "Bağlanma Zaman Aşımı Süresi(Saniye)"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -957,16 +921,15 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Maksimum Arabellek (2'nin üssü olacak şekilde)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Köşenoktalar:"
+msgstr "Sertifikalar"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -975,9 +938,8 @@ msgid "Resource"
 msgstr "Kaynak"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Sahneyi Kapat"
+msgstr "Sahneye Yerel"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -987,9 +949,8 @@ msgid "Path"
 msgstr "Yol"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "Kaynak"
+msgstr "Kaynak Kodu"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
@@ -1010,27 +971,27 @@ msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr "KiB"
+msgstr "KB"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr "MiB"
+msgstr "MB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr "GiB"
+msgstr "GB"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr "TiB"
+msgstr "TB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr "PiB"
+msgstr "PB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr "EiB"
+msgstr "EB"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -1038,7 +999,7 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "Arabellek"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1060,7 +1021,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1091,21 +1052,21 @@ msgid "Use Bicubic Sampling"
 msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Maks. Renderlanabilinecek Ögeler"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Maks. İşlenebilinecek Işık Sayısı"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Max Renderable Reflections"
-msgstr "Merkez Seçimi"
+msgstr "Maks. İşlenebilinecek Yansıma Sayısı"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Maks. Objeye düşen Işık Sayısı"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
@@ -1125,9 +1086,8 @@ msgid "Scale"
 msgstr "Ölçekle"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Follow Surface"
-msgstr "Yüzeyi Doldur"
+msgstr "Yüzeyi Takip Et"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
@@ -1139,7 +1099,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Yüksek Kalite"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1230,16 +1190,14 @@ msgstr "Zaman"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "Yerelleştirme"
+msgstr "Konum"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "Dönme Adımı:"
+msgstr "Rotasyon"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
@@ -1247,14 +1205,13 @@ msgid "Value"
 msgstr "Değer"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "Değer:"
+msgstr "Argüman Sayısı"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argümanlar"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1301,9 +1258,8 @@ msgid "Animation"
 msgstr "Animasyon"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing"
-msgstr "Açılma Kararma"
+msgstr "Yumuşatma"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1360,7 +1316,7 @@ msgstr "Animasyon Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Animasyon uzunluğu (çerçeve)"
+msgstr "Animasyon uzunluğu (kare)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
@@ -1377,7 +1333,7 @@ msgstr "Animasyon Döngüsü"
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "İşlevler:"
+msgstr "Fonksiyonlar:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
@@ -1412,19 +1368,16 @@ msgid "Remove this track."
 msgstr "Bu izi sil."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Süre (sn): "
+msgstr "Süre (sn):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Pozisyon"
+msgstr "Pozisyon:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Dönme Adımı:"
+msgstr "Rotasyon:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1446,9 +1399,8 @@ msgid "(Invalid, expected type: %s)"
 msgstr "Geçersiz Dışa Aktarım Şablonu:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing:"
-msgstr "Açılma Kararma"
+msgstr "Yumuşatma:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2305,8 +2257,8 @@ msgid "Open"
 msgstr "Aç"
 
 #: editor/dependency_editor.cpp
-msgid "Owners Of:"
-msgstr "Şunların sahipleri:"
+msgid "Owners of: %s (Total: %d)"
+msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2610,7 +2562,7 @@ msgid "Bus Options"
 msgstr "Bus ayarları"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/project_export.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Çoğalt"
 
@@ -2868,6 +2820,25 @@ msgid "Choose"
 msgstr "Seç"
 
 #: editor/editor_export.cpp
+msgid "Project export for platform:"
+msgstr ""
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed with errors."
+msgstr "Düğüm Yolunu Kopyala"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Completed sucessfully."
+msgstr "Paket Başarı ile Kuruldu!"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed."
+msgstr "Başarısız:"
+
+#: editor/editor_export.cpp
 msgid "Storing File:"
 msgstr "Dosya Depolama:"
 
@@ -2878,6 +2849,31 @@ msgstr "Beklenen adreste dışa aktarım şablonu bulunamadı:"
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Çıkınla"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save PCK"
+msgstr "Farklı Kaydet"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Cannot create file \"%s\"."
+msgstr "Klasör oluşturulamadı."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to export project files."
+msgstr "Proje dosyaları dışa aktarılamadı"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Can't open file to read from path \"%s\"."
+msgstr "Dosya yazmak için açılamıyor:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Save ZIP"
+msgstr "Farklı Kaydet"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -3000,9 +2996,31 @@ msgstr "Özel hata ayıklama şablonu bulunmadı."
 msgid "Custom release template not found."
 msgstr "Özel yayınlama şablonu bulunamadı."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Prepare Template"
+msgstr "Şablonlarını Yönet"
+
+#: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist."
+msgstr "Belirtilen Dışa aktarım yolu mevcut değil:"
+
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-msgid "Template file not found:"
+#, fuzzy
+msgid "Template file not found: \"%s\"."
 msgstr "Şablon dosyası bulunamadı:"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid "Failed to copy export template."
+msgstr "Geçersiz Dışa Aktarım Şablonu:"
+
+#: editor/editor_export.cpp platform/windows/export/export.cpp
+#: platform/x11/export/export.cpp
+#, fuzzy
+msgid "PCK Embedding"
+msgstr "Dolgulama"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3178,9 +3196,9 @@ msgid "Import"
 msgstr "İçe Aktar"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
-#: platform/android/export/export.cpp platform/javascript/export/export.cpp
-#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#: platform/windows/export/export.cpp
+#: platform/android/export/export.cpp platform/android/export/export_plugin.cpp
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 msgid "Export"
 msgstr "Dışa Aktar"
 
@@ -3458,7 +3476,7 @@ msgstr "Sınıf:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Kalıtçılar:"
+msgstr "Miras:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -5306,6 +5324,11 @@ msgstr ""
 "Lütfen Dışa Aktar menüsüne çalıştırılabilir bir ön ayar ekleyin veya mevcut "
 "bir ön ayarı çalıştırılabilir olarak tanımlayın."
 
+#: editor/editor_run_native.cpp
+#, fuzzy
+msgid "Project Run"
+msgstr "Proje"
+
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
 msgstr "Mantığınızı _run() metoduna yazın."
@@ -5589,7 +5612,9 @@ msgid "Draw Spaces"
 msgstr "Çizim Çağrıları:"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp scene/main/scene_tree.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
+#: scene/main/scene_tree.cpp scene/resources/world.cpp
+#: scene/resources/world_2d.cpp
 msgid "Navigation"
 msgstr "Gezinim"
 
@@ -7090,7 +7115,7 @@ msgstr ""
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
-#: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
+#: scene/gui/control.cpp
 #, fuzzy
 msgid "Filter"
 msgstr "Süzgeçler:"
@@ -7387,6 +7412,18 @@ msgstr "`Post_import ()` yönteminde Node türevi bir nesne döndürdünüz mü?
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Kaydediliyor..."
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used as a normal map in 3D. Enabling red-green "
+"texture compression to reduce memory usage (blue channel is discarded)."
+msgstr ""
+
+#: editor/import/resource_importer_texture.cpp
+msgid ""
+"%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
+"generation and VRAM texture compression."
+msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -10373,6 +10410,7 @@ msgid "Points"
 msgstr "Noktalar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp scene/2d/polygon_2d.cpp
+#: scene/resources/navigation_mesh.cpp
 msgid "Polygons"
 msgstr "Çokgenler"
 
@@ -11754,7 +11792,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Geçersiz geometri, örüntü ile değiştirilemiyor."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to Mesh2D"
+#, fuzzy
+msgid "Convert to MeshInstance2D"
 msgstr "Örüntü2D'ye döüştür"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -12750,8 +12789,7 @@ msgid "Select the previous shape, subtile, or Tile."
 msgstr "Önceki şekil, altdöşeme ya da Döşemeyi Seç."
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/sprite.cpp
-#: scene/3d/sprite_3d.cpp scene/resources/navigation_mesh.cpp
-#: scene/resources/texture.cpp
+#: scene/3d/sprite_3d.cpp scene/resources/texture.cpp
 msgid "Region"
 msgstr "Bölge"
 
@@ -14268,34 +14306,8 @@ msgid "Delete preset '%s'?"
 msgstr "'%s' önayarı silinsin mi?"
 
 #: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"Export templates seem to be missing or invalid."
-msgstr ""
-"'%s' platformu için proje dışa aktarılamadı.\n"
-"Dışa aktarma şablonları eksik veya hatalı görünüyor."
-
-#: editor/project_export.cpp
-msgid ""
-"Failed to export the project for platform '%s'.\n"
-"This might be due to a configuration issue in the export preset or your "
-"export settings."
-msgstr ""
-"'%s' platformu için proje dışa aktarılamadı.\n"
-"Bu, dışa aktarma ön ayarlarındaki ya da dışa aktarma ayarlarınızdaki bir "
-"yapılandırma sorunundan kaynaklanıyor olabilir."
-
-#: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Tümünü Dışa Aktarma"
-
-#: editor/project_export.cpp
-msgid "The given export path doesn't exist:"
-msgstr "Belirtilen Dışa aktarım yolu mevcut değil:"
-
-#: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Bu platform için dışa aktarma şablonu eksik/bozuk:"
 
 #: editor/project_export.cpp
 msgid "Export Path"
@@ -14443,6 +14455,11 @@ msgstr "Godot Oyun Paketi"
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
 msgstr "Bu platform için dışa aktarma şablonu eksik:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Project Export"
+msgstr "Projenin Kurucuları"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -16863,7 +16880,7 @@ msgstr ""
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
-#: scene/3d/collision_polygon.cpp scene/resources/navigation_mesh.cpp
+#: scene/3d/collision_polygon.cpp
 #, fuzzy
 msgid "Polygon"
 msgstr "Çokgenler"
@@ -17486,7 +17503,6 @@ msgid "Use In Baked Light"
 msgstr "Işık-Haritalarını Pişir"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#: scene/resources/navigation_mesh.cpp
 msgid "Cell"
 msgstr ""
 
@@ -17515,6 +17531,19 @@ msgstr "Merkez"
 #: scene/resources/material.cpp
 msgid "Mask"
 msgstr ""
+
+#: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
+#, fuzzy
+msgid "Bake Navigation"
+msgstr "Gezinim"
+
+#: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
+#: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
+#: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
+#: scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Navigation Layers"
+msgstr "Gezinim Kipi"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -19051,10 +19080,6 @@ msgid "Could not execute on device."
 msgstr "Cihazda yürütülemedi."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unable to find the 'apksigner' tool."
-msgstr "'apksigner' aracı bulunamıyor."
-
-#: platform/android/export/export_plugin.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -19178,12 +19203,17 @@ msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
 msgstr ""
 "\"Target Sdk\" sürümü \"Min Sdk\" sürümünden daha büyük veya eşit olmalıdır."
 
+#: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Code Signing"
+msgstr "Sinyal"
+
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"'apksigner' could not be found.\n"
-"Please check the command is available in the Android SDK build-tools "
-"directory.\n"
-"The resulting %s is unsigned."
+"'apksigner' could not be found. Please check that the command is available "
+"in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
 "'apksigner' bulunamadı.\n"
 "Lütfen komutun Android SDK build-tools dizininde bulunup bulunmadığını "
@@ -19201,6 +19231,11 @@ msgstr "%s sürümü imzalanıyor..."
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
 msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Could not start apksigner executable."
+msgstr "Alt işlem başlatılamadı!"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19231,7 +19266,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Geçersiz dosya adı! Android APK, * .apk uzantısını gerektirir."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Unsupported export format!\n"
+#, fuzzy
+msgid "Unsupported export format!"
 msgstr "Desteklenmeyen dışa aktarma biçimi!\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -19243,10 +19279,9 @@ msgstr ""
 "için sürüm bilgisi yok. Lütfen 'Proje' menüsünden yeniden yükleyin."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Android build version mismatch:\n"
-"   Template installed: %s\n"
-"   Godot Version: %s\n"
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
 "Android derlemesi sürüm uyumsuzluğu:\n"
@@ -19255,13 +19290,15 @@ msgstr ""
 "Lütfen 'Proje' menüsünden Android derleme şablonunu yeniden yükleyin."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name"
+"Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
 "Proje adıyla res://android/build/res/*.xml dosyalarının üzerine yazılamıyor"
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files to gradle project\n"
+#, fuzzy
+msgid "Could not export project files to gradle project."
 msgstr "Proje dosyaları gradle projesine aktarılamadı\n"
 
 #: platform/android/export/export_plugin.cpp
@@ -19273,8 +19310,9 @@ msgid "Building Android Project (gradle)"
 msgstr "Android Projesi Oluşturma (gradle)"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Building of Android project failed, check output for the error.\n"
+"Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Android projesinin oluşturulması başarısız oldu, hatayı çıktı için kontrol "
@@ -19295,7 +19333,8 @@ msgstr ""
 "için gradle proje dizinini kontrol edin."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Package not found: %s"
+#, fuzzy
+msgid "Package not found: \"%s\"."
 msgstr "Paket bulunamadı: %s"
 
 #: platform/android/export/export_plugin.cpp
@@ -19303,17 +19342,16 @@ msgid "Creating APK..."
 msgstr "APK oluşturuluyor..."
 
 #: platform/android/export/export_plugin.cpp
-msgid ""
-"Could not find template APK to export:\n"
-"%s"
+#, fuzzy
+msgid "Could not find template APK to export: \"%s\"."
 msgstr ""
 "Dışa aktarılacak şablon APK bulunamadı:\n"
 "%s"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Missing libraries in the export template for the selected architectures: "
-"%s.\n"
+"Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
@@ -19326,7 +19364,8 @@ msgid "Adding files..."
 msgstr "Dosyalar ekleniyor..."
 
 #: platform/android/export/export_plugin.cpp
-msgid "Could not export project files"
+#, fuzzy
+msgid "Could not export project files."
 msgstr "Proje dosyaları dışa aktarılamadı"
 
 #: platform/android/export/export_plugin.cpp
@@ -19569,6 +19608,17 @@ msgstr "ÖzelSınıf"
 msgid "Custom BG Color"
 msgstr "ÖzelSınıf"
 
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Prepare Templates"
+msgstr "Şablonlarını Yönet"
+
+#: platform/iphone/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Export template not found."
+msgstr "Özel yayınlama şablonu bulunamadı."
+
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr "App Store Ekip Kimliği belirtilmedi - proje yapılandırılamıyor."
@@ -19590,20 +19640,33 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Dışa aktarılmış HTML'yi sistemin varsayılan tarayıcısında çalıştır."
 
 #: platform/javascript/export/export.cpp
-msgid "Could not open template for export:"
+#, fuzzy
+msgid "Could not open template for export: \"%s\"."
 msgstr "Dışa aktarma için şablon açılamadı:"
 
 #: platform/javascript/export/export.cpp
-msgid "Invalid export template:"
+#, fuzzy
+msgid "Invalid export template: \"%s\"."
 msgstr "Geçersiz Dışa Aktarım Şablonu:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not write file:"
+#, fuzzy
+msgid "Could not write file: \"%s\"."
 msgstr "Dosya yazılamadı:"
 
+#: platform/javascript/export/export.cpp platform/osx/export/export.cpp
+#, fuzzy
+msgid "Icon Creation"
+msgstr "Kenar Boşluk Belirle"
+
 #: platform/javascript/export/export.cpp
-msgid "Could not read file:"
+#, fuzzy
+msgid "Could not read file: \"%s\"."
 msgstr "Dosya okunamadı:"
+
+#: platform/javascript/export/export.cpp
+msgid "PWA"
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19680,15 +19743,18 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-msgid "Could not read HTML shell:"
+#, fuzzy
+msgid "Could not read HTML shell: \"%s\"."
 msgstr "HTML kabuğu okunamadı:"
 
 #: platform/javascript/export/export.cpp
-msgid "Could not create HTTP server directory:"
+#, fuzzy
+msgid "Could not create HTTP server directory: %s."
 msgstr "HTTP sunucu klasörü oluşturulamadı:"
 
 #: platform/javascript/export/export.cpp
-msgid "Error starting HTTP server:"
+#, fuzzy
+msgid "Error starting HTTP server: %d."
 msgstr "HTTP sunucusu başlatılırken hata:"
 
 #: platform/javascript/export/export.cpp
@@ -19989,9 +20055,28 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open icon file \"%s\"."
+msgstr "Proje dosyaları dışa aktarılamadı"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start xcrun executable."
+msgstr "Alt işlem başlatılamadı!"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Notarization failed."
+msgstr "Yerelleştirme"
+
+#: platform/osx/export/export.cpp
+msgid "Notarization request UUID: \"%s\""
+msgstr ""
+
+#: platform/osx/export/export.cpp
 msgid ""
-"Note: The notarization process generally takes less than an hour. When the "
-"process is completed, you'll receive an email."
+"The notarization process generally takes less than an hour. When the process "
+"is completed, you'll receive an email."
 msgstr ""
 
 #: platform/osx/export/export.cpp
@@ -20007,9 +20092,59 @@ msgid ""
 msgstr ""
 
 #: platform/osx/export/export.cpp
+msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign failed with error \"%s\"."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "Built-in CodeSign require regex module."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid ""
+"Could not start codesign executable, make sure Xcode command line tools are "
+"installed."
+msgstr ""
+
+#: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
 msgid "No identity found."
 msgstr "Simge bulunamadı."
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Cannot sign file %s."
+msgstr "%s dosyası kaydedilirken hata"
+
+#: platform/osx/export/export.cpp
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "DMG Creation"
+msgstr "Yönler"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not start hdiutil executable."
+msgstr "Alt işlem başlatılamadı!"
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed - file exists."
+msgstr ""
+
+#: platform/osx/export/export.cpp
+msgid "`hdiutil create` failed."
+msgstr ""
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20018,10 +20153,15 @@ msgstr "Küçük Bediz Oluşturuluyor"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
-msgid "Could not find template app to export:"
+msgid "Could not find template app to export: \"%s\"."
 msgstr ""
 "Dışa aktarılacak şablon APK bulunamadı:\n"
 "%s"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Invalid export format."
+msgstr "Geçersiz Dışa Aktarım Şablonu:"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -20031,7 +20171,7 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid ""
-"Requested template binary '%s' not found. It might be missing from your "
+"Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
 
@@ -20070,6 +20210,16 @@ msgstr ""
 #: platform/osx/export/export.cpp
 msgid "Sending archive for notarization"
 msgstr ""
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "ZIP Creation"
+msgstr "Proje"
+
+#: platform/osx/export/export.cpp
+#, fuzzy
+msgid "Could not open file to read from path \"%s\"."
+msgstr "Proje dosyaları gradle projesine aktarılamadı\n"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20387,6 +20537,11 @@ msgid "Debug Algorithm"
 msgstr "Hata Ayıklayıcı"
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Geçici dosya kaldırılamıyor:"
+
+#: platform/windows/export/export.cpp
 msgid "Identity Type"
 msgstr ""
 
@@ -20434,6 +20589,70 @@ msgid "Trademarks"
 msgstr ""
 
 #: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Resources Modification"
+msgstr "Rastgele Döndürme:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find rcedit executable at \"%s\"."
+msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find wine executable at \"%s\"."
+msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start rcedit executable, configure rcedit path in the Editor "
+"Settings (Export > Windows > Rcedit)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"rcedit failed to modify executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find signtool executable at \"%s\"."
+msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Could not find osslsigncode executable at \"%s\"."
+msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid identity type."
+msgstr "Geçersiz Tanımlayıcı:"
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Invalid timestamp server."
+msgstr "Geçersiz ad."
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Could not start signtool executable, configure signtool path in the Editor "
+"Settings (Export > Windows > Signtool)."
+msgstr ""
+
+#: platform/windows/export/export.cpp
+msgid ""
+"Signtool failed to sign executable:\n"
+"%s"
+msgstr ""
+
+#: platform/windows/export/export.cpp
+#, fuzzy
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Geçici dosya kaldırılamıyor:"
+
+#: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
@@ -20455,6 +20674,23 @@ msgid "Invalid product version:"
 msgstr "Geçersiz ürün GUID'i."
 
 #: platform/windows/export/export.cpp
+msgid "Windows executables cannot be >= 4 GiB."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+#, fuzzy
+msgid "Failed to open executable file \"%s\"."
+msgstr "Geçersiz uzantı."
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable file header corrupted."
+msgstr ""
+
+#: platform/windows/export/export.cpp platform/x11/export/export.cpp
+msgid "Executable \"pck\" section not found."
+msgstr ""
+
+#: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Windows"
 msgstr "Yeni Pencere"
@@ -20469,6 +20705,10 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
+msgstr ""
+
+#: platform/x11/export/export.cpp
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
@@ -20598,7 +20838,8 @@ msgstr ""
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
-#: scene/3d/visual_instance.cpp scene/resources/material.cpp
+#: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
+#: scene/resources/material.cpp
 #, fuzzy
 msgid "Max Distance"
 msgstr "Uzaklık Seç:"
@@ -21472,16 +21713,18 @@ msgstr ""
 "çokgen çizin."
 
 #: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance, bir Navigation2D çocuğu olmalı ya da Navigation2D "
-"düğümünün torunu olması gerekir. Bu nesne yalnızca yönlendirme verisi sağlar."
-
-#: scene/2d/navigation_polygon.cpp
 msgid "Navpoly"
 msgstr ""
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Enter Cost"
+msgstr "Merkez Alt"
+
+#: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
+#, fuzzy
+msgid "Travel Cost"
+msgstr "Seyahat"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -22722,14 +22965,6 @@ msgstr "[Gözardı et]"
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr "NavigationAgent sadece Spatial düğümünün altında kullanılabilir."
-
-#: scene/3d/navigation_mesh_instance.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
-"olmalıdır. O yalnızca yönlendirme verisi sağlar."
 
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 #, fuzzy
@@ -25478,6 +25713,16 @@ msgid "3D Physics"
 msgstr " (Fiziksel)"
 
 #: scene/register_scene_types.cpp
+#, fuzzy
+msgid "2D Navigation"
+msgstr "Gezinim"
+
+#: scene/register_scene_types.cpp
+#, fuzzy
+msgid "3D Navigation"
+msgstr "Gezinim"
+
+#: scene/register_scene_types.cpp
 msgid "Use hiDPI"
 msgstr ""
 
@@ -26905,7 +27150,7 @@ msgstr "Geçiş: "
 msgid "Refraction"
 msgstr "Ayrım:"
 
-#: scene/resources/material.cpp scene/resources/navigation_mesh.cpp
+#: scene/resources/material.cpp
 msgid "Detail"
 msgstr ""
 
@@ -26990,7 +27235,12 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
-msgid "Sample Partition Type"
+msgid "Sampling"
+msgstr "Ölçekleniyor: "
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Partition Type"
 msgstr "Değişken Tipini Ayarla"
 
 #: scene/resources/navigation_mesh.cpp
@@ -27008,8 +27258,13 @@ msgid "Source Group Name"
 msgstr "Kaynak"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Agent"
+msgid "Cells"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Agents"
+msgstr "Ana Sahne Değiştirgenleri:"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -27021,11 +27276,16 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
+msgid "Regions"
+msgstr "Bölge"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
 msgid "Merge Size"
 msgstr "Sahneden Birleştir"
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Edge"
+msgid "Edges"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
@@ -27036,6 +27296,11 @@ msgstr "Hata"
 #: scene/resources/navigation_mesh.cpp
 msgid "Verts Per Poly"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Details"
+msgstr "Varsayılanı Göster"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -27056,7 +27321,7 @@ msgid "Ledge Spans"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-msgid "Filter Walkable Low Height Spans"
+msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
@@ -27474,6 +27739,11 @@ msgid "Scenario"
 msgstr "Sahne"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Navigation Map"
+msgstr "Gezinim"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
@@ -27490,6 +27760,26 @@ msgstr "Sol Doğrusal"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
 msgstr ""
+
+#: scene/resources/world.cpp
+#, fuzzy
+msgid "Default Map Up"
+msgstr "Varsayılan"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Size"
+msgstr "Varsayılan Önizleme"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Cell Height"
+msgstr "Deneme"
+
+#: scene/resources/world.cpp scene/resources/world_2d.cpp
+#, fuzzy
+msgid "Default Edge Connection Margin"
+msgstr "Bağlantıyı Düzenle:"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
@@ -27683,11 +27973,11 @@ msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Msec"
-msgstr ""
+msgstr "MiliSaniye"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Room Size"
-msgstr ""
+msgstr "Oda Büyüklüğü"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 #, fuzzy
@@ -27712,14 +28002,12 @@ msgid "Surround"
 msgstr ""
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Enable Audio Input"
-msgstr "Audio Bus'ı Yeniden Adlandır"
+msgstr "Ses Girişini Aktifleştir"
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Output Latency"
-msgstr "Çıktı"
+msgstr "Çıkış Gecikmesi"
 
 #: servers/audio_server.cpp
 msgid "Channel Disable Threshold dB"
@@ -27740,9 +28028,8 @@ msgid "Bus Count"
 msgstr "Giriş Portu Ekle"
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Capture Device"
-msgstr "Pikselden Yakala"
+msgstr "Yakalama Cihazı"
 
 #: servers/audio_server.cpp
 #, fuzzy
@@ -27754,9 +28041,8 @@ msgid "Feed"
 msgstr ""
 
 #: servers/camera/camera_feed.cpp
-#, fuzzy
 msgid "Is Active"
-msgstr "Derinlik"
+msgstr "Aktif mi"
 
 #: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
 msgid "Sleep Threshold Linear"
@@ -27798,50 +28084,46 @@ msgid "Total Linear Damp"
 msgstr "Doğrusal"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Total Gravity"
-msgstr "Varsayılan Önizleme"
+msgstr "Toplam Yerçekimi"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Linear Velocity"
-msgstr "Etkinleştir"
+msgstr "Çizgisel hız"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Exclude"
-msgstr ""
+msgstr "Hariç tut"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Shape RID"
-msgstr ""
+msgstr "Şekil RID"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 #, fuzzy
 msgid "Collide With Bodies"
-msgstr "Temas Kipi"
+msgstr "Diğer Bedenlerle Çarpış"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
+#, fuzzy
 msgid "Collide With Areas"
-msgstr ""
+msgstr "Diğer Alanlarla Çarpış"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Motion Remainder"
-msgstr ""
+msgstr "Kalan Hareket"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Point"
-msgstr "Temas Kipi"
+msgstr "Çarpışma Noktası"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Normal"
-msgstr "Temas Kipi"
+msgstr "Çarpışma Normali"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Depth"
-msgstr "Temas Kipi"
+msgstr "Çarpışma Derinliği"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 #, fuzzy
@@ -27854,14 +28136,12 @@ msgid "Collision Unsafe Fraction"
 msgstr "Temas Kipi"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Physics Engine"
-msgstr "Fizik Kare %"
+msgstr "Fizik Motoru"
 
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Center Of Mass"
-msgstr "Sol Merkez"
+msgstr "Kütle Merkezi"
 
 #: servers/physics_server.cpp
 msgid "Principal Inertia Axes"
@@ -27942,12 +28222,11 @@ msgstr "Kalıbı İçe Aktar"
 
 #: servers/visual_server.cpp
 msgid "Lossless Compression"
-msgstr ""
+msgstr "Kayıpsız Sıkıştırma"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Force PNG"
-msgstr "Zorla Gönder"
+msgstr "PNG Uzantısını Kullanmaya Zorla"
 
 #: servers/visual_server.cpp
 msgid "WebP Compression Level"
@@ -27979,14 +28258,12 @@ msgid "Quadrant 3 Subdiv"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shadows"
-msgstr "Gölgelendirici"
+msgstr "Gölgeler"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filter Mode"
-msgstr "Düğümleri Süzgeçden Geçir"
+msgstr "Filtre Modu"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28023,21 +28300,20 @@ msgid "Mesh Storage"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Split Stream"
-msgstr "Eğriyi Böl"
+msgstr "Akışı Böl"
 
 #: servers/visual_server.cpp
 msgid "Use Physical Light Attenuation"
-msgstr ""
+msgstr "Fiziksel Işık Zayıflatmayı Kullanın"
 
 #: servers/visual_server.cpp
 msgid "Depth Prepass"
-msgstr ""
+msgstr "Derinlik Ön Geçişi"
 
 #: servers/visual_server.cpp
 msgid "Disable For Vendors"
-msgstr ""
+msgstr "Bu Satıcılar İçin Devre Dışı Bırak"
 
 #: servers/visual_server.cpp
 msgid "Anisotropic Filter Level"
@@ -28088,12 +28364,11 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Legacy Stream"
-msgstr ""
+msgstr "Eski Akış"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Batching"
-msgstr "Aranıyor..."
+msgstr "Yığınlama"
 
 #: servers/visual_server.cpp
 msgid "Use Batching"
@@ -28144,25 +28419,23 @@ msgstr "Çerçeveyi Yapıştır"
 
 #: servers/visual_server.cpp
 msgid "GLES2"
-msgstr ""
+msgstr "GLES2"
 
 #: servers/visual_server.cpp
 msgid "Compatibility"
-msgstr ""
+msgstr "Uyumluluk"
 
 #: servers/visual_server.cpp
 msgid "Disable Half Float"
-msgstr ""
+msgstr "Yarım Float'ı devre dışı bırak"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Enable High Float"
-msgstr "Önceliklemeyi Etkinleştir"
+msgstr "Yüksek Float'ı Etkinleştir"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Precision"
-msgstr "İfade"
+msgstr "Hassasiyet"
 
 #: servers/visual_server.cpp
 msgid "UV Contract"
@@ -28182,9 +28455,8 @@ msgid "PVS Logging"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Signals"
-msgstr "sinyaller"
+msgstr "Sinyal Kullan"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28203,12 +28475,11 @@ msgstr "Emilme Ayırmayı Görüntüle"
 
 #: servers/visual_server.cpp
 msgid "Max Active Spheres"
-msgstr ""
+msgstr "Maks. Aktif Küre Sayısı"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Max Active Polygons"
-msgstr "Çokgeni Taşı"
+msgstr "Maks. Aktif Çokgen Sayısı"
 
 #: servers/visual_server.cpp
 #, fuzzy

@@ -84,6 +84,14 @@ public:
 	GDVIRTUAL2(font_set_data, RID, const PackedByteArray &);
 	GDVIRTUAL3(font_set_data_ptr, RID, GDNativeConstPtr<const uint8_t>, int64_t);
 
+	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
+	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
+	GDVIRTUAL2(font_set_face_index, RID, int64_t);
+	GDVIRTUAL1RC(int64_t, font_get_face_index, RID);
+
+	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(int64_t, font_get_face_count, RID);
+
 	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
 	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;
 	GDVIRTUAL2(font_set_style, RID, int64_t);

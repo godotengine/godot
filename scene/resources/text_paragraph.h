@@ -41,15 +41,6 @@ class TextParagraph : public RefCounted {
 	GDCLASS(TextParagraph, RefCounted);
 	_THREAD_SAFE_CLASS_
 
-public:
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
 private:
 	RID dropcap_rid;
 	int dropcap_lines = 0;
@@ -66,7 +57,7 @@ private:
 	int max_lines_visible = -1;
 
 	uint16_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -116,8 +107,8 @@ public:
 	void set_flags(uint16_t p_flags);
 	uint16_t get_flags() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -164,7 +155,5 @@ public:
 	TextParagraph();
 	~TextParagraph();
 };
-
-VARIANT_ENUM_CAST(TextParagraph::OverrunBehavior);
 
 #endif // TEXT_PARAGRAPH_H

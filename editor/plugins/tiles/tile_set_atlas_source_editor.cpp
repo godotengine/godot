@@ -2071,9 +2071,10 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 			}
 		} else if (p_property == "terrain_set") {
 			int current_terrain_set = tile_data_proxy->get("terrain_set");
+			ADD_UNDO(tile_data_proxy, "terrain");
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
-				if (tile_set->is_valid_peering_bit_terrain(current_terrain_set, bit)) {
+				if (tile_set->is_valid_terrain_peering_bit(current_terrain_set, bit)) {
 					ADD_UNDO(tile_data_proxy, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
 				}
 			}

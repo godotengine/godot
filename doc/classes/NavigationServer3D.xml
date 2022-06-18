@@ -8,7 +8,7 @@
 		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world.
 		[b]Note:[/b] Most NavigationServer changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation related Nodes in the SceneTree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
-		You may assign navigation layers to regions with [method NavigationServer3D.region_set_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This allows allowing or forbidding some areas to 3D objects.
+		You may assign navigation layers to regions with [method NavigationServer3D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This allows allowing or forbidding some areas to 3D objects.
 		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
 		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
@@ -44,7 +44,8 @@
 			<argument index="2" name="method" type="StringName" />
 			<argument index="3" name="userdata" type="Variant" default="null" />
 			<description>
-				Callback called at the end of the RVO process.
+				Callback called at the end of the RVO process. If a callback is created manually and the agent is placed on a navigation map it will calculate avoidance for the agent and dispatch the calculated [code]safe_velocity[/code] to the [code]receiver[/code] object with a signal to the chosen [code]method[/code] name.
+				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]null[/code] object as the [code]receiver[/code].
 			</description>
 		</method>
 		<method name="agent_set_map" qualifiers="const">
@@ -193,9 +194,9 @@
 			<argument index="1" name="origin" type="Vector3" />
 			<argument index="2" name="destination" type="Vector3" />
 			<argument index="3" name="optimize" type="bool" />
-			<argument index="4" name="layers" type="int" default="1" />
+			<argument index="4" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns the navigation path to reach the destination from the origin. [code]layers[/code] is a bitmask of all region layers that are allowed to be in the path.
+				Returns the navigation path to reach the destination from the origin. [code]navigation_layers[/code] is a bitmask of all region navigation layers that are allowed to be in the path.
 			</description>
 		</method>
 		<method name="map_get_regions" qualifiers="const">
@@ -304,18 +305,18 @@
 				Returns the [code]enter_cost[/code] of this [code]region[/code].
 			</description>
 		</method>
-		<method name="region_get_layers" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="region" type="RID" />
-			<description>
-				Returns the region's layers.
-			</description>
-		</method>
 		<method name="region_get_map" qualifiers="const">
 			<return type="RID" />
 			<argument index="0" name="region" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [code]region[/code] is currently assigned to.
+			</description>
+		</method>
+		<method name="region_get_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the region's navigation layers.
 			</description>
 		</method>
 		<method name="region_get_travel_cost" qualifiers="const">
@@ -333,20 +334,20 @@
 				Sets the [code]enter_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
-		<method name="region_set_layers" qualifiers="const">
-			<return type="void" />
-			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="layers" type="int" />
-			<description>
-				Set the region's layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
-			</description>
-		</method>
 		<method name="region_set_map" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="region" type="RID" />
 			<argument index="1" name="map" type="RID" />
 			<description>
 				Sets the map for the region.
+			</description>
+		</method>
+		<method name="region_set_navigation_layers" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="navigation_layers" type="int" />
+			<description>
+				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
 			</description>
 		</method>
 		<method name="region_set_navmesh" qualifiers="const">

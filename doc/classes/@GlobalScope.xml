@@ -1414,6 +1414,63 @@
 		<constant name="KEY_F16" value="16777259" enum="Key">
 			F16 key.
 		</constant>
+		<constant name="KEY_F17" value="16777260" enum="Key">
+			F17 key.
+		</constant>
+		<constant name="KEY_F18" value="16777261" enum="Key">
+			F18 key.
+		</constant>
+		<constant name="KEY_F19" value="16777262" enum="Key">
+			F19 key.
+		</constant>
+		<constant name="KEY_F20" value="16777263" enum="Key">
+			F20 key.
+		</constant>
+		<constant name="KEY_F21" value="16777264" enum="Key">
+			F21 key.
+		</constant>
+		<constant name="KEY_F22" value="16777265" enum="Key">
+			F22 key.
+		</constant>
+		<constant name="KEY_F23" value="16777266" enum="Key">
+			F23 key.
+		</constant>
+		<constant name="KEY_F24" value="16777267" enum="Key">
+			F24 key.
+		</constant>
+		<constant name="KEY_F25" value="16777268" enum="Key">
+			F25 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F26" value="16777269" enum="Key">
+			F26 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F27" value="16777270" enum="Key">
+			F27 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F28" value="16777271" enum="Key">
+			F28 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F29" value="16777272" enum="Key">
+			F29 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F30" value="16777273" enum="Key">
+			F30 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F31" value="16777274" enum="Key">
+			F31 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F32" value="16777275" enum="Key">
+			F32 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F33" value="16777276" enum="Key">
+			F33 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F34" value="16777277" enum="Key">
+			F34 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F35" value="16777278" enum="Key">
+			F35 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
 		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="Key">
 			Multiply (*) key on the numeric keypad.
 		</constant>
@@ -1459,148 +1516,148 @@
 		<constant name="KEY_KP_9" value="16777359" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="16777260" enum="Key">
+		<constant name="KEY_SUPER_L" value="16777280" enum="Key">
 			Left Super key (Windows key).
 		</constant>
-		<constant name="KEY_SUPER_R" value="16777261" enum="Key">
+		<constant name="KEY_SUPER_R" value="16777281" enum="Key">
 			Right Super key (Windows key).
 		</constant>
-		<constant name="KEY_MENU" value="16777262" enum="Key">
+		<constant name="KEY_MENU" value="16777282" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="16777263" enum="Key">
+		<constant name="KEY_HYPER_L" value="16777283" enum="Key">
 			Left Hyper key.
 		</constant>
-		<constant name="KEY_HYPER_R" value="16777264" enum="Key">
+		<constant name="KEY_HYPER_R" value="16777284" enum="Key">
 			Right Hyper key.
 		</constant>
-		<constant name="KEY_HELP" value="16777265" enum="Key">
+		<constant name="KEY_HELP" value="16777285" enum="Key">
 			Help key.
 		</constant>
-		<constant name="KEY_DIRECTION_L" value="16777266" enum="Key">
+		<constant name="KEY_DIRECTION_L" value="16777286" enum="Key">
 			Left Direction key.
 		</constant>
-		<constant name="KEY_DIRECTION_R" value="16777267" enum="Key">
+		<constant name="KEY_DIRECTION_R" value="16777287" enum="Key">
 			Right Direction key.
 		</constant>
-		<constant name="KEY_BACK" value="16777280" enum="Key">
+		<constant name="KEY_BACK" value="16777288" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
-		<constant name="KEY_FORWARD" value="16777281" enum="Key">
+		<constant name="KEY_FORWARD" value="16777289" enum="Key">
 			Media forward key.
 		</constant>
-		<constant name="KEY_STOP" value="16777282" enum="Key">
+		<constant name="KEY_STOP" value="16777290" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_REFRESH" value="16777283" enum="Key">
+		<constant name="KEY_REFRESH" value="16777291" enum="Key">
 			Media refresh key.
 		</constant>
-		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="Key">
+		<constant name="KEY_VOLUMEDOWN" value="16777292" enum="Key">
 			Volume down key.
 		</constant>
-		<constant name="KEY_VOLUMEMUTE" value="16777285" enum="Key">
+		<constant name="KEY_VOLUMEMUTE" value="16777293" enum="Key">
 			Mute volume key.
 		</constant>
-		<constant name="KEY_VOLUMEUP" value="16777286" enum="Key">
+		<constant name="KEY_VOLUMEUP" value="16777294" enum="Key">
 			Volume up key.
 		</constant>
-		<constant name="KEY_BASSBOOST" value="16777287" enum="Key">
+		<constant name="KEY_BASSBOOST" value="16777295" enum="Key">
 			Bass Boost key.
 		</constant>
-		<constant name="KEY_BASSUP" value="16777288" enum="Key">
+		<constant name="KEY_BASSUP" value="16777296" enum="Key">
 			Bass up key.
 		</constant>
-		<constant name="KEY_BASSDOWN" value="16777289" enum="Key">
+		<constant name="KEY_BASSDOWN" value="16777297" enum="Key">
 			Bass down key.
 		</constant>
-		<constant name="KEY_TREBLEUP" value="16777290" enum="Key">
+		<constant name="KEY_TREBLEUP" value="16777298" enum="Key">
 			Treble up key.
 		</constant>
-		<constant name="KEY_TREBLEDOWN" value="16777291" enum="Key">
+		<constant name="KEY_TREBLEDOWN" value="16777299" enum="Key">
 			Treble down key.
 		</constant>
-		<constant name="KEY_MEDIAPLAY" value="16777292" enum="Key">
+		<constant name="KEY_MEDIAPLAY" value="16777300" enum="Key">
 			Media play key.
 		</constant>
-		<constant name="KEY_MEDIASTOP" value="16777293" enum="Key">
+		<constant name="KEY_MEDIASTOP" value="16777301" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_MEDIAPREVIOUS" value="16777294" enum="Key">
+		<constant name="KEY_MEDIAPREVIOUS" value="16777302" enum="Key">
 			Previous song key.
 		</constant>
-		<constant name="KEY_MEDIANEXT" value="16777295" enum="Key">
+		<constant name="KEY_MEDIANEXT" value="16777303" enum="Key">
 			Next song key.
 		</constant>
-		<constant name="KEY_MEDIARECORD" value="16777296" enum="Key">
+		<constant name="KEY_MEDIARECORD" value="16777304" enum="Key">
 			Media record key.
 		</constant>
-		<constant name="KEY_HOMEPAGE" value="16777297" enum="Key">
+		<constant name="KEY_HOMEPAGE" value="16777305" enum="Key">
 			Home page key.
 		</constant>
-		<constant name="KEY_FAVORITES" value="16777298" enum="Key">
+		<constant name="KEY_FAVORITES" value="16777306" enum="Key">
 			Favorites key.
 		</constant>
-		<constant name="KEY_SEARCH" value="16777299" enum="Key">
+		<constant name="KEY_SEARCH" value="16777307" enum="Key">
 			Search key.
 		</constant>
-		<constant name="KEY_STANDBY" value="16777300" enum="Key">
+		<constant name="KEY_STANDBY" value="16777308" enum="Key">
 			Standby key.
 		</constant>
-		<constant name="KEY_OPENURL" value="16777301" enum="Key">
+		<constant name="KEY_OPENURL" value="16777309" enum="Key">
 			Open URL / Launch Browser key.
 		</constant>
-		<constant name="KEY_LAUNCHMAIL" value="16777302" enum="Key">
+		<constant name="KEY_LAUNCHMAIL" value="16777310" enum="Key">
 			Launch Mail key.
 		</constant>
-		<constant name="KEY_LAUNCHMEDIA" value="16777303" enum="Key">
+		<constant name="KEY_LAUNCHMEDIA" value="16777311" enum="Key">
 			Launch Media key.
 		</constant>
-		<constant name="KEY_LAUNCH0" value="16777304" enum="Key">
+		<constant name="KEY_LAUNCH0" value="16777312" enum="Key">
 			Launch Shortcut 0 key.
 		</constant>
-		<constant name="KEY_LAUNCH1" value="16777305" enum="Key">
+		<constant name="KEY_LAUNCH1" value="16777313" enum="Key">
 			Launch Shortcut 1 key.
 		</constant>
-		<constant name="KEY_LAUNCH2" value="16777306" enum="Key">
+		<constant name="KEY_LAUNCH2" value="16777314" enum="Key">
 			Launch Shortcut 2 key.
 		</constant>
-		<constant name="KEY_LAUNCH3" value="16777307" enum="Key">
+		<constant name="KEY_LAUNCH3" value="16777315" enum="Key">
 			Launch Shortcut 3 key.
 		</constant>
-		<constant name="KEY_LAUNCH4" value="16777308" enum="Key">
+		<constant name="KEY_LAUNCH4" value="16777316" enum="Key">
 			Launch Shortcut 4 key.
 		</constant>
-		<constant name="KEY_LAUNCH5" value="16777309" enum="Key">
+		<constant name="KEY_LAUNCH5" value="16777317" enum="Key">
 			Launch Shortcut 5 key.
 		</constant>
-		<constant name="KEY_LAUNCH6" value="16777310" enum="Key">
+		<constant name="KEY_LAUNCH6" value="16777318" enum="Key">
 			Launch Shortcut 6 key.
 		</constant>
-		<constant name="KEY_LAUNCH7" value="16777311" enum="Key">
+		<constant name="KEY_LAUNCH7" value="16777319" enum="Key">
 			Launch Shortcut 7 key.
 		</constant>
-		<constant name="KEY_LAUNCH8" value="16777312" enum="Key">
+		<constant name="KEY_LAUNCH8" value="16777320" enum="Key">
 			Launch Shortcut 8 key.
 		</constant>
-		<constant name="KEY_LAUNCH9" value="16777313" enum="Key">
+		<constant name="KEY_LAUNCH9" value="16777321" enum="Key">
 			Launch Shortcut 9 key.
 		</constant>
-		<constant name="KEY_LAUNCHA" value="16777314" enum="Key">
+		<constant name="KEY_LAUNCHA" value="16777322" enum="Key">
 			Launch Shortcut A key.
 		</constant>
-		<constant name="KEY_LAUNCHB" value="16777315" enum="Key">
+		<constant name="KEY_LAUNCHB" value="16777323" enum="Key">
 			Launch Shortcut B key.
 		</constant>
-		<constant name="KEY_LAUNCHC" value="16777316" enum="Key">
+		<constant name="KEY_LAUNCHC" value="16777324" enum="Key">
 			Launch Shortcut C key.
 		</constant>
-		<constant name="KEY_LAUNCHD" value="16777317" enum="Key">
+		<constant name="KEY_LAUNCHD" value="16777325" enum="Key">
 			Launch Shortcut D key.
 		</constant>
-		<constant name="KEY_LAUNCHE" value="16777318" enum="Key">
+		<constant name="KEY_LAUNCHE" value="16777326" enum="Key">
 			Launch Shortcut E key.
 		</constant>
-		<constant name="KEY_LAUNCHF" value="16777319" enum="Key">
+		<constant name="KEY_LAUNCHF" value="16777327" enum="Key">
 			Launch Shortcut F key.
 		</constant>
 		<constant name="KEY_UNKNOWN" value="33554431" enum="Key">
@@ -2419,63 +2476,66 @@
 		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="6" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LINK" value="6" enum="PropertyHint">
+			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
+		</constant>
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="12" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="13" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="13" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
+		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="14" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="15" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="16" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="17" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="18" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="19" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="20" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="21" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="22" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="23" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="24" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="26" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
@@ -2485,43 +2545,43 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

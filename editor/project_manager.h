@@ -63,8 +63,11 @@ class ProjectManager : public Control {
 	Label *loading_label = nullptr;
 	OptionButton *filter_option = nullptr;
 
-	Button *run_btn = nullptr;
+	Button *create_btn = nullptr;
+	Button *import_btn = nullptr;
+	Button *scan_btn = nullptr;
 	Button *open_btn = nullptr;
+	Button *run_btn = nullptr;
 	Button *rename_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
