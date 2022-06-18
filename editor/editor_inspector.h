@@ -50,7 +50,7 @@ public:
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
 	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
-	static bool can_property_revert(Object *p_object, const StringName &p_property);
+	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
 };
 
 class EditorProperty : public Container {
@@ -131,6 +131,9 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	const Color *_get_property_colors();
 
+	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
+	virtual StringName _get_revert_property() const;
+
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
@@ -143,7 +146,7 @@ public:
 	bool is_read_only() const;
 
 	Object *get_edited_object();
-	StringName get_edited_property();
+	StringName get_edited_property() const;
 
 	virtual void update_property();
 	void update_revert_and_pin_status();
