@@ -6622,11 +6622,10 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					_reduce_node_type(op->arguments[0]);
 
 					// If types are equal, then the expression is of the same type
-					// If they are compatible, return the broader type
-					if (true_type == false_type || _is_type_compatible(true_type, false_type)) {
-						node_type = true_type;
-					} else if (_is_type_compatible(false_type, true_type)) {
-						node_type = false_type;
+					// If they are compatible, return the common type
+					DataType common_type = get_common_type(true_type, false_type);
+					if (common_type.has_type) {
+						node_type = common_type;
 					} else {
 #ifdef DEBUG_ENABLED
 						_add_warning(GDScriptWarning::INCOMPATIBLE_TERNARY, op->line);
