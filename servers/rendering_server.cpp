@@ -2934,10 +2934,10 @@ void RenderingServer::init() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/amount", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/limit", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
-	GLOBAL_DEF_RST("rendering/scaling_3d/mode", 0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/scale", 1.0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
+	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
