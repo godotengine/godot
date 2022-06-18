@@ -135,6 +135,11 @@ private:
 	void _clear_window();
 	void _update_from_window();
 
+	Size2i max_size_used;
+
+	Size2i _clamp_limit_size(const Size2i &p_limit_size);
+	Size2i _clamp_window_size(const Size2i &p_size);
+	void _validate_limit_size();
 	void _update_viewport_size();
 	void _update_window_size();
 
@@ -306,6 +311,7 @@ public:
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	Size2 get_contents_minimum_size() const;
+	Size2 get_clamped_minimum_size() const;
 
 	void grab_focus();
 	bool has_focus() const;

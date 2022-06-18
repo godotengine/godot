@@ -276,10 +276,6 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	// Plus there is a separation size added on top.
 	content_minsize.y += theme_cache.buttons_separation;
 
-	// Last, we make sure that we aren't below the minimum window size.
-	Size2 window_minsize = get_min_size();
-	content_minsize.x = MAX(window_minsize.x, content_minsize.x);
-	content_minsize.y = MAX(window_minsize.y, content_minsize.y);
 	return content_minsize;
 }
 
