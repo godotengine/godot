@@ -919,7 +919,7 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		HashMap<StringName, int> value;
+		HashMap<StringName, int64_t> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
@@ -931,7 +931,7 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int p_constant_value) {
+	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
@@ -1245,7 +1245,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (const KeyValue<StringName, int> &E : cd.value) {
+	for (const KeyValue<StringName, int64_t> &E : cd.value) {
 		p_constants->push_back(E.key);
 #endif
 	}
@@ -1281,7 +1281,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	HashMap<StringName, int>::Iterator E = cd.value.find(p_value);
+	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
 	if (!E) {
 		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {
@@ -1402,8 +1402,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, to_upper, sarray(), varray());
 	bind_method(String, to_lower, sarray(), varray());
 
-	bind_method(String, left, sarray("position"), varray());
-	bind_method(String, right, sarray("position"), varray());
+	bind_method(String, left, sarray("length"), varray());
+	bind_method(String, right, sarray("length"), varray());
 
 	bind_method(String, strip_edges, sarray("left", "right"), varray(true, true));
 	bind_method(String, strip_escapes, sarray(), varray());
@@ -1471,6 +1471,10 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(String, num_uint64, sarray("number", "base", "capitalize_hex"), varray(10, false));
 	bind_static_method(String, chr, sarray("char"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
+
+	/* StringName */
+
+	bind_method(StringName, hash, sarray(), varray());
 
 	/* Vector2 */
 
@@ -1671,6 +1675,8 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, get_named_color, sarray("idx"), varray());
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
+	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
+
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 
 	/* RID */
@@ -1684,6 +1690,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_name_count, sarray(), varray());
 	bind_method(NodePath, get_name, sarray("idx"), varray());
 	bind_method(NodePath, get_subname_count, sarray(), varray());
+	bind_method(NodePath, hash, sarray(), varray());
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
@@ -1808,6 +1815,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, size, sarray(), varray());
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
+	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
 	bind_method(Dictionary, erase, sarray("key"), varray());
@@ -1853,6 +1861,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, filter, sarray("method"), varray());
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
+	bind_method(Array, any, sarray("method"), varray());
+	bind_method(Array, all, sarray("method"), varray());
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
 

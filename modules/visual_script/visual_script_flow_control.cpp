@@ -391,7 +391,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Input type not iterable: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Input type not iterable:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -414,7 +414,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Iterator became invalid: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Iterator became invalid:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 

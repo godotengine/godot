@@ -689,6 +689,10 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				_bind_instance_data_buffer(1);
 				glBindVertexArray(pb->vertex_array);
 
+				if (pb->color_disabled) {
+					glVertexAttrib4f(RS::ARRAY_COLOR, pb->color.r, pb->color.g, pb->color.b, pb->color.a);
+				}
+
 				if (pb->index_buffer != 0) {
 					glDrawElements(prim[polygon->primitive], pb->count, GL_UNSIGNED_INT, nullptr);
 				} else {
@@ -698,6 +702,11 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				state.fences[state.current_buffer] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 				state.current_buffer = (state.current_buffer + 1) % state.canvas_instance_data_buffers.size();
+
+				if (pb->color_disabled) {
+					// Reset so this doesn't pollute other draw calls.
+					glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);
+				}
 			} break;
 
 			case Item::Command::TYPE_PRIMITIVE: {
@@ -758,7 +767,6 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 				GLuint multimesh_buffer = 0;
 				uint32_t multimesh_stride = 0;
 				uint32_t multimesh_color_offset = 0;
-				uint32_t multimesh_custom_data_offset = 0;
 				bool multimesh_uses_color = false;
 				bool multimesh_uses_custom_data = false;
 
@@ -788,7 +796,6 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 					multimesh_buffer = mesh_storage->multimesh_get_gl_buffer(multimesh);
 					multimesh_stride = mesh_storage->multimesh_get_stride(multimesh);
 					multimesh_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
-					multimesh_custom_data_offset = mesh_storage->multimesh_get_custom_data_offset(multimesh);
 					multimesh_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
 					multimesh_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
 				}
@@ -854,22 +861,17 @@ void RasterizerCanvasGLES3::_render_item(RID p_render_target, const Item *p_item
 					if (instance_count > 1) {
 						// Bind instance buffers.
 						glBindBuffer(GL_ARRAY_BUFFER, multimesh_buffer);
-						glEnableVertexAttribArray(5);
-						glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
-						glVertexAttribDivisor(5, 1);
-						glEnableVertexAttribArray(6);
-						glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
-						glVertexAttribDivisor(6, 1);
+						glEnableVertexAttribArray(1);
+						glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+						glVertexAttribDivisor(1, 1);
+						glEnableVertexAttribArray(2);
+						glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(4 * 4));
+						glVertexAttribDivisor(2, 1);
 
-						if (multimesh_uses_color) {
-							glEnableVertexAttribArray(7);
-							glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_color_offset * sizeof(float)));
-							glVertexAttribDivisor(7, 1);
-						}
-						if (multimesh_uses_custom_data) {
-							glEnableVertexAttribArray(8);
-							glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_custom_data_offset * sizeof(float)));
-							glVertexAttribDivisor(8, 1);
+						if (multimesh_uses_color || multimesh_uses_custom_data) {
+							glEnableVertexAttribArray(5);
+							glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, multimesh_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(multimesh_color_offset * sizeof(float)));
+							glVertexAttribDivisor(5, 1);
 						}
 					}
 
@@ -1268,11 +1270,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 		}
 
 		// Next add colors
-		if (p_colors.size() == 1) {
-			glDisableVertexAttribArray(RS::ARRAY_COLOR);
-			Color m = p_colors[0];
-			glVertexAttrib4f(RS::ARRAY_COLOR, m.r, m.g, m.b, m.a);
-		} else if ((uint32_t)p_colors.size() == vertex_count) {
+		if ((uint32_t)p_colors.size() == vertex_count) {
 			glEnableVertexAttribArray(RS::ARRAY_COLOR);
 			glVertexAttribPointer(RS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(base_offset * sizeof(float)));
 
@@ -1287,7 +1285,8 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 			base_offset += 4;
 		} else {
 			glDisableVertexAttribArray(RS::ARRAY_COLOR);
-			glVertexAttrib4f(RS::ARRAY_COLOR, 1.0, 1.0, 1.0, 1.0);
+			pb.color_disabled = true;
+			pb.color = p_colors.size() == 1 ? p_colors[0] : Color(1.0, 1.0, 1.0, 1.0);
 		}
 
 		if ((uint32_t)p_uvs.size() == vertex_count) {

@@ -51,18 +51,18 @@
 	</members>
 	<signals>
 		<signal name="animation_added">
-			<argument index="0" name="name" type="Animation" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</signal>
 		<signal name="animation_removed">
-			<argument index="0" name="name" type="Animation" />
+			<argument index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</signal>
 		<signal name="animation_renamed">
-			<argument index="0" name="name" type="Animation" />
-			<argument index="1" name="to_name" type="Animation" />
+			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="to_name" type="StringName" />
 			<description>
 			</description>
 		</signal>

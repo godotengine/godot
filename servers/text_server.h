@@ -64,6 +64,21 @@ public:
 		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
 	};
 
+	enum VisibleCharactersBehavior {
+		VC_CHARS_BEFORE_SHAPING,
+		VC_CHARS_AFTER_SHAPING,
+		VC_GLYPHS_AUTO,
+		VC_GLYPHS_LTR,
+		VC_GLYPHS_RTL,
+	};
+
+	enum AutowrapMode {
+		AUTOWRAP_OFF,
+		AUTOWRAP_ARBITRARY,
+		AUTOWRAP_WORD,
+		AUTOWRAP_WORD_SMART
+	};
+
 	enum LineBreakFlag { // LineBreakFlag can be passed in the same value as the JustificationFlag, do not use the same values.
 		BREAK_NONE = 0,
 		BREAK_MANDATORY = 1 << 5,
@@ -72,8 +87,16 @@ public:
 		BREAK_WORD_BOUND_ADAPTIVE = 1 << 6 | 1 << 8,
 	};
 
+	enum OverrunBehavior {
+		OVERRUN_NO_TRIMMING,
+		OVERRUN_TRIM_CHAR,
+		OVERRUN_TRIM_WORD,
+		OVERRUN_TRIM_ELLIPSIS,
+		OVERRUN_TRIM_WORD_ELLIPSIS,
+	};
+
 	enum TextOverrunFlag {
-		OVERRUN_NO_TRIMMING = 0,
+		OVERRUN_NO_TRIM = 0,
 		OVERRUN_TRIM = 1 << 0,
 		OVERRUN_TRIM_WORD_ONLY = 1 << 1,
 		OVERRUN_ADD_ELLIPSIS = 1 << 2,
@@ -188,6 +211,11 @@ public:
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) = 0;
+
+	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) = 0;
+	virtual int64_t font_get_face_index(const RID &p_font_rid) const = 0;
+
+	virtual int64_t font_get_face_count(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) = 0;
 	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const = 0;
@@ -517,6 +545,9 @@ public:
 
 #define TS TextServerManager::get_singleton()->get_primary_interface()
 
+VARIANT_ENUM_CAST(TextServer::VisibleCharactersBehavior);
+VARIANT_ENUM_CAST(TextServer::AutowrapMode);
+VARIANT_ENUM_CAST(TextServer::OverrunBehavior);
 VARIANT_ENUM_CAST(TextServer::Direction);
 VARIANT_ENUM_CAST(TextServer::Orientation);
 VARIANT_ENUM_CAST(TextServer::JustificationFlag);

@@ -250,11 +250,6 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		// Filter out unnecessary ProjectSettings sections, as they already have their dedicated tabs.
-		if (pi.name.begins_with("autoload") || pi.name.begins_with("editor_plugins") || pi.name.begins_with("shader_globals")) {
-			continue;
-		}
-
 		if (!filter.is_empty() && !_property_path_matches(pi.name, filter, name_style)) {
 			continue;
 		}

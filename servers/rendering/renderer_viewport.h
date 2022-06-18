@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
@@ -66,7 +67,11 @@ public:
 
 		RS::ViewportMSAA msaa;
 		RS::ViewportScreenSpaceAA screen_space_aa;
+		bool use_taa;
 		bool use_debanding;
+
+		RendererSceneRender::CameraData prev_camera_data;
+		uint64_t prev_camera_data_frame = 0;
 
 		bool use_occlusion_culling;
 		bool occlusion_buffer_dirty;
@@ -233,6 +238,9 @@ public:
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
+	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);
+	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
+
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
@@ -252,6 +260,7 @@ public:
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
+	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);

@@ -107,7 +107,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Ref<Image> img;
 	img.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + p_source_file + "\".");
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
 	font->set_texture_image(0, Vector2i(base_size, 0), 0, img);
 
 	int count = columns * rows;

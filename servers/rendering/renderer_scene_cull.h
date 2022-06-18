@@ -923,6 +923,9 @@ public:
 
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
+	const int TAA_JITTER_COUNT = 16;
+	LocalVector<Vector2> taa_jitter_array;
+
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
 
@@ -1054,7 +1057,7 @@ public:
 	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -1155,7 +1158,7 @@ public:
 	/* Render Buffers */
 
 	PASS0R(RID, render_buffers_create)
-	PASS12(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
+	PASS13(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, bool, uint32_t)
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */

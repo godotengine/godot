@@ -52,6 +52,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "full" to also include in/out. (ie: "attenuation,inout")
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
+	PROPERTY_HINT_LINK,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_LAYERS_2D_RENDER,
@@ -523,10 +524,10 @@ private:
 	bool _has_user_signal(const StringName &p_name) const;
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Array _get_signal_list() const;
-	Array _get_signal_connection_list(const String &p_signal) const;
+	Array _get_signal_connection_list(const StringName &p_signal) const;
 	Array _get_incoming_connections() const;
-	void _set_bind(const String &p_set, const Variant &p_value);
-	Variant _get_bind(const String &p_name) const;
+	void _set_bind(const StringName &p_set, const Variant &p_value);
+	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 

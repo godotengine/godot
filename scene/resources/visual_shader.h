@@ -44,8 +44,6 @@ class VisualShader : public Shader {
 
 	friend class VisualShaderNodeVersionChecker;
 
-	Dictionary engine_version;
-
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -176,14 +174,6 @@ protected:
 public: // internal methods
 	void set_shader_type(Type p_type);
 	Type get_shader_type() const;
-
-public:
-	void set_engine_version(const Dictionary &p_version);
-	Dictionary get_engine_version() const;
-
-#ifndef DISABLE_DEPRECATED
-	void update_engine_version(const Dictionary &p_new_version);
-#endif /* DISABLE_DEPRECATED */
 
 	enum {
 		NODE_ID_INVALID = -1,

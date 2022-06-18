@@ -56,7 +56,7 @@
  * @param C String
  * @return 32-bits hashcode
  */
-static inline uint32_t hash_djb2(const char *p_cstr) {
+static _FORCE_INLINE_ uint32_t hash_djb2(const char *p_cstr) {
 	const unsigned char *chr = (const unsigned char *)p_cstr;
 	uint32_t hash = 5381;
 	uint32_t c;
@@ -68,7 +68,7 @@ static inline uint32_t hash_djb2(const char *p_cstr) {
 	return hash;
 }
 
-static inline uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32_t p_prev = 5381) {
+static _FORCE_INLINE_ uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32_t p_prev = 5381) {
 	uint32_t hash = p_prev;
 
 	for (int i = 0; i < p_len; i++) {
@@ -78,7 +78,7 @@ static inline uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len, uint32
 	return hash;
 }
 
-static inline uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
+static _FORCE_INLINE_ uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
 	return ((p_prev << 5) + p_prev) + p_in;
 }
 
@@ -89,7 +89,7 @@ static inline uint32_t hash_djb2_one_32(uint32_t p_in, uint32_t p_prev = 5381) {
  * @param p_int - 64-bit unsigned integer key to be hashed
  * @return unsigned 32-bit value representing hashcode
  */
-static inline uint32_t hash_one_uint64(const uint64_t p_int) {
+static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	uint64_t v = p_int;
 	v = (~v) + (v << 18); // v = (v << 18) - v - 1;
 	v = v ^ (v >> 31);
@@ -100,7 +100,72 @@ static inline uint32_t hash_one_uint64(const uint64_t p_int) {
 	return uint32_t(v);
 }
 
-static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
+// Murmurhash3 32-bit version.
+// All MurmurHash versions are public domain software, and the author disclaims all copyright to their code.
+
+static _FORCE_INLINE_ uint32_t rotl32(uint32_t x, int8_t r) {
+	return (x << r) | (x >> (32 - r));
+}
+
+static _FORCE_INLINE_ uint32_t fmix32(uint32_t h) {
+	h ^= h >> 16;
+	h *= 0x85ebca6b;
+	h ^= h >> 13;
+	h *= 0xc2b2ae35;
+	h ^= h >> 16;
+
+	return h;
+}
+
+static _FORCE_INLINE_ uint32_t hash_murmur3_32(const void *key, int length, const uint32_t seed = 0x7F07C65) {
+	// Although not required, this is a random prime number.
+	const uint8_t *data = (const uint8_t *)key;
+	const int nblocks = length / 4;
+
+	uint32_t h1 = seed;
+
+	const uint32_t c1 = 0xcc9e2d51;
+	const uint32_t c2 = 0x1b873593;
+
+	const uint32_t *blocks = (const uint32_t *)(data + nblocks * 4);
+
+	for (int i = -nblocks; i; i++) {
+		uint32_t k1 = blocks[i];
+
+		k1 *= c1;
+		k1 = rotl32(k1, 15);
+		k1 *= c2;
+
+		h1 ^= k1;
+		h1 = rotl32(h1, 13);
+		h1 = h1 * 5 + 0xe6546b64;
+	}
+
+	const uint8_t *tail = (const uint8_t *)(data + nblocks * 4);
+
+	uint32_t k1 = 0;
+
+	switch (length & 3) {
+		case 3:
+			k1 ^= tail[2] << 16;
+			[[fallthrough]];
+		case 2:
+			k1 ^= tail[1] << 8;
+			[[fallthrough]];
+		case 1:
+			k1 ^= tail[0];
+			k1 *= c1;
+			k1 = rotl32(k1, 15);
+			k1 *= c2;
+			h1 ^= k1;
+	};
+
+	// Finalize with additional bit mixing.
+	h1 ^= length;
+	return fmix32(h1);
+}
+
+static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
 	union {
 		double d;
 		uint64_t i;
@@ -119,7 +184,7 @@ static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) 
 }
 
 template <class T>
-static inline uint32_t make_uint32_t(T p_in) {
+static _FORCE_INLINE_ uint32_t make_uint32_t(T p_in) {
 	union {
 		T t;
 		uint32_t _u32;
@@ -129,7 +194,7 @@ static inline uint32_t make_uint32_t(T p_in) {
 	return _u._u32;
 }
 
-static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381) {
+static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381) {
 	union {
 		double d;
 		uint64_t i;
@@ -147,12 +212,12 @@ static inline uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 538
 	return ((p_prev << 5) + p_prev) + u.i;
 }
 
-static inline uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {
+static _FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev = 5381) {
 	return ((p_prev << 5) + p_prev) + p_in;
 }
 
 template <class T>
-static inline uint64_t make_uint64_t(T p_in) {
+static _FORCE_INLINE_ uint64_t make_uint64_t(T p_in) {
 	union {
 		T t;
 		uint64_t _u64;
@@ -167,78 +232,40 @@ template <class T>
 class Ref;
 
 struct HashMapHasherDefault {
-	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
-	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
-	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
-
-	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash(uint64_t(p_int)); }
-	static _FORCE_INLINE_ uint32_t hash(const float p_float) { return hash_djb2_one_float(p_float); }
-	static _FORCE_INLINE_ uint32_t hash(const double p_double) { return hash_djb2_one_float(p_double); }
-	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return (uint32_t)p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return (uint32_t)p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return (uint32_t)p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return (uint32_t)p_wchar; }
-	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return (uint32_t)p_uchar; }
-	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return (uint32_t)p_uchar; }
-	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
-
-	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
-	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
-
+	// Generic hash function for any type.
 	template <class T>
 	static _FORCE_INLINE_ uint32_t hash(const T *p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
 
 	template <class T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
-	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) {
-		uint32_t h = hash_djb2_one_32(p_vec.x);
-		return hash_djb2_one_32(p_vec.y, h);
-	}
-	static _FORCE_INLINE_ uint32_t hash(const Vector3i &p_vec) {
-		uint32_t h = hash_djb2_one_32(p_vec.x);
-		h = hash_djb2_one_32(p_vec.y, h);
-		return hash_djb2_one_32(p_vec.z, h);
-	}
+	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
+	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return fmix32(p_wchar); }
+	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return fmix32(p_uchar); }
+	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return fmix32(p_uchar); }
+	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
+	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
 
-	static _FORCE_INLINE_ uint32_t hash(const Vector2 &p_vec) {
-		uint32_t h = hash_djb2_one_float(p_vec.x);
-		return hash_djb2_one_float(p_vec.y, h);
-	}
-	static _FORCE_INLINE_ uint32_t hash(const Vector3 &p_vec) {
-		uint32_t h = hash_djb2_one_float(p_vec.x);
-		h = hash_djb2_one_float(p_vec.y, h);
-		return hash_djb2_one_float(p_vec.z, h);
-	}
-
-	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {
-		uint32_t h = hash_djb2_one_32(p_rect.position.x);
-		h = hash_djb2_one_32(p_rect.position.y, h);
-		h = hash_djb2_one_32(p_rect.size.x, h);
-		return hash_djb2_one_32(p_rect.size.y, h);
-	}
-
-	static _FORCE_INLINE_ uint32_t hash(const Rect2 &p_rect) {
-		uint32_t h = hash_djb2_one_float(p_rect.position.x);
-		h = hash_djb2_one_float(p_rect.position.y, h);
-		h = hash_djb2_one_float(p_rect.size.x, h);
-		return hash_djb2_one_float(p_rect.size.y, h);
-	}
-
-	static _FORCE_INLINE_ uint32_t hash(const AABB &p_aabb) {
-		uint32_t h = hash_djb2_one_float(p_aabb.position.x);
-		h = hash_djb2_one_float(p_aabb.position.y, h);
-		h = hash_djb2_one_float(p_aabb.position.z, h);
-		h = hash_djb2_one_float(p_aabb.size.x, h);
-		h = hash_djb2_one_float(p_aabb.size.y, h);
-		return hash_djb2_one_float(p_aabb.size.z, h);
-	}
-
-	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
+	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const float p_float) { return hash_djb2_one_float(p_float); }
+	static _FORCE_INLINE_ uint32_t hash(const double p_double) { return hash_djb2_one_float(p_double); }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) { return hash_murmur3_32(&p_vec, sizeof(Vector2i)); }
+	static _FORCE_INLINE_ uint32_t hash(const Vector3i &p_vec) { return hash_murmur3_32(&p_vec, sizeof(Vector3i)); }
+	static _FORCE_INLINE_ uint32_t hash(const Vector2 &p_vec) { return hash_murmur3_32(&p_vec, sizeof(Vector2)); }
+	static _FORCE_INLINE_ uint32_t hash(const Vector3 &p_vec) { return hash_murmur3_32(&p_vec, sizeof(Vector3)); }
+	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) { return hash_murmur3_32(&p_rect, sizeof(Rect2i)); }
+	static _FORCE_INLINE_ uint32_t hash(const Rect2 &p_rect) { return hash_murmur3_32(&p_rect, sizeof(Rect2)); }
+	static _FORCE_INLINE_ uint32_t hash(const AABB &p_aabb) { return hash_murmur3_32(&p_aabb, sizeof(AABB)); }
 };
 
 template <typename T>

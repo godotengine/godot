@@ -903,6 +903,8 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+
+	add_theme_constant_override("separation", 0);
 }
 
 // EditorScriptPicker

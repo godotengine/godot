@@ -2076,9 +2076,9 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	return success;
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool found;
-	int c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
+	int64_t c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }

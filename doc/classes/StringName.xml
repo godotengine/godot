@@ -32,6 +32,14 @@
 			</description>
 		</constructor>
 	</constructors>
+	<methods>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the 32-bit hash value representing the [StringName]'s contents.
+			</description>
+		</method>
+	</methods>
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />

@@ -216,6 +216,9 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/features" type="PackedStringArray" setter="" getter="">
+			List of internal features associated with the project, like [code]Double Precision[/code] or [code]C#[/code]. Not to be confused with feature tags.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
@@ -303,6 +306,12 @@
 		</member>
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
+		</member>
+		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer2D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength].
+		</member>
+		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
+			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
@@ -438,8 +447,11 @@
 		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
 			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
-		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on https://github.com/godotengine/godot/issues&quot;">
-			Message to be displayed before the backtrace when the engine crashes.
+		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
+			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
+		</member>
+		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
+			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
@@ -810,6 +822,12 @@
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used when running the project from the editor.
+		</member>
+		<member name="internationalization/locale/translation_remaps" type="PackedStringArray" setter="" getter="">
+			Locale-dependent resource remaps. Edit them in the "Localization" tab of Project Settings editor.
+		</member>
+		<member name="internationalization/locale/translations" type="PackedStringArray" setter="" getter="">
+			List of translation files available in the project. Edit them in the "Localization" tab of Project Settings editor.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
@@ -1375,10 +1393,10 @@
 		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>
-		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.3">
+		<member name="navigation/3d/default_edge_connection_margin" type="float" setter="" getter="" default="0.25">
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
@@ -1584,6 +1602,10 @@
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 		</member>
+		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
+			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion.
+			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
+		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/amount" type="float" setter="" getter="" default="0.25">
 		</member>
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/enabled" type="bool" setter="" getter="" default="true">
@@ -1701,28 +1723,40 @@
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+			The maximum number of rays that can be thrown per pass when baking lightmaps with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
+			The maximum number of rays that can be thrown per pass when baking dynamic object lighting in [LightmapProbe]s with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/region_size" type="int" setter="" getter="" default="512">
+			The region size to use when baking lightmaps with [LightmapGI].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/high_quality_ray_count" type="int" setter="" getter="" default="256">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/low_quality_probe_ray_count" type="int" setter="" getter="" default="64">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/low_quality_ray_count" type="int" setter="" getter="" default="16">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_LOW].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/medium_quality_probe_ray_count" type="int" setter="" getter="" default="256">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/medium_quality_ray_count" type="int" setter="" getter="" default="64">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_MEDIUM].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count" type="int" setter="" getter="" default="2048">
+			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/lightmapping/bake_quality/ultra_quality_ray_count" type="int" setter="" getter="" default="1024">
+			The number of rays to use for baking lightmaps with [LightmapGI] when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_ULTRA].
 		</member>
 		<member name="rendering/lightmapping/probe_capture/update_speed" type="float" setter="" getter="" default="15">
+			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
 		</member>
 		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
 		</member>
@@ -1898,6 +1932,11 @@
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
+		</member>
+		<member name="rendering/textures/vram_compression/minimum_size" type="int" setter="" getter="" default="512">
+			When a texture is detected as used in 3D in the editor, only enable VRAM compression if its size is greater than or equal to [code]minimum_size * minimum_size[/code] pixels. This is done to prevent reducing texture quality when it doesn't save much video memory, especially for pixel art.
+			For non-square textures, the pixel count is used. For example, with [member rendering/textures/vram_compression/minimum_size] set to [code]512[/code], a 512×512 texture will use VRAM compression, while 256×256 textures, 256×512 and 1024×64 textures will keep their existing compression mode (Lossless by default).
+			[b]Note:[/b] This project setting only affects textures that are detected to be used in 3D at a given time. Textures that were already imported will not be affected by changes to this setting. To force 3D detection to occur again, select a texture in the FileSystem dock, change its Detect 3D import option in the Import dock to [b]VRAM Compressed[/b] or [b]Basis Universal[/b] then click [b]Reimport[/b].
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>

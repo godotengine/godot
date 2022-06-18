@@ -62,7 +62,7 @@ GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
 
 bool GDScriptNativeClass::_get(const StringName &p_name, Variant &r_ret) const {
 	bool ok;
-	int v = ClassDB::get_integer_constant(name, p_name, &ok);
+	int64_t v = ClassDB::get_integer_constant(name, p_name, &ok);
 
 	if (ok) {
 		r_ret = v;
@@ -128,6 +128,7 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 			return;
 		}
 	}
+	ERR_FAIL_NULL(p_script->implicit_initializer);
 	p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
 }
 
@@ -1474,6 +1475,9 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 					}
 					if (d.has("usage")) {
 						pinfo.usage = d["usage"];
+					}
+					if (d.has("class_name")) {
+						pinfo.class_name = d["class_name"];
 					}
 
 					props.push_back(pinfo);

@@ -62,7 +62,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height = font->get_height(font_size);
+	ms.height = font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -132,7 +132,7 @@ void EditorProperty::_notification(int p_what) {
 				int child_room = size.width * (1.0 - split_ratio);
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-				int height = font->get_height(font_size);
+				int height = font->get_height(font_size) + 4 * EDSCALE;
 				bool no_children = true;
 
 				//compute room needed
@@ -236,30 +236,24 @@ void EditorProperty::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-			Color dark_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
 			bool rtl = is_layout_rtl();
 
 			Size2 size = get_size();
 			if (bottom_editor) {
-				size.height = bottom_editor->get_offset(SIDE_TOP);
+				size.height = bottom_editor->get_offset(SIDE_TOP) - get_theme_constant(SNAME("v_separation"));
 			} else if (label_reference) {
 				size.height = label_reference->get_size().height;
 			}
 
-			Ref<StyleBox> sb;
-			if (selected) {
-				sb = get_theme_stylebox(SNAME("bg_selected"));
-			} else {
-				sb = get_theme_stylebox(SNAME("bg"));
-			}
-
+			Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
 			draw_style_box(sb, Rect2(Vector2(), size));
 
+			Ref<StyleBox> bg_stylebox = get_theme_stylebox(SNAME("child_bg"));
 			if (draw_top_bg && right_child_rect != Rect2()) {
-				draw_rect(right_child_rect, dark_color);
+				draw_style_box(bg_stylebox, right_child_rect);
 			}
 			if (bottom_child_rect != Rect2()) {
-				draw_rect(bottom_child_rect, dark_color);
+				draw_style_box(bg_stylebox, bottom_child_rect);
 			}
 
 			Color color;
@@ -1075,7 +1069,7 @@ void EditorInspectorPlugin::_bind_methods() {
 void EditorInspectorCategory::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			Ref<StyleBox> sb = get_theme_stylebox(SNAME("prop_category_style"), SNAME("Editor"));
+			Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 

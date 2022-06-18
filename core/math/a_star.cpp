@@ -33,19 +33,19 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/script_language.h"
 
-int AStar3D::get_available_point_id() const {
+int64_t AStar3D::get_available_point_id() const {
 	if (points.has(last_free_id)) {
-		int cur_new_id = last_free_id + 1;
+		int64_t cur_new_id = last_free_id + 1;
 		while (points.has(cur_new_id)) {
 			cur_new_id++;
 		}
-		const_cast<int &>(last_free_id) = cur_new_id;
+		const_cast<int64_t &>(last_free_id) = cur_new_id;
 	}
 
 	return last_free_id;
 }
 
-void AStar3D::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
+void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(p_id < 0, vformat("Can't add a point with negative id: %d.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't add a point with weight scale less than 0.0: %f.", p_weight_scale));
 
@@ -68,7 +68,7 @@ void AStar3D::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	}
 }
 
-Vector3 AStar3D::get_point_position(int p_id) const {
+Vector3 AStar3D::get_point_position(int64_t p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't get point's position. Point with id: %d doesn't exist.", p_id));
@@ -76,7 +76,7 @@ Vector3 AStar3D::get_point_position(int p_id) const {
 	return p->pos;
 }
 
-void AStar3D::set_point_position(int p_id, const Vector3 &p_pos) {
+void AStar3D::set_point_position(int64_t p_id, const Vector3 &p_pos) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's position. Point with id: %d doesn't exist.", p_id));
@@ -84,7 +84,7 @@ void AStar3D::set_point_position(int p_id, const Vector3 &p_pos) {
 	p->pos = p_pos;
 }
 
-real_t AStar3D::get_point_weight_scale(int p_id) const {
+real_t AStar3D::get_point_weight_scale(int64_t p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, 0, vformat("Can't get point's weight scale. Point with id: %d doesn't exist.", p_id));
@@ -92,7 +92,7 @@ real_t AStar3D::get_point_weight_scale(int p_id) const {
 	return p->weight_scale;
 }
 
-void AStar3D::set_point_weight_scale(int p_id, real_t p_weight_scale) {
+void AStar3D::set_point_weight_scale(int64_t p_id, real_t p_weight_scale) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
@@ -101,12 +101,12 @@ void AStar3D::set_point_weight_scale(int p_id, real_t p_weight_scale) {
 	p->weight_scale = p_weight_scale;
 }
 
-void AStar3D::remove_point(int p_id) {
+void AStar3D::remove_point(int64_t p_id) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't remove point. Point with id: %d doesn't exist.", p_id));
 
-	for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 		Segment s(p_id, (*it.key));
 		segments.erase(s);
 
@@ -114,7 +114,7 @@ void AStar3D::remove_point(int p_id) {
 		(*it.value)->unlinked_neighbours.remove(p->id);
 	}
 
-	for (OAHashMap<int, Point *>::Iterator it = p->unlinked_neighbours.iter(); it.valid; it = p->unlinked_neighbours.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = p->unlinked_neighbours.iter(); it.valid; it = p->unlinked_neighbours.next_iter(it)) {
 		Segment s(p_id, (*it.key));
 		segments.erase(s);
 
@@ -127,7 +127,7 @@ void AStar3D::remove_point(int p_id) {
 	last_free_id = p_id;
 }
 
-void AStar3D::connect_points(int p_id, int p_with_id, bool bidirectional) {
+void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
 	ERR_FAIL_COND_MSG(p_id == p_with_id, vformat("Can't connect point with id: %d to itself.", p_id));
 
 	Point *a;
@@ -165,7 +165,7 @@ void AStar3D::connect_points(int p_id, int p_with_id, bool bidirectional) {
 	segments.insert(s);
 }
 
-void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
+void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
 	Point *a;
 	bool a_exists = points.lookup(p_id, a);
 	ERR_FAIL_COND_MSG(!a_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_id));
@@ -175,7 +175,7 @@ void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	ERR_FAIL_COND_MSG(!b_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_with_id));
 
 	Segment s(p_id, p_with_id);
-	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : s.direction;
+	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : (int)s.direction;
 
 	HashSet<Segment, Segment>::Iterator element = segments.find(s);
 	if (element) {
@@ -205,35 +205,35 @@ void AStar3D::disconnect_points(int p_id, int p_with_id, bool bidirectional) {
 	}
 }
 
-bool AStar3D::has_point(int p_id) const {
+bool AStar3D::has_point(int64_t p_id) const {
 	return points.has(p_id);
 }
 
 Array AStar3D::get_point_ids() {
 	Array point_list;
 
-	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
 		point_list.push_back(*(it.key));
 	}
 
 	return point_list;
 }
 
-Vector<int> AStar3D::get_point_connections(int p_id) {
+Vector<int64_t> AStar3D::get_point_connections(int64_t p_id) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
-	ERR_FAIL_COND_V_MSG(!p_exists, Vector<int>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
+	ERR_FAIL_COND_V_MSG(!p_exists, Vector<int64_t>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
 
-	Vector<int> point_list;
+	Vector<int64_t> point_list;
 
-	for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 		point_list.push_back((*it.key));
 	}
 
 	return point_list;
 }
 
-bool AStar3D::are_points_connected(int p_id, int p_with_id, bool bidirectional) const {
+bool AStar3D::are_points_connected(int64_t p_id, int64_t p_with_id, bool bidirectional) const {
 	Segment s(p_id, p_with_id);
 	const HashSet<Segment, Segment>::Iterator element = segments.find(s);
 
@@ -243,32 +243,32 @@ bool AStar3D::are_points_connected(int p_id, int p_with_id, bool bidirectional) 
 
 void AStar3D::clear() {
 	last_free_id = 0;
-	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
 		memdelete(*(it.value));
 	}
 	segments.clear();
 	points.clear();
 }
 
-int AStar3D::get_point_count() const {
+int64_t AStar3D::get_point_count() const {
 	return points.get_num_elements();
 }
 
-int AStar3D::get_point_capacity() const {
+int64_t AStar3D::get_point_capacity() const {
 	return points.get_capacity();
 }
 
-void AStar3D::reserve_space(int p_num_nodes) {
+void AStar3D::reserve_space(int64_t p_num_nodes) {
 	ERR_FAIL_COND_MSG(p_num_nodes <= 0, vformat("New capacity must be greater than 0, new was: %d.", p_num_nodes));
 	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), vformat("New capacity must be greater than current capacity: %d, new was: %d.", points.get_capacity(), p_num_nodes));
 	points.reserve(p_num_nodes);
 }
 
-int AStar3D::get_closest_point(const Vector3 &p_point, bool p_include_disabled) const {
-	int closest_id = -1;
+int64_t AStar3D::get_closest_point(const Vector3 &p_point, bool p_include_disabled) const {
+	int64_t closest_id = -1;
 	real_t closest_dist = 1e20;
 
-	for (OAHashMap<int, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = points.iter(); it.valid; it = points.next_iter(it)) {
 		if (!p_include_disabled && !(*it.value)->enabled) {
 			continue; // Disabled points should not be considered.
 		}
@@ -276,7 +276,7 @@ int AStar3D::get_closest_point(const Vector3 &p_point, bool p_include_disabled) 
 		// Keep the closest point's ID, and in case of multiple closest IDs,
 		// the smallest one (makes it deterministic).
 		real_t d = p_point.distance_squared_to((*it.value)->pos);
-		int id = *(it.key);
+		int64_t id = *(it.key);
 		if (d <= closest_dist) {
 			if (d == closest_dist && id > closest_id) { // Keep lowest ID.
 				continue;
@@ -295,8 +295,8 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 
 	for (const Segment &E : segments) {
 		Point *from_point = nullptr, *to_point = nullptr;
-		points.lookup(E.u, from_point);
-		points.lookup(E.v, to_point);
+		points.lookup(E.key.first, from_point);
+		points.lookup(E.key.second, to_point);
 
 		if (!(from_point->enabled && to_point->enabled)) {
 			continue;
@@ -346,7 +346,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed
 
-		for (OAHashMap<int, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+		for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 			Point *e = *(it.value); // The neighbour point
 
 			if (!e->enabled || e->closed_pass == pass) {
@@ -380,7 +380,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 	return found_route;
 }
 
-real_t AStar3D::_estimate_cost(int p_from_id, int p_to_id) {
+real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -397,7 +397,7 @@ real_t AStar3D::_estimate_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-real_t AStar3D::_compute_cost(int p_from_id, int p_to_id) {
+real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -414,7 +414,7 @@ real_t AStar3D::_compute_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector3> AStar3D::get_point_path(int p_from_id, int p_to_id) {
+Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -438,7 +438,7 @@ Vector<Vector3> AStar3D::get_point_path(int p_from_id, int p_to_id) {
 	}
 
 	Point *p = end_point;
-	int pc = 1; // Begin point
+	int64_t pc = 1; // Begin point
 	while (p != begin_point) {
 		pc++;
 		p = p->prev_point;
@@ -451,7 +451,7 @@ Vector<Vector3> AStar3D::get_point_path(int p_from_id, int p_to_id) {
 		Vector3 *w = path.ptrw();
 
 		Point *p2 = end_point;
-		int idx = pc - 1;
+		int64_t idx = pc - 1;
 		while (p2 != begin_point) {
 			w[idx--] = p2->pos;
 			p2 = p2->prev_point;
@@ -463,17 +463,17 @@ Vector<Vector3> AStar3D::get_point_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
-Vector<int> AStar3D::get_id_path(int p_from_id, int p_to_id) {
+Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	Point *a;
 	bool from_exists = points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	Point *b;
 	bool to_exists = points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
-		Vector<int> ret;
+		Vector<int64_t> ret;
 		ret.push_back(a->id);
 		return ret;
 	}
@@ -483,24 +483,24 @@ Vector<int> AStar3D::get_id_path(int p_from_id, int p_to_id) {
 
 	bool found_route = _solve(begin_point, end_point);
 	if (!found_route) {
-		return Vector<int>();
+		return Vector<int64_t>();
 	}
 
 	Point *p = end_point;
-	int pc = 1; // Begin point
+	int64_t pc = 1; // Begin point
 	while (p != begin_point) {
 		pc++;
 		p = p->prev_point;
 	}
 
-	Vector<int> path;
+	Vector<int64_t> path;
 	path.resize(pc);
 
 	{
-		int *w = path.ptrw();
+		int64_t *w = path.ptrw();
 
 		p = end_point;
-		int idx = pc - 1;
+		int64_t idx = pc - 1;
 		while (p != begin_point) {
 			w[idx--] = p->id;
 			p = p->prev_point;
@@ -512,7 +512,7 @@ Vector<int> AStar3D::get_id_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
-void AStar3D::set_point_disabled(int p_id, bool p_disabled) {
+void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
@@ -520,7 +520,7 @@ void AStar3D::set_point_disabled(int p_id, bool p_disabled) {
 	p->enabled = !p_disabled;
 }
 
-bool AStar3D::is_point_disabled(int p_id) const {
+bool AStar3D::is_point_disabled(int64_t p_id) const {
 	Point *p;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point is disabled. Point with id: %d doesn't exist.", p_id));
@@ -568,40 +568,40 @@ AStar3D::~AStar3D() {
 
 /////////////////////////////////////////////////////////////
 
-int AStar2D::get_available_point_id() const {
+int64_t AStar2D::get_available_point_id() const {
 	return astar.get_available_point_id();
 }
 
-void AStar2D::add_point(int p_id, const Vector2 &p_pos, real_t p_weight_scale) {
+void AStar2D::add_point(int64_t p_id, const Vector2 &p_pos, real_t p_weight_scale) {
 	astar.add_point(p_id, Vector3(p_pos.x, p_pos.y, 0), p_weight_scale);
 }
 
-Vector2 AStar2D::get_point_position(int p_id) const {
+Vector2 AStar2D::get_point_position(int64_t p_id) const {
 	Vector3 p = astar.get_point_position(p_id);
 	return Vector2(p.x, p.y);
 }
 
-void AStar2D::set_point_position(int p_id, const Vector2 &p_pos) {
+void AStar2D::set_point_position(int64_t p_id, const Vector2 &p_pos) {
 	astar.set_point_position(p_id, Vector3(p_pos.x, p_pos.y, 0));
 }
 
-real_t AStar2D::get_point_weight_scale(int p_id) const {
+real_t AStar2D::get_point_weight_scale(int64_t p_id) const {
 	return astar.get_point_weight_scale(p_id);
 }
 
-void AStar2D::set_point_weight_scale(int p_id, real_t p_weight_scale) {
+void AStar2D::set_point_weight_scale(int64_t p_id, real_t p_weight_scale) {
 	astar.set_point_weight_scale(p_id, p_weight_scale);
 }
 
-void AStar2D::remove_point(int p_id) {
+void AStar2D::remove_point(int64_t p_id) {
 	astar.remove_point(p_id);
 }
 
-bool AStar2D::has_point(int p_id) const {
+bool AStar2D::has_point(int64_t p_id) const {
 	return astar.has_point(p_id);
 }
 
-Vector<int> AStar2D::get_point_connections(int p_id) {
+Vector<int64_t> AStar2D::get_point_connections(int64_t p_id) {
 	return astar.get_point_connections(p_id);
 }
 
@@ -609,31 +609,31 @@ Array AStar2D::get_point_ids() {
 	return astar.get_point_ids();
 }
 
-void AStar2D::set_point_disabled(int p_id, bool p_disabled) {
+void AStar2D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	astar.set_point_disabled(p_id, p_disabled);
 }
 
-bool AStar2D::is_point_disabled(int p_id) const {
+bool AStar2D::is_point_disabled(int64_t p_id) const {
 	return astar.is_point_disabled(p_id);
 }
 
-void AStar2D::connect_points(int p_id, int p_with_id, bool p_bidirectional) {
+void AStar2D::connect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional) {
 	astar.connect_points(p_id, p_with_id, p_bidirectional);
 }
 
-void AStar2D::disconnect_points(int p_id, int p_with_id) {
-	astar.disconnect_points(p_id, p_with_id);
+void AStar2D::disconnect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional) {
+	astar.disconnect_points(p_id, p_with_id, p_bidirectional);
 }
 
-bool AStar2D::are_points_connected(int p_id, int p_with_id) const {
-	return astar.are_points_connected(p_id, p_with_id);
+bool AStar2D::are_points_connected(int64_t p_id, int64_t p_with_id, bool p_bidirectional) const {
+	return astar.are_points_connected(p_id, p_with_id, p_bidirectional);
 }
 
-int AStar2D::get_point_count() const {
+int64_t AStar2D::get_point_count() const {
 	return astar.get_point_count();
 }
 
-int AStar2D::get_point_capacity() const {
+int64_t AStar2D::get_point_capacity() const {
 	return astar.get_point_capacity();
 }
 
@@ -641,11 +641,11 @@ void AStar2D::clear() {
 	astar.clear();
 }
 
-void AStar2D::reserve_space(int p_num_nodes) {
+void AStar2D::reserve_space(int64_t p_num_nodes) {
 	astar.reserve_space(p_num_nodes);
 }
 
-int AStar2D::get_closest_point(const Vector2 &p_point, bool p_include_disabled) const {
+int64_t AStar2D::get_closest_point(const Vector2 &p_point, bool p_include_disabled) const {
 	return astar.get_closest_point(Vector3(p_point.x, p_point.y, 0), p_include_disabled);
 }
 
@@ -654,7 +654,7 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 	return Vector2(p.x, p.y);
 }
 
-real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
+real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -671,7 +671,7 @@ real_t AStar2D::_estimate_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
+real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -688,7 +688,7 @@ real_t AStar2D::_compute_cost(int p_from_id, int p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
+Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	AStar3D::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -711,7 +711,7 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	}
 
 	AStar3D::Point *p = end_point;
-	int pc = 1; // Begin point
+	int64_t pc = 1; // Begin point
 	while (p != begin_point) {
 		pc++;
 		p = p->prev_point;
@@ -724,7 +724,7 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 		Vector2 *w = path.ptrw();
 
 		AStar3D::Point *p2 = end_point;
-		int idx = pc - 1;
+		int64_t idx = pc - 1;
 		while (p2 != begin_point) {
 			w[idx--] = Vector2(p2->pos.x, p2->pos.y);
 			p2 = p2->prev_point;
@@ -736,17 +736,17 @@ Vector<Vector2> AStar2D::get_point_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
-Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
+Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	AStar3D::Point *a;
 	bool from_exists = astar.points.lookup(p_from_id, a);
-	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
+	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
 	AStar3D::Point *b;
 	bool to_exists = astar.points.lookup(p_to_id, b);
-	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
+	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
 	if (a == b) {
-		Vector<int> ret;
+		Vector<int64_t> ret;
 		ret.push_back(a->id);
 		return ret;
 	}
@@ -756,24 +756,24 @@ Vector<int> AStar2D::get_id_path(int p_from_id, int p_to_id) {
 
 	bool found_route = _solve(begin_point, end_point);
 	if (!found_route) {
-		return Vector<int>();
+		return Vector<int64_t>();
 	}
 
 	AStar3D::Point *p = end_point;
-	int pc = 1; // Begin point
+	int64_t pc = 1; // Begin point
 	while (p != begin_point) {
 		pc++;
 		p = p->prev_point;
 	}
 
-	Vector<int> path;
+	Vector<int64_t> path;
 	path.resize(pc);
 
 	{
-		int *w = path.ptrw();
+		int64_t *w = path.ptrw();
 
 		p = end_point;
-		int idx = pc - 1;
+		int64_t idx = pc - 1;
 		while (p != begin_point) {
 			w[idx--] = p->id;
 			p = p->prev_point;
@@ -813,7 +813,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = astar.pass; // Mark the point as closed
 
-		for (OAHashMap<int, AStar3D::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+		for (OAHashMap<int64_t, AStar3D::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
 			AStar3D::Point *e = *(it.value); // The neighbour point
 
 			if (!e->enabled || e->closed_pass == astar.pass) {
@@ -863,8 +863,8 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar2D::connect_points, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar2D::disconnect_points);
-	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar2D::are_points_connected);
+	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar2D::disconnect_points, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar2D::are_points_connected, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar2D::get_point_count);
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar2D::get_point_capacity);

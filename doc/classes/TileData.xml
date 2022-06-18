@@ -79,7 +79,7 @@
 				Returns the occluder polygon of the tile for the TileSet occlusion layer with index [code]layer_id[/code].
 			</description>
 		</method>
-		<method name="get_peering_bit_terrain" qualifiers="const">
+		<method name="get_terrain_peering_bit" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<description>
@@ -185,7 +185,7 @@
 				Sets the occluder for the TileSet occlusion layer with index [code]layer_id[/code].
 			</description>
 		</method>
-		<method name="set_peering_bit_terrain">
+		<method name="set_terrain_peering_bit">
 			<return type="void" />
 			<argument index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<argument index="1" name="terrain" type="int" />
@@ -204,6 +204,8 @@
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 		</member>
 		<member name="probability" type="float" setter="set_probability" getter="get_probability" default="1.0">
+		</member>
+		<member name="terrain" type="int" setter="set_terrain" getter="get_terrain" default="-1">
 		</member>
 		<member name="terrain_set" type="int" setter="set_terrain_set" getter="get_terrain_set" default="-1">
 		</member>

@@ -50,10 +50,10 @@ class NavMap : public NavRid {
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size.
-	real_t cell_size = 0.3;
+	real_t cell_size = 0.25;
 
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = 5.0;
+	real_t edge_connection_margin = 0.25;
 
 	bool regenerate_polygons = true;
 	bool regenerate_links = true;
@@ -105,7 +105,7 @@ public:
 
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
-	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers = 1) const;
+	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
 	Vector3 get_closest_point(const Vector3 &p_point) const;
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;

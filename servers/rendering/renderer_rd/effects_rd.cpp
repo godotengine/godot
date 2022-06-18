@@ -252,6 +252,35 @@ void EffectsRD::fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RI
 	RD::get_singleton()->compute_list_end(compute_list);
 }
 
+void EffectsRD::taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+
+	RID shader = TAA_resolve.shader.version_get_shader(TAA_resolve.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	memset(&TAA_resolve.push_constant, 0, sizeof(TAAResolvePushConstant));
+	TAA_resolve.push_constant.resolution_width = p_resolution.width;
+	TAA_resolve.push_constant.resolution_height = p_resolution.height;
+	TAA_resolve.push_constant.disocclusion_threshold = 0.025f;
+	TAA_resolve.push_constant.disocclusion_scale = 10.0f;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, TAA_resolve.pipeline);
+
+	RD::Uniform u_frame_source(RD::UNIFORM_TYPE_IMAGE, 0, { p_frame });
+	RD::Uniform u_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, { default_sampler, p_depth });
+	RD::Uniform u_velocity(RD::UNIFORM_TYPE_IMAGE, 2, { p_velocity });
+	RD::Uniform u_prev_velocity(RD::UNIFORM_TYPE_IMAGE, 3, { p_prev_velocity });
+	RD::Uniform u_history(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, { default_sampler, p_history });
+	RD::Uniform u_frame_dest(RD::UNIFORM_TYPE_IMAGE, 5, { p_temp });
+
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_frame_source, u_depth, u_velocity, u_prev_velocity, u_history, u_frame_dest), 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &TAA_resolve.push_constant, sizeof(TAAResolvePushConstant));
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_resolution.width, p_resolution.height, 1);
+	RD::get_singleton()->compute_list_end();
+}
+
 void EffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera) {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -415,7 +444,7 @@ void EffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_dept
 }
 
 void EffectsRD::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection) {
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>());
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, Vector<Color>());
 
 	if (p_reflection.is_valid()) {
 		if (p_base.is_valid()) {
@@ -2012,6 +2041,14 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		}
 	}
 
+	{
+		Vector<String> taa_modes;
+		taa_modes.push_back("\n#define MODE_TAA_RESOLVE");
+		TAA_resolve.shader.initialize(taa_modes);
+		TAA_resolve.shader_version = TAA_resolve.shader.version_create();
+		TAA_resolve.pipeline = RD::get_singleton()->compute_pipeline_create(TAA_resolve.shader.version_get_shader(TAA_resolve.shader_version, 0));
+	}
+
 	RD::SamplerState sampler;
 	sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 	sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
@@ -2060,6 +2097,7 @@ EffectsRD::~EffectsRD() {
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
 	FSR_upscale.shader.version_free(FSR_upscale.shader_version);
+	TAA_resolve.shader.version_free(TAA_resolve.shader_version);
 	if (prefer_raster_effects) {
 		luminance_reduce_raster.shader.version_free(luminance_reduce_raster.shader_version);
 		roughness.raster_shader.version_free(roughness.shader_version);

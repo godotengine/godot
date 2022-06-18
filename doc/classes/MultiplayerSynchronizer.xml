@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="congiruation" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
+		<member name="replication_config" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
 		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
 		</member>

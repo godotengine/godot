@@ -334,14 +334,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		// Global enums and constants.
 		Array constants;
-		HashMap<String, List<Pair<String, int>>> enum_list;
+		HashMap<String, List<Pair<String, int64_t>>> enum_list;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-			int value = CoreConstants::get_global_constant_value(i);
+			int64_t value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
 			if (!enum_name.is_empty()) {
-				enum_list[enum_name].push_back(Pair<String, int>(name, value));
+				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
 			} else {
 				Dictionary d;
 				d["name"] = name;
@@ -353,11 +353,11 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		api_dump["global_constants"] = constants;
 
 		Array enums;
-		for (const KeyValue<String, List<Pair<String, int>>> &E : enum_list) {
+		for (const KeyValue<String, List<Pair<String, int64_t>>> &E : enum_list) {
 			Dictionary d1;
 			d1["name"] = E.key;
 			Array values;
-			for (const Pair<String, int> &F : E.value) {
+			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;

@@ -151,7 +151,13 @@ Error EditorRunNative::run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 	}
 
-	return eep->run(preset, p_idx, flags);
+	eep->clear_messages();
+	Error err = eep->run(preset, p_idx, flags);
+	result_dialog_log->clear();
+	if (eep->fill_log_messages(result_dialog_log, err)) {
+		result_dialog->popup_centered_ratio(0.5);
+	}
+	return err;
 }
 
 void EditorRunNative::resume_run_native() {
@@ -167,6 +173,15 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 }
 
 EditorRunNative::EditorRunNative() {
+	result_dialog = memnew(AcceptDialog);
+	result_dialog->set_title(TTR("Project Run"));
+	result_dialog_log = memnew(RichTextLabel);
+	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog->add_child(result_dialog_log);
+
+	add_child(result_dialog);
+	result_dialog->hide();
+
 	set_process(true);
 	resume_idx = 0;
 	resume_platform = 0;

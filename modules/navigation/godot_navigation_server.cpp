@@ -198,11 +198,11 @@ real_t GodotNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	return map->get_edge_connection_margin();
 }
 
-Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
+Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize, p_layers);
+	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -309,18 +309,48 @@ COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform) {
 	region->set_transform(p_transform);
 }
 
-COMMAND_2(region_set_layers, RID, p_region, uint32_t, p_layers) {
+COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_enter_cost < 0.0);
 
-	region->set_layers(p_layers);
+	region->set_enter_cost(p_enter_cost);
 }
 
-uint32_t GodotNavigationServer::region_get_layers(RID p_region) const {
+real_t GodotNavigationServer::region_get_enter_cost(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, 0);
 
-	return region->get_layers();
+	return region->get_enter_cost();
+}
+
+COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+	ERR_FAIL_COND(p_travel_cost < 0.0);
+
+	region->set_travel_cost(p_travel_cost);
+}
+
+real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_travel_cost();
+}
+
+COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_navigation_layers(p_navigation_layers);
+}
+
+uint32_t GodotNavigationServer::region_get_navigation_layers(RID p_region) const {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, 0);
+
+	return region->get_navigation_layers();
 }
 
 COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {

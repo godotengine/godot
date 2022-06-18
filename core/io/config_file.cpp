@@ -61,19 +61,19 @@ PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 }
 
 void ConfigFile::set_value(const String &p_section, const String &p_key, const Variant &p_value) {
-	if (p_value.get_type() == Variant::NIL) {
-		//erase
+	if (p_value.get_type() == Variant::NIL) { // Erase key.
 		if (!values.has(p_section)) {
-			return; // ?
+			return;
 		}
+
 		values[p_section].erase(p_key);
 		if (values[p_section].is_empty()) {
 			values.erase(p_section);
 		}
-
 	} else {
 		if (!values.has(p_section)) {
-			values[p_section] = HashMap<String, Variant>();
+			// Insert section-less keys at the beginning.
+			values.insert(p_section, HashMap<String, Variant>(), p_section.is_empty());
 		}
 
 		values[p_section][p_key] = p_value;
@@ -125,6 +125,9 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 	ERR_FAIL_COND_MSG(!values[p_section].has(p_key), vformat("Cannot erase nonexistent key \"%s\" from section \"%s\".", p_key, p_section));
 
 	values[p_section].erase(p_key);
+	if (values[p_section].is_empty()) {
+		values.erase(p_section);
+	}
 }
 
 Error ConfigFile::save(const String &p_path) {

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		2D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent2D] is physics safe.
+		[b]Note:[/b] After [method set_target_location] is used it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,7 +25,7 @@
 		<method name="get_nav_path" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<description>
-				Returns the path from start to finish in global coordinates.
+				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target location is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_location] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
 			</description>
 		</method>
 		<method name="get_nav_path_index" qualifiers="const">
@@ -33,10 +34,16 @@
 				Returns which index the agent is currently on in the navigation path's [PackedVector2Array].
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map for this NavigationAgent node. This function returns always the map set on the NavigationAgent node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationAgent node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationAgent and also update the agent on the NavigationServer.
+			</description>
+		</method>
 		<method name="get_next_location">
 			<return type="Vector2" />
 			<description>
-				Returns a [Vector2] in global coordinates, that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent.
+				Returns the next location in global coordinates that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent. The use of this function once every physics frame is required to update the internal path logic of the NavigationAgent.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -69,6 +76,13 @@
 				Returns true if the target location is reached. The target location is set using [method set_target_location]. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
 			</description>
 		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<argument index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
+			</description>
+		</method>
 		<method name="set_target_location">
 			<return type="void" />
 			<argument index="0" name="location" type="Vector2" />
@@ -94,8 +108,8 @@
 		<member name="max_speed" type="float" setter="set_max_speed" getter="get_max_speed" default="200.0">
 			The maximum speed that an agent can move.
 		</member>
-		<member name="navigable_layers" type="int" setter="set_navigable_layers" getter="get_navigable_layers" default="1">
-			A bitfield determining what layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new layers.
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining what navigation layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new navigation layers.
 		</member>
 		<member name="neighbor_dist" type="float" setter="set_neighbor_dist" getter="get_neighbor_dist" default="500.0">
 			The distance to search for other agents.

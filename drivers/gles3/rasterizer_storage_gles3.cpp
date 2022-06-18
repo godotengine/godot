@@ -38,6 +38,8 @@
 #include "rasterizer_scene_gles3.h"
 #include "servers/rendering/shader_language.h"
 
+/* MISC */
+
 void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
 	if (GLES3::MeshStorage::get_singleton()->owns_mesh(p_base)) {
 		GLES3::Mesh *mesh = GLES3::MeshStorage::get_singleton()->get_mesh(p_base);
@@ -52,6 +54,29 @@ void RasterizerStorageGLES3::base_update_dependency(RID p_base, DependencyTracke
 		GLES3::Light *l = GLES3::LightStorage::get_singleton()->get_light(p_base);
 		p_instance->update_dependency(&l->dependency);
 	}
+}
+
+Vector<uint8_t> RasterizerStorageGLES3::buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size) {
+	Vector<uint8_t> ret;
+	ret.resize(p_buffer_size);
+	glBindBuffer(p_target, p_buffer);
+
+#if defined(__EMSCRIPTEN__)
+	{
+		uint8_t *w = ret.ptrw();
+		glGetBufferSubData(p_target, 0, p_buffer_size, w);
+	}
+#else
+	void *data = glMapBufferRange(p_target, 0, p_buffer_size, GL_MAP_READ_BIT);
+	ERR_FAIL_NULL_V(data, Vector<uint8_t>());
+	{
+		uint8_t *w = ret.ptrw();
+		memcpy(w, data, p_buffer_size);
+	}
+	glUnmapBuffer(p_target);
+#endif
+	glBindBuffer(p_target, 0);
+	return ret;
 }
 
 /* VOXEL GI API */

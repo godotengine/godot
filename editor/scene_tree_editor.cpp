@@ -584,6 +584,11 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		p_parent = tree->get_root();
 	}
 
+	if (!p_parent) {
+		// Tree is empty, nothing to do here.
+		return false;
+	}
+
 	bool keep = false;
 	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
 		keep = _update_filter(child, p_scroll_to_selected) || keep;

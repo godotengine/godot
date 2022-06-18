@@ -184,7 +184,6 @@ void ShaderCreateDialog::_create_new() {
 		Ref<VisualShader> visual_shader;
 		visual_shader.instantiate();
 		shader = visual_shader;
-		visual_shader->set_engine_version(Engine::get_singleton()->get_version_info());
 		visual_shader->set_mode(Shader::Mode(current_mode));
 	}
 
@@ -529,7 +528,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in shaders can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
@@ -633,7 +632,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	add_child(file_browse);
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
