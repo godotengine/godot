@@ -769,6 +769,49 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	}
 }
 
+static Vector2 compute_polyline_segment_dir(const Vector<Point2> &p_points, int p_index, const Vector2 &p_prev_segment_dir) {
+	int point_count = p_points.size();
+
+	bool is_last_point = (p_index == point_count - 1);
+
+	Vector2 segment_dir;
+
+	if (is_last_point) {
+		segment_dir = p_prev_segment_dir;
+	} else {
+		segment_dir = (p_points[p_index + 1] - p_points[p_index]).normalized();
+
+		if (segment_dir.is_zero_approx()) {
+			segment_dir = p_prev_segment_dir;
+		}
+	}
+
+	return segment_dir;
+}
+
+static Vector2 compute_polyline_edge_offset_clamped(const Vector2 &p_segment_dir, const Vector2 &p_prev_segment_dir) {
+	Vector2 bisector;
+	float length = 1.0f;
+
+	bisector = (p_prev_segment_dir * p_segment_dir.length() - p_segment_dir * p_prev_segment_dir.length()).normalized();
+
+	float angle = atan2f(bisector.cross(p_prev_segment_dir), bisector.dot(p_prev_segment_dir));
+	float sin_angle = sinf(angle);
+
+	if (!Math::is_zero_approx(sin_angle) && !p_segment_dir.is_equal_approx(p_prev_segment_dir)) {
+		length = 1.0f / sin_angle;
+		length = CLAMP(length, -3.0f, 3.0f);
+	} else {
+		bisector = p_segment_dir.orthogonal();
+	}
+
+	if (bisector.is_zero_approx()) {
+		bisector = p_segment_dir.orthogonal();
+	}
+
+	return bisector * length;
+}
+
 void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND(p_points.size() < 2);
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
@@ -777,11 +820,30 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Color color = Color(1, 1, 1, 1);
 
 	Vector<int> indices;
-	int pc = p_points.size();
-	int pc2 = pc * 2;
+	int point_count = p_points.size();
+	int polyline_point_count = point_count * 2;
 
-	Vector2 prev_t;
-	int j2;
+	bool loop = p_points[0].is_equal_approx(p_points[point_count - 1]);
+	Vector2 first_segment_dir;
+	Vector2 last_segment_dir;
+
+	// Search for first non-zero vector between two segments.
+	for (int i = 1; i < point_count; i++) {
+		first_segment_dir = (p_points[i] - p_points[i - 1]).normalized();
+
+		if (!first_segment_dir.is_zero_approx()) {
+			break;
+		}
+	}
+
+	// Search for last non-zero vector between two segments.
+	for (int i = point_count - 1; i >= 1; i--) {
+		last_segment_dir = (p_points[i] - p_points[i - 1]).normalized();
+
+		if (!last_segment_dir.is_zero_approx()) {
+			break;
+		}
+	}
 
 	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!pline);
@@ -789,8 +851,8 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	PackedColorArray colors;
 	PackedVector2Array points;
 
-	colors.resize(pc2);
-	points.resize(pc2);
+	colors.resize(polyline_point_count);
+	points.resize(polyline_point_count);
 
 	Vector2 *points_ptr = points.ptrw();
 	Color *colors_ptr = colors.ptrw();
@@ -845,14 +907,14 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		PackedColorArray colors_left;
 		PackedVector2Array points_left;
 
-		colors_left.resize(pc2);
-		points_left.resize(pc2);
+		colors_left.resize(polyline_point_count);
+		points_left.resize(polyline_point_count);
 
 		PackedColorArray colors_right;
 		PackedVector2Array points_right;
 
-		colors_right.resize(pc2);
-		points_right.resize(pc2);
+		colors_right.resize(polyline_point_count);
+		points_right.resize(polyline_point_count);
 
 		Item::CommandPolygon *pline_begin = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_COND(!pline_begin);
@@ -898,79 +960,81 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		Color *colors_left_ptr = colors_left.ptrw();
 		Color *colors_right_ptr = colors_right.ptrw();
 
-		for (int i = 0, j = 0; i < pc; i++, j += 2) {
-			bool is_begin = i == 0;
-			bool is_end = i == pc - 1;
+		Vector2 prev_segment_dir;
+		for (int i = 0; i < point_count; i++) {
+			bool is_first_point = (i == 0);
+			bool is_last_point = (i == point_count - 1);
 
-			Vector2 t;
-			Vector2 end_border;
-			Vector2 begin_border;
-			if (is_end) {
-				t = prev_t;
-				end_border = (p_points[i] - p_points[i - 1]).normalized() * border_size;
-			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
-				if (is_begin) {
-					prev_t = t;
-					begin_border = (p_points[i] - p_points[i + 1]).normalized() * border_size;
-				}
+			Vector2 segment_dir = compute_polyline_segment_dir(p_points, i, prev_segment_dir);
+			if (is_first_point && loop) {
+				prev_segment_dir = last_segment_dir;
+			} else if (is_last_point && loop) {
+				prev_segment_dir = first_segment_dir;
 			}
 
-			j2 = j + 1;
+			Vector2 base_edge_offset;
+			if (is_first_point && !loop) {
+				base_edge_offset = first_segment_dir.orthogonal();
+			} else if (is_last_point && !loop) {
+				base_edge_offset = last_segment_dir.orthogonal();
+			} else {
+				base_edge_offset = compute_polyline_edge_offset_clamped(segment_dir, prev_segment_dir);
+			}
 
-			Vector2 dir = (t + prev_t).normalized();
-			Vector2 tangent = dir * p_width * 0.5;
-			Vector2 border = dir * border_size;
+			Vector2 edge_offset = base_edge_offset * (p_width * 0.5f);
+			Vector2 border = base_edge_offset * border_size;
 			Vector2 pos = p_points[i];
 
-			points_ptr[j] = pos + tangent;
-			points_ptr[j2] = pos - tangent;
+			points_ptr[i * 2 + 0] = pos + edge_offset;
+			points_ptr[i * 2 + 1] = pos - edge_offset;
 
-			points_left_ptr[j] = pos + tangent + border;
-			points_left_ptr[j2] = pos + tangent;
+			points_left_ptr[i * 2 + 0] = pos + edge_offset + border;
+			points_left_ptr[i * 2 + 1] = pos + edge_offset;
 
-			points_right_ptr[j] = pos - tangent;
-			points_right_ptr[j2] = pos - tangent - border;
+			points_right_ptr[i * 2 + 0] = pos - edge_offset;
+			points_right_ptr[i * 2 + 1] = pos - edge_offset - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
 				color2 = Color(color.r, color.g, color.b, 0);
 			}
 
-			colors_ptr[j] = color;
-			colors_ptr[j2] = color;
+			colors_ptr[i * 2 + 0] = color;
+			colors_ptr[i * 2 + 1] = color;
 
-			colors_left_ptr[j] = color2;
-			colors_left_ptr[j2] = color;
+			colors_left_ptr[i * 2 + 0] = color2;
+			colors_left_ptr[i * 2 + 1] = color;
 
-			colors_right_ptr[j] = color;
-			colors_right_ptr[j2] = color2;
+			colors_right_ptr[i * 2 + 0] = color;
+			colors_right_ptr[i * 2 + 1] = color2;
 
-			if (is_begin) {
-				points_begin_ptr[0] = pos + tangent + begin_border;
-				points_begin_ptr[1] = pos - tangent + begin_border;
-				points_begin_ptr[2] = pos + tangent;
-				points_begin_ptr[3] = pos - tangent;
+			if (is_first_point) {
+				Vector2 begin_border = loop ? Vector2() : -segment_dir * border_size;
+
+				points_begin_ptr[0] = pos + edge_offset + begin_border;
+				points_begin_ptr[1] = pos - edge_offset + begin_border;
+				points_begin_ptr[2] = pos + edge_offset;
+				points_begin_ptr[3] = pos - edge_offset;
 
 				colors_begin_ptr[0] = color2;
 				colors_begin_ptr[1] = color2;
 				colors_begin_ptr[2] = color;
 				colors_begin_ptr[3] = color;
 
-				points_begin_left_corner_ptr[0] = pos - tangent - border;
-				points_begin_left_corner_ptr[1] = pos - tangent + begin_border - border;
-				points_begin_left_corner_ptr[2] = pos - tangent;
-				points_begin_left_corner_ptr[3] = pos - tangent + begin_border;
+				points_begin_left_corner_ptr[0] = pos - edge_offset - border;
+				points_begin_left_corner_ptr[1] = pos - edge_offset + begin_border - border;
+				points_begin_left_corner_ptr[2] = pos - edge_offset;
+				points_begin_left_corner_ptr[3] = pos - edge_offset + begin_border;
 
 				colors_begin_left_corner_ptr[0] = color2;
 				colors_begin_left_corner_ptr[1] = color2;
 				colors_begin_left_corner_ptr[2] = color;
 				colors_begin_left_corner_ptr[3] = color2;
 
-				points_begin_right_corner_ptr[0] = pos + tangent + begin_border;
-				points_begin_right_corner_ptr[1] = pos + tangent + begin_border + border;
-				points_begin_right_corner_ptr[2] = pos + tangent;
-				points_begin_right_corner_ptr[3] = pos + tangent + border;
+				points_begin_right_corner_ptr[0] = pos + edge_offset + begin_border;
+				points_begin_right_corner_ptr[1] = pos + edge_offset + begin_border + border;
+				points_begin_right_corner_ptr[2] = pos + edge_offset;
+				points_begin_right_corner_ptr[3] = pos + edge_offset + border;
 
 				colors_begin_right_corner_ptr[0] = color2;
 				colors_begin_right_corner_ptr[1] = color2;
@@ -978,31 +1042,33 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 				colors_begin_right_corner_ptr[3] = color2;
 			}
 
-			if (is_end) {
-				points_end_ptr[0] = pos + tangent + end_border;
-				points_end_ptr[1] = pos - tangent + end_border;
-				points_end_ptr[2] = pos + tangent;
-				points_end_ptr[3] = pos - tangent;
+			if (is_last_point) {
+				Vector2 end_border = loop ? Vector2() : prev_segment_dir * border_size;
+
+				points_end_ptr[0] = pos + edge_offset + end_border;
+				points_end_ptr[1] = pos - edge_offset + end_border;
+				points_end_ptr[2] = pos + edge_offset;
+				points_end_ptr[3] = pos - edge_offset;
 
 				colors_end_ptr[0] = color2;
 				colors_end_ptr[1] = color2;
 				colors_end_ptr[2] = color;
 				colors_end_ptr[3] = color;
 
-				points_end_left_corner_ptr[0] = pos - tangent - border;
-				points_end_left_corner_ptr[1] = pos - tangent + end_border - border;
-				points_end_left_corner_ptr[2] = pos - tangent;
-				points_end_left_corner_ptr[3] = pos - tangent + end_border;
+				points_end_left_corner_ptr[0] = pos - edge_offset - border;
+				points_end_left_corner_ptr[1] = pos - edge_offset + end_border - border;
+				points_end_left_corner_ptr[2] = pos - edge_offset;
+				points_end_left_corner_ptr[3] = pos - edge_offset + end_border;
 
 				colors_end_left_corner_ptr[0] = color2;
 				colors_end_left_corner_ptr[1] = color2;
 				colors_end_left_corner_ptr[2] = color;
 				colors_end_left_corner_ptr[3] = color2;
 
-				points_end_right_corner_ptr[0] = pos + tangent + end_border;
-				points_end_right_corner_ptr[1] = pos + tangent + end_border + border;
-				points_end_right_corner_ptr[2] = pos + tangent;
-				points_end_right_corner_ptr[3] = pos + tangent + border;
+				points_end_right_corner_ptr[0] = pos + edge_offset + end_border;
+				points_end_right_corner_ptr[1] = pos + edge_offset + end_border + border;
+				points_end_right_corner_ptr[2] = pos + edge_offset;
+				points_end_right_corner_ptr[3] = pos + edge_offset + border;
 
 				colors_end_right_corner_ptr[0] = color2;
 				colors_end_right_corner_ptr[1] = color2;
@@ -1010,7 +1076,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 				colors_end_right_corner_ptr[3] = color2;
 			}
 
-			prev_t = t;
+			prev_segment_dir = segment_dir;
 		}
 
 		pline_begin->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
@@ -1039,33 +1105,41 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	} else {
 		// Makes a single triangle strip for drawing the line.
 
-		for (int i = 0, j = 0; i < pc; i++, j += 2) {
-			Vector2 t;
-			if (i == pc - 1) {
-				t = prev_t;
-			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
-				if (i == 0) {
-					prev_t = t;
-				}
+		Vector2 prev_segment_dir;
+		for (int i = 0; i < point_count; i++) {
+			bool is_first_point = (i == 0);
+			bool is_last_point = (i == point_count - 1);
+
+			Vector2 segment_dir = compute_polyline_segment_dir(p_points, i, prev_segment_dir);
+			if (is_first_point && loop) {
+				prev_segment_dir = last_segment_dir;
+			} else if (is_last_point && loop) {
+				prev_segment_dir = first_segment_dir;
 			}
 
-			j2 = j + 1;
+			Vector2 base_edge_offset;
+			if (is_first_point && !loop) {
+				base_edge_offset = first_segment_dir.orthogonal();
+			} else if (is_last_point && !loop) {
+				base_edge_offset = last_segment_dir.orthogonal();
+			} else {
+				base_edge_offset = compute_polyline_edge_offset_clamped(segment_dir, prev_segment_dir);
+			}
 
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			Vector2 edge_offset = base_edge_offset * (p_width * 0.5f);
 			Vector2 pos = p_points[i];
 
-			points_ptr[j] = pos + tangent;
-			points_ptr[j2] = pos - tangent;
+			points_ptr[i * 2 + 0] = pos + edge_offset;
+			points_ptr[i * 2 + 1] = pos - edge_offset;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
 			}
 
-			colors_ptr[j] = color;
-			colors_ptr[j2] = color;
+			colors_ptr[i * 2 + 0] = color;
+			colors_ptr[i * 2 + 1] = color;
 
-			prev_t = t;
+			prev_segment_dir = segment_dir;
 		}
 	}
 
