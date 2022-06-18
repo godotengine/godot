@@ -6450,7 +6450,19 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						valid = Variant::can_convert(source_type.builtin_type, cn->cast_type.builtin_type);
 					}
 					if (cn->cast_type.kind != DataType::BUILTIN && source_type.kind != DataType::BUILTIN) {
-						valid = _is_type_compatible(cn->cast_type, source_type) || _is_type_compatible(source_type, cn->cast_type);
+						if (cn->cast_type.kind == DataType::NATIVE && !ClassDB::class_exists(cn->cast_type.native_type)) {
+							_set_error("Unable to cast to internal native class type '" + String(cn->cast_type.native_type) + "'.", cn->line);
+							return DataType();
+						}
+
+						if (!_is_type_compatible(cn->cast_type, source_type) && !_is_type_compatible(source_type, cn->cast_type)) {
+#ifdef DEBUG_ENABLED
+							_add_warning(GDScriptWarning::ALWAYS_NULL_AS, cn->line, source_type.to_string(), cn->cast_type.to_string());
+#endif // DEBUG_ENABLED
+						}
+
+						// might not be null at runtime, permit the cast if there is a common type currently visible
+						valid = has_common_type(source_type, cn->cast_type);
 					}
 
 					if (!valid) {
@@ -6510,14 +6522,12 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							_set_error("Invalid \"is\" test: the right operand isn't a type (neither a native type nor a script).", op->line);
 							return DataType();
 						}
+
 						type_type.is_meta_type = false; // Test the actual type
 						if (!_is_type_compatible(type_type, value_type) && !_is_type_compatible(value_type, type_type)) {
-							if (op->op == OperatorNode::OP_IS) {
-								_set_error("A value of type \"" + value_type.to_string() + "\" will never be an instance of \"" + type_type.to_string() + "\".", op->line);
-							} else {
-								_set_error("A value of type \"" + value_type.to_string() + "\" will never be of type \"" + type_type.to_string() + "\".", op->line);
-							}
-							return DataType();
+#ifdef DEBUG_ENABLED
+							_add_warning(GDScriptWarning::ALWAYS_FALSE_IS, op->line, value_type.to_string(), type_type.to_string());
+#endif // DEBUG_ENABLED
 						}
 					}
 
