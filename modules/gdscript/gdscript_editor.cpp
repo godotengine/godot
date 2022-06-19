@@ -738,7 +738,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (p_argument == 3 || p_argument == 4) {
+		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.
 			ScriptLanguage::CodeCompletionOption slider1("or_greater", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider1.insert_text = slider1.display.quote(p_quote_style);
@@ -746,6 +746,9 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptLanguage::CodeCompletionOption slider2("or_lesser", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
+			ScriptLanguage::CodeCompletionOption slider3("noslider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			slider3.insert_text = slider3.display.quote(p_quote_style);
+			r_result.insert(slider3.display, slider3);
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
