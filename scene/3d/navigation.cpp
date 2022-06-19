@@ -125,7 +125,7 @@ void Navigation::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			// FIXME 3.5 with this old navigation node only
 			// if the node gets deleted this exit causes annoying error prints in debug
-			// It tries to deactive a map that itself has send a free command to the server.
+			// It tries to deactivate a map that itself has sent a free command to the server.
 			//NavigationServer::get_singleton()->map_set_active(map, false);
 		} break;
 	}
