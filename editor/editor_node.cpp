@@ -2453,7 +2453,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			} else if (extensions.size()) {
 				String root_name = scene->get_name();
 				// Very similar to node naming logic.
-				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+				switch (ProjectSettings::get_singleton()->get("editor/scene_naming").operator int()) {
 					case SCENE_NAME_CASING_AUTO:
 						// Use casing of the root node.
 						break;
@@ -5650,9 +5650,6 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
-	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_AUTO);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
-
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
 	ClassDB::bind_method("_tool_menu_option", &EditorNode::_tool_menu_option);
 	ClassDB::bind_method("_menu_confirm_current", &EditorNode::_menu_confirm_current);
