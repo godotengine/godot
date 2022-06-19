@@ -3962,9 +3962,10 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 				animation->add_track(p_id.type);
 				animation->track_set_path(animation->get_track_count() - 1, p_id.path);
 				PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-				animation->remove_track(animation->get_track_count() - 1); //hack
+				animation->remove_track(animation->get_track_count() - 1); // Hack.
 
-				if (h.type == Variant::REAL ||
+				if (h.type == Variant::INT ||
+						h.type == Variant::REAL ||
 						h.type == Variant::VECTOR2 ||
 						h.type == Variant::RECT2 ||
 						h.type == Variant::VECTOR3 ||
@@ -4513,13 +4514,15 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 	if (adding_track_type == Animation::TYPE_VALUE) {
 		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
 		{
-			//hack
+			// Hack.
 			NodePath np;
 			animation->add_track(Animation::TYPE_VALUE);
 			animation->track_set_path(animation->get_track_count() - 1, full_path);
 			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-			animation->remove_track(animation->get_track_count() - 1); //hack
-			if (h.type == Variant::REAL ||
+			animation->remove_track(animation->get_track_count() - 1); // Hack.
+
+			if (h.type == Variant::INT ||
+					h.type == Variant::REAL ||
 					h.type == Variant::VECTOR2 ||
 					h.type == Variant::RECT2 ||
 					h.type == Variant::VECTOR3 ||
@@ -4546,12 +4549,12 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 	} else {
 		Vector<String> subindices;
 		{
-			//hack
+			// Hack.
 			NodePath np;
 			animation->add_track(Animation::TYPE_VALUE);
 			animation->track_set_path(animation->get_track_count() - 1, full_path);
 			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-			animation->remove_track(animation->get_track_count() - 1); //hack
+			animation->remove_track(animation->get_track_count() - 1); // Hack.
 			bool valid;
 			subindices = _get_bezier_subindices_for_type(h.type, &valid);
 			if (!valid) {
