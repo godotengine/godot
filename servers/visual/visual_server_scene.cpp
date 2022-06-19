@@ -1159,6 +1159,15 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
 		instance->on_interpolate_list = true;
 		_instance_queue_update(instance, true);
+
+		// We must also place on the transform update list for a tick, so the system
+		// can auto-detect if the instance is no longer moving, and remove from the interpolate lists again.
+		// If this step is ignored, an unmoving instance could remain on the interpolate lists indefinitely
+		// (or rather until the object is deleted) and cause unnecessary updates and drawcalls.
+		if (!instance->on_interpolate_transform_list) {
+			_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
+			instance->on_interpolate_transform_list = true;
+		}
 	}
 
 	// give the opportunity for the spatial partitioning scene to use a special implementation of visibility
