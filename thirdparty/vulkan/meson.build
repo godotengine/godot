@@ -4,7 +4,7 @@ if get_option('builtin_vulkan')
     _vulkan_deps = []
     _vulkan_link_args = []
     # CPP flags that we need to link against in godot
-    _vulkan_cpp_dep_args = []
+    _vulkan_cpp_dep_args = [ '-DVULKAN_ENABLED']
     # CPP flags for building the vulkan library
     _vulkan_cpp_args = ['-DVULKAN_NON_CMAKE_BUILD']
 
@@ -54,7 +54,8 @@ if get_option('builtin_vulkan')
     _vulkan_incdirs = [include_directories('include', '.')]
 
     if get_option('use_volk')
-        _vulkan_cpp_dep_args += ['-DVMA_STATIC_VULKAN_FUNCTIONS=1', '-DUSE_VOLK']
+        _vulkan_cpp_dep_args += ['-DUSE_VOLK']
+        _vulkan_cpp_args += ['-DVMA_STATIC_VULKAN_FUNCTIONS=1']
         _vulkan_lib_incdirs += include_directories('../volk')
         _vulkan_incdirs += include_directories('../volk')
     elif PLATFORM == 'android'
@@ -71,7 +72,9 @@ if get_option('builtin_vulkan')
         c_args: [_vulkan_cpp_args, _vulkan_cpp_dep_args],
         build_by_default: false)
 
-    DEP_VULKAN = declare_dependency(link_with: _vulkan_lib, include_directories: _vulkan_incdirs, compile_args: _vulkan_cpp_dep_args)
+    DEP_VULKAN = declare_dependency(link_with: _vulkan_lib,
+        include_directories: _vulkan_incdirs,
+        compile_args: _vulkan_cpp_dep_args)
 else
     DEP_VULKAN = dependency('vulkan')
 endif

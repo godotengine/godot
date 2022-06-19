@@ -180,9 +180,11 @@ endif
 if IS_DEBUG_BUILD # TODO # get_option(debug) # using IS_DEBUG_BUILD to create a fast debug build under MSVC without ZI
     CPP_ARGS += [
         '-DDEBUG_ENABLED',
+        '-DDEV_ENABLED',
         #'-DDEBUG_MEMORY_ALLOC', # This is unused anywhere...
         '-DDISABLE_FORCED_INLINE',
     ]
+    OBJCPP_ARGS += ['-DDEBUG_ENABLED', '-DDEV_ENABLED', '-DDISABLE_FORCED_INLINE']
 
     # only, only, only add this in if its not msvc. you will break msvc's linking if you set this manually
     # add this in at the PROJECT LEVEL. We have to pass this through to our thirdparties

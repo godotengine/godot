@@ -38,8 +38,8 @@ if PLATFORM == 'osx'
                       'osx_terminal_logger.mm',
                       'tts_osx.mm',
                       )
-    CPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
-    OBJCPP_ARGS += ['-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
+    CPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
+    OBJCPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED', '-fobjc-arc']
     SOURCES += _osx_srcs
     DEPENDENCIES += dependency('appleframeworks', modules: ['AppKit',
                                                             'IOKit',
