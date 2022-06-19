@@ -32,14 +32,16 @@
 
 #include "modules/modules_enabled.gen.h"
 
+const int ERROR_CODE = 77;
+
 #ifdef MODULE_REGEX_ENABLED
+
 #include "modules/regex/regex.h"
 
 #include "core/os/time.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 
-const int ERROR_CODE = 77;
 const int CONVERSION_MAX_FILE_SIZE = 1024 * 1024 * 4; // 4 MB
 
 static const char *enum_renames[][2] = {
