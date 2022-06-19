@@ -1142,7 +1142,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		// Send a focus-out notification when opening a Window Manager Popup.
 		SceneTree *scene_tree = get_tree();
 		if (scene_tree) {
-			scene_tree->notify_group("_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+			scene_tree->notify_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
 		}
 	}
 

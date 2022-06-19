@@ -386,7 +386,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 }
 
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
-	notify_group_flags(0, p_group, p_notification);
+	notify_group_flags(GROUP_CALL_DEFAULT, p_group, p_notification);
 }
 
 void SceneTree::set_group(const StringName &p_group, const String &p_name, const Variant &p_value) {
