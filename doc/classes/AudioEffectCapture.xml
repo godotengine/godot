@@ -8,6 +8,7 @@
 		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from a microphone, implement application defined effects, or to transmit audio over the network. When capturing audio data from a microphone, the format of the samples will be stereo 32-bit floating point PCM.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 		<method name="can_get_buffer" qualifiers="const">
