@@ -63,12 +63,13 @@
 # Mr.k <mineshtine28546271@gmail.com>, 2022.
 # ywmaa <ywmaa.personal@gmail.com>, 2022.
 # Awab Najim <dev.djvan@gmail.com>, 2022.
+# Abderrahim <abdoudido117@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-16 18:57+0000\n"
+"PO-Revision-Date: 2022-06-19 11:52+0000\n"
 "Last-Translator: Awab Najim <dev.djvan@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -266,9 +267,8 @@ msgstr "بيانات"
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "ملف تعريف الشبكة Network Profiler"
+msgstr "الشبكة"
 
 #: core/io/file_access_network.cpp
 msgid "Remote FS"
@@ -287,23 +287,20 @@ msgid "Blocking Mode Enabled"
 msgstr "تمكين وضع الحظر"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "وصل"
+msgstr "إتصال"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
 msgstr "حجم قطعة القراءة"
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "كائنات مرسومة:"
+msgstr "معرف الكائن"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "تفعيل تقشير البصل"
+msgstr "السماح بفك ترميز الكائن"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
@@ -315,19 +312,16 @@ msgid "Network Peer"
 msgstr "ملف تعريف الشبكة Network Profiler"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "اسم العُقدة الرئيسة (الجذر)"
+msgstr "العُقدة الرئيسة (الجذر)"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "وصل"
+msgstr "رفض الإتصالات الجديدة"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "نوع التحوّل"
+msgstr "وضع التحويل"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
@@ -358,9 +352,8 @@ msgid "Blocking Handshake"
 msgstr "حظر المصافحة"
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "تعديل الإتصال:"
+msgstr "الحد الأقصى للاتصالات المعلقة"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -423,14 +416,12 @@ msgid "Max Size (KB)"
 msgstr "الحجم الأقصى (كيلو بايت)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "وضع التحريك"
+msgstr "وضع الفأرة"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "مسح المدخله"
+msgstr "استخدم المدخلات المتراكمة"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -695,6 +686,11 @@ msgid "Main Run Args"
 msgstr "معاملات المشهد الرئيس"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "المسار للمشهد:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "البحث في امتدادات الملف"
 
@@ -702,18 +698,15 @@ msgstr "البحث في امتدادات الملف"
 msgid "Script Templates Search Path"
 msgstr "مسار البحث في قوالب النص البرمجي"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "إدارة الإصدارات (Version Control)"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "التحميل التلقائي عند بدء التشغيل"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "اسم الإضافة"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "إدارة الإصدارات (Version Control)"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -807,9 +800,8 @@ msgstr "إنشاء متصادم تراميش قريب"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "مُحرك الإخراج البصري:"
+msgstr "استدعاء"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -819,18 +811,17 @@ msgstr "مُحرك الإخراج البصري:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "جودة"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "مرشحات:"
+msgstr "مرشحات"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "شحذ الكثافة"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -846,9 +837,8 @@ msgstr "تصحيح الأخطاء"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "الإعدادات:"
+msgstr "الإعدادات"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -856,14 +846,12 @@ msgid "Profiler"
 msgstr "مُنشئ الملفات التعريفية Profiler"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "عمل دالة"
+msgstr "أقصى عمل"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "تحديد التعبير"
+msgstr "ضغط"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -876,15 +864,15 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "مطابقة المسافات الطويلة"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "ضغط المستوى"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "حجم نافذة سجل"
 
 #: core/project_settings.cpp
 msgid "Zlib"
@@ -896,20 +884,19 @@ msgstr ""
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "أندرويد"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "وحدات"
 
 #: core/register_core_types.cpp
 msgid "TCP"
 msgstr ""
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "الاتصالات لدالة:"
+msgstr "نفذ وقت الإتصال"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -924,9 +911,8 @@ msgid "SSL"
 msgstr ""
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "القمم:"
+msgstr "الشهادات"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -935,9 +921,8 @@ msgid "Resource"
 msgstr "مورد"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "اغلاق المشهد"
+msgstr "مشهد محلي"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -947,22 +932,20 @@ msgid "Path"
 msgstr "المسار"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "مصدر"
+msgstr "مصدر الرمز"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "محلي"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "أختبار"
+msgstr "إختبار"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
-msgstr ""
+msgstr "تقهقر"
 
 #: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
@@ -2829,8 +2812,8 @@ msgstr "نسخ مسار العُقدة"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
-msgstr "تم تتبيث الحزمة بنجاح!"
+msgid "Completed successfully."
+msgstr "اكتمل بنجاح."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -4341,15 +4324,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "مشهد"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "المسار للمشهد:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4478,6 +4452,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "إدارة الإصدارات (Version Control)"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "إعادة التسمية"
@@ -4505,6 +4483,10 @@ msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "إضافة مشهد جديد."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "مشهد"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -11265,7 +11247,7 @@ msgstr "القمم:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr "FPS: %d (%s جزء من الثانية)"
+msgstr "عدد الإطارات في الثانية: %d (%s ميلي ثانية)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -19216,15 +19198,13 @@ msgid "Code Signing"
 msgstr "الإشاراة"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"تعذر العثور على 'apksigner'.\n"
-"تأكد من فضلك إن كان الأمر موجوداً في دليل ملفات أدوات-بناء الأندرويد Android "
-"SDK build-tools.\n"
-"لم يتم توقيع الناتج %s."
+"تعذر العثور على 'apksigner'. تأكد من فضلك إن كان الأمر موجوداً في دليل ملفات "
+"أدوات-بناء حزمة تطوير الأندرويد Android SDK build-tools. لم يتم توقيع الناتج "
+"%s."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19239,9 +19219,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "لا يمكن العثور على مفتاح المتجر، لا يمكن التصدير."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء تشغيل apksigner ."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19274,9 +19253,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "أسم الملف غير صالح! يتطلب ملف اندرويد APK أمتداد *.apk لتعمل."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "صيغة تصدير غير مدعومة!\n"
+msgstr "تنسيق تصدير غير مدعوم!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19287,15 +19265,12 @@ msgstr ""
 "أعد التحميل من قائمة \"المشروع\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"نسخ بناء Android  غير متوافقة:\n"
-"\tقوالب مُنصبة: %s\n"
-"\tإصدار غودوت: %s\n"
-"من فضلك أعد تنصيب قالب بناء الأندرويد Android  من قائمة \"المشروع\"."
+"نسخ بناء Android غير متوافقة: قوالب مُنصبة: %s إصدار غودوت: %s. من فضلك أعد "
+"تنصيب قالب بناء الأندرويد من قائمة 'المشروع'."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19305,9 +19280,8 @@ msgstr ""
 "تعذرت كتابة overwrite ملفات res://android/build/res/*.xml مع اسم المشروع"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle\n"
+msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19318,13 +19292,12 @@ msgid "Building Android Project (gradle)"
 msgstr "بناء مشروع الأندرويد (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"أخفق بناء مشروع الأندرويد، تفقد المُخرجات للإطلاع على الخطأ.\n"
-"بصورة بديلة يمكنك زيارة docs.godotengine.org لأجل مستندات البناء للأندرويد."
+"أخفق بناء مشروع الأندرويد، تفقد المُخرجات للإطلاع على الخطأ. بصورة بديلة "
+"يمكنك زيارة docs.godotengine.org لأجل مستندات البناء للأندرويد."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -19347,22 +19320,18 @@ msgid "Creating APK..."
 msgstr "إنشاء المحيط..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"لم يتم إيجاد قالب APK للتصدير:\n"
-"%s"
+msgstr "لم يتم إيجاد قالب APK للتصدير: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"هنالك مكاتب قوالب تصدير ناقصة بالنسبة للمعمارية المختارة: %s.\n"
-"ابن قالب التصدير متضمناً جميع المكتبات الضرورية، أو أزال اختيار المعماريات "
-"الناقصة من خيارات التصدير المعدّة مسبقاً."
+"هنالك مكاتب قوالب تصدير ناقصة بالنسبة للمعمارية المختارة: %s.ابن قالب "
+"التصدير متضمناً جميع المكتبات الضرورية، أو أزال اختيار المعماريات الناقصة من "
+"خيارات التصدير المعدّة مسبقاً."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -20067,9 +20036,8 @@ msgid "Could not open icon file \"%s\"."
 msgstr "لم نتمكن من تصدير ملفات المشروع"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء تشغيل xcrun."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20141,9 +20109,8 @@ msgid "DMG Creation"
 msgstr "الاتجاهات"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء الملف التنفيذي hdiutil."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -20222,9 +20189,8 @@ msgid "ZIP Creation"
 msgstr "مشروع"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle\n"
+msgstr "تعذر فتح الملف للقراءة من المسار \"%s\"."
 
 #: platform/osx/export/export.cpp
 #, fuzzy

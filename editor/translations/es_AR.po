@@ -671,6 +671,11 @@ msgid "Main Run Args"
 msgstr "Argumentos de Escena Principal:"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Ruta a la Escena:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Buscar En Extensiones de Archivos"
 
@@ -678,18 +683,15 @@ msgstr "Buscar En Extensiones de Archivos"
 msgid "Script Templates Search Path"
 msgstr "Ruta de Búsqueda de Plantillas de Scripts"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Version Control Autoload On Startup"
+msgstr "Sistema de Control de Versiones"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Version Control Plugin Name"
 msgstr "Control de Versiones"
-
-#: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nombre del Plugin"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2816,7 +2818,7 @@ msgstr "Copiar Ruta del Nodo"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "El Paquete se instaló exitosamente!"
 
 #: editor/editor_export.cpp
@@ -4360,15 +4362,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Escena"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Ruta a la Escena:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4497,6 +4490,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Control de Versiones"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Nombre de usuario"
 
@@ -4523,6 +4520,10 @@ msgstr "Act./Desact. modo sin distracciones."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Agregar nueva escena."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Escena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

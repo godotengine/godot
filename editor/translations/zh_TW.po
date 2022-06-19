@@ -689,6 +689,11 @@ msgstr "主執行引數"
 
 #: core/project_settings.cpp
 #, fuzzy
+msgid "Scene Naming"
+msgstr "場景路徑："
+
+#: core/project_settings.cpp
+#, fuzzy
 msgid "Search In File Extensions"
 msgstr "以副檔名搜尋"
 
@@ -696,18 +701,15 @@ msgstr "以副檔名搜尋"
 msgid "Script Templates Search Path"
 msgstr "腳本樣板搜尋路徑"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "版本控制"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "啟動時自動載入"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "外掛名稱"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "版本控制"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2827,7 +2829,7 @@ msgstr "複製節點路徑"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "套件安裝成功！"
 
 #: editor/editor_export.cpp
@@ -4315,15 +4317,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "無法寫入檔案'%s'，該檔案正被使用、鎖定或因權限不足。"
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "場景"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "場景路徑："
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4454,6 +4447,10 @@ msgid "Default Color Picker Mode"
 msgstr "預設顏色挑選器模式"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "版本控制"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "重新命名"
@@ -4481,6 +4478,10 @@ msgstr "切換／取消專注模式。"
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "新增場景。"
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "場景"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
