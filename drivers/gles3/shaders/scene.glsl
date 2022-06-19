@@ -2,7 +2,7 @@
 [vertex]
 
 #if defined(IS_UBERSHADER)
-uniform highp uint ubershader_flags;
+uniform highp int ubershader_flags;
 #endif
 
 #define M_PI 3.14159265359
@@ -645,7 +645,7 @@ VERTEX_SHADER_CODE
 [fragment]
 
 #if defined(IS_UBERSHADER)
-uniform highp uint ubershader_flags;
+uniform highp int ubershader_flags;
 // These are more performant and make the ubershaderification simpler
 #define VCT_QUALITY_HIGH
 #define USE_LIGHTMAP_FILTER_BICUBIC
