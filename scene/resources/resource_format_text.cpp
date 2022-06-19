@@ -1564,17 +1564,17 @@ String ResourceFormatSaverTextInstance::_write_resources(void *ud, const Ref<Res
 
 String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res) {
 	if (external_resources.has(res)) {
-		return "ExtResource( \"" + external_resources[res] + "\" )";
+		return "ExtResource(\"" + external_resources[res] + "\")";
 	} else {
 		if (internal_resources.has(res)) {
-			return "SubResource( \"" + internal_resources[res] + "\" )";
+			return "SubResource(\"" + internal_resources[res] + "\")";
 		} else if (!res->is_built_in()) {
 			if (res->get_path() == local_path) { //circular reference attempt
 				return "null";
 			}
 			//external resource
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
-			return "Resource( \"" + path + "\" )";
+			return "Resource(\"" + path + "\")";
 		} else {
 			ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
 			//internal resource
