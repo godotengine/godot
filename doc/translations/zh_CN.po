@@ -36150,7 +36150,7 @@ msgstr ""
 
 #: doc/classes/InputEventJoypadButton.xml
 msgid ""
-"Represents the pressure the user puts on the button with his finger, if the "
+"Represents the pressure the user puts on the button with their finger, if the "
 "controller supports it. Ranges from [code]0[/code] to [code]1[/code]."
 msgstr ""
 "如果控制器支持，则表示用户用手指在按钮上施加的压力。范围从 [code]0[/code] 到 "

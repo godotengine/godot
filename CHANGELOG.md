@@ -29,7 +29,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Print every file exported with `PCKPacker.flush()`'s verbose parameter ([GH-58520](https://github.com/godotengine/godot/pull/58520)).
 - Fix `UndoRedo::create_action()` invalid memory usage ([GH-58652](https://github.com/godotengine/godot/pull/58652)).
-- Revert "Fix ProjectSettings `has_setting()` when used on a overriden setting with feature tags" ([GH-58859](https://github.com/godotengine/godot/pull/58859)).
+- Revert "Fix ProjectSettings `has_setting()` when used on a overridden setting with feature tags" ([GH-58859](https://github.com/godotengine/godot/pull/58859)).
 - Fix crash on `Input.get_joy_button_index_from_string` and `Input.get_joy_axis_index_from_string` for non-existing key ([GH-59195](https://github.com/godotengine/godot/pull/59195)).
 
 #### GUI

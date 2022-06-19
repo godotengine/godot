@@ -324,7 +324,7 @@ float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
 	/* There are three different formulas for the conversion from normalized
 	 * values to relative decibal values.
 	 * One formula is an exponential graph which intends to counteract
-	 * the logorithmic nature of human hearing. This is an approximation
+	 * the logarithmic nature of human hearing. This is an approximation
 	 * of the behaviour of a 'logarithmic potentiometer' found on most
 	 * musical instruments and also emulated in popular software.
 	 * The other two equations are hand-tuned linear tapers that intend to
