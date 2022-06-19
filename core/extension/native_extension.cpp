@@ -281,6 +281,7 @@ void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p
 Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
 	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
+		ERR_PRINT("GDExtension dynamic library not found: " + p_path);
 		return err;
 	}
 
@@ -289,6 +290,7 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
+		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + p_path);
 		OS::get_singleton()->close_dynamic_library(library);
 		return err;
 	}
@@ -299,6 +301,7 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 		level_initialized = -1;
 		return OK;
 	} else {
+		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
 		return FAILED;
 	}
 }
@@ -387,6 +390,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (err != OK) {
+		ERR_PRINT("Error loading GDExtension config file: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -394,6 +398,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
+		ERR_PRINT("GDExtension config file must contain 'configuration.entry_symbol' key: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -426,6 +431,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
+		ERR_PRINT("No GDExtension library found for current architecture; in config file " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -443,6 +449,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (err != OK) {
+		// Errors already logged in open_library()
 		return Ref<Resource>();
 	}
 
