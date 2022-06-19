@@ -10,12 +10,13 @@
 # balintmaci <balintmaci@gmail.com>, 2021.
 # Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
 # Szevin <kevingeiger25@gmail.com>, 2022.
+# 6Leoo6 <leo.takacs@yahoo.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-01-26 23:53+0000\n"
-"Last-Translator: Szevin <kevingeiger25@gmail.com>\n"
+"PO-Revision-Date: 2022-06-19 11:54+0000\n"
+"Last-Translator: 6Leoo6 <leo.takacs@yahoo.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/hu/>\n"
 "Language: hu\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -47,7 +48,7 @@ msgstr "Téma Tulajdonságai"
 
 #: doc/tools/make_rst.py
 msgid "Signals"
-msgstr "Jelzések"
+msgstr "jelek"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
@@ -365,7 +366,7 @@ msgstr ""
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
 "Compares two values by checking their actual contents, recursing into any "
-"`Array` or `Dictionary` up to its deepest level.\n"
+"[Array] or [Dictionary] up to its deepest level.\n"
 "This compares to [code]==[/code] in a number of ways:\n"
 "- For [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/"
 "code], [code]Object[/code] and [code]RID[/code] both [code]deep_equal[/code] "
@@ -3411,6 +3412,12 @@ msgstr ""
 msgid ""
 "Hints that an integer property is a bitmask using the optionally named 3D "
 "physics layers."
+msgstr ""
+
+#: doc/classes/@GlobalScope.xml
+msgid ""
+"Hints that an integer property is a bitmask using the optionally named 3D "
+"navigation layers."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
@@ -30142,8 +30149,8 @@ msgstr ""
 
 #: doc/classes/InputEventJoypadButton.xml
 msgid ""
-"Represents the pressure the user puts on the button with his finger, if the "
-"controller supports it. Ranges from [code]0[/code] to [code]1[/code]."
+"Represents the pressure the user puts on the button with their finger, if "
+"the controller supports it. Ranges from [code]0[/code] to [code]1[/code]."
 msgstr ""
 
 #: doc/classes/InputEventJoypadMotion.xml
@@ -36498,7 +36505,7 @@ msgstr ""
 #: doc/classes/NavigationMeshInstance.xml
 #: doc/classes/NavigationPolygonInstance.xml
 msgid ""
-"When pathfinding enters this regions navmesh from another regions navmesh "
+"When pathfinding enters this region's navmesh from another regions navmesh "
 "the [code]enter_cost[/code] value is added to the path distance for "
 "determining the shortest path."
 msgstr ""
@@ -36518,7 +36525,7 @@ msgstr ""
 #: doc/classes/NavigationMeshInstance.xml
 #: doc/classes/NavigationPolygonInstance.xml
 msgid ""
-"When pathfinding moves inside this regions navmesh the traveled distances "
+"When pathfinding moves inside this region's navmesh the traveled distances "
 "are multiplied with [code]travel_cost[/code] for determining the shortest "
 "path."
 msgstr ""
@@ -47302,6 +47309,18 @@ msgid ""
 "[codeblock]\n"
 "prime-run %command%\n"
 "[/codeblock]"
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default naming style for scene files to infer from their root nodes. "
+"Possible options are:\n"
+"- [code]0[/code] (Auto): Uses the scene root name as is without changing its "
+"casing.\n"
+"- [code]1[/code] (PascalCase): Converts the scene root name to PascalCase "
+"casing.\n"
+"- [code]2[/code] (snake_case): Converts the scene root name to snake_case "
+"casing."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -66583,11 +66602,12 @@ msgid "This enabler will stop [Particles2D] nodes."
 msgstr ""
 
 #: doc/classes/VisibilityEnabler2D.xml
-msgid "This enabler will stop the parent's _process function."
+msgid "This enabler will stop the parent's [method Node._process] function."
 msgstr ""
 
 #: doc/classes/VisibilityEnabler2D.xml
-msgid "This enabler will stop the parent's _physics_process function."
+msgid ""
+"This enabler will stop the parent's [method Node._physics_process] function."
 msgstr ""
 
 #: doc/classes/VisibilityEnabler2D.xml
@@ -74604,8 +74624,8 @@ msgstr ""
 
 #: doc/classes/World.xml
 msgid ""
-"The World's fallback_environment will be used if the World's [Environment] "
-"fails or is missing."
+"The World's fallback environment will be used if [member environment] fails "
+"or is missing."
 msgstr ""
 
 #: doc/classes/World.xml
