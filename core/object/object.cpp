@@ -209,6 +209,17 @@ MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const
 	arguments.push_back(p_param5);
 }
 
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL) {
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+	arguments.push_back(p_param5);
+	arguments.push_back(p_param6);
+}
+
 MethodInfo::MethodInfo(Variant::Type ret) :
 		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
@@ -265,6 +276,18 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 	arguments.push_back(p_param5);
 }
 
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL) {
+	return_val.type = ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+	arguments.push_back(p_param5);
+	arguments.push_back(p_param6);
+}
+
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name) :
 		name(p_name),
 		return_val(p_ret),
@@ -314,6 +337,18 @@ MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const Pr
 	arguments.push_back(p_param3);
 	arguments.push_back(p_param4);
 	arguments.push_back(p_param5);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL) {
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+	arguments.push_back(p_param5);
+	arguments.push_back(p_param6);
 }
 
 Object::Connection::operator Variant() const {
