@@ -189,6 +189,11 @@ bool ShaderGLES3::_bind_ubershader() {
 	ERR_FAIL_COND_V(conditionals_uniform == -1, false);
 #endif
 	new_conditional_version.version &= ~VersionKey::UBERSHADER_FLAG;
+#ifdef DEV_ENABLED
+	// So far we don't need bit 31 for conditionals. That allows us to use signed integers,
+	// which are more compatible across GL driver vendors.
+	CRASH_COND(new_conditional_version.version >= 0x80000000);
+#endif
 	glUniform1ui(conditionals_uniform, new_conditional_version.version);
 	return bound;
 }
@@ -499,11 +504,11 @@ static CharString _prepare_ubershader_chunk(const CharString &p_chunk) {
 			} else if (l.begins_with("#ifdef")) {
 				Vector<String> pieces = l.split_spaces();
 				CRASH_COND(pieces.size() != 2);
-				s += "if ((ubershader_flags & FLAG_" + pieces[1] + ") != 0u) {\n";
+				s += "if ((ubershader_flags & FLAG_" + pieces[1] + ") != 0) {\n";
 			} else if (l.begins_with("#ifndef")) {
 				Vector<String> pieces = l.split_spaces();
 				CRASH_COND(pieces.size() != 2);
-				s += "if ((ubershader_flags & FLAG_" + pieces[1] + ") == 0u) {\n";
+				s += "if ((ubershader_flags & FLAG_" + pieces[1] + ") == 0) {\n";
 			} else {
 				CRASH_NOW_MSG("The shader template is using too complex syntax in a line marked with ubershader-runtime.");
 			}
@@ -577,7 +582,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version(bool &r_async_forbidden) 
 	if (build_ubershader) {
 		strings_common.push_back("#define IS_UBERSHADER\n");
 		for (int i = 0; i < conditional_count; i++) {
-			String s = vformat("#define FLAG_%s (1u << %du)\n", String(conditional_defines[i]).strip_edges().trim_prefix("#define "), i);
+			String s = vformat("#define FLAG_%s (1 << %d)\n", String(conditional_defines[i]).strip_edges().trim_prefix("#define "), i);
 			CharString cs = s.ascii();
 			flag_macros.push_back(cs);
 			strings_common.push_back(cs.ptr());
