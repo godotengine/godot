@@ -187,7 +187,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 
 #ifdef DEBUG_ENABLED
 		// For debug builds, we also fetched from native base classes as well before if this is not a native base class.
-		// This allows us to warn the user here if he is using snake_case by mistake.
+		// This allows us to warn the user here if they are using snake_case by mistake.
 
 		if (p_native_base != this) {
 			GDMonoClass *native_top = p_native_base;
