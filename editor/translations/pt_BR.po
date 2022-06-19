@@ -145,7 +145,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-06-16 18:57+0000\n"
+"PO-Revision-Date: 2022-06-19 11:52+0000\n"
 "Last-Translator: lucas rossy brasil coelho <lucasrossy270@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -154,7 +154,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -766,6 +766,10 @@ msgid "Main Run Args"
 msgstr "Argumentos de Execução Principais"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Nomeação de Cena"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Pesquisar em Extensões de Arquivo"
 
@@ -773,18 +777,15 @@ msgstr "Pesquisar em Extensões de Arquivo"
 msgid "Script Templates Search Path"
 msgstr "Caminho de Pesquisa de Modelos de Script"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Controle de Versão"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Carregamento Automático na Inicialização"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nome do Plugin"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Controle de Versão"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2892,7 +2893,7 @@ msgstr "Copiar Caminho do Nó"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Pacote instalado com sucesso!"
 
 #: editor/editor_export.cpp
@@ -4412,14 +4413,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Cena"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Nomeação de Cena"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4543,6 +4536,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Controle de Versão"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Nome do usuário"
 
@@ -4569,6 +4566,10 @@ msgstr "Alternar modo sem-distrações."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Adicionar nova cena."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Cena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -9873,7 +9874,7 @@ msgstr "Criar Contorno"
 #: scene/resources/multimesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Mesh"
-msgstr "Malha"
+msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -19225,15 +19226,13 @@ msgid "Code Signing"
 msgstr "Sinal"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"'apksigner' não foi encontrado.\n"
-"Verifique se o comando está disponível no diretório do Android SDK build-"
-"tools.\n"
-"O %s resultante está sem assinatura."
+"'apksigner' não foi encontrado. Verifique se o comando está disponível no "
+"diretório de ferramentas de compilação do Android SDK. O %s resultante não é "
+"assinado."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19281,9 +19280,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Nome de arquivo inválido! Android APK requer a extensão *.apk."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Formato de Exportação Não Suportado\n"
+msgstr "Formato de exportação não suportado!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""

@@ -705,6 +705,11 @@ msgid "Main Run Args"
 msgstr "Ana Sahne Değiştirgenleri:"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Sahne Yolu:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Dosya Uzantılarında Ara"
 
@@ -712,19 +717,15 @@ msgstr "Dosya Uzantılarında Ara"
 msgid "Script Templates Search Path"
 msgstr "Script Dosyalarını Aramak İçin Dosya Yolu"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Sürüm Kontrol"
-
 #: core/project_settings.cpp
 #, fuzzy
-msgid "Autoload On Startup"
+msgid "Version Control Autoload On Startup"
 msgstr "Başlangıçta Otomatik Yükleme"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Eklenti Adı"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Sürüm Kontrol"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2830,7 +2831,7 @@ msgstr "Düğüm Yolunu Kopyala"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Paket Başarı ile Kuruldu!"
 
 #: editor/editor_export.cpp
@@ -4362,15 +4363,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Sahne"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Sahne Yolu:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4499,6 +4491,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Sürüm Kontrol"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Kullanıcı adı"
 
@@ -4525,6 +4521,10 @@ msgstr "Dikkat-Dağıtmayan Kipine geç."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Yeni bir sahne ekle."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Sahne"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

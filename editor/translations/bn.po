@@ -688,6 +688,11 @@ msgid "Main Run Args"
 msgstr "প্রধান দৃশ্যের মান/আর্গুমেন্ট-সমূহ:"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "দৃশ্যের পথ:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -695,20 +700,15 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
+#: core/project_settings.cpp
 #, fuzzy
-msgid "Version Control"
+msgid "Version Control Autoload On Startup"
 msgstr "সংস্করণ:"
 
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
 #, fuzzy
-msgid "Plugin Name"
-msgstr "প্লাগইন-সমূহ"
+msgid "Version Control Plugin Name"
+msgstr "সংস্করণ:"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2899,7 +2899,7 @@ msgstr "পথ প্রতিলিপি/কপি করুন"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "প্যাকেজ ইন্সটল সম্পন্ন হয়েছে!"
 
 #: editor/editor_export.cpp
@@ -4496,15 +4496,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "দৃশ্য"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "দৃশ্যের পথ:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4635,6 +4626,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
+msgid "Version Control"
+msgstr "সংস্করণ:"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Username"
 msgstr "পুনঃনামকরণ করুন"
 
@@ -4663,6 +4659,10 @@ msgstr "বিক্ষেপ-হীন মোড"
 #, fuzzy
 msgid "Add a new scene."
 msgstr "নতুন ট্র্যাক/পথ-সমূহ যোগ করুন।"
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "দৃশ্য"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

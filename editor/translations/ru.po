@@ -741,6 +741,10 @@ msgid "Main Run Args"
 msgstr "Основные аргументы запуска"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Именование сцен"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Искать в расширениях файлов"
 
@@ -748,18 +752,15 @@ msgstr "Искать в расширениях файлов"
 msgid "Script Templates Search Path"
 msgstr "Путь поиска шаблонов скриптов"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Контроль версий"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Автозагрузка при запуске"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Название плагина"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Контроль версий"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2848,7 +2849,7 @@ msgstr "Завершать пути файлов"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Пакет успешно установлен!"
 
 #: editor/editor_export.cpp
@@ -4364,14 +4365,6 @@ msgstr ""
 "Невозможно записать в файл «%s», файл используется, заблокирован или "
 "отсутствуют разрешения."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Сцена"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Именование сцен"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4486,6 +4479,10 @@ msgid "Default Color Picker Mode"
 msgstr "Режим выбора цвета по умолчанию"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Контроль версий"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Имя пользователя"
 
@@ -4512,6 +4509,10 @@ msgstr "Переключить режим без отвлечения."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Добавить новую сцену."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Сцена"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
