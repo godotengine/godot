@@ -4219,10 +4219,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
 			animation->remove_track(animation->get_track_count() - 1); // Hack.
 
-			if (h.type == Variant::FLOAT ||
+			if (h.type == Variant::INT ||
+					h.type == Variant::FLOAT ||
 					h.type == Variant::VECTOR2 ||
+					h.type == Variant::VECTOR2I ||
 					h.type == Variant::RECT2 ||
+					h.type == Variant::RECT2I ||
 					h.type == Variant::VECTOR3 ||
+					h.type == Variant::VECTOR3I ||
 					h.type == Variant::AABB ||
 					h.type == Variant::QUATERNION ||
 					h.type == Variant::COLOR ||
@@ -4815,10 +4819,15 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 			animation->track_set_path(animation->get_track_count() - 1, full_path);
 			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
 			animation->remove_track(animation->get_track_count() - 1); // Hack.
-			if (h.type == Variant::FLOAT ||
+
+			if (h.type == Variant::INT ||
+					h.type == Variant::FLOAT ||
 					h.type == Variant::VECTOR2 ||
+					h.type == Variant::VECTOR2I ||
 					h.type == Variant::RECT2 ||
+					h.type == Variant::RECT2I ||
 					h.type == Variant::VECTOR3 ||
+					h.type == Variant::VECTOR3I ||
 					h.type == Variant::AABB ||
 					h.type == Variant::QUATERNION ||
 					h.type == Variant::COLOR ||
