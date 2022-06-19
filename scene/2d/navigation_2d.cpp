@@ -60,7 +60,7 @@ void Navigation2D::_notification(int p_what) {
 		} break;
 			// FIXME 3.5 with this old navigation 2d node only
 			// if the node gets deleted this exit causes annoying error prints in debug
-			// It tries to deactive a map that itself has send a free command to the server.
+			// It tries to deactivate a map that itself has sent a free command to the server.
 			//case NOTIFICATION_EXIT_TREE: {
 			//	Navigation2DServer::get_singleton()->map_set_active(map, false);
 			//} break;
