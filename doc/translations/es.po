@@ -526,7 +526,7 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Compares two values by checking their actual contents, recursing into any "
-"`Array` or `Dictionary` up to its deepest level.\n"
+"[Array] or [Dictionary] up to its deepest level.\n"
 "This compares to [code]==[/code] in a number of ways:\n"
 "- For [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/"
 "code], [code]Object[/code] and [code]RID[/code] both [code]deep_equal[/code] "
@@ -4457,6 +4457,15 @@ msgid ""
 msgstr ""
 "Sugiere que una propiedad entera es una máscara de bits usando las, "
 "opcionalmente nombrada, capas fisicas 3D."
+
+#: doc/classes/@GlobalScope.xml
+#, fuzzy
+msgid ""
+"Hints that an integer property is a bitmask using the optionally named 3D "
+"navigation layers."
+msgstr ""
+"Sugiere que una propiedad entera es una máscara de bits usando las, "
+"opcionalmente nombradas, capas de representación 2D."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -39964,9 +39973,10 @@ msgstr ""
 "code], se libera el estado del botón."
 
 #: doc/classes/InputEventJoypadButton.xml
+#, fuzzy
 msgid ""
-"Represents the pressure the user puts on the button with his finger, if the "
-"controller supports it. Ranges from [code]0[/code] to [code]1[/code]."
+"Represents the pressure the user puts on the button with their finger, if "
+"the controller supports it. Ranges from [code]0[/code] to [code]1[/code]."
 msgstr ""
 "Representa la presión que el usuario ejerce sobre el botón con su dedo, si "
 "el controlador lo soporta. Va de [code]0[/code] a [code]1[/code]."
@@ -48108,7 +48118,7 @@ msgstr ""
 #: doc/classes/NavigationMeshInstance.xml
 #: doc/classes/NavigationPolygonInstance.xml
 msgid ""
-"When pathfinding enters this regions navmesh from another regions navmesh "
+"When pathfinding enters this region's navmesh from another regions navmesh "
 "the [code]enter_cost[/code] value is added to the path distance for "
 "determining the shortest path."
 msgstr ""
@@ -48129,7 +48139,7 @@ msgstr "El recurso [Mesh] para la instancia."
 #: doc/classes/NavigationMeshInstance.xml
 #: doc/classes/NavigationPolygonInstance.xml
 msgid ""
-"When pathfinding moves inside this regions navmesh the traveled distances "
+"When pathfinding moves inside this region's navmesh the traveled distances "
 "are multiplied with [code]travel_cost[/code] for determining the shortest "
 "path."
 msgstr ""
@@ -62810,6 +62820,18 @@ msgid ""
 "[codeblock]\n"
 "prime-run %command%\n"
 "[/codeblock]"
+msgstr ""
+
+#: doc/classes/ProjectSettings.xml
+msgid ""
+"Default naming style for scene files to infer from their root nodes. "
+"Possible options are:\n"
+"- [code]0[/code] (Auto): Uses the scene root name as is without changing its "
+"casing.\n"
+"- [code]1[/code] (PascalCase): Converts the scene root name to PascalCase "
+"casing.\n"
+"- [code]2[/code] (snake_case): Converts the scene root name to snake_case "
+"casing."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -87439,11 +87461,14 @@ msgid "This enabler will stop [Particles2D] nodes."
 msgstr "Este habilitador detendrá los nodos [GPUParticles2D]."
 
 #: doc/classes/VisibilityEnabler2D.xml
-msgid "This enabler will stop the parent's _process function."
+#, fuzzy
+msgid "This enabler will stop the parent's [method Node._process] function."
 msgstr "Este habilitador detendrá la función _process del padre."
 
 #: doc/classes/VisibilityEnabler2D.xml
-msgid "This enabler will stop the parent's _physics_process function."
+#, fuzzy
+msgid ""
+"This enabler will stop the parent's [method Node._physics_process] function."
 msgstr "Este habilitador detendrá la función del _physics_process del padre."
 
 #: doc/classes/VisibilityEnabler2D.xml
@@ -97788,8 +97813,8 @@ msgstr "El [Environment] del World."
 #: doc/classes/World.xml
 #, fuzzy
 msgid ""
-"The World's fallback_environment will be used if the World's [Environment] "
-"fails or is missing."
+"The World's fallback environment will be used if [member environment] fails "
+"or is missing."
 msgstr ""
 "El fallback_environment del World3D se usará si el [Environment] de World3D "
 "falla o falta."
