@@ -239,7 +239,7 @@ void CanvasItem::_enter_canvas() {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, SNAME("_top_level_raise_self"));
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, group, SNAME("_top_level_raise_self"));
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -320,7 +320,7 @@ void CanvasItem::_notification(int p_what) {
 			}
 
 			if (group != StringName()) {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
