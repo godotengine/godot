@@ -262,6 +262,12 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 			}
+
+			if (can_revert) {
+				// Property is modified from its default value; highlight it.
+				color = color.lerp(get_theme_color(SNAME("accent_color"), SNAME("Editor")), 0.6);
+			}
+
 			if (label.contains(".")) {
 				// FIXME: Move this to the project settings editor, as this is only used
 				// for project settings feature tag overrides.
