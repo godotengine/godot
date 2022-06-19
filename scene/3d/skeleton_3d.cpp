@@ -326,13 +326,11 @@ void Skeleton3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// This is active only if the skeleton animates the physical bones
 			// and the state of the bone is not active.
-			if (Engine::get_singleton()->is_editor_hint()) {
-				if (animate_physical_bones) {
-					for (int i = 0; i < bones.size(); i += 1) {
-						if (bones[i].physical_bone) {
-							if (bones[i].physical_bone->is_simulating_physics() == false) {
-								bones[i].physical_bone->reset_to_rest_position();
-							}
+			if (animate_physical_bones) {
+				for (int i = 0; i < bones.size(); i += 1) {
+					if (bones[i].physical_bone) {
+						if (bones[i].physical_bone->is_simulating_physics() == false) {
+							bones[i].physical_bone->reset_to_rest_position();
 						}
 					}
 				}
