@@ -706,6 +706,10 @@ msgid "Main Run Args"
 msgstr "Laufzeitargumente für Main"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Szenenbenennung"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "In Dateierweiterungen suchen"
 
@@ -713,18 +717,15 @@ msgstr "In Dateierweiterungen suchen"
 msgid "Script Templates Search Path"
 msgstr "Suchpfad für Skriptvorlagen"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Versionsverwaltung"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Autoladen beim Start"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Pluginname"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Versionsverwaltung"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2828,7 +2829,7 @@ msgstr "Dateipfade vervollständigen"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Paket wurde erfolgreich installiert!"
 
 #: editor/editor_export.cpp
@@ -4362,14 +4363,6 @@ msgstr ""
 "In Datei ‚%s‘ kann nicht geschrieben werden. Die Datei wird bereits "
 "verwendet, sie ist gesperrt, oder es ist keine Schreibberechtigung vorhanden."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Szene"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Szenenbenennung"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4484,6 +4477,10 @@ msgid "Default Color Picker Mode"
 msgstr "Standard Farbwahlmodus"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Versionsverwaltung"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Nutzername"
 
@@ -4510,6 +4507,10 @@ msgstr "Ablenkungsfreien Modus umschalten."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Eine neue Szene hinzufügen."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Szene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

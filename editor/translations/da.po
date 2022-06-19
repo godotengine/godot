@@ -683,6 +683,11 @@ msgid "Main Run Args"
 msgstr ""
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Scene Sti:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -690,20 +695,15 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
+#: core/project_settings.cpp
 #, fuzzy
-msgid "Version Control"
+msgid "Version Control Autoload On Startup"
 msgstr "Versionskontrol"
 
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
 #, fuzzy
-msgid "Plugin Name"
-msgstr "Node Navn:"
+msgid "Version Control Plugin Name"
+msgstr "Versionskontrol"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2890,7 +2890,7 @@ msgstr ""
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Pakke installeret med succes!"
 
 #: editor/editor_export.cpp
@@ -4449,15 +4449,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scene"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Scene Sti:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4586,6 +4577,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
+msgid "Version Control"
+msgstr "Versionskontrol"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Username"
 msgstr "Omdøb"
 
@@ -4612,6 +4608,10 @@ msgstr "Skift distraktions-fri modus."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Tilføj en ny scene."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

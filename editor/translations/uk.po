@@ -650,6 +650,10 @@ msgid "Main Run Args"
 msgstr "Аргументи основного запуску"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Іменування сцен"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Розширення пошуку у файлах"
 
@@ -657,18 +661,15 @@ msgstr "Розширення пошуку у файлах"
 msgid "Script Templates Search Path"
 msgstr "Шлях пошуку для шаблонів скриптів"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Керування версіями"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Автоматично завантажувати під час запуску"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Назва додатка"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Керування версіями"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2754,7 +2755,7 @@ msgstr "Повні шляхи до файлів"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Пакунок успішно встановлено!"
 
 #: editor/editor_export.cpp
@@ -4274,14 +4275,6 @@ msgstr ""
 "Не вдалося записати до файла «%s», файл використовує інша програма, його "
 "заблоковано або у вас немає відповідних прав доступу до нього."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Сцена"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Іменування сцен"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4396,6 +4389,10 @@ msgid "Default Color Picker Mode"
 msgstr "Типовий режим піпетки кольорів"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Керування версіями"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Користувач"
 
@@ -4422,6 +4419,10 @@ msgstr "Перемкнути режим без відволікання."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Додати нову сцену."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Сцена"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-16 18:57+0000\n"
+"PO-Revision-Date: 2022-06-19 11:52+0000\n"
 "Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -82,7 +82,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -693,6 +693,10 @@ msgid "Main Run Args"
 msgstr "Parametri Principali Eseguiti"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Nome Scena"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Cerca nelle Estensioni dei File"
 
@@ -700,18 +704,15 @@ msgstr "Cerca nelle Estensioni dei File"
 msgid "Script Templates Search Path"
 msgstr "Percorso di Ricerca dei Template di Script"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Controllo della versione"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Autocaricamento all'Avvio"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nome dell'estensione"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Controllo della versione"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2808,23 +2809,24 @@ msgid "Choose"
 msgstr "Scegli"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Esportazione del progetto per la piattaforma:"
 
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Completed with errors."
-msgstr "Percorsi Completi dei File"
+msgstr "Completato con errori."
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
-msgstr "Pacchetto installato con successo!"
+msgid "Completed successfully."
+msgstr "Completato con successo."
 
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Failed."
-msgstr "Fallito:"
+msgstr "Fallito."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2841,7 +2843,7 @@ msgstr "Impacchettando"
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Save PCK"
-msgstr "Salva come"
+msgstr "Salva PCK"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2861,7 +2863,7 @@ msgstr "Impossibile aprire il file in scrittura:"
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Save ZIP"
-msgstr "Salva come"
+msgstr "Salva ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -4345,14 +4347,6 @@ msgid ""
 msgstr ""
 "Impossibile scrivere sul file '%s', file in uso, bloccato o mancano permessi."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scena"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Nome Scena"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4467,6 +4461,10 @@ msgid "Default Color Picker Mode"
 msgstr "Modalità di Scelta Colore Predefinita"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Controllo della versione"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Nome Utente"
 
@@ -4493,6 +4491,10 @@ msgstr "Commuta la modalità senza distrazioni."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Aggiungi una nuova scena."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -18032,8 +18034,9 @@ msgid "if (cond) is:"
 msgstr "if (cond) is:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
+#, fuzzy
 msgid "While"
-msgstr ""
+msgstr "While"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -18345,8 +18348,9 @@ msgid "Search VisualScript"
 msgstr "Ricerca VisualScript"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
+#, fuzzy
 msgid "Yield"
-msgstr ""
+msgstr "Yield"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
@@ -18371,17 +18375,17 @@ msgstr "Tempo Di Attesa"
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
 msgid "WaitSignal"
-msgstr "Segnale"
+msgstr "WaitSignal"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
 msgid "WaitNodeSignal"
-msgstr "Segnale"
+msgstr "WaitNodeSignal"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 #, fuzzy
 msgid "WaitInstanceSignal"
-msgstr "Istanza"
+msgstr "WaitInstanceSignal"
 
 #: modules/webrtc/webrtc_data_channel.cpp
 #, fuzzy
@@ -18921,7 +18925,7 @@ msgstr "Non è stato possibile trovare keystore, impossible esportare."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Impossibile avviare il sottoprocesso!"
+msgstr "Non è stato possibile avviare l'eseguibile apksigner."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18954,9 +18958,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Nome file non valido! L'APK Android richiede l'estensione *.apk."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Formato d'esportazione non supportato!\n"
+msgstr "Formato d'esportazione non supportato!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18973,10 +18976,9 @@ msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Versione build di Android non coerente:\n"
-"   Template installato: %s\n"
-"   Versione Godot: %s\n"
-"Per favore, reinstalla il build template di Android dal menu \"Progetto\"."
+"Versione build di Android non coerente: Template installato: %s, Versione "
+"Godot: %s. Per favore, reinstalla il build template di Android dal menu "
+"\"Progetto\"."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18989,7 +18991,7 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Impossibile esportare i file del progetto in un progetto gradle\n"
+msgstr "Impossibile esportare i file del progetto in un progetto gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19034,9 +19036,7 @@ msgstr "Creazione APK..."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Impossibile trovare il template APK per l'esportazione:\n"
-"%s"
+msgstr "Impossibile trovare il template APK per l'esportazione: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19754,7 +19754,7 @@ msgstr "Impossibile esportare i file del progetto"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Impossibile avviare il sottoprocesso!"
+msgstr "Impossibile avviare l'eseguibile xcrun."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19828,7 +19828,7 @@ msgstr "Direzione"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Impossibile avviare il sottoprocesso!"
+msgstr "Impossibile avviare l'eseguibile hdiutil."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -19909,7 +19909,7 @@ msgstr "Proiezione"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Impossibile esportare i file del progetto in un progetto gradle\n"
+msgstr "Impossibile aprire il file da leggere dal percorso \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20226,7 +20226,7 @@ msgstr "UWP"
 #: platform/uwp/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
 msgid "Signtool"
-msgstr "Segnale"
+msgstr "Signtool"
 
 #: platform/uwp/export/export.cpp
 msgid "Debug Certificate"
@@ -21026,8 +21026,9 @@ msgstr ""
 #: scene/3d/physics_joint.cpp scene/3d/vehicle_body.cpp
 #: scene/resources/particles_material.cpp
 #: servers/audio/effects/audio_effect_reverb.cpp
+#, fuzzy
 msgid "Damping"
-msgstr ""
+msgstr "Smorzamento"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21042,8 +21043,9 @@ msgstr "Dividi Curva"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/light.cpp
 #: scene/resources/particles_material.cpp
+#, fuzzy
 msgid "Angle"
-msgstr ""
+msgstr "Angolo"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21176,8 +21178,9 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp scene/resources/animation.cpp
 #: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
+#, fuzzy
 msgid "Length"
-msgstr ""
+msgstr "Lunghezza"
 
 #: scene/2d/joints_2d.cpp
 #, fuzzy
@@ -21213,8 +21216,9 @@ msgstr "TextureRegion"
 #: scene/2d/light_2d.cpp scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 #: scene/3d/light.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/sky.cpp
+#, fuzzy
 msgid "Energy"
-msgstr ""
+msgstr "Energia"
 
 #: scene/2d/light_2d.cpp
 msgid "Z Min"
@@ -21291,8 +21295,9 @@ msgid "Default Color"
 msgstr "Predefinito"
 
 #: scene/2d/line_2d.cpp scene/resources/texture.cpp
+#, fuzzy
 msgid "Fill"
-msgstr ""
+msgstr "Riempimento"
 
 #: scene/2d/line_2d.cpp scene/resources/texture.cpp
 #, fuzzy
@@ -21343,8 +21348,9 @@ msgid "Antialiased"
 msgstr "Inizializza"
 
 #: scene/2d/multimesh_instance_2d.cpp scene/3d/multimesh_instance.cpp
+#, fuzzy
 msgid "Multimesh"
-msgstr ""
+msgstr "Multimesh"
 
 #: scene/2d/navigation_2d.cpp scene/3d/baked_lightmap.cpp
 #: scene/3d/navigation.cpp scene/animation/root_motion_view.cpp
@@ -21415,8 +21421,9 @@ msgstr ""
 "poligono."
 
 #: scene/2d/navigation_polygon.cpp
+#, fuzzy
 msgid "Navpoly"
-msgstr ""
+msgstr "Navpoly"
 
 #: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
 #, fuzzy
@@ -21630,8 +21637,9 @@ msgstr ""
 "Modifica invece la dimensione nelle forme di collisione figlie."
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
 msgid "Mass"
-msgstr ""
+msgstr "Massa"
 
 #: scene/2d/physics_body_2d.cpp
 #, fuzzy
@@ -21682,8 +21690,9 @@ msgid "Damp"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
+#, fuzzy
 msgid "Angular"
-msgstr ""
+msgstr "Angolare"
 
 #: scene/2d/physics_body_2d.cpp
 msgid "Applied Forces"
