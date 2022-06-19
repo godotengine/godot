@@ -670,6 +670,11 @@ msgid "Main Run Args"
 msgstr "Hovedkjøringsargumenter"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Scene-Sti:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Søk I Filetternavn"
 
@@ -677,18 +682,15 @@ msgstr "Søk I Filetternavn"
 msgid "Script Templates Search Path"
 msgstr "Skriptmaler Søkesti"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Versjonskontroll"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Automatisk Lasting Ved Oppstart"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Navn På Programvareutvidelse"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Versjonskontroll"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2869,7 +2871,7 @@ msgstr "Kopier Node-bane"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Vellykket Installering av Pakke!"
 
 #: editor/editor_export.cpp
@@ -4439,15 +4441,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scene"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Scene-Sti:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4577,6 +4570,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Versjonskontroll"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "Gi nytt navn"
@@ -4604,6 +4601,10 @@ msgstr "Vis/skjul distraksjonsfri modus."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Legg til ny scene."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

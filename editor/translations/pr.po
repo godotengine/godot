@@ -665,6 +665,10 @@ msgid "Main Run Args"
 msgstr ""
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr ""
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -672,17 +676,12 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
+#: core/project_settings.cpp
+msgid "Version Control Autoload On Startup"
 msgstr ""
 
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
-msgid "Plugin Name"
+msgid "Version Control Plugin Name"
 msgstr ""
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
@@ -2794,7 +2793,7 @@ msgid "Completed with errors."
 msgstr "Forge yer Node!"
 
 #: editor/editor_export.cpp
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr ""
 
 #: editor/editor_export.cpp
@@ -4257,14 +4256,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr ""
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4384,6 +4375,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "Rename Function"
@@ -4410,6 +4405,10 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
 msgstr ""
 
 #: editor/editor_node.cpp

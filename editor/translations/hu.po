@@ -23,13 +23,14 @@
 # balintmaci <balintmaci@gmail.com>, 2021.
 # Balázs Püspök-Kiss <pkblazsak@gmail.com>, 2021.
 # Mr.Catfood <sipos22@msn.com>, 2022.
+# 6Leoo6 <leo.takacs@yahoo.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-03 02:51+0000\n"
-"Last-Translator: Mr.Catfood <sipos22@msn.com>\n"
+"PO-Revision-Date: 2022-06-19 11:52+0000\n"
+"Last-Translator: 6Leoo6 <leo.takacs@yahoo.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -366,7 +367,7 @@ msgstr "Érvénytelen bemenet %i (nem átadott) a kifejezésben"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self nem használható, mert a példány null (nincs átadva)"
+msgstr "Nem használható self mivel nincs megadva"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -452,9 +453,8 @@ msgid "Pressed"
 msgstr "Előre beállított"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Keresés"
+msgstr "beolvasási kód"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -462,7 +462,7 @@ msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -706,6 +706,11 @@ msgid "Main Run Args"
 msgstr "Fő Jelenet Argumentumok:"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Scene elérési Út:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -713,19 +718,15 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Verziókezelés"
 
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
 #, fuzzy
-msgid "Plugin Name"
-msgstr "Bővítmény neve:"
+msgid "Version Control Plugin Name"
+msgstr "Verziókezelés"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2165,7 +2166,7 @@ msgstr "Biztosan eltávolítja az összes kapcsolatot a(z) \"%s\" jelzésről?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "Jelzések"
+msgstr "jelek"
 
 #: editor/connections_dialog.cpp
 msgid "Filter signals"
@@ -2866,7 +2867,7 @@ msgstr "Node Útvonal Másolása"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "A csomag telepítése sikeres volt!"
 
 #: editor/editor_export.cpp
@@ -4417,15 +4418,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Jelenet"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Scene elérési Út:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4552,6 +4544,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Verziókezelés"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "Átnevezés"
@@ -4579,6 +4575,10 @@ msgstr "Zavarmentes mód váltása."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Hozzáad egy új jelenetet."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Jelenet"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -5898,7 +5898,7 @@ msgstr "Pont"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "Alakzat"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -7157,7 +7157,7 @@ msgstr ""
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -13339,7 +13339,7 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "SSH Passphrase"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -16787,9 +16787,8 @@ msgstr ""
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/collision_polygon.cpp
-#, fuzzy
 msgid "Polygon"
-msgstr "Sokszögek"
+msgstr "Sokszög"
 
 #: modules/csg/csg_shape.cpp
 msgid "Spin Degrees"
@@ -18222,7 +18221,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Amíg"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -18551,7 +18550,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "hozam"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"

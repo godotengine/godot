@@ -666,6 +666,10 @@ msgid "Main Run Args"
 msgstr "Jalan Utama Argumen"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Penamaan Skena"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Cari dalam Ekstensi File"
 
@@ -673,18 +677,15 @@ msgstr "Cari dalam Ekstensi File"
 msgid "Script Templates Search Path"
 msgstr "Jalur Pencarian Template Skrip"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Kontrol Versi"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Muat Otomatis Saat Memulai"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nama Plugin"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Kontrol Versi"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2797,7 +2798,7 @@ msgstr "Salin Lokasi Node"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Paket Sukses Terpasang!"
 
 #: editor/editor_export.cpp
@@ -4330,14 +4331,6 @@ msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scene"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Penamaan Skena"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4466,6 +4459,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Kontrol Versi"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "Ubah Nama"
@@ -4493,6 +4490,10 @@ msgstr "Toggle mode tanpa gangguan."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Tambah skena baru."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

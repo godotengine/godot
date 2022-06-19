@@ -690,6 +690,11 @@ msgid "Main Run Args"
 msgstr "Główne argumenty włączania"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Ścieżka sceny:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Wyszukiwanie w rozszerzeniach plików"
 
@@ -697,18 +702,15 @@ msgstr "Wyszukiwanie w rozszerzeniach plików"
 msgid "Script Templates Search Path"
 msgstr "Ścieżka wyszukiwania szablonów skryptów"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Kontrola wersji"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Automatyczne ładowanie podczas uruchamiania"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nazwa wtyczki"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Kontrola wersji"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2812,7 +2814,7 @@ msgstr "Skopiuj ścieżkę węzła"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Pakiet zainstalowano poprawnie!"
 
 #: editor/editor_export.cpp
@@ -4340,15 +4342,6 @@ msgstr ""
 "Nie można zapisać do pliku '%s', plik jest w użyciu, zablokowany lub nie ma "
 "wystarczających uprawnień."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scena"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Ścieżka sceny:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4480,6 +4473,10 @@ msgid "Default Color Picker Mode"
 msgstr "Domyślny tryb pipety"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Kontrola wersji"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Użytkownik"
 
@@ -4506,6 +4503,10 @@ msgstr "Tryb bez rozproszeń."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Dodaj nową scenę."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scena"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."

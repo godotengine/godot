@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-06-12 13:19+0000\n"
+"PO-Revision-Date: 2022-06-19 11:52+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -434,14 +434,12 @@ msgid "Max Size (KB)"
 msgstr "最大大小（KB）"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "移动模式"
+msgstr "鼠标模式"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "删除输入"
+msgstr "使用累积输入"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -706,6 +704,10 @@ msgid "Main Run Args"
 msgstr "主运行参数"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "场景命名"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "搜索文件扩展名"
 
@@ -713,18 +715,15 @@ msgstr "搜索文件扩展名"
 msgid "Script Templates Search Path"
 msgstr "脚本模板搜索路径"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "版本控制"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "启动时自动加载"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "插件名"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "版本控制"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2228,7 +2227,7 @@ msgstr "打开"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "%s 的所有者（总计：%d）"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2782,22 +2781,20 @@ msgstr "选择"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "针对平台导出项目："
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with errors."
-msgstr "补全文件路径"
+msgstr "已完成，存在错误。"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
-msgstr "软件包安装成功！"
+msgid "Completed successfully."
+msgstr "成功完成。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "失败："
+msgstr "失败。"
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2812,29 +2809,24 @@ msgid "Packing"
 msgstr "打包中"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "另存为"
+msgstr "保存 PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "无法创建文件夹。"
+msgstr "无法创建文件“%s”。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "无法导出项目文件"
+msgstr "导出项目文件失败。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "无法以可写模式打开文件："
+msgstr "无法打开位于“%s”的文件用于读取。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "另存为"
+msgstr "保存 ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2946,30 +2938,25 @@ msgid "Custom release template not found."
 msgstr "找不到自定义发布模板。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "管理模板"
+msgstr "准备模板"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "指定导出路径不存在："
+msgstr "给定的导出路径不存在。"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "找不到模板文件："
+msgstr "模板文件不存在：“%s”。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "导出模板无效："
+msgstr "复制导出模板失败。"
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "填充"
+msgstr "PCK 内嵌"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -4251,14 +4238,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "无法写入文件“%s”，文件被占用、已锁定、或权限不足。"
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "场景"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "场景命名"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4373,6 +4352,10 @@ msgid "Default Color Picker Mode"
 msgstr "默认取色器模式"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "版本控制"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "用户名"
 
@@ -4399,6 +4382,10 @@ msgstr "切换专注模式。"
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "添加新场景。"
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "场景"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -5164,9 +5151,8 @@ msgstr ""
 "请在导出菜单中添加可执行预设，或将已有预设设为可执行。"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "项目"
+msgstr "项目运行"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -7083,12 +7069,15 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s：检测到纹理被用于 3D 法线贴图。正在启用红绿纹理压缩，降低内存使用（蓝通道"
+"被丢弃）。"
 
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s：检测到纹理被用于 3D。正在启用过滤、重复、Mipmap 生成和 VRAM 纹理压缩。"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -11363,9 +11352,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "无效的几何体，无法使用网格替换。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to MeshInstance2D"
-msgstr "转换为 Mesh2D"
+msgstr "转换为 MeshInstance2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -13933,9 +13921,8 @@ msgid "Export templates for this platform are missing:"
 msgstr "该平台的导出模板缺失："
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Project Export"
-msgstr "项目创始人"
+msgstr "项目导出"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -16834,17 +16821,15 @@ msgid "Mask"
 msgstr "遮罩"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#, fuzzy
 msgid "Bake Navigation"
-msgstr "导航"
+msgstr "烘焙导航"
 
 #: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
 #: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
 #: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
 #: scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Navigation Layers"
-msgstr "导航体验"
+msgstr "导航层"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -18385,19 +18370,16 @@ msgstr "“Target Sdk”版本必须大于等于“Min Sdk”版本。"
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Code Signing"
-msgstr "正在对 DMG 进行代码签名"
+msgstr "代码签名"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"无法找到“apksigner”。\n"
-"请检查 Android SDK 的 build-tools 目录中是否有此命令。\n"
-"生成的 %s 未签名。"
+"无法找到“apksigner”。请检查 Android SDK 的 build-tools 目录中是否有此命令。生"
+"成的 %s 未签名。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -18412,9 +18394,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "找不到密钥库，无法导出。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "无法启动子进程！"
+msgstr "无法启动 apksigner 可执行文件。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18445,9 +18426,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "无效文件名！Android APK 必须有 *.apk 扩展。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "不支持的导出格式！\n"
+msgstr "不支持的导出格式！"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18457,26 +18437,21 @@ msgstr ""
 "尝试从自定义构建的模板构建，但是不存在其版本信息。请从“项目”菜单中重新安装。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Android 构建版本不匹配：\n"
-"   安装的模板：%s\n"
-"   Godot 版本：%s\n"
-"请从“项目”菜单中重新安装 Android 构建模板。"
+"Android 构建版本不匹配：安装的模板：%s，Godot 版本：%s。请从“项目”菜单中重新"
+"安装 Android 构建模板。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
-msgstr "无法使用项目名称覆盖 res://android/build/res/*.xml 文件"
+msgstr "无法使用项目名称覆盖 res://android/build/res/*.xml 文件。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "无法将项目文件导出至 gradle 项目\n"
+msgstr "无法将项目文件导出至 gradle 项目。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -18487,13 +18462,12 @@ msgid "Building Android Project (gradle)"
 msgstr "构建 Android 项目 (Gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Android 项目构建失败，请检查输出中显示的错误。\n"
-"也可以访问 docs.godotengine.org 查看 Android 构建文档。"
+"Android 项目构建失败，请检查输出中显示的错误。也可以访问 docs.godotengine."
+"org 查看 Android 构建文档。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -18506,39 +18480,33 @@ msgid ""
 msgstr "无法复制与更名导出文件，请在 Gradle 项目文件夹内确认输出。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "包不存在：%s"
+msgstr "包不存在：“%s”。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "正在创建 APK……"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"找不到导出模板 APK：\n"
-"%s"
+msgstr "找不到导出模板 APK：“%s”。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"导出模板缺失所选架构的库：%s。\n"
-"请使用全部所需的库构建模板，或者在导出预设中取消对缺失架构的选择。"
+"导出模板缺失所选架构的库：%s。请使用全部所需的库构建模板，或者在导出预设中取"
+"消对缺失架构的选择。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
 msgstr "正在添加文件……"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "无法导出项目文件"
+msgstr "无法导出项目文件。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -18763,14 +18731,12 @@ msgstr "自定义背景色"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Prepare Templates"
-msgstr "管理模板"
+msgstr "准备模板"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Export template not found."
-msgstr "找不到自定义发布模板。"
+msgstr "找不到导出模板。"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -18793,33 +18759,28 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "使用默认浏览器打开导出的 HTML 文件。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "无法打开导出模板："
+msgstr "无法打开导出模板：“%s”。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "导出模板无效："
+msgstr "导出模板无效：“%s”。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "无法写入文件:"
+msgstr "无法写入文件：“%s”。"
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Icon Creation"
-msgstr "图标边距"
+msgstr "图标创建"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "无法读取文件："
+msgstr "无法读取文件：“%s”。"
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
-msgstr ""
+msgstr "PWA"
 
 #: platform/javascript/export/export.cpp
 msgid "Variant"
@@ -18890,19 +18851,16 @@ msgid "Icon 512 X 512"
 msgstr "图标 512×512"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "无法读取 HTML 壳："
+msgstr "无法读取 HTML 壳：“%s”。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "无法创建 HTTP 服务器目录："
+msgstr "无法创建 HTTP 服务器目录：%s。"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "启动 HTTP 服务器时出错："
+msgstr "启动 HTTP 服务器时出错：%d。"
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -19166,30 +19124,26 @@ msgid "Apple Team ID"
 msgstr "Apple 团队 ID"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open icon file \"%s\"."
-msgstr "无法导出项目文件"
+msgstr "无法打开图标文件“%s”。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "无法启动子进程！"
+msgstr "无法启动 xcrun 可执行文件。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization failed."
-msgstr "公证"
+msgstr "公证失败。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
-msgstr ""
+msgstr "公证请求 UUID：“%s”"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "The notarization process generally takes less than an hour. When the process "
 "is completed, you'll receive an email."
-msgstr "注意：公证过程通常少于一个小时。过程结束后，你会收到一封邮件。"
+msgstr "公证过程通常少于一个小时。过程结束后，你会收到一封邮件。"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19204,75 +19158,67 @@ msgid ""
 msgstr "运行以下命令将公证票证装订到导出的应用中（可选）："
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
-msgstr "时间戳运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
+msgstr "添加时间戳与 Ad-hoc 签名不兼容，已被禁用！"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
-msgstr "加固运行时环境与 Ad-hoc 签名不兼容，将被禁用！"
+msgstr "加固运行时环境与 Ad-hoc 签名不兼容，已被禁用！"
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign failed with error \"%s\"."
-msgstr ""
+msgstr "内置 CodeSign 失败，错误为“%s”。"
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign require regex module."
-msgstr ""
+msgstr "内置 CodeSign 需要 regex 模块。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
-msgstr ""
+msgstr "无法启动 codesign 可执行文件，请确保已安装 Xcode 命令行工具。"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
 msgstr "没有找到身份。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Cannot sign file %s."
-msgstr "保存文件时出错：%s"
+msgstr "无法签名文件 %s。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
-msgstr "该操作系统上不支持相对符号链接，导出的项目可能损坏！"
+msgstr "不支持相对符号链接，导出的“%s”可能损坏！"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "DMG Creation"
-msgstr "方向"
+msgstr "DMG 创建"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "无法启动子进程！"
+msgstr "无法启动 hdiutil 可执行文件。"
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
-msgstr ""
+msgstr "`hdiutil create` 失败 - 文件已存在。"
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed."
-msgstr ""
+msgstr "`hdiutil create` 失败。"
 
 #: platform/osx/export/export.cpp
 msgid "Creating app bundle"
 msgstr "正在创建应用捆绑包"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export: \"%s\"."
-msgstr "无法找到导出的模板应用："
+msgstr "无法找到导出的模板应用：“%s”。"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid export format."
-msgstr "导出模板无效："
+msgstr "导出格式无效。"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19281,11 +19227,10 @@ msgid ""
 msgstr "该操作系统上不支持相对符号链接，导出的项目可能损坏！"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
-msgstr "未找到请求的二进制模板“%s”。你的模板归档中可能缺失该文件。"
+msgstr "未找到请求的模板二进制文件“%s”。你的模板归档中可能缺失该文件。"
 
 #: platform/osx/export/export.cpp
 msgid "Making PKG"
@@ -19324,14 +19269,12 @@ msgid "Sending archive for notarization"
 msgstr "正在发送归档进行公证"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "ZIP Creation"
-msgstr "投影"
+msgstr "ZIP 创建"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "无法将项目文件导出至 gradle 项目\n"
+msgstr "无法打开位于“%s”的文件进行读取。"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -19638,9 +19581,8 @@ msgid "Debug Algorithm"
 msgstr "调试算法"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "无法移除临时文件："
+msgstr "重命名临时文件“%s”失败。"
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
@@ -19683,74 +19625,68 @@ msgid "Trademarks"
 msgstr "商标"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Resources Modification"
-msgstr "推送通知"
+msgstr "资源修改"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find rcedit executable at \"%s\"."
-msgstr "找不到密钥库，无法导出。"
+msgstr "无法在“%s”找到 rcedit 可执行文件。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find wine executable at \"%s\"."
-msgstr "找不到密钥库，无法导出。"
+msgstr "无法在“%s”找到 wine 可执行文件。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start rcedit executable, configure rcedit path in the Editor "
 "Settings (Export > Windows > Rcedit)."
 msgstr ""
-"必须在编辑器设置中配置 rcedit 工具（Export > Windows > Rcedit）才能修改图标或"
-"应用信息数据。"
+"无法启动 rcedit 可执行文件，请在编辑器设置中配置 rcedit 路径（导出 > Windows "
+"> Rcedit）。"
 
 #: platform/windows/export/export.cpp
 msgid ""
 "rcedit failed to modify executable:\n"
 "%s"
 msgstr ""
+"rcedit 修改可执行文件失败：\n"
+"%s"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find signtool executable at \"%s\"."
-msgstr "找不到密钥库，无法导出。"
+msgstr "无法在“%s”找到 signtool 可执行文件。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find osslsigncode executable at \"%s\"."
-msgstr "找不到密钥库，无法导出。"
+msgstr "无法在“%s”找到 osslsigncode 可执行文件。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid identity type."
-msgstr "身份类型"
+msgstr "身份类型无效。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid timestamp server."
-msgstr "名称无效。"
+msgstr "时间戳服务器无效。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start signtool executable, configure signtool path in the Editor "
 "Settings (Export > Windows > Signtool)."
 msgstr ""
-"必须在编辑器设置中配置 rcedit 工具（Export > Windows > Rcedit）才能修改图标或"
-"应用信息数据。"
+"无法启动 signtool 可执行文件，请在编辑器设置中配置 signtool 路径（导出 > "
+"Windows > Signtool）。"
 
 #: platform/windows/export/export.cpp
 msgid ""
 "Signtool failed to sign executable:\n"
 "%s"
 msgstr ""
+"Signtool 签名可执行文件失败：\n"
+"%s"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "无法移除临时文件："
+msgstr "移除临时文件“%s”失败。"
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -19774,20 +19710,19 @@ msgstr "产品版本无效："
 
 #: platform/windows/export/export.cpp
 msgid "Windows executables cannot be >= 4 GiB."
-msgstr ""
+msgstr "Windows 可执行文件不能 >= 4GiB。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
-#, fuzzy
 msgid "Failed to open executable file \"%s\"."
-msgstr "可执行文件无效。"
+msgstr "打开可执行文件“%s”失败。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable file header corrupted."
-msgstr ""
+msgstr "可执行文件头已损坏。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable \"pck\" section not found."
-msgstr ""
+msgstr "可执行文件“pck”区未找到。"
 
 #: platform/windows/export/export.cpp
 msgid "Windows"
@@ -19807,7 +19742,7 @@ msgstr "Wine"
 
 #: platform/x11/export/export.cpp
 msgid "32-bit executables cannot have embedded data >= 4 GiB."
-msgstr ""
+msgstr "32 位可执行文件无法内嵌 >= 4 GiB 的数据。"
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/texture.cpp
@@ -20684,14 +20619,12 @@ msgid "Navpoly"
 msgstr "导航多边形"
 
 #: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Enter Cost"
-msgstr "底部居中"
+msgstr "进入消耗"
 
 #: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Travel Cost"
-msgstr "行程"
+msgstr "移动消耗"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -24162,14 +24095,12 @@ msgid "3D Physics"
 msgstr "3D 物理"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Navigation"
-msgstr "导航"
+msgstr "2D 导航"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Navigation"
-msgstr "导航"
+msgstr "3D 导航"
 
 #: scene/register_scene_types.cpp
 msgid "Use hiDPI"
@@ -25455,14 +25386,12 @@ msgid "Visible Instance Count"
 msgstr "可见实例数"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Sampling"
-msgstr "缩放："
+msgstr "采样"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Partition Type"
-msgstr "采样分区类型"
+msgstr "分区类型"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Parsed Geometry Type"
@@ -25477,12 +25406,10 @@ msgid "Source Group Name"
 msgstr "来源分组名称"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Cells"
 msgstr "单元格"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Agents"
 msgstr "代理"
 
@@ -25495,16 +25422,14 @@ msgid "Max Slope"
 msgstr "最大斜坡"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Regions"
-msgstr "区域"
+msgstr "地区"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Merge Size"
 msgstr "合并大小"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Edges"
 msgstr "边界"
 
@@ -25517,7 +25442,6 @@ msgid "Verts Per Poly"
 msgstr "每多边形顶点数"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Details"
 msgstr "细节"
 
@@ -25538,9 +25462,8 @@ msgid "Ledge Spans"
 msgstr "凸台范围"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Walkable Low Height Spans"
-msgstr "过滤可行走低高度范围"
+msgstr "可行走低高度范围"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
@@ -25897,9 +25820,8 @@ msgid "Scenario"
 msgstr "场景"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Navigation Map"
-msgstr "导航"
+msgstr "导航地图"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
@@ -25918,24 +25840,20 @@ msgid "Default Angular Damp"
 msgstr "默认角度阻尼"
 
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Default Map Up"
-msgstr "默认浮点数步长"
+msgstr "默认地图上方"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Size"
-msgstr "单元格大小"
+msgstr "默认单元格大小"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Height"
-msgstr "单元格高度"
+msgstr "默认单元格高度"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Edge Connection Margin"
-msgstr "边界连接边距"
+msgstr "默认边界连接边距"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
