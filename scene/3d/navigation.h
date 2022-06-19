@@ -82,6 +82,8 @@ public:
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
 	RID get_closest_point_owner(const Vector3 &p_point) const;
 
+	virtual String get_configuration_warning() const;
+
 	Navigation();
 	~Navigation();
 };
