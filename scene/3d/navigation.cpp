@@ -33,7 +33,12 @@
 #include "servers/navigation_server.h"
 
 Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) const {
+	WARN_DEPRECATED_MSG("'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will be removed in a future version. Use 'NavigationServer.map_get_path()' instead.");
 	return NavigationServer::get_singleton()->map_get_path(map, p_start, p_end, p_optimize, navigation_layers);
+}
+
+String Navigation::get_configuration_warning() const {
+	return TTR("'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will be removed in a future version. Use 'NavigationServer.map_get_path()' instead.");
 }
 
 Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {

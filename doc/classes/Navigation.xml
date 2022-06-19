@@ -4,6 +4,7 @@
 		Mesh-based navigation and pathfinding node.
 	</brief_description>
 	<description>
+		[i]Deprecated.[/i] [Navigation] node and [method get_simple_path] are deprecated and will be removed in a future version. Use [method NavigationServer.map_get_path] instead.
 		Provides navigation and pathfinding within a collection of [NavigationMesh]es. By default, these will be automatically collected from child [NavigationMeshInstance] nodes. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
 	</description>
 	<tutorials>
@@ -52,6 +53,7 @@
 			<argument index="1" name="end" type="Vector3" />
 			<argument index="2" name="optimize" type="bool" default="true" />
 			<description>
+				[i]Deprecated.[/i] [Navigation] node and [method get_simple_path] are deprecated and will be removed in a future version. Use [method NavigationServer.map_get_path] instead.
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the agent properties associated with each [NavigationMesh] (radius, height, etc.) are considered in the path calculation, otherwise they are ignored.
 			</description>
 		</method>
