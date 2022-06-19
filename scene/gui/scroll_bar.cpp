@@ -620,7 +620,7 @@ void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
 
-	ADD_SIGNAL(MethodInfo("scrolling"));
+	ADD_SIGNAL(M_INFO("scrolling"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_custom_step", "get_custom_step");
 }

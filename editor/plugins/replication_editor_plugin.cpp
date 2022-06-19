@@ -253,7 +253,7 @@ void ReplicationEditor::_bind_methods() {
 	ClassDB::bind_method("_can_drop_data_fw", &ReplicationEditor::_can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &ReplicationEditor::_drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("keying_changed"));
+	ADD_SIGNAL(M_INFO("keying_changed"));
 }
 
 bool ReplicationEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {

@@ -161,195 +161,17 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	return mi;
 }
 
+MethodInfo M_INFOP(const String &p_name, const PropertyInfo **p_args, uint32_t p_argcount) {
+	MethodInfo mi;
+	mi.name = p_name;
+	for (uint32_t i = 0; i < p_argcount; i++) {
+		mi.arguments.push_back(*p_args[i]);
+	}
+	return mi;
+}
+
 MethodInfo::MethodInfo() :
 		flags(METHOD_FLAG_NORMAL) {}
-
-MethodInfo::MethodInfo(const String &p_name) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-	arguments.push_back(p_param6);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret) :
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
-		name(p_name),
-		flags(METHOD_FLAG_NORMAL) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-	arguments.push_back(p_param6);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-}
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6) :
-		name(p_name),
-		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-	arguments.push_back(p_param6);
-}
 
 Object::Connection::operator Variant() const {
 	Dictionary d;
@@ -1648,30 +1470,34 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 
-	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
+	ClassDB::add_virtual_method("Object", M_INFO("free"), false);
 
-	ADD_SIGNAL(MethodInfo("script_changed"));
-	ADD_SIGNAL(MethodInfo("property_list_changed"));
+	ADD_SIGNAL(M_INFO("script_changed"));
+	ADD_SIGNAL(M_INFO("property_list_changed"));
 
 #define BIND_OBJ_CORE_METHOD(m_method) \
 	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);
 
-	BIND_OBJ_CORE_METHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
+	BIND_OBJ_CORE_METHOD(M_INFO("_notification", PropertyInfo(Variant::INT, "what")));
+	MethodInfo mi = M_INFO("_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value"));
+	mi.return_val.type = Variant::BOOL;
+	BIND_OBJ_CORE_METHOD(mi);
 #ifdef TOOLS_ENABLED
-	MethodInfo miget("_get", PropertyInfo(Variant::STRING_NAME, "property"));
+	MethodInfo miget = M_INFO("_get", PropertyInfo(Variant::STRING_NAME, "property"));
 	miget.return_val.name = "Variant";
 	miget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	BIND_OBJ_CORE_METHOD(miget);
 
-	MethodInfo plget("_get_property_list");
+	MethodInfo plget = M_INFO("_get_property_list");
 
 	plget.return_val.type = Variant::ARRAY;
 	BIND_OBJ_CORE_METHOD(plget);
 
 #endif
-	BIND_OBJ_CORE_METHOD(MethodInfo("_init"));
-	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_to_string"));
+	BIND_OBJ_CORE_METHOD(M_INFO("_init"));
+	mi = M_INFO("_to_string");
+	mi.return_val.type = Variant::STRING;
+	BIND_OBJ_CORE_METHOD(mi);
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);

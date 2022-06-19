@@ -3319,9 +3319,9 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tree_editor"), &SceneTreeDock::get_tree_editor);
 	ClassDB::bind_method(D_METHOD("replace_node"), &SceneTreeDock::replace_node);
 
-	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
-	ADD_SIGNAL(MethodInfo("add_node_used"));
-	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(M_INFO("remote_tree_selected"));
+	ADD_SIGNAL(M_INFO("add_node_used"));
+	ADD_SIGNAL(M_INFO("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
 SceneTreeDock *SceneTreeDock::singleton = nullptr;

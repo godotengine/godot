@@ -503,7 +503,7 @@ void ShaderCreateDialog::_update_dialog() {
 void ShaderCreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("config", "path", "built_in_enabled", "load_enabled"), &ShaderCreateDialog::config, DEFVAL(true), DEFVAL(true));
 
-	ADD_SIGNAL(MethodInfo("shader_created", PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader")));
+	ADD_SIGNAL(M_INFO("shader_created", PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader")));
 }
 
 ShaderCreateDialog::ShaderCreateDialog() {

@@ -652,8 +652,8 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_search_current", &FindReplaceBar::search_current);
 
-	ADD_SIGNAL(MethodInfo("search"));
-	ADD_SIGNAL(MethodInfo("error"));
+	ADD_SIGNAL(M_INFO("search"));
+	ADD_SIGNAL(M_INFO("error"));
 }
 
 FindReplaceBar::FindReplaceBar() {
@@ -1826,10 +1826,10 @@ void CodeTextEditor::remove_all_bookmarks() {
 }
 
 void CodeTextEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("validate_script"));
-	ADD_SIGNAL(MethodInfo("load_theme_settings"));
-	ADD_SIGNAL(MethodInfo("show_errors_panel"));
-	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
+	ADD_SIGNAL(M_INFO("validate_script"));
+	ADD_SIGNAL(M_INFO("load_theme_settings"));
+	ADD_SIGNAL(M_INFO("show_errors_panel"));
+	ADD_SIGNAL(M_INFO("show_warnings_panel"));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {

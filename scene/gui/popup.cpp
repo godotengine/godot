@@ -117,7 +117,7 @@ void Popup::_post_popup() {
 }
 
 void Popup::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("popup_hide"));
+	ADD_SIGNAL(M_INFO("popup_hide"));
 }
 
 Rect2i Popup::_popup_adjust_rect() const {

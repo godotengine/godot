@@ -629,7 +629,7 @@ void AnimationLibraryEditor::_update_editor(Object *p_player) {
 
 void AnimationLibraryEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_editor", "player"), &AnimationLibraryEditor::_update_editor);
-	ADD_SIGNAL(MethodInfo("update_editor"));
+	ADD_SIGNAL(M_INFO("update_editor"));
 }
 
 AnimationLibraryEditor::AnimationLibraryEditor() {

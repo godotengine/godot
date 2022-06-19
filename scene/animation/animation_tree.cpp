@@ -437,9 +437,9 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
 
-	ADD_SIGNAL(MethodInfo("removed_from_graph"));
+	ADD_SIGNAL(M_INFO("removed_from_graph"));
 
-	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(M_INFO("tree_changed"));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);

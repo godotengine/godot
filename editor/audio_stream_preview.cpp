@@ -208,7 +208,7 @@ void AudioStreamPreviewGenerator::_bind_methods() {
 	ClassDB::bind_method("_update_emit", &AudioStreamPreviewGenerator::_update_emit);
 	ClassDB::bind_method(D_METHOD("generate_preview", "stream"), &AudioStreamPreviewGenerator::generate_preview);
 
-	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
+	ADD_SIGNAL(M_INFO("preview_updated", PropertyInfo(Variant::INT, "obj_id")));
 }
 
 AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;

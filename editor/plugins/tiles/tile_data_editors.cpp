@@ -70,7 +70,7 @@ TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
 void TileDataEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tile_set_changed_deferred_update"), &TileDataEditor::_tile_set_changed_deferred_update);
 
-	ADD_SIGNAL(MethodInfo("needs_redraw"));
+	ADD_SIGNAL(M_INFO("needs_redraw"));
 }
 
 void TileDataEditor::set_tile_set(Ref<TileSet> p_tile_set) {
@@ -740,7 +740,7 @@ void GenericTilePolygonEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "index", "polygon"), &GenericTilePolygonEditor::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon", "index"), &GenericTilePolygonEditor::set_polygon);
 
-	ADD_SIGNAL(MethodInfo("polygons_changed"));
+	ADD_SIGNAL(M_INFO("polygons_changed"));
 }
 
 GenericTilePolygonEditor::GenericTilePolygonEditor() {

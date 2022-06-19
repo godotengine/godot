@@ -126,7 +126,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_END);
 
-	ADD_SIGNAL(MethodInfo("advance_condition_changed"));
+	ADD_SIGNAL(M_INFO("advance_condition_changed"));
 }
 
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {

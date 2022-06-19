@@ -44,8 +44,8 @@ void TextServerManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "index"), &TextServerManager::set_primary_interface);
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &TextServerManager::get_primary_interface);
 
-	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
-	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+	ADD_SIGNAL(M_INFO("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+	ADD_SIGNAL(M_INFO("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 }
 
 void TextServerManager::add_interface(const Ref<TextServer> &p_interface) {

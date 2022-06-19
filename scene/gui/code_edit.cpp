@@ -2274,14 +2274,14 @@ void CodeEdit::_bind_methods() {
 
 	/* Signals */
 	/* Gutters */
-	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(M_INFO("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
 
 	/* Code Completion */
-	ADD_SIGNAL(MethodInfo("code_completion_requested"));
+	ADD_SIGNAL(M_INFO("code_completion_requested"));
 
 	/* Symbol lookup */
-	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
-	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+	ADD_SIGNAL(M_INFO("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(M_INFO("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
 }
 
 /* Auto brace completion */

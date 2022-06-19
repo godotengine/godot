@@ -58,7 +58,7 @@ public:
 protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_sig_changed", &VisualScriptEditorSignalEdit::_sig_changed);
-		ADD_SIGNAL(MethodInfo("changed"));
+		ADD_SIGNAL(M_INFO("changed"));
 	}
 
 	void _sig_changed() {
@@ -192,7 +192,7 @@ protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_var_changed", &VisualScriptEditorVariableEdit::_var_changed);
 		ClassDB::bind_method("_var_value_changed", &VisualScriptEditorVariableEdit::_var_value_changed);
-		ADD_SIGNAL(MethodInfo("changed"));
+		ADD_SIGNAL(M_INFO("changed"));
 	}
 
 	void _var_changed() {
@@ -4921,7 +4921,7 @@ void VisualScriptCustomNodes::remove_custom_node(const String &p_name, const Str
 void VisualScriptCustomNodes::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_custom_node", "name", "category", "script"), &VisualScriptCustomNodes::add_custom_node);
 	ClassDB::bind_method(D_METHOD("remove_custom_node", "name", "category"), &VisualScriptCustomNodes::remove_custom_node);
-	ADD_SIGNAL(MethodInfo("custom_nodes_updated"));
+	ADD_SIGNAL(M_INFO("custom_nodes_updated"));
 }
 
 #endif

@@ -73,7 +73,7 @@ void Path3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_curve", "get_curve");
 
-	ADD_SIGNAL(MethodInfo("curve_changed"));
+	ADD_SIGNAL(M_INFO("curve_changed"));
 }
 
 //////////////

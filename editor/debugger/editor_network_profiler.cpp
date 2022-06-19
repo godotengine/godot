@@ -35,7 +35,7 @@
 #include "editor/editor_settings.h"
 
 void EditorNetworkProfiler::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
+	ADD_SIGNAL(M_INFO("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
 }
 
 void EditorNetworkProfiler::_notification(int p_what) {

@@ -36,11 +36,11 @@
 
 void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
-	ADD_SIGNAL(MethodInfo("session_begun"));
-	ADD_SIGNAL(MethodInfo("session_stopping"));
-	ADD_SIGNAL(MethodInfo("session_focussed"));
-	ADD_SIGNAL(MethodInfo("session_visible"));
-	ADD_SIGNAL(MethodInfo("pose_recentered"));
+	ADD_SIGNAL(M_INFO("session_begun"));
+	ADD_SIGNAL(M_INFO("session_stopping"));
+	ADD_SIGNAL(M_INFO("session_focussed"));
+	ADD_SIGNAL(M_INFO("session_visible"));
+	ADD_SIGNAL(M_INFO("pose_recentered"));
 }
 
 StringName OpenXRInterface::get_name() const {

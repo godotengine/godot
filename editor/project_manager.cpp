@@ -654,8 +654,8 @@ protected:
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
 		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
 		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
-		ADD_SIGNAL(MethodInfo("project_created"));
-		ADD_SIGNAL(MethodInfo("projects_updated"));
+		ADD_SIGNAL(M_INFO("project_created"));
+		ADD_SIGNAL(M_INFO("projects_updated"));
 	}
 
 public:
@@ -1859,8 +1859,8 @@ const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
 const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
 
 void ProjectList::_bind_methods() {
-	ADD_SIGNAL(MethodInfo(SIGNAL_SELECTION_CHANGED));
-	ADD_SIGNAL(MethodInfo(SIGNAL_PROJECT_ASK_OPEN));
+	ADD_SIGNAL(M_INFO(SIGNAL_SELECTION_CHANGED));
+	ADD_SIGNAL(M_INFO(SIGNAL_PROJECT_ASK_OPEN));
 }
 
 ProjectManager *ProjectManager::singleton = nullptr;

@@ -273,8 +273,8 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
 	ClassDB::bind_method(D_METHOD("is_scrollable"), &Slider::is_scrollable);
 
-	ADD_SIGNAL(MethodInfo("drag_started"));
-	ADD_SIGNAL(MethodInfo("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
+	ADD_SIGNAL(M_INFO("drag_started"));
+	ADD_SIGNAL(M_INFO("drag_ended", PropertyInfo(Variant::BOOL, "value_changed")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");

@@ -199,7 +199,7 @@ void ImportDefaultsEditor::clear() {
 }
 
 void ImportDefaultsEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("project_settings_changed"));
+	ADD_SIGNAL(M_INFO("project_settings_changed"));
 }
 
 ImportDefaultsEditor::ImportDefaultsEditor() {

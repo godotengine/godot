@@ -75,7 +75,7 @@ class ShaderGlobalsEditorInterface : public Object {
 protected:
 	static void _bind_methods() {
 		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
-		ADD_SIGNAL(MethodInfo("var_changed"));
+		ADD_SIGNAL(M_INFO("var_changed"));
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
@@ -434,7 +434,7 @@ void ShaderGlobalsEditor::_changed() {
 
 void ShaderGlobalsEditor::_bind_methods() {
 	ClassDB::bind_method("_changed", &ShaderGlobalsEditor::_changed);
-	ADD_SIGNAL(MethodInfo("globals_changed"));
+	ADD_SIGNAL(M_INFO("globals_changed"));
 }
 
 void ShaderGlobalsEditor::_notification(int p_what) {

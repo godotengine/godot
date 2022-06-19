@@ -711,7 +711,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect("item_selected", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_sources_lists_current));
 	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list), varray(sources_list, source_sort_button));
-	sources_list->add_user_signal(MethodInfo("sort_request"));
+	sources_list->add_user_signal(M_INFO("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list), varray(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->set_drag_forwarding(this);

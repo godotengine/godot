@@ -110,7 +110,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"), "set_id", "get_id");
 
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(M_INFO("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
@@ -514,7 +514,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 }
 
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(M_INFO("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
 void TileSetAtlasSourceEditor::_inspector_property_selected(String p_property) {
@@ -2308,7 +2308,7 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &TileSetAtlasSourceEditor::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_selection_from_array"), &TileSetAtlasSourceEditor::_set_selection_from_array);
 
-	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
+	ADD_SIGNAL(M_INFO("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {

@@ -797,8 +797,8 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
 
-	ADD_SIGNAL(MethodInfo("frame_changed"));
-	ADD_SIGNAL(MethodInfo("texture_changed"));
+	ADD_SIGNAL(M_INFO("frame_changed"));
+	ADD_SIGNAL(M_INFO("texture_changed"));
 }
 
 Sprite3D::Sprite3D() {
@@ -1277,8 +1277,8 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
-	ADD_SIGNAL(MethodInfo("frame_changed"));
-	ADD_SIGNAL(MethodInfo("animation_finished"));
+	ADD_SIGNAL(M_INFO("frame_changed"));
+	ADD_SIGNAL(M_INFO("animation_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");

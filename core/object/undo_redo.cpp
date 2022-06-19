@@ -546,7 +546,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);
 	ClassDB::bind_method(D_METHOD("undo"), &UndoRedo::undo);
 
-	ADD_SIGNAL(MethodInfo("version_changed"));
+	ADD_SIGNAL(M_INFO("version_changed"));
 
 	BIND_ENUM_CONSTANT(MERGE_DISABLE);
 	BIND_ENUM_CONSTANT(MERGE_ENDS);

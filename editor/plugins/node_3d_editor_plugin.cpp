@@ -3641,8 +3641,8 @@ void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &Node3DEditorViewport::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &Node3DEditorViewport::drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
-	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(M_INFO("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(M_INFO("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
 }
 
 void Node3DEditorViewport::reset() {
@@ -7323,9 +7323,9 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
 
-	ADD_SIGNAL(MethodInfo("transform_key_request"));
-	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
-	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(M_INFO("transform_key_request"));
+	ADD_SIGNAL(M_INFO("item_lock_status_changed"));
+	ADD_SIGNAL(M_INFO("item_group_status_changed"));
 }
 
 void Node3DEditor::clear() {

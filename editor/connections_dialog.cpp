@@ -245,7 +245,7 @@ void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
 
-	ADD_SIGNAL(MethodInfo("connected"));
+	ADD_SIGNAL(M_INFO("connected"));
 }
 
 Node *ConnectDialog::get_source() const {

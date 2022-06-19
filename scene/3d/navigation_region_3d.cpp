@@ -259,8 +259,8 @@ void NavigationRegion3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 
-	ADD_SIGNAL(MethodInfo("navigation_mesh_changed"));
-	ADD_SIGNAL(MethodInfo("bake_finished"));
+	ADD_SIGNAL(M_INFO("navigation_mesh_changed"));
+	ADD_SIGNAL(M_INFO("bake_finished"));
 }
 
 void NavigationRegion3D::_navigation_changed() {

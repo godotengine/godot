@@ -5799,14 +5799,14 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_version_button_pressed", &EditorNode::_version_button_pressed);
 
-	ADD_SIGNAL(MethodInfo("play_pressed"));
-	ADD_SIGNAL(MethodInfo("pause_pressed"));
-	ADD_SIGNAL(MethodInfo("stop_pressed"));
-	ADD_SIGNAL(MethodInfo("request_help_search"));
-	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
-	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
-	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
-	ADD_SIGNAL(MethodInfo("project_settings_changed"));
+	ADD_SIGNAL(M_INFO("play_pressed"));
+	ADD_SIGNAL(M_INFO("pause_pressed"));
+	ADD_SIGNAL(M_INFO("stop_pressed"));
+	ADD_SIGNAL(M_INFO("request_help_search"));
+	ADD_SIGNAL(M_INFO("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
+	ADD_SIGNAL(M_INFO("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
+	ADD_SIGNAL(M_INFO("scene_saved", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(M_INFO("project_settings_changed"));
 }
 
 static Node *_resource_get_edited_scene() {

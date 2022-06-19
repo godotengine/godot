@@ -438,5 +438,5 @@ ColorPicker *GradientEdit::get_picker() {
 }
 
 void GradientEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("ramp_changed"));
+	ADD_SIGNAL(M_INFO("ramp_changed"));
 }

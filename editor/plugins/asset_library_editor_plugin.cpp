@@ -92,9 +92,9 @@ void EditorAssetLibraryItem::_author_clicked() {
 
 void EditorAssetLibraryItem::_bind_methods() {
 	ClassDB::bind_method("set_image", &EditorAssetLibraryItem::set_image);
-	ADD_SIGNAL(MethodInfo("asset_selected"));
-	ADD_SIGNAL(MethodInfo("category_selected"));
-	ADD_SIGNAL(MethodInfo("author_selected"));
+	ADD_SIGNAL(M_INFO("asset_selected"));
+	ADD_SIGNAL(M_INFO("category_selected"));
+	ADD_SIGNAL(M_INFO("author_selected"));
 }
 
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
@@ -499,7 +499,7 @@ void EditorAssetLibraryItemDownload::_make_request() {
 }
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(M_INFO("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
 EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
@@ -1384,7 +1384,7 @@ void EditorAssetLibrary::set_columns(const int p_columns) {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(M_INFO("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {

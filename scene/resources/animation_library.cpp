@@ -143,9 +143,9 @@ void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &AnimationLibrary::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
-	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::STRING_NAME, "to_name")));
+	ADD_SIGNAL(M_INFO("animation_added", PropertyInfo(Variant::STRING_NAME, "name")));
+	ADD_SIGNAL(M_INFO("animation_removed", PropertyInfo(Variant::STRING_NAME, "name")));
+	ADD_SIGNAL(M_INFO("animation_renamed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::STRING_NAME, "to_name")));
 }
 AnimationLibrary::AnimationLibrary() {
 }

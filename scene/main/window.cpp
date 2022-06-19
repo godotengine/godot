@@ -1656,17 +1656,17 @@ void Window::_bind_methods() {
 	ADD_GROUP("Auto Translate", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 
-	ADD_SIGNAL(MethodInfo("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
-	ADD_SIGNAL(MethodInfo("mouse_entered"));
-	ADD_SIGNAL(MethodInfo("mouse_exited"));
-	ADD_SIGNAL(MethodInfo("focus_entered"));
-	ADD_SIGNAL(MethodInfo("focus_exited"));
-	ADD_SIGNAL(MethodInfo("close_requested"));
-	ADD_SIGNAL(MethodInfo("go_back_requested"));
-	ADD_SIGNAL(MethodInfo("visibility_changed"));
-	ADD_SIGNAL(MethodInfo("about_to_popup"));
-	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(M_INFO("window_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(M_INFO("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
+	ADD_SIGNAL(M_INFO("mouse_entered"));
+	ADD_SIGNAL(M_INFO("mouse_exited"));
+	ADD_SIGNAL(M_INFO("focus_entered"));
+	ADD_SIGNAL(M_INFO("focus_exited"));
+	ADD_SIGNAL(M_INFO("close_requested"));
+	ADD_SIGNAL(M_INFO("go_back_requested"));
+	ADD_SIGNAL(M_INFO("visibility_changed"));
+	ADD_SIGNAL(M_INFO("about_to_popup"));
+	ADD_SIGNAL(M_INFO("theme_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 

@@ -1893,7 +1893,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_search", &EditorHelp::_search);
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
-	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(M_INFO("go_to_help"));
 }
 
 EditorHelp::EditorHelp() {
@@ -1976,7 +1976,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 void EditorHelpBit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &EditorHelpBit::set_text);
-	ADD_SIGNAL(MethodInfo("request_hide"));
+	ADD_SIGNAL(M_INFO("request_hide"));
 }
 
 void EditorHelpBit::_notification(int p_what) {
@@ -2081,7 +2081,7 @@ void FindBar::_notification(int p_what) {
 }
 
 void FindBar::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("search"));
+	ADD_SIGNAL(M_INFO("search"));
 }
 
 void FindBar::set_rich_text_label(RichTextLabel *p_rich_text_label) {

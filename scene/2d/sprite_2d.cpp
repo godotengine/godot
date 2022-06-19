@@ -433,8 +433,8 @@ void Sprite2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rect"), &Sprite2D::get_rect);
 
-	ADD_SIGNAL(MethodInfo("frame_changed"));
-	ADD_SIGNAL(MethodInfo("texture_changed"));
+	ADD_SIGNAL(M_INFO("frame_changed"));
+	ADD_SIGNAL(M_INFO("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Offset", "");

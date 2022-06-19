@@ -600,11 +600,11 @@ void CollisionObject2D::_bind_methods() {
 
 	GDVIRTUAL_BIND(_input_event, "viewport", "event", "shape_idx");
 
-	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "viewport", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
-	ADD_SIGNAL(MethodInfo("mouse_entered"));
-	ADD_SIGNAL(MethodInfo("mouse_exited"));
-	ADD_SIGNAL(MethodInfo("mouse_shape_entered", PropertyInfo(Variant::INT, "shape_idx")));
-	ADD_SIGNAL(MethodInfo("mouse_shape_exited", PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(M_INFO("input_event", PropertyInfo(Variant::OBJECT, "viewport", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(M_INFO("mouse_entered"));
+	ADD_SIGNAL(M_INFO("mouse_exited"));
+	ADD_SIGNAL(M_INFO("mouse_shape_entered", PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(M_INFO("mouse_shape_exited", PropertyInfo(Variant::INT, "shape_idx")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,Make Static,Keep Active"), "set_disable_mode", "get_disable_mode");
 

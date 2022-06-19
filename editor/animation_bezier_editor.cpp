@@ -1583,18 +1583,18 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method("_update_hidden_tracks_after", &AnimationBezierTrackEdit::_update_hidden_tracks_after);
 	ClassDB::bind_method("_update_locked_tracks_after", &AnimationBezierTrackEdit::_update_locked_tracks_after);
 
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
-	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
-	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
-	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
-	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("clear_selection"));
-	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(M_INFO("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
+	ADD_SIGNAL(M_INFO("remove_request", PropertyInfo(Variant::INT, "track")));
+	ADD_SIGNAL(M_INFO("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(M_INFO("select_key", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
+	ADD_SIGNAL(M_INFO("deselect_key", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(M_INFO("clear_selection"));
+	ADD_SIGNAL(M_INFO("close_request"));
 
-	ADD_SIGNAL(MethodInfo("move_selection_begin"));
-	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
-	ADD_SIGNAL(MethodInfo("move_selection_commit"));
-	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
+	ADD_SIGNAL(M_INFO("move_selection_begin"));
+	ADD_SIGNAL(M_INFO("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(M_INFO("move_selection_commit"));
+	ADD_SIGNAL(M_INFO("move_selection_cancel"));
 }
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {

@@ -32,8 +32,8 @@
 #include "openxr_action_editor.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_set_editor")));
-	ADD_SIGNAL(MethodInfo("action_removed"));
+	ADD_SIGNAL(M_INFO("remove", PropertyInfo(Variant::OBJECT, "action_set_editor")));
+	ADD_SIGNAL(M_INFO("action_removed"));
 }
 
 void OpenXRActionSetEditor::_set_fold_icon() {

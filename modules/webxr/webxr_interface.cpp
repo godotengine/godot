@@ -54,18 +54,18 @@ void WebXRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "visibility_state", PROPERTY_HINT_NONE), "", "get_visibility_state");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "bounds_geometry", PROPERTY_HINT_NONE), "", "get_bounds_geometry");
 
-	ADD_SIGNAL(MethodInfo("session_supported", PropertyInfo(Variant::STRING, "session_mode"), PropertyInfo(Variant::BOOL, "supported")));
-	ADD_SIGNAL(MethodInfo("session_started"));
-	ADD_SIGNAL(MethodInfo("session_ended"));
-	ADD_SIGNAL(MethodInfo("session_failed", PropertyInfo(Variant::STRING, "message")));
+	ADD_SIGNAL(M_INFO("session_supported", PropertyInfo(Variant::STRING, "session_mode"), PropertyInfo(Variant::BOOL, "supported")));
+	ADD_SIGNAL(M_INFO("session_started"));
+	ADD_SIGNAL(M_INFO("session_ended"));
+	ADD_SIGNAL(M_INFO("session_failed", PropertyInfo(Variant::STRING, "message")));
 
-	ADD_SIGNAL(MethodInfo("selectstart", PropertyInfo(Variant::INT, "controller_id")));
-	ADD_SIGNAL(MethodInfo("select", PropertyInfo(Variant::INT, "controller_id")));
-	ADD_SIGNAL(MethodInfo("selectend", PropertyInfo(Variant::INT, "controller_id")));
-	ADD_SIGNAL(MethodInfo("squeezestart", PropertyInfo(Variant::INT, "controller_id")));
-	ADD_SIGNAL(MethodInfo("squeeze", PropertyInfo(Variant::INT, "controller_id")));
-	ADD_SIGNAL(MethodInfo("squeezeend", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("selectstart", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("select", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("selectend", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("squeezestart", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("squeeze", PropertyInfo(Variant::INT, "controller_id")));
+	ADD_SIGNAL(M_INFO("squeezeend", PropertyInfo(Variant::INT, "controller_id")));
 
-	ADD_SIGNAL(MethodInfo("visibility_state_changed"));
-	ADD_SIGNAL(MethodInfo("reference_space_reset"));
+	ADD_SIGNAL(M_INFO("visibility_state_changed"));
+	ADD_SIGNAL(M_INFO("reference_space_reset"));
 }

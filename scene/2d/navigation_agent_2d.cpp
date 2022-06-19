@@ -91,10 +91,10 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 
-	ADD_SIGNAL(MethodInfo("path_changed"));
-	ADD_SIGNAL(MethodInfo("target_reached"));
-	ADD_SIGNAL(MethodInfo("navigation_finished"));
-	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
+	ADD_SIGNAL(M_INFO("path_changed"));
+	ADD_SIGNAL(M_INFO("target_reached"));
+	ADD_SIGNAL(M_INFO("navigation_finished"));
+	ADD_SIGNAL(M_INFO("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
 }
 
 void NavigationAgent2D::_notification(int p_what) {

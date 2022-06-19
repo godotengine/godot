@@ -96,7 +96,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "id"), "set_id", "get_id");
 
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(M_INFO("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
@@ -205,7 +205,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::edit(TileSetScen
 }
 
 void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(M_INFO("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
 void TileSetScenesCollectionSourceEditor::_scenes_collection_source_proxy_object_changed(String p_what) {
@@ -445,7 +445,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 }
 
 void TileSetScenesCollectionSourceEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
+	ADD_SIGNAL(M_INFO("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 
 	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileSetScenesCollectionSourceEditor::_scene_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetScenesCollectionSourceEditor::_can_drop_data_fw);

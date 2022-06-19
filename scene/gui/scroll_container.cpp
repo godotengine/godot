@@ -572,8 +572,8 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &ScrollContainer::get_v_scroll_bar);
 	ClassDB::bind_method(D_METHOD("ensure_control_visible", "control"), &ScrollContainer::ensure_control_visible);
 
-	ADD_SIGNAL(MethodInfo("scroll_started"));
-	ADD_SIGNAL(MethodInfo("scroll_ended"));
+	ADD_SIGNAL(M_INFO("scroll_started"));
+	ADD_SIGNAL(M_INFO("scroll_ended"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 

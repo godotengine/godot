@@ -1770,9 +1770,9 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 }
 
 void CustomPropertyEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("variant_changed"));
-	ADD_SIGNAL(MethodInfo("variant_field_changed", PropertyInfo(Variant::STRING, "field")));
-	ADD_SIGNAL(MethodInfo("resource_edit_request"));
+	ADD_SIGNAL(M_INFO("variant_changed"));
+	ADD_SIGNAL(M_INFO("variant_field_changed", PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(M_INFO("resource_edit_request"));
 }
 
 CustomPropertyEditor::CustomPropertyEditor() {

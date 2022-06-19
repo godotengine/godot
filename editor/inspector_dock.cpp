@@ -453,7 +453,7 @@ void InspectorDock::_bind_methods() {
 
 	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
 
-	ADD_SIGNAL(MethodInfo("request_help"));
+	ADD_SIGNAL(M_INFO("request_help"));
 }
 
 void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {

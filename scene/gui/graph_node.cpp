@@ -1114,12 +1114,12 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
 
-	ADD_SIGNAL(MethodInfo("position_offset_changed"));
-	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));
-	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
-	ADD_SIGNAL(MethodInfo("raise_request"));
-	ADD_SIGNAL(MethodInfo("close_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+	ADD_SIGNAL(M_INFO("position_offset_changed"));
+	ADD_SIGNAL(M_INFO("slot_updated", PropertyInfo(Variant::INT, "idx")));
+	ADD_SIGNAL(M_INFO("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
+	ADD_SIGNAL(M_INFO("raise_request"));
+	ADD_SIGNAL(M_INFO("close_request"));
+	ADD_SIGNAL(M_INFO("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
 	BIND_ENUM_CONSTANT(OVERLAY_DISABLED);
 	BIND_ENUM_CONSTANT(OVERLAY_BREAKPOINT);

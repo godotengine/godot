@@ -573,7 +573,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
+		MethodInfo info = M_INFO(name, __VA_ARGS__);                                             \
 		info.return_val.type = m_return_type;                                                    \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
@@ -584,7 +584,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name);                                                      \
+		MethodInfo info = M_INFO(name);                                                          \
 		info.return_val.type = m_return_type;                                                    \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
@@ -595,7 +595,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name);                                                      \
+		MethodInfo info = M_INFO(name);                                                          \
 		info.return_val.type = m_return_type;                                                    \
 		info.flags |= METHOD_FLAG_VARARG;                                                        \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
@@ -607,7 +607,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
+		MethodInfo info = M_INFO(name, __VA_ARGS__);                                             \
 		info.return_val.type = Variant::NIL;                                                     \
 		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;                                  \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
@@ -619,7 +619,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
+		MethodInfo info = M_INFO(name, __VA_ARGS__);                                             \
 		info.return_val.type = Variant::OBJECT;                                                  \
 		info.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;                                      \
 		info.return_val.class_name = m_return_type;                                              \
@@ -632,7 +632,7 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 		if (name.begins_with("_")) {                                                             \
 			name = name.substr(1, name.length() - 1);                                            \
 		}                                                                                        \
-		MethodInfo info = MethodInfo(name, __VA_ARGS__);                                         \
+		MethodInfo info = M_INFO(name, __VA_ARGS__);                                             \
 		info.return_val.type = m_return_type;                                                    \
 		info.default_arguments.push_back(m_default);                                             \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \

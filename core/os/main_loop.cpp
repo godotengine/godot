@@ -44,7 +44,7 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_APPLICATION_FOCUS_OUT);
 	BIND_CONSTANT(NOTIFICATION_TEXT_SERVER_CHANGED);
 
-	ADD_SIGNAL(MethodInfo("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
+	ADD_SIGNAL(M_INFO("on_request_permissions_result", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_physics_process, "delta");

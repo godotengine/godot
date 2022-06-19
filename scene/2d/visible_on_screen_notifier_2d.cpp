@@ -104,8 +104,8 @@ void VisibleOnScreenNotifier2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect", PROPERTY_HINT_NONE, "suffix:px"), "set_rect", "get_rect");
 
-	ADD_SIGNAL(MethodInfo("screen_entered"));
-	ADD_SIGNAL(MethodInfo("screen_exited"));
+	ADD_SIGNAL(M_INFO("screen_entered"));
+	ADD_SIGNAL(M_INFO("screen_exited"));
 }
 
 VisibleOnScreenNotifier2D::VisibleOnScreenNotifier2D() {

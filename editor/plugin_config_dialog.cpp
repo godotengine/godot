@@ -204,7 +204,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 }
 
 void PluginConfigDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("plugin_ready", PropertyInfo(Variant::STRING, "script_path", PROPERTY_HINT_NONE, ""), PropertyInfo(Variant::STRING, "activate_name")));
+	ADD_SIGNAL(M_INFO("plugin_ready", PropertyInfo(Variant::STRING, "script_path", PROPERTY_HINT_NONE, ""), PropertyInfo(Variant::STRING, "activate_name")));
 }
 
 PluginConfigDialog::PluginConfigDialog() {

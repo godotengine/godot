@@ -5711,5 +5711,5 @@ void TileData::_bind_methods() {
 	ADD_GROUP("Miscellaneous", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
 
-	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(M_INFO("changed"));
 }

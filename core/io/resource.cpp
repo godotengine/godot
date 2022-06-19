@@ -436,15 +436,15 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
-	ADD_SIGNAL(MethodInfo("changed"));
-	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
+	ADD_SIGNAL(M_INFO("changed"));
+	ADD_SIGNAL(M_INFO("setup_local_to_scene_requested"));
 
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
 
-	MethodInfo get_rid_bind("_get_rid");
+	MethodInfo get_rid_bind = M_INFO("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
 
 	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);

@@ -2971,7 +2971,7 @@ void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 }
 
 void CSharpScript::_bind_methods() {
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, M_INFO("new"));
 }
 
 Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native) {

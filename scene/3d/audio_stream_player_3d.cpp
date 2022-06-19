@@ -906,7 +906,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("finished"));
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {

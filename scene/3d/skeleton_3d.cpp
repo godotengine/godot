@@ -1286,12 +1286,12 @@ void Skeleton3D::_bind_methods() {
 #endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
-	ADD_SIGNAL(MethodInfo("pose_updated"));
+	ADD_SIGNAL(M_INFO("pose_updated"));
 #endif // TOOLS_ENABLED
 
-	ADD_SIGNAL(MethodInfo("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
-	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
-	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));
+	ADD_SIGNAL(M_INFO("bone_pose_changed", PropertyInfo(Variant::INT, "bone_idx")));
+	ADD_SIGNAL(M_INFO("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
+	ADD_SIGNAL(M_INFO("show_rest_only_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

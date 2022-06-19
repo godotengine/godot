@@ -321,8 +321,8 @@ void EditorLog::_reset_message_counts() {
 }
 
 void EditorLog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("clear_request"));
-	ADD_SIGNAL(MethodInfo("copy_request"));
+	ADD_SIGNAL(M_INFO("clear_request"));
+	ADD_SIGNAL(M_INFO("copy_request"));
 }
 
 EditorLog::EditorLog() {

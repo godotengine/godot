@@ -204,7 +204,7 @@ void NavigationServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer2D::free);
 
-	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
+	ADD_SIGNAL(M_INFO("map_changed", PropertyInfo(Variant::RID, "map")));
 }
 
 NavigationServer2D::NavigationServer2D() {

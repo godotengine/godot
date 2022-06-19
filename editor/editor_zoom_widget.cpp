@@ -158,7 +158,7 @@ void EditorZoomWidget::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
 
-	ADD_SIGNAL(MethodInfo("zoom_changed", PropertyInfo(Variant::FLOAT, "zoom")));
+	ADD_SIGNAL(M_INFO("zoom_changed", PropertyInfo(Variant::FLOAT, "zoom")));
 }
 
 EditorZoomWidget::EditorZoomWidget() {

@@ -558,12 +558,12 @@ void MultiplayerAPI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 
-	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
-	ADD_SIGNAL(MethodInfo("connected_to_server"));
-	ADD_SIGNAL(MethodInfo("connection_failed"));
-	ADD_SIGNAL(MethodInfo("server_disconnected"));
+	ADD_SIGNAL(M_INFO("peer_connected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("peer_disconnected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
+	ADD_SIGNAL(M_INFO("connected_to_server"));
+	ADD_SIGNAL(M_INFO("connection_failed"));
+	ADD_SIGNAL(M_INFO("server_disconnected"));
 }
 
 MultiplayerAPI::MultiplayerAPI() {

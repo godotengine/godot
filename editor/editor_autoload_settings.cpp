@@ -815,7 +815,7 @@ void EditorAutoloadSettings::_bind_methods() {
 	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
 	ClassDB::bind_method("autoload_remove", &EditorAutoloadSettings::autoload_remove);
 
-	ADD_SIGNAL(MethodInfo("autoload_changed"));
+	ADD_SIGNAL(M_INFO("autoload_changed"));
 }
 
 EditorAutoloadSettings::EditorAutoloadSettings() {

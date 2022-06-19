@@ -796,7 +796,7 @@ void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);
 
-	ADD_SIGNAL(MethodInfo("bone_setup_changed"));
+	ADD_SIGNAL(M_INFO("bone_setup_changed"));
 }
 
 Skeleton2D::Skeleton2D() {

@@ -944,7 +944,7 @@ void GridMap::_bind_methods() {
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
-	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(M_INFO("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
 }
 
 void GridMap::set_cell_scale(float p_scale) {

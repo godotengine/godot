@@ -1058,7 +1058,7 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
 	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
 	ClassDB::bind_method(D_METHOD("_emit_change"), &EditorSelection::_emit_change);
-	ADD_SIGNAL(MethodInfo("selection_changed"));
+	ADD_SIGNAL(M_INFO("selection_changed"));
 }
 
 void EditorSelection::add_editor_plugin(Object *p_object) {

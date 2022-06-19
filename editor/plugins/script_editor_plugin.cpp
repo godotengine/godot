@@ -218,15 +218,15 @@ void ScriptEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 
-	ADD_SIGNAL(MethodInfo("name_changed"));
-	ADD_SIGNAL(MethodInfo("edited_script_changed"));
-	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
-	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("request_save_history"));
-	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
+	ADD_SIGNAL(M_INFO("name_changed"));
+	ADD_SIGNAL(M_INFO("edited_script_changed"));
+	ADD_SIGNAL(M_INFO("request_help", PropertyInfo(Variant::STRING, "topic")));
+	ADD_SIGNAL(M_INFO("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(M_INFO("request_save_history"));
+	ADD_SIGNAL(M_INFO("go_to_help", PropertyInfo(Variant::STRING, "what")));
 	// TODO: This signal is no use for VisualScript.
-	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
-	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(M_INFO("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(M_INFO("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
@@ -365,7 +365,7 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 }
 
 void ScriptEditorQuickOpen::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("goto_line", PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(M_INFO("goto_line", PropertyInfo(Variant::INT, "line")));
 }
 
 ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
@@ -3637,8 +3637,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 	ClassDB::bind_method(D_METHOD("open_script_create_dialog", "base_name", "base_path"), &ScriptEditor::open_script_create_dialog);
 
-	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
-	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
+	ADD_SIGNAL(M_INFO("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
+	ADD_SIGNAL(M_INFO("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
 
 ScriptEditor::ScriptEditor() {

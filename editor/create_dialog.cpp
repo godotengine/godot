@@ -705,8 +705,8 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method("_can_drop_data_fw", &CreateDialog::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &CreateDialog::drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("create"));
-	ADD_SIGNAL(MethodInfo("favorites_updated"));
+	ADD_SIGNAL(M_INFO("create"));
+	ADD_SIGNAL(M_INFO("favorites_updated"));
 }
 
 CreateDialog::CreateDialog() {

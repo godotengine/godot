@@ -467,7 +467,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("finished"));
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {

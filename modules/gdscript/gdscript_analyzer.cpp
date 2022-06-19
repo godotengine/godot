@@ -43,7 +43,7 @@
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
 
-	MethodInfo info(p_function);
+	MethodInfo info = M_INFO(p_function);
 
 	if (Variant::has_utility_function_return_value(p_function)) {
 		info.return_val.type = Variant::get_utility_function_return_type(p_function);

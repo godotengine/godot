@@ -114,7 +114,7 @@ void VisualScriptNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_default_input_values"), &VisualScriptNode::_get_default_input_values);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_default_input_values", "_get_default_input_values");
-	ADD_SIGNAL(MethodInfo("ports_changed"));
+	ADD_SIGNAL(M_INFO("ports_changed"));
 }
 
 VisualScriptNode::TypeGuess VisualScriptNode::guess_output_type(TypeGuess *p_inputs, int p_output) const {
@@ -1156,7 +1156,7 @@ void VisualScript::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
-	ADD_SIGNAL(MethodInfo("node_ports_changed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("node_ports_changed", PropertyInfo(Variant::INT, "id")));
 }
 
 VisualScript::VisualScript() {
@@ -2158,7 +2158,7 @@ void VisualScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_signal", "obj", "signals", "args"), &VisualScriptFunctionState::connect_to_signal);
 	ClassDB::bind_method(D_METHOD("resume", "args"), &VisualScriptFunctionState::resume, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("is_valid"), &VisualScriptFunctionState::is_valid);
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &VisualScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &VisualScriptFunctionState::_signal_callback, M_INFO("_signal_callback"));
 }
 
 VisualScriptFunctionState::VisualScriptFunctionState() {

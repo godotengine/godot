@@ -1572,7 +1572,7 @@ void EditorExport::save_presets() {
 }
 
 void EditorExport::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("export_presets_updated"));
+	ADD_SIGNAL(M_INFO("export_presets_updated"));
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {

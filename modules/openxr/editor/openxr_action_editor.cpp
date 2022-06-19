@@ -31,7 +31,7 @@
 #include "openxr_action_editor.h"
 
 void OpenXRActionEditor::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
+	ADD_SIGNAL(M_INFO("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
 }
 
 void OpenXRActionEditor::_theme_changed() {

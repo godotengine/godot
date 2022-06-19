@@ -4629,8 +4629,8 @@ void CanvasItemEditor::_bind_methods() {
 
 	ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
 
-	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
-	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
+	ADD_SIGNAL(M_INFO("item_lock_status_changed"));
+	ADD_SIGNAL(M_INFO("item_group_status_changed"));
 }
 
 Dictionary CanvasItemEditor::get_state() const {

@@ -439,7 +439,7 @@ void VideoStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoStreamPlayer::get_video_texture);
 
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");

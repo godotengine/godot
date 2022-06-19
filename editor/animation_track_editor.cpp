@@ -1877,11 +1877,11 @@ void AnimationTimelineEdit::_track_added(int p_track) {
 }
 
 void AnimationTimelineEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("zoom_changed"));
-	ADD_SIGNAL(MethodInfo("name_limit_changed"));
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
-	ADD_SIGNAL(MethodInfo("track_added", PropertyInfo(Variant::INT, "track")));
-	ADD_SIGNAL(MethodInfo("length_changed", PropertyInfo(Variant::FLOAT, "size")));
+	ADD_SIGNAL(M_INFO("zoom_changed"));
+	ADD_SIGNAL(M_INFO("name_limit_changed"));
+	ADD_SIGNAL(M_INFO("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(M_INFO("track_added", PropertyInfo(Variant::INT, "track")));
+	ADD_SIGNAL(M_INFO("length_changed", PropertyInfo(Variant::FLOAT, "size")));
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
@@ -3189,23 +3189,23 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 }
 
 void AnimationTrackEdit::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
-	ADD_SIGNAL(MethodInfo("remove_request", PropertyInfo(Variant::INT, "track")));
-	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
-	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
-	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
-	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("bezier_edit"));
+	ADD_SIGNAL(M_INFO("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(M_INFO("remove_request", PropertyInfo(Variant::INT, "track")));
+	ADD_SIGNAL(M_INFO("dropped", PropertyInfo(Variant::INT, "from_track"), PropertyInfo(Variant::INT, "to_track")));
+	ADD_SIGNAL(M_INFO("insert_key", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(M_INFO("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
+	ADD_SIGNAL(M_INFO("deselect_key", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(M_INFO("bezier_edit"));
 
-	ADD_SIGNAL(MethodInfo("move_selection_begin"));
-	ADD_SIGNAL(MethodInfo("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
-	ADD_SIGNAL(MethodInfo("move_selection_commit"));
-	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
+	ADD_SIGNAL(M_INFO("move_selection_begin"));
+	ADD_SIGNAL(M_INFO("move_selection", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(M_INFO("move_selection_commit"));
+	ADD_SIGNAL(M_INFO("move_selection_cancel"));
 
-	ADD_SIGNAL(MethodInfo("duplicate_request"));
-	ADD_SIGNAL(MethodInfo("create_reset_request"));
-	ADD_SIGNAL(MethodInfo("duplicate_transpose_request"));
-	ADD_SIGNAL(MethodInfo("delete_request"));
+	ADD_SIGNAL(M_INFO("duplicate_request"));
+	ADD_SIGNAL(M_INFO("create_reset_request"));
+	ADD_SIGNAL(M_INFO("duplicate_transpose_request"));
+	ADD_SIGNAL(M_INFO("delete_request"));
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
@@ -6146,10 +6146,10 @@ void AnimationTrackEditor::_bind_methods() {
 	ClassDB::bind_method("_key_deselected", &AnimationTrackEditor::_key_deselected); // Still used by some connect_compat.
 	ClassDB::bind_method("_clear_selection", &AnimationTrackEditor::_clear_selection); // Still used by some connect_compat.
 
-	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
-	ADD_SIGNAL(MethodInfo("keying_changed"));
-	ADD_SIGNAL(MethodInfo("animation_len_changed", PropertyInfo(Variant::FLOAT, "len")));
-	ADD_SIGNAL(MethodInfo("animation_step_changed", PropertyInfo(Variant::FLOAT, "step")));
+	ADD_SIGNAL(M_INFO("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
+	ADD_SIGNAL(M_INFO("keying_changed"));
+	ADD_SIGNAL(M_INFO("animation_len_changed", PropertyInfo(Variant::FLOAT, "len")));
+	ADD_SIGNAL(M_INFO("animation_step_changed", PropertyInfo(Variant::FLOAT, "step")));
 }
 
 void AnimationTrackEditor::_pick_track_filter_text_changed(const String &p_newtext) {

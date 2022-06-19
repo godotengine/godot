@@ -73,7 +73,7 @@ void JavaScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("download_buffer", "buffer", "name", "mime"), &JavaScript::download_buffer, DEFVAL("application/octet-stream"));
 	ClassDB::bind_method(D_METHOD("pwa_needs_update"), &JavaScript::pwa_needs_update);
 	ClassDB::bind_method(D_METHOD("pwa_update"), &JavaScript::pwa_update);
-	ADD_SIGNAL(MethodInfo("pwa_update_available"));
+	ADD_SIGNAL(M_INFO("pwa_update_available"));
 }
 
 #if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)

@@ -219,29 +219,20 @@ struct MethodInfo {
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
 	MethodInfo();
-	MethodInfo(const String &p_name);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
-	MethodInfo(Variant::Type ret);
-	MethodInfo(Variant::Type ret, const String &p_name);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
 };
+
+MethodInfo M_INFOP(const String &p_name, const PropertyInfo **p_args, uint32_t p_argcount);
+
+template <typename... VarArgs>
+MethodInfo M_INFO(const String &p_name, const VarArgs... p_args) {
+	const PropertyInfo args[sizeof...(p_args) + 1] = { p_args..., PropertyInfo() }; // +1 makes sure zero sized arrays are also supported.
+	const PropertyInfo *argptrs[sizeof...(p_args) + 1];
+	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+		argptrs[i] = &args[i];
+	}
+
+	return M_INFOP(p_name, sizeof...(p_args) == 0 ? nullptr : (const PropertyInfo **)argptrs, sizeof...(p_args));
+}
 
 // API used to extend in GDNative and other C compatible compiled languages.
 class MethodBind;

@@ -216,7 +216,7 @@ void PropertySelector::_update_search() {
 		} else {
 			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
 			if (script_ref.is_valid()) {
-				methods.push_back(MethodInfo("*Script Methods"));
+				methods.push_back(M_INFO("*Script Methods"));
 				if (script_ref->is_built_in()) {
 					script_ref->reload(true);
 				}
@@ -225,7 +225,7 @@ void PropertySelector::_update_search() {
 
 			StringName base = base_type;
 			while (base) {
-				methods.push_back(MethodInfo("*" + String(base)));
+				methods.push_back(M_INFO("*" + String(base)));
 				ClassDB::get_method_list(base, &methods, true, true);
 				base = ClassDB::get_parent_class(base);
 			}
@@ -568,7 +568,7 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 }
 
 void PropertySelector::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(M_INFO("selected", PropertyInfo(Variant::STRING, "name")));
 }
 
 PropertySelector::PropertySelector() {

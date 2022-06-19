@@ -457,8 +457,8 @@ void OptionButton::_bind_methods() {
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(M_INFO("item_selected", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(M_INFO("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
 OptionButton::OptionButton(const String &p_text) :

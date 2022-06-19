@@ -133,9 +133,9 @@ void WebSocketClient::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
 
-	ADD_SIGNAL(MethodInfo("data_received"));
-	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));
-	ADD_SIGNAL(MethodInfo("server_close_request", PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
-	ADD_SIGNAL(MethodInfo("connection_closed", PropertyInfo(Variant::BOOL, "was_clean_close")));
-	ADD_SIGNAL(MethodInfo("connection_error"));
+	ADD_SIGNAL(M_INFO("data_received"));
+	ADD_SIGNAL(M_INFO("connection_established", PropertyInfo(Variant::STRING, "protocol")));
+	ADD_SIGNAL(M_INFO("server_close_request", PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
+	ADD_SIGNAL(M_INFO("connection_closed", PropertyInfo(Variant::BOOL, "was_clean_close")));
+	ADD_SIGNAL(M_INFO("connection_error"));
 }

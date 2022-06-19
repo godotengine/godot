@@ -1593,14 +1593,14 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
 
-	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_close_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
+	ADD_SIGNAL(M_INFO("tab_selected", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_clicked", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_rmb_clicked", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_close_pressed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_hovered", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");

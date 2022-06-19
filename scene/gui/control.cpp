@@ -3434,15 +3434,15 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_RTL);
 
-	ADD_SIGNAL(MethodInfo("resized"));
-	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ADD_SIGNAL(MethodInfo("mouse_entered"));
-	ADD_SIGNAL(MethodInfo("mouse_exited"));
-	ADD_SIGNAL(MethodInfo("focus_entered"));
-	ADD_SIGNAL(MethodInfo("focus_exited"));
-	ADD_SIGNAL(MethodInfo("size_flags_changed"));
-	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
-	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(M_INFO("resized"));
+	ADD_SIGNAL(M_INFO("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ADD_SIGNAL(M_INFO("mouse_entered"));
+	ADD_SIGNAL(M_INFO("mouse_exited"));
+	ADD_SIGNAL(M_INFO("focus_entered"));
+	ADD_SIGNAL(M_INFO("focus_exited"));
+	ADD_SIGNAL(M_INFO("size_flags_changed"));
+	ADD_SIGNAL(M_INFO("minimum_size_changed"));
+	ADD_SIGNAL(M_INFO("theme_changed"));
 
 	GDVIRTUAL_BIND(_has_point, "position");
 	GDVIRTUAL_BIND(_structured_text_parser, "args", "text");

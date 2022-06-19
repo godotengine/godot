@@ -907,10 +907,10 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TabContainer::_can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TabContainer::_drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
-	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
+	ADD_SIGNAL(M_INFO("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_selected", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("tab_button_pressed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(M_INFO("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");

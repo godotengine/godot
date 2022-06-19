@@ -39,7 +39,7 @@
 #include "scene/gui/tree.h"
 
 void EditorLocaleDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(Variant::STRING, "locale")));
+	ADD_SIGNAL(M_INFO("locale_selected", PropertyInfo(Variant::STRING, "locale")));
 }
 
 void EditorLocaleDialog::ok_pressed() {

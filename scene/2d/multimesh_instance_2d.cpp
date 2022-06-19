@@ -52,7 +52,7 @@ void MultiMeshInstance2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &MultiMeshInstance2D::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &MultiMeshInstance2D::get_normal_map);
 
-	ADD_SIGNAL(MethodInfo("texture_changed"));
+	ADD_SIGNAL(M_INFO("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");

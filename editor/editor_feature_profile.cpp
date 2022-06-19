@@ -867,7 +867,7 @@ EditorFeatureProfileManager *EditorFeatureProfileManager::singleton = nullptr;
 void EditorFeatureProfileManager::_bind_methods() {
 	ClassDB::bind_method("_update_selected_profile", &EditorFeatureProfileManager::_update_selected_profile);
 
-	ADD_SIGNAL(MethodInfo("current_feature_profile_changed"));
+	ADD_SIGNAL(M_INFO("current_feature_profile_changed"));
 }
 
 EditorFeatureProfileManager::EditorFeatureProfileManager() {

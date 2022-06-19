@@ -378,7 +378,7 @@ void VisualScriptPropertySelector::show_window(float p_screen_ratio) {
 }
 
 void VisualScriptPropertySelector::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "category"), PropertyInfo(Variant::BOOL, "connecting")));
+	ADD_SIGNAL(M_INFO("selected", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "category"), PropertyInfo(Variant::BOOL, "connecting")));
 }
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {

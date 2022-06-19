@@ -1727,7 +1727,7 @@ void AudioServer::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("capture_device", "Default");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
 
-	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+	ADD_SIGNAL(M_INFO("bus_layout_changed"));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);

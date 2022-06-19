@@ -212,8 +212,8 @@ void Container::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_PRE_SORT_CHILDREN);
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
 
-	ADD_SIGNAL(MethodInfo("pre_sort_children"));
-	ADD_SIGNAL(MethodInfo("sort_children"));
+	ADD_SIGNAL(M_INFO("pre_sort_children"));
+	ADD_SIGNAL(M_INFO("sort_children"));
 }
 
 Container::Container() {

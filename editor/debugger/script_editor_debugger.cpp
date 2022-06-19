@@ -1607,27 +1607,27 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_remote_object", "id"), &ScriptEditorDebugger::request_remote_object);
 	ClassDB::bind_method(D_METHOD("update_remote_object", "id", "property", "value"), &ScriptEditorDebugger::update_remote_object);
 
-	ADD_SIGNAL(MethodInfo("started"));
-	ADD_SIGNAL(MethodInfo("stopped"));
-	ADD_SIGNAL(MethodInfo("stop_requested"));
-	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
-	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::INT, "error")));
-	ADD_SIGNAL(MethodInfo("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
-	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
-	ADD_SIGNAL(MethodInfo("remote_object_requested", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
-	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
-	ADD_SIGNAL(MethodInfo("output"));
-	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
-	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
-	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
-	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
-	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
-	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
-	ADD_SIGNAL(MethodInfo("errors_cleared"));
+	ADD_SIGNAL(M_INFO("started"));
+	ADD_SIGNAL(M_INFO("stopped"));
+	ADD_SIGNAL(M_INFO("stop_requested"));
+	ADD_SIGNAL(M_INFO("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
+	ADD_SIGNAL(M_INFO("error_selected", PropertyInfo(Variant::INT, "error")));
+	ADD_SIGNAL(M_INFO("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(M_INFO("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(M_INFO("clear_execution", PropertyInfo("script")));
+	ADD_SIGNAL(M_INFO("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
+	ADD_SIGNAL(M_INFO("remote_object_requested", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("remote_object_updated", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(M_INFO("remote_tree_updated"));
+	ADD_SIGNAL(M_INFO("output"));
+	ADD_SIGNAL(M_INFO("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
+	ADD_SIGNAL(M_INFO("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
+	ADD_SIGNAL(M_INFO("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(M_INFO("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
+	ADD_SIGNAL(M_INFO("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
+	ADD_SIGNAL(M_INFO("clear_breakpoints"));
+	ADD_SIGNAL(M_INFO("errors_cleared"));
 }
 
 void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {

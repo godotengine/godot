@@ -358,7 +358,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("finished"));
 
 	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
 	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);

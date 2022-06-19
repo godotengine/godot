@@ -2355,9 +2355,9 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
 
-	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
-	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
-	ADD_SIGNAL(MethodInfo("text_submitted", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(M_INFO("text_changed", PropertyInfo(Variant::STRING, "new_text")));
+	ADD_SIGNAL(M_INFO("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
+	ADD_SIGNAL(M_INFO("text_submitted", PropertyInfo(Variant::STRING, "new_text")));
 
 	BIND_ENUM_CONSTANT(MENU_CUT);
 	BIND_ENUM_CONSTANT(MENU_COPY);

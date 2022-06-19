@@ -56,7 +56,7 @@ void Tweener::clear_tween() {
 }
 
 void Tweener::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("finished"));
 }
 
 void Tween::start_tweeners() {
@@ -651,9 +651,9 @@ void Tween::_bind_methods() {
 
 	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
-	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
-	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
-	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(M_INFO("step_finished", PropertyInfo(Variant::INT, "idx")));
+	ADD_SIGNAL(M_INFO("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
+	ADD_SIGNAL(M_INFO("finished"));
 
 	BIND_ENUM_CONSTANT(TWEEN_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TWEEN_PROCESS_IDLE);

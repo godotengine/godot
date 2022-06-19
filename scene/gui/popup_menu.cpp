@@ -1930,9 +1930,9 @@ void PopupMenu::_bind_methods() {
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
-	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(M_INFO("id_pressed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("id_focused", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("index_pressed", PropertyInfo(Variant::INT, "index")));
 }
 
 void PopupMenu::popup(const Rect2 &p_bounds) {

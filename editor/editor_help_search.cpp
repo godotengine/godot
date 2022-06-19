@@ -147,7 +147,7 @@ void EditorHelpSearch::_notification(int p_what) {
 }
 
 void EditorHelpSearch::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(M_INFO("go_to_help"));
 }
 
 void EditorHelpSearch::popup_dialog() {

@@ -766,11 +766,11 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("_can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &EditorAudioBus::drop_data_fw);
 
-	ADD_SIGNAL(MethodInfo("duplicate_request"));
-	ADD_SIGNAL(MethodInfo("delete_request"));
-	ADD_SIGNAL(MethodInfo("vol_reset_request"));
-	ADD_SIGNAL(MethodInfo("drop_end_request"));
-	ADD_SIGNAL(MethodInfo("dropped"));
+	ADD_SIGNAL(M_INFO("duplicate_request"));
+	ADD_SIGNAL(M_INFO("delete_request"));
+	ADD_SIGNAL(M_INFO("vol_reset_request"));
+	ADD_SIGNAL(M_INFO("drop_end_request"));
+	ADD_SIGNAL(M_INFO("dropped"));
 }
 
 EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
@@ -990,7 +990,7 @@ void EditorAudioBusDrop::drop_data(const Point2 &p_point, const Variant &p_data)
 }
 
 void EditorAudioBusDrop::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("dropped"));
+	ADD_SIGNAL(M_INFO("dropped"));
 }
 
 EditorAudioBusDrop::EditorAudioBusDrop() {

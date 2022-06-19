@@ -70,10 +70,10 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_handshake_timeout", "timeout"), &WebSocketServer::set_handshake_timeout);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "handshake_timeout"), "set_handshake_timeout", "get_handshake_timeout");
 
-	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
-	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
-	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol"), PropertyInfo(Variant::STRING, "resource_name")));
-	ADD_SIGNAL(MethodInfo("data_received", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
+	ADD_SIGNAL(M_INFO("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
+	ADD_SIGNAL(M_INFO("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol"), PropertyInfo(Variant::STRING, "resource_name")));
+	ADD_SIGNAL(M_INFO("data_received", PropertyInfo(Variant::INT, "id")));
 }
 
 IPAddress WebSocketServer::get_bind_ip() const {

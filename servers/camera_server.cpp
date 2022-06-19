@@ -45,8 +45,8 @@ void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_feed", "feed"), &CameraServer::add_feed);
 	ClassDB::bind_method(D_METHOD("remove_feed", "feed"), &CameraServer::remove_feed);
 
-	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("camera_feed_added", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(M_INFO("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_IMAGE);

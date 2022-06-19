@@ -1074,8 +1074,8 @@ void EditorPropertyLayersGrid::set_flag(uint32_t p_flag) {
 }
 
 void EditorPropertyLayersGrid::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("flag_changed", PropertyInfo(Variant::INT, "flag")));
-	ADD_SIGNAL(MethodInfo("rename_confirmed", PropertyInfo(Variant::INT, "layer_id"), PropertyInfo(Variant::STRING, "new_name")));
+	ADD_SIGNAL(M_INFO("flag_changed", PropertyInfo(Variant::INT, "flag")));
+	ADD_SIGNAL(M_INFO("rename_confirmed", PropertyInfo(Variant::INT, "layer_id"), PropertyInfo(Variant::STRING, "new_name")));
 }
 
 void EditorPropertyLayers::_set_read_only(bool p_read_only) {

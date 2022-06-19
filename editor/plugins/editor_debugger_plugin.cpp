@@ -57,10 +57,10 @@ void EditorDebuggerPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_debuggable"), &EditorDebuggerPlugin::is_debuggable);
 	ClassDB::bind_method(D_METHOD("is_session_active"), &EditorDebuggerPlugin::is_session_active);
 
-	ADD_SIGNAL(MethodInfo("started"));
-	ADD_SIGNAL(MethodInfo("stopped"));
-	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "can_debug")));
-	ADD_SIGNAL(MethodInfo("continued"));
+	ADD_SIGNAL(M_INFO("started"));
+	ADD_SIGNAL(M_INFO("stopped"));
+	ADD_SIGNAL(M_INFO("breaked", PropertyInfo(Variant::BOOL, "can_debug")));
+	ADD_SIGNAL(M_INFO("continued"));
 }
 
 void EditorDebuggerPlugin::attach_debugger(ScriptEditorDebugger *p_debugger) {

@@ -215,7 +215,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 }
 
 void ThemeEditorPreview::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("control_picked", PropertyInfo(Variant::STRING, "class_name")));
+	ADD_SIGNAL(M_INFO("control_picked", PropertyInfo(Variant::STRING, "class_name")));
 }
 
 ThemeEditorPreview::ThemeEditorPreview() {
@@ -482,8 +482,8 @@ void SceneThemeEditorPreview::_notification(int p_what) {
 }
 
 void SceneThemeEditorPreview::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("scene_invalidated"));
-	ADD_SIGNAL(MethodInfo("scene_reloaded"));
+	ADD_SIGNAL(M_INFO("scene_invalidated"));
+	ADD_SIGNAL(M_INFO("scene_reloaded"));
 }
 
 bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {

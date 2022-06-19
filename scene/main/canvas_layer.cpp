@@ -338,7 +338,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enable"), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_lesser"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
-	ADD_SIGNAL(MethodInfo("visibility_changed"));
+	ADD_SIGNAL(M_INFO("visibility_changed"));
 }
 
 CanvasLayer::CanvasLayer() {

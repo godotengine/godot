@@ -85,8 +85,8 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
 
-	ADD_SIGNAL(MethodInfo("screen_entered"));
-	ADD_SIGNAL(MethodInfo("screen_exited"));
+	ADD_SIGNAL(M_INFO("screen_entered"));
+	ADD_SIGNAL(M_INFO("screen_exited"));
 }
 
 VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {

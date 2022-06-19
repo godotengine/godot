@@ -31,7 +31,7 @@
 #include "openxr_select_interaction_profile_dialog.h"
 
 void OpenXRSelectInteractionProfileDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("interaction_profile_selected", PropertyInfo(Variant::STRING, "interaction_profile")));
+	ADD_SIGNAL(M_INFO("interaction_profile_selected", PropertyInfo(Variant::STRING, "interaction_profile")));
 }
 
 void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {

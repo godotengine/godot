@@ -307,9 +307,9 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
 
-	ADD_SIGNAL(MethodInfo("confirmed"));
-	ADD_SIGNAL(MethodInfo("cancelled"));
-	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
+	ADD_SIGNAL(M_INFO("confirmed"));
+	ADD_SIGNAL(M_INFO("cancelled"));
+	ADD_SIGNAL(M_INFO("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
 
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");

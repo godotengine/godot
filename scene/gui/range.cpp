@@ -268,8 +268,8 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
-	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(M_INFO("value_changed", PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(M_INFO("changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value"), "set_max", "get_max");

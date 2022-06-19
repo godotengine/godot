@@ -1234,9 +1234,9 @@ void ColorPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_enabled"), "set_presets_enabled", "are_presets_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
 
-	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
-	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
-	ADD_SIGNAL(MethodInfo("preset_removed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(M_INFO("color_changed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(M_INFO("preset_added", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(M_INFO("preset_removed", PropertyInfo(Variant::COLOR, "color")));
 
 	BIND_ENUM_CONSTANT(SHAPE_HSV_RECTANGLE);
 	BIND_ENUM_CONSTANT(SHAPE_HSV_WHEEL);
@@ -1525,9 +1525,9 @@ void ColorPickerButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(D_METHOD("_about_to_popup"), &ColorPickerButton::_about_to_popup);
 
-	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
-	ADD_SIGNAL(MethodInfo("popup_closed"));
-	ADD_SIGNAL(MethodInfo("picker_created"));
+	ADD_SIGNAL(M_INFO("color_changed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(M_INFO("popup_closed"));
+	ADD_SIGNAL(M_INFO("picker_created"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }

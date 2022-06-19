@@ -5442,17 +5442,17 @@ void TextEdit::_bind_methods() {
 
 	/* Signals */
 	/* Core. */
-	ADD_SIGNAL(MethodInfo("text_set"));
-	ADD_SIGNAL(MethodInfo("text_changed"));
-	ADD_SIGNAL(MethodInfo("lines_edited_from", PropertyInfo(Variant::INT, "from_line"), PropertyInfo(Variant::INT, "to_line")));
+	ADD_SIGNAL(M_INFO("text_set"));
+	ADD_SIGNAL(M_INFO("text_changed"));
+	ADD_SIGNAL(M_INFO("lines_edited_from", PropertyInfo(Variant::INT, "from_line"), PropertyInfo(Variant::INT, "to_line")));
 
 	/* Caret. */
-	ADD_SIGNAL(MethodInfo("caret_changed"));
+	ADD_SIGNAL(M_INFO("caret_changed"));
 
 	/* Gutters. */
-	ADD_SIGNAL(MethodInfo("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
-	ADD_SIGNAL(MethodInfo("gutter_added"));
-	ADD_SIGNAL(MethodInfo("gutter_removed"));
+	ADD_SIGNAL(M_INFO("gutter_clicked", PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "gutter")));
+	ADD_SIGNAL(M_INFO("gutter_added"));
+	ADD_SIGNAL(M_INFO("gutter_removed"));
 
 	/* Settings. */
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);

@@ -32,7 +32,7 @@
 #include "editor/editor_node.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));
+	ADD_SIGNAL(M_INFO("action_selected", PropertyInfo(Variant::STRING, "action")));
 }
 
 void OpenXRSelectActionDialog::_notification(int p_what) {

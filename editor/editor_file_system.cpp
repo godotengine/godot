@@ -2374,10 +2374,10 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_script_classes"), &EditorFileSystem::update_script_classes);
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
-	ADD_SIGNAL(MethodInfo("filesystem_changed"));
-	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
-	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
-	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
+	ADD_SIGNAL(M_INFO("filesystem_changed"));
+	ADD_SIGNAL(M_INFO("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
+	ADD_SIGNAL(M_INFO("resources_reimported", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
+	ADD_SIGNAL(M_INFO("resources_reload", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
 }
 
 void EditorFileSystem::_update_extensions() {

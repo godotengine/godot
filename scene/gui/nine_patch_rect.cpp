@@ -69,7 +69,7 @@ void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchRect::set_v_axis_stretch_mode);
 	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &NinePatchRect::get_v_axis_stretch_mode);
 
-	ADD_SIGNAL(MethodInfo("texture_changed"));
+	ADD_SIGNAL(M_INFO("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");

@@ -63,8 +63,8 @@ void EditorDebuggerTree::_notification(int p_what) {
 }
 
 void EditorDebuggerTree::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::INT, "debugger")));
-	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(M_INFO("object_selected", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(M_INFO("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
 }
 
 void EditorDebuggerTree::_scene_tree_selected() {

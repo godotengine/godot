@@ -879,7 +879,7 @@ void ThemeItemImportTree::_notification(int p_what) {
 }
 
 void ThemeItemImportTree::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("items_imported"));
+	ADD_SIGNAL(M_INFO("items_imported"));
 }
 
 ThemeItemImportTree::ThemeItemImportTree() {
@@ -2194,7 +2194,7 @@ void ThemeTypeDialog::_notification(int p_what) {
 }
 
 void ThemeTypeDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(Variant::STRING, "type_name")));
+	ADD_SIGNAL(M_INFO("type_selected", PropertyInfo(Variant::STRING, "type_name")));
 }
 
 void ThemeTypeDialog::set_edited_theme(const Ref<Theme> &p_theme) {

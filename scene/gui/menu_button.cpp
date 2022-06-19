@@ -220,7 +220,7 @@ void MenuButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
-	ADD_SIGNAL(MethodInfo("about_to_popup"));
+	ADD_SIGNAL(M_INFO("about_to_popup"));
 }
 
 void MenuButton::set_disable_shortcuts(bool p_disabled) {

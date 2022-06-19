@@ -1236,18 +1236,18 @@ void SceneTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
-	ADD_SIGNAL(MethodInfo("node_selected"));
-	ADD_SIGNAL(MethodInfo("node_renamed"));
-	ADD_SIGNAL(MethodInfo("node_prerename"));
-	ADD_SIGNAL(MethodInfo("node_changed"));
-	ADD_SIGNAL(MethodInfo("nodes_dragged"));
-	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
-	ADD_SIGNAL(MethodInfo("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
+	ADD_SIGNAL(M_INFO("node_selected"));
+	ADD_SIGNAL(M_INFO("node_renamed"));
+	ADD_SIGNAL(M_INFO("node_prerename"));
+	ADD_SIGNAL(M_INFO("node_changed"));
+	ADD_SIGNAL(M_INFO("nodes_dragged"));
+	ADD_SIGNAL(M_INFO("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(M_INFO("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(M_INFO("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
+	ADD_SIGNAL(M_INFO("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
 
-	ADD_SIGNAL(MethodInfo("open"));
-	ADD_SIGNAL(MethodInfo("open_script"));
+	ADD_SIGNAL(M_INFO("open"));
+	ADD_SIGNAL(M_INFO("open_script"));
 }
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) {
@@ -1365,7 +1365,7 @@ void SceneTreeDialog::_filter_changed(const String &p_filter) {
 void SceneTreeDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &SceneTreeDialog::_cancel);
 
-	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::NODE_PATH, "path")));
+	ADD_SIGNAL(M_INFO("selected", PropertyInfo(Variant::NODE_PATH, "path")));
 }
 
 SceneTreeDialog::SceneTreeDialog() {

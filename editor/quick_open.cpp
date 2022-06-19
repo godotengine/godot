@@ -241,7 +241,7 @@ void EditorQuickOpen::_theme_changed() {
 }
 
 void EditorQuickOpen::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("quick_open"));
+	ADD_SIGNAL(M_INFO("quick_open"));
 }
 
 EditorQuickOpen::EditorQuickOpen() {

@@ -484,7 +484,7 @@ void LocalizationEditor::update_translations() {
 void LocalizationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_translations"), &LocalizationEditor::update_translations);
 
-	ADD_SIGNAL(MethodInfo("localization_changed"));
+	ADD_SIGNAL(M_INFO("localization_changed"));
 }
 
 LocalizationEditor::LocalizationEditor() {

@@ -32,7 +32,7 @@
 // #include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
+	ADD_SIGNAL(M_INFO("play_area_changed", PropertyInfo(Variant::INT, "mode")));
 
 	ClassDB::bind_method(D_METHOD("get_name"), &XRInterface::get_name);
 	ClassDB::bind_method(D_METHOD("get_capabilities"), &XRInterface::get_capabilities);
