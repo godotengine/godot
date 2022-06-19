@@ -62,7 +62,7 @@ Files extracted from upstream source:
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.8 (7b9885133108ae301ddd16e2651320f54cafeba7, 2022)
+- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
 - License: MIT
 
 Files extracted from upstream source:
