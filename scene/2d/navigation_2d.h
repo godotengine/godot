@@ -68,6 +68,8 @@ public:
 	Vector2 get_closest_point(const Vector2 &p_point) const;
 	RID get_closest_point_owner(const Vector2 &p_point) const;
 
+	virtual String get_configuration_warning() const;
+
 	Navigation2D();
 	~Navigation2D();
 };
