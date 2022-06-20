@@ -194,7 +194,7 @@ bool ShaderGLES3::_bind_ubershader() {
 	// which are more compatible across GL driver vendors.
 	CRASH_COND(new_conditional_version.version >= 0x80000000);
 #endif
-	glUniform1ui(conditionals_uniform, new_conditional_version.version);
+	glUniform1i(conditionals_uniform, new_conditional_version.version);
 	return bound;
 }
 
