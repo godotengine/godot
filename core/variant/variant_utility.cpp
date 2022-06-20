@@ -1423,17 +1423,17 @@ uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	ERR_FAIL_COND_V(!bfi, 0);
 
-	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
-	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
+	hash = hash_murmur3_one_32(bfi->returns_value, hash);
 	if (bfi->returns_value) {
-		hash = hash_djb2_one_32(bfi->return_type, hash);
+		hash = hash_murmur3_one_32(bfi->return_type, hash);
 	}
-	hash = hash_djb2_one_32(bfi->argcount, hash);
+	hash = hash_murmur3_one_32(bfi->argcount, hash);
 	for (int i = 0; i < bfi->argcount; i++) {
-		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+		hash = hash_murmur3_one_32(bfi->get_arg_type(i), hash);
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {

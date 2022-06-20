@@ -110,7 +110,7 @@ private:
 		uint32_t key = 0;
 
 		static uint32_t hash(const MaterialKey &p_key) {
-			return hash_djb2_one_32(p_key.key);
+			return hash_murmur3_one_32(p_key.key);
 		}
 
 		bool operator==(const MaterialKey &p_key) const {

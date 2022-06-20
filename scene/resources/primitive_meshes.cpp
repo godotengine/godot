@@ -2435,7 +2435,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 		if (glyphs[i].font_rid != RID()) {
 			uint32_t hash = hash_one_uint64(glyphs[i].font_rid.get_id());
-			hash = hash_djb2_one_32(glyphs[i].index, hash);
+			hash = hash_murmur3_one_32(glyphs[i].index, hash);
 
 			_generate_glyph_mesh_data(hash, glyphs[i]);
 			GlyphMeshData &gl_data = cache[hash];
@@ -2494,7 +2494,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 		if (glyphs[i].font_rid != RID()) {
 			uint32_t hash = hash_one_uint64(glyphs[i].font_rid.get_id());
-			hash = hash_djb2_one_32(glyphs[i].index, hash);
+			hash = hash_murmur3_one_32(glyphs[i].index, hash);
 
 			const GlyphMeshData &gl_data = cache[hash];
 

@@ -155,8 +155,8 @@ private:
 
 		static uint32_t hash(const TrackNodeCacheKey &p_key) {
 			uint32_t h = hash_one_uint64(p_key.id);
-			h = hash_djb2_one_32(p_key.bone_idx, h);
-			return hash_djb2_one_32(p_key.blend_shape_idx, h);
+			h = hash_murmur3_one_32(p_key.bone_idx, h);
+			return hash_fmix32(hash_murmur3_one_32(p_key.blend_shape_idx, h));
 		}
 
 		inline bool operator==(const TrackNodeCacheKey &p_right) const {

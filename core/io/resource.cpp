@@ -100,14 +100,14 @@ String Resource::generate_scene_unique_id() {
 	// If it's not unique it does not matter because the saver will try again.
 	OS::Date date = OS::get_singleton()->get_date();
 	OS::Time time = OS::get_singleton()->get_time();
-	uint32_t hash = hash_djb2_one_32(OS::get_singleton()->get_ticks_usec());
-	hash = hash_djb2_one_32(date.year, hash);
-	hash = hash_djb2_one_32(date.month, hash);
-	hash = hash_djb2_one_32(date.day, hash);
-	hash = hash_djb2_one_32(time.hour, hash);
-	hash = hash_djb2_one_32(time.minute, hash);
-	hash = hash_djb2_one_32(time.second, hash);
-	hash = hash_djb2_one_32(Math::rand(), hash);
+	uint32_t hash = hash_murmur3_one_32(OS::get_singleton()->get_ticks_usec());
+	hash = hash_murmur3_one_32(date.year, hash);
+	hash = hash_murmur3_one_32(date.month, hash);
+	hash = hash_murmur3_one_32(date.day, hash);
+	hash = hash_murmur3_one_32(time.hour, hash);
+	hash = hash_murmur3_one_32(time.minute, hash);
+	hash = hash_murmur3_one_32(time.second, hash);
+	hash = hash_murmur3_one_32(Math::rand(), hash);
 
 	static constexpr uint32_t characters = 5;
 	static constexpr uint32_t char_count = ('z' - 'a');
@@ -328,7 +328,7 @@ void Resource::notify_change_to_owners() {
 #ifdef TOOLS_ENABLED
 
 uint32_t Resource::hash_edited_version() const {
-	uint32_t hash = hash_djb2_one_32(get_edited_version());
+	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -337,7 +337,7 @@ uint32_t Resource::hash_edited_version() const {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_djb2_one_32(res->hash_edited_version(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
 			}
 		}
 	}

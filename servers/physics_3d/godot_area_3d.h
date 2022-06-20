@@ -74,9 +74,9 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 		static uint32_t hash(const BodyKey &p_key) {
 			uint32_t h = hash_one_uint64(p_key.rid.get_id());
-			h = hash_djb2_one_64(p_key.instance_id, h);
-			h = hash_djb2_one_32(p_key.area_shape, h);
-			return hash_djb2_one_32(p_key.body_shape, h);
+			h = hash_murmur3_one_64(p_key.instance_id, h);
+			h = hash_murmur3_one_32(p_key.area_shape, h);
+			return hash_fmix32(hash_murmur3_one_32(p_key.body_shape, h));
 		}
 
 		_FORCE_INLINE_ bool operator==(const BodyKey &p_key) const {
