@@ -1147,7 +1147,7 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 	property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, p_type, p_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	property_editor->set_object_and_property(dummy_object, p_property);
 	if (p_label.is_empty()) {
-		property_editor->set_label(p_property);
+		property_editor->set_label(EditorPropertyNameProcessor::get_singleton()->process_name(p_property, EditorPropertyNameProcessor::get_default_inspector_style()));
 	} else {
 		property_editor->set_label(p_label);
 	}
@@ -1173,6 +1173,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 
 	label = memnew(Label);
 	label->set_text(TTR("Painting:"));
+	label->set_theme_type_variation("HeaderSmall");
 	add_child(label);
 
 	toolbar->add_child(memnew(VSeparator));
@@ -2566,7 +2567,8 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	undo_redo = EditorNode::get_undo_redo();
 
 	label = memnew(Label);
-	label->set_text("Painting:");
+	label->set_text(TTR("Painting:"));
+	label->set_theme_type_variation("HeaderSmall");
 	add_child(label);
 
 	// Toolbar
