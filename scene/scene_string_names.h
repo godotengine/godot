@@ -72,7 +72,7 @@ public:
 	StringName tree_exited;
 	StringName ready;
 	StringName child_entered_tree;
-	StringName child_exited_tree;
+	StringName child_exiting_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
 	StringName sleeping_state_changed;

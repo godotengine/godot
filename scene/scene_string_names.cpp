@@ -52,7 +52,7 @@ SceneStringNames::SceneStringNames() {
 	tree_exited = StaticCString::create("tree_exited");
 	ready = StaticCString::create("ready");
 	child_entered_tree = StaticCString::create("child_entered_tree");
-	child_exited_tree = StaticCString::create("child_exited_tree");
+	child_exiting_tree = StaticCString::create("child_exiting_tree");
 	item_rect_changed = StaticCString::create("item_rect_changed");
 	size_flags_changed = StaticCString::create("size_flags_changed");
 	minimum_size_changed = StaticCString::create("minimum_size_changed");
