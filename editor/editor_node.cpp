@@ -553,6 +553,8 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 	tree->set_debug_navigation_color(GLOBAL_GET("debug/shapes/navigation/geometry_color"));
 	tree->set_debug_navigation_disabled_color(GLOBAL_GET("debug/shapes/navigation/disabled_geometry_color"));
+
+	_update_title();
 }
 
 void EditorNode::_select_default_main_screen_plugin() {
@@ -582,10 +584,7 @@ void EditorNode::_notification(int p_what) {
 				opening_prev = false;
 			}
 
-			if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
-				unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
-				_update_title();
-			}
+			unsaved_cache = saved_version != editor_data.get_undo_redo().get_version();
 
 			if (last_checked_version != editor_data.get_undo_redo().get_version()) {
 				_update_scene_tabs();
