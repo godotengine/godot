@@ -300,7 +300,7 @@ void Node::_propagate_exit_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signalp(SNAME("child_exited_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_exiting_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -2973,7 +2973,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
