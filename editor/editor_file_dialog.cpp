@@ -1687,6 +1687,7 @@ EditorFileDialog::EditorFileDialog() {
 	file = memnew(LineEdit);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
+	file->set_deselect_on_focus_loss_enabled(false);
 	file_box->add_child(file);
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
