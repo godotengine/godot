@@ -40,6 +40,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationAgent2D::set_avoidance_enabled);
 	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationAgent2D::get_avoidance_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_path_desired_distance", "desired_distance"), &NavigationAgent2D::set_path_desired_distance);
+	ClassDB::bind_method(D_METHOD("get_path_desired_distance"), &NavigationAgent2D::get_path_desired_distance);
+
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
@@ -81,6 +84,7 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:px"), "set_path_desired_distance", "get_path_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:px"), "set_target_desired_distance", "get_target_desired_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01,suffix:px"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_dist", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px"), "set_neighbor_dist", "get_neighbor_dist");
@@ -232,6 +236,10 @@ RID NavigationAgent2D::get_navigation_map() const {
 		return agent_parent->get_world_2d()->get_navigation_map();
 	}
 	return RID();
+}
+
+void NavigationAgent2D::set_path_desired_distance(real_t p_dd) {
+	path_desired_distance = p_dd;
 }
 
 void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
@@ -399,7 +407,7 @@ void NavigationAgent2D::update_navigation() {
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
-		while (o.distance_to(navigation_path[nav_path_index]) < target_desired_distance) {
+		while (o.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
 				_check_distance_to_target();
