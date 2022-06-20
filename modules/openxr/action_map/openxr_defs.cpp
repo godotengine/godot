@@ -32,8 +32,28 @@
 
 // Our top level paths to which devices can be bound
 OpenXRDefs::TopLevelPath OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_TOP_LEVEL_PATH_MAX] = {
+	// Core OpenXR paths
 	{ "Left hand controller", "/user/hand/left" },
 	{ "Right hand controller", "/user/hand/right" },
+	{ "Head", "/user/head" },
+	{ "Gamepad", "/user/gamepad" },
+	{ "Treadmill", "/user/treadmill" },
+
+	// Specific to HTC tracker extension
+	// { "Handheld object tracker", "/user/vive_tracker_htcx/role/handheld_object" },
+	{ "Left foot tracker", "/user/vive_tracker_htcx/role/left_foot" },
+	{ "Right foot tracker", "/user/vive_tracker_htcx/role/right_foot" },
+	{ "Left shoulder tracker", "/user/vive_tracker_htcx/role/left_shoulder" },
+	{ "Right shoulder tracker", "/user/vive_tracker_htcx/role/right_shoulder" },
+	{ "Left elbow tracker", "/user/vive_tracker_htcx/role/left_elbow" },
+	{ "Right elbow tracker", "/user/vive_tracker_htcx/role/right_elbow" },
+	{ "Left knee tracker", "/user/vive_tracker_htcx/role/left_knee" },
+	{ "Right knee tracker", "/user/vive_tracker_htcx/role/right_knee" },
+	{ "Waist tracker", "/user/vive_tracker_htcx/role/waist" },
+	{ "Chest tracker", "/user/vive_tracker_htcx/role/chest" },
+	{ "Camera tracker", "/user/vive_tracker_htcx/role/camera" },
+	{ "Keyboard tracker", "/user/vive_tracker_htcx/role/keyboard" },
+
 };
 
 // Fallback Khronos simple controller
@@ -378,6 +398,137 @@ OpenXRDefs::IOPath OpenXRDefs::huawei_controller_paths[] = {
 	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
 };
 
+// HTC Vive tracker
+// Interestingly enough trackers don't have buttons or inputs, yet these are defined in the spec.
+// I think this can be supported through attachments on the trackers.
+OpenXRDefs::IOPath OpenXRDefs::vive_tracker_controller_paths[] = {
+	// { "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	// { "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+	{ "Trigger", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/trigger/value", OpenXRAction::OPENXR_ACTION_FLOAT },
+
+	// { "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trigger click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/trigger/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	// { "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Squeeze click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/squeeze/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	// { "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+	{ "Trackpad", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2 },
+
+	// { "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/trackpad/click", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	// { "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+	{ "Trackpad touch", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/trackpad/touch", OpenXRAction::OPENXR_ACTION_BOOL },
+
+	// { "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
+
+	// { "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_HANDHELD_TRACKER], "/user/vive_tracker_htcx/role/handheld_object/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/left_foot/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_FOOT_TRACKER], "/user/vive_tracker_htcx/role/right_foot/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/left_shoulder/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_SHOULDER_TRACKER], "/user/vive_tracker_htcx/role/right_shoulder/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/left_elbow/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_ELBOW_TRACKER], "/user/vive_tracker_htcx/role/right_elbow/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_LEFT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/left_knee/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_RIGHT_KNEE_TRACKER], "/user/vive_tracker_htcx/role/right_knee/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_WAIST_TRACKER], "/user/vive_tracker_htcx/role/waist/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CHEST_TRACKER], "/user/vive_tracker_htcx/role/chest/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_CAMERA_TRACKER], "/user/vive_tracker_htcx/role/camera/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+	{ "Haptic output", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_HTC_KEYBOARD_TRACKER], "/user/vive_tracker_htcx/role/keyboard/output/haptic", OpenXRAction::OPENXR_ACTION_HAPTIC },
+};
+
 OpenXRDefs::InteractionProfile OpenXRDefs::available_interaction_profiles[] = {
 	{
 			"Simple controller", // display_name
@@ -438,6 +589,13 @@ OpenXRDefs::InteractionProfile OpenXRDefs::available_interaction_profiles[] = {
 			"/interaction_profiles/huawei/controller", // openxr_path
 			huawei_controller_paths, // io_paths
 			sizeof(huawei_controller_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
+	},
+
+	{
+			"HTC Vive tracker", // display_name
+			"/interaction_profiles/htc/vive_tracker_htcx", // openxr_path
+			vive_tracker_controller_paths, // io_paths
+			sizeof(vive_tracker_controller_paths) / sizeof(OpenXRDefs::IOPath) // io_path_count
 	},
 };
 

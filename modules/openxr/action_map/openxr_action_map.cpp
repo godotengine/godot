@@ -182,10 +182,40 @@ void OpenXRActionMap::create_default_action_sets() {
 	Ref<OpenXRAction> ax_touch = action_set->add_new_action("ax_touch", "A/X touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> by_button = action_set->add_new_action("by_button", "B/Y button", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> by_touch = action_set->add_new_action("by_touch", "B/Y touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
-	Ref<OpenXRAction> default_pose = action_set->add_new_action("default_pose", "Default pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
+	Ref<OpenXRAction> default_pose = action_set->add_new_action("default_pose", "Default pose", OpenXRAction::OPENXR_ACTION_POSE,
+			"/user/hand/left,"
+			"/user/hand/right,"
+			// "/user/vive_tracker_htcx/role/handheld_object," <-- getting errors on this one
+			"/user/vive_tracker_htcx/role/left_foot,"
+			"/user/vive_tracker_htcx/role/right_foot,"
+			"/user/vive_tracker_htcx/role/left_shoulder,"
+			"/user/vive_tracker_htcx/role/right_shoulder,"
+			"/user/vive_tracker_htcx/role/left_elbow,"
+			"/user/vive_tracker_htcx/role/right_elbow,"
+			"/user/vive_tracker_htcx/role/left_knee,"
+			"/user/vive_tracker_htcx/role/right_knee,"
+			"/user/vive_tracker_htcx/role/waist,"
+			"/user/vive_tracker_htcx/role/chest,"
+			"/user/vive_tracker_htcx/role/camera,"
+			"/user/vive_tracker_htcx/role/keyboard");
 	Ref<OpenXRAction> aim_pose = action_set->add_new_action("aim_pose", "Aim pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_pose = action_set->add_new_action("grip_pose", "Grip pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
-	Ref<OpenXRAction> haptic = action_set->add_new_action("haptic", "Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC, "/user/hand/left,/user/hand/right");
+	Ref<OpenXRAction> haptic = action_set->add_new_action("haptic", "Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC,
+			"/user/hand/left,"
+			"/user/hand/right,"
+			// "/user/vive_tracker_htcx/role/handheld_object," <-- getting errors on this one
+			"/user/vive_tracker_htcx/role/left_foot,"
+			"/user/vive_tracker_htcx/role/right_foot,"
+			"/user/vive_tracker_htcx/role/left_shoulder,"
+			"/user/vive_tracker_htcx/role/right_shoulder,"
+			"/user/vive_tracker_htcx/role/left_elbow,"
+			"/user/vive_tracker_htcx/role/right_elbow,"
+			"/user/vive_tracker_htcx/role/left_knee,"
+			"/user/vive_tracker_htcx/role/right_knee,"
+			"/user/vive_tracker_htcx/role/waist,"
+			"/user/vive_tracker_htcx/role/chest,"
+			"/user/vive_tracker_htcx/role/camera,"
+			"/user/vive_tracker_htcx/role/keyboard");
 
 	// Create our interaction profiles
 	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/simple_controller");
@@ -399,6 +429,37 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(primary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
 	profile->add_new_binding(primary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
+
+	// Create our HTC Vive tracker profile
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_tracker_htcx");
+	profile->add_new_binding(default_pose,
+			// "/user/vive_tracker_htcx/role/handheld_object/input/grip/pose," <-- getting errors on this one
+			"/user/vive_tracker_htcx/role/left_foot/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_foot/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_shoulder/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_shoulder/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_elbow/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_elbow/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_knee/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_knee/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/waist/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/chest/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/camera/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose");
+	profile->add_new_binding(haptic,
+			// "/user/vive_tracker_htcx/role/handheld_object/output/haptic," <-- getting errors on this one
+			"/user/vive_tracker_htcx/role/left_foot/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_foot/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_shoulder/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_shoulder/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_elbow/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_elbow/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_knee/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_knee/output/haptic,"
+			"/user/vive_tracker_htcx/role/waist/output/haptic,"
+			"/user/vive_tracker_htcx/role/chest/output/haptic,"
+			"/user/vive_tracker_htcx/role/camera/output/haptic,"
+			"/user/vive_tracker_htcx/role/keyboard/output/haptic");
 	add_interaction_profile(profile);
 }
 
