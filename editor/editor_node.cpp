@@ -7054,7 +7054,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin));
 	add_editor_plugin(memnew(ShaderFileEditorPlugin));
-	add_editor_plugin(memnew(VisualShaderEditorPlugin));
 
 	add_editor_plugin(memnew(Camera3DEditorPlugin));
 	add_editor_plugin(memnew(ThemeEditorPlugin));
