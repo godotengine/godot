@@ -4,6 +4,7 @@
 		2D navigation and pathfinding node.
 	</brief_description>
 	<description>
+		[i]Deprecated.[/i] [Navigation2D] node and [method get_simple_path] are deprecated and will be removed in a future version. Use [method Navigation2DServer.map_get_path] instead.
 		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. By default, these are automatically collected from child [NavigationPolygonInstance] nodes.
 	</description>
 	<tutorials>
@@ -36,6 +37,7 @@
 			<argument index="1" name="end" type="Vector2" />
 			<argument index="2" name="optimize" type="bool" default="true" />
 			<description>
+				[i]Deprecated.[/i] [Navigation2D] node and [method get_simple_path] are deprecated and will be removed in a future version. Use [method Navigation2DServer.map_get_path] instead.
 				Returns the path between two given points. Points are in local coordinate space. If [code]optimize[/code] is [code]true[/code] (the default), the path is smoothed by merging path segments where possible.
 			</description>
 		</method>
