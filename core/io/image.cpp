@@ -85,6 +85,7 @@ SaveJPGFunc Image::save_jpg_func = nullptr;
 SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
+SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
 SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
 
 SaveWebPFunc Image::save_webp_func = nullptr;
@@ -2323,6 +2324,13 @@ Error Image::save_exr(const String &p_path, bool p_grayscale) const {
 	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
 }
 
+Vector<uint8_t> Image::save_exr_to_buffer() const {
+	if (save_exr_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+	return save_exr_buffer_func(Ref<Image>((Image *)this), false);
+}
+
 Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality) const {
 	if (save_webp_func == nullptr) {
 		return ERR_UNAVAILABLE;
@@ -3180,6 +3188,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::save_webp, DEFVAL(false), DEFVAL(0.75f));
 	ClassDB::bind_method(D_METHOD("save_webp_to_buffer", "lossy", "quality"), &Image::save_webp_to_buffer, DEFVAL(false), DEFVAL(0.75f));
 
