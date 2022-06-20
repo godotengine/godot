@@ -1933,11 +1933,6 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
-		<member name="rendering/textures/vram_compression/minimum_size" type="int" setter="" getter="" default="512">
-			When a texture is detected as used in 3D in the editor, only enable VRAM compression if its size is greater than or equal to [code]minimum_size * minimum_size[/code] pixels. This is done to prevent reducing texture quality when it doesn't save much video memory, especially for pixel art.
-			For non-square textures, the pixel count is used. For example, with [member rendering/textures/vram_compression/minimum_size] set to [code]512[/code], a 512×512 texture will use VRAM compression, while 256×256 textures, 256×512 and 1024×64 textures will keep their existing compression mode (Lossless by default).
-			[b]Note:[/b] This project setting only affects textures that are detected to be used in 3D at a given time. Textures that were already imported will not be affected by changes to this setting. To force 3D detection to occur again, select a texture in the FileSystem dock, change its Detect 3D import option in the Import dock to [b]VRAM Compressed[/b] or [b]Basis Universal[/b] then click [b]Reimport[/b].
-		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">

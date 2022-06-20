@@ -1250,9 +1250,6 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
-
-	GLOBAL_DEF("rendering/textures/vram_compression/minimum_size", 512);
-	custom_prop_info["rendering/textures/vram_compression/minimum_size"] = PropertyInfo(Variant::INT, "rendering/textures/vram_compression/minimum_size", PROPERTY_HINT_RANGE, "16,16384,1");
 }
 
 ProjectSettings::~ProjectSettings() {
