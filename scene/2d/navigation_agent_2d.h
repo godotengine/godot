@@ -89,6 +89,9 @@ public:
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
 
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
+
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
 
