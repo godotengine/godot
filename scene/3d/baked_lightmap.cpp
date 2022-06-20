@@ -792,6 +792,20 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_data_sa
 					if (env.is_valid()) {
 						environment_image = _get_irradiance_map(env, Vector2i(128, 64));
 						environment_xform = get_global_transform().affine_inverse().basis * env->get_sky_orientation();
+
+						float ambient_sky = env->get_ambient_light_sky_contribution();
+						float energy = env->get_ambient_light_energy();
+						if (ambient_sky != 1.0 || energy != 1.0) {
+							Color ambient_light = env->get_ambient_light_color().to_linear() * (1.0 - ambient_sky) * energy;
+							environment_image->lock();
+							for (int i = 0; i < 128; i++) {
+								for (int j = 0; j < 64; j++) {
+									Color c = ambient_light + environment_image->get_pixel(i, j) * ambient_sky * energy;
+									environment_image->set_pixel(i, j, c);
+								}
+							}
+							environment_image->unlock();
+						}
 					}
 				}
 			} break;
