@@ -696,7 +696,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_pressed() && items.size() > 0) {
 		if (p_event->is_action("ui_up")) {
-			if (!search_string.is_empty()) {
+			if (search_string.is_not_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 
@@ -734,7 +734,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_down")) {
-			if (!search_string.is_empty()) {
+			if (search_string.is_not_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 

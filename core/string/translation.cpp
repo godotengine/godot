@@ -365,7 +365,7 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 			}
 		}
 	}
-	if (!script.is_empty() && country.is_empty()) {
+	if (script.is_not_empty() && country.is_empty()) {
 		// Add conntry code based on script for some ambiguous cases.
 		for (int i = 0; i < locale_script_info.size(); i++) {
 			const LocaleScriptInfo &info = locale_script_info[i];
@@ -378,13 +378,13 @@ String TranslationServer::standardize_locale(const String &p_locale) const {
 
 	// Combine results.
 	String locale = lang;
-	if (!script.is_empty()) {
+	if (script.is_not_empty()) {
 		locale = locale + "_" + script;
 	}
-	if (!country.is_empty()) {
+	if (country.is_not_empty()) {
 		locale = locale + "_" + country;
 	}
-	if (!variant.is_empty()) {
+	if (variant.is_not_empty()) {
 		locale = locale + "_" + variant;
 	}
 	return locale;
@@ -440,10 +440,10 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	}
 
 	String name = language_map[lang];
-	if (!script.is_empty()) {
+	if (script.is_not_empty()) {
 		name = name + " (" + script_map[script] + ")";
 	}
-	if (!country.is_empty()) {
+	if (country.is_not_empty()) {
 		name = name + ", " + country_name_map[country];
 	}
 	return name;
@@ -653,7 +653,7 @@ bool TranslationServer::_load_translations(const String &p_from) {
 void TranslationServer::setup() {
 	String test = GLOBAL_DEF("internationalization/locale/test", "");
 	test = test.strip_edges();
-	if (!test.is_empty()) {
+	if (test.is_not_empty()) {
 		set_locale(test);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());

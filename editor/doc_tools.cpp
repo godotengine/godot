@@ -1043,7 +1043,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (!path.is_empty()) {
+	while (path.is_not_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
@@ -1073,7 +1073,7 @@ Error DocTools::erase_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (!path.is_empty()) {
+	while (path.is_not_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}

@@ -321,7 +321,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		for (int i = 0; i < keycode_get_count(); i++) {
 			String name = keycode_get_name_by_index(i);
 
-			if (!search_term.is_empty() && name.findn(search_term) == -1) {
+			if (search_term.is_not_empty() && name.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -345,7 +345,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			mb->set_button_index(mouse_buttons[i]);
 			String desc = get_event_text(mb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (search_term.is_not_empty() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -368,7 +368,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joyb->set_button_index((JoyButton)i);
 			String desc = get_event_text(joyb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (search_term.is_not_empty() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -394,7 +394,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym->set_axis_value(direction);
 			String desc = get_event_text(joym, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (search_term.is_not_empty() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -806,7 +806,7 @@ String ActionMapEditor::_check_new_action_name(const String &p_name) {
 void ActionMapEditor::_add_edit_text_changed(const String &p_name) {
 	String error = _check_new_action_name(p_name);
 	add_button->set_tooltip(error);
-	add_button->set_disabled(!error.is_empty());
+	add_button->set_disabled(error.is_not_empty());
 }
 
 bool ActionMapEditor::_has_action(const String &p_name) const {
@@ -820,7 +820,7 @@ bool ActionMapEditor::_has_action(const String &p_name) const {
 
 void ActionMapEditor::_add_action(const String &p_name) {
 	String error = _check_new_action_name(p_name);
-	if (!error.is_empty()) {
+	if (error.is_not_empty()) {
 		show_message(error);
 		return;
 	}
@@ -1103,7 +1103,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		}
 
 		String search_term = action_list_search->get_text();
-		if (!search_term.is_empty() && action_info.name.findn(search_term) == -1) {
+		if (search_term.is_not_empty() && action_info.name.findn(search_term) == -1) {
 			continue;
 		}
 

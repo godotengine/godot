@@ -1642,7 +1642,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		int err_line = current_node_id; // Not a line but it works as one.
 
 		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str.is_empty())) {
-			if (!error_str.is_empty()) {
+			if (error_str.is_not_empty()) {
 				error_str += " ";
 			}
 

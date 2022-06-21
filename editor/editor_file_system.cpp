@@ -293,7 +293,7 @@ void EditorFileSystem::_scan_filesystem() {
 		{
 			Ref<FileAccess> f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
-			while (!l.is_empty()) {
+			while (l.is_not_empty()) {
 				file_cache.erase(l); //erase cache for this, so it gets updated
 				l = f2->get_line().strip_edges();
 			}
@@ -398,7 +398,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			if (assign.begins_with("path")) {
 				to_check.push_back(value);
 			} else if (assign == "files") {
@@ -466,7 +466,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			ERR_PRINT("ResourceFormatImporter::load - '" + p_path + ".import.md5:" + itos(lines) + "' error '" + error_text + "'.");
 			return false; // parse error
 		}
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			if (!p_only_imported_files) {
 				if (assign == "source_md5") {
 					source_md5 = value;
@@ -486,7 +486,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check source md5 matching
 	if (!p_only_imported_files) {
-		if (!source_file.is_empty() && source_file != p_path) {
+		if (source_file.is_not_empty() && source_file != p_path) {
 			return true; //file was moved, reimport
 		}
 
@@ -499,7 +499,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return true;
 		}
 
-		if (dest_files.size() && !dest_md5.is_empty()) {
+		if (dest_files.size() && dest_md5.is_not_empty()) {
 			md5 = FileAccess::get_multiple_md5(dest_files);
 			if (md5 != dest_md5) {
 				return true;
@@ -1654,7 +1654,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		String file_importer_name = config->get_value("remap", "importer");
 		ERR_CONTINUE(file_importer_name.is_empty());
 
-		if (!importer_name.is_empty() && importer_name != file_importer_name) {
+		if (importer_name.is_not_empty() && importer_name != file_importer_name) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("There are multiple importers for different types pointing to file %s, import aborted"), p_group_file));
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
@@ -1819,7 +1819,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	HashMap<StringName, Variant> params;
 	String importer_name; //empty by default though
 
-	if (!p_custom_importer.is_empty()) {
+	if (p_custom_importer.is_not_empty()) {
 		importer_name = p_custom_importer;
 	}
 	if (p_custom_options != nullptr) {
@@ -1870,7 +1870,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	Ref<ResourceImporter> importer;
 	bool load_default = false;
 	//find the importer
-	if (!importer_name.is_empty()) {
+	if (importer_name.is_not_empty()) {
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
 	}
 
@@ -2096,7 +2096,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			groups_to_reimport.insert(file);
 			//groups do not belong to grups
 			group_file = String();
-		} else if (!group_file.is_empty()) {
+		} else if (group_file.is_not_empty()) {
 			//it's a group file, add group to import and skip this file
 			groups_to_reimport.insert(group_file);
 		} else {

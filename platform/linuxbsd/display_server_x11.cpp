@@ -450,7 +450,7 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 
 void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 	_THREAD_SAFE_METHOD_
-	if (!p_text.is_empty()) {
+	if (p_text.is_not_empty()) {
 		{
 			// The clipboard content can be accessed while polling for events.
 			MutexLock mutex_lock(events_mutex);

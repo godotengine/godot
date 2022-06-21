@@ -227,13 +227,13 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
-		if (!resource_path.is_empty()) {
+		if (resource_path.is_not_empty()) {
 			return p_path.replace("res:/", resource_path);
 		}
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
-		if (!data_dir.is_empty()) {
+		if (data_dir.is_not_empty()) {
 			return p_path.replace("user:/", data_dir);
 		}
 		return p_path.replace("user://", "");
@@ -455,7 +455,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	// Attempt with a user-defined main pack first
 
-	if (!p_main_pack.is_empty()) {
+	if (p_main_pack.is_not_empty()) {
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
@@ -470,7 +470,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	String exec_path = OS::get_singleton()->get_executable_path();
 
-	if (!exec_path.is_empty()) {
+	if (exec_path.is_not_empty()) {
 		// We do several tests sequentially until one succeeds to find a PCK,
 		// and if so, we attempt loading it at the end.
 
@@ -526,7 +526,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
-		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
+		if (resource_path.is_not_empty() && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
 
@@ -588,7 +588,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
 		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
-		if (!custom_settings.is_empty()) {
+		if (custom_settings.is_not_empty()) {
 			_load_settings_text(custom_settings);
 		}
 	}
@@ -687,7 +687,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 		}
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			if (section.is_empty() && assign == "config_version") {
 				config_version = value;
 				ERR_FAIL_COND_V_MSG(config_version > CONFIG_VERSION, ERR_FILE_CANT_OPEN, vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
@@ -782,7 +782,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 		count += E.value.size();
 	}
 
-	if (!p_custom_features.is_empty()) {
+	if (p_custom_features.is_not_empty()) {
 		file->store_32(count + 1);
 		//store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
@@ -852,7 +852,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 	file->store_line("");
 
 	file->store_string("config_version=" + itos(CONFIG_VERSION) + "\n");
-	if (!p_custom_features.is_empty()) {
+	if (p_custom_features.is_not_empty()) {
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	}
 	file->store_string("\n");
@@ -901,7 +901,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 	// Check the rendering API.
 	const String rendering_api = has_setting("rendering/quality/driver/driver_name") ? (String)get_setting("rendering/quality/driver/driver_name") : String();
-	if (!rendering_api.is_empty()) {
+	if (rendering_api.is_not_empty()) {
 		// Add the rendering API as a project feature if it doesn't already exist.
 		if (!project_features.has(rendering_api)) {
 			project_features.append(rendering_api);

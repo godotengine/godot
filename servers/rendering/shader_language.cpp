@@ -7449,7 +7449,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 			if (tk.type == TK_SEMICOLON) {
 				//all is good
 				if (b->parent_function->return_type != TYPE_VOID) {
-					_set_error(vformat(RTR("Expected '%s' with an expression of type '%s'."), "return", (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
+					_set_error(vformat(RTR("Expected '%s' with an expression of type '%s'."), "return", (return_struct_name.is_not_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 			} else {
@@ -7467,7 +7467,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 
 				if (b->parent_function->return_type != expr->get_datatype() || b->parent_function->return_array_size != expr->get_array_size() || return_struct_name != expr->get_datatype_name()) {
-					_set_error(vformat(RTR("Expected return with an expression of type '%s'."), (!return_struct_name.is_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
+					_set_error(vformat(RTR("Expected return with an expression of type '%s'."), (return_struct_name.is_not_empty() ? return_struct_name : get_datatype_name(b->parent_function->return_type)) + array_size_string));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -7636,7 +7636,7 @@ String ShaderLanguage::_get_shader_type_list(const HashSet<String> &p_shader_typ
 	// Return a list of shader types as an human-readable string
 	String valid_types;
 	for (const String &E : p_shader_types) {
-		if (!valid_types.is_empty()) {
+		if (valid_types.is_not_empty()) {
 			valid_types += ", ";
 		}
 
@@ -9446,7 +9446,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 			break;
 
 		} else if (p_code[i] <= 32) {
-			if (!cur_identifier.is_empty()) {
+			if (cur_identifier.is_not_empty()) {
 				if (!reading_type) {
 					if (cur_identifier != "shader_type") {
 						return String();
@@ -9942,7 +9942,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						calltip += get_datatype_name(builtin_func_defs[idx].args[i]);
 
 						String arg_name = (String)builtin_func_defs[idx].args_names[i];
-						if (!arg_name.is_empty()) {
+						if (arg_name.is_not_empty()) {
 							calltip += " ";
 							calltip += arg_name;
 						}

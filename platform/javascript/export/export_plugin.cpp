@@ -164,7 +164,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 	const String icon_dest = p_path.get_base_dir().plus_file(icon_name);
 
 	Ref<Image> icon;
-	if (!p_icon.is_empty()) {
+	if (p_icon.is_not_empty()) {
 		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
@@ -252,7 +252,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 
 	// Custom offline page
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
-	if (!offline_page.is_empty()) {
+	if (offline_page.is_not_empty()) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
@@ -399,13 +399,13 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String etc_error = test_etc2();
-		if (!etc_error.is_empty()) {
+		if (etc_error.is_not_empty()) {
 			valid = false;
 			err += etc_error;
 		}
 	}
 
-	if (!err.is_empty()) {
+	if (err.is_not_empty()) {
 		r_error = err;
 	}
 
@@ -443,7 +443,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return ERR_FILE_BAD_PATH;
 	}
 
-	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
+	if (template_path.is_not_empty() && !FileAccess::exists(template_path)) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}

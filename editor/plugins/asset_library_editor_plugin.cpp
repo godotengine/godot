@@ -358,7 +358,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			if (p_code != 200) {
 				error_text = TTR("Request failed, return code:") + " " + itos(p_code);
 				status->set_text(TTR("Failed:") + " " + itos(p_code));
-			} else if (!sha256.is_empty()) {
+			} else if (sha256.is_not_empty()) {
 				String download_sha256 = FileAccess::get_sha256(download->get_download_file());
 				if (sha256 != download_sha256) {
 					error_text = TTR("Bad download hash, assuming file has been tampered with.") + "\n";
@@ -369,7 +369,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 	}
 
-	if (!error_text.is_empty()) {
+	if (error_text.is_not_empty()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
 		download_error->popup_centered();
 		// Let the user retry the download.
@@ -946,7 +946,7 @@ void EditorAssetLibrary::_search(int p_page) {
 			support_list += String(support_key[i]) + "+";
 		}
 	}
-	if (!support_list.is_empty()) {
+	if (support_list.is_not_empty()) {
 		args += "&support=" + support_list.substr(0, support_list.length() - 1);
 	}
 

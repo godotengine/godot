@@ -791,7 +791,7 @@ void EditorFileDialog::update_file_list() {
 
 	String item = dir_access->get_next();
 
-	while (!item.is_empty()) {
+	while (item.is_not_empty()) {
 		if (item == "." || item == "..") {
 			item = dir_access->get_next();
 			continue;

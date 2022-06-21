@@ -1233,7 +1233,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		name = name.substr(1, name.length() - 1);
 	}
 
-	if (!name.is_empty()) {
+	if (name.is_not_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1277,7 +1277,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	while (name.length() && !is_ascii_char(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
-	if (!name.is_empty()) {
+	if (name.is_not_empty()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1986,7 +1986,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 	}
 
 	node_code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
-	if (!node_code.is_empty()) {
+	if (node_code.is_not_empty()) {
 		code += node_name;
 		code += node_code;
 	}
@@ -2063,7 +2063,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 		}
 	}
 
-	if (!node_code.is_empty()) {
+	if (node_code.is_not_empty()) {
 		code += "\n";
 	}
 
@@ -2117,7 +2117,7 @@ void VisualShader::_update_shader() const {
 
 			if (!info.options.is_empty()) {
 				if (modes.has(temp) && modes[temp] < info.options.size()) {
-					if (!render_mode.is_empty()) {
+					if (render_mode.is_not_empty()) {
 						render_mode += ", ";
 					}
 					render_mode += temp + "_" + info.options[modes[temp]];
@@ -2129,14 +2129,14 @@ void VisualShader::_update_shader() const {
 
 		// Add flags afterward.
 		for (int i = 0; i < flag_names.size(); i++) {
-			if (!render_mode.is_empty()) {
+			if (render_mode.is_not_empty()) {
 				render_mode += ", ";
 			}
 			render_mode += flag_names[i];
 		}
 	}
 
-	if (!render_mode.is_empty()) {
+	if (render_mode.is_not_empty()) {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
@@ -2491,7 +2491,7 @@ void VisualShader::_update_shader() const {
 			continue;
 		}
 		String func_code = global_code_per_func[Type(i)].as_string();
-		if (empty_funcs.has(Type(i)) && !func_code.is_empty()) {
+		if (empty_funcs.has(Type(i)) && func_code.is_not_empty()) {
 			func_code = vformat("%s%s%s", String("\nvoid " + String(func_name[i]) + "() {\n"), func_code, "}\n");
 		}
 		tcode = tcode.insert(insertion_pos[i], func_code);
@@ -3146,7 +3146,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 
 		while (ports[idx].mode != Shader::MODE_MAX) {
 			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-				if (!port_list.is_empty()) {
+				if (port_list.is_not_empty()) {
 					port_list += ",";
 				}
 				port_list += ports[idx].name;

@@ -130,7 +130,7 @@ void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_pa
 	dir->list_dir_begin();
 	String cur = dir->get_next();
 	String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
-	while (!cur.is_empty()) {
+	while (cur.is_not_empty()) {
 		String cs = p_path.plus_file(cur);
 		if (cur == "." || cur == ".." || cur == project_data_dir_name) {
 			// Skip

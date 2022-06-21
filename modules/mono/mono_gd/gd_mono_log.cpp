@@ -119,7 +119,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 
 	String current = da->get_next();
-	while (!current.is_empty()) {
+	while (current.is_not_empty()) {
 		if (da->current_is_dir() || !current.ends_with(".txt")) {
 			current = da->get_next();
 			continue;

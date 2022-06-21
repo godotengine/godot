@@ -335,7 +335,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 			}
 
-			if (!old_parent_path.is_empty()) {
+			if (old_parent_path.is_not_empty()) {
 				node->_set_name_nocheck(old_parent_path + "@" + node->get_name());
 			}
 

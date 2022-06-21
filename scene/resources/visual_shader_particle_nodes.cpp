@@ -1276,7 +1276,7 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 		default:
 			break;
 	}
-	if (!port_name.is_empty()) {
+	if (port_name.is_not_empty()) {
 		return port_name.capitalize();
 	}
 	return String();

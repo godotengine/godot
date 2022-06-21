@@ -691,7 +691,7 @@ void CreateDialog::_load_favorites_and_history() {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
-			if (!l.is_empty()) {
+			if (l.is_not_empty()) {
 				favorite_list.push_back(l);
 			}
 		}

@@ -4863,7 +4863,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
 				if (pos.x > col_width - size.width) {
 					String tooltip = c.buttons[j].tooltip;
-					if (!tooltip.is_empty()) {
+					if (tooltip.is_not_empty()) {
 						return tooltip;
 					}
 				}

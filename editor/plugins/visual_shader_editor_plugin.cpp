@@ -960,7 +960,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 
 	String error = vsnode->get_warning(mode, p_type);
-	if (!error.is_empty()) {
+	if (error.is_not_empty()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		error_label->set_text(error);
@@ -1274,7 +1274,7 @@ void VisualShaderEditor::_update_nodes() {
 			category = category.rstrip("/");
 			category = category.lstrip("/");
 			category = "Addons/" + category;
-			if (!subcategory.is_empty()) {
+			if (subcategory.is_not_empty()) {
 				category += "/" + subcategory;
 			}
 
@@ -1340,7 +1340,7 @@ void VisualShaderEditor::_update_options_menu() {
 	TreeItem *root = members->create_item();
 
 	String filter = node_filter->get_text().strip_edges();
-	bool use_filter = !filter.is_empty();
+	bool use_filter = filter.is_not_empty();
 
 	bool is_first_item = true;
 

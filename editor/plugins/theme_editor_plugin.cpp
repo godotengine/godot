@@ -96,12 +96,12 @@ void ThemeItemImportTree::_update_items_tree() {
 			for (const StringName &F : names) {
 				String item_name = (String)F;
 				bool is_item_matching_filter = (item_name.findn(filter_text) > -1);
-				if (!filter_text.is_empty() && !is_matching_filter && !is_item_matching_filter) {
+				if (filter_text.is_not_empty() && !is_matching_filter && !is_item_matching_filter) {
 					continue;
 				}
 
 				// Only mark this if actual items match the filter and not just the type group.
-				if (!filter_text.is_empty() && is_item_matching_filter) {
+				if (filter_text.is_not_empty() && is_item_matching_filter) {
 					has_filtered_items = true;
 					data_type_has_filtered_items = true;
 				}
@@ -206,7 +206,7 @@ void ThemeItemImportTree::_update_items_tree() {
 		}
 
 		// Show one level inside of a type group if there are matches in items.
-		if (!filter_text.is_empty() && has_filtered_items) {
+		if (filter_text.is_not_empty() && has_filtered_items) {
 			type_node->set_collapsed(false);
 		}
 	}
@@ -2715,7 +2715,7 @@ void ThemeTypeEditor::_update_type_items() {
 		type_variation_edit->set_editable(false);
 		type_variation_edit->set_text("");
 		type_variation_button->hide();
-		type_variation_locked->set_visible(!edited_type.is_empty());
+		type_variation_locked->set_visible(edited_type.is_not_empty());
 	} else {
 		type_variation_edit->set_editable(true);
 		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));

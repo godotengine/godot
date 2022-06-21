@@ -76,7 +76,7 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &exts);
 	String ext_hint;
 	for (const String &E : exts) {
-		if (!ext_hint.is_empty()) {
+		if (ext_hint.is_not_empty()) {
 			ext_hint += ",";
 		}
 		ext_hint += "*." + E;

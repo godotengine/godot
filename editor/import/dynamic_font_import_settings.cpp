@@ -972,7 +972,7 @@ void DynamicFontImportSettings::_re_import() {
 		String name = vars_item->get_text(0);
 		variation += ("name=" + name);
 		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
-			if (!variation.is_empty()) {
+			if (variation.is_not_empty()) {
 				variation += ",";
 			}
 			variation += (String(E.key) + "=" + String(E.value));

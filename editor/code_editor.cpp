@@ -1581,7 +1581,7 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 
 void CodeTextEditor::set_error(const String &p_error) {
 	error->set_text(p_error);
-	if (!p_error.is_empty()) {
+	if (p_error.is_not_empty()) {
 		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	} else {
 		error->set_default_cursor_shape(CURSOR_ARROW);

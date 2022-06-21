@@ -312,7 +312,7 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			current_profile = EDITOR_GET("_default_feature_profile");
-			if (!current_profile.is_empty()) {
+			if (current_profile.is_not_empty()) {
 				current.instantiate();
 				Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
 				if (err != OK) {
@@ -389,15 +389,15 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 		}
 	}
 
-	class_list_vbc->set_visible(!selected_profile.is_empty());
-	property_list_vbc->set_visible(!selected_profile.is_empty());
+	class_list_vbc->set_visible(selected_profile.is_not_empty());
+	property_list_vbc->set_visible(selected_profile.is_not_empty());
 	no_profile_selected_help->set_visible(selected_profile.is_empty());
 	profile_actions[PROFILE_CLEAR]->set_disabled(current_profile.is_empty());
 	profile_actions[PROFILE_ERASE]->set_disabled(selected_profile.is_empty());
 	profile_actions[PROFILE_EXPORT]->set_disabled(selected_profile.is_empty());
 	profile_actions[PROFILE_SET]->set_disabled(selected_profile.is_empty());
 
-	current_profile_name->set_text(!current_profile.is_empty() ? current_profile : TTR("(none)"));
+	current_profile_name->set_text(current_profile.is_not_empty() ? current_profile : TTR("(none)"));
 
 	_update_selected_profile();
 }

@@ -89,7 +89,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		}
 		String filename = p_path.get_file();
 		// Don't add as a file if the path points to a directory
-		if (!filename.is_empty()) {
+		if (filename.is_not_empty()) {
 			cd->files.insert(filename);
 		}
 	}

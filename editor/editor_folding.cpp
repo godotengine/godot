@@ -243,7 +243,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 
 		//can unfold
 		if (E.usage & PROPERTY_USAGE_EDITOR) {
-			if (!group.is_empty()) { //group
+			if (group.is_not_empty()) { //group
 				if (group_base.is_empty() || E.name.begins_with(group_base)) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {

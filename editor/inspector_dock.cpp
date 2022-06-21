@@ -466,7 +466,7 @@ void InspectorDock::open_resource(const String &p_type) {
 
 void InspectorDock::set_warning(const String &p_message) {
 	warning->hide();
-	if (!p_message.is_empty()) {
+	if (p_message.is_not_empty()) {
 		warning->show();
 		warning_dialog->set_text(p_message);
 	}

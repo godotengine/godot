@@ -414,7 +414,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
 	String aname;
-	if (!p_name.is_empty()) {
+	if (p_name.is_not_empty()) {
 		aname = p_name;
 	} else {
 		aname = ProjectSettings::get_singleton()->get("application/config/name");
@@ -764,7 +764,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 	PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
 	for (int i = 0; i < user_perms.size(); i++) {
 		String user_perm = user_perms[i].strip_edges();
-		if (!user_perm.is_empty()) {
+		if (user_perm.is_not_empty()) {
 			r_permissions.push_back(user_perm);
 		}
 	}
@@ -1504,7 +1504,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 	bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
 	String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-	if (!project_splash_path.is_empty()) {
+	if (project_splash_path.is_not_empty()) {
 		splash_image.instantiate();
 		print_verbose("Loading splash image: " + project_splash_path);
 		const Error err = ImageLoader::load_image(project_splash_path, splash_image);
@@ -1578,7 +1578,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 
 	// Adaptive background: user selection -> default.
 	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
-	if (!path.is_empty()) {
+	if (path.is_not_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
 	}
@@ -1601,7 +1601,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 		const Ref<Image> &foreground,
 		const Ref<Image> &background) {
 	// Store the splash configuration
-	if (!processed_splash_config_xml.is_empty()) {
+	if (processed_splash_config_xml.is_not_empty()) {
 		print_verbose("Storing processed splash configuration: " + String("\n") + processed_splash_config_xml);
 		store_string_at_path(SPLASH_CONFIG_PATH, processed_splash_config_xml);
 	}
@@ -2016,7 +2016,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	// There are additional versions directories we need to go through.
 	da->list_dir_begin();
 	String sub_dir = da->get_next();
-	while (!sub_dir.is_empty()) {
+	while (sub_dir.is_not_empty()) {
 		if (!sub_dir.begins_with(".") && da->current_is_dir()) {
 			// Check if the tool is here.
 			String tool_path = build_tools_dir.plus_file(sub_dir).plus_file(apksigner_command_name);
@@ -2090,7 +2090,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	String dk_user = p_preset->get("keystore/debug_user");
 	String dk_password = p_preset->get("keystore/debug_password");
 
-	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
+	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (dk.is_not_empty() || dk_user.is_not_empty() || dk_password.is_not_empty())) {
 		valid = false;
 		err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
 	}
@@ -2107,12 +2107,12 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	String rk_user = p_preset->get("keystore/release_user");
 	String rk_password = p_preset->get("keystore/release_password");
 
-	if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (!rk.is_empty() || !rk_user.is_empty() || !rk_password.is_empty())) {
+	if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (rk.is_not_empty() || rk_user.is_not_empty() || rk_password.is_not_empty())) {
 		valid = false;
 		err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
 	}
 
-	if (!rk.is_empty() && !FileAccess::exists(rk)) {
+	if (rk.is_not_empty() && !FileAccess::exists(rk)) {
 		valid = false;
 		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 	}
@@ -2181,14 +2181,14 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (etc_error.is_not_empty()) {
 		valid = false;
 		err += etc_error;
 	}
 
 	// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 	String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset));
-	if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
+	if (enabled_plugins_names.is_not_empty() && !custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
 		err += "\n";

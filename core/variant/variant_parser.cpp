@@ -1644,7 +1644,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 
 				//could come up with some sort of text
-				if (!res_text.is_empty()) {
+				if (res_text.is_not_empty()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
 				}

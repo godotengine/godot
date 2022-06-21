@@ -587,7 +587,7 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].h_ofs;
 		if (items[i].separator) {
-			if (!text.is_empty() || !items[i].icon.is_null()) {
+			if (text.is_not_empty() || !items[i].icon.is_null()) {
 				int content_size = items[i].text_buf->get_size().width + hseparation * 2;
 				if (!items[i].icon.is_null()) {
 					content_size += icon_size.width + hseparation;
@@ -666,7 +666,7 @@ void PopupMenu::_draw_items() {
 			Color font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
 			int separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
 
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (!rtl && !items[i].icon.is_null()) {
 					text_pos.x += icon_size.width + hseparation;
@@ -1573,7 +1573,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 	Item sep;
 	sep.separator = true;
 	sep.id = p_id;
-	if (!p_text.is_empty()) {
+	if (p_text.is_not_empty()) {
 		sep.text = p_text;
 		sep.xl_text = atr(p_text);
 	}

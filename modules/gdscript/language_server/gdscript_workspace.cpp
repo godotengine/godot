@@ -264,7 +264,7 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 	String query = p_params["query"];
 	Array arr;
-	if (!query.is_empty()) {
+	if (query.is_not_empty()) {
 		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
 			Vector<lsp::DocumentedSymbolInformation> script_symbols;
 			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
@@ -627,7 +627,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 			pos.character += offset.y;
 		}
 
-		if (!symbol_identifier.is_empty()) {
+		if (symbol_identifier.is_not_empty()) {
 			if (ScriptServer::is_global_class(symbol_identifier)) {
 				String class_path = ScriptServer::get_global_class_path(symbol_identifier);
 				symbol = get_script_symbol(class_path);

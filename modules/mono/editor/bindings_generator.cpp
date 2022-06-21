@@ -961,7 +961,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		p_output.append(";");
 	}
 
-	if (!global_constants.is_empty()) {
+	if (global_constants.is_not_empty()) {
 		p_output.append("\n");
 	}
 

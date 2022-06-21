@@ -2362,7 +2362,7 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 	Vector<String> clean_parts;
 	for (String &part : parts) {
 		part = part.strip_edges();
-		if (!part.is_empty()) {
+		if (part.is_not_empty()) {
 			clean_parts.append(part);
 		}
 	}

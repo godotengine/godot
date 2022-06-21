@@ -55,7 +55,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
-		while (!c.is_empty()) {
+		while (c.is_not_empty()) {
 			if (da->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}

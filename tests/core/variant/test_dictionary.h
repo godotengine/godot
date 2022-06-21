@@ -132,7 +132,7 @@ TEST_CASE("[Dictionary] size(), empty() and clear()") {
 	CHECK(map.is_empty());
 	map[1] = 3;
 	CHECK(map.size() == 1);
-	CHECK(!map.is_empty());
+	CHECK(map.is_not_empty());
 	map.clear();
 	CHECK(map.size() == 0);
 	CHECK(map.is_empty());

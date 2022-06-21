@@ -306,6 +306,12 @@
 				Returns [code]true[/code] if the length of the string equals [code]0[/code].
 			</description>
 		</method>
+		<method name="is_not_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the length of the string is different than [code]0[/code].
+			</description>
+		</method>
 		<method name="is_relative_path" qualifiers="const">
 			<return type="bool" />
 			<description>

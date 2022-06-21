@@ -48,20 +48,20 @@ Vector<String> GDMonoAssembly::search_dirs;
 void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 	String framework_dir;
 
-	if (!p_custom_bcl_dir.is_empty()) {
+	if (p_custom_bcl_dir.is_not_empty()) {
 		framework_dir = p_custom_bcl_dir;
 	} else if (mono_assembly_getrootdir()) {
 		framework_dir = String::utf8(mono_assembly_getrootdir()).plus_file("mono").plus_file("4.5");
 	}
 
-	if (!framework_dir.is_empty()) {
+	if (framework_dir.is_not_empty()) {
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
 
 #if !defined(TOOLS_ENABLED)
 	String data_game_assemblies_dir = GodotSharpDirs::get_data_game_assemblies_dir();
-	if (!data_game_assemblies_dir.is_empty()) {
+	if (data_game_assemblies_dir.is_not_empty()) {
 		r_search_dirs.push_back(data_game_assemblies_dir);
 	}
 #endif

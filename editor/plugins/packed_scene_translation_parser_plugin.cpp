@@ -92,7 +92,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				int incr_value = node_type == "MenuButton" ? PopupMenu::ITEM_PROPERTY_SIZE : OptionButton::ITEM_PROPERTY_SIZE;
 				for (int k = 0; k < str_values.size(); k += incr_value) {
 					String desc = str_values[k].get_slice(";", 1).strip_edges();
-					if (!desc.is_empty()) {
+					if (desc.is_not_empty()) {
 						parsed_strings.push_back(desc);
 					}
 				}
@@ -101,7 +101,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				Vector<String> str_values = property_value;
 				for (int k = 0; k < str_values.size(); k++) {
 					String desc = str_values[k].get_slice(";", 1).strip_edges();
-					if (!desc.is_empty()) {
+					if (desc.is_not_empty()) {
 						parsed_strings.push_back(desc);
 					}
 				}

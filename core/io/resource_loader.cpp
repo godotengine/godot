@@ -194,7 +194,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 			continue;
 		}
 		found = true;
-		Ref<Resource> res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+		Ref<Resource> res = loader[i]->load(p_path, p_original_path.is_not_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (res.is_null()) {
 			continue;
 		}
@@ -289,7 +289,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	thread_load_mutex->lock();
 
-	if (!p_source_resource.is_empty()) {
+	if (p_source_resource.is_not_empty()) {
 		//must be loading from this resource
 		if (!thread_load_tasks.has(p_source_resource)) {
 			thread_load_mutex->unlock();
@@ -310,7 +310,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	if (thread_load_tasks.has(local_path)) {
 		thread_load_tasks[local_path].requests++;
-		if (!p_source_resource.is_empty()) {
+		if (p_source_resource.is_not_empty()) {
 			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
 		}
 		thread_load_mutex->unlock();
@@ -354,7 +354,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 			ResourceCache::lock.read_unlock();
 		}
 
-		if (!p_source_resource.is_empty()) {
+		if (p_source_resource.is_not_empty()) {
 			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
 		}
 
@@ -752,7 +752,7 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		String result = loader[i]->get_resource_type(local_path);
-		if (!result.is_empty()) {
+		if (result.is_not_empty()) {
 			return result;
 		}
 	}

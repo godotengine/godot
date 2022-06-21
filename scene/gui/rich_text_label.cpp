@@ -742,7 +742,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = segment + prefix;
 		}
 	}
-	if (!prefix.is_empty()) {
+	if (prefix.is_not_empty()) {
 		Ref<Font> font = _find_font(l.from);
 		if (font.is_null()) {
 			font = get_theme_font(SNAME("normal_font"));
@@ -1626,7 +1626,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_stop_thread();
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				set_text(text);
 			}
 
@@ -3423,7 +3423,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				text = "\n";
 			}
 
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				add_text(text);
 			}
 			break; //nothing else to add
@@ -3494,7 +3494,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			after_list_open_tag = false;
 
 			if (tag == "/ol" || tag == "/ul") {
-				if (!text.is_empty()) {
+				if (text.is_not_empty()) {
 					// Make sure text ends with a newline character, that is, the last item
 					// will wrap at the end of block.
 					if (!text.ends_with("\n")) {
@@ -3508,7 +3508,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				after_list_close_tag = false;
 			}
 
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				add_text(text);
 			}
 
@@ -3528,7 +3528,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else {
 			after_list_open_tag = false;
 		}
-		if (!text.is_empty()) {
+		if (text.is_not_empty()) {
 			add_text(text);
 		}
 		after_list_close_tag = false;
@@ -3935,7 +3935,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 				int width = 0;
 				int height = 0;
-				if (!bbcode_value.is_empty()) {
+				if (bbcode_value.is_not_empty()) {
 					int sep = bbcode_value.find("x");
 					if (sep == -1) {
 						width = bbcode_value.to_int();
@@ -4566,7 +4566,7 @@ void RichTextLabel::deselect() {
 void RichTextLabel::selection_copy() {
 	String text = get_selected_text();
 
-	if (!text.is_empty()) {
+	if (text.is_not_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
@@ -4792,7 +4792,7 @@ float RichTextLabel::get_percent_visible() const {
 
 void RichTextLabel::set_effects(Array p_effects) {
 	custom_effects = p_effects;
-	if ((!text.is_empty()) && use_bbcode) {
+	if ((text.is_not_empty()) && use_bbcode) {
 		parse_bbcode(text);
 	}
 }
@@ -4807,7 +4807,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 	if (rteffect.is_valid()) {
 		custom_effects.push_back(effect);
-		if ((!text.is_empty()) && use_bbcode) {
+		if (text.is_not_empty() && use_bbcode) {
 			parse_bbcode(text);
 		}
 	}

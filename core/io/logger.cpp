@@ -129,7 +129,7 @@ void RotatedFileLogger::clear_old_backups() {
 	da->list_dir_begin();
 	String f = da->get_next();
 	HashSet<String> backups;
-	while (!f.is_empty()) {
+	while (f.is_not_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}

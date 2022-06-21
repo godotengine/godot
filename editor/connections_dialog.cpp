@@ -755,7 +755,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	String s = node_name.capitalize().replace(" ", "");
 	subst["NodeName"] = s;
-	if (!s.is_empty()) {
+	if (s.is_not_empty()) {
 		s[0] = s.to_lower()[0];
 	}
 	subst["nodeName"] = s;
@@ -763,7 +763,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	s = signal_name.capitalize().replace(" ", "");
 	subst["SignalName"] = s;
-	if (!s.is_empty()) {
+	if (s.is_not_empty()) {
 		s[0] = s.to_lower()[0];
 	}
 	subst["signalName"] = s;

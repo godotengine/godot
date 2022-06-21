@@ -520,7 +520,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String mnt = get_mountpoint(path);
 
 	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
-	if (!mnt.is_empty()) {
+	if (mnt.is_not_empty()) {
 		String mountpoint_trash_path(mnt + "/.Trash-" + itos(getuid()));
 		struct stat s;
 		if (!stat(mountpoint_trash_path.utf8().get_data(), &s)) {

@@ -937,7 +937,7 @@ void GDMono::_load_api_assemblies() {
 
 		// 2. Update the API assemblies
 		String update_error = update_api_assemblies_from_prebuilt("Debug", &core_api_assembly.out_of_sync, &editor_api_assembly.out_of_sync);
-		CRASH_COND_MSG(!update_error.is_empty(), update_error);
+		CRASH_COND_MSG(update_error.is_not_empty, update_error);
 
 		// 3. Load the scripts domain again
 		Error domain_load_err = _load_scripts_domain();

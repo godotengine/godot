@@ -1473,7 +1473,7 @@ String Directory::get_next() {
 	ERR_FAIL_COND_V_MSG(!is_open(), "", "Directory must be opened before use.");
 
 	String next = d->get_next();
-	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
+	while (next.is_not_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
 		next = d->get_next();
 	}
 	return next;
@@ -1503,7 +1503,7 @@ PackedStringArray Directory::_get_contents(bool p_directories) {
 
 	list_dir_begin();
 	String s = get_next();
-	while (!s.is_empty()) {
+	while (s.is_not_empty()) {
 		if (current_is_dir() == p_directories) {
 			ret.append(s);
 		}

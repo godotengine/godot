@@ -41,10 +41,10 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double p_value) {
 	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
-	if (!prefix.is_empty()) {
+	if (prefix.is_not_empty()) {
 		value = prefix + " " + value;
 	}
-	if (!suffix.is_empty()) {
+	if (suffix.is_not_empty()) {
 		value += " " + suffix;
 	}
 	line_edit->set_text(value);

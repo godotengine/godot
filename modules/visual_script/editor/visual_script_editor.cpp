@@ -725,7 +725,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E));
 		} else {
 			String text = node->get_text();
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				has_gnode_text = true;
 				Label *label = memnew(Label);
 				label->set_text(text);
@@ -2694,7 +2694,7 @@ String VisualScriptEditor::get_name() {
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (!script_name.is_empty()) {
+		if (script_name.is_not_empty()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -3603,7 +3603,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (base_type.is_not_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsfc->set_base_type(base_type);
 					}
 					if (method_name == "call" || method_name == "call_deferred") {
@@ -3638,7 +3638,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (base_type.is_not_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}
@@ -3667,7 +3667,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				} else if (script->get_node(port_action_node).is_valid()) {
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (base_type.is_not_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}

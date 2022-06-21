@@ -240,7 +240,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 	dir->list_dir_begin();
 	String next = dir->get_next();
 
-	while (!next.is_empty()) {
+	while (next.is_not_empty()) {
 		if (dir->current_is_dir()) {
 			if (next == "." || next == "..") {
 				next = dir->get_next();

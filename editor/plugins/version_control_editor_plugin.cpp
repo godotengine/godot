@@ -266,7 +266,7 @@ void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
 
 void VersionControlEditorPlugin::_refresh_file_diff() {
 	String open_file = diff_file_name->get_text();
-	if (!open_file.is_empty()) {
+	if (open_file.is_not_empty()) {
 		_display_file_diff(diff_file_name->get_text());
 	}
 }

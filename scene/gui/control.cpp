@@ -524,19 +524,19 @@ void Control::_validate_property(PropertyInfo &property) const {
 				hint_string += "Fill:1";
 			}
 			if (size_flags.has(SIZE_EXPAND)) {
-				if (!hint_string.is_empty()) {
+				if (hint_string.is_not_empty()) {
 					hint_string += ",";
 				}
 				hint_string += "Expand:2";
 			}
 			if (size_flags.has(SIZE_SHRINK_CENTER)) {
-				if (!hint_string.is_empty()) {
+				if (hint_string.is_not_empty()) {
 					hint_string += ",";
 				}
 				hint_string += "Shrink Center:4";
 			}
 			if (size_flags.has(SIZE_SHRINK_END)) {
-				if (!hint_string.is_empty()) {
+				if (hint_string.is_not_empty()) {
 					hint_string += ",";
 				}
 				hint_string += "Shrink End:8";

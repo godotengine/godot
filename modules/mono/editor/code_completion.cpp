@@ -148,14 +148,14 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			List<String> directories;
 			directories.push_back(dir_access->get_current_dir());
 
-			while (!directories.is_empty()) {
+			while (directories.is_not_empty()) {
 				dir_access->change_dir(directories.back()->get());
 				directories.pop_back();
 
 				dir_access->list_dir_begin();
 				String filename = dir_access->get_next();
 
-				while (!filename.is_empty()) {
+				while (filename.is_not_empty()) {
 					if (filename == "." || filename == "..") {
 						filename = dir_access->get_next();
 						continue;

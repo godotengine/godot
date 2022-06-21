@@ -707,7 +707,7 @@ String OS_Windows::get_locale() const {
 		wl++;
 	}
 
-	if (!neutral.is_empty()) {
+	if (neutral.is_not_empty()) {
 		return String(neutral).replace("-", "_");
 	}
 
@@ -934,7 +934,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 
 String OS_Windows::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (!appname.is_empty()) {
+	if (appname.is_not_empty()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);

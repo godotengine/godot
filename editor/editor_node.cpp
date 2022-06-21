@@ -419,7 +419,7 @@ void EditorNode::_update_title() {
 	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
 	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname) + String(" - ") + VERSION_NAME;
 	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_scene_file_path() : String();
-	if (!edited.is_empty()) {
+	if (edited.is_not_empty()) {
 		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
 		title = vformat("%s - %s", edited.get_file(), title);
 	}
@@ -979,7 +979,7 @@ void EditorNode::_fs_changed() {
 			}
 		}
 
-		if (!export_error.is_empty()) {
+		if (export_error.is_not_empty()) {
 			ERR_PRINT(export_error);
 			_exit_editor(EXIT_FAILURE);
 		} else {
@@ -1033,7 +1033,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		_load_docks();
 
-		if (!defer_load_scene.is_empty()) {
+		if (defer_load_scene.is_not_empty()) {
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -1268,7 +1268,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		preferred.move_to_front(tres_element);
 	}
 
-	if (!p_at_path.is_empty()) {
+	if (p_at_path.is_not_empty()) {
 		file->set_current_dir(p_at_path);
 		if (p_resource->get_path().is_resource_file()) {
 			file->set_current_file(p_resource->get_path().get_file());
@@ -1806,7 +1806,7 @@ void EditorNode::restart_editor() {
 	args.push_back("--path");
 	args.push_back(ProjectSettings::get_singleton()->get_resource_path());
 	args.push_back("-e");
-	if (!to_reopen.is_empty()) {
+	if (to_reopen.is_not_empty()) {
 		args.push_back(to_reopen);
 	}
 
@@ -2364,7 +2364,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	String run_filename;
 
-	if (p_current || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
+	if (p_current || (editor_data.get_edited_scene_root() && p_custom.is_not_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
@@ -2382,7 +2382,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		}
 
 		run_filename = scene->get_scene_file_path();
-	} else if (!p_custom.is_empty()) {
+	} else if (p_custom.is_not_empty()) {
 		run_filename = p_custom;
 	}
 
@@ -2429,7 +2429,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	if (p_current) {
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	} else if (!p_custom.is_empty()) {
+	} else if (p_custom.is_not_empty()) {
 		run_custom_filename = p_custom;
 		play_custom_scene_button->set_pressed(true);
 		play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
@@ -2551,10 +2551,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						String scene_filename = scene_root->get_scene_file_path();
 						if (p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 							save_confirmation->get_ok_button()->set_text(TTR("Save & Reload"));
-							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), scene_filename.is_not_empty() ? scene_filename : "unsaved scene"));
 						} else {
 							save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
-							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename.is_not_empty() ? scene_filename : "unsaved scene"));
 						}
 						save_confirmation->popup_centered();
 						break;
@@ -2692,7 +2692,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				if (!editor_data.get_undo_redo().undo()) {
 					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
-				} else if (!action.is_empty()) {
+				} else if (action.is_not_empty()) {
 					log->add_message(vformat(TTR("Undo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
@@ -2789,7 +2789,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case FILE_SHOW_IN_FILESYSTEM: {
 			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
-			if (!path.is_empty()) {
+			if (path.is_not_empty()) {
 				FileSystemDock::get_singleton()->navigate_to_path(path);
 			}
 		} break;
@@ -3089,7 +3089,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			Node *scene = editor_data.get_edited_scene_root(tab_closing_idx);
 			if (scene != nullptr) {
 				String scene_filename = scene->get_scene_file_path();
-				if (!scene_filename.is_empty()) {
+				if (scene_filename.is_not_empty()) {
 					previous_scenes.push_back(scene_filename);
 				}
 			}
@@ -4597,13 +4597,13 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 		String names;
 		for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
 			String name = dock_slot[i]->get_tab_control(j)->get_name();
-			if (!names.is_empty()) {
+			if (names.is_not_empty()) {
 				names += ",";
 			}
 			names += name;
 		}
 
-		if (!names.is_empty()) {
+		if (names.is_not_empty()) {
 			p_layout->set_value(p_section, "dock_" + itos(i + 1), names);
 		}
 	}
@@ -5112,7 +5112,7 @@ void EditorNode::_scene_tab_hovered(int p_tab) {
 		tab_preview_panel->hide();
 	} else {
 		String path = editor_data.get_scene_path(p_tab);
-		if (!path.is_empty()) {
+		if (path.is_not_empty()) {
 			EditorResourcePreview::get_singleton()->queue_resource_preview(path, this, "_thumbnail_done", p_tab);
 		}
 	}
@@ -5565,7 +5565,7 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 			sub_dir->list_dir_begin();
 
 			String next_file = sub_dir->get_next();
-			while (!next_file.is_empty()) {
+			while (next_file.is_not_empty()) {
 				if (next_file == "." || next_file == "..") {
 					next_file = sub_dir->get_next();
 					continue;

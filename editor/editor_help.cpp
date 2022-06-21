@@ -198,9 +198,9 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (t.is_empty()) {
 		t = "void";
 	}
-	bool can_ref = (t != "void" && !t.contains("*")) || !p_enum.is_empty();
+	bool can_ref = (t != "void" && !t.contains("*")) || p_enum.is_not_empty();
 
-	if (!p_enum.is_empty()) {
+	if (p_enum.is_not_empty()) {
 		if (p_enum.get_slice_count(".") > 1) {
 			t = p_enum.get_slice(".", 1);
 		} else {
@@ -397,7 +397,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 			if (i < m.size() - 1 && new_prefix == m[i + 1].name.substr(0, 3) && new_prefix != group_prefix) {
 				is_new_group = i > 0;
 				group_prefix = new_prefix;
-			} else if (!group_prefix.is_empty() && new_prefix != group_prefix) {
+			} else if (group_prefix.is_not_empty() && new_prefix != group_prefix) {
 				is_new_group = true;
 				group_prefix = "";
 			}
@@ -556,12 +556,12 @@ void EditorHelp::_update_doc() {
 
 		String inherits = cd.inherits;
 
-		while (!inherits.is_empty()) {
+		while (inherits.is_not_empty()) {
 			_add_type(inherits);
 
 			inherits = doc->class_list[inherits].inherits;
 
-			if (!inherits.is_empty()) {
+			if (inherits.is_not_empty()) {
 				class_desc->add_text(" < ");
 			}
 		}

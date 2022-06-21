@@ -238,7 +238,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String show_name_on_tiles = "";
-		if (!name_on_tiles.is_empty()) {
+		if (name_on_tiles.is_not_empty()) {
 			show_name_on_tiles = "<uap:ShowNameOnTiles>\n" + name_on_tiles + "        </uap:ShowNameOnTiles>";
 		}
 
@@ -259,7 +259,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String rotation_preference = "";
-		if (!rotations.is_empty()) {
+		if (rotations.is_not_empty()) {
 			rotation_preference = "<uap:InitialRotationPreference>\n" + rotations + "        </uap:InitialRotationPreference>";
 		}
 
@@ -293,7 +293,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String capabilities_string = "<Capabilities />";
-		if (!capabilities_elements.is_empty()) {
+		if (capabilities_elements.is_not_empty()) {
 			capabilities_string = "<Capabilities>\n" + capabilities_elements + "  </Capabilities>";
 		}
 

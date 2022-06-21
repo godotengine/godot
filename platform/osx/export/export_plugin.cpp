@@ -391,7 +391,7 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 				descriptions += "\t<key>NSRemovableVolumesUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/removable_volumes_usage_description") + "</string>\n";
 			}
-			if (!descriptions.is_empty()) {
+			if (descriptions.is_not_empty()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
 			}
 		} else {
@@ -526,7 +526,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		PackedStringArray user_args = p_preset->get("codesign/custom_options");
 		for (int i = 0; i < user_args.size(); i++) {
 			String user_arg = user_args[i].strip_edges();
-			if (!user_arg.is_empty()) {
+			if (user_arg.is_not_empty()) {
 				args.push_back(user_arg);
 			}
 		}
@@ -585,7 +585,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 
 	dir_access->list_dir_begin();
 	String current_file{ dir_access->get_next() };
-	while (!current_file.is_empty()) {
+	while (current_file.is_not_empty()) {
 		String current_file_path{ p_path.plus_file(current_file) };
 
 		if (current_file == ".." || current_file == ".") {
@@ -1034,7 +1034,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
 			}
 
-			if (!iconpath.is_empty()) {
+			if (iconpath.is_not_empty()) {
 				if (iconpath.get_extension() == "icns") {
 					Ref<FileAccess> icon = FileAccess::open(iconpath, FileAccess::READ);
 					if (icon.is_valid()) {
@@ -1425,7 +1425,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 	Ref<DirAccess> da = DirAccess::open(dir);
 	da->list_dir_begin();
 	String f = da->get_next();
-	while (!f.is_empty()) {
+	while (f.is_not_empty()) {
 		if (f == "." || f == "..") {
 			f = da->get_next();
 			continue;
@@ -1658,7 +1658,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	if (!err.is_empty()) {
+	if (err.is_not_empty()) {
 		r_error = err;
 	}
 	return valid;

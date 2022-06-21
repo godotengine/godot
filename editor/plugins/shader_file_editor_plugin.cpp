@@ -148,7 +148,7 @@ void ShaderFileEditor::_update_options() {
 		bool failed = false;
 		for (int j = 0; j < RD::SHADER_STAGE_MAX; j++) {
 			String error = bytecode->get_stage_compile_error(RD::ShaderStage(j));
-			if (!error.is_empty()) {
+			if (error.is_not_empty()) {
 				failed = true;
 			}
 		}

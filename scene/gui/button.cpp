@@ -52,7 +52,7 @@ Size2 Button::get_minimum_size() const {
 
 			if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
 				minsize.width += _icon->get_width();
-				if (!xl_text.is_empty()) {
+				if (xl_text.is_not_empty()) {
 					minsize.width += get_theme_constant(SNAME("h_separation"));
 				}
 			} else {
@@ -60,7 +60,7 @@ Size2 Button::get_minimum_size() const {
 			}
 		}
 	}
-	if (!xl_text.is_empty()) {
+	if (xl_text.is_not_empty()) {
 		Ref<Font> font = get_theme_font(SNAME("font"));
 		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
 		minsize.height = MAX(font_height, minsize.height);
@@ -363,7 +363,7 @@ void Button::_shape() {
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	text_buf->add_string(xl_text, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text_buf->add_string(xl_text, font, font_size, opentype_features, (language.is_not_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text_buf->set_text_overrun_behavior(overrun_behavior);
 }
 

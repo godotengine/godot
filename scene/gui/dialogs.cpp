@@ -252,7 +252,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 		hbc->add_spacer(true);
 	}
 
-	if (!p_action.is_empty()) {
+	if (p_action.is_not_empty()) {
 		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 

@@ -793,7 +793,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -823,7 +823,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -855,7 +855,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (oob) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -886,7 +886,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -922,7 +922,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = key->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(key) + "'";
@@ -955,7 +955,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (oob) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (v.is_not_empty()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";

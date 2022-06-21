@@ -171,16 +171,16 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
 	ERR_FAIL_COND(p_source == nullptr);
 	Vector<String> symbols;
-	if (!p_symbol1.is_empty()) {
+	if (p_symbol1.is_not_empty()) {
 		symbols.push_back(p_symbol1);
 	}
-	if (!p_symbol2.is_empty()) {
+	if (p_symbol2.is_not_empty()) {
 		symbols.push_back(p_symbol2);
 	}
-	if (!p_symbol3.is_empty()) {
+	if (p_symbol3.is_not_empty()) {
 		symbols.push_back(p_symbol3);
 	}
-	if (!p_symbol4.is_empty()) {
+	if (p_symbol4.is_not_empty()) {
 		symbols.push_back(p_symbol4);
 	}
 	push_warning(p_source, p_code, symbols);
@@ -3164,7 +3164,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 	if (!comments.has(p_line)) {
 		return;
 	}
-	ERR_FAIL_COND(!p_brief.is_empty() || !p_desc.is_empty() || p_tutorials.size() != 0);
+	ERR_FAIL_COND(p_brief.is_not_empty() || p_desc.is_not_empty() || p_tutorials.size() != 0);
 
 	int line = p_line;
 	bool in_codeblock = false;
@@ -3196,7 +3196,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 		String stripped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (stripped_line.is_empty() && mode == BRIEF && !p_brief.is_empty()) {
+		if (stripped_line.is_empty() && mode == BRIEF && p_brief.is_not_empty()) {
 			mode = DESC;
 			continue;
 
@@ -3804,11 +3804,11 @@ String GDScriptParser::DataType::to_string() const {
 				return script_type->get_class_name().operator String();
 			}
 			String name = script_type->get_name();
-			if (!name.is_empty()) {
+			if (name.is_not_empty()) {
 				return name;
 			}
 			name = script_path;
-			if (!name.is_empty()) {
+			if (name.is_not_empty()) {
 				return name;
 			}
 			return native_type.operator String();
@@ -3884,7 +3884,7 @@ void GDScriptParser::TreePrinter::decrease_indent() {
 }
 
 void GDScriptParser::TreePrinter::push_line(const String &p_line) {
-	if (!p_line.is_empty()) {
+	if (p_line.is_not_empty()) {
 		push_text(p_line);
 	}
 	printed += "\n";

@@ -315,7 +315,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (is_move_to_foreground()) {
 			DisplayServer::get_singleton()->window_move_to_foreground();
 		}
-		if (!error.is_empty()) {
+		if (error.is_not_empty()) {
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false);

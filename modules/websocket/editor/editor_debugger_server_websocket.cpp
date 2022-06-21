@@ -62,7 +62,7 @@ Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 	int bind_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 
 	// Optionally override
-	if (!p_uri.is_empty() && p_uri != "ws://") {
+	if (p_uri.is_not_empty() && p_uri != "ws://") {
 		String scheme, path;
 		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
 		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);

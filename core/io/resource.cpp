@@ -52,7 +52,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
-	if (!path_cache.is_empty()) {
+	if (path_cache.is_not_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();
@@ -82,7 +82,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 	}
 	path_cache = p_path;
 
-	if (!path_cache.is_empty()) {
+	if (path_cache.is_not_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
 		ResourceCache::lock.write_unlock();
@@ -454,7 +454,7 @@ Resource::Resource() :
 		remapped_list(this) {}
 
 Resource::~Resource() {
-	if (!path_cache.is_empty()) {
+	if (path_cache.is_not_empty()) {
 		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
 		ResourceCache::lock.write_unlock();

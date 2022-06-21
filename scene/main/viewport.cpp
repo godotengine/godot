@@ -1148,7 +1148,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		}
 
 		// If we found a tooltip, we stop here.
-		if (!tooltip.is_empty()) {
+		if (tooltip.is_not_empty()) {
 			break;
 		}
 

@@ -95,7 +95,7 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 	}
 
 	HistoryElement h;
-	if (!p_property.is_empty() && has_prev) {
+	if (p_property.is_not_empty() && has_prev) {
 		// Add a sub property.
 		HistoryElement &prev_element = history.write[current_elem_idx];
 		h = prev_element;

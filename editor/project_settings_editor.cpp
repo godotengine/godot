@@ -155,7 +155,7 @@ void ProjectSettingsEditor::_update_property_box() {
 	add_button->set_disabled(true);
 	del_button->set_disabled(true);
 
-	if (!feature.is_empty()) {
+	if (feature.is_not_empty()) {
 		feature_invalid = true;
 		for (int i = 1; i < feature_box->get_item_count(); i++) {
 			if (feature == feature_box->get_item_text(i)) {
@@ -213,7 +213,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("ui_undo", p_event)) {
 			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
+			if (action.is_not_empty()) {
 				EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}
 			undo_redo->undo();
@@ -223,7 +223,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("ui_redo", p_event)) {
 			undo_redo->redo();
 			String action = undo_redo->get_current_action_name();
-			if (!action.is_empty()) {
+			if (action.is_not_empty()) {
 				EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 			}
 			handled = true;
@@ -285,7 +285,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 		Vector<String> custom_list = custom.split(",");
 		for (int j = 0; j < custom_list.size(); j++) {
 			String f = custom_list[j].strip_edges();
-			if (!f.is_empty()) {
+			if (f.is_not_empty()) {
 				presets.insert(f);
 			}
 		}

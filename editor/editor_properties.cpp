@@ -244,7 +244,7 @@ void EditorPropertyTextEnum::update_property() {
 		option_button->clear();
 
 		// Manually entered value.
-		if (default_option < 0 && !current_value.is_empty()) {
+		if (default_option < 0 && current_value.is_not_empty()) {
 			option_button->add_item(current_value, options.size() + 1001);
 			option_button->select(0);
 
@@ -441,7 +441,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
-			if (!e.is_empty()) {
+			if (e.is_not_empty()) {
 				dialog->add_filter(extensions[i].strip_edges());
 			}
 		}
@@ -760,7 +760,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
-		if (!option.is_empty()) {
+		if (option.is_not_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
@@ -3911,10 +3911,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text.is_not_empty()) {
 				editor->setup(p_hint_text, Vector<StringName>(), (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text.is_not_empty()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));

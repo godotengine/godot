@@ -317,7 +317,7 @@ bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const Str
 					main_exe = path;
 					bundle = true;
 				}
-				if (bundle && found == CRMatch::CR_MATCH_NESTED && !info_path.is_empty()) {
+				if (bundle && found == CRMatch::CR_MATCH_NESTED && info_path.is_not_empty()) {
 					// Read Info.plist.
 					PList info_plist;
 					if (info_plist.load_file(info_path)) {
@@ -1210,7 +1210,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 
 	// Read Info.plist.
-	if (!p_info.is_empty()) {
+	if (p_info.is_not_empty()) {
 		print_verbose(vformat("CodeSign: Reading bundle info..."));
 		PList info_plist;
 		if (info_plist.load_file(p_info)) {
@@ -1283,7 +1283,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 
 	// Generate core resources.
-	if (!p_bundle_path.is_empty()) {
+	if (p_bundle_path.is_not_empty()) {
 		print_verbose(vformat("CodeSign: Generating bundle CodeResources..."));
 		CodeSignCodeResources cr;
 
@@ -1370,7 +1370,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	Ref<CodeSignEntitlementsText> cet;
 	Ref<CodeSignEntitlementsBinary> ceb;
-	if (!p_ent_path.is_empty()) {
+	if (p_ent_path.is_not_empty()) {
 		String entitlements = FileAccess::get_file_as_string(p_ent_path);
 		if (entitlements.is_empty()) {
 			CLEANUP();

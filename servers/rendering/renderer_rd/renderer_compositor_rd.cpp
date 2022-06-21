@@ -271,7 +271,7 @@ RendererCompositorRD::RendererCompositorRD() {
 					shader_cache_dir = String(); //disable only if not editor
 				}
 
-				if (!shader_cache_dir.is_empty()) {
+				if (shader_cache_dir.is_not_empty()) {
 					bool compress = GLOBAL_GET("rendering/shader_compiler/shader_cache/compress");
 					bool use_zstd = GLOBAL_GET("rendering/shader_compiler/shader_cache/use_zstd_compression");
 					bool strip_debug = GLOBAL_GET("rendering/shader_compiler/shader_cache/strip_debug");

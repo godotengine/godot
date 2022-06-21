@@ -282,7 +282,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			set_value(section, assign, value);
 		} else if (!next_tag.name.is_empty()) {
 			section = next_tag.name;

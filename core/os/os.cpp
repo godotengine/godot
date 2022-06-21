@@ -196,8 +196,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF.is_valid());
-	if (!p_to_file.is_empty()) {
+	ERR_FAIL_COND(p_to_file.is_not_empty() && _OSPRF.is_valid());
+	if (p_to_file.is_not_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {

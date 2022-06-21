@@ -510,7 +510,7 @@ bool SceneTree::process(double p_time) {
 			cpath = fallback->get_path();
 		}
 		if (cpath != env_path) {
-			if (!env_path.is_empty()) {
+			if (env_path.is_not_empty()) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
 					//could not load fallback, set as empty
@@ -1320,7 +1320,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 			dir_access->list_dir_begin();
 			String filename = dir_access->get_next();
 
-			while (!filename.is_empty()) {
+			while (filename.is_not_empty()) {
 				if (filename == "." || filename == "..") {
 					filename = dir_access->get_next();
 					continue;
@@ -1435,7 +1435,7 @@ SceneTree::SceneTree() {
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
 		for (const String &E : exts) {
-			if (!ext_hint.is_empty()) {
+			if (ext_hint.is_not_empty()) {
 				ext_hint += ",";
 			}
 			ext_hint += "*." + E;
@@ -1445,7 +1445,7 @@ SceneTree::SceneTree() {
 		// Setup property.
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/defaults/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
-		if (!env_path.is_empty()) {
+		if (env_path.is_not_empty()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
 				root->get_world_3d()->set_fallback_environment(env);

@@ -209,7 +209,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 			text_edit->add_string_delimiter(beg, end, end.is_empty());
 		}
 
-		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+		if (end.is_not_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
@@ -222,7 +222,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
-		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+		if (end.is_not_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
@@ -401,7 +401,7 @@ String ScriptTextEditor::get_name() {
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (!script_name.is_empty()) {
+		if (script_name.is_not_empty()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -1326,7 +1326,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (text.is_empty()) {
 				text = tx->get_word_under_caret();
 			}
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
@@ -1335,7 +1335,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (text.is_empty()) {
 				text = tx->get_selected_text();
 			}
-			if (!text.is_empty()) {
+			if (text.is_not_empty()) {
 				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
 			}
 		} break;

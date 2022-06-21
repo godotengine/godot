@@ -94,7 +94,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Response
 		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
-		if (!output.is_empty()) {
+		if (output.is_not_empty()) {
 			res_queue.push_back(output.utf8());
 		}
 	}

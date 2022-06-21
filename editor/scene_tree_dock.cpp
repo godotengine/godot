@@ -3182,7 +3182,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 			while (!f->eof_reached()) {
 				String l = f->get_line().strip_edges();
 
-				if (!l.is_empty()) {
+				if (l.is_not_empty()) {
 					Button *button = memnew(Button);
 					favorite_nodes->add_child(button);
 					button->set_text(l);

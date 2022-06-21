@@ -410,7 +410,7 @@ bool GDScript::instance_has(const Object *p_this) const {
 }
 
 bool GDScript::has_source_code() const {
-	return !source.is_empty();
+	return source.is_not_empty();
 }
 
 String GDScript::get_source_code() const {
@@ -465,7 +465,7 @@ void GDScript::_update_doc() {
 	_clear_doc();
 
 	doc.script_path = "\"" + get_path().get_slice("://", 1) + "\"";
-	if (!name.is_empty()) {
+	if (name.is_not_empty()) {
 		doc.name = name;
 	} else {
 		doc.name = doc.script_path;
@@ -641,7 +641,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			basedir = get_path();
 		}
 
-		if (!basedir.is_empty()) {
+		if (basedir.is_not_empty()) {
 			basedir = basedir.get_base_dir();
 		}
 
@@ -677,7 +677,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 					}
 				}
 
-				if (!path.is_empty()) {
+				if (path.is_not_empty()) {
 					if (path != get_path()) {
 						Ref<GDScript> bf = ResourceLoader::load(path);
 
@@ -834,7 +834,7 @@ Error GDScript::reload(bool p_keep_state) {
 		basedir = get_path();
 	}
 
-	if (!basedir.is_empty()) {
+	if (basedir.is_not_empty()) {
 		basedir = basedir.get_base_dir();
 	}
 
@@ -850,7 +850,7 @@ Error GDScript::reload(bool p_keep_state) {
 		if (source_path.is_empty()) {
 			source_path = get_path();
 		}
-		if (!source_path.is_empty()) {
+		if (source_path.is_not_empty()) {
 			MutexLock lock(GDScriptCache::singleton->lock);
 			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
 				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;

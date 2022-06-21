@@ -120,7 +120,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
-	if (!base_type.is_empty()) {
+	if (base_type.is_not_empty()) {
 		bool any_type_matches = false;
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -406,7 +406,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	}
 
 	// By default provide generic "New ..." options.
-	if (!base_type.is_empty()) {
+	if (base_type.is_not_empty()) {
 		int idx = 0;
 
 		HashSet<String> allowed_types;
@@ -589,7 +589,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 			String file = files[0];
 
 			String file_type = EditorFileSystem::get_singleton()->get_file_type(file);
-			if (!file_type.is_empty() && _is_type_valid(file_type, allowed_types)) {
+			if (file_type.is_not_empty() && _is_type_valid(file_type, allowed_types)) {
 				return true;
 			}
 		}
@@ -767,7 +767,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
-	if (!base_type.is_empty() && edited_resource.is_valid()) {
+	if (base_type.is_not_empty() && edited_resource.is_valid()) {
 		HashSet<String> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
@@ -817,7 +817,7 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 		return;
 	}
 
-	if (!base_type.is_empty()) {
+	if (base_type.is_not_empty()) {
 		HashSet<String> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 

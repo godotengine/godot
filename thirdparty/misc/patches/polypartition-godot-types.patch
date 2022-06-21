@@ -244,7 +244,7 @@ index 3a8a6efa83..8c5409bf24 100644
    diagonals.push_back(newdiagonal);
 -  while (!diagonals.empty()) {
 -    diagonal = *(diagonals.begin());
-+  while (!diagonals.is_empty()) {
++  while (diagonals.is_not_empty()) {
 +    diagonal = diagonals.front()->get();
      diagonals.pop_front();
      bestvertex = dpstates[diagonal.index2][diagonal.index1].bestvertex;
@@ -361,7 +361,7 @@ index 3a8a6efa83..8c5409bf24 100644
    diagonals.push_front(newdiagonal);
 -  while (!diagonals.empty()) {
 -    diagonal = *(diagonals.begin());
-+  while (!diagonals.is_empty()) {
++  while (diagonals.is_not_empty()) {
 +    diagonal = diagonals.front()->get();
      diagonals.pop_front();
      if ((diagonal.index2 - diagonal.index1) <= 1) {
@@ -434,7 +434,7 @@ index 3a8a6efa83..8c5409bf24 100644
    diagonals.push_front(newdiagonal);
 -  while (!diagonals.empty()) {
 -    diagonal = *(diagonals.begin());
-+  while (!diagonals.is_empty()) {
++  while (diagonals.is_not_empty()) {
 +    diagonal = diagonals.front()->get();
      diagonals.pop_front();
      if ((diagonal.index2 - diagonal.index1) <= 1) {
@@ -445,7 +445,7 @@ index 3a8a6efa83..8c5409bf24 100644
  
 -    while (!diagonals2.empty()) {
 -      diagonal = *(diagonals2.begin());
-+    while (!diagonals2.is_empty()) {
++    while (diagonals2.is_not_empty()) {
 +      diagonal = diagonals2.front()->get();
        diagonals2.pop_front();
        if ((diagonal.index2 - diagonal.index1) <= 1) {

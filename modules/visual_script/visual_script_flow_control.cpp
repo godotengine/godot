@@ -724,7 +724,7 @@ String VisualScriptTypeCast::get_caption() const {
 }
 
 String VisualScriptTypeCast::get_text() const {
-	if (!script.is_empty()) {
+	if (script.is_not_empty()) {
 		return vformat(RTR("Is %s?"), script.get_file());
 	} else {
 		return vformat(RTR("Is %s?"), base_type);
@@ -762,7 +762,7 @@ String VisualScriptTypeCast::get_base_script() const {
 VisualScriptTypeCast::TypeGuess VisualScriptTypeCast::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
-	if (!script.is_empty()) {
+	if (script.is_not_empty()) {
 		tg.script = ResourceLoader::load(script);
 	}
 	//if (!tg.script.is_valid()) {
@@ -793,7 +793,7 @@ public:
 			return 0;
 		}
 
-		if (!script.is_empty()) {
+		if (script.is_not_empty()) {
 			Ref<Script> obj_script = obj->get_script();
 			if (!obj_script.is_valid()) {
 				return 1; //well, definitely not the script because object we got has no script.
@@ -853,7 +853,7 @@ void VisualScriptTypeCast::_bind_methods() {
 
 	String script_ext_hint;
 	for (const String &E : script_extensions) {
-		if (!script_ext_hint.is_empty()) {
+		if (script_ext_hint.is_not_empty()) {
 			script_ext_hint += ",";
 		}
 		script_ext_hint += "*." + E;

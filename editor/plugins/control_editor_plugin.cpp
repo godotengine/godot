@@ -440,7 +440,7 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 	if (p_path == "size_flags_horizontal" || p_path == "size_flags_vertical") {
 		EditorPropertySizeFlags *prop_editor = memnew(EditorPropertySizeFlags);
 		Vector<String> options;
-		if (!p_hint_text.is_empty()) {
+		if (p_hint_text.is_not_empty()) {
 			options = p_hint_text.split(",");
 		}
 		prop_editor->setup(options, p_path == "size_flags_vertical");

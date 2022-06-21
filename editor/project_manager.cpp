@@ -184,7 +184,7 @@ private:
 		}
 
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
-			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
+			if (valid_path.is_not_empty() && !d->file_exists("project.godot")) {
 				if (valid_path.ends_with(".zip")) {
 					Ref<FileAccess> io_fa;
 					zlib_filefunc_def io = zipio_create_io(&io_fa);
@@ -226,7 +226,7 @@ private:
 					d->list_dir_begin();
 					is_folder_empty = true;
 					String n = d->get_next();
-					while (!n.is_empty()) {
+					while (n.is_not_empty()) {
 						if (!n.begins_with(".")) {
 							// Allow `.`, `..` (reserved current/parent folder names)
 							// and hidden files/folders to be present.
@@ -263,7 +263,7 @@ private:
 			d->list_dir_begin();
 			is_folder_empty = true;
 			String n = d->get_next();
-			while (!n.is_empty()) {
+			while (n.is_not_empty()) {
 				if (!n.begins_with(".")) {
 					// Allow `.`, `..` (reserved current/parent folder names)
 					// and hidden files/folders to be present.
@@ -291,7 +291,7 @@ private:
 
 	void _path_text_changed(const String &p_path) {
 		String sp = _test_path();
-		if (!sp.is_empty()) {
+		if (sp.is_not_empty()) {
 			// If the project name is empty or default, infer the project name from the selected folder name
 			if (project_name->get_text().strip_edges().is_empty() || project_name->get_text().strip_edges() == TTR("New Game Project")) {
 				sp = sp.replace("\\", "/");
@@ -309,7 +309,7 @@ private:
 			}
 		}
 
-		if (!created_folder_path.is_empty() && created_folder_path != p_path) {
+		if (created_folder_path.is_not_empty() && created_folder_path != p_path) {
 			_remove_created_folder();
 		}
 	}
@@ -378,7 +378,7 @@ private:
 
 	void _create_folder() {
 		const String project_name_no_edges = project_name->get_text().strip_edges();
-		if (project_name_no_edges.is_empty() || !created_folder_path.is_empty() || project_name_no_edges.ends_with(".")) {
+		if (project_name_no_edges.is_empty() || created_folder_path.is_not_empty() || project_name_no_edges.ends_with(".")) {
 			set_message(TTR("Invalid project name."), MESSAGE_WARNING);
 			return;
 		}
@@ -610,7 +610,7 @@ private:
 	}
 
 	void _remove_created_folder() {
-		if (!created_folder_path.is_empty()) {
+		if (created_folder_path.is_not_empty()) {
 			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			d->remove(created_folder_path);
 
@@ -711,7 +711,7 @@ public:
 
 		} else {
 			fav_dir = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
-			if (!fav_dir.is_empty()) {
+			if (fav_dir.is_not_empty()) {
 				project_path->set_text(fav_dir);
 				fdialog->set_current_dir(fav_dir);
 			} else {
@@ -1194,7 +1194,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_property_key, b
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
 		String cf_project_name = static_cast<String>(cf->get_value("application", "config/name", ""));
-		if (!cf_project_name.is_empty()) {
+		if (cf_project_name.is_not_empty()) {
 			project_name = cf_project_name.xml_unescape();
 		}
 		config_version = (int)cf->get_value("", "config_version", 0);
@@ -1476,7 +1476,7 @@ void ProjectList::sort_projects() {
 		Item &item = _projects.write[i];
 
 		bool visible = true;
-		if (!_search_term.is_empty()) {
+		if (_search_term.is_not_empty()) {
 			String search_path;
 			if (_search_term.contains("/")) {
 				// Search path will match the whole path
@@ -1788,7 +1788,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 	const Item &clicked_project = _projects[clicked_index];
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		if (mb->is_shift_pressed() && _selected_project_keys.size() > 0 && !_last_clicked.is_empty() && clicked_project.project_key != _last_clicked) {
+		if (mb->is_shift_pressed() && _selected_project_keys.size() > 0 && _last_clicked.is_not_empty() && clicked_project.project_key != _last_clicked) {
 			int anchor_index = -1;
 			for (int i = 0; i < _projects.size(); ++i) {
 				const Item &p = _projects[i];
@@ -2302,7 +2302,7 @@ void ProjectManager::_scan_dir(const String &path, List<String> *r_projects) {
 	ERR_FAIL_COND_MSG(error != OK, "Could not scan directory at: " + path);
 	da->list_dir_begin();
 	String n = da->get_next();
-	while (!n.is_empty()) {
+	while (n.is_not_empty()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
 			_scan_dir(da->get_current_dir().plus_file(n), r_projects);
 		} else if (n == "project.godot") {
@@ -2443,7 +2443,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 			if (dir->change_dir(folders[0]) == OK) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
-				while (confirm && !file.is_empty()) {
+				while (confirm && file.is_not_empty()) {
 					if (!dir->current_is_dir() && file.ends_with("project.godot")) {
 						confirm = false;
 					}
@@ -2899,7 +2899,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	String autoscan_path = EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path");
-	if (!autoscan_path.is_empty()) {
+	if (autoscan_path.is_not_empty()) {
 		if (dir_access->dir_exists(autoscan_path)) {
 			_scan_begin(autoscan_path);
 		} else {

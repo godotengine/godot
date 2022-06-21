@@ -452,7 +452,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					previous_column = j;
 
 					// ignore if just whitespace
-					if (!text.is_empty()) {
+					if (text.is_not_empty()) {
 						previous_text = text;
 					}
 				}

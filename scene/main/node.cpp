@@ -1403,7 +1403,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (!p_pattern.is_empty()) {
+		if (p_pattern.is_not_empty()) {
 			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
 				continue;
 			} else if (p_type.is_empty()) {

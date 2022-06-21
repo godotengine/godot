@@ -201,7 +201,7 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (!hash.is_empty()) {
+	if (hash.is_not_empty()) {
 		hash = "." + hash.left(9);
 	}
 	return String(VERSION_FULL_BUILD) + hash;
@@ -429,7 +429,7 @@ Error Main::test_setup() {
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
+	if (locale.is_not_empty()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -1183,7 +1183,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
-	if (!remotefs.is_empty()) {
+	if (remotefs.is_not_empty()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.contains(":")) {
@@ -1352,7 +1352,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// And OpenGL3 next, or first if Vulkan is disabled.
 #ifdef GLES3_ENABLED
-	if (!renderer_hints.is_empty()) {
+	if (renderer_hints.is_not_empty()) {
 		renderer_hints += ",";
 	}
 	renderer_hints += "opengl3";
@@ -1837,7 +1837,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Ref<Image> boot_logo;
 
 		if (boot_logo_image) {
-			if (!boot_logo_path.is_empty()) {
+			if (boot_logo_path.is_not_empty()) {
 				boot_logo.instantiate();
 				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 				if (load_err) {
@@ -1931,7 +1931,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Translations and Remaps");
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
+	if (locale.is_not_empty()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -1957,7 +1957,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
 	}
 
-	if (!text_driver.is_empty()) {
+	if (text_driver.is_not_empty()) {
 		/* Load user selected text server. */
 		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 			if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
@@ -2176,12 +2176,12 @@ bool Main::start() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (!doc_tool_path.is_empty()) {
+	if (doc_tool_path.is_not_empty()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
 
 		// Translate the class reference only when `-l LOCALE` parameter is given.
-		if (!locale.is_empty() && locale != "en") {
+		if (locale.is_not_empty() && locale != "en") {
 			load_doc_translations(locale);
 		}
 
@@ -2300,7 +2300,7 @@ bool Main::start() {
 	}
 	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 
-	if (!script.is_empty()) {
+	if (script.is_not_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
@@ -2390,7 +2390,7 @@ bool Main::start() {
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
-			if (!game_path.is_empty() || !script.is_empty()) {
+			if (game_path.is_not_empty() || script.is_not_empty()) {
 				//autoload
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
@@ -2455,7 +2455,7 @@ bool Main::start() {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			if (!_export_preset.is_empty()) {
+			if (_export_preset.is_not_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
@@ -2572,7 +2572,7 @@ bool Main::start() {
 #endif
 
 		String local_game_path;
-		if (!game_path.is_empty() && !project_manager) {
+		if (game_path.is_not_empty() && !project_manager) {
 			local_game_path = game_path.replace("\\", "/");
 
 			if (!local_game_path.begins_with("res://")) {
@@ -2611,7 +2611,7 @@ bool Main::start() {
 					}
 				}
 				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
-				if (!debug_server_uri.is_empty()) {
+				if (debug_server_uri.is_not_empty()) {
 					EditorDebuggerNode::get_singleton()->start(debug_server_uri);
 				}
 			}
@@ -2626,7 +2626,7 @@ bool Main::start() {
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
-			if (!game_path.is_empty()) {
+			if (game_path.is_not_empty()) {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {
@@ -2638,7 +2638,7 @@ bool Main::start() {
 
 #ifdef OSX_ENABLED
 				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
-				if (!mac_iconpath.is_empty()) {
+				if (mac_iconpath.is_not_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);
 					hasicon = true;
 				}
@@ -2646,14 +2646,14 @@ bool Main::start() {
 
 #ifdef WINDOWS_ENABLED
 				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
-				if (!win_iconpath.is_empty()) {
+				if (win_iconpath.is_not_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(win_iconpath);
 					hasicon = true;
 				}
 #endif
 
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
-				if ((!iconpath.is_empty()) && (!hasicon)) {
+				if ((iconpath.is_not_empty()) && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instantiate();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {

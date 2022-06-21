@@ -267,7 +267,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (can_rename) { //should be can edit..
 
 		String warning = p_node->get_configuration_warnings_as_string();
-		if (!warning.is_empty()) {
+		if (warning.is_not_empty()) {
 			item->add_button(0, get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
 		}
 
@@ -574,7 +574,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = false;
 	tree_dirty = false;
 
-	if (!filter.is_empty()) {
+	if (filter.is_not_empty()) {
 		_update_filter(nullptr, p_scroll_to_selected);
 	}
 }

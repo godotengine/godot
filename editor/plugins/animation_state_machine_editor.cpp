@@ -1573,7 +1573,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
-				if (!error.is_empty()) {
+				if (error.is_not_empty()) {
 					error_panel->show();
 				} else {
 					error_panel->hide();

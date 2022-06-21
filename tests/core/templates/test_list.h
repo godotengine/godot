@@ -57,7 +57,7 @@ TEST_CASE("[List] Push/pop back") {
 	CHECK(n->get() == "C");
 
 	CHECK(list.size() == 3);
-	CHECK(!list.is_empty());
+	CHECK(list.is_not_empty());
 
 	String v;
 	v = list.back()->get();
@@ -89,7 +89,7 @@ TEST_CASE("[List] Push/pop front") {
 	CHECK(n->get() == "C");
 
 	CHECK(list.size() == 3);
-	CHECK(!list.is_empty());
+	CHECK(list.is_not_empty());
 
 	String v;
 	v = list.front()->get();

@@ -277,7 +277,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					}
 				}
 
-				if (!assign.is_empty()) {
+				if (assign.is_not_empty()) {
 					int nameidx = packed_scene->get_state()->add_name(assign);
 					int valueidx = packed_scene->get_state()->add_value(value);
 					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
@@ -595,7 +595,7 @@ Error ResourceLoaderText::load() {
 				return error;
 			}
 
-			if (!assign.is_empty()) {
+			if (assign.is_not_empty()) {
 				if (do_assign) {
 					bool set_valid = true;
 
@@ -714,7 +714,7 @@ Error ResourceLoaderText::load() {
 				return error;
 			}
 
-			if (!assign.is_empty()) {
+			if (assign.is_not_empty()) {
 				bool set_valid = true;
 
 				if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
@@ -1231,7 +1231,7 @@ Error ResourceLoaderText::save_as_binary(Ref<FileAccess> p_f, const String &p_pa
 					return error;
 				}
 
-				if (!assign.is_empty()) {
+				if (assign.is_not_empty()) {
 					HashMap<StringName, int> empty_string_map; //unused
 					bs_save_unicode_string(wf2, assign, true);
 					ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_index_map, dummy_read.external_resources, empty_string_map);
@@ -1412,7 +1412,7 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderText loader;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = p_original_path.is_not_empty() ? p_original_path : p_path;
 	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
@@ -1965,7 +1965,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			f->store_string(header);
 
-			if (!instance_placeholder.is_empty()) {
+			if (instance_placeholder.is_not_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
 				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this);

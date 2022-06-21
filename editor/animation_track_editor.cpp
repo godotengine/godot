@@ -649,7 +649,7 @@ public:
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
 						for (const StringName &E : anims) {
-							if (!animations.is_empty()) {
+							if (animations.is_not_empty()) {
 								animations += ",";
 							}
 
@@ -658,7 +658,7 @@ public:
 					}
 				}
 
-				if (!animations.is_empty()) {
+				if (animations.is_not_empty()) {
 					animations += ",";
 				}
 				animations += "[stop]";
@@ -1331,7 +1331,7 @@ public:
 							List<StringName> anims;
 							ap->get_animation_list(&anims);
 							for (List<StringName>::Element *G = anims.front(); G; G = G->next()) {
-								if (!animations.is_empty()) {
+								if (animations.is_not_empty()) {
 									animations += ",";
 								}
 
@@ -1340,7 +1340,7 @@ public:
 						}
 					}
 
-					if (!animations.is_empty()) {
+					if (animations.is_not_empty()) {
 						animations += ",";
 					}
 					animations += "[stop]";
@@ -3776,7 +3776,7 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
-	if (!p_sub.is_empty()) {
+	if (p_sub.is_not_empty()) {
 		path += ":" + p_sub;
 	}
 
@@ -3816,7 +3816,7 @@ bool AnimationTrackEditor::has_track(Node3D *p_node, const String &p_sub, const 
 
 	// Let's build a node path.
 	String path = root->get_path_to(p_node);
-	if (!p_sub.is_empty()) {
+	if (p_sub.is_not_empty()) {
 		path += ":" + p_sub;
 	}
 
@@ -5684,7 +5684,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					default: {
 					};
 				}
-				if (!track_type.is_empty()) {
+				if (track_type.is_not_empty()) {
 					text += vformat(" (%s)", track_type);
 				}
 
@@ -6188,7 +6188,7 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (p_filter.is_not_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
 		p_select_candidates.push_back(node);
 	}
 

@@ -1052,7 +1052,7 @@ void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 
 	// Exit if another property has the same name.
-	if (!p_value.is_empty()) {
+	if (p_value.is_not_empty()) {
 		for (int other_layer_id = 0; other_layer_id < get_custom_data_layers_count(); other_layer_id++) {
 			if (other_layer_id != p_layer_id && get_custom_data_name(other_layer_id) == p_value) {
 				ERR_FAIL_MSG(vformat("There is already a custom property named %s", p_value));

@@ -42,7 +42,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 			_update_theme();
 
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
-			if (!last_lang.is_empty()) {
+			if (last_lang.is_not_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_lang) {
 						language_menu->select(i);
@@ -223,7 +223,7 @@ void ShaderCreateDialog::_language_changed(int p_language) {
 	String path = file_path->get_text();
 	String extension = "";
 
-	if (!path.is_empty()) {
+	if (path.is_not_empty()) {
 		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
@@ -306,7 +306,7 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_new_shader_created = true;
 
 	String path_error = _validate_path(p_path);
-	if (!path_error.is_empty()) {
+	if (path_error.is_not_empty()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
@@ -328,7 +328,7 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 }
 
 void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
-	if (!p_base_path.is_empty()) {
+	if (p_base_path.is_not_empty()) {
 		initial_base_path = p_base_path.get_basename();
 		file_path->set_text(initial_base_path + "." + language_data[language_menu->get_selected()].default_extension);
 		current_language = language_menu->get_selected();

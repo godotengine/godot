@@ -1307,7 +1307,7 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (const StringName &E : vars) {
-			if (!vhint.is_empty()) {
+			if (vhint.is_not_empty()) {
 				vhint += ",";
 			}
 
@@ -1417,7 +1417,7 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo &property) const {
 
 		String vhint;
 		for (const StringName &E : vars) {
-			if (!vhint.is_empty()) {
+			if (vhint.is_not_empty()) {
 				vhint += ",";
 			}
 
@@ -2356,7 +2356,7 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 			continue; //skip these, too simple named
 		}
 
-		if (!cc.is_empty()) {
+		if (cc.is_not_empty()) {
 			cc += ",";
 		}
 		cc += E.name;
@@ -3779,7 +3779,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo &property) const {
 		al.sort();
 
 		for (int i = 0; i < al.size(); i++) {
-			if (!actions.is_empty()) {
+			if (actions.is_not_empty()) {
 				actions += ",";
 			}
 			actions += al[i];

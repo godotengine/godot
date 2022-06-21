@@ -249,7 +249,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool needs_templates;
 	String error;
 	if (!current->get_platform()->can_export(current, error, needs_templates)) {
-		if (!error.is_empty()) {
+		if (error.is_not_empty()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
 			for (int i = 0; i < items.size(); i++) {
@@ -356,7 +356,7 @@ void ProjectExportDialog::_update_feature_list() {
 	Vector<String> custom_list = custom.split(",");
 	for (int i = 0; i < custom_list.size(); i++) {
 		String f = custom_list[i].strip_edges();
-		if (!f.is_empty()) {
+		if (f.is_not_empty()) {
 			features.push_back(f);
 		}
 	}
@@ -544,7 +544,7 @@ void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
 bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
 	bool is_valid = false;
 
-	if (!p_key.is_empty() && p_key.is_valid_hex_number(false) && p_key.length() == 64) {
+	if (p_key.is_not_empty() && p_key.is_valid_hex_number(false) && p_key.length() == 64) {
 		is_valid = true;
 	}
 	return is_valid;

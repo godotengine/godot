@@ -3284,7 +3284,7 @@ bool CSharpScript::instance_has(const Object *p_this) const {
 }
 
 bool CSharpScript::has_source_code() const {
-	return !source.is_empty();
+	return source.is_not_empty;
 }
 
 String CSharpScript::get_source_code() const {
@@ -3541,7 +3541,7 @@ Error CSharpScript::load_source_code(const String &p_path) {
 void CSharpScript::_update_name() {
 	String path = get_path();
 
-	if (!path.is_empty()) {
+	if (path.is_not_empty()) {
 		name = get_path().get_file().get_basename();
 	}
 }

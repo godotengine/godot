@@ -93,7 +93,7 @@ TEST_CASE("[NodePath] Relative path") {
 			"The node path should be considered relative.");
 
 	CHECK_MESSAGE(
-			!node_path_relative.is_empty(),
+			node_path_relative.is_not_empty,
 			"The node path shouldn't be considered empty.");
 }
 
@@ -135,7 +135,7 @@ TEST_CASE("[NodePath] Absolute path") {
 			"The node path should be considered absolute.");
 
 	CHECK_MESSAGE(
-			!node_path_aboslute.is_empty(),
+			node_path_aboslute.is_not_empty,
 			"The node path shouldn't be considered empty.");
 }
 

@@ -635,7 +635,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!splash_path.is_empty()) {
+		if (splash_path.is_not_empty()) {
 			splash.instantiate();
 			const Error err = splash->load(splash_path);
 			if (err) {
@@ -761,7 +761,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(Ref<DirAccess> &p_da, FileHan
 	String current_dir = p_da->get_current_dir();
 	p_da->list_dir_begin();
 	String path = p_da->get_next();
-	while (!path.is_empty()) {
+	while (path.is_not_empty()) {
 		if (p_da->current_is_dir()) {
 			if (path != "." && path != "..") {
 				dirs.push_back(path);
@@ -1825,12 +1825,12 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	}
 
 	const String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (etc_error.is_not_empty()) {
 		valid = false;
 		err += etc_error;
 	}
 
-	if (!err.is_empty()) {
+	if (err.is_not_empty()) {
 		r_error = err;
 	}
 

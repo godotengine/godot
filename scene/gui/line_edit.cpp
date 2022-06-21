@@ -261,7 +261,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			deselect();
 			set_caret_at_pixel_pos(b->get_position().x);
-			if (!paste_buffer.is_empty()) {
+			if (paste_buffer.is_not_empty()) {
 				insert_text_at_caret(paste_buffer);
 
 				if (!text_changed_dirty) {
@@ -282,7 +282,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
 			accept_event(); // don't pass event further when clicked on text field
-			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
+			if (text.is_not_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
 				update();
@@ -354,7 +354,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 				DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
 			}
-			if (!text.is_empty() && is_editable() && clear_button_enabled) {
+			if (text.is_not_empty() && is_editable() && clear_button_enabled) {
 				bool press_attempt = clear_button_status.press_attempt;
 				clear_button_status.press_attempt = false;
 				if (press_attempt && clear_button_status.pressing_inside && _is_over_clear_button(b->get_position())) {
@@ -381,7 +381,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (!text.is_empty() && is_editable() && clear_button_enabled) {
+		if (text.is_not_empty() && is_editable() && clear_button_enabled) {
 			bool last_press_inside = clear_button_status.pressing_inside;
 			clear_button_status.pressing_inside = clear_button_status.press_attempt && _is_over_clear_button(m->get_position());
 			if (last_press_inside != clear_button_status.pressing_inside) {
@@ -684,7 +684,7 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape LineEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if ((!text.is_empty() && is_editable() && _is_over_clear_button(p_pos)) || (!is_editable() && (!is_selecting_enabled() || text.is_empty()))) {
+	if ((text.is_not_empty() && is_editable() && _is_over_clear_button(p_pos)) || (!is_editable() && (!is_selecting_enabled() || text.is_empty()))) {
 		return CURSOR_ARROW;
 	}
 	return Control::get_cursor_shape(p_pos);
@@ -1086,7 +1086,7 @@ void LineEdit::paste_text() {
 	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
 	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
 
-	if (!paste_buffer.is_empty()) {
+	if (paste_buffer.is_not_empty()) {
 		int prev_len = text.length();
 		if (selection.enabled) {
 			selection_delete();
@@ -2142,7 +2142,7 @@ void LineEdit::_shape() {
 	const Ref<Font> &font = get_theme_font(SNAME("font"));
 	int font_size = get_theme_font_size(SNAME("font_size"));
 	ERR_FAIL_COND(font.is_null());
-	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, opentype_features, (language.is_not_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, t));
 
 	full_width = TS->shaped_text_get_size(text_rid).x;

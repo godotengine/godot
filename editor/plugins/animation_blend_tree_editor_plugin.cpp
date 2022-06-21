@@ -318,7 +318,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		return;
 	}
 
-	if (!from_node.is_empty() && anode->get_input_count() == 0) {
+	if (from_node.is_not_empty() && anode->get_input_count() == 0) {
 		from_node = "";
 		return;
 	}
@@ -343,11 +343,11 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	undo_redo->add_do_method(blend_tree.ptr(), "add_node", name, anode, instance_pos / EDSCALE);
 	undo_redo->add_undo_method(blend_tree.ptr(), "remove_node", name);
 
-	if (!from_node.is_empty()) {
+	if (from_node.is_not_empty()) {
 		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", name, 0, from_node);
 		from_node = "";
 	}
-	if (!to_node.is_empty() && to_slot != -1) {
+	if (to_node.is_not_empty() && to_slot != -1) {
 		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", to_node, to_slot, name);
 		to_node = "";
 		to_slot = -1;
@@ -592,7 +592,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 					default: {
 					} break;
 				}
-				if (!track_type_name.is_empty()) {
+				if (track_type_name.is_not_empty()) {
 					types[track_path].insert(track_type_name);
 				}
 			}
@@ -611,7 +611,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
-			if (!accum.is_empty()) {
+			if (accum.is_not_empty()) {
 				accum += "/";
 			}
 			accum += name;
@@ -783,7 +783,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
-				if (!error.is_empty()) {
+				if (error.is_not_empty()) {
 					error_panel->show();
 				} else {
 					error_panel->hide();

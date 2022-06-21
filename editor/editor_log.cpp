@@ -171,7 +171,7 @@ void EditorLog::_copy_request() {
 		text = log->get_parsed_text();
 	}
 
-	if (!text.is_empty()) {
+	if (text.is_not_empty()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }

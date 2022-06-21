@@ -1098,7 +1098,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					int start = TS->shaped_text_get_range(rid).x;
-					if (!clipped && !search_text.is_empty()) { // Search highhlight
+					if (!clipped && search_text.is_not_empty()) { // Search highhlight
 						int search_text_col = _get_column_pos_of_word(search_text, str, search_flags, 0);
 						while (search_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, search_text_col + start, search_text_col + search_text.length() + start);
@@ -1121,7 +1121,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
+					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && highlighted_text.is_not_empty()) { // Highlight
 						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 						while (highlighted_text_col != -1) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text.length() + start);
@@ -1482,7 +1482,7 @@ void TextEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
 				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
 			}
-			if (!ime_text.is_empty()) {
+			if (ime_text.is_not_empty()) {
 				ime_text = "";
 				ime_selection = Point2();
 				text.invalidate_cache(caret.line, caret.column, true, ime_text);
@@ -2652,7 +2652,7 @@ void TextEdit::_update_caches() {
 	} else {
 		dir = (TextServer::Direction)text_direction;
 	}
-	text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text.set_direction_and_language(dir, (language.is_not_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 	text.set_font_features(opentype_features);
 	text.set_draw_control_chars(draw_control_chars);
 	text.set_font(font);
@@ -2806,7 +2806,7 @@ void TextEdit::set_tooltip_request_func(const Callable &p_tooltip_callback) {
 /* Text */
 // Text properties.
 bool TextEdit::has_ime_text() const {
-	return !ime_text.is_empty();
+	return ime_text.is_not_empty();
 }
 
 void TextEdit::set_editable(const bool p_editable) {
@@ -2836,7 +2836,7 @@ void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (language.is_not_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_font();
 		_update_placeholder();
 
@@ -2890,7 +2890,7 @@ void TextEdit::set_language(const String &p_language) {
 		} else {
 			dir = (TextServer::Direction)text_direction;
 		}
-		text.set_direction_and_language(dir, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+		text.set_direction_and_language(dir, (language.is_not_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
 		text.invalidate_all();
 		_update_placeholder();
 		update();
@@ -5689,7 +5689,7 @@ void TextEdit::_paste_internal() {
 	begin_complex_operation();
 	if (has_selection()) {
 		delete_selection();
-	} else if (!cut_copy_line.is_empty() && cut_copy_line == clipboard) {
+	} else if (cut_copy_line.is_not_empty() && cut_copy_line == clipboard) {
 		set_caret_column(0);
 		String ins = "\n";
 		clipboard += ins;
@@ -5710,7 +5710,7 @@ void TextEdit::_paste_primary_clipboard_internal() {
 	deselect();
 	set_caret_line(pos.y, true, false);
 	set_caret_column(pos.x);
-	if (!paste_buffer.is_empty()) {
+	if (paste_buffer.is_not_empty()) {
 		insert_text_at_caret(paste_buffer);
 	}
 

@@ -205,7 +205,7 @@ bool Joint2D::get_exclude_nodes_from_collision() const {
 TypedArray<String> Joint2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node2D::get_configuration_warnings();
 
-	if (!warning.is_empty()) {
+	if (warning.is_not_empty()) {
 		warnings.push_back(warning);
 	}
 

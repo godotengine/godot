@@ -115,7 +115,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				method_dict["hint_flags"] = mb->get_hint_flags();
 			}
 
-			if (!methods.is_empty()) {
+			if (methods.is_not_empty()) {
 				class_dict["methods"] = methods;
 			}
 		}
@@ -140,7 +140,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constant_dict["value"] = t->constant_map[F];
 			}
 
-			if (!constants.is_empty()) {
+			if (constants.is_not_empty()) {
 				class_dict["constants"] = constants;
 			}
 		}
@@ -173,7 +173,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				}
 			}
 
-			if (!signals.is_empty()) {
+			if (signals.is_not_empty()) {
 				class_dict["signals"] = signals;
 			}
 		}
@@ -201,7 +201,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				property_dict["getter"] = psg->getter;
 			}
 
-			if (!properties.is_empty()) {
+			if (properties.is_not_empty()) {
 				class_dict["property_setget"] = properties;
 			}
 		}
@@ -220,7 +220,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			property_dict["usage"] = F.usage;
 		}
 
-		if (!property_list.is_empty()) {
+		if (property_list.is_not_empty()) {
 			class_dict["property_list"] = property_list;
 		}
 	}

@@ -752,7 +752,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			res = Ref<Resource>(r);
-			if (!path.is_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (path.is_not_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
 			}
 			r->set_scene_unique_id(id);
@@ -1071,7 +1071,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = p_original_path.is_not_empty() ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
 	loader.open(f);

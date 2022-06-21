@@ -1213,7 +1213,7 @@ String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader
 		} else {
 			id = p_input_vars[2];
 		}
-		if (!id.is_empty()) {
+		if (id.is_not_empty()) {
 			if (p_input_vars[0].is_empty()) { // Use UV by default.
 				if (p_input_vars[1].is_empty()) {
 					code += "	" + p_output_vars[0] + " = texture(" + id + ", " + default_uv + ");\n";
@@ -5599,7 +5599,7 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 				break;
 		}
 
-		if (!type_code.is_empty()) {
+		if (type_code.is_not_empty()) {
 			code += " : " + type_code;
 			has_colon = true;
 		}
@@ -5632,7 +5632,7 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 				break;
 		}
 
-		if (!filter_code.is_empty()) {
+		if (filter_code.is_not_empty()) {
 			if (!has_colon) {
 				code += " : ";
 				has_colon = true;
@@ -5658,7 +5658,7 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 				break;
 		}
 
-		if (!repeat_code.is_empty()) {
+		if (repeat_code.is_not_empty()) {
 			if (!has_colon) {
 				code += " : ";
 			} else {

@@ -76,7 +76,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
@@ -294,7 +294,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			return;
 		}
 
-		if (!assign.is_empty()) {
+		if (assign.is_not_empty()) {
 			if (assign.begins_with("path.")) {
 				r_paths->push_back(value);
 			} else if (assign == "path") {

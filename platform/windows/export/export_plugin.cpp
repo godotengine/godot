@@ -161,7 +161,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	// On non-Windows we need WINE to run rcedit
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
-	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
+	if (wine_path.is_not_empty() && !FileAccess::exists(wine_path)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -183,39 +183,39 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 	List<String> args;
 	args.push_back(p_path);
-	if (!icon_path.is_empty()) {
+	if (icon_path.is_not_empty()) {
 		args.push_back("--set-icon");
 		args.push_back(icon_path);
 	}
-	if (!file_verion.is_empty()) {
+	if (file_verion.is_not_empty()) {
 		args.push_back("--set-file-version");
 		args.push_back(file_verion);
 	}
-	if (!product_version.is_empty()) {
+	if (product_version.is_not_empty()) {
 		args.push_back("--set-product-version");
 		args.push_back(product_version);
 	}
-	if (!company_name.is_empty()) {
+	if (company_name.is_not_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("CompanyName");
 		args.push_back(company_name);
 	}
-	if (!product_name.is_empty()) {
+	if (product_name.is_not_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("ProductName");
 		args.push_back(product_name);
 	}
-	if (!file_description.is_empty()) {
+	if (file_description.is_not_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("FileDescription");
 		args.push_back(file_description);
 	}
-	if (!copyright.is_empty()) {
+	if (copyright.is_not_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("LegalCopyright");
 		args.push_back(copyright);
 	}
-	if (!trademarks.is_empty()) {
+	if (trademarks.is_not_empty()) {
 		args.push_back("--set-version-string");
 		args.push_back("LegalTrademarks");
 		args.push_back(trademarks);
@@ -248,7 +248,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 #ifdef WINDOWS_ENABLED
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/signtool");
-	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
+	if (signtool_path.is_not_empty() && !FileAccess::exists(signtool_path)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find signtool executable at \"%s\"."), signtool_path));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -257,7 +257,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	}
 #else
 	String signtool_path = EditorSettings::get_singleton()->get("export/windows/osslsigncode");
-	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
+	if (signtool_path.is_not_empty() && !FileAccess::exists(signtool_path)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find osslsigncode executable at \"%s\"."), signtool_path));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -361,7 +361,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	PackedStringArray user_args = p_preset->get("codesign/custom_options");
 	for (int i = 0; i < user_args.size(); i++) {
 		String user_arg = user_args[i].strip_edges();
-		if (!user_arg.is_empty()) {
+		if (user_arg.is_not_empty()) {
 			args.push_back(user_arg);
 		}
 	}
@@ -421,14 +421,14 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
-	if (!icon_path.is_empty() && !FileAccess::exists(icon_path)) {
+	if (icon_path.is_not_empty() && !FileAccess::exists(icon_path)) {
 		err += TTR("Invalid icon path:") + " " + icon_path + "\n";
 	}
 
 	// Only non-negative integers can exist in the version string.
 
 	String file_version = p_preset->get("application/file_version");
-	if (!file_version.is_empty()) {
+	if (file_version.is_not_empty()) {
 		PackedStringArray version_array = file_version.split(".", false);
 		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
@@ -438,7 +438,7 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String product_version = p_preset->get("application/product_version");
-	if (!product_version.is_empty()) {
+	if (product_version.is_not_empty()) {
 		PackedStringArray version_array = product_version.split(".", false);
 		if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 				!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
@@ -447,7 +447,7 @@ bool EditorExportPlatformWindows::can_export(const Ref<EditorExportPreset> &p_pr
 		}
 	}
 
-	if (!err.is_empty()) {
+	if (err.is_not_empty()) {
 		r_error = err;
 	}
 

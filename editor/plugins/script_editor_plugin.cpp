@@ -395,7 +395,7 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
 	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
-	if (!val.is_empty()) {
+	if (val.is_not_empty()) {
 		return p_text + ": " + val;
 	} else {
 		return String();
@@ -1423,7 +1423,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			case SHOW_IN_FILE_SYSTEM: {
 				const Ref<Resource> script = current->get_edited_resource();
 				String path = script->get_path();
-				if (!path.is_empty()) {
+				if (path.is_not_empty()) {
 					if (script->is_built_in()) {
 						path = path.get_slice("::", 0); // Show the scene instead.
 					}
@@ -1998,7 +1998,7 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
-			bool saved = !path.is_empty();
+			bool saved = path.is_not_empty();
 			if (saved) {
 				// The script might be deleted, moved, or renamed, so make sure
 				// to update original path to previously edited resource.
@@ -2478,7 +2478,7 @@ void ScriptEditor::save_current_script() {
 	if (resource->is_built_in()) {
 		// If built-in script, save the scene instead.
 		const String scene_path = resource->get_path().get_slice("::", 0);
-		if (!scene_path.is_empty()) {
+		if (scene_path.is_not_empty()) {
 			Vector<String> scene_to_save;
 			scene_to_save.push_back(scene_path);
 			EditorNode::get_singleton()->save_scene_list(scene_to_save);
@@ -3972,7 +3972,7 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 		Script *p_script = Object::cast_to<Script>(p_object);
 		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (p_script->is_built_in() && !res_path.is_empty()) {
+		if (p_script->is_built_in() && res_path.is_not_empty()) {
 			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
 				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 					EditorNode::get_singleton()->load_scene(res_path);

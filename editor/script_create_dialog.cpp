@@ -60,7 +60,7 @@ static String _get_parent_class_of_script(String p_path) {
 
 	// Inherits from a script that has class_name.
 	class_name = script->get_language()->get_global_class_name(base->get_path());
-	if (!class_name.is_empty()) {
+	if (class_name.is_not_empty()) {
 		return class_name;
 	}
 
@@ -108,7 +108,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-			if (!last_language.is_empty()) {
+			if (last_language.is_not_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_language) {
 						language_menu->select(i);
@@ -166,7 +166,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
 
-	if (!p_base_path.is_empty()) {
+	if (p_base_path.is_not_empty()) {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 		current_language = language_menu->get_selected();
@@ -294,7 +294,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	// Let ScriptLanguage do custom validation.
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (!path_error.is_empty()) {
+	if (path_error.is_not_empty()) {
 		return path_error;
 	}
 
@@ -422,7 +422,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();
 	String extension = "";
-	if (!path.is_empty()) {
+	if (path.is_not_empty()) {
 		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
@@ -540,7 +540,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	is_new_script_created = true;
 
 	String path_error = _validate_path(p_path, false);
-	if (!path_error.is_empty()) {
+	if (path_error.is_not_empty()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;

@@ -66,7 +66,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
-	if (!error.is_empty()) {
+	if (error.is_not_empty()) {
 		return;
 	}
 
