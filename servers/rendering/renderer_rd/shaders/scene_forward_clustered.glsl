@@ -96,6 +96,8 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 } material;
 #endif
 
+float global_time;
+
 #ifdef MODE_DUAL_PARABOLOID
 
 layout(location = 9) out float dp_clip;
@@ -386,9 +388,12 @@ void main() {
 
 	mat4 model_matrix = instances.data[instance_index].transform;
 #if defined(MOTION_VECTORS)
+	global_time = scene_data_block.prev_data.time;
 	vertex_shader(instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	global_time = scene_data_block.data.time;
 	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
 #else
+	global_time = scene_data_block.data.time;
 	vec4 screen_position;
 	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
 #endif
@@ -485,6 +490,8 @@ layout(location = 10) in flat uint instance_index_interp;
 #define projection_matrix scene_data.projection_matrix
 #define inv_projection_matrix scene_data.inv_projection_matrix
 #endif
+
+#define global_time scene_data_block.data.time
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
 //both required for transmittance to be enabled
