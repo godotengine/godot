@@ -1152,7 +1152,11 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 }
 
 Vector2 Viewport::get_mouse_position() const {
-	return gui.last_mouse_pos;
+	Vector2 window_offset;
+	if (get_parent() && get_parent()->has_method(SNAME("get_global_position"))) {
+		window_offset = get_parent()->call(SNAME("get_global_position"));
+	}
+	return (get_final_transform().affine_inverse()).xform(Input::get_singleton()->get_mouse_position() - window_offset);
 }
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
