@@ -54,7 +54,7 @@
 			<return type="void" />
 			<argument index="0" name="mask" type="int" />
 			<description>
-				Update the layer mask which help GPUParticles3D interact with Collider and Attractor via cull_musk
+				Update the layer mask which helps [GPUParticles3D] interact with [GPUParticlesCollision3D] and [GPUParticlesAttractor3D]'s cull mask.
 			</description>
 		</method>
 	</methods>
