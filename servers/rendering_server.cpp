@@ -2875,6 +2875,10 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
 	GLOBAL_DEF("rendering/rendering_device/descriptor_pools/max_descriptors_per_pool", 64);
 
+	// Number of commands that can be drawn per frame.
+	GLOBAL_DEF_RST("rendering/gl_compatibility/item_buffer_size", 16384);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/item_buffer_size", PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "1024,1048576,1"));
+
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/use_zstd_compression", true);

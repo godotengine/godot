@@ -126,11 +126,6 @@ struct CanvasTexture {
 
 	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-
-	Size2i size_cache = Size2i(1, 1);
-	bool use_normal_cache = false;
-	bool use_specular_cache = false;
-	bool cleared_cache = true;
 };
 
 /* CANVAS SHADOW */

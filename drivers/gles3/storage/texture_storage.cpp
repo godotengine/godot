@@ -1533,9 +1533,11 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	if (!rt->clear_requested) {
 		return;
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 
 	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
 	rt->clear_requested = false;
+	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
