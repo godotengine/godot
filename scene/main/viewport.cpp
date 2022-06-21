@@ -2640,11 +2640,6 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					close_rect.position = Vector2(r.position.x + r.size.x - close_h_ofs, r.position.y - close_v_ofs);
 					close_rect.size = close_icon->get_size();
 
-					if (gui.subwindow_focused != sw.window) {
-						// Refocus.
-						_sub_window_grab_focus(sw.window);
-					}
-
 					if (close_rect.has_point(mb->get_position())) {
 						gui.subwindow_drag = SUB_WINDOW_DRAG_CLOSE;
 						gui.subwindow_drag_close_inside = true; // Starts inside.
@@ -2668,16 +2663,15 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			if (!click_on_window && r.has_point(mb->get_position())) {
+				click_on_window = true;
+			}
+
+			if (click_on_window) {
 				// Clicked, see if it needs to fetch focus.
 				if (gui.subwindow_focused != sw.window) {
 					// Refocus.
 					_sub_window_grab_focus(sw.window);
 				}
-
-				click_on_window = true;
-			}
-
-			if (click_on_window) {
 				break;
 			}
 		}
