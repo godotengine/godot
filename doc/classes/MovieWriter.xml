@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MovieWriter" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_audio_mix_rate" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_audio_speaker_mode" qualifiers="virtual const">
+			<return type="int" enum="AudioServer.SpeakerMode" />
+			<description>
+			</description>
+		</method>
+		<method name="_handles_file" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_write_begin" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<argument index="0" name="movie_size" type="Vector2i" />
+			<argument index="1" name="fps" type="int" />
+			<argument index="2" name="base_path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_write_end" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_write_frame" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<argument index="0" name="frame_image" type="Image" />
+			<argument index="1" name="audio_frame_block" type="const void*" />
+			<description>
+			</description>
+		</method>
+		<method name="add_writer" qualifiers="static">
+			<return type="void" />
+			<argument index="0" name="writer" type="MovieWriter" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

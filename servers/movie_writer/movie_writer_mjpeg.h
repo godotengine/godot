@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_dummy.h                                                 */
+/*  movie_writer_mjpeg.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_DRIVER_DUMMY_H
-#define AUDIO_DRIVER_DUMMY_H
+#ifndef MOVIE_WRITER_MJPEG_H
+#define MOVIE_WRITER_MJPEG_H
 
-#include "servers/audio_server.h"
+#include "servers/movie_writer/movie_writer.h"
 
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
+class MovieWriterMJPEG : public MovieWriter {
+	GDCLASS(MovieWriterMJPEG, MovieWriter)
 
-class AudioDriverDummy : public AudioDriver {
-	Thread thread;
-	Mutex mutex;
+	uint32_t mix_rate = 48000;
+	AudioServer::SpeakerMode speaker_mode = AudioServer::SPEAKER_MODE_STEREO;
+	String base_path;
+	uint32_t frame_count = 0;
+	uint32_t fps = 0;
+	float quality = 0.75;
 
-	int32_t *samples_in = nullptr;
+	uint32_t audio_block_size = 0;
 
-	static void thread_func(void *p_udata);
+	Vector<uint32_t> jpg_frame_sizes;
 
-	uint32_t buffer_frames = 4096;
-	int32_t mix_rate = -1;
-	SpeakerMode speaker_mode = SPEAKER_MODE_STEREO;
+	uint64_t total_frames_ofs = 0;
+	uint64_t total_frames_ofs2 = 0;
+	uint64_t total_frames_ofs3 = 0;
+	uint64_t total_audio_frames_ofs4 = 0;
+	uint64_t movi_data_ofs = 0;
 
-	int channels;
+	Ref<FileAccess> f;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+protected:
+	virtual uint32_t get_audio_mix_rate() const override;
+	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const override;
+	virtual void get_supported_extensions(List<String> *r_extensions) const override;
 
-	bool use_threads = true;
+	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) override;
+	virtual Error write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) override;
+	virtual void write_end() override;
 
-	static AudioDriverDummy *singleton;
+	virtual bool handles_file(const String &p_path) const override;
 
 public:
-	const char *get_name() const {
-		return "Dummy";
-	};
-
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
-
-	void set_use_threads(bool p_use_threads);
-	void set_speaker_mode(SpeakerMode p_mode);
-	void set_mix_rate(int p_rate);
-
-	uint32_t get_channels() const;
-
-	void mix_audio(int p_frames, int32_t *p_buffer);
-
-	static AudioDriverDummy *get_dummy_singleton() { return singleton; }
-
-	AudioDriverDummy();
-	~AudioDriverDummy() {}
+	MovieWriterMJPEG();
 };
 
-#endif
+#endif // MOVIE_WRITER_AVIJPEG_H

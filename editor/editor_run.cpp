@@ -43,7 +43,7 @@ String EditorRun::get_running_scene() const {
 	return running_scene;
 }
 
-Error EditorRun::run(const String &p_scene) {
+Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	List<String> args;
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
@@ -66,6 +66,16 @@ Error EditorRun::run(const String &p_scene) {
 
 	if (debug_navigation) {
 		args.push_back("--debug-navigation");
+	}
+
+	if (p_write_movie != "") {
+		args.push_back("--write-movie");
+		args.push_back(p_write_movie);
+		args.push_back("--fixed-fps");
+		args.push_back(itos(GLOBAL_GET("editor/movie_writer/fps")));
+		if (bool(GLOBAL_GET("editor/movie_writer/disable_vsync"))) {
+			args.push_back("--disable-vsync");
+		}
 	}
 
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");

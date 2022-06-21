@@ -173,6 +173,7 @@ private:
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
 		RUN_USER_DATA_FOLDER,
+		RUN_WRITE_MOVIE,
 		RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
 		RUN_VCS_METADATA,
@@ -333,6 +334,7 @@ private:
 	Button *play_scene_button = nullptr;
 	Button *play_custom_scene_button = nullptr;
 	Button *search_button = nullptr;
+	Button *write_movie_button = nullptr;
 	TextureProgressBar *audio_vu = nullptr;
 
 	Timer *screenshot_timer = nullptr;
@@ -667,7 +669,7 @@ private:
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 	void _immediate_dialog_confirmed();
-
+	void _update_write_movie_icon();
 	void _select_default_main_screen_plugin();
 
 	void _bottom_panel_switch(bool p_enable, int p_idx);

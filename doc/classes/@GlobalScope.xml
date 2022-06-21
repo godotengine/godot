@@ -2569,19 +2569,21 @@
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="42" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="41" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="43" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="44" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

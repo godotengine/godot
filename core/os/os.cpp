@@ -388,6 +388,10 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 
+	if (p_feature == "movie") {
+		return _writing_movie;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
