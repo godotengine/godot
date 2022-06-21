@@ -62,7 +62,6 @@ public:
 private:
 	Vector<TouchPos> touch;
 	Point2 hover_prev_pos; // needed to calculate the relative position on hover events
-	Point2 scroll_prev_pos; // needed to calculate the relative position on scroll events
 
 	bool alt_mem = false;
 	bool shift_mem = false;
@@ -89,7 +88,6 @@ public:
 	void process_hover(int p_type, Point2 p_pos);
 	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor);
 	void process_double_tap(int event_android_button_mask, Point2 p_pos);
-	void process_scroll(Point2 p_pos);
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 };
 
