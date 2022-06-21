@@ -1240,36 +1240,6 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid() && !p_already_accepted) {
-		// Zoom gesture
-		_zoom_on_position(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
-		return true;
-	}
-
-	Ref<InputEventPanGesture> pan_gesture = p_event;
-	if (pan_gesture.is_valid() && !p_already_accepted) {
-		// If ctrl key pressed, then zoom instead of pan.
-		if (pan_gesture->is_ctrl_pressed()) {
-			const real_t factor = pan_gesture->get_delta().y;
-
-			zoom_widget->set_zoom_by_increments(1);
-			if (factor != 1.f) {
-				zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * factor + 1.f));
-			}
-			_zoom_on_position(zoom_widget->get_zoom(), pan_gesture->get_position());
-
-			return true;
-		}
-
-		// Pan gesture
-		const Vector2 delta = (pan_speed / zoom) * pan_gesture->get_delta();
-		view_offset.x += delta.x;
-		view_offset.y += delta.y;
-		update_viewport();
-		return true;
-	}
-
 	return false;
 }
 
@@ -1292,6 +1262,36 @@ void CanvasItemEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bo
 		zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * ABS(p_scroll_vec.y) + 1.f));
 	}
 	_zoom_on_position(zoom_widget->get_zoom(), p_origin);
+}
+
+void CanvasItemEditor::_gesture_callback(Ref<InputEvent> p_gesture) {
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_gesture;
+	if (magnify_gesture.is_valid()) {
+		// Zoom gesture
+		_zoom_on_position(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+		return;
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_gesture;
+	if (pan_gesture.is_valid()) {
+		// If Ctrl key pressed, then zoom instead of pan.
+		if (pan_gesture->is_ctrl_pressed()) {
+			const real_t factor = pan_gesture->get_delta().y;
+
+			zoom_widget->set_zoom_by_increments(1);
+			if (factor != 1.f) {
+				zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * factor + 1.f));
+			}
+			_zoom_on_position(zoom_widget->get_zoom(), pan_gesture->get_position());
+			return;
+		}
+
+		// Pan gesture
+		const Vector2 delta = (pan_speed / zoom) * pan_gesture->get_delta();
+		view_offset.x += delta.x;
+		view_offset.y += delta.y;
+		update_viewport();
+	}
 }
 
 bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
@@ -4944,7 +4944,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback), callable_mp(this, &CanvasItemEditor::_gesture_callback));
 
 	viewport = memnew(CanvasItemEditorViewport(this));
 	viewport_scrollable->add_child(viewport);

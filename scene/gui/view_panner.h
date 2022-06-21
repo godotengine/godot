@@ -58,12 +58,13 @@ private:
 	Callable scroll_callback;
 	Callable pan_callback;
 	Callable zoom_callback;
+	Callable gesture_callback;
 
 	void callback_helper(Callable p_callback, Vector<Variant> p_args);
 	ControlScheme control_scheme = SCROLL_ZOOMS;
 
 public:
-	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback);
+	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback, Callable p_gesture_callback = Callable());
 	void set_control_scheme(ControlScheme p_scheme);
 	void set_enable_rmb(bool p_enable);
 	void set_pan_shortcut(Ref<Shortcut> p_shortcut);

@@ -119,6 +119,10 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		}
 	}
 
+	if (gesture_callback.is_valid() && (Object::cast_to<InputEventMagnifyGesture>(p_event.ptr()) || Object::cast_to<InputEventPanGesture>(p_event.ptr()))) {
+		callback_helper(gesture_callback, varray(p_event));
+		return true;
+	}
 	return false;
 }
 
@@ -138,10 +142,11 @@ void ViewPanner::callback_helper(Callable p_callback, Vector<Variant> p_args) {
 	p_callback.call(argptr, p_args.size(), result, ce);
 }
 
-void ViewPanner::set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback) {
+void ViewPanner::set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback, Callable p_gesture_callback) {
 	scroll_callback = p_scroll_callback;
 	pan_callback = p_pan_callback;
 	zoom_callback = p_zoom_callback;
+	gesture_callback = p_gesture_callback;
 }
 
 void ViewPanner::set_control_scheme(ControlScheme p_scheme) {

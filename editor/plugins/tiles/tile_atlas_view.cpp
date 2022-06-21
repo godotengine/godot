@@ -63,6 +63,19 @@ void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool 
 	_update_zoom_and_panning(true);
 }
 
+void TileAtlasView::_gesture_callback(Ref<InputEvent> p_gesture) {
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_gesture;
+	if (magnify_gesture.is_valid()) {
+		_zoom_callback(Vector2(0, magnify_gesture->get_factor()), Vector2(), false);
+		return;
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_gesture;
+	if (pan_gesture.is_valid()) {
+		_pan_callback(pan_gesture->get_delta());
+	}
+}
+
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
 	// Update the texture.
 	Vector2i size;
@@ -565,7 +578,7 @@ TileAtlasView::TileAtlasView() {
 	add_child(button_center_view);
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback), callable_mp(this, &TileAtlasView::_gesture_callback));
 	panner->set_enable_rmb(true);
 
 	center_container = memnew(CenterContainer);

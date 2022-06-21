@@ -365,6 +365,7 @@ private:
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+	void _gesture_callback(Ref<InputEvent> p_gesture);
 
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
