@@ -1353,8 +1353,9 @@ void SceneTreeDialog::_cancel() {
 
 void SceneTreeDialog::_select() {
 	if (tree->get_selected()) {
-		emit_signal(SNAME("selected"), tree->get_selected()->get_path());
+		// The signal may cause another dialog to be displayed, so be sure to hide this one first.
 		hide();
+		emit_signal(SNAME("selected"), tree->get_selected()->get_path());
 	}
 }
 
