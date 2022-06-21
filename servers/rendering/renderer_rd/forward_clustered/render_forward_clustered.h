@@ -36,8 +36,8 @@
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -541,7 +541,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			bool mirror = false;
 			bool dirty_dependencies = false;
 
-			RendererStorage::DependencyTracker dependency_tracker;
+			DependencyTracker dependency_tracker;
 		};
 
 		Data *data = nullptr;
@@ -550,8 +550,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 				dirty_list_element(this) {}
 	};
 
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceForwardClustered>::List geometry_instance_dirty_list;
 
@@ -683,7 +683,7 @@ public:
 
 	virtual bool free(RID p_rid) override;
 
-	RenderForwardClustered(RendererStorageRD *p_storage);
+	RenderForwardClustered();
 	~RenderForwardClustered();
 };
 } // namespace RendererSceneRenderImplementation

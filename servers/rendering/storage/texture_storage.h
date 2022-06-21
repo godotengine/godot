@@ -34,7 +34,18 @@
 #include "servers/rendering_server.h"
 
 class RendererTextureStorage {
+private:
+	Color default_clear_color;
+
 public:
+	void set_default_clear_color(const Color &p_color) {
+		default_clear_color = p_color;
+	}
+
+	Color get_default_clear_color() const {
+		return default_clear_color;
+	}
+
 	/* Canvas Texture API */
 
 	virtual RID canvas_texture_allocate() = 0;

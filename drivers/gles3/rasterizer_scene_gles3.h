@@ -37,7 +37,6 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "rasterizer_storage_gles3.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
@@ -45,6 +44,8 @@
 #include "shader_gles3.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/sky.glsl.gen.h"
+#include "storage/material_storage.h"
+#include "storage/utilities.h"
 
 enum RenderListType {
 	RENDER_LIST_OPAQUE, //used for opaque objects
@@ -125,7 +126,6 @@ struct RenderDataGLES3 {
 	RendererScene::RenderInfo *render_info = nullptr;
 };
 
-class RasterizerStorageGLES3;
 class RasterizerCanvasGLES3;
 
 class RasterizerSceneGLES3 : public RendererSceneRender {
@@ -323,7 +323,7 @@ private:
 			bool mirror = false;
 			bool dirty_dependencies = false;
 
-			RendererStorage::DependencyTracker dependency_tracker;
+			DependencyTracker dependency_tracker;
 		};
 
 		Data *data = nullptr;
@@ -345,8 +345,8 @@ private:
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
 	};
 
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceGLES3>::List geometry_instance_dirty_list;
 
@@ -739,7 +739,6 @@ protected:
 	void _free_sky_data(Sky *p_sky);
 
 public:
-	RasterizerStorageGLES3 *storage;
 	RasterizerCanvasGLES3 *canvas;
 
 	GeometryInstance *geometry_instance_create(RID p_base) override;
@@ -943,7 +942,7 @@ public:
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 
 	static RasterizerSceneGLES3 *get_singleton();
-	RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage);
+	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();
 };
 

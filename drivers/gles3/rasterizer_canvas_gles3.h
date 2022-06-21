@@ -34,7 +34,6 @@
 #ifdef GLES3_ENABLED
 
 #include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "storage/material_storage.h"
@@ -204,8 +203,6 @@ public:
 
 	typedef void Texture;
 
-	RasterizerStorageGLES3 *storage = nullptr;
-
 	void canvas_begin(RID p_to_render_target, bool p_to_backbuffer);
 
 	//virtual void draw_window_margins(int *black_margin, RID *black_image) override;
@@ -260,7 +257,7 @@ public:
 	void set_time(double p_time);
 
 	static RasterizerCanvasGLES3 *get_singleton();
-	RasterizerCanvasGLES3(RasterizerStorageGLES3 *p_storage);
+	RasterizerCanvasGLES3();
 	~RasterizerCanvasGLES3();
 };
 

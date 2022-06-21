@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.cpp                                         */
+/*  texture_storage.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_globals.h"
+#include "texture_storage.h"
 
-bool RenderingServerGlobals::threaded = false;
+using namespace RendererDummy;
 
-RendererUtilities *RenderingServerGlobals::utilities = nullptr;
-RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
-RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
-RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
-RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
-RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
-RendererGI *RenderingServerGlobals::gi = nullptr;
-RendererFog *RenderingServerGlobals::fog = nullptr;
-RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
-RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+TextureStorage *TextureStorage::singleton = nullptr;
 
-RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
-RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+TextureStorage::TextureStorage() {
+	singleton = this;
+}
+
+TextureStorage::~TextureStorage() {
+	singleton = nullptr;
+}

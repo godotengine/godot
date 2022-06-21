@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.cpp                                         */
+/*  renderer_fog.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_globals.h"
+#ifndef RENDERER_FOG_H
+#define RENDERER_FOG_H
 
-bool RenderingServerGlobals::threaded = false;
+#include "servers/rendering_server.h"
 
-RendererUtilities *RenderingServerGlobals::utilities = nullptr;
-RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
-RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
-RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
-RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
-RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
-RendererGI *RenderingServerGlobals::gi = nullptr;
-RendererFog *RenderingServerGlobals::fog = nullptr;
-RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
-RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+class RendererFog {
+public:
+	virtual ~RendererFog() {}
 
-RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
-RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+	/* FOG VOLUMES */
+
+	virtual RID fog_volume_allocate() = 0;
+	virtual void fog_volume_initialize(RID p_rid) = 0;
+	virtual void fog_free(RID p_rid) = 0;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
+};
+
+#endif // !RENDERER_FOG_H

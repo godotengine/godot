@@ -31,7 +31,6 @@
 #ifndef RENDERER_GI_H
 #define RENDERER_GI_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererGI {
