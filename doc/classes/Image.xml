@@ -397,12 +397,30 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Saves the image as a PNG file to [code]path[/code].
+				Saves the image as a PNG file to the file at [code]path[/code].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Saves the image as a PNG file to a byte array.
+			</description>
+		</method>
+		<method name="save_webp" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="lossy" type="bool" default="false" />
+			<argument index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to the file at [code]path[/code]. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+			</description>
+		</method>
+		<method name="save_webp_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="lossy" type="bool" default="false" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="set_pixel">

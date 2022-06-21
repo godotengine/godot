@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_saver_webp.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "image_loader_webp.h"
 #include "resource_saver_webp.h"
 
-static ImageLoaderWebP *image_loader_webp = nullptr;
-static Ref<ResourceSaverWebP> resource_saver_webp;
+#include "core/io/file_access.h"
+#include "core/io/image.h"
+#include "scene/resources/texture.h"
+#include "webp_common.h"
 
-void initialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+Error ResourceSaverWebP::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+	Ref<ImageTexture> texture = p_resource;
 
-	image_loader_webp = memnew(ImageLoaderWebP);
-	resource_saver_webp.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_webp);
-	ResourceSaver::add_resource_format_saver(resource_saver_webp);
+	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as WEBP.");
+	ERR_FAIL_COND_V_MSG(!texture->get_width(), ERR_INVALID_PARAMETER, "Can't save empty texture as WEBP.");
+
+	Ref<Image> img = texture->get_image();
+
+	Error err = save_image(p_path, img);
+
+	return err;
 }
 
-void uninitialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+Error ResourceSaverWebP::save_image(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality) {
+	Vector<uint8_t> buffer = save_image_to_buffer(p_img, p_lossy, p_quality);
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save WEBP at path: '%s'.", p_path));
+
+	const uint8_t *reader = buffer.ptr();
+
+	file->store_buffer(reader, buffer.size());
+	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
+		return ERR_CANT_CREATE;
 	}
 
-	memdelete(image_loader_webp);
-	ResourceSaver::remove_resource_format_saver(resource_saver_webp);
-	resource_saver_webp.unref();
+	return OK;
+}
+
+Vector<uint8_t> ResourceSaverWebP::save_image_to_buffer(const Ref<Image> &p_img, const bool p_lossy, const float p_quality) {
+	Vector<uint8_t> buffer;
+	if (p_lossy) {
+		buffer = WebPCommon::_webp_lossy_pack(p_img, p_quality);
+	} else {
+		buffer = WebPCommon::_webp_lossless_pack(p_img);
+	}
+	return buffer;
+}
+
+bool ResourceSaverWebP::recognize(const Ref<Resource> &p_resource) const {
+	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
+}
+
+void ResourceSaverWebP::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+	if (Object::cast_to<ImageTexture>(*p_resource)) {
+		p_extensions->push_back("webp");
+	}
+}
+
+ResourceSaverWebP::ResourceSaverWebP() {
+	Image::save_webp_func = &save_image;
+	Image::save_webp_buffer_func = &save_image_to_buffer;
 }

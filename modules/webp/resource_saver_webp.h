@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_saver_webp.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef RESOURCE_SAVER_WEBP_H
+#define RESOURCE_SAVER_WEBP_H
 
-#include "image_loader_webp.h"
-#include "resource_saver_webp.h"
+#include "core/io/image.h"
+#include "core/io/resource_saver.h"
 
-static ImageLoaderWebP *image_loader_webp = nullptr;
-static Ref<ResourceSaverWebP> resource_saver_webp;
+class ResourceSaverWebP : public ResourceFormatSaver {
+public:
+	static Error save_image(const String &p_path, const Ref<Image> &p_img, const bool p_lossy = false, const float p_quality = 0.75f);
+	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img, const bool p_lossy = false, const float p_quality = 0.75f);
 
-void initialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual bool recognize(const Ref<Resource> &p_resource) const;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 
-	image_loader_webp = memnew(ImageLoaderWebP);
-	resource_saver_webp.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_webp);
-	ResourceSaver::add_resource_format_saver(resource_saver_webp);
-}
+	ResourceSaverWebP();
+};
 
-void uninitialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	memdelete(image_loader_webp);
-	ResourceSaver::remove_resource_format_saver(resource_saver_webp);
-	resource_saver_webp.unref();
-}
+#endif // RESOURCE_SAVER_WEBP_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webp_common.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef WEBP_COMMON_H
+#define WEBP_COMMON_H
 
-#include "image_loader_webp.h"
-#include "resource_saver_webp.h"
+#include "core/io/image.h"
 
-static ImageLoaderWebP *image_loader_webp = nullptr;
-static Ref<ResourceSaverWebP> resource_saver_webp;
+namespace WebPCommon {
+// Given an image, pack this data into a WebP file.
+Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality);
+Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image);
+// Given a WebP file, unpack it into an image.
+Ref<Image> _webp_unpack(const Vector<uint8_t> &p_buffer);
+Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len);
+} //namespace WebPCommon
 
-void initialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	image_loader_webp = memnew(ImageLoaderWebP);
-	resource_saver_webp.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_webp);
-	ResourceSaver::add_resource_format_saver(resource_saver_webp);
-}
-
-void uninitialize_webp_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	memdelete(image_loader_webp);
-	ResourceSaver::remove_resource_format_saver(resource_saver_webp);
-	resource_saver_webp.unref();
-}
+#endif // WEBP_COMMON_H
