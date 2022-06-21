@@ -101,6 +101,10 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+StringName Script::get_global_class_name() const {
+	return ScriptServer::get_global_class_name(get_path());
+}
+
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
@@ -110,6 +114,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
 	ClassDB::bind_method(D_METHOD("reload", "keep_state"), &Script::reload, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_base_script"), &Script::get_base_script);
+	ClassDB::bind_method(D_METHOD("get_global_class_name"), &Script::get_global_class_name);
 	ClassDB::bind_method(D_METHOD("get_instance_base_type"), &Script::get_instance_base_type);
 
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
@@ -226,6 +231,16 @@ void ScriptServer::remove_global_class(const StringName &p_class) {
 
 bool ScriptServer::is_global_class(const StringName &p_class) {
 	return global_classes.has(p_class);
+}
+
+StringName ScriptServer::get_global_class_name(const StringName &p_path) {
+	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
+		if (E.value.path == p_path) {
+			return E.key;
+		}
+	}
+
+	return StringName();
 }
 
 StringName ScriptServer::get_global_class_language(const StringName &p_class) {

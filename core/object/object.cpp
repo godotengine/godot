@@ -405,6 +405,15 @@ void Object::get_valid_parents_static(List<String> *p_parents) {
 void Object::_get_valid_parents_static(List<String> *p_parents) {
 }
 
+StringName Object::get_script_class_name() const {
+	if (!script.is_null()) {
+		Ref<Script> s = script;
+		return s->get_global_class_name();
+	}
+
+	return StringName();
+}
+
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 #ifdef TOOLS_ENABLED
 
@@ -1575,6 +1584,7 @@ void Object::notify_property_list_changed() {
 
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
+	ClassDB::bind_method(D_METHOD("get_script_class_name"), &Object::get_script_class_name);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);

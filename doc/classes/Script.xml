@@ -24,6 +24,12 @@
 				Returns the script directly inherited by this script.
 			</description>
 		</method>
+		<method name="get_global_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the script's global class name.
+			</description>
+		</method>
 		<method name="get_instance_base_type" qualifiers="const">
 			<return type="StringName" />
 			<description>

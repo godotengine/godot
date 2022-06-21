@@ -397,6 +397,12 @@
 				Returns the object's [Script] instance, or [code]null[/code] if none is assigned.
 			</description>
 		</method>
+		<method name="get_script_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the object's [Script] global class name.
+			</description>
+		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="signal" type="StringName" />

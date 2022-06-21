@@ -348,6 +348,15 @@ public:                                                                         
 		p_inheritance_list->push_back(String(#m_class));                                                                                         \
 	}                                                                                                                                            \
 	virtual bool is_class(const String &p_class) const override {                                                                                \
+		if (!p_class.is_empty() && !get_script().is_null()) {                                                                                    \
+			Object *s = get_script();                                                                                                            \
+			while (s) {                                                                                                                          \
+				if (s->call(StringName("get_global_class_name")).operator String() == p_class) {                                                 \
+					return true;                                                                                                                 \
+				}                                                                                                                                \
+				s = s->call(StringName("get_base_script"));                                                                                      \
+			}                                                                                                                                    \
+		}                                                                                                                                        \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                           \
 			return true;                                                                                                                         \
 		}                                                                                                                                        \
@@ -690,7 +699,19 @@ public:
 	}
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
+	StringName get_script_class_name() const;
+
 	virtual bool is_class(const String &p_class) const {
+		if (!p_class.is_empty() && !script.is_null()) {
+			Object *s = script;
+			while (s) {
+				if (s->call(StringName("get_global_class_name")).operator String() == p_class) {
+					return true;
+				}
+				s = s->call(StringName("get_base_script"));
+			}
+		}
+
 		if (_extension && _extension->is_class(p_class)) {
 			return true;
 		}
