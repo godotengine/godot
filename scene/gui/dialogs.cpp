@@ -262,7 +262,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel.is_empty()) {
-		c = TTRC("Cancel");
+		c = RTR("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
@@ -349,7 +349,7 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew(Button);
-	ok->set_text(TTRC("OK"));
+	ok->set_text(RTR("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
