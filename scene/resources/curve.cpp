@@ -54,6 +54,7 @@ void Curve::set_point_count(int p_count) {
 	if (_points.size() >= p_count) {
 		_points.resize(p_count);
 		mark_dirty();
+		notify_property_list_changed();
 	} else {
 		for (int i = p_count - _points.size(); i > 0; i--) {
 			add_point(Vector2());
@@ -61,7 +62,7 @@ void Curve::set_point_count(int p_count) {
 	}
 }
 
-int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
 	// Add a point and preserve order
 
 	// Curve bounds is in 0..1
@@ -108,6 +109,13 @@ int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_t
 	update_auto_tangents(ret);
 
 	mark_dirty();
+
+	return ret;
+}
+
+int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+	int ret = _add_point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode);
+	notify_property_list_changed();
 
 	return ret;
 }
@@ -217,15 +225,21 @@ Curve::TangentMode Curve::get_point_right_mode(int p_index) const {
 	return _points[p_index].right_mode;
 }
 
-void Curve::remove_point(int p_index) {
+void Curve::_remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, _points.size());
 	_points.remove_at(p_index);
 	mark_dirty();
 }
 
+void Curve::remove_point(int p_index) {
+	_remove_point(p_index);
+	notify_property_list_changed();
+}
+
 void Curve::clear_points() {
 	_points.clear();
 	mark_dirty();
+	notify_property_list_changed();
 }
 
 void Curve::set_point_value(int p_index, real_t p_position) {
@@ -238,8 +252,8 @@ void Curve::set_point_value(int p_index, real_t p_position) {
 int Curve::set_point_offset(int p_index, real_t p_offset) {
 	ERR_FAIL_INDEX_V(p_index, _points.size(), -1);
 	Point p = _points[p_index];
-	remove_point(p_index);
-	int i = add_point(Vector2(p_offset, p.position.y));
+	_remove_point(p_index);
+	int i = _add_point(Vector2(p_offset, p.position.y));
 	_points.write[i].left_tangent = p.left_tangent;
 	_points.write[i].right_tangent = p.right_tangent;
 	_points.write[i].left_mode = p.left_mode;
@@ -370,7 +384,6 @@ real_t Curve::interpolate_local_nocheck(int p_index, real_t p_local_offset) cons
 void Curve::mark_dirty() {
 	_baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
-	notify_property_list_changed();
 }
 
 Array Curve::get_data() const {
@@ -429,6 +442,7 @@ void Curve::set_data(const Array p_input) {
 	}
 
 	mark_dirty();
+	notify_property_list_changed();
 }
 
 void Curve::bake() {
