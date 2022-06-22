@@ -803,7 +803,7 @@ public:
 				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
-			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));
+			Ref<Script> cast_script = ResourceCache::get_ref(script);
 			if (!cast_script.is_valid()) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				r_error_str = "Script path is not a script: " + script;

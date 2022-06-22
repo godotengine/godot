@@ -693,7 +693,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && ResourceCache::has(path)) {
-				Ref<Resource> cached = ResourceCache::get(path);
+				Ref<Resource> cached = ResourceCache::get_ref(path);
 				if (cached.is_valid()) {
 					//already loaded, don't do anything
 					error = OK;
@@ -717,10 +717,10 @@ Error ResourceLoaderBinary::load() {
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//use the existing one
-			Resource *r = ResourceCache::get(path);
-			if (r->get_class() == t) {
-				r->reset_state();
-				res = Ref<Resource>(r);
+			Ref<Resource> cached = ResourceCache::get_ref(path);
+			if (cached->get_class() == t) {
+				cached->reset_state();
+				res = cached;
 			}
 		}
 

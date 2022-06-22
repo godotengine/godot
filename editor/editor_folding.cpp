@@ -193,10 +193,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 
 	for (int i = 0; i < res_unfolds.size(); i += 2) {
 		String path2 = res_unfolds[i];
-		Ref<Resource> res;
-		if (ResourceCache::has(path2)) {
-			res = Ref<Resource>(ResourceCache::get(path2));
-		}
+		Ref<Resource> res = ResourceCache::get_ref(path2);
 		if (res.is_null()) {
 			continue;
 		}
