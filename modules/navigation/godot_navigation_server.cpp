@@ -123,6 +123,18 @@ void GodotNavigationServer::add_command(SetCommand *command) const {
 	}
 }
 
+Array GodotNavigationServer::get_maps() const {
+	Array all_map_rids;
+	List<RID> maps_owned;
+	map_owner.get_owned_list(&maps_owned);
+	if (maps_owned.size()) {
+		for (List<RID>::Element *E = maps_owned.front(); E; E = E->next()) {
+			all_map_rids.push_back(E->get());
+		}
+	}
+	return all_map_rids;
+}
+
 RID GodotNavigationServer::map_create() const {
 	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);

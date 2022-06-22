@@ -83,6 +83,8 @@ public:
 
 	void add_command(SetCommand *command) const;
 
+	virtual Array get_maps() const;
+
 	virtual RID map_create() const;
 	COMMAND_2(map_set_active, RID, p_map, bool, p_active);
 	virtual bool map_is_active(RID p_map) const;
