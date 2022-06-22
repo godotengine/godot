@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/threaded_callable_queue.h"
+#include "main/main.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 #include "servers/visual_server.h"
@@ -8098,7 +8099,10 @@ void RasterizerStorageGLES3::initialize() {
 	config.parallel_shader_compile_supported = config.extensions.has("GL_KHR_parallel_shader_compile") || config.extensions.has("GL_ARB_parallel_shader_compile");
 #endif
 
-	const int compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
+	int compilation_mode = 0;
+	if (!(Engine::get_singleton()->is_editor_hint() || Main::is_project_manager())) {
+		compilation_mode = ProjectSettings::get_singleton()->get("rendering/gles3/shaders/shader_compilation_mode");
+	}
 	config.async_compilation_enabled = compilation_mode >= 1;
 	config.shader_cache_enabled = compilation_mode == 2;
 
