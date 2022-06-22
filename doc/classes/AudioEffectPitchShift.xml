@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPitchShift" inherits="AudioEffect" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a pitch-shifting audio effect to an Audio bus.
+		Adds a pitch-shifting audio effect to an audio bus.
 		Raises or lowers the pitch of original sound.
 	</brief_description>
 	<description>
 		Allows modulation of pitch independently of tempo. All frequencies can be increased/decreased with minimal effect on transients.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<members>
 		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectPitchShift.FFTSize" default="3">
