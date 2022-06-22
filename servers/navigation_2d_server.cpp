@@ -188,6 +188,7 @@ void Navigation2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &Navigation2DServer::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &Navigation2DServer::map_get_agents);
+	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &Navigation2DServer::map_force_update);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &Navigation2DServer::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &Navigation2DServer::region_set_enter_cost);
@@ -250,6 +251,10 @@ RID FORWARD_0_C(map_create);
 void FORWARD_2_C(map_set_active, RID, p_map, bool, p_active, rid_to_rid, bool_to_bool);
 
 bool FORWARD_1_C(map_is_active, RID, p_map, rid_to_rid);
+
+void Navigation2DServer::map_force_update(RID p_map) {
+	NavigationServer::get_singleton_mut()->map_force_update(p_map);
+}
 
 void FORWARD_2_C(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
