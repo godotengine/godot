@@ -33,6 +33,8 @@
 NavigationServer *NavigationServer::singleton = nullptr;
 
 void NavigationServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer::get_maps);
+
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer::map_set_active);
 	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &NavigationServer::map_is_active);
