@@ -159,6 +159,8 @@ void NavigationServer2D::_emit_map_changed(RID p_map) {
 }
 
 void NavigationServer2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer2D::get_maps);
+
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer2D::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer2D::map_set_active);
 	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &NavigationServer2D::map_is_active);
@@ -216,6 +218,8 @@ NavigationServer2D::NavigationServer2D() {
 NavigationServer2D::~NavigationServer2D() {
 	singleton = nullptr;
 }
+
+Array FORWARD_0_C(get_maps);
 
 Array FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
 

@@ -53,6 +53,8 @@ public:
 	/// MUST be used in single thread!
 	static NavigationServer2D *get_singleton_mut() { return singleton; }
 
+	virtual Array get_maps() const;
+
 	/// Create a new map.
 	virtual RID map_create() const;
 
