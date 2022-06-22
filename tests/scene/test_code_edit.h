@@ -1104,7 +1104,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			/* Check region metadata. */
 			int idx = code_edit->is_in_string(1, 1);
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
-			CHECK(code_edit->get_delimiter_end_key(idx) == "");
+			CHECK(code_edit->get_delimiter_end_key(idx).is_empty());
 
 			/* Check nested strings are handled correctly. */
 			code_edit->set_text(" \n#  # \n ");
@@ -1195,7 +1195,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			/* Check region metadata. */
 			int idx = code_edit->is_in_comment(1, 1);
 			CHECK(code_edit->get_delimiter_start_key(idx) == "#");
-			CHECK(code_edit->get_delimiter_end_key(idx) == "");
+			CHECK(code_edit->get_delimiter_end_key(idx).is_empty());
 
 			/* Check nested comments are handled correctly. */
 			code_edit->set_text(" \n#  # \n ");
@@ -1964,7 +1964,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Simple unindent. */
 		code_edit->do_unindent();
-		CHECK(code_edit->get_line(0) == "");
+		CHECK(code_edit->get_line(0).is_empty());
 
 		/* Should inindent inplace. */
 		code_edit->set_text("");
@@ -1977,7 +1977,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_text("");
 		code_edit->insert_text_at_caret("\t");
 		code_edit->backspace();
-		CHECK(code_edit->get_line(0) == "");
+		CHECK(code_edit->get_line(0).is_empty());
 
 		/* Unindent lines does entire line and works without selection. */
 		code_edit->set_text("");
@@ -2051,7 +2051,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Simple unindent. */
 		code_edit->do_unindent();
-		CHECK(code_edit->get_line(0) == "");
+		CHECK(code_edit->get_line(0).is_empty());
 
 		/* Should inindent inplace. */
 		code_edit->set_text("");
@@ -2064,7 +2064,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_text("");
 		code_edit->insert_text_at_caret("    ");
 		code_edit->backspace();
-		CHECK(code_edit->get_line(0) == "");
+		CHECK(code_edit->get_line(0).is_empty());
 
 		/* Backspace with letter. */
 		code_edit->set_text("");
@@ -2153,7 +2153,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
-			CHECK(code_edit->get_line(0) == "");
+			CHECK(code_edit->get_line(0).is_empty());
 			CHECK(code_edit->get_line(1) == "test:");
 
 			/* Whitespace between symbol and caret is okay. */
@@ -2178,7 +2178,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test: # string");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 			code_edit->remove_string_delimiter("#");
 
 			/* Non-whitespace prevents auto-indentation. */
@@ -2187,7 +2187,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test := 0 # comment");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0 # comment");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 			code_edit->remove_comment_delimiter("#");
 
 			/* Even when there's no comments. */
@@ -2195,7 +2195,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test := 0");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 
 			/* If between brace pairs an extra line is added. */
 			code_edit->set_text("");
@@ -2211,7 +2211,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
-			CHECK(code_edit->get_line(0) == "");
+			CHECK(code_edit->get_line(0).is_empty());
 			CHECK(code_edit->get_line(1) == "test{}");
 
 			/* or below. */
@@ -2220,7 +2220,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_caret_column(5);
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 		}
 
 		SUBCASE("[CodeEdit] auto indent spaces") {
@@ -2246,7 +2246,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
-			CHECK(code_edit->get_line(0) == "");
+			CHECK(code_edit->get_line(0).is_empty());
 			CHECK(code_edit->get_line(1) == "test:");
 
 			/* Whitespace between symbol and caret is okay. */
@@ -2271,7 +2271,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test: # string");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 			code_edit->remove_string_delimiter("#");
 
 			/* Non-whitespace prevents auto-indentation. */
@@ -2280,7 +2280,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test := 0 # comment");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0 # comment");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 			code_edit->remove_comment_delimiter("#");
 
 			/* Even when there's no comments. */
@@ -2288,7 +2288,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test := 0");
 			SEND_GUI_ACTION(code_edit, "ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 
 			/* If between brace pairs an extra line is added. */
 			code_edit->set_text("");
@@ -2304,7 +2304,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
-			CHECK(code_edit->get_line(0) == "");
+			CHECK(code_edit->get_line(0).is_empty());
 			CHECK(code_edit->get_line(1) == "test{}");
 
 			/* or below. */
@@ -2313,7 +2313,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_caret_column(5);
 			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
-			CHECK(code_edit->get_line(1) == "");
+			CHECK(code_edit->get_line(1).is_empty());
 		}
 	}
 
@@ -3350,7 +3350,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->set_caret_column(13);
 	SEND_GUI_ACTION(code_edit, "ui_text_newline");
 	CHECK(code_edit->get_line(0) == "test new line");
-	CHECK(code_edit->get_line(1) == "");
+	CHECK(code_edit->get_line(1).is_empty());
 
 	/* Split line with new line. */
 	code_edit->set_text("");
@@ -3366,7 +3366,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->select(0, 0, 0, 5);
 	SEND_GUI_ACTION(code_edit, "ui_text_newline");
-	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(0).is_empty());
 	CHECK(code_edit->get_line(1) == "new line");
 
 	/* Blank new line below with selection should not split. */
@@ -3375,14 +3375,14 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->select(0, 0, 0, 5);
 	SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
 	CHECK(code_edit->get_line(0) == "test new line");
-	CHECK(code_edit->get_line(1) == "");
+	CHECK(code_edit->get_line(1).is_empty());
 
 	/* Blank new line above with selection should not split. */
 	code_edit->set_text("");
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->select(0, 0, 0, 5);
 	SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
-	CHECK(code_edit->get_line(0) == "");
+	CHECK(code_edit->get_line(0).is_empty());
 	CHECK(code_edit->get_line(1) == "test new line");
 
 	memdelete(code_edit);

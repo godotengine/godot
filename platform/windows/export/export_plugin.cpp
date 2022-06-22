@@ -82,7 +82,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	}
 
 	String app_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")).is_not_empty()) {
 		app_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		app_name = "Unnamed";

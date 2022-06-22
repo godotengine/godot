@@ -1871,7 +1871,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 			String current_dir = dir.get_current_dir();
 			String file_name = dir.get_next();
 
-			while (file_name != "") {
+			while (file_name.is_not_empty()) {
 				if (file_name == ".git" || file_name == ".import" || file_name == ".godot") {
 					file_name = dir.get_next();
 					continue;

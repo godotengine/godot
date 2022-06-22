@@ -1448,7 +1448,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")).is_not_empty()) {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";

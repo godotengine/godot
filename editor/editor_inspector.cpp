@@ -3727,7 +3727,7 @@ void EditorInspector::_add_meta_confirm() {
 void EditorInspector::_check_meta_name(String name) {
 	String error;
 
-	if (name == "") {
+	if (name.is_empty()) {
 		error = TTR("Metadata can't be empty.");
 	} else if (!name.is_valid_identifier()) {
 		error = TTR("Invalid metadata identifier.");
@@ -3737,7 +3737,7 @@ void EditorInspector::_check_meta_name(String name) {
 		error = TTR("Names starting with _ are reserved for editor-only metadata.");
 	}
 
-	if (error != "") {
+	if (error.is_not_empty()) {
 		add_meta_error->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		add_meta_error->set_text(error);
 		add_meta_dialog->get_ok_button()->set_disabled(true);

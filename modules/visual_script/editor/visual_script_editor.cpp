@@ -3736,7 +3736,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 
 		if (vnode_old.is_valid() && p_connecting) {
-			if (base_type == "") {
+			if (base_type.is_empty()) {
 				base_type = property_path[0];
 			} else if (ClassDB::is_parent_class(property_path[0], base_type)) {
 				base_type = property_path[0];

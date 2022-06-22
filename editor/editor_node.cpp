@@ -1050,7 +1050,7 @@ void EditorNode::_scan_external_changes() {
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (editor_data.get_scene_path(i) == "" || !da->file_exists(editor_data.get_scene_path(i))) {
+		if (editor_data.get_scene_path(i).is_empty() || !da->file_exists(editor_data.get_scene_path(i))) {
 			continue;
 		}
 
@@ -1086,7 +1086,7 @@ void EditorNode::_reload_modified_scenes() {
 	int current_idx = editor_data.get_edited_scene();
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		if (editor_data.get_scene_path(i) == "") {
+		if (editor_data.get_scene_path(i).is_empty()) {
 			continue;
 		}
 
@@ -2998,7 +2998,7 @@ void EditorNode::_tool_menu_option(int p_idx) {
 			orphan_resources->show();
 		} break;
 		case TOOLS_CUSTOM: {
-			if (tool_menu->get_item_submenu(p_idx) == "") {
+			if (tool_menu->get_item_submenu(p_idx).is_empty()) {
 				Callable callback = tool_menu->get_item_metadata(p_idx);
 				Callable::CallError ce;
 				Variant result;
@@ -3551,12 +3551,12 @@ void EditorNode::_clear_undo_history() {
 
 void EditorNode::set_current_scene(int p_idx) {
 	// Save the folding in case the scene gets reloaded.
-	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx)) {
+	if (editor_data.get_scene_path(p_idx).is_not_empty() && editor_data.get_edited_scene_root(p_idx)) {
 		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 	}
 
 	if (editor_data.check_and_update_scene(p_idx)) {
-		if (editor_data.get_scene_path(p_idx) != "") {
+		if (editor_data.get_scene_path(p_idx).is_not_empty()) {
 			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 		}
 
@@ -5514,7 +5514,7 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 		}
 
 		if (tool_menu->get_item_text(i) == p_name) {
-			if (tool_menu->get_item_submenu(i) != "") {
+			if (tool_menu->get_item_submenu(i).is_not_empty()) {
 				Node *n = tool_menu->get_node(tool_menu->get_item_submenu(i));
 				tool_menu->remove_child(n);
 				memdelete(n);

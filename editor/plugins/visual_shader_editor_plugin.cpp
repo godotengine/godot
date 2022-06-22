@@ -485,7 +485,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		uniform_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_changed), varray(p_id));
 		uniform_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_focus_out), varray(uniform_name, p_id));
 
-		if (vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
+		if (vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0).is_empty()) {
 			hb = memnew(HBoxContainer);
 			hb->add_child(uniform_name);
 			node->add_child(hb);
@@ -573,7 +573,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 
 	if (custom_editor) {
-		if (is_curve || (hb == nullptr && !vsnode->is_use_prop_slots() && (vsnode->get_output_port_count() == 0 || vsnode->get_output_port_name(0) == "") && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == ""))) {
+		if (is_curve || (hb == nullptr && !vsnode->is_use_prop_slots() && (vsnode->get_output_port_count() == 0 || vsnode->get_output_port_name(0).is_empty()) && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0).is_empty()))) {
 			//will be embedded in first port
 		} else {
 			port_offset++;

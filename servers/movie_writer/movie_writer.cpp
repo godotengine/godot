@@ -152,7 +152,7 @@ void MovieWriter::set_extensions_hint() {
 	String ext_hint;
 
 	for (const String &S : found) {
-		if (ext_hint != "") {
+		if (ext_hint.is_not_empty()) {
 			ext_hint += ",";
 		}
 		ext_hint += "*." + S;

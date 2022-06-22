@@ -551,7 +551,7 @@ void ReplicationEditor::property_keyed(const String &p_property) {
 	String path = root->get_path_to(node);
 	for (int i = 1; i < history->get_path_size(); i++) {
 		String prop = history->get_path_property(i);
-		ERR_FAIL_COND(prop == "");
+		ERR_FAIL_COND(prop.is_empty());
 		path += ":" + prop;
 	}
 	path += ":" + p_property;

@@ -694,7 +694,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 	match_highest_score = 0;
 
 	if (
-			(selector_ui->base_script.unquote() != "") &&
+			(selector_ui->base_script.unquote().is_not_empty()) &&
 			(selector_ui->base_script.unquote() != ".") &&
 			!combined_docs.has(selector_ui->base_script)) {
 		String file_path = "res://" + selector_ui->base_script.unquote(); // EditorHelp::get_doc_data().name to filepath
@@ -835,12 +835,12 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		match.doc = &class_doc;
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES || _match_visual_script(class_doc)) {
-			if (term == "") {
+			if (term.is_empty()) {
 				match.name = !_match_is_hidden(class_doc);
 			} else {
 				match.name = _match_string(term, class_doc.name);
 			}
-			//	match.name = term == "" || _match_string(term, class_doc.name);
+			//	match.name = term.is_empty() || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
@@ -1100,7 +1100,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 
 	// Ensure parent nodes are created first.
 	TreeItem *parent = root_item;
-	if (p_match.doc->inherits != "") {
+	if (p_match.doc->inherits.is_not_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
 			parent = class_items[p_match.doc->inherits];
 		} else if (matches.has(p_match.doc->inherits)) {
@@ -1185,7 +1185,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_method_item(TreeIt
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (arg.default_value.is_not_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {
@@ -1201,7 +1201,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_signal_item(TreeIt
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
 		tooltip += arg.type + " " + arg.name;
-		if (arg.default_value != "") {
+		if (arg.default_value.is_not_empty()) {
 			tooltip += " = " + arg.default_value;
 		}
 		if (i < p_doc->arguments.size() - 1) {

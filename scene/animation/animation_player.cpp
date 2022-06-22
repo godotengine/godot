@@ -1543,7 +1543,7 @@ void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_bl
 void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
-	if (String(name) == "") {
+	if (String(name).is_empty()) {
 		name = playback.assigned;
 	}
 

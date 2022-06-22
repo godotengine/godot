@@ -45,7 +45,7 @@ void OpenXRSelectActionDialog::_notification(int p_what) {
 }
 
 void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
-	if (selected_action != "") {
+	if (selected_action.is_not_empty()) {
 		NodePath button_path = action_buttons[selected_action];
 		Button *button = static_cast<Button *>(get_node(button_path));
 		if (button != nullptr) {
@@ -55,7 +55,7 @@ void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
 
 	selected_action = p_action;
 
-	if (selected_action != "") {
+	if (selected_action.is_not_empty()) {
 		NodePath button_path = action_buttons[selected_action];
 		Button *button = static_cast<Button *>(get_node(button_path));
 		if (button != nullptr) {
@@ -111,7 +111,7 @@ void OpenXRSelectActionDialog::open() {
 }
 
 void OpenXRSelectActionDialog::ok_pressed() {
-	if (selected_action == "") {
+	if (selected_action.is_empty()) {
 		return;
 	}
 

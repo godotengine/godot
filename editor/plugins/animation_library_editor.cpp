@@ -53,7 +53,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 	if (adding_animation) {
 		Ref<AnimationLibrary> al = player->call("get_animation_library", adding_animation_to_library);
 		ERR_FAIL_COND(al.is_null());
-		if (p_name == "") {
+		if (p_name.is_empty()) {
 			error = TTR("Animation name can't be empty.");
 		} else if (!AnimationLibrary::is_valid_animation_name(p_name)) {
 			error = TTR("Animation name contains invalid characters: '/', ':', ',' or '['.");
@@ -61,7 +61,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 			error = TTR("Animation with the same name already exists.");
 		}
 	} else {
-		if (p_name == "" && bool(player->call("has_animation_library", ""))) {
+		if (p_name.is_empty() && bool(player->call("has_animation_library", ""))) {
 			error = TTR("Enter a library name.");
 		} else if (!AnimationLibrary::is_valid_library_name(p_name)) {
 			error = TTR("Library name contains invalid characters: '/', ':', ',' or '['.");
@@ -70,7 +70,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		}
 	}
 
-	if (error != "") {
+	if (error.is_not_empty()) {
 		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
@@ -78,7 +78,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		if (adding_animation) {
 			add_library_validate->set_text(TTR("Animation name is valid."));
 		} else {
-			if (p_name == "") {
+			if (p_name.is_empty()) {
 				add_library_validate->set_text(TTR("Global library will be created."));
 			} else {
 				add_library_validate->set_text(TTR("Library name is valid."));
@@ -382,7 +382,7 @@ void AnimationLibraryEditor::_item_renamed() {
 				undo_redo->commit_action();
 				updating = false;
 				ti->set_metadata(0, text);
-				if (text == "") {
+				if (text.is_empty()) {
 					ti->set_suffix(0, TTR("[Global]"));
 				} else {
 					ti->set_suffix(0, "");
@@ -463,7 +463,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				anim = anim->duplicate(); // Users simply dont care about referencing, so making a copy works better here.
 
 				String base_name;
-				if (anim->get_name() != "") {
+				if (anim->get_name().is_not_empty()) {
 					base_name = anim->get_name();
 				} else {
 					base_name = TTR("Pasted Animation");
@@ -521,7 +521,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		ERR_FAIL_COND(!anim.is_valid());
 		switch (p_id) {
 			case ANIM_BUTTON_COPY: {
-				if (anim->get_name() == "") {
+				if (anim->get_name().is_empty()) {
 					anim->set_name(anim_name); // Keep the name around
 				}
 				EditorSettings::get_singleton()->set_resource_clipboard(anim);

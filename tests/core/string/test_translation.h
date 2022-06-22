@@ -52,7 +52,7 @@ TEST_CASE("[Translation] Messages") {
 
 	translation->erase_message("Hello");
 	// The message no longer exists, so it returns an empty string instead.
-	CHECK(translation->get_message("Hello") == "");
+	CHECK(translation->get_message("Hello").is_empty());
 
 	List<StringName> messages;
 	translation->get_message_list(&messages);
@@ -77,14 +77,14 @@ TEST_CASE("[TranslationPO] Messages with context") {
 	translation->add_message("Hello", "Salut", "friendly");
 	CHECK(translation->get_message("Hello") == "Bonjour");
 	CHECK(translation->get_message("Hello", "friendly") == "Salut");
-	CHECK(translation->get_message("Hello", "nonexistent_context") == "");
+	CHECK(translation->get_message("Hello", "nonexistent_context").is_empty());
 
 	// Only remove the message for the default context, not the "friendly" context.
 	translation->erase_message("Hello");
 	// The message no longer exists, so it returns an empty string instead.
-	CHECK(translation->get_message("Hello") == "");
+	CHECK(translation->get_message("Hello").is_empty());
 	CHECK(translation->get_message("Hello", "friendly") == "Salut");
-	CHECK(translation->get_message("Hello", "nonexistent_context") == "");
+	CHECK(translation->get_message("Hello", "nonexistent_context").is_empty());
 
 	List<StringName> messages;
 	translation->get_message_list(&messages);
@@ -122,7 +122,7 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	translation->add_plural_message("There are %d apples", plurals);
 	ERR_PRINT_OFF;
 	// This is invalid, as the number passed to `get_plural_message()` may not be negative.
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", -1), -1) == "");
+	CHECK(vformat(translation->get_plural_message("There are %d apples", "", -1), -1).is_empty());
 	ERR_PRINT_ON;
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
@@ -141,7 +141,7 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(optimized_translation->get_message("Hello") == "Bonjour");
 	CHECK(optimized_translation->get_message("Hello2") == "Bonjour2");
 	CHECK(optimized_translation->get_message("Hello3") == "Bonjour3");
-	CHECK(optimized_translation->get_message("DoesNotExist") == "");
+	CHECK(optimized_translation->get_message("DoesNotExist").is_empty());
 
 	List<StringName> messages;
 	// `get_message_list()` can't return the list of messages stored in an OptimizedTranslation.

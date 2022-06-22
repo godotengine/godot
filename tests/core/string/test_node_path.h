@@ -58,10 +58,10 @@ TEST_CASE("[NodePath] Relative path") {
 			"The returned name at index 2 should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_relative.get_name(3) == "",
+			node_path_relative.get_name(3).is_empty(),
 			"The returned name at invalid index 3 should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_relative.get_name(-1) == "",
+			node_path_relative.get_name(-1).is_empty(),
 			"The returned name at invalid index -1 should match the expected value.");
 	ERR_PRINT_ON;
 
@@ -77,10 +77,10 @@ TEST_CASE("[NodePath] Relative path") {
 			"The returned subname at index 1 should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_relative.get_subname(2) == "",
+			node_path_relative.get_subname(2).is_empty(),
 			"The returned subname at invalid index 2 should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_relative.get_subname(-1) == "",
+			node_path_relative.get_subname(-1).is_empty(),
 			"The returned subname at invalid index -1 should match the expected value.");
 	ERR_PRINT_ON;
 
@@ -104,7 +104,7 @@ TEST_CASE("[NodePath] Absolute path") {
 			node_path_aboslute.get_as_property_path() == NodePath(":root/Sprite2D"),
 			"The returned property path should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_concatenated_subnames() == "",
+			node_path_aboslute.get_concatenated_subnames().is_empty(),
 			"The returned concatenated subnames should match the expected value.");
 
 	CHECK_MESSAGE(
@@ -115,10 +115,10 @@ TEST_CASE("[NodePath] Absolute path") {
 			"The returned name at index 1 should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(2) == "",
+			node_path_aboslute.get_name(2).is_empty(),
 			"The returned name at invalid index 2 should match the expected value.");
 	CHECK_MESSAGE(
-			node_path_aboslute.get_name(-1) == "",
+			node_path_aboslute.get_name(-1).is_empty(),
 			"The returned name at invalid index -1 should match the expected value.");
 	ERR_PRINT_ON;
 
@@ -147,7 +147,7 @@ TEST_CASE("[NodePath] Empty path") {
 			"The returned property path should match the expected value.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			node_path_empty.get_concatenated_subnames() == "",
+			node_path_empty.get_concatenated_subnames().is_empty(),
 			"The returned concatenated subnames should match the expected value.");
 	ERR_PRINT_ON;
 

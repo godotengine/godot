@@ -116,7 +116,7 @@ TEST_CASE("[RegEx] Uninitialized use") {
 	ERR_PRINT_OFF;
 	CHECK(re.search(s) == nullptr);
 	CHECK(re.search_all(s).size() == 0);
-	CHECK(re.sub(s, "") == "");
+	CHECK(re.sub(s, "").is_empty());
 	CHECK(re.get_group_count() == 0);
 	CHECK(re.get_names().size() == 0);
 	ERR_PRINT_ON
@@ -137,7 +137,7 @@ TEST_CASE("[RegEx] Invalid offset") {
 	REQUIRE(re.is_valid());
 	CHECK(re.search(s, -1) == nullptr);
 	CHECK(re.search_all(s, -1).size() == 0);
-	CHECK(re.sub(s, "", true, -1) == "");
+	CHECK(re.sub(s, "", true, -1).is_empty());
 }
 
 TEST_CASE("[RegEx] Invalid end position") {

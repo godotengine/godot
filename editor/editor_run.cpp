@@ -68,7 +68,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back("--debug-navigation");
 	}
 
-	if (p_write_movie != "") {
+	if (p_write_movie.is_not_empty()) {
 		args.push_back("--write-movie");
 		args.push_back(p_write_movie);
 		args.push_back("--fixed-fps");

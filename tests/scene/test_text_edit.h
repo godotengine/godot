@@ -62,7 +62,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// "text_changed" should not be emitted on clear / set.
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK(text_edit->get_line_count() == 1);
 			SIGNAL_CHECK("text_set", empty_signal_args);
@@ -82,7 +82,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
@@ -101,7 +101,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->redo();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
@@ -128,7 +128,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("text_set", empty_signal_args);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
@@ -139,7 +139,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->undo();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK_FALSE("text_set");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
@@ -162,7 +162,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->undo();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
@@ -200,7 +200,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
 			SIGNAL_CHECK("text_set", empty_signal_args);
@@ -213,7 +213,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Set / Get line is 0 indexed.
 			text_edit->set_line(1, "test");
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			SIGNAL_CHECK_FALSE("text_set");
 			SIGNAL_CHECK_FALSE("text_changed");
@@ -223,7 +223,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "test");
 			CHECK(text_edit->get_line(0) == "test");
-			CHECK(text_edit->get_line(1) == "");
+			CHECK(text_edit->get_line(1).is_empty());
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_set");
@@ -599,7 +599,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selection_from_column() == -1);
 			CHECK(text_edit->get_selection_to_line() == -1);
 			CHECK(text_edit->get_selection_to_column() == -1);
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			ERR_PRINT_ON;
 
 			text_edit->set_text("test\nselection");
@@ -621,13 +621,13 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_caret_column(0);
 			text_edit->set_selecting_enabled(false);
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 
 			text_edit->select_all();
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 		}
@@ -647,7 +647,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->select_word_under_caret();
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 
 			SEND_GUI_ACTION(text_edit, "ui_text_select_word_under_caret");
 			CHECK(text_edit->get_viewport()->is_input_handled());
@@ -665,7 +665,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_selecting_enabled(false);
 			text_edit->select_word_under_caret();
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
 			SIGNAL_CHECK_FALSE("caret_changed");
@@ -675,11 +675,11 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_caret_column(5);
 			text_edit->select_word_under_caret();
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 
 			text_edit->select_word_under_caret();
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 5);
 			SIGNAL_CHECK_FALSE("caret_changed");
@@ -742,7 +742,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD)
 #endif
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
@@ -750,7 +750,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT)
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
@@ -758,12 +758,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT)
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 
 			text_edit->set_selecting_enabled(false);
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT)
 			CHECK_FALSE(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "");
+			CHECK(text_edit->get_selected_text().is_empty());
 			text_edit->set_selecting_enabled(true);
 		}
 
@@ -1044,7 +1044,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit, line_0, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
 
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(target_text_edit->get_text() == "drag me");
 
 			memdelete(target_text_edit);
@@ -1446,7 +1446,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			SEND_GUI_ACTION(text_edit, "ui_text_backspace_all_to_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			CHECK_FALSE(text_edit->has_selection());
@@ -1615,7 +1615,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[0] = 0;
 
 			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
-			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_text().is_empty());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK_FALSE("caret_changed");
@@ -2551,7 +2551,7 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 	CHECK(text_edit->get_saved_version() == 3);
 
 	text_edit->undo();
-	CHECK(text_edit->get_line(0) == "");
+	CHECK(text_edit->get_line(0).is_empty());
 	CHECK(text_edit->get_version() == 0);
 	CHECK(text_edit->get_saved_version() == 3);
 	CHECK_FALSE(text_edit->has_undo());
@@ -2758,10 +2758,10 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	// Should this work?
 	text_edit->set_caret_column(5);
-	CHECK(text_edit->get_word_under_caret() == "");
+	CHECK(text_edit->get_word_under_caret().is_empty());
 
 	text_edit->set_caret_column(6);
-	CHECK(text_edit->get_word_under_caret() == "");
+	CHECK(text_edit->get_word_under_caret().is_empty());
 
 	text_edit->set_caret_line(1);
 	CHECK(text_edit->get_caret_line() == 1);
@@ -3302,7 +3302,7 @@ TEST_CASE("[SceneTree][TextEdit] setter getters") {
 		text_edit->set_placeholder("test\nplaceholder");
 		CHECK(text_edit->get_placeholder() == "test\nplaceholder");
 
-		CHECK(text_edit->get_text() == "");
+		CHECK(text_edit->get_text().is_empty());
 		CHECK(text_edit->get_line_count() == 1);
 		CHECK(text_edit->get_last_full_visible_line() == 0);
 	}
@@ -3437,8 +3437,8 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		text_edit->remove_gutter(100);
 		SIGNAL_CHECK_FALSE("gutter_removed");
 
-		CHECK(text_edit->get_gutter_name(-1) == "");
-		CHECK(text_edit->get_gutter_name(100) == "");
+		CHECK(text_edit->get_gutter_name(-1).is_empty());
+		CHECK(text_edit->get_gutter_name(100).is_empty());
 		ERR_PRINT_ON;
 	}
 
@@ -3472,10 +3472,10 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		text_edit->set_line_gutter_metadata(-1, 0, "test");
 
 		CHECK(text_edit->get_line_gutter_metadata(1, 0) == "test");
-		CHECK(text_edit->get_line_gutter_metadata(0, -1) == "");
-		CHECK(text_edit->get_line_gutter_metadata(0, 2) == "");
-		CHECK(text_edit->get_line_gutter_metadata(2, 0) == "");
-		CHECK(text_edit->get_line_gutter_metadata(-1, 0) == "");
+		CHECK(text_edit->get_line_gutter_metadata(0, -1).is_empty());
+		CHECK(text_edit->get_line_gutter_metadata(0, 2).is_empty());
+		CHECK(text_edit->get_line_gutter_metadata(2, 0).is_empty());
+		CHECK(text_edit->get_line_gutter_metadata(-1, 0).is_empty());
 
 		text_edit->set_line_gutter_text(1, 0, "test");
 		text_edit->set_line_gutter_text(0, -1, "test");
@@ -3484,10 +3484,10 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		text_edit->set_line_gutter_text(-1, 0, "test");
 
 		CHECK(text_edit->get_line_gutter_text(1, 0) == "test");
-		CHECK(text_edit->get_line_gutter_text(0, -1) == "");
-		CHECK(text_edit->get_line_gutter_text(0, 2) == "");
-		CHECK(text_edit->get_line_gutter_text(2, 0) == "");
-		CHECK(text_edit->get_line_gutter_text(-1, 0) == "");
+		CHECK(text_edit->get_line_gutter_text(0, -1).is_empty());
+		CHECK(text_edit->get_line_gutter_text(0, 2).is_empty());
+		CHECK(text_edit->get_line_gutter_text(2, 0).is_empty());
+		CHECK(text_edit->get_line_gutter_text(-1, 0).is_empty());
 
 		text_edit->set_line_gutter_item_color(1, 0, Color(1, 0, 0));
 		text_edit->set_line_gutter_item_color(0, -1, Color(1, 0, 0));

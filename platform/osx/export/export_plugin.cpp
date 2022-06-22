@@ -758,7 +758,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")).is_not_empty()) {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
@@ -1303,7 +1303,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 #else
 			String sign_identity = "-";
 #endif
-			ad_hoc = (sign_identity == "" || sign_identity == "-");
+			ad_hoc = (sign_identity.is_empty() || sign_identity == "-");
 			bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 			if ((!dylibs_found.is_empty() || !shared_objects.is_empty()) && sign_enabled && ad_hoc && !lib_validation) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
@@ -1404,7 +1404,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		DirAccess::remove_file_or_error(hlp_ent_path);
 
 		// Clean up temporary .app dir and generated entitlements.
-		if ((String)(p_preset->get("codesign/entitlements/custom_file")) == "") {
+		if (String(p_preset->get("codesign/entitlements/custom_file")).is_empty()) {
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {

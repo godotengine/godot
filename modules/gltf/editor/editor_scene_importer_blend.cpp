@@ -368,7 +368,7 @@ Vector<String> EditorFileSystemImportFormatSupportQueryBlend::get_file_extension
 void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path) {
 	String error;
 	bool success = false;
-	if (p_path == "") {
+	if (p_path.is_empty()) {
 		error = TTR("Path is empty.");
 	} else {
 		if (_test_blender_path(p_path, &error)) {
@@ -464,7 +464,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 	String path = EDITOR_GET("filesystem/import/blender/blender3_path");
 
-	if (path == "") {
+	if (path.is_empty()) {
 		// Autodetect
 		auto_detected_path = "";
 
@@ -529,7 +529,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 			_autodetect_path("/opt/blender/bin");
 		}
 #endif
-		if (auto_detected_path != "") {
+		if (auto_detected_path.is_not_empty()) {
 			path = auto_detected_path;
 		}
 	}

@@ -659,7 +659,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 			if (c->extends_used) {
 				String path = "";
-				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
+				if (String(c->extends_path).is_not_empty() && String(c->extends_path) != get_path()) {
 					path = c->extends_path;
 					if (path.is_relative_path()) {
 						String base = get_path();

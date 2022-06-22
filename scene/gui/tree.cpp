@@ -4870,7 +4870,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 				col_width -= size.width;
 			}
 			String ret;
-			if (it->get_tooltip(col) == "") {
+			if (it->get_tooltip(col).is_empty()) {
 				ret = it->get_text(col);
 			} else {
 				ret = it->get_tooltip(col);

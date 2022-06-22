@@ -313,7 +313,7 @@ void AnimationPlayerEditor::_animation_new() {
 			current_library_name = player->find_animation_library(current_animation);
 		}
 	}
-	String attempt_prefix = (current_library_name == "") ? "" : current_library_name + "/";
+	String attempt_prefix = (current_library_name.is_empty()) ? "" : current_library_name + "/";
 	while (true) {
 		String attempt = base;
 		if (count > 1) {
@@ -448,7 +448,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	String test_name_prefix = "";
 	if (library->is_visible() && library->get_selected_id() != -1) {
 		test_name_prefix = library->get_item_metadata(library->get_selected_id());
-		test_name_prefix += (test_name_prefix != "") ? "/" : "";
+		test_name_prefix += (test_name_prefix.is_not_empty()) ? "/" : "";
 	}
 
 	if (player->has_animation(test_name_prefix + new_name)) {
@@ -526,7 +526,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			}
 			undo_redo->commit_action();
 
-			if (library_name != "") {
+			if (library_name.is_not_empty()) {
 				library_name = library_name + "/";
 			}
 			_select_anim_by_name(library_name + new_name);
@@ -574,7 +574,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			}
 			undo_redo->commit_action();
 
-			if (library_name != "") {
+			if (library_name.is_not_empty()) {
 				library_name = library_name + "/";
 			}
 			_select_anim_by_name(library_name + new_name);
@@ -824,7 +824,7 @@ void AnimationPlayerEditor::_update_player() {
 
 		for (const StringName &E : animlist) {
 			String path = K;
-			if (path != "") {
+			if (path.is_not_empty()) {
 				path += "/";
 			}
 			path += E;

@@ -1303,7 +1303,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")) == "") {
+	if (main_args.size() == 0 && String(GLOBAL_GET("application/run/main_scene")).is_empty()) {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -2279,7 +2279,7 @@ bool Main::start() {
 
 #endif
 
-	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
+	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")).is_not_empty()) {
 		game_path = GLOBAL_GET("application/run/main_scene");
 	}
 

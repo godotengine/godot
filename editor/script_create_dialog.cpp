@@ -195,7 +195,7 @@ bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
 		String p = p_string.substr(1, p_string.length() - 2);
-		if (_validate_path(p, true) == "") {
+		if (_validate_path(p, true).is_empty()) {
 			return true;
 		}
 	}
@@ -884,7 +884,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 				}
 			} else {
 				// Store script
-				if (space_indent != "") {
+				if (space_indent.is_not_empty()) {
 					line = line.replace(space_indent, "_TS_");
 				}
 				script_template.content += line.replace("\t", "_TS_") + "\n";

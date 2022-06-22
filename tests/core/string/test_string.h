@@ -1074,11 +1074,11 @@ TEST_CASE("[String] lstrip and rstrip") {
 	STRIP_TEST(String("bababbababccc").lstrip("ab") == "ccc");
 	STRIP_TEST(String("aaabcbcbcbbcbbc").rstrip("cb") == "aaa");
 	// strip empty string
-	STRIP_TEST(String("").lstrip("") == "");
-	STRIP_TEST(String("").rstrip("") == "");
+	STRIP_TEST(String("").lstrip("").is_empty());
+	STRIP_TEST(String("").rstrip("").is_empty());
 	// strip to empty string
-	STRIP_TEST(String("abcabcabc").lstrip("bca") == "");
-	STRIP_TEST(String("abcabcabc").rstrip("bca") == "");
+	STRIP_TEST(String("abcabcabc").lstrip("bca").is_empty());
+	STRIP_TEST(String("abcabcabc").rstrip("bca").is_empty());
 	// don't strip wrong end
 	STRIP_TEST(String("abc").lstrip("c") == "abc");
 	STRIP_TEST(String("abca").lstrip("a") == "bca");
@@ -1103,11 +1103,11 @@ TEST_CASE("[String] lstrip and rstrip") {
 	STRIP_TEST(String("bababbababccc").lstrip("qwabjkl") == "ccc");
 	STRIP_TEST(String("aaabcbcbcbbcbbc").rstrip("qwcbjkl") == "aaa");
 	// strip empty string
-	STRIP_TEST(String("").lstrip("qwjkl") == "");
-	STRIP_TEST(String("").rstrip("qwjkl") == "");
+	STRIP_TEST(String("").lstrip("qwjkl").is_empty());
+	STRIP_TEST(String("").rstrip("qwjkl").is_empty());
 	// strip to empty string
-	STRIP_TEST(String("abcabcabc").lstrip("qwbcajkl") == "");
-	STRIP_TEST(String("abcabcabc").rstrip("qwbcajkl") == "");
+	STRIP_TEST(String("abcabcabc").lstrip("qwbcajkl").is_empty());
+	STRIP_TEST(String("abcabcabc").rstrip("qwbcajkl").is_empty());
 	// don't strip wrong end
 	STRIP_TEST(String("abc").lstrip("qwcjkl") == "abc");
 	STRIP_TEST(String("abca").lstrip("qwajkl") == "bca");

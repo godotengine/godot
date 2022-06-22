@@ -505,7 +505,7 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 }
 
 bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
-	return find_export_template(template_file_name, err) != "";
+	return find_export_template(template_file_name, err).is_not_empty();
 }
 
 Ref<EditorExportPreset> EditorExportPlatform::create_preset() {

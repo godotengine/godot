@@ -849,7 +849,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 
 		if (path.is_resource_file()) {
 			text = path.get_file();
-		} else if (edited_shaders[i].shader->get_name() != "") {
+		} else if (edited_shaders[i].shader->get_name().is_not_empty()) {
 			text = edited_shaders[i].shader->get_name();
 		} else {
 			text = _class + ":" + itos(edited_shaders[i].shader->get_instance_id());
