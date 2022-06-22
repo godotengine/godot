@@ -261,9 +261,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// The margin values below were determined by empirical testing.
 	if (is_layout_rtl()) {
 		stylebox->set_default_margin(SIDE_LEFT, 0);
-		stylebox->set_default_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_RIGHT, (!get_label().is_empty_string() ? 23 : 16) * EDSCALE);
 	} else {
-		stylebox->set_default_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
+		stylebox->set_default_margin(SIDE_LEFT, (!get_label().is_empty_string() ? 23 : 16) * EDSCALE);
 		stylebox->set_default_margin(SIDE_RIGHT, 0);
 	}
 
@@ -302,7 +302,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	Color fc = get_theme_color(is_read_only() ? SNAME("font_uneditable_color") : SNAME("font_color"), SNAME("LineEdit"));
 	Color lc = get_theme_color(is_read_only() ? SNAME("read_only_label_color") : SNAME("label_color"));
 
-	if (flat && !label.is_empty()) {
+	if (flat && !label.is_empty_string()) {
 		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
 		if (rtl) {
 			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));

@@ -309,7 +309,7 @@ void Skeleton3DEditor::insert_keys(const bool p_all_bones) {
 	for (int i = 0; i < bone_len; i++) {
 		const String name = skeleton->get_bone_name(i);
 
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			continue;
 		}
 

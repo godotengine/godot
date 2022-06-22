@@ -157,7 +157,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 }
 
 void EditorAutoloadSettings::_autoload_add() {
-	if (autoload_add_path->get_text().is_empty()) {
+	if (autoload_add_path->get_text().is_empty_string()) {
 		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
 		String fpath = path;
 		if (!fpath.ends_with("/")) {
@@ -381,7 +381,7 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 }
 
 void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
-	if (!autoload_add_path->get_text().is_empty() && _autoload_name_is_valid(p_name, nullptr)) {
+	if (!autoload_add_path->get_text().is_empty_string() && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
@@ -395,7 +395,7 @@ void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
 	add_autoload->set_disabled(!is_name_valid);
 	error_message->set_text(error_string);
-	error_message->set_visible(!autoload_add_name->get_text().is_empty() && !is_name_valid);
+	error_message->set_visible(!autoload_add_name->get_text().is_empty_string() && !is_name_valid);
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
@@ -454,7 +454,7 @@ void EditorAutoloadSettings::update_autoload() {
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			continue;
 		}
 
@@ -830,7 +830,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		String name = pi.name.get_slice("/", 1);
 		String path = ProjectSettings::get_singleton()->get(pi.name);
 
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			continue;
 		}
 

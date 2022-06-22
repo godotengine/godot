@@ -55,7 +55,7 @@ void ExportTemplateManager::_update_template_status() {
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
-		while (!c.is_empty()) {
+		while (!c.is_empty_string()) {
 			if (da->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
@@ -123,7 +123,7 @@ void ExportTemplateManager::_download_current() {
 
 	if (mirrors_available) {
 		String mirror_url = _get_selected_mirror();
-		if (mirror_url.is_empty()) {
+		if (mirror_url.is_empty_string()) {
 			_set_current_progress_status(TTR("There are no mirrors available."), true);
 			return;
 		}
@@ -289,7 +289,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 
 	if (is_downloading_templates) {
 		String mirror_url = _get_selected_mirror();
-		if (mirror_url.is_empty()) {
+		if (mirror_url.is_empty_string()) {
 			_set_current_progress_status(TTR("There are no mirrors available."), true);
 			return;
 		}
@@ -432,7 +432,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGoToNextFile(pkg);
 	}
 
-	if (version.is_empty()) {
+	if (version.is_empty_string()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
 		unzClose(pkg);
 		return false;
@@ -573,7 +573,7 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 	switch (p_id) {
 		case VISIT_WEB_MIRROR: {
 			String mirror_url = _get_selected_mirror();
-			if (mirror_url.is_empty()) {
+			if (mirror_url.is_empty_string()) {
 				EditorNode::get_singleton()->show_warning(TTR("There are no mirrors available."));
 				return;
 			}
@@ -583,7 +583,7 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 
 		case COPY_MIRROR_URL: {
 			String mirror_url = _get_selected_mirror();
-			if (mirror_url.is_empty()) {
+			if (mirror_url.is_empty_string()) {
 				EditorNode::get_singleton()->show_warning(TTR("There are no mirrors available."));
 				return;
 			}

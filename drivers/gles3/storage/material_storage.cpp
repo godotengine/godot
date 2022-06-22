@@ -1172,7 +1172,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				}
 			}
 #ifdef TOOLS_ENABLED
-			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
+			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty_string()) {
 				roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 			}
 #endif
@@ -1207,7 +1207,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 #endif
 				}
 #ifdef TOOLS_ENABLED
-				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
+				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty_string()) {
 					roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 				}
 #endif
@@ -2737,7 +2737,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	uses_sdf = false;
 	uses_time = false;
 
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return; //just invalid, but no error
 	}
 
@@ -2945,7 +2945,7 @@ void SkyShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return; //just invalid, but no error
 	}
 
@@ -3170,7 +3170,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_screen_texture = false;
 
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return; //just invalid, but no error
 	}
 

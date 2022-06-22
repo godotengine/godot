@@ -218,7 +218,7 @@ public:
 			da->list_dir_begin();
 			while (true) {
 				String file = da->get_next();
-				if (file.is_empty()) {
+				if (file.is_empty_string()) {
 					break;
 				}
 

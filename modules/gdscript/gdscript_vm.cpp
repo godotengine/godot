@@ -73,7 +73,7 @@ static String _get_script_name(const Ref<Script> p_script) {
 	Ref<GDScript> gdscript = p_script;
 	if (gdscript.is_valid()) {
 		return gdscript->get_script_class_name();
-	} else if (p_script->get_name().is_empty()) {
+	} else if (p_script->get_name().is_empty_string()) {
 		return p_script->get_path().get_file();
 	} else {
 		return p_script->get_name();
@@ -793,7 +793,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -823,7 +823,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -855,7 +855,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (oob) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -886,7 +886,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -922,7 +922,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = key->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(key) + "'";
@@ -955,7 +955,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (oob) {
 					String v = index->operator String();
-					if (!v.is_empty()) {
+					if (!v.is_empty_string()) {
 						v = "'" + v + "'";
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
@@ -2763,7 +2763,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(counter, Variant::INT);
 				*VariantInternal::get_int(counter) = 0;
 
-				if (!str->is_empty()) {
+				if (!str->is_empty_string()) {
 					GET_INSTRUCTION_ARG(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::STRING);
 					*VariantInternal::get_string(iterator) = str->substr(0, 1);
@@ -3331,7 +3331,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						GET_INSTRUCTION_ARG(message, 1);
 						message_str = *message;
 					}
-					if (message_str.is_empty()) {
+					if (message_str.is_empty_string()) {
 						err_text = "Assertion failed.";
 					} else {
 						err_text = "Assertion failed: " + message_str;
@@ -3409,20 +3409,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		//error
 		// function, file, line, error, explanation
 		String err_file;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
+		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty_string()) {
 			err_file = p_instance->script->path;
 		} else if (script) {
 			err_file = script->path;
 		}
-		if (err_file.is_empty()) {
+		if (err_file.is_empty_string()) {
 			err_file = "<built-in>";
 		}
 		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->name.is_empty()) {
+		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->name.is_empty_string()) {
 			err_func = p_instance->script->name + "." + err_func;
 		}
 		int err_line = line;
-		if (err_text.is_empty()) {
+		if (err_text.is_empty_string()) {
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
 

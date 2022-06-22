@@ -55,7 +55,7 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 	if (port == 0) {
 		port = ssl ? 443 : 80;
 	}
-	if (path.is_empty()) {
+	if (path.is_empty_string()) {
 		path = "/";
 	}
 	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);

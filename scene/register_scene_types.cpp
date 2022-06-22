@@ -1122,7 +1122,7 @@ void initialize_theme() {
 	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
 
 	Ref<Font> font;
-	if (!font_path.is_empty()) {
+	if (!font_path.is_empty_string()) {
 		font = ResourceLoader::load(font_path);
 		if (!font.is_valid()) {
 			ERR_PRINT("Error loading custom font '" + font_path + "'");
@@ -1134,7 +1134,7 @@ void initialize_theme() {
 		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
 	}
 
-	if (!theme_path.is_empty()) {
+	if (!theme_path.is_empty_string()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
 			Theme::set_project_default(theme);

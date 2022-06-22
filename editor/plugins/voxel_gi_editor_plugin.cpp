@@ -37,7 +37,7 @@ void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {
 		if (voxel_gi->get_probe_data().is_null()) {
 			String path = get_tree()->get_edited_scene_root()->get_scene_file_path();
-			if (path.is_empty()) {
+			if (path.is_empty_string()) {
 				path = "res://" + voxel_gi->get_name() + "_data.res";
 			} else {
 				String ext = path.get_extension();

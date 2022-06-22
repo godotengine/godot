@@ -94,7 +94,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Response
 		String output = GDScriptLanguageProtocol::get_singleton()->process_message(msg);
-		if (!output.is_empty()) {
+		if (!output.is_empty_string()) {
 			res_queue.push_back(output.utf8());
 		}
 	}
@@ -139,7 +139,7 @@ void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 
 String GDScriptLanguageProtocol::process_message(const String &p_text) {
 	String ret = process_string(p_text);
-	if (ret.is_empty()) {
+	if (ret.is_empty_string()) {
 		return ret;
 	} else {
 		return format_output(ret);

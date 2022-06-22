@@ -95,7 +95,7 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 	}
 
 	HistoryElement h;
-	if (!p_property.is_empty() && has_prev) {
+	if (!p_property.is_empty_string() && has_prev) {
 		// Add a sub property.
 		HistoryElement &prev_element = history.write[current_elem_idx];
 		h = prev_element;
@@ -542,7 +542,7 @@ void EditorData::remove_scene(int p_idx) {
 		current_edited_scene--;
 	}
 
-	if (!edited_scene[p_idx].path.is_empty()) {
+	if (!edited_scene[p_idx].path.is_empty_string()) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
 	}
 
@@ -554,7 +554,7 @@ bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<Str
 
 	if (p_node == p_root) {
 		ss = p_node->get_scene_inherited_state();
-	} else if (!p_node->get_scene_file_path().is_empty()) {
+	} else if (!p_node->get_scene_file_path().is_empty_string()) {
 		ss = p_node->get_scene_instance_state();
 	}
 
@@ -618,7 +618,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = new_scene;
-		if (!new_scene->get_scene_file_path().is_empty()) {
+		if (!new_scene->get_scene_file_path().is_empty_string()) {
 			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();
 		}
 		edited_scene.write[p_idx].selection = new_selection;
@@ -652,14 +652,14 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	edited_scene.write[current_edited_scene].root = p_root;
 	if (p_root) {
-		if (!p_root->get_scene_file_path().is_empty()) {
+		if (!p_root->get_scene_file_path().is_empty_string()) {
 			edited_scene.write[current_edited_scene].path = p_root->get_scene_file_path();
 		} else {
 			p_root->set_scene_file_path(edited_scene[current_edited_scene].path);
 		}
 	}
 
-	if (!edited_scene[current_edited_scene].path.is_empty()) {
+	if (!edited_scene[current_edited_scene].path.is_empty_string()) {
 		edited_scene.write[current_edited_scene].file_modified_time = FileAccess::get_modified_time(edited_scene[current_edited_scene].path);
 	}
 }
@@ -734,7 +734,7 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
 	if (!s.is_valid() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (!s.is_valid() && n && n->get_scene_file_path().is_empty()) {
+		while (!s.is_valid() && n && n->get_scene_file_path().is_empty_string()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}
@@ -747,7 +747,7 @@ String EditorData::get_scene_title(int p_idx, bool p_always_strip_extension) con
 	if (!edited_scene[p_idx].root) {
 		return TTR("[empty]");
 	}
-	if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
+	if (edited_scene[p_idx].root->get_scene_file_path().is_empty_string()) {
 		return TTR("[unsaved]");
 	}
 
@@ -788,7 +788,7 @@ String EditorData::get_scene_path(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 
 	if (edited_scene[p_idx].root) {
-		if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
+		if (edited_scene[p_idx].root->get_scene_file_path().is_empty_string()) {
 			edited_scene[p_idx].root->set_scene_file_path(edited_scene[p_idx].path);
 		} else {
 			return edited_scene[p_idx].root->get_scene_file_path();
@@ -925,7 +925,7 @@ String EditorData::script_class_get_icon_path(const String &p_class) const {
 
 	String current = p_class;
 	String ret = _script_class_icon_paths[current];
-	while (ret.is_empty()) {
+	while (ret.is_empty_string()) {
 		current = script_class_get_base(current);
 		if (!ScriptServer::is_global_class(current)) {
 			return String();

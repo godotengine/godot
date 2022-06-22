@@ -97,7 +97,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	};
 
 	bool _valid_resource_name(const String &p_name) const {
-		if (p_name.is_empty()) {
+		if (p_name.is_empty_string()) {
 			return false;
 		}
 		if (p_name.ends_with(".")) {
@@ -143,7 +143,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 	bool _valid_bgcolor(const String &p_color) const {
-		if (p_color.is_empty()) {
+		if (p_color.is_empty_string()) {
 			return true;
 		}
 		if (p_color.begins_with("#") && p_color.is_valid_html_color()) {
@@ -219,7 +219,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
-		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
+		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty_string() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));
 
 		result = result.replace("$publisher_display_name$", p_preset->get("package/publisher_display_name"));
 		result = result.replace("$app_description$", p_preset->get("package/description"));
@@ -238,7 +238,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String show_name_on_tiles = "";
-		if (!name_on_tiles.is_empty()) {
+		if (!name_on_tiles.is_empty_string()) {
 			show_name_on_tiles = "<uap:ShowNameOnTiles>\n" + name_on_tiles + "        </uap:ShowNameOnTiles>";
 		}
 
@@ -259,7 +259,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String rotation_preference = "";
-		if (!rotations.is_empty()) {
+		if (!rotations.is_empty_string()) {
 			rotation_preference = "<uap:InitialRotationPreference>\n" + rotations + "        </uap:InitialRotationPreference>";
 		}
 
@@ -293,7 +293,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		}
 
 		String capabilities_string = "<Capabilities />";
-		if (!capabilities_elements.is_empty()) {
+		if (!capabilities_elements.is_empty_string()) {
 			capabilities_string = "<Capabilities>\n" + capabilities_elements + "  </Capabilities>";
 		}
 

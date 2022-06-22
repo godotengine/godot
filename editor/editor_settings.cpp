@@ -930,7 +930,7 @@ void EditorSettings::setup_network() {
 		if (ip == current) {
 			selected = ip;
 		}
-		if (!hint.is_empty()) {
+		if (!hint.is_empty_string()) {
 			hint += ",";
 		}
 		hint += ip;
@@ -949,7 +949,7 @@ void EditorSettings::save() {
 		return;
 	}
 
-	if (singleton->config_file_path.is_empty()) {
+	if (singleton->config_file_path.is_empty_string()) {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
 		return;
 	}
@@ -1202,7 +1202,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
-		while (!line.is_empty()) {
+		while (!line.is_empty_string()) {
 			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1211,7 +1211,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
 	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
-		while (!line.is_empty()) {
+		while (!line.is_empty_string()) {
 			recent_dirs.push_back(line);
 			line = f->get_line().strip_edges();
 		}
@@ -1234,7 +1234,7 @@ void EditorSettings::list_text_editor_themes() {
 		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (!file.is_empty()) {
+		while (!file.is_empty_string()) {
 			if (file.get_extension() == "tet" && !_is_default_text_editor_theme(file.get_basename().to_lower())) {
 				custom_themes.push_back(file.get_basename());
 			}
@@ -1344,14 +1344,14 @@ bool EditorSettings::is_default_text_editor_theme() {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
 	Vector<String> templates;
 	String template_dir = get_script_templates_dir();
-	if (!p_custom_path.is_empty()) {
+	if (!p_custom_path.is_empty_string()) {
 		template_dir = p_custom_path;
 	}
 	Ref<DirAccess> d = DirAccess::open(template_dir);
 	if (d.is_valid()) {
 		d->list_dir_begin();
 		String file = d->get_next();
-		while (!file.is_empty()) {
+		while (!file.is_empty_string()) {
 			if (file.get_extension() == p_extension) {
 				templates.push_back(file.get_basename());
 			}

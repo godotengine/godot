@@ -876,11 +876,11 @@ void GridMapEditor::update_palette() {
 		String name = mesh_library->get_item_name(id);
 		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
 
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			name = "#" + itos(id);
 		}
 
-		if (!filter.is_empty() && !filter.is_subsequence_ofn(name)) {
+		if (!filter.is_empty_string() && !filter.is_subsequence_ofn(name)) {
 			continue;
 		}
 

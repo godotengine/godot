@@ -164,7 +164,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 	const String icon_dest = p_path.get_base_dir().plus_file(icon_name);
 
 	Ref<Image> icon;
-	if (!p_icon.is_empty()) {
+	if (!p_icon.is_empty_string()) {
 		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
@@ -193,7 +193,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 
 Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
 	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
-	if (proj_name.is_empty()) {
+	if (proj_name.is_empty_string()) {
 		proj_name = "Godot Game";
 	}
 
@@ -252,7 +252,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 
 	// Custom offline page
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
-	if (!offline_page.is_empty()) {
+	if (!offline_page.is_empty_string()) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
@@ -399,13 +399,13 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String etc_error = test_etc2();
-		if (!etc_error.is_empty()) {
+		if (!etc_error.is_empty_string()) {
 			valid = false;
 			err += etc_error;
 		}
 	}
 
-	if (!err.is_empty()) {
+	if (!err.is_empty_string()) {
 		r_error = err;
 	}
 
@@ -434,7 +434,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	// Find the correct template
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
-	if (template_path.is_empty()) {
+	if (template_path.is_empty_string()) {
 		ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
 		template_path = find_export_template(_get_template_name(mode, p_debug));
 	}
@@ -443,7 +443,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return ERR_FILE_BAD_PATH;
 	}
 
-	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
+	if (!template_path.is_empty_string() && !FileAccess::exists(template_path)) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -487,7 +487,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 
 	// Read the HTML shell file (custom or from template).
-	const String html_path = custom_html.is_empty() ? base_path + ".html" : custom_html;
+	const String html_path = custom_html.is_empty_string() ? base_path + ".html" : custom_html;
 	Vector<uint8_t> html;
 	f = FileAccess::open(html_path, FileAccess::READ);
 	if (f.is_null()) {

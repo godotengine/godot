@@ -514,11 +514,11 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (!appname.is_empty()) {
+	if (!appname.is_empty_string()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir.is_empty()) {
+			if (custom_dir.is_empty_string()) {
 				custom_dir = appname;
 			}
 			return get_data_path().plus_file(custom_dir);
@@ -540,7 +540,7 @@ String OS_Unix::get_executable_path() const {
 	if (len > 0) {
 		b.parse_utf8(buf, len);
 	}
-	if (b.is_empty()) {
+	if (b.is_empty_string()) {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();
 	}

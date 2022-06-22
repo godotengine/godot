@@ -360,12 +360,12 @@ String InputEventKey::as_text() const {
 		kc = keycode_get_string(keycode);
 	}
 
-	if (kc.is_empty()) {
+	if (kc.is_empty_string()) {
 		return kc;
 	}
 
 	String mods_text = InputEventWithModifiers::as_text();
-	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+	return mods_text.is_empty_string() ? kc : mods_text + "+" + kc;
 }
 
 String InputEventKey::to_string() {
@@ -382,7 +382,7 @@ String InputEventKey::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? "none" : mods;
+	mods = mods.is_empty_string() ? "none" : mods;
 
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
@@ -644,7 +644,7 @@ static const char *_mouse_button_descriptions[9] = {
 String InputEventMouseButton::as_text() const {
 	// Modifiers
 	String mods_text = InputEventWithModifiers::as_text();
-	String full_string = mods_text.is_empty() ? "" : mods_text + "+";
+	String full_string = mods_text.is_empty_string() ? "" : mods_text + "+";
 
 	// Button
 	MouseButton idx = get_button_index();
@@ -697,7 +697,7 @@ String InputEventMouseButton::to_string() {
 	}
 
 	String mods = InputEventWithModifiers::as_text();
-	mods = mods.is_empty() ? "none" : mods;
+	mods = mods.is_empty_string() ? "none" : mods;
 
 	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
 	String index_and_mods = vformat("button_index=%s, mods=%s", button_index, mods);

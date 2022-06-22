@@ -102,10 +102,10 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	for (int i = 0; i < p_class->members.size(); i++) {
 		if (p_class->members[i].type == GDScriptParser::ClassNode::Member::FUNCTION) {
 			const GDScriptParser::FunctionNode *function = p_class->members[i].function;
-			r_funcs[function->start_line] = p_prefix.is_empty() ? String(function->identifier->name) : p_prefix + "." + String(function->identifier->name);
+			r_funcs[function->start_line] = p_prefix.is_empty_string() ? String(function->identifier->name) : p_prefix + "." + String(function->identifier->name);
 		} else if (p_class->members[i].type == GDScriptParser::ClassNode::Member::CLASS) {
 			String new_prefix = p_class->members[i].m_class->identifier->name;
-			get_function_names_recursively(p_class->members[i].m_class, p_prefix.is_empty() ? new_prefix : p_prefix + "." + new_prefix, r_funcs);
+			get_function_names_recursively(p_class->members[i].m_class, p_prefix.is_empty_string() ? new_prefix : p_prefix + "." + new_prefix, r_funcs);
 		}
 	}
 }
@@ -461,7 +461,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			s += p_args[i].get_slice(":", 0);
 			if (th) {
 				String type = p_args[i].get_slice(":", 1);
-				if (!type.is_empty() && type != "var") {
+				if (!type.is_empty_string() && type != "var") {
 					s += ": " + type;
 				}
 			}
@@ -1522,7 +1522,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 									String arg1 = args[0];
 									if (arg1.begins_with("/root/")) {
 										String which = arg1.get_slice("/", 2);
-										if (!which.is_empty()) {
+										if (!which.is_empty_string()) {
 											// Try singletons first
 											if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(which)) {
 												r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[which]);
@@ -2709,7 +2709,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				break;
 			}
 
-			if (!type.enumeration.is_empty()) {
+			if (!type.enumeration.is_empty_string()) {
 				_find_enumeration_candidates(completion_context, type.enumeration, options);
 				r_forced = options.size() > 0;
 			} else {
@@ -2960,7 +2960,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		String st = l.substr(tc, l.length()).strip_edges();
-		if (st.is_empty() || st.begins_with("#")) {
+		if (st.is_empty_string() || st.begins_with("#")) {
 			continue; //ignore!
 		}
 

@@ -762,7 +762,7 @@ int HTTPClientTCP::get_read_chunk_size() const {
 }
 
 void HTTPClientTCP::set_http_proxy(const String &p_host, int p_port) {
-	if (p_host.is_empty() || p_port == -1) {
+	if (p_host.is_empty_string() || p_port == -1) {
 		http_proxy_host = "";
 		http_proxy_port = -1;
 	} else {
@@ -772,7 +772,7 @@ void HTTPClientTCP::set_http_proxy(const String &p_host, int p_port) {
 }
 
 void HTTPClientTCP::set_https_proxy(const String &p_host, int p_port) {
-	if (p_host.is_empty() || p_port == -1) {
+	if (p_host.is_empty_string() || p_port == -1) {
 		https_proxy_host = "";
 		https_proxy_port = -1;
 	} else {

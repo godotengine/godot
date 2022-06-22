@@ -135,9 +135,9 @@ String VisualShaderNodeParticleSphereEmitter::generate_code(Shader::Mode p_mode,
 	String code;
 
 	if (mode_2d) {
-		code += "	" + p_output_vars[0] + " = __get_random_point_in_circle(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_circle(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
 	} else {
-		code += "	" + p_output_vars[0] + " = __get_random_point_in_sphere(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_sphere(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
 	}
 
 	return code;
@@ -207,9 +207,9 @@ String VisualShaderNodeParticleBoxEmitter::generate_global_per_node(Shader::Mode
 String VisualShaderNodeParticleBoxEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	if (mode_2d) {
-		code += "	" + p_output_vars[0] + " = __get_random_point_in_box2d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_box2d(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
 	} else {
-		code += "	" + p_output_vars[0] + " = __get_random_point_in_box3d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
+		code += "	" + p_output_vars[0] + " = __get_random_point_in_box3d(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ");\n";
 	}
 	return code;
 }
@@ -265,9 +265,9 @@ String VisualShaderNodeParticleRingEmitter::generate_code(Shader::Mode p_mode, V
 	String code;
 
 	if (mode_2d) {
-		code = "	" + p_output_vars[0] + " = __get_random_point_on_ring2d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+		code = "	" + p_output_vars[0] + " = __get_random_point_on_ring2d(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
 	} else {
-		code = "	" + p_output_vars[0] + " = __get_random_point_on_ring3d(__seed, " + (p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ");\n";
+		code = "	" + p_output_vars[0] + " = __get_random_point_on_ring3d(__seed, " + (p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0]) + ", " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty_string() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ");\n";
 	}
 
 	return code;
@@ -799,9 +799,9 @@ String VisualShaderNodeParticleMultiplyByAxisAngle::get_output_port_name(int p_p
 String VisualShaderNodeParticleMultiplyByAxisAngle::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	if (degrees_mode) {
-		code += "	" + p_output_vars[0] + " = __build_rotation_mat3(" + (p_input_vars[1].is_empty() ? ("vec3" + (String)get_input_port_default_value(1)) : p_input_vars[1]) + ", radians(" + (p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ")) * " + (p_input_vars[0].is_empty() ? "vec3(0.0)" : p_input_vars[0]) + ";\n";
+		code += "	" + p_output_vars[0] + " = __build_rotation_mat3(" + (p_input_vars[1].is_empty_string() ? ("vec3" + (String)get_input_port_default_value(1)) : p_input_vars[1]) + ", radians(" + (p_input_vars[2].is_empty_string() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ")) * " + (p_input_vars[0].is_empty_string() ? "vec3(0.0)" : p_input_vars[0]) + ";\n";
 	} else {
-		code += "	" + p_output_vars[0] + " = __build_rotation_mat3(" + (p_input_vars[1].is_empty() ? ("vec3" + (String)get_input_port_default_value(1)) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ") * " + (p_input_vars[0].is_empty() ? "vec3(0.0)" : p_input_vars[0]) + ";\n";
+		code += "	" + p_output_vars[0] + " = __build_rotation_mat3(" + (p_input_vars[1].is_empty_string() ? ("vec3" + (String)get_input_port_default_value(1)) : p_input_vars[1]) + ", " + (p_input_vars[2].is_empty_string() ? (String)get_input_port_default_value(2) : p_input_vars[2]) + ") * " + (p_input_vars[0].is_empty_string() ? "vec3(0.0)" : p_input_vars[0]) + ";\n";
 	}
 	return code;
 }
@@ -879,10 +879,10 @@ bool VisualShaderNodeParticleConeVelocity::has_output_port_preview(int p_port) c
 
 String VisualShaderNodeParticleConeVelocity::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	__radians = radians(" + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+	code += "	__radians = radians(" + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
 	code += "	__scalar_buff1 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
 	code += "	__scalar_buff2 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
-	code += "	__vec3_buff1 = " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + ";\n";
+	code += "	__vec3_buff1 = " + (p_input_vars[0].is_empty_string() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + ";\n";
 	code += "	__scalar_buff1 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.x, __vec3_buff1.z) : sign(__vec3_buff1.x) * (PI / 2.0);\n";
 	code += "	__scalar_buff2 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.z)) : (__vec3_buff1.x != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.x)) : sign(__vec3_buff1.y) * (PI / 2.0));\n";
 	code += "	__vec3_buff1 = vec3(sin(__scalar_buff1), 0.0, cos(__scalar_buff1));\n";
@@ -970,13 +970,13 @@ String VisualShaderNodeParticleRandomness::generate_code(Shader::Mode p_mode, Vi
 	String code;
 	switch (op_type) {
 		case OP_TYPE_SCALAR: {
-			code += vformat("	%s = __randf_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
+			code += vformat("	%s = __randf_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
 		} break;
 		case OP_TYPE_VECTOR_2D: {
-			code += vformat("	%s = __randv2_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
+			code += vformat("	%s = __randv2_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
 		} break;
 		case OP_TYPE_VECTOR_3D: {
-			code += vformat("	%s = __randv3_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
+			code += vformat("	%s = __randv3_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty_string() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
 		} break;
 		default:
 			break;
@@ -1088,14 +1088,14 @@ String VisualShaderNodeParticleAccelerator::generate_code(Shader::Mode p_mode, V
 	String code;
 	switch (mode) {
 		case MODE_LINEAR:
-			code += "	" + p_output_vars[0] + " = length(VELOCITY) > 0.0 ? " + "normalize(VELOCITY) * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
+			code += "	" + p_output_vars[0] + " = length(VELOCITY) > 0.0 ? " + "normalize(VELOCITY) * " + (p_input_vars[0].is_empty_string() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
 			break;
 		case MODE_RADIAL:
-			code += "	" + p_output_vars[0] + " = length(__diff) > 0.0 ? __ndiff * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
+			code += "	" + p_output_vars[0] + " = length(__diff) > 0.0 ? __ndiff * " + (p_input_vars[0].is_empty_string() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
 			break;
 		case MODE_TANGENTIAL:
-			code += "	__vec3_buff1 = cross(__ndiff, normalize(" + (p_input_vars[2].is_empty() ? "vec3" + (String)get_input_port_default_value(2) : p_input_vars[2]) + "));\n";
-			code += "	" + p_output_vars[0] + " = length(__vec3_buff1) > 0.0 ? normalize(__vec3_buff1) * (" + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ")) : vec3(0.0);\n";
+			code += "	__vec3_buff1 = cross(__ndiff, normalize(" + (p_input_vars[2].is_empty_string() ? "vec3" + (String)get_input_port_default_value(2) : p_input_vars[2]) + "));\n";
+			code += "	" + p_output_vars[0] + " = length(__vec3_buff1) > 0.0 ? normalize(__vec3_buff1) * (" + (p_input_vars[0].is_empty_string() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty_string() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ")) : vec3(0.0);\n";
 			break;
 		default:
 			break;
@@ -1276,7 +1276,7 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 		default:
 			break;
 	}
-	if (!port_name.is_empty()) {
+	if (!port_name.is_empty_string()) {
 		return port_name.capitalize();
 	}
 	return String();
@@ -1299,44 +1299,44 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 	String tab = "	";
 
 	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		if (!p_input_vars[0].is_empty()) { // custom.rgb
+		if (!p_input_vars[0].is_empty_string()) { // custom.rgb
 			code += tab + "CUSTOM.rgb = " + p_input_vars[0] + ";\n";
 		}
-		if (!p_input_vars[1].is_empty()) { // custom.a
+		if (!p_input_vars[1].is_empty_string()) { // custom.a
 			code += tab + "CUSTOM.a = " + p_input_vars[1] + ";\n";
 		}
-		if (!p_input_vars[2].is_empty()) { // velocity
+		if (!p_input_vars[2].is_empty_string()) { // velocity
 			code += tab + "VELOCITY = " + p_input_vars[2] + ";\n";
 		}
-		if (!p_input_vars[3].is_empty()) { // color.rgb
+		if (!p_input_vars[3].is_empty_string()) { // color.rgb
 			code += tab + "COLOR.rgb = " + p_input_vars[3] + ";\n";
 		}
-		if (!p_input_vars[4].is_empty()) { // color.a
+		if (!p_input_vars[4].is_empty_string()) { // color.a
 			code += tab + "COLOR.a = " + p_input_vars[4] + ";\n";
 		}
-		if (!p_input_vars[5].is_empty()) { // transform
+		if (!p_input_vars[5].is_empty_string()) { // transform
 			code += tab + "TRANSFORM = " + p_input_vars[5] + ";\n";
 		}
 	} else {
-		if (!p_input_vars[0].is_empty()) { // Active (begin).
+		if (!p_input_vars[0].is_empty_string()) { // Active (begin).
 			code += tab + "ACTIVE = " + p_input_vars[0] + ";\n";
 			code += tab + "if(ACTIVE) {\n";
 			tab += "	";
 		}
-		if (!p_input_vars[1].is_empty()) { // velocity
+		if (!p_input_vars[1].is_empty_string()) { // velocity
 			code += tab + "VELOCITY = " + p_input_vars[1] + ";\n";
 		}
-		if (!p_input_vars[2].is_empty()) { // color
+		if (!p_input_vars[2].is_empty_string()) { // color
 			code += tab + "COLOR.rgb = " + p_input_vars[2] + ";\n";
 		}
-		if (!p_input_vars[3].is_empty()) { // alpha
+		if (!p_input_vars[3].is_empty_string()) { // alpha
 			code += tab + "COLOR.a = " + p_input_vars[3] + ";\n";
 		}
 
 		// position
 		if (shader_type == VisualShader::TYPE_START) {
 			code += tab + "if (RESTART_POSITION) {\n";
-			if (!p_input_vars[4].is_empty()) {
+			if (!p_input_vars[4].is_empty_string()) {
 				code += tab + "	TRANSFORM = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(" + p_input_vars[4] + ", 1.0));\n";
 			} else {
 				code += tab + "	TRANSFORM = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
@@ -1347,7 +1347,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			code += tab + "	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 			code += tab + "}\n";
 		} else if (shader_type == VisualShader::TYPE_COLLIDE) { // position
-			if (!p_input_vars[4].is_empty()) {
+			if (!p_input_vars[4].is_empty_string()) {
 				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
 			}
 		}
@@ -1368,20 +1368,20 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				op = "=";
 			}
 
-			if (!p_input_vars[rotation].is_empty()) { // rotation_axis & angle_in_radians
+			if (!p_input_vars[rotation].is_empty_string()) { // rotation_axis & angle_in_radians
 				String axis;
-				if (p_input_vars[rotation_axis].is_empty()) {
+				if (p_input_vars[rotation_axis].is_empty_string()) {
 					axis = "vec3(0, 1, 0)";
 				} else {
 					axis = p_input_vars[rotation_axis];
 				}
 				code += tab + "TRANSFORM " + op + " __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
 			}
-			if (!p_input_vars[scale].is_empty()) { // scale
+			if (!p_input_vars[scale].is_empty_string()) { // scale
 				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
 			}
 		}
-		if (!p_input_vars[0].is_empty()) { // Active (end).
+		if (!p_input_vars[0].is_empty_string()) { // Active (end).
 			code += "	}\n";
 		}
 	}
@@ -1538,42 +1538,42 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 	}
 
 	String transform;
-	if (p_input_vars[1].is_empty()) {
+	if (p_input_vars[1].is_empty_string()) {
 		transform = "TRANSFORM";
 	} else {
 		transform = p_input_vars[1];
 	}
 
 	String velocity;
-	if (p_input_vars[2].is_empty()) {
+	if (p_input_vars[2].is_empty_string()) {
 		velocity = "VELOCITY";
 	} else {
 		velocity = p_input_vars[2];
 	}
 
 	String color;
-	if (p_input_vars[3].is_empty()) {
+	if (p_input_vars[3].is_empty_string()) {
 		color = "COLOR.rgb";
 	} else {
 		color = p_input_vars[3];
 	}
 
 	String alpha;
-	if (p_input_vars[4].is_empty()) {
+	if (p_input_vars[4].is_empty_string()) {
 		alpha = "COLOR.a";
 	} else {
 		alpha = p_input_vars[4];
 	}
 
 	String custom;
-	if (p_input_vars[5].is_empty()) {
+	if (p_input_vars[5].is_empty_string()) {
 		custom = "CUSTOM.rgb";
 	} else {
 		custom = p_input_vars[5];
 	}
 
 	String custom_alpha;
-	if (p_input_vars[6].is_empty()) {
+	if (p_input_vars[6].is_empty_string()) {
 		custom_alpha = "CUSTOM.a";
 	} else {
 		custom_alpha = p_input_vars[6];
@@ -1606,7 +1606,7 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 		flags += flags_arr[i];
 	}
 
-	if (flags.is_empty()) {
+	if (flags.is_empty_string()) {
 		flags = "uint(0)";
 	}
 

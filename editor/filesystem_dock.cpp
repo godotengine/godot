@@ -68,7 +68,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	// Create a tree item for the subdirectory.
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
-	if (dname.is_empty()) {
+	if (dname.is_empty_string()) {
 		dname = "res://";
 	}
 
@@ -559,7 +559,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	}
 
 	String file_name = p_path.get_file();
-	if (!file_name.is_empty()) {
+	if (!file_name.is_empty_string()) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->get_item_text(i) == file_name) {
 				files->select(i, true);
@@ -947,7 +947,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			files->select(item_index, false);
 		}
 
-		if (!p_keep_selection && !file.is_empty() && fname == file) {
+		if (!p_keep_selection && !file.is_empty_string() && fname == file) {
 			files->select(item_index, true);
 			files->ensure_current_is_visible();
 		}
@@ -1741,7 +1741,7 @@ Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> select
 		selected_strings.sort_custom<NaturalNoCaseComparator>();
 		String last_path = "";
 		for (int i = 0; i < selected_strings.size(); i++) {
-			if (!last_path.is_empty() && selected_strings[i].begins_with(last_path)) {
+			if (!last_path.is_empty_string() && selected_strings[i].begins_with(last_path)) {
 				selected_strings.remove_at(i);
 				i--;
 			}
@@ -2097,7 +2097,7 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 		tree_search_box->set_text(searched_string);
 	}
 
-	bool unfold_path = (p_text.is_empty() && !path.is_empty());
+	bool unfold_path = (p_text.is_empty_string() && !path.is_empty_string());
 	switch (display_mode) {
 		case DISPLAY_MODE_TREE_ONLY: {
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>(), false, false, unfold_path);
@@ -2233,7 +2233,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !to_dir.is_empty();
+		return !to_dir.is_empty_string();
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
@@ -2246,7 +2246,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return true;
 		}
 
-		if (to_dir.is_empty()) {
+		if (to_dir.is_empty_string()) {
 			return false;
 		}
 
@@ -2349,7 +2349,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		if (res.is_valid() && !to_dir.is_empty()) {
+		if (res.is_valid() && !to_dir.is_empty_string()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
 		}
@@ -2360,7 +2360,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		if (!to_dir.is_empty()) {
+		if (!to_dir.is_empty_string()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
 			for (int i = 0; i < fnames.size(); i++) {
@@ -2883,7 +2883,7 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 	Ref<DirAccess> da = DirAccess::open(p_path);
 	da->list_dir_begin();
 	String n = da->get_next();
-	while (!n.is_empty()) {
+	while (!n.is_empty_string()) {
 		if (n != "." && n != ".." && !n.ends_with(".import")) {
 			String npath = p_path + n + (da->current_is_dir() ? "/" : "");
 			_get_imported_files(npath, files);
@@ -2938,7 +2938,7 @@ void FileSystemDock::_update_import_dock() {
 		if (cf->has_section_key("remap", "type")) {
 			type = cf->get_value("remap", "type");
 		}
-		if (import_type.is_empty()) {
+		if (import_type.is_empty_string()) {
 			import_type = type;
 		} else if (import_type != type) {
 			// All should be the same type.

@@ -327,7 +327,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 					}
 
-					if (d.description.is_empty()) {
+					if (d.description.is_empty_string()) {
 						//in the oven, request!
 						args.clear();
 						args.push_back("-s");
@@ -376,7 +376,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 						}
 
 						d.name = vendor + " " + device;
-						if (device.is_empty()) {
+						if (device.is_empty_string()) {
 							continue;
 						}
 					}
@@ -414,13 +414,13 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 
 String EditorExportPlatformAndroid::get_project_name(const String &p_name) const {
 	String aname;
-	if (!p_name.is_empty()) {
+	if (!p_name.is_empty_string()) {
 		aname = p_name;
 	} else {
 		aname = ProjectSettings::get_singleton()->get("application/config/name");
 	}
 
-	if (aname.is_empty()) {
+	if (aname.is_empty_string()) {
 		aname = VERSION_NAME;
 	}
 
@@ -444,7 +444,7 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 			first = false;
 		}
 	}
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		name = "noname";
 	}
 
@@ -601,7 +601,7 @@ Vector<String> EditorExportPlatformAndroid::list_gdap_files(const String &p_path
 		da->list_dir_begin();
 		while (true) {
 			String file = da->get_next();
-			if (file.is_empty()) {
+			if (file.is_empty_string()) {
 				break;
 			}
 
@@ -764,7 +764,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 	PackedStringArray user_perms = p_preset->get("permissions/custom_permissions");
 	for (int i = 0; i < user_perms.size(); i++) {
 		String user_perm = user_perms[i].strip_edges();
-		if (!user_perm.is_empty()) {
+		if (!user_perm.is_empty_string()) {
 			r_permissions.push_back(user_perm);
 		}
 	}
@@ -1504,7 +1504,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 	bool apply_filter = ProjectSettings::get_singleton()->get("application/boot_splash/use_filter");
 	String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-	if (!project_splash_path.is_empty()) {
+	if (!project_splash_path.is_empty_string()) {
 		splash_image.instantiate();
 		print_verbose("Loading splash image: " + project_splash_path);
 		const Error err = ImageLoader::load_image(project_splash_path, splash_image);
@@ -1563,7 +1563,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	// Regular icon: user selection -> project icon -> default.
 	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
+	if (path.is_empty_string() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
 		ImageLoader::load_image(project_icon_path, icon);
 	}
@@ -1571,14 +1571,14 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
 	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
+	if (path.is_empty_string() || ImageLoader::load_image(path, foreground) != OK) {
 		print_verbose("- falling back to using the regular icon");
 		foreground = icon;
 	}
 
 	// Adaptive background: user selection -> default.
 	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
-	if (!path.is_empty()) {
+	if (!path.is_empty_string()) {
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
 	}
@@ -1601,7 +1601,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 		const Ref<Image> &foreground,
 		const Ref<Image> &background) {
 	// Store the splash configuration
-	if (!processed_splash_config_xml.is_empty()) {
+	if (!processed_splash_config_xml.is_empty_string()) {
 		print_verbose("Storing processed splash configuration: " + String("\n") + processed_splash_config_xml);
 		store_string_at_path(SPLASH_CONFIG_PATH, processed_splash_config_xml);
 	}
@@ -2016,7 +2016,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	// There are additional versions directories we need to go through.
 	da->list_dir_begin();
 	String sub_dir = da->get_next();
-	while (!sub_dir.is_empty()) {
+	while (!sub_dir.is_empty_string()) {
 		if (!sub_dir.begins_with(".") && da->current_is_dir()) {
 			// Check if the tool is here.
 			String tool_path = build_tools_dir.plus_file(sub_dir).plus_file(apksigner_command_name);
@@ -2029,7 +2029,7 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	}
 	da->list_dir_end();
 
-	if (apksigner_path.is_empty()) {
+	if (apksigner_path.is_empty_string()) {
 		print_error("Unable to find the 'apksigner' tool.");
 	}
 
@@ -2090,7 +2090,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	String dk_user = p_preset->get("keystore/debug_user");
 	String dk_password = p_preset->get("keystore/debug_password");
 
-	if ((dk.is_empty() || dk_user.is_empty() || dk_password.is_empty()) && (!dk.is_empty() || !dk_user.is_empty() || !dk_password.is_empty())) {
+	if ((dk.is_empty_string() || dk_user.is_empty_string() || dk_password.is_empty_string()) && (!dk.is_empty_string() || !dk_user.is_empty_string() || !dk_password.is_empty_string())) {
 		valid = false;
 		err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
 	}
@@ -2107,18 +2107,18 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	String rk_user = p_preset->get("keystore/release_user");
 	String rk_password = p_preset->get("keystore/release_password");
 
-	if ((rk.is_empty() || rk_user.is_empty() || rk_password.is_empty()) && (!rk.is_empty() || !rk_user.is_empty() || !rk_password.is_empty())) {
+	if ((rk.is_empty_string() || rk_user.is_empty_string() || rk_password.is_empty_string()) && (!rk.is_empty_string() || !rk_user.is_empty_string() || !rk_password.is_empty_string())) {
 		valid = false;
 		err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
 	}
 
-	if (!rk.is_empty() && !FileAccess::exists(rk)) {
+	if (!rk.is_empty_string() && !FileAccess::exists(rk)) {
 		valid = false;
 		err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 	}
 
 	String sdk_path = EditorSettings::get_singleton()->get("export/android/android_sdk_path");
-	if (sdk_path.is_empty()) {
+	if (sdk_path.is_empty_string()) {
 		err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
 		valid = false;
 	} else {
@@ -2165,7 +2165,7 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	if (apk_expansion) {
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-		if (apk_expansion_pkey.is_empty()) {
+		if (apk_expansion_pkey.is_empty_string()) {
 			valid = false;
 
 			err += TTR("Invalid public key for APK expansion.") + "\n";
@@ -2181,14 +2181,14 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 	}
 
 	String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!etc_error.is_empty_string()) {
 		valid = false;
 		err += etc_error;
 	}
 
 	// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 	String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset));
-	if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
+	if (!enabled_plugins_names.is_empty_string() && !custom_build_enabled) {
 		valid = false;
 		err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
 		err += "\n";
@@ -2347,7 +2347,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		password = p_preset->get("keystore/debug_password");
 		user = p_preset->get("keystore/debug_user");
 
-		if (keystore.is_empty()) {
+		if (keystore.is_empty_string()) {
 			keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 			password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 			user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
@@ -2452,7 +2452,7 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 	print_verbose("Removing previously installed libraries...");
 	Error error;
 	String libs_json = FileAccess::get_file_as_string(GDNATIVE_LIBS_PATH, &error);
-	if (error || libs_json.is_empty()) {
+	if (error || libs_json.is_empty_string()) {
 		print_verbose("No previously installed libraries found");
 		return;
 	}
@@ -2564,7 +2564,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 		const String assets_directory = get_assets_directory(p_preset, export_format);
 		String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-		ERR_FAIL_COND_V_MSG(sdk_path.is_empty(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
+		ERR_FAIL_COND_V_MSG(sdk_path.is_empty_string(), ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/android_sdk_path'.");
 		print_verbose("Android sdk path: " + sdk_path);
 
 		// TODO: should we use "package/name" or "application/config/name"?
@@ -2676,7 +2676,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				String debug_password = p_preset->get("keystore/debug_password");
 				String debug_user = p_preset->get("keystore/debug_user");
 
-				if (debug_keystore.is_empty()) {
+				if (debug_keystore.is_empty_string()) {
 					debug_keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 					debug_password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 					debug_user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
@@ -2758,13 +2758,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		src_apk = p_preset->get("custom_template/release");
 	}
 	src_apk = src_apk.strip_edges();
-	if (src_apk.is_empty()) {
+	if (src_apk.is_empty_string()) {
 		if (p_debug) {
 			src_apk = find_export_template("android_debug.apk");
 		} else {
 			src_apk = find_export_template("android_release.apk");
 		}
-		if (src_apk.is_empty()) {
+		if (src_apk.is_empty_string()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Package not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}

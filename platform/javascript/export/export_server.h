@@ -106,7 +106,7 @@ public:
 			if (crypto.is_null()) {
 				return ERR_UNAVAILABLE;
 			}
-			if (!p_ssl_key.is_empty() && !p_ssl_cert.is_empty()) {
+			if (!p_ssl_key.is_empty_string() && !p_ssl_cert.is_empty_string()) {
 				key = Ref<CryptoKey>(CryptoKey::create());
 				Error err = key->load(p_ssl_key);
 				ERR_FAIL_COND_V(err != OK, err);

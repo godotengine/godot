@@ -48,18 +48,18 @@ void EditorLocaleDialog::ok_pressed() {
 	}
 
 	String locale;
-	if (lang_code->get_text().is_empty()) {
+	if (lang_code->get_text().is_empty_string()) {
 		return; // Language code is required.
 	}
 	locale = lang_code->get_text();
 
-	if (!script_code->get_text().is_empty()) {
+	if (!script_code->get_text().is_empty_string()) {
 		locale += "_" + script_code->get_text();
 	}
-	if (!country_code->get_text().is_empty()) {
+	if (!country_code->get_text().is_empty_string()) {
 		locale += "_" + country_code->get_text();
 	}
-	if (!variant_code->get_text().is_empty()) {
+	if (!variant_code->get_text().is_empty_string()) {
 		locale += "_" + variant_code->get_text();
 	}
 
@@ -343,7 +343,7 @@ void EditorLocaleDialog::_update_tree() {
 
 void EditorLocaleDialog::set_locale(const String &p_locale) {
 	const String &locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
-	if (locale.is_empty()) {
+	if (locale.is_empty_string()) {
 		locale_set = false;
 
 		lang_code->set_text("");

@@ -735,7 +735,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
-		if (tile_set->get_custom_data_name(i).is_empty()) {
+		if (tile_set->get_custom_data_name(i).is_empty_string()) {
 			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), vformat("custom_data_%d", i));
 		} else {
 			ADD_TILE_DATA_EDITOR(group, tile_set->get_custom_data_name(i), vformat("custom_data_%d", i));
@@ -788,7 +788,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 	// Find the property to use.
 	String property;
-	if (tools_button_group->get_pressed_button() == tool_select_button && tile_inspector->is_visible() && !tile_inspector->get_selected_path().is_empty()) {
+	if (tools_button_group->get_pressed_button() == tool_select_button && tile_inspector->is_visible() && !tile_inspector->get_selected_path().is_empty_string()) {
 		Vector<String> components = tile_inspector->get_selected_path().split("/");
 		if (components.size() >= 1) {
 			property = components[0];
@@ -2566,7 +2566,7 @@ void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 }
 
 void EditorPropertyTilePolygon::_polygons_changed() {
-	if (String(count_property).is_empty()) {
+	if (String(count_property).is_empty_string()) {
 		if (base_type == "OccluderPolygon2D") {
 			// Single OccluderPolygon2D.
 			Ref<OccluderPolygon2D> occluder;
@@ -2588,7 +2588,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
 	} else {
-		if (base_type.is_empty()) {
+		if (base_type.is_empty_string()) {
 			// Multiple array of vertices.
 			Vector<String> changed_properties;
 			Array values;
@@ -2621,7 +2621,7 @@ void EditorPropertyTilePolygon::update_property() {
 	// Reset the polygons.
 	generic_tile_polygon_editor->clear_polygons();
 
-	if (String(count_property).is_empty()) {
+	if (String(count_property).is_empty_string()) {
 		if (base_type == "OccluderPolygon2D") {
 			// Single OccluderPolygon2D.
 			Ref<OccluderPolygon2D> occluder = get_edited_object()->get(get_edited_property());
@@ -2641,7 +2641,7 @@ void EditorPropertyTilePolygon::update_property() {
 		}
 	} else {
 		int count = get_edited_object()->get(count_property);
-		if (base_type.is_empty()) {
+		if (base_type.is_empty_string()) {
 			// Multiple array of vertices.
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {

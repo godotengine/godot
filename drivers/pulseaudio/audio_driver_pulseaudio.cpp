@@ -299,7 +299,7 @@ Error AudioDriverPulseAudio::init() {
 		context_name = VERSION_NAME " Editor";
 	} else {
 		context_name = GLOBAL_GET("application/config/name");
-		if (context_name.is_empty()) {
+		if (context_name.is_empty_string()) {
 			context_name = VERSION_NAME " Project";
 		}
 	}

@@ -890,7 +890,7 @@ Error CompressedTexture2D::load(const String &p_path) {
 	path_to_file = p_path;
 	format = image->get_format();
 
-	if (get_path().is_empty()) {
+	if (get_path().is_empty_string()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -1324,7 +1324,7 @@ Error CompressedTexture3D::load(const String &p_path) {
 
 	path_to_file = p_path;
 
-	if (get_path().is_empty()) {
+	if (get_path().is_empty_string()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
@@ -3147,7 +3147,7 @@ Error CompressedTextureLayered::load(const String &p_path) {
 
 	path_to_file = p_path;
 
-	if (get_path().is_empty()) {
+	if (get_path().is_empty_string()) {
 		//temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}

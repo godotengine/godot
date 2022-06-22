@@ -3881,7 +3881,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		return false;
 	}
 
-	if (!EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path().is_empty()) { // cyclical instancing
+	if (!EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path().is_empty_string()) { // cyclical instancing
 		if (_cyclical_dependency_exists(EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path(), instantiated_scene)) {
 			memdelete(instantiated_scene);
 			return false;

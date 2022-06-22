@@ -142,7 +142,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		type = ResourceLoader::get_resource_type(p_item.path);
 	}
 
-	if (type.is_empty()) {
+	if (type.is_empty_string()) {
 		r_texture = Ref<ImageTexture>();
 		r_small_texture = Ref<ImageTexture>();
 		return; //could not guess type

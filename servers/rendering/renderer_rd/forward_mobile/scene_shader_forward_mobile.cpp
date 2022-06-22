@@ -48,7 +48,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 	uses_screen_texture = false;
 
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return; //just invalid, but no error
 	}
 

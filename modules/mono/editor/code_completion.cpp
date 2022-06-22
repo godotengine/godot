@@ -155,7 +155,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				dir_access->list_dir_begin();
 				String filename = dir_access->get_next();
 
-				while (!filename.is_empty()) {
+				while (!filename.is_empty_string()) {
 					if (filename == "." || filename == "..") {
 						filename = dir_access->get_next();
 						continue;

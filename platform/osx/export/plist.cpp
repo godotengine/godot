@@ -99,7 +99,7 @@ Ref<PListNode> PListNode::new_real(float p_real) {
 bool PListNode::push_subnode(const Ref<PListNode> &p_node, const String &p_key) {
 	ERR_FAIL_COND_V(p_node.is_null(), false);
 	if (data_type == PList::PLNodeType::PL_NODE_TYPE_DICT) {
-		ERR_FAIL_COND_V(p_key.is_empty(), false);
+		ERR_FAIL_COND_V(p_key.is_empty_string(), false);
 		ERR_FAIL_COND_V(data_dict.has(p_key), false);
 		data_dict[p_key] = p_node;
 		return true;
@@ -383,7 +383,7 @@ bool PList::load_string(const String &p_string) {
 		pos = open_token_e;
 
 		String token = p_string.substr(open_token_s + 1, open_token_e - open_token_s - 1);
-		if (token.is_empty()) {
+		if (token.is_empty_string()) {
 			ERR_FAIL_V_MSG(false, "PList: Invalid token name.");
 		}
 		String value;

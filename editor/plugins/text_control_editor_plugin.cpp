@@ -69,7 +69,7 @@ void TextControlEditor::_find_resources(EditorFileSystemDirectory *p_dir) {
 			if (fd.is_valid()) {
 				String name = fd->get_font_name();
 				String sty = fd->get_font_style_name();
-				if (sty.is_empty()) {
+				if (sty.is_empty_string()) {
 					sty = "Default";
 				}
 				fonts[name][sty] = p_dir->get_file_path(i);
@@ -309,7 +309,7 @@ void TextControlEditor::_set_font() {
 			// Load new font resource using selected name and style.
 			String name = font_list->get_item_text(font_list->get_selected());
 			String style = font_style_list->get_item_text(font_style_list->get_selected());
-			if (style.is_empty()) {
+			if (style.is_empty_string()) {
 				style = "Default";
 			}
 			if (fonts.has(name)) {

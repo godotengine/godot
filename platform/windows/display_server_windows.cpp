@@ -1749,7 +1749,7 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	GetKeyboardLayoutList(layout_count, layouts);
 
 	String ret = _get_full_layout_name_from_registry(layouts[p_index]); // Try reading full name from Windows registry, fallback to locale name if failed (e.g. on Wine).
-	if (ret.is_empty()) {
+	if (ret.is_empty_string()) {
 		WCHAR buf[LOCALE_NAME_MAX_LENGTH];
 		memset(buf, 0, LOCALE_NAME_MAX_LENGTH * sizeof(WCHAR));
 		LCIDToLocaleName(MAKELCID(LOWORD(layouts[p_index]), SORT_DEFAULT), buf, LOCALE_NAME_MAX_LENGTH, 0);

@@ -171,7 +171,7 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 
 void AcceptDialog::_update_child_rects() {
 	Size2 label_size = label->get_minimum_size();
-	if (label->get_text().is_empty()) {
+	if (label->get_text().is_empty_string()) {
 		label_size.height = 0;
 	}
 	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
@@ -252,7 +252,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 		hbc->add_spacer(true);
 	}
 
-	if (!p_action.is_empty()) {
+	if (!p_action.is_empty_string()) {
 		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
 	}
 
@@ -261,7 +261,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel.is_empty()) {
+	if (p_cancel.is_empty_string()) {
 		c = TTRC("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);

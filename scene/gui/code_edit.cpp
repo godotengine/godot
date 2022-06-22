@@ -192,7 +192,7 @@ void CodeEdit::_notification(int p_what) {
 			}
 
 			/* Code hint */
-			if (caret_visible && !code_hint.is_empty() && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
+			if (caret_visible && !code_hint.is_empty_string() && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
 				const int font_height = font->get_height(font_size);
 				Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
 				Color font_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
@@ -318,7 +318,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 			if (mb->get_button_index() == MouseButton::LEFT) {
-				if (mb->is_command_pressed() && !symbol_lookup_word.is_empty()) {
+				if (mb->is_command_pressed() && !symbol_lookup_word.is_empty_string()) {
 					Vector2i mpos = mb->get_position();
 					if (is_layout_rtl()) {
 						mpos.x = get_size().x - mpos.x;
@@ -477,7 +477,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* MISC */
-	if (!code_hint.is_empty() && k->is_action("ui_cancel", true)) {
+	if (!code_hint.is_empty_string() && k->is_action("ui_cancel", true)) {
 		set_code_hint("");
 		accept_event();
 		return;
@@ -538,7 +538,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 /* General overrides */
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (!symbol_lookup_word.is_empty()) {
+	if (!symbol_lookup_word.is_empty_string()) {
 		return CURSOR_POINTING_HAND;
 	}
 
@@ -596,7 +596,7 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode) {
 			insert_text_at_caret(chr);
 
 			String close_key = get_auto_brace_completion_close_key(chr);
-			if (!close_key.is_empty()) {
+			if (!close_key.is_empty_string()) {
 				insert_text_at_caret(selection_text + close_key);
 				set_caret_column(get_caret_column() - 1);
 			}
@@ -1009,7 +1009,7 @@ void CodeEdit::_new_line(bool p_split_current_line, bool p_above) {
 			ins += indent_text;
 
 			String closing_pair = get_auto_brace_completion_close_key(String::chr(indent_char));
-			if (!closing_pair.is_empty() && line.find(closing_pair, cc) == cc) {
+			if (!closing_pair.is_empty_string() && line.find(closing_pair, cc) == cc) {
 				/* No need to move the brace below if we are not taking the text with us. */
 				if (p_split_current_line) {
 					brace_indent = true;
@@ -1072,8 +1072,8 @@ bool CodeEdit::is_highlight_matching_braces_enabled() const {
 }
 
 void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const String &p_close_key) {
-	ERR_FAIL_COND_MSG(p_open_key.is_empty(), "auto brace completion open key cannot be empty");
-	ERR_FAIL_COND_MSG(p_close_key.is_empty(), "auto brace completion close key cannot be empty");
+	ERR_FAIL_COND_MSG(p_open_key.is_empty_string(), "auto brace completion open key cannot be empty");
+	ERR_FAIL_COND_MSG(p_close_key.is_empty_string(), "auto brace completion close key cannot be empty");
 
 	for (int i = 0; i < p_open_key.length(); i++) {
 		ERR_FAIL_COND_MSG(!is_symbol(p_open_key[i]), "auto brace completion open key must be a symbol");
@@ -1745,7 +1745,7 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 	for (int i = 0; i < p_prefixes.size(); i++) {
 		const String prefix = p_prefixes[i];
 
-		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
+		ERR_CONTINUE_MSG(prefix.is_empty_string(), "Code completion prefix cannot be empty.");
 		code_completion_prefixes.insert(prefix[0]);
 	}
 }
@@ -2592,7 +2592,7 @@ int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) c
 void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only, DelimiterType p_type) {
 	// If we are the editor allow "null" as a valid start key, otherwise users cannot add delimiters via the inspector.
 	if (!(Engine::get_singleton()->is_editor_hint() && p_start_key == "null")) {
-		ERR_FAIL_COND_MSG(p_start_key.is_empty(), "delimiter start key cannot be empty");
+		ERR_FAIL_COND_MSG(p_start_key.is_empty_string(), "delimiter start key cannot be empty");
 
 		for (int i = 0; i < p_start_key.length(); i++) {
 			ERR_FAIL_COND_MSG(!is_symbol(p_start_key[i]), "delimiter must start with a symbol");
@@ -2617,7 +2617,7 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 	delimiter.type = p_type;
 	delimiter.start_key = p_start_key;
 	delimiter.end_key = p_end_key;
-	delimiter.line_only = p_line_only || p_end_key.is_empty();
+	delimiter.line_only = p_line_only || p_end_key.is_empty_string();
 	delimiters.insert(at, delimiter);
 	if (!setting_delimiters) {
 		delimiter_cache.clear();
@@ -2660,14 +2660,14 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 	for (int i = 0; i < p_delimiters.size(); i++) {
 		String key = p_delimiters[i];
 
-		if (key.is_empty()) {
+		if (key.is_empty_string()) {
 			continue;
 		}
 
 		const String start_key = key.get_slice(" ", 0);
 		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
 
-		_add_delimiter(start_key, end_key, end_key.is_empty(), p_type);
+		_add_delimiter(start_key, end_key, end_key.is_empty_string(), p_type);
 	}
 	setting_delimiters = false;
 	_update_delimiter_cache();
@@ -2691,7 +2691,7 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 		if (delimiters[i].type != p_type) {
 			continue;
 		}
-		r_delimiters.push_back(delimiters[i].start_key + (delimiters[i].end_key.is_empty() ? "" : " " + delimiters[i].end_key));
+		r_delimiters.push_back(delimiters[i].start_key + (delimiters[i].end_key.is_empty_string() ? "" : " " + delimiters[i].end_key));
 	}
 	return r_delimiters;
 }
@@ -2815,7 +2815,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		prev_is_prefix = true;
 	}
 
-	if (!prev_is_word && string_to_complete.is_empty() && (cofs == 0 || !prev_is_prefix)) {
+	if (!prev_is_word && string_to_complete.is_empty_string() && (cofs == 0 || !prev_is_prefix)) {
 		cancel_code_completion();
 		return;
 	}

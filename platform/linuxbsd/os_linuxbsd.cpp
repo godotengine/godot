@@ -130,10 +130,10 @@ void OS_LinuxBSD::initialize_joypads() {
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
-	if (machine_id.is_empty()) {
+	if (machine_id.is_empty_string()) {
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
 		if (f.is_valid()) {
-			while (machine_id.is_empty() && !f->eof_reached()) {
+			while (machine_id.is_empty_string() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 		}
@@ -520,7 +520,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String mnt = get_mountpoint(path);
 
 	// If there is a directory "[Mountpoint]/.Trash-[UID], use it as the trash can.
-	if (!mnt.is_empty()) {
+	if (!mnt.is_empty_string()) {
 		String mountpoint_trash_path(mnt + "/.Trash-" + itos(getuid()));
 		struct stat s;
 		if (!stat(mountpoint_trash_path.utf8().get_data(), &s)) {
@@ -529,7 +529,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	}
 
 	// Otherwise, if ${XDG_DATA_HOME} is defined, use "${XDG_DATA_HOME}/Trash" as the trash can.
-	if (trash_path.is_empty()) {
+	if (trash_path.is_empty_string()) {
 		char *dhome = getenv("XDG_DATA_HOME");
 		if (dhome) {
 			trash_path = String::utf8(dhome) + "/Trash";
@@ -537,7 +537,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	}
 
 	// Otherwise, if ${HOME} is defined, use "${HOME}/.local/share/Trash" as the trash can.
-	if (trash_path.is_empty()) {
+	if (trash_path.is_empty_string()) {
 		char *home = getenv("HOME");
 		if (home) {
 			trash_path = String::utf8(home) + "/.local/share/Trash";
@@ -545,7 +545,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	}
 
 	// Issue an error if none of the previous locations is appropriate for the trash can.
-	ERR_FAIL_COND_V_MSG(trash_path.is_empty(), FAILED, "Could not determine the trash can location");
+	ERR_FAIL_COND_V_MSG(trash_path.is_empty_string(), FAILED, "Could not determine the trash can location");
 
 	// Create needed directories for decided trash can location.
 	{

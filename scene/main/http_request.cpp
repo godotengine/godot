@@ -61,7 +61,7 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	if (port == 0) {
 		port = use_ssl ? 443 : 80;
 	}
-	if (request_string.is_empty()) {
+	if (request_string.is_empty_string()) {
 		request_string = "/";
 	}
 	return OK;
@@ -240,7 +240,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			}
 		}
 
-		if (!new_request.is_empty()) {
+		if (!new_request.is_empty_string()) {
 			// Process redirect.
 			client->close();
 			int new_redirs = redirections + 1; // Because _request() will clear it.
@@ -360,7 +360,7 @@ bool HTTPRequest::_update_connection() {
 					return true;
 				}
 
-				if (!download_to_file.is_empty()) {
+				if (!download_to_file.is_empty_string()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
 					if (file.is_null()) {
 						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());

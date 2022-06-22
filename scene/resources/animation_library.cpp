@@ -31,7 +31,7 @@
 #include "animation_library.h"
 
 bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
-	return !(p_name.is_empty() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
+	return !(p_name.is_empty_string() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
 }
 
 bool AnimationLibrary::is_valid_library_name(const String &p_name) {

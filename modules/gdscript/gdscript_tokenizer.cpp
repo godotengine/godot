@@ -223,7 +223,7 @@ String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
 
 void GDScriptTokenizer::set_source_code(const String &p_source_code) {
 	source = p_source_code;
-	if (source.is_empty()) {
+	if (source.is_empty_string()) {
 		_source = U"";
 	} else {
 		_source = source.ptr();

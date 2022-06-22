@@ -67,7 +67,7 @@ public:
 	String path;
 
 	void compute_checksums() {
-		ERR_FAIL_COND(path.is_empty());
+		ERR_FAIL_COND(path.is_empty_string());
 
 		// MD5
 		Checksum md5;

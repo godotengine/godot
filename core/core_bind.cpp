@@ -1473,7 +1473,7 @@ String Directory::get_next() {
 	ERR_FAIL_COND_V_MSG(!is_open(), "", "Directory must be opened before use.");
 
 	String next = d->get_next();
-	while (!next.is_empty() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
+	while (!next.is_empty_string() && ((!include_navigational && (next == "." || next == "..")) || (!include_hidden && d->current_is_hidden()))) {
 		next = d->get_next();
 	}
 	return next;
@@ -1503,7 +1503,7 @@ PackedStringArray Directory::_get_contents(bool p_directories) {
 
 	list_dir_begin();
 	String s = get_next();
-	while (!s.is_empty()) {
+	while (!s.is_empty_string()) {
 		if (current_is_dir() == p_directories) {
 			ret.append(s);
 		}
@@ -1608,7 +1608,7 @@ Error Directory::copy(String p_from, String p_to) {
 
 Error Directory::rename(String p_from, String p_to) {
 	ERR_FAIL_COND_V_MSG(!is_open(), ERR_UNCONFIGURED, "Directory must be opened before use.");
-	ERR_FAIL_COND_V_MSG(p_from.is_empty() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
+	ERR_FAIL_COND_V_MSG(p_from.is_empty_string() || p_from == "." || p_from == "..", ERR_INVALID_PARAMETER, "Invalid path to rename.");
 
 	if (!p_from.is_relative_path()) {
 		Ref<DirAccess> da = DirAccess::create_for_path(p_from);
@@ -1686,7 +1686,7 @@ String Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
 	String ret = CryptoCore::b64_encode_str(&w[0], len);
-	ERR_FAIL_COND_V(ret.is_empty(), ret);
+	ERR_FAIL_COND_V(ret.is_empty_string(), ret);
 
 	return ret;
 }
@@ -1711,7 +1711,7 @@ Variant Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) 
 
 String Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
 	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
-	ERR_FAIL_COND_V(ret.is_empty(), ret);
+	ERR_FAIL_COND_V(ret.is_empty_string(), ret);
 	return ret;
 }
 
@@ -1735,7 +1735,7 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 String Marshalls::utf8_to_base64(const String &p_str) {
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
-	ERR_FAIL_COND_V(ret.is_empty(), ret);
+	ERR_FAIL_COND_V(ret.is_empty_string(), ret);
 	return ret;
 }
 

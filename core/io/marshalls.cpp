@@ -562,7 +562,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 				}
 
-				if (str.is_empty()) {
+				if (str.is_empty_string()) {
 					r_variant = (Object *)nullptr;
 				} else {
 					Object *obj = ClassDB::instantiate(str);

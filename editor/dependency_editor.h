@@ -109,8 +109,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 		String dependency_folder;
 
 		bool operator<(const RemovedDependency &p_other) const {
-			if (dependency_folder.is_empty() != p_other.dependency_folder.is_empty()) {
-				return p_other.dependency_folder.is_empty();
+			if (dependency_folder.is_empty_string() != p_other.dependency_folder.is_empty_string()) {
+				return p_other.dependency_folder.is_empty_string();
 			} else {
 				return dependency < p_other.dependency;
 			}

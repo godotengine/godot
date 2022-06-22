@@ -253,7 +253,7 @@ bool Theme::is_valid_type_name(const String &p_name) {
 }
 
 bool Theme::is_valid_item_name(const String &p_name) {
-	if (p_name.is_empty()) {
+	if (p_name.is_empty_string()) {
 		return false;
 	}
 	for (int i = 0; i < p_name.length(); i++) {

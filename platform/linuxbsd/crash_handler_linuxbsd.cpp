@@ -72,7 +72,7 @@ static void handle_crash(int sig) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
+	if (String(VERSION_HASH).is_empty_string()) {
 		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
 	} else {
 		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));

@@ -109,7 +109,7 @@ public:
 void ConnectDialog::ok_pressed() {
 	String method_name = dst_method->get_text();
 
-	if (method_name.is_empty()) {
+	if (method_name.is_empty_string()) {
 		error->set_text(TTR("Method in target node must be specified."));
 		error->popup_centered();
 		return;
@@ -195,7 +195,7 @@ void ConnectDialog::_add_bind() {
  */
 void ConnectDialog::_remove_bind() {
 	String st = bind_editor->get_selected_path();
-	if (st.is_empty()) {
+	if (st.is_empty_string()) {
 		return;
 	}
 	int idx = st.get_slice("/", 1).to_int() - 1;
@@ -755,7 +755,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	String s = node_name.capitalize().replace(" ", "");
 	subst["NodeName"] = s;
-	if (!s.is_empty()) {
+	if (!s.is_empty_string()) {
 		s[0] = s.to_lower()[0];
 	}
 	subst["nodeName"] = s;
@@ -763,7 +763,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	s = signal_name.capitalize().replace(" ", "");
 	subst["SignalName"] = s;
-	if (!s.is_empty()) {
+	if (!s.is_empty_string()) {
 		s[0] = s.to_lower()[0];
 	}
 	subst["signalName"] = s;
@@ -1013,7 +1013,7 @@ void ConnectionsDock::update_tree() {
 					} else if (pi.type != Variant::NIL) {
 						tname = Variant::get_type_name(pi.type);
 					}
-					signaldesc += (pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname;
+					signaldesc += (pi.name.is_empty_string() ? String("arg " + itos(i)) : pi.name) + ": " + tname;
 					argnames.push_back(pi.name + ":" + tname);
 				}
 			}
@@ -1045,14 +1045,14 @@ void ConnectionsDock::update_tree() {
 				if (!found) {
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
-					while (F && descr.is_empty()) {
+					while (F && descr.is_empty_string()) {
 						for (int i = 0; i < F->value.signals.size(); i++) {
 							if (F->value.signals[i].name == signal_name.operator String()) {
 								descr = DTR(F->value.signals[i].description);
 								break;
 							}
 						}
-						if (!F->value.inherits.is_empty()) {
+						if (!F->value.inherits.is_empty_string()) {
 							F = dd->class_list.find(F->value.inherits);
 						} else {
 							break;

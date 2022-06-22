@@ -908,7 +908,7 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
 
-	ERR_FAIL_COND(name.is_empty());
+	ERR_FAIL_COND(name.is_empty_string());
 
 	if (data.unique_name_in_owner && data.owner) {
 		_release_unique_name_in_owner();
@@ -1365,7 +1365,7 @@ bool Node::has_node(const NodePath &p_path) const {
 // Finds the first child node (in tree order) whose name matches the given pattern.
 // Can be recursive or not, and limited to owned nodes.
 Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) const {
-	ERR_FAIL_COND_V(p_pattern.is_empty(), nullptr);
+	ERR_FAIL_COND_V(p_pattern.is_empty_string(), nullptr);
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
@@ -1394,7 +1394,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 // Can be recursive or not, and limited to owned nodes.
 TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_type, bool p_recursive, bool p_owned) const {
 	TypedArray<Node> ret;
-	ERR_FAIL_COND_V(p_pattern.is_empty() && p_type.is_empty(), ret);
+	ERR_FAIL_COND_V(p_pattern.is_empty_string() && p_type.is_empty_string(), ret);
 
 	Node *const *cptr = data.children.ptr();
 	int ccount = data.children.size();
@@ -1403,10 +1403,10 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (!p_pattern.is_empty()) {
+		if (!p_pattern.is_empty_string()) {
 			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
 				continue;
-			} else if (p_type.is_empty()) {
+			} else if (p_type.is_empty_string()) {
 				ret.append(cptr[i]);
 			}
 		}
@@ -2099,7 +2099,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_scene_file_path().is_empty()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_scene_file_path().is_empty_string()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2124,7 +2124,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		ERR_FAIL_COND_V(!node, nullptr);
 	}
 
-	if (!get_scene_file_path().is_empty()) { //an instance
+	if (!get_scene_file_path().is_empty_string()) { //an instance
 		node->set_scene_file_path(get_scene_file_path());
 		node->data.editable_instance = data.editable_instance;
 	}
@@ -2156,7 +2156,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 
 				node_tree.push_back(descendant);
 
-				if (!descendant->get_scene_file_path().is_empty() && instance_roots.has(descendant->get_owner())) {
+				if (!descendant->get_scene_file_path().is_empty_string() && instance_roots.has(descendant->get_owner())) {
 					instance_roots.push_back(descendant);
 				}
 			}

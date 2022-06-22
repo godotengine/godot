@@ -960,7 +960,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 
 	String error = vsnode->get_warning(mode, p_type);
-	if (!error.is_empty()) {
+	if (!error.is_empty_string()) {
 		Label *error_label = memnew(Label);
 		error_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		error_label->set_text(error);
@@ -1274,7 +1274,7 @@ void VisualShaderEditor::_update_nodes() {
 			category = category.rstrip("/");
 			category = category.lstrip("/");
 			category = "Addons/" + category;
-			if (!subcategory.is_empty()) {
+			if (!subcategory.is_empty_string()) {
 				category += "/" + subcategory;
 			}
 
@@ -1340,7 +1340,7 @@ void VisualShaderEditor::_update_options_menu() {
 	TreeItem *root = members->create_item();
 
 	String filter = node_filter->get_text().strip_edges();
-	bool use_filter = !filter.is_empty();
+	bool use_filter = !filter.is_empty_string();
 
 	bool is_first_item = true;
 
@@ -1817,7 +1817,7 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *p
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, false);
-	if (validated_name.is_empty() || prev_name == validated_name) {
+	if (validated_name.is_empty_string() || prev_name == validated_name) {
 		line_edit->set_text(node->get_input_port_name(p_port_id));
 		return;
 	}
@@ -1843,7 +1843,7 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	ERR_FAIL_COND(!line_edit);
 
 	String validated_name = visual_shader->validate_port_name(p_text, node.ptr(), p_port_id, true);
-	if (validated_name.is_empty() || prev_name == validated_name) {
+	if (validated_name.is_empty_string() || prev_name == validated_name) {
 		line_edit->set_text(node->get_output_port_name(p_port_id));
 		return;
 	}
@@ -2638,7 +2638,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 	bool is_custom = add_options[p_idx].is_custom;
 
-	if (!is_custom && !add_options[p_idx].type.is_empty()) {
+	if (!is_custom && !add_options[p_idx].type.is_empty_string()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
 		if (!p_ops.is_empty()) {
@@ -2698,7 +2698,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
 
-	if (p_resource_path.is_empty()) {
+	if (p_resource_path.is_empty_string()) {
 		undo_redo->create_action(TTR("Add Node to Visual Shader"));
 	} else {
 		id_to_use += p_node_idx;
@@ -2845,7 +2845,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		graph_plugin->call_deferred(SNAME("update_curve_xyz"), id_to_use);
 	}
 
-	if (p_resource_path.is_empty()) {
+	if (p_resource_path.is_empty_string()) {
 		undo_redo->commit_action();
 	} else {
 		//post-initialization

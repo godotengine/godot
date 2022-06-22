@@ -46,7 +46,7 @@
 
 String PluginConfigAndroid::resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
-	if (!dependency_path.is_empty()) {
+	if (!dependency_path.is_empty_string()) {
 		if (dependency_path.is_absolute_path()) {
 			absolute_path = ProjectSettings::get_singleton()->globalize_path(dependency_path);
 		} else {
@@ -75,13 +75,13 @@ Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plu
 }
 
 bool PluginConfigAndroid::is_plugin_config_valid(PluginConfigAndroid plugin_config) {
-	bool valid_name = !plugin_config.name.is_empty();
+	bool valid_name = !plugin_config.name.is_empty_string();
 	bool valid_binary_type = plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ||
 			plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE;
 
 	bool valid_binary = false;
 	if (valid_binary_type) {
-		valid_binary = !plugin_config.binary.is_empty() &&
+		valid_binary = !plugin_config.binary.is_empty_string() &&
 				(plugin_config.binary_type == PluginConfigAndroid::BINARY_TYPE_REMOTE ||
 						FileAccess::exists(plugin_config.binary));
 	}

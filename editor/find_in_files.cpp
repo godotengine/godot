@@ -112,7 +112,7 @@ void FindInFiles::_notification(int p_what) {
 }
 
 void FindInFiles::start() {
-	if (_pattern.is_empty()) {
+	if (_pattern.is_empty_string()) {
 		print_verbose("Nothing to search, pattern is empty");
 		emit_signal(SNAME(SIGNAL_FINISHED));
 		return;
@@ -222,7 +222,7 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 	for (int i = 0; i < 1000; ++i) {
 		String file = dir->get_next();
 
-		if (file.is_empty()) {
+		if (file.is_empty_string()) {
 			break;
 		}
 
@@ -504,8 +504,8 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 	ERR_FAIL_COND(!_find_button);
 	ERR_FAIL_COND(!_replace_button);
 
-	_find_button->set_disabled(get_search_text().is_empty());
-	_replace_button->set_disabled(get_search_text().is_empty());
+	_find_button->set_disabled(get_search_text().is_empty_string());
+	_replace_button->set_disabled(get_search_text().is_empty_string());
 }
 
 void FindInFilesDialog::_on_search_text_submitted(String text) {

@@ -176,10 +176,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		"scaleAspectFill",
 		"scaleToFill"
 	};
-	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
-	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().is_empty() || (dbg_sign_id != "iPhone Developer");
-	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().is_empty() || (rel_sign_id != "iPhone Distribution");
+	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty_string() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
+	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty_string() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
+	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().is_empty_string() || (dbg_sign_id != "iPhone Developer");
+	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().is_empty_string() || (rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -635,7 +635,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 		const String splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
 
-		if (!splash_path.is_empty()) {
+		if (!splash_path.is_empty_string()) {
 			splash.instantiate();
 			const Error err = splash->load(splash_path);
 			if (err) {
@@ -761,7 +761,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(Ref<DirAccess> &p_da, FileHan
 	String current_dir = p_da->get_current_dir();
 	p_da->list_dir_begin();
 	String path = p_da->get_next();
-	while (!path.is_empty()) {
+	while (!path.is_empty_string()) {
 		if (p_da->current_is_dir()) {
 			if (path != "." && path != "..") {
 				dirs.push_back(path);
@@ -807,9 +807,9 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 
 		String sign_id;
 		if (data->debug) {
-			sign_id = data->preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : data->preset->get("application/code_sign_identity_debug");
+			sign_id = data->preset->get("application/code_sign_identity_debug").operator String().is_empty_string() ? "iPhone Developer" : data->preset->get("application/code_sign_identity_debug");
 		} else {
-			sign_id = data->preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : data->preset->get("application/code_sign_identity_release");
+			sign_id = data->preset->get("application/code_sign_identity_release").operator String().is_empty_string() ? "iPhone Distribution" : data->preset->get("application/code_sign_identity_release");
 		}
 
 		List<String> codesign_args;
@@ -1277,7 +1277,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 					break;
 			}
 
-			if (key.is_empty() || value.is_empty()) {
+			if (key.is_empty_string() || value.is_empty_string()) {
 				continue;
 			}
 
@@ -1305,7 +1305,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 			String key = E.key;
 			String value = E.value;
 
-			if (key.is_empty() || value.is_empty()) {
+			if (key.is_empty_string() || value.is_empty_string()) {
 				continue;
 			}
 
@@ -1392,10 +1392,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		src_pkg_name = p_preset->get("custom_template/release");
 	}
 
-	if (src_pkg_name.is_empty()) {
+	if (src_pkg_name.is_empty_string()) {
 		String err;
 		src_pkg_name = find_export_template("iphone.zip", &err);
-		if (src_pkg_name.is_empty()) {
+		if (src_pkg_name.is_empty_string()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -1825,12 +1825,12 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	}
 
 	const String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!etc_error.is_empty_string()) {
 		valid = false;
 		err += etc_error;
 	}
 
-	if (!err.is_empty()) {
+	if (!err.is_empty_string()) {
 		r_error = err;
 	}
 

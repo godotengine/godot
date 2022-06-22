@@ -742,7 +742,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			prefix = segment + prefix;
 		}
 	}
-	if (!prefix.is_empty()) {
+	if (!prefix.is_empty_string()) {
 		Ref<Font> font = _find_font(l.from);
 		if (font.is_null()) {
 			font = get_theme_font(SNAME("normal_font"));
@@ -1626,7 +1626,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_stop_thread();
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				set_text(text);
 			}
 
@@ -2876,7 +2876,7 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	MutexLock data_lock(data_mutex);
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
-	ERR_FAIL_COND(p_string.is_empty());
+	ERR_FAIL_COND(p_string.is_empty_string());
 	ERR_FAIL_COND(p_font.is_null());
 	ERR_FAIL_COND(p_size <= 0);
 
@@ -3419,11 +3419,11 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		if (brk_pos == p_bbcode.length()) {
 			// For tags that are not properly closed.
-			if (text.is_empty() && after_list_open_tag) {
+			if (text.is_empty_string() && after_list_open_tag) {
 				text = "\n";
 			}
 
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				add_text(text);
 			}
 			break; //nothing else to add
@@ -3488,13 +3488,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				continue;
 			}
 
-			if (text.is_empty() && after_list_open_tag) {
+			if (text.is_empty_string() && after_list_open_tag) {
 				text = "\n"; // Make empty list have at least one item.
 			}
 			after_list_open_tag = false;
 
 			if (tag == "/ol" || tag == "/ul") {
-				if (!text.is_empty()) {
+				if (!text.is_empty_string()) {
 					// Make sure text ends with a newline character, that is, the last item
 					// will wrap at the end of block.
 					if (!text.ends_with("\n")) {
@@ -3508,7 +3508,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				after_list_close_tag = false;
 			}
 
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				add_text(text);
 			}
 
@@ -3521,14 +3521,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		}
 
 		if (tag == "ol" || tag.begins_with("ol ") || tag == "ul" || tag.begins_with("ul ")) {
-			if (text.is_empty() && after_list_open_tag) {
+			if (text.is_empty_string() && after_list_open_tag) {
 				text = "\n"; // Make each list have at least one item at the beginning.
 			}
 			after_list_open_tag = true;
 		} else {
 			after_list_open_tag = false;
 		}
-		if (!text.is_empty()) {
+		if (!text.is_empty_string()) {
 			add_text(text);
 		}
 		after_list_close_tag = false;
@@ -3935,7 +3935,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 				int width = 0;
 				int height = 0;
-				if (!bbcode_value.is_empty()) {
+				if (!bbcode_value.is_empty_string()) {
 					int sep = bbcode_value.find("x");
 					if (sep == -1) {
 						width = bbcode_value.to_int();
@@ -4566,7 +4566,7 @@ void RichTextLabel::deselect() {
 void RichTextLabel::selection_copy() {
 	String text = get_selected_text();
 
-	if (!text.is_empty()) {
+	if (!text.is_empty_string()) {
 		DisplayServer::get_singleton()->clipboard_set(text);
 	}
 }
@@ -4792,7 +4792,7 @@ float RichTextLabel::get_percent_visible() const {
 
 void RichTextLabel::set_effects(Array p_effects) {
 	custom_effects = p_effects;
-	if ((!text.is_empty()) && use_bbcode) {
+	if ((!text.is_empty_string()) && use_bbcode) {
 		parse_bbcode(text);
 	}
 }
@@ -4807,7 +4807,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 
 	if (rteffect.is_valid()) {
 		custom_effects.push_back(effect);
-		if ((!text.is_empty()) && use_bbcode) {
+		if ((!text.is_empty_string()) && use_bbcode) {
 			parse_bbcode(text);
 		}
 	}
@@ -4837,7 +4837,7 @@ int RichTextLabel::get_content_width() const {
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
 // Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
 bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "bbcode_text" && !((String)p_value).is_empty()) {
+	if (p_name == "bbcode_text" && !((String)p_value).is_empty_string()) {
 		set_text(p_value);
 		return true;
 	}

@@ -98,7 +98,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		HANDLE f = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
 		if (f != INVALID_HANDLE_VALUE) {
 			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (!fname.is_empty()) {
+			if (!fname.is_empty_string()) {
 				String base_file = path.get_file();
 				if (base_file != fname && base_file.findn(fname) == 0) {
 					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
@@ -141,7 +141,7 @@ void FileAccessWindows::_close() {
 	fclose(f);
 	f = nullptr;
 
-	if (!save_path.is_empty()) {
+	if (!save_path.is_empty_string()) {
 		bool rename_error = true;
 		int attempts = 4;
 		while (rename_error && attempts) {

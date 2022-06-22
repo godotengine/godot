@@ -363,18 +363,18 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				int c = hint_text.get_slice_count(",");
 				float min = 0, max = 100, step = type == Variant::FLOAT ? .01 : 1;
 				if (c >= 1) {
-					if (!hint_text.get_slice(",", 0).is_empty()) {
+					if (!hint_text.get_slice(",", 0).is_empty_string()) {
 						min = hint_text.get_slice(",", 0).to_float();
 					}
 				}
 				if (c >= 2) {
-					if (!hint_text.get_slice(",", 1).is_empty()) {
+					if (!hint_text.get_slice(",", 1).is_empty_string()) {
 						max = hint_text.get_slice(",", 1).to_float();
 					}
 				}
 
 				if (c >= 3) {
-					if (!hint_text.get_slice(",", 2).is_empty()) {
+					if (!hint_text.get_slice(",", 2).is_empty_string()) {
 						step = hint_text.get_slice(",", 2).to_float();
 					}
 				}
@@ -567,7 +567,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					add_child(create_dialog);
 				}
 
-				if (!hint_text.is_empty()) {
+				if (!hint_text.is_empty_string()) {
 					create_dialog->set_base_type(hint_text);
 				} else {
 					create_dialog->set_base_type("Object");
@@ -868,7 +868,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (p_name == "script" && hint_text == "Script" && Object::cast_to<Node>(owner)) {
 				menu->add_item(TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 				menu->add_separator();
-			} else if (!hint_text.is_empty()) {
+			} else if (!hint_text.is_empty_string()) {
 				int idx = 0;
 
 				Vector<EditorData::CustomType> custom_resources;
@@ -948,7 +948,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 			bool paste_valid = false;
 			if (cb.is_valid()) {
-				if (hint_text.is_empty()) {
+				if (hint_text.is_empty_string()) {
 					paste_valid = true;
 				} else {
 					for (int i = 0; i < hint_text.get_slice_count(","); i++) {
@@ -1133,7 +1133,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		return;
 	}
 
-	if (hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !hint_text.is_empty()) {
+	if (hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !hint_text.is_empty_string()) {
 		Node *node = get_node(hint_text);
 		if (node) {
 			Node *tonode = node->get_node(p_path);
@@ -1217,7 +1217,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 					file->clear_filters();
 
-					if (!hint_text.is_empty()) {
+					if (!hint_text.is_empty_string()) {
 						Vector<String> extensions = hint_text.split(",");
 						for (int i = 0; i < extensions.size(); i++) {
 							String filter = extensions[i];

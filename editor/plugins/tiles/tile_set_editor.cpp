@@ -147,7 +147,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		String item_text;
 
 		// Common to all type of sources.
-		if (!source->get_name().is_empty()) {
+		if (!source->get_name().is_empty_string()) {
 			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
 		}
 
@@ -155,7 +155,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
 			texture = atlas_source->get_texture();
-			if (item_text.is_empty()) {
+			if (item_text.is_empty_string()) {
 				if (texture.is_valid()) {
 					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
 				} else {
@@ -168,13 +168,13 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		TileSetScenesCollectionSource *scene_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 		if (scene_collection_source) {
 			texture = get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
-			if (item_text.is_empty()) {
+			if (item_text.is_empty_string()) {
 				item_text = vformat(TTR("Scene Collection Source (ID: %d)"), source_id);
 			}
 		}
 
 		// Use default if not valid.
-		if (item_text.is_empty()) {
+		if (item_text.is_empty_string()) {
 			item_text = vformat(TTR("Unknown Type Source (ID: %d)"), source_id);
 		}
 		if (!texture.is_valid()) {

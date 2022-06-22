@@ -158,10 +158,10 @@ TEST_CASE("[String] Invalid UTF8") {
 	String s;
 	bool err = s.parse_utf8((const char *)u8str);
 	CHECK(err);
-	CHECK(s.is_empty());
+	CHECK(s.is_empty_string());
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs).is_empty());
+	CHECK(String::utf8(cs).is_empty_string());
 	ERR_PRINT_ON
 }
 
@@ -171,10 +171,10 @@ TEST_CASE("[String] Invalid UTF16") {
 	String s;
 	bool err = s.parse_utf16(u16str);
 	CHECK(err);
-	CHECK(s.is_empty());
+	CHECK(s.is_empty_string());
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs).is_empty());
+	CHECK(String::utf16(cs).is_empty_string());
 	ERR_PRINT_ON
 }
 
@@ -238,11 +238,11 @@ TEST_CASE("[String] Testing size and length of string") {
 }
 
 TEST_CASE("[String] Testing for empty string") {
-	CHECK(!String("Mellon").is_empty());
+	CHECK(!String("Mellon").is_empty_string());
 	// do this more than once, to check for string corruption
-	CHECK(String("").is_empty());
-	CHECK(String("").is_empty());
-	CHECK(String("").is_empty());
+	CHECK(String("").is_empty_string());
+	CHECK(String("").is_empty_string());
+	CHECK(String("").is_empty_string());
 }
 
 TEST_CASE("[String] Contains") {
@@ -1536,7 +1536,7 @@ TEST_CASE("[String] Variant ptr indexed set") {
 TEST_CASE("[Stress][String] Empty via ' == String()'") {
 	for (int i = 0; i < 100000; ++i) {
 		String str = "Hello World!";
-		if (str.is_empty()) {
+		if (str.is_empty_string()) {
 			continue;
 		}
 	}
@@ -1545,7 +1545,7 @@ TEST_CASE("[Stress][String] Empty via ' == String()'") {
 TEST_CASE("[Stress][String] Empty via `is_empty()`") {
 	for (int i = 0; i < 100000; ++i) {
 		String str = "Hello World!";
-		if (str.is_empty()) {
+		if (str.is_empty_string()) {
 			continue;
 		}
 	}

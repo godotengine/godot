@@ -91,7 +91,7 @@ void Joint3D::_update_joint(bool p_only_free) {
 
 	update_configuration_warnings();
 
-	if (!warning.is_empty()) {
+	if (!warning.is_empty_string()) {
 		PhysicsServer3D::get_singleton()->joint_clear(joint);
 		return;
 	}
@@ -201,7 +201,7 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 TypedArray<String> Joint3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node3D::get_configuration_warnings();
 
-	if (!warning.is_empty()) {
+	if (!warning.is_empty_string()) {
 		warnings.push_back(warning);
 	}
 

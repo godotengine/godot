@@ -450,7 +450,7 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 
 void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 	_THREAD_SAFE_METHOD_
-	if (!p_text.is_empty()) {
+	if (!p_text.is_empty_string()) {
 		{
 			// The clipboard content can be accessed while polling for events.
 			MutexLock mutex_lock(events_mutex);
@@ -622,7 +622,7 @@ String DisplayServerX11::_clipboard_get(Atom p_source, Window x11_window) const 
 	if (utf8_atom != None) {
 		ret = _clipboard_get_impl(p_source, x11_window, utf8_atom);
 	}
-	if (ret.is_empty()) {
+	if (ret.is_empty_string()) {
 		ret = _clipboard_get_impl(p_source, x11_window, XA_STRING);
 	}
 	return ret;
@@ -634,7 +634,7 @@ String DisplayServerX11::clipboard_get() const {
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window);
 
-	if (ret.is_empty()) {
+	if (ret.is_empty_string()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
 	}
 
@@ -647,7 +647,7 @@ String DisplayServerX11::clipboard_get_primary() const {
 	String ret;
 	ret = _clipboard_get(XInternAtom(x11_display, "PRIMARY", 0), windows[MAIN_WINDOW_ID].x11_window);
 
-	if (ret.is_empty()) {
+	if (ret.is_empty_string()) {
 		ret = _clipboard_get(XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window);
 	}
 

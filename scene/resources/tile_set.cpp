@@ -1052,7 +1052,7 @@ void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 
 	// Exit if another property has the same name.
-	if (!p_value.is_empty()) {
+	if (!p_value.is_empty_string()) {
 		for (int other_layer_id = 0; other_layer_id < get_custom_data_layers_count(); other_layer_id++) {
 			if (other_layer_id != p_layer_id && get_custom_data_name(other_layer_id) == p_value) {
 				ERR_FAIL_MSG(vformat("There is already a custom property named %s", p_value));
@@ -1060,7 +1060,7 @@ void TileSet::set_custom_data_name(int p_layer_id, String p_value) {
 		}
 	}
 
-	if (p_value.is_empty() && custom_data_layers_by_name.has(p_value)) {
+	if (p_value.is_empty_string() && custom_data_layers_by_name.has(p_value)) {
 		custom_data_layers_by_name.erase(p_value);
 	} else {
 		custom_data_layers_by_name[p_value] = p_layer_id;

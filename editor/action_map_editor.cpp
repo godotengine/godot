@@ -309,7 +309,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 	TreeItem *root = input_list_tree->create_item();
 	String search_term = input_list_search->get_text();
 
-	bool collapse = input_list_search->get_text().is_empty();
+	bool collapse = input_list_search->get_text().is_empty_string();
 
 	if (allowed_input_types & INPUT_KEY) {
 		TreeItem *kb_root = input_list_tree->create_item(root);
@@ -321,7 +321,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		for (int i = 0; i < keycode_get_count(); i++) {
 			String name = keycode_get_name_by_index(i);
 
-			if (!search_term.is_empty() && name.findn(search_term) == -1) {
+			if (!search_term.is_empty_string() && name.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -345,7 +345,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			mb->set_button_index(mouse_buttons[i]);
 			String desc = get_event_text(mb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty_string() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -368,7 +368,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joyb->set_button_index((JoyButton)i);
 			String desc = get_event_text(joyb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty_string() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -394,7 +394,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym->set_axis_value(direction);
 			String desc = get_event_text(joym, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty_string() && desc.findn(search_term) == -1) {
 				continue;
 			}
 
@@ -792,7 +792,7 @@ void ActionMapEditor::_add_action_pressed() {
 }
 
 String ActionMapEditor::_check_new_action_name(const String &p_name) {
-	if (p_name.is_empty() || !_is_action_name_valid(p_name)) {
+	if (p_name.is_empty_string() || !_is_action_name_valid(p_name)) {
 		return TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'");
 	}
 
@@ -806,7 +806,7 @@ String ActionMapEditor::_check_new_action_name(const String &p_name) {
 void ActionMapEditor::_add_edit_text_changed(const String &p_name) {
 	String error = _check_new_action_name(p_name);
 	add_button->set_tooltip(error);
-	add_button->set_disabled(!error.is_empty());
+	add_button->set_disabled(!error.is_empty_string());
 }
 
 bool ActionMapEditor::_has_action(const String &p_name) const {
@@ -820,7 +820,7 @@ bool ActionMapEditor::_has_action(const String &p_name) const {
 
 void ActionMapEditor::_add_action(const String &p_name) {
 	String error = _check_new_action_name(p_name);
-	if (!error.is_empty()) {
+	if (!error.is_empty_string()) {
 		show_message(error);
 		return;
 	}
@@ -844,7 +844,7 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		if (new_name.is_empty() || !_is_action_name_valid(new_name)) {
+		if (new_name.is_empty_string() || !_is_action_name_valid(new_name)) {
 			ti->set_text(0, old_name);
 			show_message(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			return;
@@ -1103,7 +1103,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		}
 
 		String search_term = action_list_search->get_text();
-		if (!search_term.is_empty() && action_info.name.findn(search_term) == -1) {
+		if (!search_term.is_empty_string() && action_info.name.findn(search_term) == -1) {
 			continue;
 		}
 

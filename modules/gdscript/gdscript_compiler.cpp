@@ -66,7 +66,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
-	if (!error.is_empty()) {
+	if (!error.is_empty_string()) {
 		return;
 	}
 
@@ -115,8 +115,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				result.builtin_type = p_datatype.builtin_type;
 
 				String class_name = class_type->fqcn.split("::")[0];
-				const bool is_inner_by_path = (!main_script->path.is_empty()) && (class_name == main_script->path);
-				const bool is_inner_by_name = (!main_script->name.is_empty()) && (class_name == main_script->name);
+				const bool is_inner_by_path = (!main_script->path.is_empty_string()) && (class_name == main_script->path);
+				const bool is_inner_by_name = (!main_script->name.is_empty_string()) && (class_name == main_script->name);
 				if (is_inner_by_path || is_inner_by_name) {
 					// Local class.
 					List<StringName> names;
@@ -2079,7 +2079,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (EngineDebugger::is_active()) {
 		String signature;
 		// Path.
-		if (!p_script->get_path().is_empty()) {
+		if (!p_script->get_path().is_empty_string()) {
 			signature += p_script->get_path();
 		}
 		// Location.
@@ -2217,7 +2217,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
 
-	if (!p_script->name.is_empty()) {
+	if (!p_script->name.is_empty_string()) {
 		if (ClassDB::class_exists(p_script->name) && ClassDB::is_class_exposed(p_script->name)) {
 			_set_error("The class '" + p_script->name + "' shadows a native class", p_class);
 			return ERR_ALREADY_EXISTS;
@@ -2346,7 +2346,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[name] = constant->start_line;
-				if (!constant->doc_description.is_empty()) {
+				if (!constant->doc_description.is_empty_string()) {
 					p_script->doc_constants[name] = constant->doc_description;
 				}
 #endif
@@ -2382,7 +2382,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				}
 				p_script->_signals[name] = parameters_names;
 #ifdef TOOLS_ENABLED
-				if (!signal->doc_description.is_empty()) {
+				if (!signal->doc_description.is_empty_string()) {
 					p_script->doc_signals[name] = signal->doc_description;
 				}
 #endif

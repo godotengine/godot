@@ -66,12 +66,12 @@ String TextEditor::get_name() {
 	String name;
 
 	name = text_file->get_path().get_file();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		// This appears for newly created built-in text_files before saving the scene.
 		name = TTR("[unsaved]");
 	} else if (text_file->is_built_in()) {
 		const String &text_file_name = text_file->get_name();
-		if (!text_file_name.is_empty()) {
+		if (!text_file_name.is_empty_string()) {
 			// If the built-in text_file has a custom resource name defined,
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
@@ -198,7 +198,7 @@ void TextEditor::apply_code() {
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			text_file->get_path().is_empty(); // In memory.
+			text_file->get_path().is_empty_string(); // In memory.
 	return unsaved;
 }
 

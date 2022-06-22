@@ -249,7 +249,7 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> state) {
 
 	if (state->nodes.size()) {
 		Dictionary s;
-		if (!state->scene_name.is_empty()) {
+		if (!state->scene_name.is_empty_string()) {
 			s["name"] = state->scene_name;
 		}
 
@@ -408,7 +408,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 		Ref<GLTFNode> n = state->nodes[i];
 		Dictionary extensions;
 		node["extensions"] = extensions;
-		if (!n->get_name().is_empty()) {
+		if (!n->get_name().is_empty_string()) {
 			node["name"] = n->get_name();
 		}
 		if (n->camera != -1) {
@@ -528,7 +528,7 @@ String GLTFDocument::_sanitize_bone_name(const String &p_name) {
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
 	String s_name = _sanitize_bone_name(p_name);
-	if (s_name.is_empty()) {
+	if (s_name.is_empty_string()) {
 		s_name = "bone";
 	}
 	String name;
@@ -569,7 +569,7 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
 			state->root_nodes.push_back(nodes[j]);
 		}
 
-		if (s.has("name") && !String(s["name"]).is_empty() && !((String)s["name"]).begins_with("Scene")) {
+		if (s.has("name") && !String(s["name"]).is_empty_string() && !((String)s["name"]).begins_with("Scene")) {
 			state->scene_name = _gen_unique_name(state, s["name"]);
 		} else {
 			state->scene_name = _gen_unique_name(state, state->filename);
@@ -788,7 +788,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 					}
 					buffer_data = _parse_base64_uri(uri);
 				} else { // Relative path to an external image file.
-					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(p_base_path.is_empty_string(), ERR_INVALID_PARAMETER);
 					uri = uri.uri_decode();
 					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
@@ -2556,7 +2556,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 		Ref<ImporterMesh> import_mesh;
 		import_mesh.instantiate();
 		String mesh_name = "mesh";
-		if (d.has("name") && !String(d["name"]).is_empty()) {
+		if (d.has("name") && !String(d["name"]).is_empty_string()) {
 			mesh_name = d["name"];
 		}
 		import_mesh->set_name(_gen_unique_name(state, vformat("%s_%s", state->scene_name, mesh_name)));
@@ -3000,7 +3000,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 		Ref<Image> image = state->images[i]->get_image();
 		ERR_CONTINUE(image.is_null());
 
-		if (p_path.to_lower().ends_with("glb") || p_path.is_empty()) {
+		if (p_path.to_lower().ends_with("glb") || p_path.is_empty_string()) {
 			GLTFBufferViewIndex bvi;
 
 			Ref<GLTFBufferView> bv;
@@ -3029,9 +3029,9 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			d["bufferView"] = bvi;
 			d["mimeType"] = "image/png";
 		} else {
-			ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
+			ERR_FAIL_COND_V(p_path.is_empty_string(), ERR_INVALID_PARAMETER);
 			String name = state->images[i]->get_name();
-			if (name.is_empty()) {
+			if (name.is_empty_string()) {
 				name = itos(i);
 			}
 			name = _gen_unique_name(state, name);
@@ -3112,7 +3112,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 				data_ptr = data.ptr();
 				data_size = data.size();
 				// mimeType is optional, but if we have it defined in the URI, let's use it.
-				if (mimetype.is_empty()) {
+				if (mimetype.is_empty_string()) {
 					if (uri.begins_with("data:image/png;base64")) {
 						mimetype = "image/png";
 					} else if (uri.begins_with("data:image/jpeg;base64")) {
@@ -3120,7 +3120,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					}
 				}
 			} else { // Relative path to an external image file.
-				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_base_path.is_empty_string(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_decode();
 				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 				// ResourceLoader will rely on the file extension to use the relevant loader.
@@ -3152,7 +3152,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			}
 		} else if (d.has("bufferView")) {
 			// Handles the third bullet point from the spec (bufferView).
-			ERR_FAIL_COND_V_MSG(mimetype.is_empty(), ERR_FILE_CORRUPT,
+			ERR_FAIL_COND_V_MSG(mimetype.is_empty_string(), ERR_FILE_CORRUPT,
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
@@ -3285,7 +3285,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			materials.push_back(d);
 			continue;
 		}
-		if (!material->get_name().is_empty()) {
+		if (!material->get_name().is_empty_string()) {
 			d["name"] = _gen_unique_name(state, material->get_name());
 		}
 		{
@@ -3546,7 +3546,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 
 		Ref<StandardMaterial3D> material;
 		material.instantiate();
-		if (d.has("name") && !String(d["name"]).is_empty()) {
+		if (d.has("name") && !String(d["name"]).is_empty_string()) {
 			material->set_name(d["name"]);
 		} else {
 			material->set_name(vformat("material_%s", itos(i)));
@@ -4083,7 +4083,7 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> state) {
 			state->nodes.write[node]->joint = true;
 		}
 
-		if (d.has("name") && !String(d["name"]).is_empty()) {
+		if (d.has("name") && !String(d["name"]).is_empty_string()) {
 			skin->set_name(d["name"]);
 		} else {
 			skin->set_name(vformat("skin_%s", itos(i)));
@@ -4385,7 +4385,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> state) {
 
 			const int bone_index = skeleton->get_bone_count();
 
-			if (node->get_name().is_empty()) {
+			if (node->get_name().is_empty_string()) {
 				node->set_name("bone");
 			}
 
@@ -4487,7 +4487,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 	// Create unique names now, after removing duplicates
 	for (GLTFSkinIndex skin_i = 0; skin_i < state->skins.size(); ++skin_i) {
 		Ref<Skin> skin = state->skins.write[skin_i]->godot_skin;
-		if (skin->get_name().is_empty()) {
+		if (skin->get_name().is_empty_string()) {
 			// Make a unique name, no gltf node represents this skin
 			skin->set_name(_gen_unique_name(state, "Skin"));
 		}
@@ -4757,7 +4757,7 @@ Error GLTFDocument::_serialize_animations(Ref<GLTFState> state) {
 			continue;
 		}
 
-		if (!gltf_animation->get_name().is_empty()) {
+		if (!gltf_animation->get_name().is_empty_string()) {
 			d["name"] = gltf_animation->get_name();
 		}
 		Array channels;
@@ -5068,7 +5068,7 @@ void GLTFDocument::_assign_scene_names(Ref<GLTFState> state) {
 			continue;
 		}
 
-		if (n->get_name().is_empty()) {
+		if (n->get_name().is_empty_string()) {
 			if (n->mesh >= 0) {
 				n->set_name(_gen_unique_name(state, "Mesh"));
 			} else if (n->camera >= 0) {
@@ -5892,7 +5892,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	Ref<GLTFAnimation> anim = state->animations[index];
 
 	String name = anim->get_name();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		// No node represent these, and they are not in the hierarchy, so just make a unique name
 		name = _gen_unique_name(state, "Animation");
 	}
@@ -6715,7 +6715,7 @@ Error GLTFDocument::_serialize_version(Ref<GLTFState> state) {
 	asset["version"] = version;
 
 	String hash = String(VERSION_HASH);
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
+	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty_string() ? String("unknown") : hash);
 	state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!state->json.has("asset"), Error::FAILED);
@@ -7093,7 +7093,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 	ERR_FAIL_NULL_V(f, ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
-	if (base_path.is_empty()) {
+	if (base_path.is_empty_string()) {
 		base_path = p_path.get_base_dir();
 	}
 	r_state->base_path = base_path;

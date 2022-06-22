@@ -725,7 +725,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			line_edit->connect("text_changed", callable_mp(this, &VisualScriptEditor::_expression_text_changed), varray(E));
 		} else {
 			String text = node->get_text();
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				has_gnode_text = true;
 				Label *label = memnew(Label);
 				label->set_text(text);
@@ -1384,7 +1384,7 @@ void VisualScriptEditor::_create_function_dialog() {
 }
 
 void VisualScriptEditor::_create_function() {
-	String name = _validate_name((func_name_box->get_text().is_empty()) ? "new_func" : func_name_box->get_text());
+	String name = _validate_name((func_name_box->get_text().is_empty_string()) ? "new_func" : func_name_box->get_text());
 	selected = name;
 	Vector2 pos = _get_available_pos();
 
@@ -2166,7 +2166,7 @@ Variant VisualScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 		String type = it->get_metadata(0);
 
-		if (type.is_empty()) {
+		if (type.is_empty_string()) {
 			return Variant();
 		}
 
@@ -2689,12 +2689,12 @@ String VisualScriptEditor::get_name() {
 	String name;
 
 	name = script->get_path().get_file();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		// This appears for newly created built-in scripts before saving the scene.
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (!script_name.is_empty()) {
+		if (!script_name.is_empty_string()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -2725,7 +2725,7 @@ bool VisualScriptEditor::is_unsaved() {
 	bool unsaved =
 			script->is_edited() ||
 			script->are_subnodes_edited() ||
-			script->get_path().is_empty(); // In memory.
+			script->get_path().is_empty_string(); // In memory.
 	return unsaved;
 }
 
@@ -2923,7 +2923,7 @@ void VisualScriptEditor::clear_edit_menu() {
 void VisualScriptEditor::_change_base_type_callback() {
 	String bt = select_base_type->get_selected_type();
 
-	ERR_FAIL_COND(bt.is_empty());
+	ERR_FAIL_COND(bt.is_empty_string());
 	undo_redo->create_action(TTR("Change Base Type"));
 	undo_redo->add_do_method(script.ptr(), "set_instance_base_type", bt);
 	undo_redo->add_undo_method(script.ptr(), "set_instance_base_type", script->get_instance_base_type());
@@ -3333,7 +3333,7 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 				property_info = script->get_node(port_action_node)->get_output_value_port_info(port_action_output);
 			}
 			if (tg.type == Variant::OBJECT) {
-				if (property_info.type == Variant::OBJECT && !property_info.hint_string.is_empty()) {
+				if (property_info.type == Variant::OBJECT && !property_info.hint_string.is_empty_string()) {
 					new_connect_node_select->select_from_action(property_info.hint_string);
 				} else {
 					new_connect_node_select->select_from_action("");
@@ -3603,7 +3603,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty_string() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsfc->set_base_type(base_type);
 					}
 					if (method_name == "call" || method_name == "call_deferred") {
@@ -3638,7 +3638,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
 
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty_string() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}
@@ -3667,7 +3667,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				} else if (script->get_node(port_action_node).is_valid()) {
 					PropertyHint hint = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint;
 					String base_type = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
-					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
+					if (!base_type.is_empty_string() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsp->set_base_type(base_type);
 					}
 				}

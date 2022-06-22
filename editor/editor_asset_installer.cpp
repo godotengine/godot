@@ -168,7 +168,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			depth--;
 		}
 
-		if (skip || path.is_empty()) {
+		if (skip || path.is_empty_string()) {
 			continue;
 		}
 
@@ -267,7 +267,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 		if (status_map.has(name) && (status_map[name]->is_checked(0) || status_map[name]->is_indeterminate(0))) {
 			String path = status_map[name]->get_metadata(0);
-			if (path.is_empty()) { // a dir
+			if (path.is_empty_string()) { // a dir
 
 				String dirpath;
 				TreeItem *t = status_map[name];

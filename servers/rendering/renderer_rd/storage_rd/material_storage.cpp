@@ -1138,7 +1138,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 				}
 			}
 #ifdef TOOLS_ENABLED
-			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
+			if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty_string()) {
 				roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 			}
 #endif
@@ -1178,7 +1178,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 					rd_texture = texture_storage->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
 				}
 #ifdef TOOLS_ENABLED
-				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
+				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty_string()) {
 					roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 				}
 #endif

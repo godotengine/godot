@@ -81,7 +81,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, HashMap<St
 		String path = efsd->get_file_path(i);
 
 		for (KeyValue<String, String> &E : candidates[file]) {
-			if (E.value.is_empty()) {
+			if (E.value.is_empty_string()) {
 				E.value = path;
 				continue;
 			}
@@ -141,7 +141,7 @@ void DependencyEditor::_fix_all() {
 
 	for (KeyValue<String, HashMap<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
-			if (!F.value.is_empty()) {
+			if (!F.value.is_empty_string()) {
 				remaps[F.key] = F.value;
 			}
 		}

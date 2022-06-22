@@ -401,7 +401,7 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	}
 #else
 	if (!icu_data_loaded) {
-		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
+		String filename = (p_filename.is_empty_string()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
 		Ref<File> f;
 		f.instantiate();
@@ -3632,7 +3632,7 @@ bool TextServerAdvanced::shaped_text_add_string(const RID &p_shaped, const Strin
 		ERR_FAIL_COND_V(!font_owner.get_or_null(p_fonts[i]), false);
 	}
 
-	if (p_text.is_empty()) {
+	if (p_text.is_empty_string()) {
 		return true;
 	}
 
@@ -4873,7 +4873,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	}
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
-	if (!p_sd->spans[p_span].language.is_empty()) {
+	if (!p_sd->spans[p_span].language.is_empty_string()) {
 		hb_language_t lang = hb_language_from_string(p_sd->spans[p_span].language.ascii().get_data(), -1);
 		hb_buffer_set_language(p_sd->hb_buffer, lang);
 	}
@@ -5527,12 +5527,12 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 }
 
 String TextServerAdvanced::format_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty_string()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits.is_empty()) {
+			if (num_systems[i].digits.is_empty_string()) {
 				return p_string;
 			}
 			res.replace("e", num_systems[i].exp);
@@ -5552,12 +5552,12 @@ String TextServerAdvanced::format_number(const String &p_string, const String &p
 }
 
 String TextServerAdvanced::parse_number(const String &p_string, const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty_string()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	String res = p_string;
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].digits.is_empty()) {
+			if (num_systems[i].digits.is_empty_string()) {
 				return p_string;
 			}
 			res.replace(num_systems[i].exp, "e");
@@ -5580,11 +5580,11 @@ String TextServerAdvanced::parse_number(const String &p_string, const String &p_
 }
 
 String TextServerAdvanced::percent_sign(const String &p_language) const {
-	const StringName lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	const StringName lang = (p_language.is_empty_string()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	for (int i = 0; i < num_systems.size(); i++) {
 		if (num_systems[i].lang.has(lang)) {
-			if (num_systems[i].percent_sign.is_empty()) {
+			if (num_systems[i].percent_sign.is_empty_string()) {
 				return "%";
 			}
 			return num_systems[i].percent_sign;

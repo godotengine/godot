@@ -2678,7 +2678,7 @@ bool TextServerFallback::shaped_text_add_string(const RID &p_shaped, const Strin
 		ERR_FAIL_COND_V(!font_owner.get_or_null(p_fonts[i]), false);
 	}
 
-	if (p_text.is_empty()) {
+	if (p_text.is_empty_string()) {
 		return true;
 	}
 

@@ -1802,10 +1802,10 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_editable(false);
 
 		code_edit->do_indent();
-		CHECK(code_edit->get_line(0).is_empty());
+		CHECK(code_edit->get_line(0).is_empty_string());
 
 		code_edit->indent_lines();
-		CHECK(code_edit->get_line(0).is_empty());
+		CHECK(code_edit->get_line(0).is_empty_string());
 
 		code_edit->set_editable(true);
 
@@ -1875,10 +1875,10 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_editable(false);
 
 		code_edit->do_indent();
-		CHECK(code_edit->get_line(0).is_empty());
+		CHECK(code_edit->get_line(0).is_empty_string());
 
 		code_edit->indent_lines();
-		CHECK(code_edit->get_line(0).is_empty());
+		CHECK(code_edit->get_line(0).is_empty_string());
 
 		code_edit->set_editable(true);
 
@@ -2774,7 +2774,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_auto_brace_completion_close_key("'") == "'");
 		CHECK(code_edit->get_auto_brace_completion_close_key(";") == "'");
 		CHECK(code_edit->get_auto_brace_completion_close_key("'''") == "'''");
-		CHECK(code_edit->get_auto_brace_completion_close_key("(").is_empty());
+		CHECK(code_edit->get_auto_brace_completion_close_key("(").is_empty_string());
 
 		/* Check typing inserts closing pair. */
 		code_edit->clear();
@@ -2795,7 +2795,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		/* Backspace should remove all. */
 		SEND_GUI_ACTION(code_edit, "ui_text_backspace");
-		CHECK(code_edit->get_line(0).is_empty());
+		CHECK(code_edit->get_line(0).is_empty_string());
 
 		/* If in between and typing close key should "skip". */
 		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
@@ -3325,7 +3325,7 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->insert_text_at_caret("line 1\nline 2\nline 3");
 	code_edit->select_all();
 	code_edit->backspace();
-	CHECK(code_edit->get_text().is_empty());
+	CHECK(code_edit->get_text().is_empty_string());
 
 	/* Backspace at the beginning without selection has no effect. */
 	code_edit->set_text("");

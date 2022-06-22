@@ -201,7 +201,7 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (!hash.is_empty()) {
+	if (!hash.is_empty_string()) {
 		hash = "." + hash.left(9);
 	}
 	return String(VERSION_FULL_BUILD) + hash;
@@ -429,7 +429,7 @@ Error Main::test_setup() {
 	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
+	if (!locale.is_empty_string()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -1183,7 +1183,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
-	if (!remotefs.is_empty()) {
+	if (!remotefs.is_empty_string()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.contains(":")) {
@@ -1352,12 +1352,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// And OpenGL3 next, or first if Vulkan is disabled.
 #ifdef GLES3_ENABLED
-	if (!renderer_hints.is_empty()) {
+	if (!renderer_hints.is_empty_string()) {
 		renderer_hints += ",";
 	}
 	renderer_hints += "opengl3";
 #endif
-	if (renderer_hints.is_empty()) {
+	if (renderer_hints.is_empty_string()) {
 		ERR_PRINT("No rendering driver available.");
 	}
 
@@ -1370,7 +1370,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_ENUM, renderer_hints));
 
 	// if not set on the command line
-	if (rendering_driver.is_empty()) {
+	if (rendering_driver.is_empty_string()) {
 		rendering_driver = GLOBAL_GET("rendering/driver/driver_name");
 	}
 
@@ -1471,7 +1471,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_display_driver_id(display_driver_idx);
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
-	if (audio_driver.is_empty()) { // Specified in project.godot.
+	if (audio_driver.is_empty_string()) { // Specified in project.godot.
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
@@ -1724,9 +1724,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
 	}
 
-	if (tablet_driver.is_empty()) { // specified in project.godot
+	if (tablet_driver.is_empty_string()) { // specified in project.godot
 		tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
-		if (tablet_driver.is_empty()) {
+		if (tablet_driver.is_empty_string()) {
 			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);
 		}
 	}
@@ -1738,7 +1738,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 
-	if (DisplayServer::get_singleton()->tablet_get_current_driver().is_empty()) {
+	if (DisplayServer::get_singleton()->tablet_get_current_driver().is_empty_string()) {
 		DisplayServer::get_singleton()->tablet_set_current_driver(DisplayServer::get_singleton()->tablet_get_driver_name(0));
 	}
 
@@ -1837,7 +1837,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Ref<Image> boot_logo;
 
 		if (boot_logo_image) {
-			if (!boot_logo_path.is_empty()) {
+			if (!boot_logo_path.is_empty_string()) {
 				boot_logo.instantiate();
 				Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
 				if (load_err) {
@@ -1879,7 +1879,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+		if (OS::get_singleton()->get_bundle_icon_path().is_empty_string()) {
 			Ref<Image> icon = memnew(Image(app_icon_png));
 			DisplayServer::get_singleton()->set_icon(icon);
 		}
@@ -1931,7 +1931,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Translations and Remaps");
 
 	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
+	if (!locale.is_empty_string()) {
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -1953,11 +1953,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 
 	/* Determine text driver */
-	if (text_driver.is_empty()) {
+	if (text_driver.is_empty_string()) {
 		text_driver = GLOBAL_GET("internationalization/rendering/text_driver");
 	}
 
-	if (!text_driver.is_empty()) {
+	if (!text_driver.is_empty_string()) {
 		/* Load user selected text server. */
 		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 			if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
@@ -2117,7 +2117,7 @@ bool Main::start() {
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
 #endif
-		} else if (args[i].length() && args[i][0] != '-' && positional_arg.is_empty()) {
+		} else if (args[i].length() && args[i][0] != '-' && positional_arg.is_empty_string()) {
 			positional_arg = args[i];
 
 			if (args[i].ends_with(".scn") ||
@@ -2176,12 +2176,12 @@ bool Main::start() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (!doc_tool_path.is_empty()) {
+	if (!doc_tool_path.is_empty_string()) {
 		// Needed to instance editor-only classes for their default values
 		Engine::get_singleton()->set_editor_hint(true);
 
 		// Translate the class reference only when `-l LOCALE` parameter is given.
-		if (!locale.is_empty() && locale != "en") {
+		if (!locale.is_empty_string() && locale != "en") {
 			load_doc_translations(locale);
 		}
 
@@ -2279,12 +2279,12 @@ bool Main::start() {
 
 #endif
 
-	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
+	if (script.is_empty_string() && game_path.is_empty_string() && String(GLOBAL_GET("application/run/main_scene")) != "") {
 		game_path = GLOBAL_GET("application/run/main_scene");
 	}
 
 #ifdef TOOLS_ENABLED
-	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty()) {
+	if (!editor && !project_manager && !cmdline_tool && script.is_empty_string() && game_path.is_empty_string()) {
 		// If we end up here, it means we didn't manage to detect what we want to run.
 		// Let's throw an error gently. The code leading to this is pretty brittle so
 		// this might end up triggered by valid usage, in which case we'll have to
@@ -2300,7 +2300,7 @@ bool Main::start() {
 	}
 	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 
-	if (!script.is_empty()) {
+	if (!script.is_empty_string()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
@@ -2349,7 +2349,7 @@ bool Main::start() {
 		}
 	}
 
-	if (!main_loop && main_loop_type.is_empty()) {
+	if (!main_loop && main_loop_type.is_empty_string()) {
 		main_loop_type = "SceneTree";
 	}
 
@@ -2390,7 +2390,7 @@ bool Main::start() {
 		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
-			if (!game_path.is_empty() || !script.is_empty()) {
+			if (!game_path.is_empty_string() || !script.is_empty_string()) {
 				//autoload
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
@@ -2455,7 +2455,7 @@ bool Main::start() {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
-			if (!_export_preset.is_empty()) {
+			if (!_export_preset.is_empty_string()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
 				game_path = ""; // Do not load anything.
 			}
@@ -2572,7 +2572,7 @@ bool Main::start() {
 #endif
 
 		String local_game_path;
-		if (!game_path.is_empty() && !project_manager) {
+		if (!game_path.is_empty_string() && !project_manager) {
 			local_game_path = game_path.replace("\\", "/");
 
 			if (!local_game_path.begins_with("res://")) {
@@ -2611,7 +2611,7 @@ bool Main::start() {
 					}
 				}
 				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
-				if (!debug_server_uri.is_empty()) {
+				if (!debug_server_uri.is_empty_string()) {
 					EditorDebuggerNode::get_singleton()->start(debug_server_uri);
 				}
 			}
@@ -2626,7 +2626,7 @@ bool Main::start() {
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
-			if (!game_path.is_empty()) {
+			if (!game_path.is_empty_string()) {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {
@@ -2646,14 +2646,14 @@ bool Main::start() {
 
 #ifdef WINDOWS_ENABLED
 				String win_iconpath = GLOBAL_DEF("application/config/windows_native_icon", "Variant()");
-				if (!win_iconpath.is_empty()) {
+				if (!win_iconpath.is_empty_string()) {
 					DisplayServer::get_singleton()->set_native_icon(win_iconpath);
 					hasicon = true;
 				}
 #endif
 
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
-				if ((!iconpath.is_empty()) && (!hasicon)) {
+				if ((!iconpath.is_empty_string()) && (!hasicon)) {
 					Ref<Image> icon;
 					icon.instantiate();
 					if (ImageLoader::load_image(iconpath, icon) == OK) {
@@ -2682,7 +2682,7 @@ bool Main::start() {
 #endif
 	}
 
-	if (!hasicon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+	if (!hasicon && OS::get_singleton()->get_bundle_icon_path().is_empty_string()) {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}

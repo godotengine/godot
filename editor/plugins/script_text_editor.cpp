@@ -206,10 +206,10 @@ void ScriptTextEditor::_set_theme_for_script() {
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
 		if (!text_edit->has_string_delimiter(beg)) {
-			text_edit->add_string_delimiter(beg, end, end.is_empty());
+			text_edit->add_string_delimiter(beg, end, end.is_empty_string());
 		}
 
-		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+		if (!end.is_empty_string() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
@@ -220,9 +220,9 @@ void ScriptTextEditor::_set_theme_for_script() {
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
-		text_edit->add_comment_delimiter(beg, end, end.is_empty());
+		text_edit->add_comment_delimiter(beg, end, end.is_empty_string());
 
-		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
+		if (!end.is_empty_string() && !text_edit->has_auto_brace_completion_open_key(beg)) {
 			text_edit->add_auto_brace_completion_pair(beg, end);
 		}
 	}
@@ -320,7 +320,7 @@ void ScriptTextEditor::update_settings() {
 bool ScriptTextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			script->get_path().is_empty(); // In memory.
+			script->get_path().is_empty_string(); // In memory.
 	return unsaved;
 }
 
@@ -396,12 +396,12 @@ String ScriptTextEditor::get_name() {
 	String name;
 
 	name = script->get_path().get_file();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		// This appears for newly created built-in scripts before saving the scene.
 		name = TTR("[unsaved]");
 	} else if (script->is_built_in()) {
 		const String &script_name = script->get_name();
-		if (!script_name.is_empty()) {
+		if (!script_name.is_empty_string()) {
 			// If the built-in script has a custom resource name defined,
 			// display the built-in script name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", script_name, name.get_slice("::", 0));
@@ -575,7 +575,7 @@ void ScriptTextEditor::_update_errors() {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
-			} else if (last_is_safe && (te->is_in_comment(i) != -1 || te->get_line(i).strip_edges().is_empty())) {
+			} else if (last_is_safe && (te->is_in_comment(i) != -1 || te->get_line(i).strip_edges().is_empty_string())) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
 				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
@@ -1050,7 +1050,7 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	String method = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
-	if (method.is_empty()) {
+	if (method.is_empty_string()) {
 		return;
 	}
 
@@ -1197,7 +1197,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				if (expression.parse(line) == OK) {
 					Variant result = expression.execute(Array(), Variant(), false);
-					if (expression.get_error_text().is_empty()) {
+					if (expression.get_error_text().is_empty_string()) {
 						results.push_back(whitespace + result.get_construct_string());
 					} else {
 						results.push_back(line);
@@ -1323,19 +1323,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case HELP_CONTEXTUAL: {
 			String text = tx->get_selected_text();
-			if (text.is_empty()) {
+			if (text.is_empty_string()) {
 				text = tx->get_word_under_caret();
 			}
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
 			String text = tx->get_word_under_caret();
-			if (text.is_empty()) {
+			if (text.is_empty_string()) {
 				text = tx->get_selected_text();
 			}
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
 			}
 		} break;
@@ -1680,10 +1680,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		}
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
-		if (word_at_pos.is_empty()) {
+		if (word_at_pos.is_empty_string()) {
 			word_at_pos = tx->get_word_under_caret();
 		}
-		if (word_at_pos.is_empty()) {
+		if (word_at_pos.is_empty_string()) {
 			word_at_pos = tx->get_selected_text();
 		}
 

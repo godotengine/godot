@@ -1337,7 +1337,7 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 			} else if (parser.get_node_name() == "skeleton") {
 				parser.read();
 				String uri = _uri_to_id(parser.get_node_data());
-				if (!uri.is_empty()) {
+				if (!uri.is_empty_string()) {
 					geom->skeletons.push_back(uri);
 				}
 			}
@@ -1439,7 +1439,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 	bool found_name = false;
 
-	if (id.is_empty()) {
+	if (id.is_empty_string()) {
 		id = "%NODEID%" + itos(Math::rand());
 
 	} else {
@@ -1454,7 +1454,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 	Node *node = nullptr;
 
 	name = parser.has_attribute("name") ? parser.get_attribute_value_safe("name") : parser.get_attribute_value_safe("id");
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		name = id;
 	} else {
 		found_name = true;
@@ -1474,7 +1474,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 			joint->sid = parser.get_attribute_value_safe("name");
 		}
 
-		if (!joint->sid.is_empty()) {
+		if (!joint->sid.is_empty_string()) {
 			state.sid_to_node_map[joint->sid] = id;
 		}
 
@@ -1671,16 +1671,16 @@ void Collada::_parse_animation(XMLParser &parser) {
 				source_param_types[current_source] = Vector<String>();
 
 			} else if (name == "float_array") {
-				if (!current_source.is_empty()) {
+				if (!current_source.is_empty_string()) {
 					float_sources[current_source] = _read_float_array(parser);
 				}
 
 			} else if (name == "Name_array") {
-				if (!current_source.is_empty()) {
+				if (!current_source.is_empty_string()) {
 					string_sources[current_source] = _read_string_array(parser);
 				}
 			} else if (name == "accessor") {
-				if (!current_source.is_empty() && parser.has_attribute("stride")) {
+				if (!current_source.is_empty_string() && parser.has_attribute("stride")) {
 					source_strides[current_source] = parser.get_attribute_value("stride").to_int();
 				}
 			} else if (name == "sampler") {
@@ -1700,7 +1700,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 
 			} else if (name == "input") {
-				if (!current_sampler.is_empty()) {
+				if (!current_sampler.is_empty_string()) {
 					samplers[current_sampler][parser.get_attribute_value("semantic")] = parser.get_attribute_value("source");
 				}
 
@@ -1813,7 +1813,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 					track.component = track.param.get_slice(".", 1).to_upper();
 				}
 				track.param = track.param.get_slice(".", 0);
-				if (names.size() > 1 && track.component.is_empty()) {
+				if (names.size() > 1 && track.component.is_empty_string()) {
 					//this is a guess because the collada spec is ambiguous here...
 					//i suppose if you have many names (outputs) you can't use a component and i should abide to that.
 					track.component = name;
@@ -1830,7 +1830,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 
 			state.referenced_tracks[target].push_back(state.animation_tracks.size() - 1);
 
-			if (!id.is_empty()) {
+			if (!id.is_empty_string()) {
 				if (!state.by_id_tracks.has(id)) {
 					state.by_id_tracks[id] = Vector<int>();
 				}
@@ -1928,10 +1928,10 @@ void Collada::_parse_library(XMLParser &parser) {
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 						if (parser.get_node_name() == "mesh") {
-							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
+							state.mesh_name_map[id] = (!name2.is_empty_string()) ? name2 : id;
 							_parse_mesh_geometry(parser, id, name2);
 						} else if (parser.get_node_name() == "spline") {
-							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
+							state.mesh_name_map[id] = (!name2.is_empty_string()) ? name2 : id;
 							_parse_curve_geometry(parser, id, name2);
 						} else if (!parser.is_empty()) {
 							parser.skip_section();
@@ -2261,7 +2261,7 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 		if (nj->controller) {
 			String base = nj->source;
 
-			while (!base.is_empty() && !state.mesh_data_map.has(base)) {
+			while (!base.is_empty_string() && !state.mesh_data_map.has(base)) {
 				if (state.skin_controller_data_map.has(base)) {
 					SkinControllerData &sk = state.skin_controller_data_map[base];
 					base = sk.base;

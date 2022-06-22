@@ -187,7 +187,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
 				String name = F.key.operator String();
 
-				ERR_CONTINUE(name.is_empty());
+				ERR_CONTINUE(name.is_empty_string());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
@@ -550,7 +550,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	type->constant_map[p_name] = p_constant;
 
 	String enum_name = p_enum;
-	if (!enum_name.is_empty()) {
+	if (!enum_name.is_empty_string()) {
 		if (enum_name.contains(".")) {
 			enum_name = enum_name.get_slicec('.', 1);
 		}

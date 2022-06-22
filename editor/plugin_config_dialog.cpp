@@ -58,8 +58,8 @@ void PluginConfigDialog::_on_confirmed() {
 
 	int lang_idx = script_option_edit->get_selected();
 	String ext = ScriptServer::get_language(lang_idx)->get_extension();
-	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
-	if (script_name.get_extension().is_empty()) {
+	String script_name = script_edit->get_text().is_empty_string() ? _get_subfolder() : script_edit->get_text();
+	if (script_name.get_extension().is_empty_string()) {
 		script_name += "." + ext;
 	}
 	String script_path = path.plus_file(script_name);
@@ -117,17 +117,17 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 
 	// Change valid status to invalid depending on conditions.
 	Vector<String> errors;
-	if (name_edit->get_text().is_empty()) {
+	if (name_edit->get_text().is_empty_string()) {
 		is_valid = false;
 		name_validation->set_texture(invalid_icon);
 		name_validation->set_tooltip(TTR("Plugin name cannot be blank."));
 	}
-	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
+	if ((!script_edit->get_text().get_extension().is_empty_string() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		is_valid = false;
 		script_validation->set_texture(invalid_icon);
 		script_validation->set_tooltip(vformat(TTR("Script extension must match chosen language extension (.%s)."), ext));
 	}
-	if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
+	if (!subfolder_edit->get_text().is_empty_string() && !subfolder_edit->get_text().is_valid_filename()) {
 		is_valid = false;
 		subfolder_validation->set_texture(invalid_icon);
 		subfolder_validation->set_tooltip(TTR("Subfolder name is not a valid folder name."));
@@ -144,7 +144,7 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 }
 
 String PluginConfigDialog::_get_subfolder() {
-	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().replace(" ", "_").to_lower() : subfolder_edit->get_text();
+	return subfolder_edit->get_text().is_empty_string() ? name_edit->get_text().replace(" ", "_").to_lower() : subfolder_edit->get_text();
 }
 
 String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {

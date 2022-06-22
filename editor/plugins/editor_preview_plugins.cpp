@@ -474,7 +474,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return Ref<Texture2D>();
 	}
 
@@ -833,7 +833,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 			sample += sample_base[i];
 		}
 	}
-	if (sample.is_empty()) {
+	if (sample.is_empty_string()) {
 		sample = sampled_font->get_supported_chars().substr(0, 6);
 	}
 	Vector2 size = sampled_font->get_string_size(sample, 50);

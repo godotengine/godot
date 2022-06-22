@@ -343,7 +343,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
-		if (!passwd.is_empty()) {
+		if (!passwd.is_empty_string()) {
 			r_flags.push_back("--remote-fs-password");
 			r_flags.push_back(passwd);
 		}
@@ -568,7 +568,7 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 
 	Vector<String> dirs;
 	String f = da->get_next();
-	while (!f.is_empty()) {
+	while (!f.is_empty_string()) {
 		if (da->current_is_dir()) {
 			dirs.push_back(f);
 		} else {
@@ -607,14 +607,14 @@ void EditorExportPlatform::_edit_files_with_filter(Ref<DirAccess> &da, const Vec
 }
 
 void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude) {
-	if (p_filter.is_empty()) {
+	if (p_filter.is_empty_string()) {
 		return;
 	}
 	Vector<String> split = p_filter.split(",");
 	Vector<String> filters;
 	for (int i = 0; i < split.size(); i++) {
 		String f = split[i].strip_edges();
-		if (f.is_empty()) {
+		if (f.is_empty_string()) {
 			continue;
 		}
 		filters.push_back(f);
@@ -777,12 +777,12 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 		result.features_pv.push_back("release");
 	}
 
-	if (!p_preset->get_custom_features().is_empty()) {
+	if (!p_preset->get_custom_features().is_empty_string()) {
 		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
 
 		for (int i = 0; i < tmp_custom_list.size(); i++) {
 			String f = tmp_custom_list[i].strip_edges();
-			if (!f.is_empty()) {
+			if (!f.is_empty_string()) {
 				result.features.insert(f);
 				result.features_pv.push_back(f);
 			}
@@ -880,7 +880,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<String> enc_in_split = p_preset->get_enc_in_filter().split(",");
 		for (int i = 0; i < enc_in_split.size(); i++) {
 			String f = enc_in_split[i].strip_edges();
-			if (f.is_empty()) {
+			if (f.is_empty_string()) {
 				continue;
 			}
 			enc_in_filters.push_back(f);
@@ -889,7 +889,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<String> enc_ex_split = p_preset->get_enc_ex_filter().split(",");
 		for (int i = 0; i < enc_ex_split.size(); i++) {
 			String f = enc_ex_split[i].strip_edges();
-			if (f.is_empty()) {
+			if (f.is_empty_string()) {
 				continue;
 			}
 			enc_ex_filters.push_back(f);
@@ -1088,12 +1088,12 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	Vector<String> custom_list;
 
-	if (!p_preset->get_custom_features().is_empty()) {
+	if (!p_preset->get_custom_features().is_empty_string()) {
 		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
 
 		for (int i = 0; i < tmp_custom_list.size(); i++) {
 			String f = tmp_custom_list[i].strip_edges();
-			if (!f.is_empty()) {
+			if (!f.is_empty_string()) {
 				custom_list.push_back(f);
 			}
 		}
@@ -1127,14 +1127,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
 	String icon = ProjectSettings::get_singleton()->get("application/config/icon");
 	String splash = ProjectSettings::get_singleton()->get("application/boot_splash/image");
-	if (!icon.is_empty() && FileAccess::exists(icon)) {
+	if (!icon.is_empty_string() && FileAccess::exists(icon)) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
 		err = p_func(p_udata, icon, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
 			return err;
 		}
 	}
-	if (!splash.is_empty() && FileAccess::exists(splash) && icon != splash) {
+	if (!splash.is_empty_string() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
 		err = p_func(p_udata, splash, array, idx, total, enc_in_filters, enc_ex_filters, key);
 		if (err != OK) {
@@ -1465,7 +1465,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
 		r_flags.push_back("--remote-fs");
 		r_flags.push_back(host + ":" + itos(port));
-		if (!passwd.is_empty()) {
+		if (!passwd.is_empty_string()) {
 			r_flags.push_back("--remote-fs-password");
 			r_flags.push_back(passwd);
 		}
@@ -1903,7 +1903,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
-	if (!err.is_empty()) {
+	if (!err.is_empty_string()) {
 		r_error = err;
 	}
 	return valid;
@@ -1936,11 +1936,11 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 
 	template_path = template_path.strip_edges();
 
-	if (template_path.is_empty()) {
+	if (template_path.is_empty_string()) {
 		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/64_bits") ? "64" : "32"));
 	}
 
-	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
+	if (!template_path.is_empty_string() && !FileAccess::exists(template_path)) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -1983,7 +1983,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 		for (int i = 0; i < so_files.size() && err == OK; i++) {
 			String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
 			String target_path;
-			if (so_files[i].target.is_empty()) {
+			if (so_files[i].target.is_empty_string()) {
 				target_path = p_path.get_base_dir().plus_file(src_path.get_file());
 			} else {
 				target_path = p_path.get_base_dir().plus_file(so_files[i].target).plus_file(src_path.get_file());

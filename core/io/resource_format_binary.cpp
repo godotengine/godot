@@ -752,7 +752,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			res = Ref<Resource>(r);
-			if (!path.is_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (!path.is_empty_string() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
 			}
 			r->set_scene_unique_id(id);
@@ -879,7 +879,7 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 			dep = external_resources[i].path;
 		}
 
-		if (p_add_types && !external_resources[i].type.is_empty()) {
+		if (p_add_types && !external_resources[i].type.is_empty_string()) {
 			dep += "::" + external_resources[i].type;
 		}
 
@@ -1071,7 +1071,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
-	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	String path = !p_original_path.is_empty_string() ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
 	loader.open(f);
@@ -1089,7 +1089,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 }
 
 void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type.is_empty()) {
+	if (p_type.is_empty_string()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
@@ -2027,7 +2027,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {
-			if (!r->get_scene_unique_id().is_empty()) {
+			if (!r->get_scene_unique_id().is_empty_string()) {
 				if (used_unique_ids.has(r->get_scene_unique_id())) {
 					r->set_scene_unique_id("");
 				} else {
@@ -2041,7 +2041,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	int res_index = 0;
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {
-			if (r->get_scene_unique_id().is_empty()) {
+			if (r->get_scene_unique_id().is_empty_string()) {
 				String new_id;
 
 				while (true) {

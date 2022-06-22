@@ -707,7 +707,7 @@ String OS_Windows::get_locale() const {
 		wl++;
 	}
 
-	if (!neutral.is_empty()) {
+	if (!neutral.is_empty_string()) {
 		return String(neutral).replace("-", "_");
 	}
 
@@ -867,7 +867,7 @@ String OS_Windows::get_data_path() const {
 
 String OS_Windows::get_cache_path() const {
 	static String cache_path_cache;
-	if (cache_path_cache.is_empty()) {
+	if (cache_path_cache.is_empty_string()) {
 		// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on Windows as well.
 		if (has_environment("XDG_CACHE_HOME")) {
 			if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
@@ -876,13 +876,13 @@ String OS_Windows::get_cache_path() const {
 				WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `%LOCALAPPDATA%\\cache`, `%TEMP%` or `get_config_path()` per the XDG Base Directory specification.");
 			}
 		}
-		if (cache_path_cache.is_empty() && has_environment("LOCALAPPDATA")) {
+		if (cache_path_cache.is_empty_string() && has_environment("LOCALAPPDATA")) {
 			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
 		}
-		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
+		if (cache_path_cache.is_empty_string() && has_environment("TEMP")) {
 			cache_path_cache = get_environment("TEMP").replace("\\", "/");
 		}
-		if (cache_path_cache.is_empty()) {
+		if (cache_path_cache.is_empty_string()) {
 			cache_path_cache = get_config_path();
 		}
 	}
@@ -934,11 +934,11 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 
 String OS_Windows::get_user_data_dir() const {
 	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
-	if (!appname.is_empty()) {
+	if (!appname.is_empty_string()) {
 		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
 		if (use_custom_dir) {
 			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
-			if (custom_dir.is_empty()) {
+			if (custom_dir.is_empty_string()) {
 				custom_dir = appname;
 			}
 			return get_data_path().plus_file(custom_dir).replace("\\", "/");

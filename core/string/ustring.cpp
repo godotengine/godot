@@ -286,7 +286,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 			base = base.substr(pos, base.length() - pos);
 		}
 	}
-	if (r_host.is_empty()) {
+	if (r_host.is_empty_string()) {
 		return ERR_INVALID_PARAMETER;
 	}
 	r_host = r_host.to_lower();
@@ -576,7 +576,7 @@ bool String::operator==(const char *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -615,7 +615,7 @@ bool String::operator==(const char32_t *p_str) const {
 	if (length() != len) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -637,7 +637,7 @@ bool String::operator==(const String &p_str) const {
 	if (length() != p_str.length()) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -662,7 +662,7 @@ bool String::operator==(const StrRange &p_str_range) const {
 	if (length() != len) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -736,20 +736,20 @@ bool String::operator>=(const String &p_str) const {
 }
 
 bool String::operator<(const char *p_str) const {
-	if (is_empty() && p_str[0] == 0) {
+	if (is_empty_string() && p_str[0] == 0) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 	return is_str_less(get_data(), p_str);
 }
 
 bool String::operator<(const wchar_t *p_str) const {
-	if (is_empty() && p_str[0] == 0) {
+	if (is_empty_string() && p_str[0] == 0) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -763,10 +763,10 @@ bool String::operator<(const wchar_t *p_str) const {
 }
 
 bool String::operator<(const char32_t *p_str) const {
-	if (is_empty() && p_str[0] == 0) {
+	if (is_empty_string() && p_str[0] == 0) {
 		return false;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return true;
 	}
 
@@ -778,13 +778,13 @@ bool String::operator<(const String &p_str) const {
 }
 
 signed char String::nocasecmp_to(const String &p_str) const {
-	if (is_empty() && p_str.is_empty()) {
+	if (is_empty_string() && p_str.is_empty_string()) {
 		return 0;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return -1;
 	}
-	if (p_str.is_empty()) {
+	if (p_str.is_empty_string()) {
 		return 1;
 	}
 
@@ -810,13 +810,13 @@ signed char String::nocasecmp_to(const String &p_str) const {
 }
 
 signed char String::casecmp_to(const String &p_str) const {
-	if (is_empty() && p_str.is_empty()) {
+	if (is_empty_string() && p_str.is_empty_string()) {
 		return 0;
 	}
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return -1;
 	}
-	if (p_str.is_empty()) {
+	if (p_str.is_empty_string()) {
 		return 1;
 	}
 
@@ -1002,10 +1002,10 @@ String String::get_with_code_lines() const {
 }
 
 int String::get_slice_count(String p_splitter) const {
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return 0;
 	}
-	if (p_splitter.is_empty()) {
+	if (p_splitter.is_empty_string()) {
 		return 0;
 	}
 
@@ -1021,7 +1021,7 @@ int String::get_slice_count(String p_splitter) const {
 }
 
 String String::get_slice(String p_splitter, int p_slice) const {
-	if (is_empty() || p_splitter.is_empty()) {
+	if (is_empty_string() || p_splitter.is_empty_string()) {
 		return "";
 	}
 
@@ -1061,7 +1061,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 }
 
 String String::get_slicec(char32_t p_splitter, int p_slice) const {
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return String();
 	}
 
@@ -2500,7 +2500,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 }
 
 double String::to_float() const {
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return 0;
 	}
 	return built_in_strtod<char32_t>(get_data());
@@ -2682,7 +2682,7 @@ String String::substr(int p_from, int p_chars) const {
 		p_chars = length() - p_from;
 	}
 
-	if (is_empty() || p_from < 0 || p_from >= length() || p_chars <= 0) {
+	if (is_empty_string() || p_from < 0 || p_from >= length() || p_chars <= 0) {
 		return "";
 	}
 
@@ -3069,7 +3069,7 @@ bool String::is_quoted() const {
 }
 
 int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
-	if (p_string.is_empty()) {
+	if (p_string.is_empty_string()) {
 		return 0;
 	}
 	int len = length();
@@ -3663,7 +3663,7 @@ static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char
 }
 
 String String::validate_identifier() const {
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return "_"; // Empty string is not a valid identifier;
 	}
 
@@ -4209,7 +4209,7 @@ bool String::is_valid_filename() const {
 		return false;
 	}
 
-	if (stripped.is_empty()) {
+	if (stripped.is_empty_string()) {
 		return false;
 	}
 
@@ -4221,7 +4221,7 @@ bool String::is_valid_ip_address() const {
 		Vector<String> ip = split(":");
 		for (int i = 0; i < ip.size(); i++) {
 			String n = ip[i];
-			if (n.is_empty()) {
+			if (n.is_empty_string()) {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
@@ -4344,7 +4344,7 @@ String String::get_extension() const {
 }
 
 String String::plus_file(const String &p_file) const {
-	if (is_empty()) {
+	if (is_empty_string()) {
 		return p_file;
 	}
 	if (operator[](length() - 1) == '/' || (p_file.size() > 0 && p_file.operator[](0) == '/')) {
@@ -4731,7 +4731,7 @@ String String::unquote() const {
 
 Vector<uint8_t> String::to_ascii_buffer() const {
 	const String *s = this;
-	if (s->is_empty()) {
+	if (s->is_empty_string()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->ascii();
@@ -4747,7 +4747,7 @@ Vector<uint8_t> String::to_ascii_buffer() const {
 
 Vector<uint8_t> String::to_utf8_buffer() const {
 	const String *s = this;
-	if (s->is_empty()) {
+	if (s->is_empty_string()) {
 		return Vector<uint8_t>();
 	}
 	CharString charstr = s->utf8();
@@ -4763,7 +4763,7 @@ Vector<uint8_t> String::to_utf8_buffer() const {
 
 Vector<uint8_t> String::to_utf16_buffer() const {
 	const String *s = this;
-	if (s->is_empty()) {
+	if (s->is_empty_string()) {
 		return Vector<uint8_t>();
 	}
 	Char16String charstr = s->utf16();
@@ -4779,7 +4779,7 @@ Vector<uint8_t> String::to_utf16_buffer() const {
 
 Vector<uint8_t> String::to_utf32_buffer() const {
 	const String *s = this;
-	if (s->is_empty()) {
+	if (s->is_empty_string()) {
 		return Vector<uint8_t>();
 	}
 
@@ -4891,7 +4891,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr.is_empty() || rtr == p_text) {
+		if (rtr.is_empty_string() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
 		} else {
 			return rtr;
@@ -4918,7 +4918,7 @@ String RTR(const String &p_text, const String &p_context) {
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
+		if (rtr.is_empty_string() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 		} else {
 			return rtr;

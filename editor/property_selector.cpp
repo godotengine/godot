@@ -181,7 +181,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!search_box->get_text().is_empty() && E.name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty_string() && E.name.findn(search_text) == -1) {
 				continue;
 			}
 
@@ -194,7 +194,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, E.name);
 			item->set_icon(0, type_icons[E.type]);
 
-			if (!found && !search_box->get_text().is_empty() && E.name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty_string() && E.name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -272,7 +272,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!search_box->get_text().is_empty() && name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty_string() && name.findn(search_text) == -1) {
 				continue;
 			}
 
@@ -321,7 +321,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && !search_box->get_text().is_empty() && name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty_string() && name.findn(search_text) != -1) {
 				item->select(0);
 				found = true;
 			}
@@ -356,7 +356,7 @@ void PropertySelector::_item_selected() {
 	String class_type;
 	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
-	} else if (!base_type.is_empty()) {
+	} else if (!base_type.is_empty_string()) {
 		class_type = base_type;
 	} else if (instance) {
 		class_type = instance->get_class();
@@ -365,7 +365,7 @@ void PropertySelector::_item_selected() {
 	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
 	if (properties) {
-		while (!class_type.is_empty()) {
+		while (!class_type.is_empty_string()) {
 			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->value.properties.size(); i++) {
@@ -376,7 +376,7 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				break;
 			}
 
@@ -384,7 +384,7 @@ void PropertySelector::_item_selected() {
 			class_type = ClassDB::get_parent_class(class_type);
 		}
 	} else {
-		while (!class_type.is_empty()) {
+		while (!class_type.is_empty_string()) {
 			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
 				for (int i = 0; i < E->value.methods.size(); i++) {
@@ -395,7 +395,7 @@ void PropertySelector::_item_selected() {
 				}
 			}
 
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				break;
 			}
 
@@ -404,7 +404,7 @@ void PropertySelector::_item_selected() {
 		}
 	}
 
-	if (!text.is_empty()) {
+	if (!text.is_empty_string()) {
 		// Display both property name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
 		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));

@@ -79,7 +79,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 
 void EditorQuickOpen::_update_search() {
 	const String search_text = search_box->get_text();
-	const bool empty_search = search_text.is_empty();
+	const bool empty_search = search_text.is_empty_string();
 
 	// Filter possible candidates.
 	Vector<Entry> entries;

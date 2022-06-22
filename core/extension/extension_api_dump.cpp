@@ -40,7 +40,7 @@
 
 static String get_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
-		if (p_info.hint_string.is_empty()) {
+		if (p_info.hint_string.is_empty_string()) {
 			return "void*";
 		} else {
 			return p_info.hint_string + "*";
@@ -340,7 +340,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			int64_t value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
-			if (!enum_name.is_empty()) {
+			if (!enum_name.is_empty_string()) {
 				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
 			} else {
 				Dictionary d;

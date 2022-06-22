@@ -72,7 +72,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		r.last_used = E.value.last_used;
 
 		if (search_text.is_subsequence_ofn(r.display_name)) {
-			if (!search_text.is_empty()) {
+			if (!search_text.is_empty_string()) {
 				r.score = _score_path(search_text, r.display_name.to_lower());
 			}
 
@@ -91,7 +91,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		return;
 	}
 
-	if (!search_text.is_empty()) {
+	if (!search_text.is_empty_string()) {
 		SortArray<CommandEntry, CommandEntryComparator> sorter;
 		sorter.sort(entries.ptrw(), entries.size());
 	} else {
@@ -163,7 +163,7 @@ void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
 void EditorCommandPalette::_confirmed() {
 	TreeItem *selected_option = search_options->get_selected();
 	String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
-	if (!command_key.is_empty()) {
+	if (!command_key.is_empty_string()) {
 		hide();
 		execute_command(command_key);
 	}
@@ -323,7 +323,7 @@ EditorCommandPalette::EditorCommandPalette() {
 }
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode, String p_command_name) {
-	if (p_command_name.is_empty()) {
+	if (p_command_name.is_empty_string()) {
 		p_command_name = p_name;
 	}
 

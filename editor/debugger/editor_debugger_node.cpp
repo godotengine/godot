@@ -143,7 +143,7 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
 	String file = p_debugger->get_stack_script_file();
-	if (file.is_empty()) {
+	if (file.is_empty_string()) {
 		return;
 	}
 	if (file.is_resource_file()) {

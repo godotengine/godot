@@ -194,7 +194,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 void AnimationPlayerEditor::_play_pressed() {
 	String current = _get_current();
 
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
@@ -208,7 +208,7 @@ void AnimationPlayerEditor::_play_pressed() {
 void AnimationPlayerEditor::_play_from_pressed() {
 	String current = _get_current();
 
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		float time = player->get_current_animation_position();
 
 		if (current == player->get_assigned_animation() && player->is_playing()) {
@@ -232,7 +232,7 @@ String AnimationPlayerEditor::_get_current() const {
 }
 void AnimationPlayerEditor::_play_bw_pressed() {
 	String current = _get_current();
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
@@ -246,7 +246,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 void AnimationPlayerEditor::_play_bw_from_pressed() {
 	String current = _get_current();
 
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		float time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
@@ -278,7 +278,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	// ui-wise is that it should play/blend the next one if currently playing
 	String current = _get_current();
 
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		player->set_assigned_animation(current);
 
 		Ref<Animation> anim = player->get_animation(current);
@@ -726,7 +726,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 
 			if (p_state.has("animation")) {
 				String anim = p_state["animation"];
-				if (!anim.is_empty() && player->has_animation(anim)) {
+				if (!anim.is_empty_string() && player->has_animation(anim)) {
 					_select_anim_by_name(anim);
 					_animation_edit();
 				}
@@ -1083,7 +1083,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 	updating = true;
 	String current = player->get_assigned_animation();
-	if (current.is_empty() || !player->has_animation(current)) {
+	if (current.is_empty_string() || !player->has_animation(current)) {
 		updating = false;
 		current = "";
 		return;
@@ -1162,7 +1162,7 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 	String current = _get_current();
 
 	Ref<Animation> anim;
-	if (!current.is_empty()) {
+	if (!current.is_empty_string()) {
 		anim = player->get_animation(current);
 	}
 

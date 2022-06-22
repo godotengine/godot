@@ -1633,7 +1633,7 @@ bool AnimationPlayer::is_playing() const {
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
-	if (p_anim == "[stop]" || p_anim.is_empty()) {
+	if (p_anim == "[stop]" || p_anim.is_empty_string()) {
 		stop();
 	} else if (!is_playing() || playback.assigned != p_anim) {
 		play(p_anim);

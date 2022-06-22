@@ -601,7 +601,7 @@ void DynamicFontImportSettings::_variations_validate() {
 			}
 		}
 	}
-	if (warn.is_empty()) {
+	if (warn.is_empty_string()) {
 		label_warn->set_text("");
 		label_warn->hide();
 	} else {
@@ -972,7 +972,7 @@ void DynamicFontImportSettings::_re_import() {
 		String name = vars_item->get_text(0);
 		variation += ("name=" + name);
 		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
-			if (!variation.is_empty()) {
+			if (!variation.is_empty_string()) {
 				variation += ",";
 			}
 			variation += (String(E.key) + "=" + String(E.value));
@@ -1072,7 +1072,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 			sample += sample_base[i];
 		}
 	}
-	if (sample.is_empty()) {
+	if (sample.is_empty_string()) {
 		sample = dfont_prev->get_supported_chars().substr(0, 6);
 	}
 	font_preview_label->set_text(sample);
@@ -1623,7 +1623,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	glyph_tree->connect("item_selected", callable_mp(this, &DynamicFontImportSettings::_range_selected));
 	glyph_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	glyph_root = glyph_tree->create_item();
-	for (int i = 0; !unicode_ranges[i].name.is_empty(); i++) {
+	for (int i = 0; !unicode_ranges[i].name.is_empty_string(); i++) {
 		_add_glyph_range_item(unicode_ranges[i].start, unicode_ranges[i].end, unicode_ranges[i].name);
 	}
 

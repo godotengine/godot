@@ -244,7 +244,7 @@ void EditorPropertyTextEnum::update_property() {
 		option_button->clear();
 
 		// Manually entered value.
-		if (default_option < 0 && !current_value.is_empty()) {
+		if (default_option < 0 && !current_value.is_empty_string()) {
 			option_button->add_item(current_value, options.size() + 1001);
 			option_button->select(0);
 
@@ -441,7 +441,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_file_mode(save_mode ? EditorFileDialog::FILE_MODE_SAVE_FILE : EditorFileDialog::FILE_MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
-			if (!e.is_empty()) {
+			if (!e.is_empty_string()) {
 				dialog->add_filter(extensions[i].strip_edges());
 			}
 		}
@@ -760,7 +760,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
 		String option = p_options[i].strip_edges();
-		if (!option.is_empty()) {
+		if (!option.is_empty_string()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
@@ -1144,7 +1144,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = ProjectSettings::get_singleton()->get(basename + vformat("/layer_%d", i + 1));
 		}
 
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			name = vformat(TTR("Layer %d"), i + 1);
 		}
 
@@ -1288,7 +1288,7 @@ void EditorPropertyObjectID::_edit_pressed() {
 
 void EditorPropertyObjectID::update_property() {
 	String type = base_type;
-	if (type.is_empty()) {
+	if (type.is_empty_string()) {
 		type = "Object";
 	}
 
@@ -3196,7 +3196,7 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 };
 
 void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_edit) {
-	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
+	if (p_resource->is_built_in() && !p_resource->get_path().is_empty_string()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
@@ -3620,7 +3620,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		}
 	}
 
-	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
+	if ((hint.radians || degrees) && hint.suffix.is_empty_string()) {
 		hint.suffix = U"\u00B0";
 	}
 
@@ -3911,10 +3911,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && !p_hint_text.is_empty_string()) {
 				editor->setup(p_hint_text, Vector<StringName>(), (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty_string()) {
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));

@@ -299,19 +299,19 @@ bool TilesEditorPlugin::SourceNameComparator::operator()(const int &p_a, const i
 	{
 		TileSetSource *source = *tile_set->get_source(p_a);
 
-		if (!source->get_name().is_empty()) {
+		if (!source->get_name().is_empty_string()) {
 			name_a = source->get_name();
 		}
 
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
 			Ref<Texture2D> texture = atlas_source->get_texture();
-			if (name_a.is_empty() && texture.is_valid()) {
+			if (name_a.is_empty_string() && texture.is_valid()) {
 				name_a = texture->get_path().get_file();
 			}
 		}
 
-		if (name_a.is_empty()) {
+		if (name_a.is_empty_string()) {
 			name_a = itos(p_a);
 		}
 	}
@@ -319,19 +319,19 @@ bool TilesEditorPlugin::SourceNameComparator::operator()(const int &p_a, const i
 	{
 		TileSetSource *source = *tile_set->get_source(p_b);
 
-		if (!source->get_name().is_empty()) {
+		if (!source->get_name().is_empty_string()) {
 			name_b = source->get_name();
 		}
 
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
 		if (atlas_source) {
 			Ref<Texture2D> texture = atlas_source->get_texture();
-			if (name_b.is_empty() && texture.is_valid()) {
+			if (name_b.is_empty_string() && texture.is_valid()) {
 				name_b = texture->get_path().get_file();
 			}
 		}
 
-		if (name_b.is_empty()) {
+		if (name_b.is_empty_string()) {
 			name_b = itos(p_b);
 		}
 	}

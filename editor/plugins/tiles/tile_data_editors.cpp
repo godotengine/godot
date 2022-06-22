@@ -1122,7 +1122,7 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 }
 
 void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p_property, String p_label, Variant p_default_value) {
-	ERR_FAIL_COND_MSG(!property.is_empty(), "Cannot setup TileDataDefaultEditor twice");
+	ERR_FAIL_COND_MSG(!property.is_empty_string(), "Cannot setup TileDataDefaultEditor twice");
 	property = p_property;
 
 	// Update everything.
@@ -1146,7 +1146,7 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 	// Create and setup the property editor.
 	property_editor = EditorInspectorDefaultPlugin::get_editor_for_property(dummy_object, p_type, p_property, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 	property_editor->set_object_and_property(dummy_object, p_property);
-	if (p_label.is_empty()) {
+	if (p_label.is_empty_string()) {
 		property_editor->set_label(EditorPropertyNameProcessor::get_singleton()->process_name(p_property, EditorPropertyNameProcessor::get_default_inspector_style()));
 	} else {
 		property_editor->set_label(p_label);
@@ -1605,7 +1605,7 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 		options.push_back(String(TTR("No terrain")) + String(":-1"));
 		for (int i = 0; i < tile_set->get_terrains_count(terrain_set); i++) {
 			String name = tile_set->get_terrain_name(terrain_set, i);
-			if (name.is_empty()) {
+			if (name.is_empty_string()) {
 				options.push_back(vformat("Terrain %d", i));
 			} else {
 				options.push_back(name);

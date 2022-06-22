@@ -360,7 +360,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 	params.load(p_params);
 	List<const lsp::DocumentSymbol *> symbols;
 	Array arr = this->find_symbols(params, symbols);
-	if (arr.is_empty() && !symbols.is_empty() && !symbols.front()->get()->native_class.is_empty()) { // Find a native symbol
+	if (arr.is_empty() && !symbols.is_empty() && !symbols.front()->get()->native_class.is_empty_string()) { // Find a native symbol
 		const lsp::DocumentSymbol *symbol = symbols.front()->get();
 		if (GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
 			String id;
@@ -449,7 +449,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 		GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_related_symbols(p_location, list);
 		for (const lsp::DocumentSymbol *&E : list) {
 			if (const lsp::DocumentSymbol *s = E) {
-				if (!s->uri.is_empty()) {
+				if (!s->uri.is_empty_string()) {
 					lsp::Location location;
 					location.uri = s->uri;
 					location.range = s->range;

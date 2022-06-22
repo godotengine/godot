@@ -60,7 +60,7 @@ static String _get_parent_class_of_script(String p_path) {
 
 	// Inherits from a script that has class_name.
 	class_name = script->get_language()->get_global_class_name(base->get_path());
-	if (!class_name.is_empty()) {
+	if (!class_name.is_empty_string()) {
 		return class_name;
 	}
 
@@ -108,7 +108,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-			if (!last_language.is_empty()) {
+			if (!last_language.is_empty_string()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
 					if (language_menu->get_item_text(i) == last_language) {
 						language_menu->select(i);
@@ -166,7 +166,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
 
-	if (!p_base_path.is_empty()) {
+	if (!p_base_path.is_empty_string()) {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 		current_language = language_menu->get_selected();
@@ -229,10 +229,10 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
 	String p = p_path.strip_edges();
 
-	if (p.is_empty()) {
+	if (p.is_empty_string()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename().is_empty()) {
+	if (p.get_file().get_basename().is_empty_string()) {
 		return TTR("Filename is empty.");
 	}
 
@@ -294,7 +294,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	// Let ScriptLanguage do custom validation.
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
-	if (!path_error.is_empty()) {
+	if (!path_error.is_empty_string()) {
 		return path_error;
 	}
 
@@ -344,7 +344,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 	String template_info = String::utf8("•  ");
 	template_info += TTR("Template:");
 	template_info += " " + sinfo.name;
-	if (!sinfo.description.is_empty()) {
+	if (!sinfo.description.is_empty_string()) {
 		template_info += " - " + sinfo.description;
 	}
 	template_info_label->set_text(template_info);
@@ -422,7 +422,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	String selected_ext = "." + language->get_extension();
 	String path = file_path->get_text();
 	String extension = "";
-	if (!path.is_empty()) {
+	if (!path.is_empty_string()) {
 		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
@@ -540,7 +540,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	is_new_script_created = true;
 
 	String path_error = _validate_path(p_path, false);
-	if (!path_error.is_empty()) {
+	if (!path_error.is_empty_string()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
@@ -775,14 +775,14 @@ void ScriptCreateDialog::_update_dialog() {
 	// Show templates list if needed.
 	if (is_using_templates) {
 		// Check if at least one suitable template has been found.
-		if (template_menu->get_item_count() == 0 && template_inactive_message.is_empty()) {
+		if (template_menu->get_item_count() == 0 && template_inactive_message.is_empty_string()) {
 			template_inactive_message = TTR("No suitable template.");
 		}
 	} else {
 		template_inactive_message = TTR("Empty");
 	}
 
-	if (!template_inactive_message.is_empty()) {
+	if (!template_inactive_message.is_empty_string()) {
 		template_menu->set_disabled(true);
 		template_menu->clear();
 		template_menu->add_item(template_inactive_message);

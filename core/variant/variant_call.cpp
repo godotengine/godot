@@ -1422,7 +1422,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, md5_buffer, sarray(), varray());
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
-	bind_method(String, is_empty, sarray(), varray());
+	bind_method(String, is_empty_string, sarray(), varray());
 	bind_methodv(String, contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
 
 	bind_method(String, is_absolute_path, sarray(), varray());

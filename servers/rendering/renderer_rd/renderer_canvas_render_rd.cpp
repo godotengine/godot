@@ -1978,7 +1978,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	uses_sdf = false;
 	uses_time = false;
 
-	if (code.is_empty()) {
+	if (code.is_empty_string()) {
 		return; //just invalid, but no error
 	}
 

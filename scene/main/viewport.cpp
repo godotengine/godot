@@ -1148,7 +1148,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		}
 
 		// If we found a tooltip, we stop here.
-		if (!tooltip.is_empty()) {
+		if (!tooltip.is_empty_string()) {
 			break;
 		}
 
@@ -1182,7 +1182,7 @@ void Viewport::_gui_show_tooltip() {
 			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
 			&tooltip_owner);
 	tooltip_text = tooltip_text.strip_edges();
-	if (tooltip_text.is_empty()) {
+	if (tooltip_text.is_empty_string()) {
 		return; // Nothing to show.
 	}
 

@@ -104,7 +104,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				f->get_buffer(data.ptrw(), str_len);
 				data.write[str_len] = 0;
 
-				if (msg_id.is_empty()) {
+				if (msg_id.is_empty_string()) {
 					config = String::utf8((const char *)data.ptr(), str_len);
 					// Record plural rule.
 					int p_start = config.find("Plural-Forms");
@@ -117,7 +117,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					Vector<String> plural_msg;
 					for (uint32_t j = 0; j < str_len + 1; j++) {
 						if (data[j] == 0x00) {
-							if (msg_id_plural.is_empty()) {
+							if (msg_id_plural.is_empty_string()) {
 								translation->add_message(msg_id, String::utf8((const char *)(data.ptr() + str_start), j - str_start), msg_context);
 							} else {
 								plural_msg.push_back(String::utf8((const char *)(data.ptr() + str_start), j - str_start));
@@ -168,7 +168,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			is_eof = f->eof_reached();
 
 			// If we reached last line and it's not a content line, break, otherwise let processing that last loop
-			if (is_eof && l.is_empty()) {
+			if (is_eof && l.is_empty_string()) {
 				if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
 					ERR_FAIL_V_MSG(Ref<Resource>(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
 				} else {
@@ -181,7 +181,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 				// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 				// and set "entered_context" to true to prevent adding twice.
-				if (!skip_this && !msg_id.is_empty()) {
+				if (!skip_this && !msg_id.is_empty_string()) {
 					if (status == STATUS_READING_STRING) {
 						translation->add_message(msg_id, msg_str, msg_context);
 					} else if (status == STATUS_READING_PLURAL) {
@@ -211,7 +211,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			} else if (l.begins_with("msgid")) {
 				ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, Ref<Resource>(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
 
-				if (!msg_id.is_empty()) {
+				if (!msg_id.is_empty_string()) {
 					if (!skip_this && !entered_context) {
 						if (status == STATUS_READING_STRING) {
 							translation->add_message(msg_id, msg_str, msg_context);
@@ -220,7 +220,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 							translation->add_plural_message(msg_id, msgs_plural, msg_context);
 						}
 					}
-				} else if (config.is_empty()) {
+				} else if (config.is_empty_string()) {
 					config = msg_str;
 					// Record plural rule.
 					int p_start = config.find("Plural-Forms");
@@ -254,7 +254,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				status = STATUS_READING_STRING;
 			}
 
-			if (l.is_empty() || l.begins_with("#")) {
+			if (l.is_empty_string() || l.begins_with("#")) {
 				if (l.contains("fuzzy")) {
 					skip_next = true;
 				}
@@ -305,22 +305,22 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 		// Add the last set of data from last iteration.
 		if (status == STATUS_READING_STRING) {
-			if (!msg_id.is_empty()) {
+			if (!msg_id.is_empty_string()) {
 				if (!skip_this) {
 					translation->add_message(msg_id, msg_str, msg_context);
 				}
-			} else if (config.is_empty()) {
+			} else if (config.is_empty_string()) {
 				config = msg_str;
 			}
 		} else if (status == STATUS_READING_PLURAL) {
-			if (!skip_this && !msg_id.is_empty()) {
+			if (!skip_this && !msg_id.is_empty_string()) {
 				ERR_FAIL_COND_V_MSG(plural_index != plural_forms - 1, Ref<Resource>(), "Number of 'msgstr[]' doesn't match with number of plural forms: " + path + ":" + itos(line));
 				translation->add_plural_message(msg_id, msgs_plural, msg_context);
 			}
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(config.is_empty(), Ref<Resource>(), "No config found in file: " + path + ".");
+	ERR_FAIL_COND_V_MSG(config.is_empty_string(), Ref<Resource>(), "No config found in file: " + path + ".");
 
 	Vector<String> configs = config.split("\n");
 	for (int i = 0; i < configs.size(); i++) {

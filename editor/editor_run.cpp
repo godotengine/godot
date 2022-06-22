@@ -47,7 +47,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	List<String> args;
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-	if (!resource_path.is_empty()) {
+	if (!resource_path.is_empty_string()) {
 		args.push_back("--path");
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
@@ -203,14 +203,14 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back("--skip-breakpoints");
 	}
 
-	if (!p_scene.is_empty()) {
+	if (!p_scene.is_empty_string()) {
 		args.push_back(p_scene);
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 
 	const String raw_custom_args = ProjectSettings::get_singleton()->get("editor/run/main_run_args");
-	if (!raw_custom_args.is_empty()) {
+	if (!raw_custom_args.is_empty_string()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command
 		// to run it. For instance, this can be used on Linux to force a running project
@@ -267,7 +267,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	}
 
 	status = STATUS_PLAY;
-	if (!p_scene.is_empty()) {
+	if (!p_scene.is_empty_string()) {
 		running_scene = p_scene;
 	}
 

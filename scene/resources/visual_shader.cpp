@@ -594,7 +594,7 @@ void VisualShaderNodeCustom::_set_input_port_default_value(int p_port, const Var
 }
 
 bool VisualShaderNodeCustom::_is_valid_code(const String &p_code) const {
-	if (p_code.is_empty() || p_code == "null") {
+	if (p_code.is_empty_string() || p_code == "null") {
 		return false;
 	}
 	return true;
@@ -1225,7 +1225,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 String VisualShader::validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const {
 	String name = p_port_name;
 
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		return String();
 	}
 
@@ -1233,7 +1233,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		name = name.substr(1, name.length() - 1);
 	}
 
-	if (!name.is_empty()) {
+	if (!name.is_empty_string()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1277,7 +1277,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 	while (name.length() && !is_ascii_char(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
-	if (!name.is_empty()) {
+	if (!name.is_empty_string()) {
 		String valid_name;
 
 		for (int i = 0; i < name.length(); i++) {
@@ -1291,7 +1291,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		name = valid_name;
 	}
 
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		name = p_uniform->get_caption();
 	}
 
@@ -1321,7 +1321,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 			while (name.length() && is_digit(name[name.length() - 1])) {
 				name = name.substr(0, name.length() - 1);
 			}
-			ERR_FAIL_COND_V(name.is_empty(), String());
+			ERR_FAIL_COND_V(name.is_empty_string(), String());
 			name += itos(attempt);
 		} else {
 			break;
@@ -1986,7 +1986,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 	}
 
 	node_code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
-	if (!node_code.is_empty()) {
+	if (!node_code.is_empty_string()) {
 		code += node_name;
 		code += node_code;
 	}
@@ -2063,7 +2063,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *global_code, StringBui
 		}
 	}
 
-	if (!node_code.is_empty()) {
+	if (!node_code.is_empty_string()) {
 		code += "\n";
 	}
 
@@ -2117,7 +2117,7 @@ void VisualShader::_update_shader() const {
 
 			if (!info.options.is_empty()) {
 				if (modes.has(temp) && modes[temp] < info.options.size()) {
-					if (!render_mode.is_empty()) {
+					if (!render_mode.is_empty_string()) {
 						render_mode += ", ";
 					}
 					render_mode += temp + "_" + info.options[modes[temp]];
@@ -2129,14 +2129,14 @@ void VisualShader::_update_shader() const {
 
 		// Add flags afterward.
 		for (int i = 0; i < flag_names.size(); i++) {
-			if (!render_mode.is_empty()) {
+			if (!render_mode.is_empty_string()) {
 				render_mode += ", ";
 			}
 			render_mode += flag_names[i];
 		}
 	}
 
-	if (!render_mode.is_empty()) {
+	if (!render_mode.is_empty_string()) {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
@@ -2352,11 +2352,11 @@ void VisualShader::_update_shader() const {
 	String global_compute_code;
 
 	if (shader_mode == Shader::MODE_PARTICLES) {
-		bool has_start = !code_map[TYPE_START].is_empty();
-		bool has_start_custom = !code_map[TYPE_START_CUSTOM].is_empty();
-		bool has_process = !code_map[TYPE_PROCESS].is_empty();
-		bool has_process_custom = !code_map[TYPE_PROCESS_CUSTOM].is_empty();
-		bool has_collide = !code_map[TYPE_COLLIDE].is_empty();
+		bool has_start = !code_map[TYPE_START].is_empty_string();
+		bool has_start_custom = !code_map[TYPE_START_CUSTOM].is_empty_string();
+		bool has_process = !code_map[TYPE_PROCESS].is_empty_string();
+		bool has_process_custom = !code_map[TYPE_PROCESS_CUSTOM].is_empty_string();
+		bool has_collide = !code_map[TYPE_COLLIDE].is_empty_string();
 
 		code += "void start() {\n";
 		if (has_start || has_start_custom) {
@@ -2491,7 +2491,7 @@ void VisualShader::_update_shader() const {
 			continue;
 		}
 		String func_code = global_code_per_func[Type(i)].as_string();
-		if (empty_funcs.has(Type(i)) && !func_code.is_empty()) {
+		if (empty_funcs.has(Type(i)) && !func_code.is_empty_string()) {
 			func_code = vformat("%s%s%s", String("\nvoid " + String(func_name[i]) + "() {\n"), func_code, "}\n");
 		}
 		tcode = tcode.insert(insertion_pos[i], func_code);
@@ -3003,7 +3003,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code.is_empty()) {
+		if (code.is_empty_string()) {
 			switch (get_output_port_type(0)) {
 				case PORT_TYPE_SCALAR: {
 					code = "	" + p_output_vars[0] + " = 0.0;\n";
@@ -3043,7 +3043,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 			idx++;
 		}
 
-		if (code.is_empty()) {
+		if (code.is_empty_string()) {
 			code = "	" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
 		}
 
@@ -3146,7 +3146,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 
 		while (ports[idx].mode != Shader::MODE_MAX) {
 			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-				if (!port_list.is_empty()) {
+				if (!port_list.is_empty_string()) {
 					port_list += ",";
 				}
 				port_list += ports[idx].name;
@@ -3154,7 +3154,7 @@ void VisualShaderNodeInput::_validate_property(PropertyInfo &property) const {
 			idx++;
 		}
 
-		if (port_list.is_empty()) {
+		if (port_list.is_empty_string()) {
 			port_list = RTR("None");
 		}
 		property.hint_string = port_list;
@@ -3618,7 +3618,7 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 	String code;
 	while (ports[idx].mode != Shader::MODE_MAX) {
 		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-			if (!p_input_vars[count].is_empty()) {
+			if (!p_input_vars[count].is_empty_string()) {
 				String s = ports[idx].string;
 				if (s.contains(":")) {
 					code += "	" + s.get_slicec(':', 0) + " = " + p_input_vars[count] + "." + s.get_slicec(':', 1) + ";\n";

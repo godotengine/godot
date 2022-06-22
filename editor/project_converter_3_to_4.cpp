@@ -2362,7 +2362,7 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 	Vector<String> clean_parts;
 	for (String &part : parts) {
 		part = part.strip_edges();
-		if (!part.is_empty()) {
+		if (!part.is_empty_string()) {
 			clean_parts.append(part);
 		}
 	}
@@ -2417,7 +2417,7 @@ String ProjectConverter3To4::get_starting_space(const String &line) const {
 	String empty_space;
 	int current_character = 0;
 
-	if (line.is_empty()) {
+	if (line.is_empty_string()) {
 		return empty_space;
 	}
 

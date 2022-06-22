@@ -73,7 +73,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 	} else {
 		if (!values.has(p_section)) {
 			// Insert section-less keys at the beginning.
-			values.insert(p_section, HashMap<String, Variant>(), p_section.is_empty());
+			values.insert(p_section, HashMap<String, Variant>(), p_section.is_empty_string());
 		}
 
 		values[p_section][p_key] = p_value;
@@ -184,7 +184,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 		} else {
 			file->store_string("\n");
 		}
-		if (!E.key.is_empty()) {
+		if (!E.key.is_empty_string()) {
 			file->store_string("[" + E.key + "]\n\n");
 		}
 
@@ -282,9 +282,9 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 			return err;
 		}
 
-		if (!assign.is_empty()) {
+		if (!assign.is_empty_string()) {
 			set_value(section, assign, value);
-		} else if (!next_tag.name.is_empty()) {
+		} else if (!next_tag.name.is_empty_string()) {
 			section = next_tag.name;
 		}
 	}

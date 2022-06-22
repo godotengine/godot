@@ -144,7 +144,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_native_symbol(const String &p_
 		if (HashMap<StringName, lsp::DocumentSymbol>::ConstIterator E = native_symbols.find(class_name)) {
 			const lsp::DocumentSymbol &class_symbol = E->value;
 
-			if (p_member.is_empty()) {
+			if (p_member.is_empty_string()) {
 				return &class_symbol;
 			} else {
 				for (int i = 0; i < class_symbol.children.size(); i++) {
@@ -172,7 +172,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_script_symbol(const String &p_
 const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier) {
 	for (int i = 0; i < p_parent->children.size(); ++i) {
 		const lsp::DocumentSymbol *parameter_symbol = &p_parent->children[i];
-		if (!parameter_symbol->detail.is_empty() && parameter_symbol->name == symbol_identifier) {
+		if (!parameter_symbol->detail.is_empty_string() && parameter_symbol->name == symbol_identifier) {
 			return parameter_symbol;
 		}
 	}
@@ -189,7 +189,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScr
 
 			for (int l = 0; l < function_symbol->children.size(); ++l) {
 				const lsp::DocumentSymbol *local = &function_symbol->children[l];
-				if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
+				if (!local->detail.is_empty_string() && local->name == p_symbol_identifier) {
 					return local;
 				}
 			}
@@ -264,7 +264,7 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 	String query = p_params["query"];
 	Array arr;
-	if (!query.is_empty()) {
+	if (!query.is_empty_string()) {
 		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
 			Vector<lsp::DocumentedSymbolInformation> script_symbols;
 			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
@@ -294,7 +294,7 @@ Error GDScriptWorkspace::initialize() {
 		class_symbol.native_class = class_name;
 		class_symbol.kind = lsp::SymbolKind::Class;
 		class_symbol.detail = String("<Native> class ") + class_name;
-		if (!class_data.inherits.is_empty()) {
+		if (!class_data.inherits.is_empty_string()) {
 			class_symbol.detail += " extends " + class_data.inherits;
 		}
 		class_symbol.documentation = class_data.brief_description + "\n" + class_data.description;
@@ -366,7 +366,7 @@ Error GDScriptWorkspace::initialize() {
 				symbol_arg.kind = lsp::SymbolKind::Variable;
 				symbol_arg.detail = arg.type;
 
-				if (!arg_default_value_started && !arg.default_value.is_empty()) {
+				if (!arg_default_value_started && !arg.default_value.is_empty_string()) {
 					arg_default_value_started = true;
 				}
 				String arg_str = arg.name + ": " + arg.type;
@@ -381,11 +381,11 @@ Error GDScriptWorkspace::initialize() {
 				symbol.children.push_back(symbol_arg);
 			}
 			if (data.qualifiers.contains("vararg")) {
-				params += params.is_empty() ? "..." : ", ...";
+				params += params.is_empty_string() ? "..." : ", ...";
 			}
 
 			String return_type = data.return_type;
-			if (return_type.is_empty()) {
+			if (return_type.is_empty_string()) {
 				return_type = "void";
 			}
 			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
@@ -621,13 +621,13 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 		}
 
 		lsp::Position pos = p_doc_pos.position;
-		if (symbol_identifier.is_empty()) {
+		if (symbol_identifier.is_empty_string()) {
 			Vector2i offset;
 			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
 			pos.character += offset.y;
 		}
 
-		if (!symbol_identifier.is_empty()) {
+		if (!symbol_identifier.is_empty_string()) {
 			if (ScriptServer::is_global_class(symbol_identifier)) {
 				String class_path = ScriptServer::get_global_class_path(symbol_identifier);
 				symbol = get_script_symbol(class_path);
@@ -642,7 +642,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						String target_script_path = path;
 						if (!ret.script.is_null()) {
 							target_script_path = ret.script->get_path();
-						} else if (!ret.class_path.is_empty()) {
+						} else if (!ret.class_path.is_empty_string()) {
 							target_script_path = ret.class_path;
 						}
 
@@ -656,7 +656,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
 					} else {
 						String member = ret.class_member;
-						if (member.is_empty() && symbol_identifier != ret.class_name) {
+						if (member.is_empty_string() && symbol_identifier != ret.class_name) {
 							member = symbol_identifier;
 						}
 						symbol = get_native_symbol(ret.class_name, member);
@@ -709,7 +709,7 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params) {
 	if (HashMap<StringName, lsp::DocumentSymbol>::Iterator E = native_symbols.find(p_params.native_class)) {
 		const lsp::DocumentSymbol &symbol = E->value;
-		if (p_params.symbol_name.is_empty() || p_params.symbol_name == symbol.name) {
+		if (p_params.symbol_name.is_empty_string() || p_params.symbol_name == symbol.name) {
 			return &symbol;
 		}
 

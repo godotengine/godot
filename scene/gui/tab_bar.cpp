@@ -76,7 +76,7 @@ Size2 TabBar::get_minimum_size() const {
 			ms.width += tex->get_size().width + hseparation;
 		}
 
-		if (!tabs[i].text.is_empty()) {
+		if (!tabs[i].text.is_empty_string()) {
 			ms.width += tabs[i].size_text + hseparation;
 		}
 		ms.height = MAX(ms.height, tabs[i].text_buf->get_size().y + y_margin);
@@ -311,7 +311,7 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, !tabs[p_tab].language.is_empty() ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
+	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, !tabs[p_tab].language.is_empty_string() ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void TabBar::_notification(int p_what) {
@@ -495,7 +495,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 	}
 
 	// Draw the text.
-	if (!tabs[p_index].text.is_empty()) {
+	if (!tabs[p_index].text.is_empty_string()) {
 		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
 				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
 
@@ -1291,7 +1291,7 @@ int TabBar::get_tab_width(int p_idx) const {
 		x += tex->get_width() + hseparation;
 	}
 
-	if (!tabs[p_idx].text.is_empty()) {
+	if (!tabs[p_idx].text.is_empty_string()) {
 		x += tabs[p_idx].size_text + hseparation;
 	}
 

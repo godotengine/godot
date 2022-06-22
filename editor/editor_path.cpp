@@ -131,14 +131,14 @@ void EditorPath::update_path() {
 					name = r->get_name();
 				}
 
-				if (name.is_empty()) {
+				if (name.is_empty_string()) {
 					name = r->get_class();
 				}
 			} else if (obj->is_class("EditorDebuggerRemoteObject")) {
 				name = obj->call("get_title");
 			} else if (Object::cast_to<Node>(obj)) {
 				name = Object::cast_to<Node>(obj)->get_name();
-			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty()) {
+			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty_string()) {
 				name = Object::cast_to<Resource>(obj)->get_name();
 			} else {
 				name = obj->get_class();

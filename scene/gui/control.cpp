@@ -524,25 +524,25 @@ void Control::_validate_property(PropertyInfo &property) const {
 				hint_string += "Fill:1";
 			}
 			if (size_flags.has(SIZE_EXPAND)) {
-				if (!hint_string.is_empty()) {
+				if (!hint_string.is_empty_string()) {
 					hint_string += ",";
 				}
 				hint_string += "Expand:2";
 			}
 			if (size_flags.has(SIZE_SHRINK_CENTER)) {
-				if (!hint_string.is_empty()) {
+				if (!hint_string.is_empty_string()) {
 					hint_string += ",";
 				}
 				hint_string += "Shrink Center:4";
 			}
 			if (size_flags.has(SIZE_SHRINK_END)) {
-				if (!hint_string.is_empty()) {
+				if (!hint_string.is_empty_string()) {
 					hint_string += ",";
 				}
 				hint_string += "Shrink End:8";
 			}
 
-			if (hint_string.is_empty()) {
+			if (hint_string.is_empty_string()) {
 				property.hint_string = "";
 				property.usage |= PROPERTY_USAGE_READ_ONLY;
 			} else {
@@ -3079,7 +3079,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
+	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty_string()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 

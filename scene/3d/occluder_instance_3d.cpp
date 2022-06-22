@@ -639,7 +639,7 @@ void OccluderInstance3D::bake_single_node(const Node3D *p_node, float p_simplifi
 }
 
 OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, String p_occluder_path) {
-	if (p_occluder_path.is_empty()) {
+	if (p_occluder_path.is_empty_string()) {
 		if (get_occluder().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}

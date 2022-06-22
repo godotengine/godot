@@ -145,7 +145,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.script_path = path;
 	r_symbol.children.clear();
 	r_symbol.name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
-	if (r_symbol.name.is_empty()) {
+	if (r_symbol.name.is_empty_string()) {
 		r_symbol.name = path.get_file();
 	}
 	r_symbol.kind = lsp::SymbolKind::Class;
@@ -213,9 +213,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				String value_text;
 				if (default_value.get_type() == Variant::OBJECT) {
 					Ref<Resource> res = default_value;
-					if (res.is_valid() && !res->get_path().is_empty()) {
+					if (res.is_valid() && !res->get_path().is_empty_string()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
-						if (symbol.documentation.is_empty()) {
+						if (symbol.documentation.is_empty_string()) {
 							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
 								symbol.documentation = S->value->class_symbol.documentation;
 							}
@@ -226,7 +226,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				} else {
 					value_text = default_value.to_json_string();
 				}
-				if (!value_text.is_empty()) {
+				if (!value_text.is_empty_string()) {
 					symbol.detail += " = " + value_text;
 				}
 
@@ -499,7 +499,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 			String line = lines[i];
 			String first_part = line.substr(0, p_cursor.character);
 			String last_part = line.substr(p_cursor.character + 1, lines[i].length());
-			if (!p_symbol.is_empty()) {
+			if (!p_symbol.is_empty_string()) {
 				String left_cursor_text;
 				for (int c = p_cursor.character - 1; c >= 0; c--) {
 					left_cursor_text = line.substr(c, p_cursor.character - c);
@@ -532,7 +532,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const {
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
 	String line = lines[p_position.line];
-	if (line.is_empty()) {
+	if (line.is_empty_string()) {
 		return "";
 	}
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
@@ -638,7 +638,7 @@ const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int 
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name, const String &p_subclass) const {
-	if (p_subclass.is_empty()) {
+	if (p_subclass.is_empty_string()) {
 		const lsp::DocumentSymbol *const *ptr = members.getptr(p_name);
 		if (ptr) {
 			return *ptr;

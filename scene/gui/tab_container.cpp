@@ -754,7 +754,7 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 		}
 
 		String name = c->get_meta("_tab_name");
-		if (!name.is_empty()) {
+		if (!name.is_empty_string()) {
 			p_strings->push_back(name);
 		}
 	}

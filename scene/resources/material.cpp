@@ -960,7 +960,7 @@ void BaseMaterial3D::_update_shader() {
 		// On the other hand, albedo textures are almost always external to the scene.
 		if (textures[TEXTURE_ALBEDO].is_valid()) {
 			WARN_PRINT(vformat("%s (albedo %s): Height mapping is not supported on triplanar materials. Ignoring height mapping in favor of triplanar mapping.", get_path(), textures[TEXTURE_ALBEDO]->get_path()));
-		} else if (!get_path().is_empty()) {
+		} else if (!get_path().is_empty_string()) {
 			WARN_PRINT(vformat("%s: Height mapping is not supported on triplanar materials. Ignoring height mapping in favor of triplanar mapping.", get_path()));
 		} else {
 			// Resource wasn't saved yet.

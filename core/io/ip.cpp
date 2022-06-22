@@ -244,7 +244,7 @@ void IP::erase_resolve_item(ResolverID p_id) {
 void IP::clear_cache(const String &p_hostname) {
 	MutexLock lock(resolver->mutex);
 
-	if (p_hostname.is_empty()) {
+	if (p_hostname.is_empty_string()) {
 		resolver->cache.clear();
 	} else {
 		resolver->cache.erase(_IP_ResolverPrivate::get_cache_key(p_hostname, IP::TYPE_NONE));

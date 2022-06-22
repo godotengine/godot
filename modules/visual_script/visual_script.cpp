@@ -1641,8 +1641,8 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		String err_func = p_method;
 		int err_line = current_node_id; // Not a line but it works as one.
 
-		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str.is_empty())) {
-			if (!error_str.is_empty()) {
+		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str.is_empty_string())) {
+			if (!error_str.is_empty_string()) {
 				error_str += " ";
 			}
 
@@ -2345,7 +2345,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 	for (int i = 0; i < node->input_port_count; i++) {
 		String name = node->get_base_node()->get_input_value_port_info(i).name;
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			name = "in_" + itos(i);
 		}
 
@@ -2365,7 +2365,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 	for (int i = 0; i < node->output_port_count; i++) {
 		String name = node->get_base_node()->get_output_value_port_info(i).name;
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			name = "out_" + itos(i);
 		}
 

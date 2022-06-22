@@ -139,7 +139,7 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 		stop();
 	}
 
-	if (p_text.is_empty()) {
+	if (p_text.is_empty_string()) {
 		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
 		return;
 	}

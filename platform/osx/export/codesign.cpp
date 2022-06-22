@@ -263,7 +263,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 				}
 			}
 		}
-		if (req_string.is_empty()) {
+		if (req_string.is_empty_string()) {
 			req_string = "cdhash H\"" + String::hex_encode_buffer(hash.ptr(), hash.size()) + "\"";
 		}
 		print_verbose(vformat("CodeSign/CodeResources: Nested object %s (cputype: %d) cdhash:%s designated rq:%s", f.name, mh.get_cputype(), f.hash, req_string));
@@ -317,7 +317,7 @@ bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const Str
 					main_exe = path;
 					bundle = true;
 				}
-				if (bundle && found == CRMatch::CR_MATCH_NESTED && !info_path.is_empty()) {
+				if (bundle && found == CRMatch::CR_MATCH_NESTED && !info_path.is_empty_string()) {
 					// Read Info.plist.
 					PList info_plist;
 					if (info_plist.load_file(info_path)) {
@@ -390,12 +390,12 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	pl.get_root()->push_subnode(rules1_dict, "rules");
 	for (int i = 0; i < rules1.size(); i++) {
 		if (rules1[i].store) {
-			if (rules1[i].key.is_empty() && rules1[i].weight <= 0) {
+			if (rules1[i].key.is_empty_string() && rules1[i].weight <= 0) {
 				rules1_dict->push_subnode(PListNode::new_bool(true), rules1[i].file_pattern);
 			} else {
 				Ref<PListNode> rule_dict = PListNode::new_dict();
 				rules1_dict->push_subnode(rule_dict, rules1[i].file_pattern);
-				if (!rules1[i].key.is_empty()) {
+				if (!rules1[i].key.is_empty_string()) {
 					rule_dict->push_subnode(PListNode::new_bool(true), rules1[i].key);
 				}
 				if (rules1[i].weight != 1) {
@@ -410,12 +410,12 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	pl.get_root()->push_subnode(rules2_dict, "rules2");
 	for (int i = 0; i < rules2.size(); i++) {
 		if (rules2[i].store) {
-			if (rules2[i].key.is_empty() && rules2[i].weight <= 0) {
+			if (rules2[i].key.is_empty_string() && rules2[i].weight <= 0) {
 				rules2_dict->push_subnode(PListNode::new_bool(true), rules2[i].file_pattern);
 			} else {
 				Ref<PListNode> rule_dict = PListNode::new_dict();
 				rules2_dict->push_subnode(rule_dict, rules2[i].file_pattern);
-				if (!rules2[i].key.is_empty()) {
+				if (!rules2[i].key.is_empty_string()) {
 					rule_dict->push_subnode(PListNode::new_bool(true), rules2[i].key);
 				}
 				if (rules2[i].weight != 1) {
@@ -425,7 +425,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 		}
 	}
 	String text = pl.save_text();
-	ERR_FAIL_COND_V_MSG(text.is_empty(), false, "CodeSign/CodeResources: Generating resources PList failed.");
+	ERR_FAIL_COND_V_MSG(text.is_empty_string(), false, "CodeSign/CodeResources: Generating resources PList failed.");
 
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
@@ -1210,7 +1210,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 
 	// Read Info.plist.
-	if (!p_info.is_empty()) {
+	if (!p_info.is_empty_string()) {
 		print_verbose(vformat("CodeSign: Reading bundle info..."));
 		PList info_plist;
 		if (info_plist.load_file(p_info)) {
@@ -1283,7 +1283,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 
 	// Generate core resources.
-	if (!p_bundle_path.is_empty()) {
+	if (!p_bundle_path.is_empty_string()) {
 		print_verbose(vformat("CodeSign: Generating bundle CodeResources..."));
 		CodeSignCodeResources cr;
 
@@ -1355,7 +1355,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 
 	// Generate common signature structures.
-	if (id.is_empty()) {
+	if (id.is_empty_string()) {
 		CryptoCore::RandomGenerator rng;
 		ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
 		uint8_t uuid[16];
@@ -1370,9 +1370,9 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	Ref<CodeSignEntitlementsText> cet;
 	Ref<CodeSignEntitlementsBinary> ceb;
-	if (!p_ent_path.is_empty()) {
+	if (!p_ent_path.is_empty_string()) {
 		String entitlements = FileAccess::get_file_as_string(p_ent_path);
-		if (entitlements.is_empty()) {
+		if (entitlements.is_empty_string()) {
 			CLEANUP();
 			r_error_msg = TTR("Invalid entitlements file.");
 			ERR_FAIL_V_MSG(FAILED, "CodeSign: Invalid entitlements file.");

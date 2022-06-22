@@ -50,7 +50,7 @@ void MultiMeshEditor::_populate() {
 
 	Ref<Mesh> mesh;
 
-	if (mesh_source->get_text().is_empty()) {
+	if (mesh_source->get_text().is_empty_string()) {
 		Ref<MultiMesh> multimesh;
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
@@ -91,7 +91,7 @@ void MultiMeshEditor::_populate() {
 		}
 	}
 
-	if (surface_source->get_text().is_empty()) {
+	if (surface_source->get_text().is_empty_string()) {
 		err_dialog->set_text(TTR("No surface source specified."));
 		err_dialog->popup_centered();
 		return;

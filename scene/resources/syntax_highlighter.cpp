@@ -513,7 +513,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 	color_region.color = p_color;
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
-	color_region.line_only = p_line_only || p_end_key.is_empty();
+	color_region.line_only = p_line_only || p_end_key.is_empty_string();
 	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
 }
@@ -549,7 +549,7 @@ void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 		String start_key = key.get_slice(" ", 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
 
-		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty());
+		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty_string());
 	}
 	clear_highlighting_cache();
 }
@@ -563,7 +563,7 @@ Dictionary CodeHighlighter::get_color_regions() const {
 	Dictionary r_color_regions;
 	for (int i = 0; i < color_regions.size(); i++) {
 		ColorRegion region = color_regions[i];
-		r_color_regions[region.start_key + (region.end_key.is_empty() ? "" : " " + region.end_key)] = region.color;
+		r_color_regions[region.start_key + (region.end_key.is_empty_string() ? "" : " " + region.end_key)] = region.color;
 	}
 	return r_color_regions;
 }

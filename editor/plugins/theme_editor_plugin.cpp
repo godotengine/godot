@@ -81,7 +81,7 @@ void ThemeItemImportTree::_update_items_tree() {
 		type_node->set_checked(IMPORT_ITEM_DATA, false);
 		type_node->set_editable(IMPORT_ITEM_DATA, true);
 
-		bool is_matching_filter = (filter_text.is_empty() || type_name.findn(filter_text) > -1);
+		bool is_matching_filter = (filter_text.is_empty_string() || type_name.findn(filter_text) > -1);
 		bool has_filtered_items = false;
 
 		for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
@@ -96,12 +96,12 @@ void ThemeItemImportTree::_update_items_tree() {
 			for (const StringName &F : names) {
 				String item_name = (String)F;
 				bool is_item_matching_filter = (item_name.findn(filter_text) > -1);
-				if (!filter_text.is_empty() && !is_matching_filter && !is_item_matching_filter) {
+				if (!filter_text.is_empty_string() && !is_matching_filter && !is_item_matching_filter) {
 					continue;
 				}
 
 				// Only mark this if actual items match the filter and not just the type group.
-				if (!filter_text.is_empty() && is_item_matching_filter) {
+				if (!filter_text.is_empty_string() && is_item_matching_filter) {
 					has_filtered_items = true;
 					data_type_has_filtered_items = true;
 				}
@@ -206,7 +206,7 @@ void ThemeItemImportTree::_update_items_tree() {
 		}
 
 		// Show one level inside of a type group if there are matches in items.
-		if (!filter_text.is_empty() && has_filtered_items) {
+		if (!filter_text.is_empty_string() && has_filtered_items) {
 			type_node->set_collapsed(false);
 		}
 	}
@@ -2162,7 +2162,7 @@ void ThemeTypeDialog::_add_type_dialog_activated(int p_index) {
 
 void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
 	pre_submitted_value = p_type_name;
-	if (p_type_name.is_empty()) {
+	if (p_type_name.is_empty_string()) {
 		add_type_confirmation->popup_centered();
 		return;
 	}
@@ -2711,11 +2711,11 @@ void ThemeTypeEditor::_update_type_items() {
 	}
 
 	// Various type settings.
-	if (edited_type.is_empty() || ClassDB::class_exists(edited_type)) {
+	if (edited_type.is_empty_string() || ClassDB::class_exists(edited_type)) {
 		type_variation_edit->set_editable(false);
 		type_variation_edit->set_text("");
 		type_variation_button->hide();
-		type_variation_locked->set_visible(!edited_type.is_empty());
+		type_variation_locked->set_visible(!edited_type.is_empty_string());
 	} else {
 		type_variation_edit->set_editable(true);
 		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
@@ -2822,7 +2822,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 	LineEdit *le = Object::cast_to<LineEdit>(p_control);
-	if (le->get_text().strip_edges().is_empty()) {
+	if (le->get_text().strip_edges().is_empty_string()) {
 		return;
 	}
 
@@ -2979,7 +2979,7 @@ void ThemeTypeEditor::_item_rename_cbk(int p_data_type, String p_item_name, Cont
 
 void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name, Control *p_control) {
 	LineEdit *le = Object::cast_to<LineEdit>(p_control->get_child(1));
-	if (le->get_text().strip_edges().is_empty()) {
+	if (le->get_text().strip_edges().is_empty_string()) {
 		return;
 	}
 
@@ -3255,7 +3255,7 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Set Theme Type Variation"));
 
-	if (p_value.is_empty()) {
+	if (p_value.is_empty_string()) {
 		ur->add_do_method(*edited_theme, "clear_type_variation", edited_type);
 	} else {
 		ur->add_do_method(*edited_theme, "set_type_variation", edited_type, StringName(p_value));

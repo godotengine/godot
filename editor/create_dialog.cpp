@@ -173,7 +173,7 @@ void CreateDialog::_update_search() {
 	_configure_search_option_item(root, base_type, ClassDB::class_exists(base_type) ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE);
 
 	const String search_text = search_box->get_text();
-	bool empty_search = search_text.is_empty();
+	bool empty_search = search_text.is_empty_string();
 
 	// Filter all candidate results.
 	Vector<String> candidates;
@@ -228,7 +228,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 			inherited_type = TypeCategory::CPP_TYPE;
 		} else {
 			inherits = script->get_language()->get_global_class_name(base->get_path());
-			if (inherits.is_empty()) {
+			if (inherits.is_empty_string()) {
 				inherits = base->get_path();
 				inherited_type = TypeCategory::PATH_TYPE;
 			}
@@ -247,7 +247,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 				inherited_type = TypeCategory::CPP_TYPE;
 			} else {
 				inherits = script->get_language()->get_global_class_name(base->get_path());
-				if (inherits.is_empty()) {
+				if (inherits.is_empty_string()) {
 					inherits = base->get_path();
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
@@ -261,7 +261,7 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 	}
 
 	// Should never happen, but just in case...
-	ERR_FAIL_COND(inherits.is_empty());
+	ERR_FAIL_COND(inherits.is_empty_string());
 
 	_add_type(inherits, inherited_type);
 
@@ -295,7 +295,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
-	if (!search_box->get_text().is_empty()) {
+	if (!search_box->get_text().is_empty_string()) {
 		r_item->set_collapsed(false);
 	} else {
 		// Don't collapse the root node or an abstract node on the first tree level.
@@ -373,7 +373,7 @@ void CreateDialog::_cleanup() {
 
 void CreateDialog::_confirmed() {
 	String selected_item = get_selected_type();
-	if (selected_item.is_empty()) {
+	if (selected_item.is_empty_string()) {
 		return;
 	}
 
@@ -458,7 +458,7 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty()) {
+	if (EditorHelp::get_doc_data()->class_list.has(p_type) && !DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description).is_empty_string()) {
 		// Display both class name and description, since the help bit may be displayed
 		// far away from the location (especially if the dialog was resized to be taller).
 		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description)));
@@ -691,7 +691,7 @@ void CreateDialog::_load_favorites_and_history() {
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
-			if (!l.is_empty()) {
+			if (!l.is_empty_string()) {
 				favorite_list.push_back(l);
 			}
 		}

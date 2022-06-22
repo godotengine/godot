@@ -407,7 +407,7 @@ bool CSharpLanguage::supports_builtin_mode() const {
 
 #ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
-	if (p_var_type_name.is_empty()) {
+	if (p_var_type_name.is_empty_string()) {
 		return "object";
 	}
 
@@ -3130,7 +3130,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		ERR_FAIL_COND_V_MSG(p_argcount == 0, nullptr,
 				"Cannot create script instance. The class '" + script_class->get_full_name() +
 						"' does not define a parameterless constructor." +
-						(get_path().is_empty() ? String() : " Path: '" + get_path() + "'."));
+						(get_path().is_empty_string() ? String() : " Path: '" + get_path() + "'."));
 
 		ERR_FAIL_V_MSG(nullptr, "Constructor not found.");
 	}
@@ -3284,7 +3284,7 @@ bool CSharpScript::instance_has(const Object *p_this) const {
 }
 
 bool CSharpScript::has_source_code() const {
-	return !source.is_empty();
+	return !source.is_empty_string();
 }
 
 String CSharpScript::get_source_code() const {
@@ -3541,7 +3541,7 @@ Error CSharpScript::load_source_code(const String &p_path) {
 void CSharpScript::_update_name() {
 	String path = get_path();
 
-	if (!path.is_empty()) {
+	if (!path.is_empty_string()) {
 		name = get_path().get_file().get_basename();
 	}
 }

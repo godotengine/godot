@@ -199,7 +199,7 @@ void GroupDialog::_add_group(String p_name) {
 	}
 
 	String name = p_name.strip_edges();
-	if (name.is_empty() || groups->get_item_with_text(name)) {
+	if (name.is_empty_string() || groups->get_item_with_text(name)) {
 		return;
 	}
 
@@ -213,7 +213,7 @@ void GroupDialog::_add_group(String p_name) {
 }
 
 void GroupDialog::_add_group_text_changed(const String &p_new_text) {
-	add_group_button->set_disabled(p_new_text.strip_edges().is_empty());
+	add_group_button->set_disabled(p_new_text.strip_edges().is_empty_string());
 }
 
 void GroupDialog::_group_renamed() {
@@ -232,7 +232,7 @@ void GroupDialog::_group_renamed() {
 		}
 	}
 
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		renamed_group->set_text(0, selected_group);
 		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
@@ -581,7 +581,7 @@ void GroupsEditor::_add_group(const String &p_group) {
 	}
 
 	const String name = group_name->get_text().strip_edges();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		return;
 	}
 
@@ -640,7 +640,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 }
 
 void GroupsEditor::_group_name_changed(const String &p_new_text) {
-	add->set_disabled(p_new_text.strip_edges().is_empty());
+	add->set_disabled(p_new_text.strip_edges().is_empty_string());
 }
 
 struct _GroupInfoComparator {

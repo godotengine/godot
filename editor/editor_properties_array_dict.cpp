@@ -406,7 +406,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 	// When the subtype is of type Object, an additional subtype may be specified in the hint string
 	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
-	if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
+	if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty_string()) {
 		allowed_type = subtype_hint_string;
 	}
 
@@ -585,7 +585,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 	// The format of p_hint_string is:
 	// subType/subTypeHint:nextSubtype ... etc.
-	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
+	if (array_type == Variant::ARRAY && !p_hint_string.is_empty_string()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);

@@ -88,7 +88,7 @@ static void _editor_init() {
 			"filesystem/import/fbx/fbx2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
 	if (fbx_enabled) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (fbx2gltf_path.is_empty()) {
+		if (fbx2gltf_path.is_empty_string()) {
 			WARN_PRINT("FBX file import is enabled, but no FBX2glTF path is configured. FBX files will not be imported.");
 		} else if (!da->file_exists(fbx2gltf_path)) {
 			WARN_PRINT("FBX file import is enabled, but the FBX2glTF path doesn't point to a valid FBX2glTF executable. FBX files will not be imported.");

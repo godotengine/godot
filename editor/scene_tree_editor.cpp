@@ -126,7 +126,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
 		String config_err = n->get_configuration_warnings_as_string();
-		if (config_err.is_empty()) {
+		if (config_err.is_empty_string()) {
 			return;
 		}
 		config_err = config_err.word_wrap(80);
@@ -267,7 +267,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (can_rename) { //should be can edit..
 
 		String warning = p_node->get_configuration_warnings_as_string();
-		if (!warning.is_empty()) {
+		if (!warning.is_empty_string()) {
 			item->add_button(0, get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + warning);
 		}
 
@@ -327,16 +327,16 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
 		String tooltip = String(p_node->get_name()) + "\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
+		if (!p_node->get_editor_description().is_empty_string()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
 		item->set_tooltip(0, tooltip);
-	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty_string() && can_open_instance) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
 		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_scene_file_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
+		if (!p_node->get_editor_description().is_empty_string()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
@@ -348,7 +348,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		String tooltip = String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type;
-		if (!p_node->get_editor_description().is_empty()) {
+		if (!p_node->get_editor_description().is_empty_string()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
@@ -574,7 +574,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = false;
 	tree_dirty = false;
 
-	if (!filter.is_empty()) {
+	if (!filter.is_empty_string()) {
 		_update_filter(nullptr, p_scroll_to_selected);
 	}
 }
@@ -841,7 +841,7 @@ void SceneTreeEditor::_renamed() {
 	ERR_FAIL_COND(!n);
 
 	// Empty node names are not allowed, so resets it to previous text and show warning
-	if (which->get_text(0).strip_edges().is_empty()) {
+	if (which->get_text(0).strip_edges().is_empty_string()) {
 		which->set_text(0, n->get_name());
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
@@ -854,7 +854,7 @@ void SceneTreeEditor::_renamed() {
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::invalid_node_name_characters);
 		error->popup_centered();
 
-		if (new_name.is_empty()) {
+		if (new_name.is_empty_string()) {
 			which->set_text(0, n->get_name());
 			return;
 		}
@@ -1019,7 +1019,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		Node *n = get_node(np);
 		if (n) {
 			// Only allow selection if not part of an instantiated scene.
-			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path().is_empty()) {
+			if (!n->get_owner() || n->get_owner() == get_scene_node() || n->get_owner()->get_scene_file_path().is_empty_string()) {
 				selected.push_back(n);
 				icons.push_back(next->get_icon(0));
 			}
@@ -1133,7 +1133,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 	}
 
-	return String(d["type"]) == "nodes" && filter.is_empty();
+	return String(d["type"]) == "nodes" && filter.is_empty_string();
 }
 
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {

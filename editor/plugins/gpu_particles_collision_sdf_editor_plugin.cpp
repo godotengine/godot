@@ -37,7 +37,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_bake() {
 	if (col_sdf) {
 		if (col_sdf->get_texture().is_null() || !col_sdf->get_texture()->get_path().is_resource_file()) {
 			String path = get_tree()->get_edited_scene_root()->get_scene_file_path();
-			if (path.is_empty()) {
+			if (path.is_empty_string()) {
 				path = "res://" + col_sdf->get_name() + "_data.exr";
 			} else {
 				String ext = path.get_extension();

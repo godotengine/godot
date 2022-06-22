@@ -283,7 +283,7 @@ void EditorFileDialog::_post_popup() {
 		file_box->set_visible(true);
 	}
 
-	if (is_visible() && !get_current_file().is_empty()) {
+	if (is_visible() && !get_current_file().is_empty_string()) {
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	}
 
@@ -791,7 +791,7 @@ void EditorFileDialog::update_file_list() {
 
 	String item = dir_access->get_next();
 
-	while (!item.is_empty()) {
+	while (!item.is_empty_string()) {
 		if (item == "." || item == "..") {
 			item = dir_access->get_next();
 			continue;

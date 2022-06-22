@@ -108,7 +108,7 @@ void ResourcePreloaderEditor::_item_edited() {
 			return;
 		}
 
-		if (new_name.is_empty() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
+		if (new_name.is_empty_string() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
 			return;
 		}
@@ -145,10 +145,10 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	}
 
 	String name = r->get_name();
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		name = r->get_path().get_file();
 	}
-	if (name.is_empty()) {
+	if (name.is_empty_string()) {
 		name = r->get_class();
 	}
 
@@ -302,7 +302,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 
 		if (r.is_valid()) {
 			String basename;
-			if (!r->get_name().is_empty()) {
+			if (!r->get_name().is_empty_string()) {
 				basename = r->get_name();
 			} else if (r->get_path().is_resource_file()) {
 				basename = r->get_path().get_basename();

@@ -410,7 +410,7 @@ bool GDScript::instance_has(const Object *p_this) const {
 }
 
 bool GDScript::has_source_code() const {
-	return !source.is_empty();
+	return !source.is_empty_string();
 }
 
 String GDScript::get_source_code() const {
@@ -465,7 +465,7 @@ void GDScript::_update_doc() {
 	_clear_doc();
 
 	doc.script_path = "\"" + get_path().get_slice("://", 1) + "\"";
-	if (!name.is_empty()) {
+	if (!name.is_empty_string()) {
 		doc.name = name;
 	} else {
 		doc.name = doc.script_path;
@@ -479,7 +479,7 @@ void GDScript::_update_doc() {
 	doc.is_script_doc = true;
 
 	if (base.is_valid() && base->is_valid()) {
-		if (!base->doc.name.is_empty()) {
+		if (!base->doc.name.is_empty_string()) {
 			doc.inherits = base->doc.name;
 		} else {
 			doc.inherits = base->get_instance_base_type();
@@ -493,7 +493,7 @@ void GDScript::_update_doc() {
 	doc.tutorials = doc_tutorials;
 
 	for (const KeyValue<String, DocData::EnumDoc> &E : doc_enums) {
-		if (!E.value.description.is_empty()) {
+		if (!E.value.description.is_empty_string()) {
 			doc.enums[E.key] = E.value.description;
 		}
 	}
@@ -637,11 +637,11 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 		String basedir = path;
 
-		if (basedir.is_empty()) {
+		if (basedir.is_empty_string()) {
 			basedir = get_path();
 		}
 
-		if (!basedir.is_empty()) {
+		if (!basedir.is_empty_string()) {
 			basedir = basedir.get_base_dir();
 		}
 
@@ -663,7 +663,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 					path = c->extends_path;
 					if (path.is_relative_path()) {
 						String base = get_path();
-						if (base.is_empty() || base.is_relative_path()) {
+						if (base.is_empty_string() || base.is_relative_path()) {
 							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
 						} else {
 							path = base.get_base_dir().plus_file(path);
@@ -677,7 +677,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 					}
 				}
 
-				if (!path.is_empty()) {
+				if (!path.is_empty_string()) {
 					if (path != get_path()) {
 						Ref<GDScript> bf = ResourceLoader::load(path);
 
@@ -811,7 +811,7 @@ void GDScript::_set_subclass_path(Ref<GDScript> &p_sc, const String &p_path) {
 }
 
 String GDScript::_get_debug_path() const {
-	if (is_built_in() && !get_name().is_empty()) {
+	if (is_built_in() && !get_name().is_empty_string()) {
 		return get_name() + " (" + get_path() + ")";
 	} else {
 		return get_path();
@@ -830,11 +830,11 @@ Error GDScript::reload(bool p_keep_state) {
 
 	String basedir = path;
 
-	if (basedir.is_empty()) {
+	if (basedir.is_empty_string()) {
 		basedir = get_path();
 	}
 
-	if (!basedir.is_empty()) {
+	if (!basedir.is_empty_string()) {
 		basedir = basedir.get_base_dir();
 	}
 
@@ -847,10 +847,10 @@ Error GDScript::reload(bool p_keep_state) {
 
 	{
 		String source_path = path;
-		if (source_path.is_empty()) {
+		if (source_path.is_empty_string()) {
 			source_path = get_path();
 		}
-		if (!source_path.is_empty()) {
+		if (!source_path.is_empty_string()) {
 			MutexLock lock(GDScriptCache::singleton->lock);
 			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
 				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;
@@ -866,7 +866,7 @@ Error GDScript::reload(bool p_keep_state) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
 		// TODO: Show all error messages.
-		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		_err_print_error("GDScript::reload", path.is_empty_string() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
@@ -880,7 +880,7 @@ Error GDScript::reload(bool p_keep_state) {
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
 		while (e != nullptr) {
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			_err_print_error("GDScript::reload", path.is_empty_string() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
 		}
 		ERR_FAIL_V(ERR_PARSE_ERROR);
@@ -900,7 +900,7 @@ Error GDScript::reload(bool p_keep_state) {
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			_err_print_error("GDScript::reload", path.is_empty_string() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			ERR_FAIL_V(ERR_COMPILATION_FAILED);
 		} else {
 			return err;
@@ -1149,7 +1149,7 @@ String GDScript::_get_gdscript_reference_class_name(const GDScript *p_gdscript) 
 
 	String class_name;
 	while (p_gdscript) {
-		if (class_name.is_empty()) {
+		if (class_name.is_empty_string()) {
 			class_name = p_gdscript->get_script_class_name();
 		} else {
 			class_name = p_gdscript->get_script_class_name() + "." + class_name;
@@ -1466,7 +1466,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 					pinfo.type = Variant::Type(d["type"].operator int());
 					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
 					pinfo.name = d["name"];
-					ERR_CONTINUE(pinfo.name.is_empty());
+					ERR_CONTINUE(pinfo.name.is_empty_string());
 					if (d.has("hint")) {
 						pinfo.hint = PropertyHint(d["hint"].operator int());
 					}
@@ -2121,7 +2121,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (err == OK) {
 		const GDScriptParser::ClassNode *c = parser.get_tree();
 		if (r_icon_path) {
-			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
+			if (c->icon_path.is_empty_string() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
 			} else if (c->icon_path.is_relative_path()) {
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
@@ -2133,7 +2133,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			GDScriptParser subparser;
 			while (subclass) {
 				if (subclass->extends_used) {
-					if (!subclass->extends_path.is_empty()) {
+					if (!subclass->extends_path.is_empty_string()) {
 						if (subclass->extends.size() == 0) {
 							get_global_class_name(subclass->extends_path, r_base_type);
 							subclass = nullptr;
@@ -2147,7 +2147,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 							}
 							String subsource = subfile->get_as_utf8_string();
 
-							if (subsource.is_empty()) {
+							if (subsource.is_empty_string()) {
 								break;
 							}
 							String subpath = subclass->extends_path;
@@ -2347,7 +2347,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
 
 	String source = file->get_as_utf8_string();
-	if (source.is_empty()) {
+	if (source.is_empty_string()) {
 		return;
 	}
 

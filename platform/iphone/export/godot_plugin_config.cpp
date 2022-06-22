@@ -37,7 +37,7 @@
 String PluginConfigIOS::resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
 	String absolute_path;
 
-	if (dependency_path.is_empty()) {
+	if (dependency_path.is_empty_string()) {
 		return absolute_path;
 	}
 
@@ -54,7 +54,7 @@ String PluginConfigIOS::resolve_local_dependency_path(String plugin_config_dir, 
 String PluginConfigIOS::resolve_system_dependency_path(String dependency_path) {
 	String absolute_path;
 
-	if (dependency_path.is_empty()) {
+	if (dependency_path.is_empty_string()) {
 		return absolute_path;
 	}
 
@@ -73,7 +73,7 @@ Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_
 	for (int i = 0; i < p_paths.size(); i++) {
 		String path = resolve_local_dependency_path(plugin_config_dir, p_paths[i]);
 
-		if (path.is_empty()) {
+		if (path.is_empty_string()) {
 			continue;
 		}
 
@@ -89,7 +89,7 @@ Vector<String> PluginConfigIOS::resolve_system_dependencies(Vector<String> p_pat
 	for (int i = 0; i < p_paths.size(); i++) {
 		String path = resolve_system_dependency_path(p_paths[i]);
 
-		if (path.is_empty()) {
+		if (path.is_empty_string()) {
 			continue;
 		}
 
@@ -100,10 +100,10 @@ Vector<String> PluginConfigIOS::resolve_system_dependencies(Vector<String> p_pat
 }
 
 bool PluginConfigIOS::validate_plugin(PluginConfigIOS &plugin_config) {
-	bool valid_name = !plugin_config.name.is_empty();
-	bool valid_binary_name = !plugin_config.binary.is_empty();
-	bool valid_initialize = !plugin_config.initialization_method.is_empty();
-	bool valid_deinitialize = !plugin_config.deinitialization_method.is_empty();
+	bool valid_name = !plugin_config.name.is_empty_string();
+	bool valid_binary_name = !plugin_config.binary.is_empty_string();
+	bool valid_initialize = !plugin_config.initialization_method.is_empty_string();
+	bool valid_deinitialize = !plugin_config.deinitialization_method.is_empty_string();
 
 	bool fields_value = valid_name && valid_binary_name && valid_initialize && valid_deinitialize;
 
@@ -236,7 +236,7 @@ PluginConfigIOS PluginConfigIOS::load_plugin_config(Ref<ConfigFile> config_file,
 				}
 			}
 
-			if (key_value.is_empty() || key_type == PluginConfigIOS::PlistItemType::UNKNOWN) {
+			if (key_value.is_empty_string() || key_type == PluginConfigIOS::PlistItemType::UNKNOWN) {
 				continue;
 			}
 

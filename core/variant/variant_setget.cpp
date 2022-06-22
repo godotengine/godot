@@ -1312,7 +1312,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		case STRING: {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
-			if (str->is_empty()) {
+			if (str->is_empty_string()) {
 				return false;
 			}
 			r_iter = 0;

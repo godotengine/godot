@@ -324,7 +324,7 @@ String DisplayServer::clipboard_get() const {
 }
 
 bool DisplayServer::clipboard_has() const {
-	return !clipboard_get().is_empty();
+	return !clipboard_get().is_empty_string();
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {

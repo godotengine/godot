@@ -65,7 +65,7 @@ void FontDataPreview::set_data(const Ref<FontData> &p_data) {
 				sample += sample_base[i];
 			}
 		}
-		if (sample.is_empty()) {
+		if (sample.is_empty_string()) {
 			sample = p_data->get_supported_chars().substr(0, 6);
 		}
 		line->add_string(sample, f, 72);

@@ -81,7 +81,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 			accel_max_w = MAX(accel_w, accel_max_w);
 		}
 
-		if (!items[i].submenu.is_empty()) {
+		if (!items[i].submenu.is_empty_string()) {
 			size.width += get_theme_icon(SNAME("submenu"))->get_width();
 		}
 
@@ -348,13 +348,13 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && !items[mouse_over].submenu.is_empty_string() && submenu_over != mouse_over) {
 			_activate_submenu(mouse_over, true);
 			set_input_as_handled();
 		}
 	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
 		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-			if (!items[mouse_over].submenu.is_empty() && submenu_over != mouse_over) {
+			if (!items[mouse_over].submenu.is_empty_string() && submenu_over != mouse_over) {
 				_activate_submenu(mouse_over, true);
 			} else {
 				activate_item(mouse_over);
@@ -409,7 +409,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (!items[over].submenu.is_empty()) {
+				if (!items[over].submenu.is_empty_string()) {
 					_activate_submenu(over);
 					return;
 				}
@@ -446,7 +446,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (!items[over].submenu.is_empty() && submenu_over != over) {
+		if (!items[over].submenu.is_empty_string() && submenu_over != over) {
 			submenu_over = over;
 			submenu_timer->start();
 		}
@@ -587,7 +587,7 @@ void PopupMenu::_draw_items() {
 		// Separator
 		item_ofs.x += items[i].h_ofs;
 		if (items[i].separator) {
-			if (!text.is_empty() || !items[i].icon.is_null()) {
+			if (!text.is_empty_string() || !items[i].icon.is_null()) {
 				int content_size = items[i].text_buf->get_size().width + hseparation * 2;
 				if (!items[i].icon.is_null()) {
 					content_size += icon_size.width + hseparation;
@@ -650,7 +650,7 @@ void PopupMenu::_draw_items() {
 		}
 
 		// Submenu arrow on right hand side.
-		if (!items[i].submenu.is_empty()) {
+		if (!items[i].submenu.is_empty_string()) {
 			if (rtl) {
 				submenu->draw(ci, Point2(scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
@@ -666,7 +666,7 @@ void PopupMenu::_draw_items() {
 			Color font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
 			int separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
 
-			if (!text.is_empty()) {
+			if (!text.is_empty_string()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (!rtl && !items[i].icon.is_null()) {
 					text_pos.x += icon_size.width + hseparation;
@@ -760,7 +760,7 @@ void PopupMenu::_shape_item(int p_item) {
 		} else {
 			items.write[p_item].text_buf->set_direction((TextServer::Direction)items[p_item].text_direction);
 		}
-		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].opentype_features, !items[p_item].language.is_empty() ? items[p_item].language : TranslationServer::get_singleton()->get_tool_locale());
+		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].opentype_features, !items[p_item].language.is_empty_string() ? items[p_item].language : TranslationServer::get_singleton()->get_tool_locale());
 
 		items.write[p_item].accel_text_buf->clear();
 		items.write[p_item].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -798,7 +798,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_WM_MOUSE_EXIT: {
-			if (mouse_over >= 0 && (items[mouse_over].submenu.is_empty() || submenu_over != -1)) {
+			if (mouse_over >= 0 && (items[mouse_over].submenu.is_empty_string() || submenu_over != -1)) {
 				mouse_over = -1;
 				control->update();
 			}
@@ -832,7 +832,7 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				for (int i = 0; i < items.size(); i++) {
-					if (items[i].submenu.is_empty()) {
+					if (items[i].submenu.is_empty_string()) {
 						continue;
 					}
 
@@ -1484,7 +1484,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			return true;
 		}
 
-		if (!items[i].submenu.is_empty()) {
+		if (!items[i].submenu.is_empty_string()) {
 			Node *n = get_node(items[i].submenu);
 			if (!n) {
 				continue;
@@ -1573,7 +1573,7 @@ void PopupMenu::add_separator(const String &p_text, int p_id) {
 	Item sep;
 	sep.separator = true;
 	sep.id = p_id;
-	if (!p_text.is_empty()) {
+	if (!p_text.is_empty_string()) {
 		sep.text = p_text;
 		sep.xl_text = atr(p_text);
 	}
@@ -1671,7 +1671,7 @@ void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
 
 void PopupMenu::get_translatable_strings(List<String> *p_strings) const {
 	for (int i = 0; i < items.size(); i++) {
-		if (!items[i].xl_text.is_empty()) {
+		if (!items[i].xl_text.is_empty_string()) {
 			p_strings->push_back(items[i].xl_text);
 		}
 	}

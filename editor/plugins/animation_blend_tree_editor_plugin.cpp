@@ -297,7 +297,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
 		ERR_FAIL_COND(!anode.is_valid());
 		base_name = anode->get_class();
-	} else if (!add_options[p_idx].type.is_empty()) {
+	} else if (!add_options[p_idx].type.is_empty_string()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_COND(!an);
 		anode = Ref<AnimationNode>(an);
@@ -318,7 +318,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		return;
 	}
 
-	if (!from_node.is_empty() && anode->get_input_count() == 0) {
+	if (!from_node.is_empty_string() && anode->get_input_count() == 0) {
 		from_node = "";
 		return;
 	}
@@ -343,11 +343,11 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	undo_redo->add_do_method(blend_tree.ptr(), "add_node", name, anode, instance_pos / EDSCALE);
 	undo_redo->add_undo_method(blend_tree.ptr(), "remove_node", name);
 
-	if (!from_node.is_empty()) {
+	if (!from_node.is_empty_string()) {
 		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", name, 0, from_node);
 		from_node = "";
 	}
-	if (!to_node.is_empty() && to_slot != -1) {
+	if (!to_node.is_empty_string() && to_slot != -1) {
 		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", to_node, to_slot, name);
 		to_node = "";
 		to_slot = -1;
@@ -592,7 +592,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 					default: {
 					} break;
 				}
-				if (!track_type_name.is_empty()) {
+				if (!track_type_name.is_empty_string()) {
 					types[track_path].insert(track_type_name);
 				}
 			}
@@ -611,7 +611,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
-			if (!accum.is_empty()) {
+			if (!accum.is_empty_string()) {
 				accum += "/";
 			}
 			accum += name;
@@ -783,7 +783,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 			if (error != error_label->get_text()) {
 				error_label->set_text(error);
-				if (!error.is_empty()) {
+				if (!error.is_empty_string()) {
 					error_panel->show();
 				} else {
 					error_panel->hide();
@@ -853,13 +853,13 @@ AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
 	String prev_name = blend_tree->get_node_name(p_node);
-	ERR_FAIL_COND(prev_name.is_empty());
+	ERR_FAIL_COND(prev_name.is_empty_string());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
 	ERR_FAIL_COND(!gn);
 
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
+	ERR_FAIL_COND(new_name.is_empty_string() || new_name.contains(".") || new_name.contains("/"));
 
 	if (new_name == prev_name) {
 		return; //nothing to do

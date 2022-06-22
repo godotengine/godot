@@ -427,7 +427,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		}
 	}
 
-	if (library_path.is_empty()) {
+	if (library_path.is_empty_string()) {
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}

@@ -161,7 +161,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
 	while (true) {
 		String file = da->get_next();
-		if (file.is_empty()) {
+		if (file.is_empty_string()) {
 			break;
 		}
 		if (!file.begins_with("values-")) {

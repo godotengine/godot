@@ -76,8 +76,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			return err;
 		}
 
-		if (!assign.is_empty()) {
-			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
+		if (!assign.is_empty_string()) {
+			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty_string()) {
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
 					r_path_and_type.path = value;
@@ -108,7 +108,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		}
 	}
 
-	if (r_path_and_type.path.is_empty() || r_path_and_type.type.is_empty()) {
+	if (r_path_and_type.path.is_empty_string() || r_path_and_type.type.is_empty_string()) {
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -154,7 +154,7 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 }
 
 void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type.is_empty()) {
+	if (p_type.is_empty_string()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
@@ -163,7 +163,7 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type.is_empty()) {
+		if (res_type.is_empty_string()) {
 			continue;
 		}
 
@@ -242,7 +242,7 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 bool ResourceFormatImporter::handles_type(const String &p_type) const {
 	for (int i = 0; i < importers.size(); i++) {
 		String res_type = importers[i]->get_resource_type();
-		if (res_type.is_empty()) {
+		if (res_type.is_empty_string()) {
 			continue;
 		}
 		if (ClassDB::is_parent_class(res_type, p_type)) {
@@ -294,7 +294,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			return;
 		}
 
-		if (!assign.is_empty()) {
+		if (!assign.is_empty_string()) {
 			if (assign.begins_with("path.")) {
 				r_paths->push_back(value);
 			} else if (assign == "path") {

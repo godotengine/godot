@@ -282,17 +282,17 @@ void DocTools::remove_from(const DocTools &p_data) {
 }
 
 void DocTools::add_doc(const DocData::ClassDoc &p_class_doc) {
-	ERR_FAIL_COND(p_class_doc.name.is_empty());
+	ERR_FAIL_COND(p_class_doc.name.is_empty_string());
 	class_list[p_class_doc.name] = p_class_doc;
 }
 
 void DocTools::remove_doc(const String &p_class_name) {
-	ERR_FAIL_COND(p_class_name.is_empty() || !class_list.has(p_class_name));
+	ERR_FAIL_COND(p_class_name.is_empty_string() || !class_list.has(p_class_name));
 	class_list.erase(p_class_name);
 }
 
 bool DocTools::has_doc(const String &p_class_name) {
-	if (p_class_name.is_empty()) {
+	if (p_class_name.is_empty_string()) {
 		return false;
 	}
 	return class_list.has(p_class_name);
@@ -470,7 +470,7 @@ void DocTools::generate(bool p_basic_types) {
 		method_list.sort();
 
 		for (const MethodInfo &E : method_list) {
-			if (E.name.is_empty() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
+			if (E.name.is_empty_string() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
 				continue; //hidden, don't count
 			}
 
@@ -492,21 +492,21 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			if (E.flags & METHOD_FLAG_CONST) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
 			}
 
 			if (E.flags & METHOD_FLAG_VARARG) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
 			}
 
 			if (E.flags & METHOD_FLAG_STATIC) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "static";
@@ -774,21 +774,21 @@ void DocTools::generate(bool p_basic_types) {
 			DocData::return_doc_from_retinfo(method, mi.return_val);
 
 			if (mi.flags & METHOD_FLAG_VARARG) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "vararg";
 			}
 
 			if (mi.flags & METHOD_FLAG_CONST) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "const";
 			}
 
 			if (mi.flags & METHOD_FLAG_STATIC) {
-				if (!method.qualifiers.is_empty()) {
+				if (!method.qualifiers.is_empty_string()) {
 					method.qualifiers += " ";
 				}
 				method.qualifiers += "static";
@@ -923,7 +923,7 @@ void DocTools::generate(bool p_basic_types) {
 				md.name = mi.name;
 
 				if (mi.flags & METHOD_FLAG_VARARG) {
-					if (!md.qualifiers.is_empty()) {
+					if (!md.qualifiers.is_empty_string()) {
 						md.qualifiers += " ";
 					}
 					md.qualifiers += "vararg";
@@ -1043,7 +1043,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (!path.is_empty()) {
+	while (!path.is_empty_string()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
@@ -1073,7 +1073,7 @@ Error DocTools::erase_classes(const String &p_dir) {
 	da->list_dir_begin();
 	String path;
 	path = da->get_next();
-	while (!path.is_empty()) {
+	while (!path.is_empty_string()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
@@ -1274,7 +1274,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 }
 
 static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_string) {
-	if (p_string.is_empty()) {
+	if (p_string.is_empty_string()) {
 		return;
 	}
 	String tab;
@@ -1292,15 +1292,15 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 			const DocData::MethodDoc &m = p_method_docs[i];
 
 			String qualifiers;
-			if (!m.qualifiers.is_empty()) {
+			if (!m.qualifiers.is_empty_string()) {
 				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 			}
 
 			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
 
-			if (!m.return_type.is_empty()) {
+			if (!m.return_type.is_empty_string()) {
 				String enum_text;
-				if (!m.return_enum.is_empty()) {
+				if (!m.return_enum.is_empty_string()) {
 					enum_text = " enum=\"" + m.return_enum + "\"";
 				}
 				_write_string(f, 3, "<return type=\"" + m.return_type + "\"" + enum_text + " />");
@@ -1315,11 +1315,11 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				const DocData::ArgumentDoc &a = m.arguments[j];
 
 				String enum_text;
-				if (!a.enumeration.is_empty()) {
+				if (!a.enumeration.is_empty_string()) {
 					enum_text = " enum=\"" + a.enumeration + "\"";
 				}
 
-				if (!a.default_value.is_empty()) {
+				if (!a.default_value.is_empty_string()) {
 					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " default=\"" + a.default_value.xml_escape(true) + "\" />");
 				} else {
 					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\"" + enum_text + " />");
@@ -1357,7 +1357,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 
 		String header = "<class name=\"" + c.name + "\"";
-		if (!c.inherits.is_empty()) {
+		if (!c.inherits.is_empty_string()) {
 			header += " inherits=\"" + c.inherits + "\"";
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
@@ -1380,7 +1380,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape() + "\"" : "";
+			String title_attribute = (!tutorial.title.is_empty_string()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
@@ -1396,10 +1396,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 			for (int i = 0; i < c.properties.size(); i++) {
 				String additional_attributes;
-				if (!c.properties[i].enumeration.is_empty()) {
+				if (!c.properties[i].enumeration.is_empty_string()) {
 					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
 				}
-				if (!c.properties[i].default_value.is_empty()) {
+				if (!c.properties[i].default_value.is_empty_string()) {
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
 
@@ -1423,13 +1423,13 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			for (int i = 0; i < c.constants.size(); i++) {
 				const DocData::ConstantDoc &k = c.constants[i];
 				if (k.is_value_valid) {
-					if (!k.enumeration.is_empty()) {
+					if (!k.enumeration.is_empty_string()) {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
 					}
 				} else {
-					if (!k.enumeration.is_empty()) {
+					if (!k.enumeration.is_empty_string()) {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\" enum=\"" + k.enumeration + "\">");
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"platform-dependent\">");
@@ -1449,7 +1449,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
 
-				if (!ti.default_value.is_empty()) {
+				if (!ti.default_value.is_empty_string()) {
 					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\" default=\"" + ti.default_value.xml_escape(true) + "\">");
 				} else {
 					_write_string(f, 2, "<theme_item name=\"" + ti.name + "\" data_type=\"" + ti.data_type + "\" type=\"" + ti.type + "\">");

@@ -64,7 +64,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
 				String name = F.key.operator String();
 
-				ERR_CONTINUE(name.is_empty());
+				ERR_CONTINUE(name.is_empty_string());
 
 				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore

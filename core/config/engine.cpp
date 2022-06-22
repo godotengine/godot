@@ -95,7 +95,7 @@ Dictionary Engine::get_version_info() const {
 	dict["year"] = VERSION_YEAR;
 
 	String hash = String(VERSION_HASH);
-	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
+	dict["hash"] = hash.is_empty_string() ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {

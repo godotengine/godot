@@ -171,16 +171,16 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
 	ERR_FAIL_COND(p_source == nullptr);
 	Vector<String> symbols;
-	if (!p_symbol1.is_empty()) {
+	if (!p_symbol1.is_empty_string()) {
 		symbols.push_back(p_symbol1);
 	}
-	if (!p_symbol2.is_empty()) {
+	if (!p_symbol2.is_empty_string()) {
 		symbols.push_back(p_symbol2);
 	}
-	if (!p_symbol3.is_empty()) {
+	if (!p_symbol3.is_empty_string()) {
 		symbols.push_back(p_symbol3);
 	}
-	if (!p_symbol4.is_empty()) {
+	if (!p_symbol4.is_empty_string()) {
 		symbols.push_back(p_symbol4);
 	}
 	push_warning(p_source, p_code, symbols);
@@ -756,7 +756,7 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 #endif // TOOLS_ENABLED
 
 	if (member->identifier != nullptr) {
-		if (!((String)member->identifier->name).is_empty()) { // Enums may be unnamed.
+		if (!((String)member->identifier->name).is_empty_string()) { // Enums may be unnamed.
 
 #ifdef DEBUG_ENABLED
 			List<MethodInfo> gdscript_funcs;
@@ -3152,7 +3152,7 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 		}
 		String line_join = (in_codeblock) ? "\n" : " ";
 
-		doc = (doc.is_empty()) ? doc_line : doc + line_join + doc_line;
+		doc = (doc.is_empty_string()) ? doc_line : doc + line_join + doc_line;
 		line++;
 	}
 
@@ -3164,7 +3164,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 	if (!comments.has(p_line)) {
 		return;
 	}
-	ERR_FAIL_COND(!p_brief.is_empty() || !p_desc.is_empty() || p_tutorials.size() != 0);
+	ERR_FAIL_COND(!p_brief.is_empty_string() || !p_desc.is_empty_string() || p_tutorials.size() != 0);
 
 	int line = p_line;
 	bool in_codeblock = false;
@@ -3196,7 +3196,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 		String stripped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (stripped_line.is_empty() && mode == BRIEF && !p_brief.is_empty()) {
+		if (stripped_line.is_empty_string() && mode == BRIEF && !p_brief.is_empty_string()) {
 			mode = DESC;
 			continue;
 
@@ -3245,7 +3245,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 			mode = TUTORIALS;
 			in_codeblock = false;
-		} else if (stripped_line.is_empty()) {
+		} else if (stripped_line.is_empty_string()) {
 			continue;
 		} else {
 			// Tutorial docs are single line, we need a @tag after it.
@@ -3804,11 +3804,11 @@ String GDScriptParser::DataType::to_string() const {
 				return script_type->get_class_name().operator String();
 			}
 			String name = script_type->get_name();
-			if (!name.is_empty()) {
+			if (!name.is_empty_string()) {
 				return name;
 			}
 			name = script_path;
-			if (!name.is_empty()) {
+			if (!name.is_empty_string()) {
 				return name;
 			}
 			return native_type.operator String();
@@ -3884,7 +3884,7 @@ void GDScriptParser::TreePrinter::decrease_indent() {
 }
 
 void GDScriptParser::TreePrinter::push_line(const String &p_line) {
-	if (!p_line.is_empty()) {
+	if (!p_line.is_empty_string()) {
 		push_text(p_line);
 	}
 	printed += "\n";
@@ -4099,7 +4099,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 	if (p_class->extends_used) {
 		bool first = true;
 		push_text(" Extends ");
-		if (!p_class->extends_path.is_empty()) {
+		if (!p_class->extends_path.is_empty_string()) {
 			push_text(vformat(R"("%s")", p_class->extends_path));
 			first = false;
 		}
@@ -4702,7 +4702,7 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	if (p_parser.is_tool()) {
 		push_line("@tool");
 	}
-	if (!p_parser.get_tree()->icon_path.is_empty()) {
+	if (!p_parser.get_tree()->icon_path.is_empty_string()) {
 		push_text(R"(@icon (")");
 		push_text(p_parser.get_tree()->icon_path);
 		push_line("\")");

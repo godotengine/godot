@@ -2333,7 +2333,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 					ep->property_usage = 0;
 				}
 
-				if (!F.label.is_empty()) {
+				if (!F.label.is_empty_string()) {
 					ep->set_label(F.label);
 				}
 
@@ -2549,7 +2549,7 @@ void EditorInspector::update_tree() {
 				}
 			}
 			if (category->icon.is_null()) {
-				if (!type.is_empty()) { // Can happen for built-in scripts.
+				if (!type.is_empty_string()) { // Can happen for built-in scripts.
 					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 				}
 			}
@@ -2570,7 +2570,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[type2] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty() ? "" : class_descr_cache[type2]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type2].is_empty_string() ? "" : class_descr_cache[type2]));
 			}
 
 			// Add editors at the start of a category.
@@ -2613,7 +2613,7 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		if (!array_prefix.is_empty()) {
+		if (!array_prefix.is_empty_string()) {
 			// If we have an array element, find the according index in array.
 			String str = p.name.trim_prefix(array_prefix);
 			int to_char_index = 0;
@@ -2630,7 +2630,7 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		if (!array_prefix.is_empty()) {
+		if (!array_prefix.is_empty_string()) {
 			path = path.trim_prefix(array_prefix);
 			int char_index = path.find("/");
 			if (char_index >= 0) {
@@ -2640,7 +2640,7 @@ void EditorInspector::update_tree() {
 			}
 		} else {
 			// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-			if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
+			if (!subgroup.is_empty_string() && !subgroup_base.is_empty_string()) {
 				if (path.begins_with(subgroup_base)) {
 					path = path.trim_prefix(subgroup_base);
 				} else if (subgroup_base.begins_with(path)) {
@@ -2651,7 +2651,7 @@ void EditorInspector::update_tree() {
 			}
 
 			// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-			if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
+			if (!group.is_empty_string() && !group_base.is_empty_string() && subgroup.is_empty_string()) {
 				if (path.begins_with(group_base)) {
 					path = path.trim_prefix(group_base);
 				} else if (group_base.begins_with(path)) {
@@ -2663,10 +2663,10 @@ void EditorInspector::update_tree() {
 			}
 
 			// Add the group and subgroup to the path.
-			if (!subgroup.is_empty()) {
+			if (!subgroup.is_empty_string()) {
 				path = subgroup + "/" + path;
 			}
-			if (!group.is_empty()) {
+			if (!group.is_empty_string()) {
 				path = group + "/" + path;
 			}
 		}
@@ -2698,8 +2698,8 @@ void EditorInspector::update_tree() {
 		}
 
 		// Ignore properties that do not fit the filter.
-		if (use_filter && !filter.is_empty()) {
-			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
+		if (use_filter && !filter.is_empty_string()) {
+			const String property_path = property_prefix + (path.is_empty_string() ? "" : path + "/") + name_override;
 			if (!_property_path_matches(property_path, filter, property_name_style)) {
 				continue;
 			}
@@ -2712,7 +2712,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Find the correct section/vbox to add the property editor to.
-		VBoxContainer *root_vbox = array_prefix.is_empty() ? main_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
+		VBoxContainer *root_vbox = array_prefix.is_empty_string() ? main_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
 		if (!root_vbox) {
 			continue;
 		}
@@ -2842,7 +2842,7 @@ void EditorInspector::update_tree() {
 
 			// Get the class name.
 			StringName classname = object->get_class_name();
-			if (!object_class.is_empty()) {
+			if (!object_class.is_empty_string()) {
 				classname = object_class;
 			}
 
@@ -2864,7 +2864,7 @@ void EditorInspector::update_tree() {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
 				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
-				while (F && descr.is_empty()) {
+				while (F && descr.is_empty_string()) {
 					for (int i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
 							descr = DTR(F->value.properties[i].description);
@@ -2882,7 +2882,7 @@ void EditorInspector::update_tree() {
 						}
 					}
 
-					if (!F->value.inherits.is_empty()) {
+					if (!F->value.inherits.is_empty_string()) {
 						F = dd->class_list.find(F->value.inherits);
 					} else {
 						break;
@@ -2935,7 +2935,7 @@ void EditorInspector::update_tree() {
 						//and set label?
 					}
 
-					if (!editors[i].label.is_empty()) {
+					if (!editors[i].label.is_empty_string()) {
 						ep->set_label(editors[i].label);
 					} else {
 						// Use the existing one.
@@ -2974,7 +2974,7 @@ void EditorInspector::update_tree() {
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
-				if (!doc_hint.is_empty()) {
+				if (!doc_hint.is_empty_string()) {
 					ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 				} else {
 					ep->set_tooltip(property_prefix + p.name);
@@ -3214,7 +3214,7 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 		return;
 	}
 
-	if (p_property.is_empty()) {
+	if (p_property.is_empty_string()) {
 		update_tree_pending = true;
 	} else {
 		pending.insert(p_property);
@@ -3652,9 +3652,9 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	for (const Ref<Script> &s : classes) {
 		String path = s->get_path();
 		String name = EditorNode::get_editor_data().script_class_get_name(path);
-		if (name.is_empty()) {
+		if (name.is_empty_string()) {
 			if (s->is_built_in()) {
-				if (s->get_name().is_empty()) {
+				if (s->get_name().is_empty_string()) {
 					name = TTR("Built-in script");
 				} else {
 					name = vformat("%s (%s)", s->get_name(), TTR("Built-in"));

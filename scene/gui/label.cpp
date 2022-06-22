@@ -83,7 +83,7 @@ void Label::_shape() {
 	int width = (get_size().width - style->get_minimum_size().width);
 
 	if (dirty || font_dirty) {
-		String lang = (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale();
+		String lang = (!language.is_empty_string()) ? language : TranslationServer::get_singleton()->get_tool_locale();
 		if (dirty) {
 			TS->shaped_text_clear(text_rid);
 		}

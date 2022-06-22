@@ -454,7 +454,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 
 		String ml;
 		for (const String &E : mstring) {
-			if (!ml.is_empty()) {
+			if (!ml.is_empty_string()) {
 				ml += ",";
 			}
 			ml += E;

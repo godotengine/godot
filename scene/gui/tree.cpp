@@ -268,7 +268,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 		cells.write[p_column].max = INT_MIN;
 		for (int i = 0; i < strings.size(); i++) {
 			int value = i;
-			if (!strings[i].get_slicec(':', 1).is_empty()) {
+			if (!strings[i].get_slicec(':', 1).is_empty_string()) {
 				value = strings[i].get_slicec(':', 1).to_int();
 			}
 			cells.write[p_column].min = MIN(cells[p_column].min, value);
@@ -1175,7 +1175,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		Size2 size;
 
 		// Text.
-		if (!cell.text.is_empty()) {
+		if (!cell.text.is_empty_string()) {
 			if (cell.dirty) {
 				tree->update_item_cell(this, p_column);
 			}
@@ -1667,7 +1667,7 @@ void Tree::update_column(int p_col) {
 		columns.write[p_col].text_buf->set_direction((TextServer::Direction)columns[p_col].text_direction);
 	}
 
-	columns.write[p_col].text_buf->add_string(columns[p_col].title, cache.font, cache.font_size, columns[p_col].opentype_features, !columns[p_col].language.is_empty() ? columns[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
+	columns.write[p_col].text_buf->add_string(columns[p_col].title, cache.font, cache.font_size, columns[p_col].opentype_features, !columns[p_col].language.is_empty_string() ? columns[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 }
 
 void Tree::update_item_cell(TreeItem *p_item, int p_col) {
@@ -1675,7 +1675,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 
 	p_item->cells.write[p_col].text_buf->clear();
 	if (p_item->cells[p_col].mode == TreeItem::CELL_MODE_RANGE) {
-		if (!p_item->cells[p_col].text.is_empty()) {
+		if (!p_item->cells[p_col].text.is_empty_string()) {
 			if (!p_item->cells[p_col].editable) {
 				return;
 			}
@@ -1686,7 +1686,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
 			for (int j = 0; j < strings.size(); j++) {
 				int value = j;
-				if (!strings[j].get_slicec(':', 1).is_empty()) {
+				if (!strings[j].get_slicec(':', 1).is_empty_string()) {
 					value = strings[j].get_slicec(':', 1).to_int();
 				}
 				if (option == value) {
@@ -1702,7 +1702,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 		valtext = p_item->cells[p_col].text;
 	}
 
-	if (!p_item->cells[p_col].suffix.is_empty()) {
+	if (!p_item->cells[p_col].suffix.is_empty_string()) {
 		valtext += " " + p_item->cells[p_col].suffix;
 	}
 
@@ -1725,7 +1725,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	} else {
 		font_size = cache.font_size;
 	}
-	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].opentype_features, !p_item->cells[p_col].language.is_empty() ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
+	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].opentype_features, !p_item->cells[p_col].language.is_empty_string() ? p_item->cells[p_col].language : TranslationServer::get_singleton()->get_tool_locale());
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }
@@ -1794,7 +1794,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (p_item->cells[i].expand_right) {
 				int plus = 1;
-				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty_string() && p_item->cells[i + plus].icon.is_null()) {
 					w += get_column_width(i + plus);
 					plus++;
 					skip2++;
@@ -1988,7 +1988,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				} break;
 				case TreeItem::CELL_MODE_RANGE: {
-					if (!p_item->cells[i].text.is_empty()) {
+					if (!p_item->cells[i].text.is_empty_string()) {
 						if (!p_item->cells[i].editable) {
 							break;
 						}
@@ -2481,7 +2481,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 			if (p_item->cells[i].expand_right) {
 				int plus = 1;
-				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty_string() && p_item->cells[i + plus].icon.is_null()) {
 					col_width += cache.hseparation;
 					col_width += get_column_width(i + plus);
 					plus++;
@@ -2657,12 +2657,12 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 			} break;
 			case TreeItem::CELL_MODE_RANGE: {
-				if (!c.text.is_empty()) {
+				if (!c.text.is_empty_string()) {
 					//if (x >= (get_column_width(col)-item_h/2)) {
 					popup_menu->clear();
 					for (int i = 0; i < c.text.get_slice_count(","); i++) {
 						String s = c.text.get_slicec(',', i);
-						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
+						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty_string() ? i : s.get_slicec(':', 1).to_int());
 					}
 
 					popup_menu->set_size(Size2(col_width, 0));
@@ -3583,11 +3583,11 @@ bool Tree::edit_selected() {
 		item_edited(col, s);
 
 		return true;
-	} else if (c.mode == TreeItem::CELL_MODE_RANGE && !c.text.is_empty()) {
+	} else if (c.mode == TreeItem::CELL_MODE_RANGE && !c.text.is_empty_string()) {
 		popup_menu->clear();
 		for (int i = 0; i < c.text.get_slice_count(","); i++) {
 			String s2 = c.text.get_slicec(',', i);
-			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty() ? i : s2.get_slicec(':', 1).to_int());
+			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty_string() ? i : s2.get_slicec(':', 1).to_int());
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
@@ -4863,7 +4863,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
 				if (pos.x > col_width - size.width) {
 					String tooltip = c.buttons[j].tooltip;
-					if (!tooltip.is_empty()) {
+					if (!tooltip.is_empty_string()) {
 						return tooltip;
 					}
 				}

@@ -81,7 +81,7 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg.is_empty()) {
+	if (msg.is_empty_string()) {
 		return;
 	}
 	DisplayServer::get_singleton()->clipboard_set(msg);
@@ -315,7 +315,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (is_move_to_foreground()) {
 			DisplayServer::get_singleton()->window_move_to_foreground();
 		}
-		if (!error.is_empty()) {
+		if (!error.is_empty_string()) {
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false);
@@ -512,17 +512,17 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (oe.callstack.size() > 0) {
 			// If available, use the script's stack in the error title.
 			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
-		} else if (!oe.source_func.is_empty()) {
+		} else if (!oe.source_func.is_empty_string()) {
 			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
 		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
-		error_title += oe.error_descr.is_empty() ? oe.error : oe.error_descr;
+		error_title += oe.error_descr.is_empty_string() ? oe.error : oe.error_descr;
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
-		if (!oe.error_descr.is_empty()) {
+		if (!oe.error_descr.is_empty_string()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
 			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
@@ -538,7 +538,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.is_empty()) {
+		if (!oe.source_func.is_empty_string()) {
 			source_txt += " @ " + oe.source_func + "()";
 		}
 
@@ -1099,7 +1099,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && !res->get_path().is_empty()) {
+	if (res && !res->get_path().is_empty_string()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
@@ -1129,7 +1129,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res = p_value;
-			if (res.is_valid() && !res->get_path().is_empty()) {
+			if (res.is_valid() && !res->get_path().is_empty_string()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1149,13 +1149,13 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 	Resource *res = Object::cast_to<Resource>(p_base);
 
-	if (res && !res->get_path().is_empty()) {
+	if (res && !res->get_path().is_empty_string()) {
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res2 = p_value;
-			if (res2.is_valid() && !res2->get_path().is_empty()) {
+			if (res2.is_valid() && !res2->get_path().is_empty_string()) {
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1559,7 +1559,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			// Construct a GitHub repository URL and open it in the user's default web browser.
 			// If the commit hash is available, use it for greater accuracy. Otherwise fall back to tagged release.
-			String git_ref = String(VERSION_HASH).is_empty() ? String(VERSION_NUMBER) + "-stable" : String(VERSION_HASH);
+			String git_ref = String(VERSION_HASH).is_empty_string() ? String(VERSION_NUMBER) + "-stable" : String(VERSION_HASH);
 			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d",
 					git_ref, file, line_number));
 		} break;

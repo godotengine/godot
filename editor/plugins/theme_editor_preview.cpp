@@ -449,7 +449,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 		return;
 	}
 
-	if (loaded_scene->get_path().is_empty() || !ResourceLoader::exists(loaded_scene->get_path())) {
+	if (loaded_scene->get_path().is_empty_string() || !ResourceLoader::exists(loaded_scene->get_path())) {
 		EditorNode::get_singleton()->show_warning(TTR("Invalid path, the PackedScene resource was probably moved or removed."));
 		emit_signal(SNAME("scene_invalidated"));
 		return;

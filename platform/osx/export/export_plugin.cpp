@@ -347,51 +347,51 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
-			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSMicrophoneUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/microphone_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSCameraUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/camera_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSLocationUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/location_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSContactsUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/address_book_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSCalendarsUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/calendar_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSPhotoLibraryUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/photos_library_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSDesktopFolderUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/desktop_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSDocumentsFolderUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/documents_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSDownloadsFolderUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/downloads_folder_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSNetworkVolumesUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/network_volumes_usage_description") + "</string>\n";
 			}
-			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty_string()) {
 				descriptions += "\t<key>NSRemovableVolumesUsageDescription</key>\n";
 				descriptions += "\t<string>" + (String)p_preset->get("privacy/removable_volumes_usage_description") + "</string>\n";
 			}
-			if (!descriptions.is_empty()) {
+			if (!descriptions.is_empty_string()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
 			}
 		} else {
@@ -526,7 +526,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		PackedStringArray user_args = p_preset->get("codesign/custom_options");
 		for (int i = 0; i < user_args.size(); i++) {
 			String user_arg = user_args[i].strip_edges();
-			if (!user_arg.is_empty()) {
+			if (!user_arg.is_empty_string()) {
 				args.push_back(user_arg);
 			}
 		}
@@ -634,7 +634,7 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(Ref<DirAccess> &dir_access, 
 		err = dir_access->copy(p_src_path, p_in_app_path);
 	}
 	if (err == OK && p_sign_enabled) {
-		if (dir_access->dir_exists(p_src_path) && p_src_path.get_extension().is_empty()) {
+		if (dir_access->dir_exists(p_src_path) && p_src_path.get_extension().is_empty_string()) {
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
 		} else {
@@ -726,10 +726,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		src_pkg_name = p_preset->get("custom_template/release");
 	}
 
-	if (src_pkg_name.is_empty()) {
+	if (src_pkg_name.is_empty_string()) {
 		String err;
 		src_pkg_name = find_export_template("osx.zip", &err);
-		if (src_pkg_name.is_empty()) {
+		if (src_pkg_name.is_empty_string()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -870,37 +870,37 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
-			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty_string()) {
 				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty_string()) {
 				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty_string()) {
 				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty_string()) {
 				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty_string()) {
 				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty_string()) {
 				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty_string()) {
 				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty_string()) {
 				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty_string()) {
 				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty_string()) {
 				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
 			}
-			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
+			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty_string()) {
 				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
 			}
 			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
@@ -1034,7 +1034,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
 			}
 
-			if (!iconpath.is_empty()) {
+			if (!iconpath.is_empty_string()) {
 				if (iconpath.get_extension() == "icns") {
 					Ref<FileAccess> icon = FileAccess::open(iconpath, FileAccess::READ);
 					if (icon.is_valid()) {
@@ -1134,7 +1134,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
 		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + "_helper.entitlements");
-		if (sign_enabled && (ent_path.is_empty())) {
+		if (sign_enabled && (ent_path.is_empty_string())) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
 			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
@@ -1315,7 +1315,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
-				if (shared_objects[i].target.is_empty()) {
+				if (shared_objects[i].target.is_empty_string()) {
 					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
 					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
 				} else {
@@ -1420,12 +1420,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty_string() ? p_root_path : p_root_path.plus_file(p_folder);
 
 	Ref<DirAccess> da = DirAccess::open(dir);
 	da->list_dir_begin();
 	String f = da->get_next();
-	while (!f.is_empty()) {
+	while (!f.is_empty_string()) {
 		if (f == "." || f == "..") {
 			f = da->get_next();
 			continue;
@@ -1632,33 +1632,33 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 #endif
 
 	if (sign_enabled) {
-		if ((bool)p_preset->get("codesign/entitlements/audio_input") && ((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/audio_input") && ((String)p_preset->get("privacy/microphone_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Microphone access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
-		if ((bool)p_preset->get("codesign/entitlements/camera") && ((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/camera") && ((String)p_preset->get("privacy/camera_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Camera access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
-		if ((bool)p_preset->get("codesign/entitlements/location") && ((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/location") && ((String)p_preset->get("privacy/location_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Location information access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
-		if ((bool)p_preset->get("codesign/entitlements/address_book") && ((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/address_book") && ((String)p_preset->get("privacy/address_book_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Address book access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
-		if ((bool)p_preset->get("codesign/entitlements/calendars") && ((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/calendars") && ((String)p_preset->get("privacy/calendar_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Calendar access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
-		if ((bool)p_preset->get("codesign/entitlements/photos_library") && ((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+		if ((bool)p_preset->get("codesign/entitlements/photos_library") && ((String)p_preset->get("privacy/photos_library_usage_description")).is_empty_string()) {
 			err += TTR("Privacy: Photo library access is enabled, but usage description is not specified.") + "\n";
 			valid = false;
 		}
 	}
 
-	if (!err.is_empty()) {
+	if (!err.is_empty_string()) {
 		r_error = err;
 	}
 	return valid;
