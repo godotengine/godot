@@ -913,9 +913,9 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
 
         if to_skip > indent_level:
             print_error(
-                "{}.xml: Four spaces should be used for indentation within ["
-                + code_type
-                + "].".format(state.current_class),
+                "{}.xml: Four spaces should be used for indentation within [{}].".format(
+                    state.current_class, code_type
+                ),
                 state,
             )
 
