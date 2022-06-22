@@ -385,12 +385,16 @@
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="quality" type="float" default="0.75" />
 			<description>
+				Saves the image as a JPEG file to [code]path[/code] with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
 			</description>
 		</method>
 		<method name="save_jpg_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<argument index="0" name="quality" type="float" default="0.75" />
 			<description>
+				Saves the image as a JPEG file to a byte array with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
