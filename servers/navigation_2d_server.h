@@ -89,6 +89,8 @@ public:
 	virtual Array map_get_regions(RID p_map) const;
 	virtual Array map_get_agents(RID p_map) const;
 
+	virtual void map_force_update(RID p_map);
+
 	/// Creates a new region.
 	virtual RID region_create() const;
 
