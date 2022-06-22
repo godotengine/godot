@@ -50,14 +50,18 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 
 	uint8_t room_needed = sizeof(Message) + sizeof(Variant);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		String type;
-		if (ObjectDB::get_instance(p_id)) {
-			type = ObjectDB::get_instance(p_id)->get_class();
+	if ((buffer_end + room_needed) >= buffer.size()) {
+		if ((buffer_end + room_needed) >= max_allowed_buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_id)) {
+				type = ObjectDB::get_instance(p_id)->get_class();
+			}
+			print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_mb' in project settings.");
+		} else {
+			buffer.resize(buffer_end + room_needed);
 		}
-		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -81,10 +85,18 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 
 	uint8_t room_needed = sizeof(Message);
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	if ((buffer_end + room_needed) >= buffer.size()) {
+		if ((buffer_end + room_needed) >= max_allowed_buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_id)) {
+				type = ObjectDB::get_instance(p_id)->get_class();
+			}
+			print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_mb' in project settings.");
+		} else {
+			buffer.resize(buffer_end + room_needed);
+		}
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -116,10 +128,18 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
-	if ((buffer_end + room_needed) >= buffer_size) {
-		print_line("Failed method: " + p_callable);
-		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+	if ((buffer_end + room_needed) >= buffer.size()) {
+		if ((buffer_end + room_needed) >= max_allowed_buffer_size) {
+			String type;
+			if (ObjectDB::get_instance(p_callable.get_object_id())) {
+				type = ObjectDB::get_instance(p_callable.get_object_id())->get_class();
+			}
+			print_line("Failed method: " + p_callable);
+			statistics();
+			ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_mb' in project settings.");
+		} else {
+			buffer.resize(buffer_end + room_needed);
+		}
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -212,7 +232,7 @@ void MessageQueue::statistics() {
 }
 
 int MessageQueue::get_max_buffer_usage() const {
-	return buffer_max_used;
+	return buffer.size();
 }
 
 void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error) {
@@ -233,10 +253,6 @@ void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_a
 }
 
 void MessageQueue::flush() {
-	if (buffer_end > buffer_max_used) {
-		buffer_max_used = buffer_end;
-	}
-
 	uint32_t read_pos = 0;
 
 	//using reverse locking strategy
@@ -314,10 +330,9 @@ MessageQueue::MessageQueue() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
 	singleton = this;
 
-	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
-	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater"));
-	buffer_size *= 1024;
-	buffer = memnew_arr(uint8_t, buffer_size);
+	max_allowed_buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_mb", 32);
+	max_allowed_buffer_size *= 1024 * 1024;
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_mb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_mb", PROPERTY_HINT_RANGE, "4,512,1,or_greater"));
 }
 
 MessageQueue::~MessageQueue() {
@@ -341,5 +356,4 @@ MessageQueue::~MessageQueue() {
 	}
 
 	singleton = nullptr;
-	memdelete_arr(buffer);
 }

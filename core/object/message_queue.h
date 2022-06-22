@@ -33,16 +33,13 @@
 
 #include "core/object/object_id.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant.h"
 
 class Object;
 
 class MessageQueue {
 	_THREAD_SAFE_CLASS_
-
-	enum {
-		DEFAULT_QUEUE_SIZE_KB = 4096
-	};
 
 	enum {
 		TYPE_CALL,
@@ -62,10 +59,9 @@ class MessageQueue {
 		};
 	};
 
-	uint8_t *buffer = nullptr;
-	uint32_t buffer_end = 0;
-	uint32_t buffer_max_used = 0;
-	uint32_t buffer_size = 0;
+	LocalVector<uint8_t> buffer;
+	uint64_t buffer_end = 0;
+	uint64_t max_allowed_buffer_size = 0;
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
 
