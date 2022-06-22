@@ -38,7 +38,9 @@
 #include "core/io/file_access.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!active, 0);
+	if (!active) {
+		return 0;
+	}
 
 	int todo = p_frames;
 
