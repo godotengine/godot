@@ -56,6 +56,8 @@ public:
 	/// MUST be used in single thread!
 	static NavigationServer *get_singleton_mut();
 
+	virtual Array get_maps() const = 0;
+
 	/// Create a new map.
 	virtual RID map_create() const = 0;
 
