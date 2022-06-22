@@ -54,6 +54,7 @@ void NavigationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer::map_get_agents);
+	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer::map_force_update);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer::region_set_enter_cost);

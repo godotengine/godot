@@ -619,6 +619,15 @@ void GodotNavigationServer::flush_queries() {
 	commands.clear();
 }
 
+void GodotNavigationServer::map_force_update(RID p_map) {
+	NavMap *map = map_owner.getornull(p_map);
+	ERR_FAIL_COND(map == nullptr);
+
+	flush_queries();
+
+	map->sync();
+}
+
 void GodotNavigationServer::process(real_t p_delta_time) {
 	flush_queries();
 
