@@ -646,6 +646,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
+	// FIXME
+#endif
+#if 0
+	// After discussion on devchat disabled EditorProgress for now as it is not thread-safe and uses hacks and Main::iteration() for steps.
+	// EditorProgress randomly crashes the Engine when the bake function is used with a thread e.g. inside Editor with a tool script and procedural navigation
+	// This was not a problem in older versions as previously Godot was unable to (re)bake NavigationMesh at runtime.
+	// If EditorProgress is fixed and made thread-safe this should be enabled again.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 	}
