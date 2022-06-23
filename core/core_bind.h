@@ -551,7 +551,6 @@ class Thread : public RefCounted {
 
 protected:
 	Variant ret;
-	Variant userdata;
 	SafeFlag running;
 	Callable target_callable;
 	::Thread thread;
@@ -566,7 +565,7 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_started() const;
 	bool is_alive() const;
