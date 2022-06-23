@@ -144,6 +144,11 @@ Light::BakeMode Light::get_bake_mode() const {
 	return bake_mode;
 }
 
+void Light::owner_changed_notify() {
+	// For cases where owner changes _after_ entering tree (as example, editor editing).
+	_update_visibility();
+}
+
 void Light::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;
