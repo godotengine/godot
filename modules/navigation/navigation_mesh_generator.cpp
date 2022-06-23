@@ -459,6 +459,21 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[1] = bmax[1];
 	cfg.bmax[2] = bmax[2];
 
+	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
+
+	bool aabb_has_no_volume = baking_aabb.has_no_area();
+
+	if (!aabb_has_no_volume) {
+		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
+
+		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
+		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
+		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;
+		cfg.bmax[0] = cfg.bmin[0] + baking_aabb.size[0];
+		cfg.bmax[1] = cfg.bmin[1] + baking_aabb.size[1];
+		cfg.bmax[2] = cfg.bmin[2] + baking_aabb.size[2];
+	}
+
 #ifdef TOOLS_ENABLED
 	if (ep)
 		ep->step(TTR("Calculating grid size..."), 2);
