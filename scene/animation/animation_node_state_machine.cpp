@@ -435,7 +435,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 
 			// handles start_node: if previous state machine is pointing to a node inside the current state machine, starts the current machine from start_node to prev_local_to
 			if (p_state_machine->start_node == current && p_state_machine->transitions[i].local_from == current) {
-				if (p_state_machine->prev_state_machine.is_valid()) {
+				if (p_state_machine->prev_state_machine != nullptr) {
 					Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter("playback");
 
 					if (prev_playback.is_valid()) {
@@ -471,9 +471,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	if (next == p_state_machine->end_node) {
-		Ref<AnimationNodeStateMachine> prev_state_machine = p_state_machine->prev_state_machine;
+		AnimationNodeStateMachine *prev_state_machine = p_state_machine->prev_state_machine;
 
-		if (prev_state_machine.is_valid()) {
+		if (prev_state_machine != nullptr) {
 			Ref<AnimationNodeStateMachinePlayback> prev_playback = prev_state_machine->get_parameter("playback");
 
 			if (prev_playback.is_valid()) {
@@ -655,7 +655,7 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 
 	if (anodesm.is_valid()) {
 		anodesm->state_machine_name = p_name;
-		anodesm->prev_state_machine = (Ref<AnimationNodeStateMachine>)this;
+		anodesm->prev_state_machine = this;
 	}
 
 	emit_changed();
@@ -821,7 +821,7 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	List<StringName> nodes;
 	for (const KeyValue<StringName, State> &E : states) {
-		if (E.key == end_node && !prev_state_machine.is_valid()) {
+		if (E.key == end_node && prev_state_machine == nullptr) {
 			continue;
 		}
 
@@ -834,7 +834,7 @@ void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	}
 }
 
-Ref<AnimationNodeStateMachine> AnimationNodeStateMachine::get_prev_state_machine() const {
+AnimationNodeStateMachine *AnimationNodeStateMachine::get_prev_state_machine() const {
 	return prev_state_machine;
 }
 
@@ -862,10 +862,10 @@ int AnimationNodeStateMachine::find_transition(const StringName &p_from, const S
 	return -1;
 }
 
-bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<Ref<AnimationNodeStateMachine>> p_parents) const {
+bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<AnimationNodeStateMachine *> p_parents) {
 	if (p_parents.is_empty()) {
-		Ref<AnimationNodeStateMachine> prev = (Ref<AnimationNodeStateMachine>)this;
-		while (prev.is_valid()) {
+		AnimationNodeStateMachine *prev = this;
+		while (prev != nullptr) {
 			p_parents.push_back(prev);
 			prev = prev->prev_state_machine;
 		}
@@ -874,7 +874,7 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<Re
 	if (states.has(p_name)) {
 		Ref<AnimationNodeStateMachine> anodesm = states[p_name].node;
 
-		if (anodesm.is_valid() && p_parents.find(anodesm) != -1) {
+		if (anodesm.is_valid() && p_parents.find(anodesm.ptr()) != -1) {
 			return false;
 		}
 
@@ -889,7 +889,7 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<Re
 	}
 
 	if (path[0] == "..") {
-		if (prev_state_machine.is_valid()) {
+		if (prev_state_machine != nullptr) {
 			return prev_state_machine->_can_connect(name.replace_first("../", ""), p_parents);
 		}
 	} else if (states.has(path[0])) {
