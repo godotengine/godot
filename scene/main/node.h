@@ -208,6 +208,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
+	virtual void owner_changed_notify();
 
 	void _propagate_replace_owner(Node *p_owner, Node *p_by_owner);
 
