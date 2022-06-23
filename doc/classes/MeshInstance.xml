@@ -52,13 +52,14 @@
 			<return type="Material" />
 			<argument index="0" name="surface" type="int" />
 			<description>
-				Returns the [Material] for a surface of the [Mesh] resource.
+				Returns the override [Material] for a surface of the [Mesh] resource.
+				[b]Note:[/b] This function only returns [i]override[/i] materials associated with this [MeshInstance]. Consider using [method get_active_material] or [method Mesh.surface_get_material] to get materials associated with the [Mesh] resource.
 			</description>
 		</method>
 		<method name="get_surface_material_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of surface materials.
+				Returns the number of surface override materials.
 			</description>
 		</method>
 		<method name="is_mergeable_with" qualifiers="const">
@@ -88,7 +89,7 @@
 			<argument index="0" name="surface" type="int" />
 			<argument index="1" name="material" type="Material" />
 			<description>
-				Sets the [Material] for a surface of the [Mesh] resource.
+				Sets the override [Material] for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance] rather than with the [Mesh] resource.
 			</description>
 		</method>
 	</methods>
