@@ -283,6 +283,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 	setup_pass++;
 
 	for (int i = 0; i < a->get_track_count(); i++) {
+		if (!a->track_is_enabled(i)) {
+			continue;
+		}
 		p_anim->node_cache.write[i] = nullptr;
 		Ref<Resource> resource;
 		Vector<StringName> leftover_path;

@@ -965,6 +965,10 @@ void AnimationTree::_process_graph(double p_delta) {
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
+				if (!a->track_is_enabled(i)) {
+					continue;
+				}
+
 				NodePath path = a->track_get_path(i);
 
 				ERR_CONTINUE(!track_cache.has(path));
