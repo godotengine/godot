@@ -327,6 +327,7 @@ void AnimationPlayerEditor::_animation_new() {
 	}
 
 	name->set_text(base);
+	name_dialog->set_title(TTR("Create New Animation"));
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
@@ -341,6 +342,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
 	name_dialog_op = TOOL_RENAME_ANIM;
+	name_dialog->set_title(TTR("Rename Animation"));
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
@@ -1005,6 +1007,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	name_title->set_text(TTR("New Animation Name:"));
 	name->set_text(new_name);
 	name_dialog_op = TOOL_DUPLICATE_ANIM;
+	name_dialog->set_title(TTR("Duplicate Animation"));
 	name_dialog->popup_centered(Size2(300, 90));
 	name->select_all();
 	name->grab_focus();
@@ -1697,7 +1700,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	add_child(file);
 
 	name_dialog = memnew(ConfirmationDialog);
-	name_dialog->set_title(TTR("Create New Animation"));
 	name_dialog->set_hide_on_ok(false);
 	add_child(name_dialog);
 	VBoxContainer *vb = memnew(VBoxContainer);
