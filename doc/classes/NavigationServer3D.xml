@@ -127,6 +127,12 @@
 				Destroys the given RID.
 			</description>
 		</method>
+		<method name="get_maps" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
+			</description>
+		</method>
 		<method name="map_create" qualifiers="const">
 			<return type="RID" />
 			<description>
