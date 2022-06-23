@@ -83,7 +83,6 @@ public:
 			real_t right_tangent = 0,
 			TangentMode left_mode = TANGENT_FREE,
 			TangentMode right_mode = TANGENT_FREE);
-
 	void remove_point(int p_index);
 	void clear_points();
 
@@ -137,6 +136,12 @@ protected:
 
 private:
 	void mark_dirty();
+	int _add_point(Vector2 p_position,
+			real_t left_tangent = 0,
+			real_t right_tangent = 0,
+			TangentMode left_mode = TANGENT_FREE,
+			TangentMode right_mode = TANGENT_FREE);
+	void _remove_point(int p_index);
 
 	Vector<Point> _points;
 	bool _baked_cache_dirty = false;
