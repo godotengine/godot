@@ -2955,6 +2955,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					if (has_vertex_color) {
 						mat3d->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
+					mat3d->set_name("Default");
 					mat = mat3d;
 				}
 				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);

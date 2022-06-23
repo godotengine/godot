@@ -134,6 +134,11 @@ class SceneImportSettingsData : public Object {
 void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
 	String import_id;
 	bool has_import_id = false;
+	bool created = false;
+	if (!material_set.has(p_material)) {
+		material_set.insert(p_material);
+		created = true;
+	}
 
 	if (p_material->has_meta("import_id")) {
 		import_id = p_material->get_meta("import_id");
@@ -162,13 +167,6 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	TreeItem *item = p_tree->create_item(p_parent);
 	item->set_text(0, p_material->get_name());
 	item->set_icon(0, icon);
-
-	bool created = false;
-	if (!material_set.has(p_material)) {
-		material_set.insert(p_material);
-		created = true;
-	}
-
 	item->set_meta("type", "Material");
 	item->set_meta("import_id", import_id);
 	item->set_tooltip(0, vformat(TTR("Import ID: %s"), import_id));
