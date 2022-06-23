@@ -365,6 +365,16 @@ real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
 	return region->get_travel_cost();
 }
 
+bool GodotNavigationServer::region_owns_point(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.getornull(p_region);
+	ERR_FAIL_COND_V(region == nullptr, false);
+	if (region->get_map()) {
+		RID closest_point_owner = map_get_closest_point_owner(region->get_map()->get_self(), p_point);
+		return closest_point_owner == region->get_self();
+	}
+	return false;
+}
+
 COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers) {
 	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);

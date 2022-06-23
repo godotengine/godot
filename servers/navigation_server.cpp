@@ -60,6 +60,7 @@ void NavigationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer::region_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer::region_get_travel_cost);
+	ClassDB::bind_method(D_METHOD("region_owns_point", "region", "point"), &NavigationServer::region_owns_point);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &NavigationServer::region_set_map);
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer::region_get_map);
 

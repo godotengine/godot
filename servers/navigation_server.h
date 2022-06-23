@@ -113,6 +113,8 @@ public:
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
 
+	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const = 0;
+
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const = 0;
 	virtual RID region_get_map(RID p_region) const = 0;
