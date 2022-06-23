@@ -204,10 +204,24 @@ struct PropertyInfo {
 
 Array convert_property_list(const List<PropertyInfo> *p_list);
 
+enum MethodFlags {
+	METHOD_FLAG_NORMAL = 1,
+	METHOD_FLAG_EDITOR = 2,
+	METHOD_FLAG_NOSCRIPT = 4,
+	METHOD_FLAG_CONST = 8,
+	METHOD_FLAG_REVERSE = 16, // used for events
+	METHOD_FLAG_VIRTUAL = 32,
+	METHOD_FLAG_FROM_SCRIPT = 64,
+	METHOD_FLAG_VARARG = 128,
+	METHOD_FLAG_STATIC = 256,
+	METHOD_FLAG_OBJECT_CORE = 512,
+	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
+};
+
 struct MethodInfo {
 	String name;
 	PropertyInfo return_val;
-	uint32_t flags; // NOLINT - prevent clang-tidy to assign method_bind.h constant here, it should stay in .cpp.
+	uint32_t flags = METHOD_FLAGS_DEFAULT;
 	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
@@ -219,29 +233,50 @@ struct MethodInfo {
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
-	MethodInfo();
-	MethodInfo(const String &p_name);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
-	MethodInfo(Variant::Type ret);
-	MethodInfo(Variant::Type ret, const String &p_name);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5, const PropertyInfo &p_param6);
+	MethodInfo() {}
+
+	void _push_params(const PropertyInfo &p_param) {
+		arguments.push_back(p_param);
+	}
+
+	template <typename... VarArgs>
+	void _push_params(const PropertyInfo &p_param, VarArgs... p_params) {
+		arguments.push_back(p_param);
+		_push_params(p_params...);
+	}
+
+	MethodInfo(const String &p_name) { name = p_name; }
+
+	template <typename... VarArgs>
+	MethodInfo(const String &p_name, VarArgs... p_params) {
+		name = p_name;
+		_push_params(p_params...);
+	}
+
+	MethodInfo(Variant::Type ret) { return_val.type = ret; }
+	MethodInfo(Variant::Type ret, const String &p_name) {
+		return_val.type = ret;
+		name = p_name;
+	}
+
+	template <typename... VarArgs>
+	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
+		name = p_name;
+		return_val.type = ret;
+		_push_params(p_params...);
+	}
+
+	MethodInfo(const PropertyInfo &p_ret, const String &p_name) {
+		return_val = p_ret;
+		name = p_name;
+	}
+
+	template <typename... VarArgs>
+	MethodInfo(const PropertyInfo &p_ret, const String &p_name, VarArgs... p_params) {
+		return_val = p_ret;
+		name = p_name;
+		_push_params(p_params...);
+	}
 };
 
 // API used to extend in GDNative and other C compatible compiled languages.
