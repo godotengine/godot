@@ -117,6 +117,8 @@ public:
 	COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost);
 	virtual real_t region_get_travel_cost(RID p_region) const override;
 
+	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const override;
+
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
 	virtual RID region_get_map(RID p_region) const override;
 	COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers);
