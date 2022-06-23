@@ -114,6 +114,8 @@ protected:
 	bool filter_low_hanging_obstacles = false;
 	bool filter_ledge_spans = false;
 	bool filter_walkable_low_height_spans = false;
+	AABB filter_baking_aabb;
+	Vector3 filter_baking_aabb_offset;
 
 public:
 	// Recast settings
@@ -182,6 +184,12 @@ public:
 
 	void set_filter_walkable_low_height_spans(bool p_value);
 	bool get_filter_walkable_low_height_spans() const;
+
+	void set_filter_baking_aabb(const AABB &p_aabb);
+	AABB get_filter_baking_aabb() const;
+
+	void set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset);
+	Vector3 get_filter_baking_aabb_offset() const;
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
