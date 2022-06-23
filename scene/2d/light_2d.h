@@ -79,6 +79,8 @@ private:
 
 	void _update_light_visibility();
 
+	virtual void owner_changed_notify();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

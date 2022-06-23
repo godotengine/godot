@@ -458,6 +458,9 @@ void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
 
+void Node::owner_changed_notify() {
+}
+
 void Node::_physics_interpolated_changed() {}
 
 void Node::set_physics_process(bool p_process) {
@@ -1605,6 +1608,8 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
 	data.OW = data.owner->data.owned.back();
+
+	owner_changed_notify();
 }
 
 void Node::_release_unique_name_in_owner() {
