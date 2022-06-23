@@ -43,7 +43,6 @@
 #include "servers/rendering/renderer_rd/shaders/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/resolve.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
@@ -579,26 +578,6 @@ private:
 		RID pipelines[3]; //3 quality levels
 	} sss;
 
-	struct ResolvePushConstant {
-		int32_t screen_size[2];
-		int32_t samples;
-		uint32_t pad;
-	};
-
-	enum ResolveMode {
-		RESOLVE_MODE_GI,
-		RESOLVE_MODE_GI_VOXEL_GI,
-		RESOLVE_MODE_DEPTH,
-		RESOLVE_MODE_MAX
-	};
-
-	struct Resolve {
-		ResolvePushConstant push_constant;
-		ResolveShaderRD shader;
-		RID shader_version;
-		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
-	} resolve;
-
 	enum SortMode {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
@@ -732,9 +711,6 @@ public:
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
-
-	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
-	void resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

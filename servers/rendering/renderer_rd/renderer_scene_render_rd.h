@@ -38,8 +38,8 @@
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
+#include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_gi_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
 #include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
@@ -99,7 +99,7 @@ struct RenderDataRD {
 
 class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererSceneSkyRD;
-	friend RendererSceneGIRD;
+	friend RendererRD::GI;
 
 protected:
 	RendererStorageRD *storage = nullptr;
@@ -131,7 +131,7 @@ protected:
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
-	void _debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
+	void _debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const CameraMatrix *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
 	void _debug_draw_cluster(RID p_render_buffers);
 
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
@@ -151,7 +151,7 @@ protected:
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID p_normal_roughness_buffer, RID p_voxel_gi_buffer);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID *p_normal_roughness_views, RID p_voxel_gi_buffer);
 
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
@@ -163,7 +163,7 @@ protected:
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
 	PagedArray<GeometryInstance *> cull_argument; //need this to exist
 
-	RendererSceneGIRD gi;
+	RendererRD::GI gi;
 	RendererSceneSkyRD sky;
 
 	RendererSceneEnvironmentRD *get_environment(RID p_environment) {
@@ -503,9 +503,9 @@ private:
 		};
 		Vector<View> views;
 
-		RendererSceneGIRD::SDFGI *sdfgi = nullptr;
+		RendererRD::GI::SDFGI *sdfgi = nullptr;
 		VolumetricFog *volumetric_fog = nullptr;
-		RendererSceneGIRD::RenderBuffersGI gi;
+		RendererRD::GI::RenderBuffersGI rbgi;
 
 		ClusterBuilderRD *cluster_builder = nullptr;
 
@@ -606,9 +606,6 @@ private:
 			RID temp;
 			RID prev_velocity; // Last frame velocity buffer
 		} taa;
-
-		RID ambient_buffer;
-		RID reflection_buffer;
 	};
 
 	/* GI */
@@ -996,6 +993,10 @@ private:
 public:
 	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
 	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) = 0;
+
+	/* GI */
+
+	RendererRD::GI *get_gi() { return &gi; }
 
 	/* SHADOW ATLAS API */
 

@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
@@ -173,336 +174,6 @@ void RendererStorageRD::visibility_notifier_call(RID p_notifier, bool p_enter, b
 	}
 }
 
-/* VOXEL GI */
-
-RID RendererStorageRD::voxel_gi_allocate() {
-	return voxel_gi_owner.allocate_rid();
-}
-void RendererStorageRD::voxel_gi_initialize(RID p_voxel_gi) {
-	voxel_gi_owner.initialize_rid(p_voxel_gi, VoxelGI());
-}
-
-void RendererStorageRD::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	if (voxel_gi->octree_buffer.is_valid()) {
-		RD::get_singleton()->free(voxel_gi->octree_buffer);
-		RD::get_singleton()->free(voxel_gi->data_buffer);
-		if (voxel_gi->sdf_texture.is_valid()) {
-			RD::get_singleton()->free(voxel_gi->sdf_texture);
-		}
-
-		voxel_gi->sdf_texture = RID();
-		voxel_gi->octree_buffer = RID();
-		voxel_gi->data_buffer = RID();
-		voxel_gi->octree_buffer_size = 0;
-		voxel_gi->data_buffer_size = 0;
-		voxel_gi->cell_count = 0;
-	}
-
-	voxel_gi->to_cell_xform = p_to_cell_xform;
-	voxel_gi->bounds = p_aabb;
-	voxel_gi->octree_size = p_octree_size;
-	voxel_gi->level_counts = p_level_counts;
-
-	if (p_octree_cells.size()) {
-		ERR_FAIL_COND(p_octree_cells.size() % 32 != 0); //cells size must be a multiple of 32
-
-		uint32_t cell_count = p_octree_cells.size() / 32;
-
-		ERR_FAIL_COND(p_data_cells.size() != (int)cell_count * 16); //see that data size matches
-
-		voxel_gi->cell_count = cell_count;
-		voxel_gi->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);
-		voxel_gi->octree_buffer_size = p_octree_cells.size();
-		voxel_gi->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
-		voxel_gi->data_buffer_size = p_data_cells.size();
-
-		if (p_distance_field.size()) {
-			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R8_UNORM;
-			tf.width = voxel_gi->octree_size.x;
-			tf.height = voxel_gi->octree_size.y;
-			tf.depth = voxel_gi->octree_size.z;
-			tf.texture_type = RD::TEXTURE_TYPE_3D;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-			Vector<Vector<uint8_t>> s;
-			s.push_back(p_distance_field);
-			voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
-		}
-#if 0
-			{
-				RD::TextureFormat tf;
-				tf.format = RD::DATA_FORMAT_R8_UNORM;
-				tf.width = voxel_gi->octree_size.x;
-				tf.height = voxel_gi->octree_size.y;
-				tf.depth = voxel_gi->octree_size.z;
-				tf.type = RD::TEXTURE_TYPE_3D;
-				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UNORM);
-				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UINT);
-				voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			}
-			RID shared_tex;
-			{
-				RD::TextureView tv;
-				tv.format_override = RD::DATA_FORMAT_R8_UINT;
-				shared_tex = RD::get_singleton()->texture_create_shared(tv, voxel_gi->sdf_texture);
-			}
-			//update SDF texture
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 1;
-				u.append_id(voxel_gi->octree_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 2;
-				u.append_id(voxel_gi->data_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 3;
-				u.append_id(shared_tex);
-				uniforms.push_back(u);
-			}
-
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, voxel_gi_sdf_shader_version_shader, 0);
-
-			{
-				uint32_t push_constant[4] = { 0, 0, 0, 0 };
-
-				for (int i = 0; i < voxel_gi->level_counts.size() - 1; i++) {
-					push_constant[0] += voxel_gi->level_counts[i];
-				}
-				push_constant[1] = push_constant[0] + voxel_gi->level_counts[voxel_gi->level_counts.size() - 1];
-
-				print_line("offset: " + itos(push_constant[0]));
-				print_line("size: " + itos(push_constant[1]));
-				//create SDF
-				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, voxel_gi_sdf_shader_pipeline);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, push_constant, sizeof(uint32_t) * 4);
-				RD::get_singleton()->compute_list_dispatch(compute_list, voxel_gi->octree_size.x / 4, voxel_gi->octree_size.y / 4, voxel_gi->octree_size.z / 4);
-				RD::get_singleton()->compute_list_end();
-			}
-
-			RD::get_singleton()->free(uniform_set);
-			RD::get_singleton()->free(shared_tex);
-		}
-#endif
-	}
-
-	voxel_gi->version++;
-	voxel_gi->data_version++;
-
-	voxel_gi->dependency.changed_notify(DEPENDENCY_CHANGED_AABB);
-}
-
-AABB RendererStorageRD::voxel_gi_get_bounds(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, AABB());
-
-	return voxel_gi->bounds;
-}
-
-Vector3i RendererStorageRD::voxel_gi_get_octree_size(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector3i());
-	return voxel_gi->octree_size;
-}
-
-Vector<uint8_t> RendererStorageRD::voxel_gi_get_octree_cells(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
-
-	if (voxel_gi->octree_buffer.is_valid()) {
-		return RD::get_singleton()->buffer_get_data(voxel_gi->octree_buffer);
-	}
-	return Vector<uint8_t>();
-}
-
-Vector<uint8_t> RendererStorageRD::voxel_gi_get_data_cells(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
-
-	if (voxel_gi->data_buffer.is_valid()) {
-		return RD::get_singleton()->buffer_get_data(voxel_gi->data_buffer);
-	}
-	return Vector<uint8_t>();
-}
-
-Vector<uint8_t> RendererStorageRD::voxel_gi_get_distance_field(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<uint8_t>());
-
-	if (voxel_gi->data_buffer.is_valid()) {
-		return RD::get_singleton()->texture_get_data(voxel_gi->sdf_texture, 0);
-	}
-	return Vector<uint8_t>();
-}
-
-Vector<int> RendererStorageRD::voxel_gi_get_level_counts(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Vector<int>());
-
-	return voxel_gi->level_counts;
-}
-
-Transform3D RendererStorageRD::voxel_gi_get_to_cell_xform(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, Transform3D());
-
-	return voxel_gi->to_cell_xform;
-}
-
-void RendererStorageRD::voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->dynamic_range = p_range;
-	voxel_gi->version++;
-}
-
-float RendererStorageRD::voxel_gi_get_dynamic_range(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-
-	return voxel_gi->dynamic_range;
-}
-
-void RendererStorageRD::voxel_gi_set_propagation(RID p_voxel_gi, float p_range) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->propagation = p_range;
-	voxel_gi->version++;
-}
-
-float RendererStorageRD::voxel_gi_get_propagation(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->propagation;
-}
-
-void RendererStorageRD::voxel_gi_set_energy(RID p_voxel_gi, float p_energy) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->energy = p_energy;
-}
-
-float RendererStorageRD::voxel_gi_get_energy(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->energy;
-}
-
-void RendererStorageRD::voxel_gi_set_bias(RID p_voxel_gi, float p_bias) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->bias = p_bias;
-}
-
-float RendererStorageRD::voxel_gi_get_bias(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->bias;
-}
-
-void RendererStorageRD::voxel_gi_set_normal_bias(RID p_voxel_gi, float p_normal_bias) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->normal_bias = p_normal_bias;
-}
-
-float RendererStorageRD::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->normal_bias;
-}
-
-void RendererStorageRD::voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->anisotropy_strength = p_strength;
-}
-
-float RendererStorageRD::voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->anisotropy_strength;
-}
-
-void RendererStorageRD::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->interior = p_enable;
-}
-
-void RendererStorageRD::voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->use_two_bounces = p_enable;
-	voxel_gi->version++;
-}
-
-bool RendererStorageRD::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, false);
-	return voxel_gi->use_two_bounces;
-}
-
-bool RendererStorageRD::voxel_gi_is_interior(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->interior;
-}
-
-uint32_t RendererStorageRD::voxel_gi_get_version(RID p_voxel_gi) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->version;
-}
-
-uint32_t RendererStorageRD::voxel_gi_get_data_version(RID p_voxel_gi) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->data_version;
-}
-
-RID RendererStorageRD::voxel_gi_get_octree_buffer(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
-	return voxel_gi->octree_buffer;
-}
-
-RID RendererStorageRD::voxel_gi_get_data_buffer(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
-	return voxel_gi->data_buffer;
-}
-
-RID RendererStorageRD::voxel_gi_get_sdf_texture(RID p_voxel_gi) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, RID());
-
-	return voxel_gi->sdf_texture;
-}
-
 /* misc */
 
 void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_instance) {
@@ -521,8 +192,8 @@ void RendererStorageRD::base_update_dependency(RID p_base, DependencyTracker *p_
 	} else if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_base)) {
 		RendererRD::Decal *decal = RendererRD::TextureStorage::get_singleton()->get_decal(p_base);
 		p_instance->update_dependency(&decal->dependency);
-	} else if (voxel_gi_owner.owns(p_base)) {
-		VoxelGI *gip = voxel_gi_owner.get_or_null(p_base);
+	} else if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_base)) {
+		RendererRD::GI::VoxelGI *gip = RendererRD::GI::get_singleton()->get_voxel_gi(p_base);
 		p_instance->update_dependency(&gip->dependency);
 	} else if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_base)) {
 		RendererRD::Lightmap *lm = RendererRD::LightStorage::get_singleton()->get_lightmap(p_base);
@@ -558,7 +229,7 @@ RS::InstanceType RendererStorageRD::get_base_type(RID p_rid) const {
 	if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
 		return RS::INSTANCE_DECAL;
 	}
-	if (voxel_gi_owner.owns(p_rid)) {
+	if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
 		return RS::INSTANCE_VOXEL_GI;
 	}
 	if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
@@ -636,11 +307,8 @@ bool RendererStorageRD::free(RID p_rid) {
 		RendererRD::LightStorage::get_singleton()->reflection_probe_free(p_rid);
 	} else if (RendererRD::TextureStorage::get_singleton()->owns_decal(p_rid)) {
 		RendererRD::TextureStorage::get_singleton()->decal_free(p_rid);
-	} else if (voxel_gi_owner.owns(p_rid)) {
-		voxel_gi_allocate_data(p_rid, Transform3D(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
-		VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_rid);
-		voxel_gi->dependency.deleted_notify(p_rid);
-		voxel_gi_owner.free(p_rid);
+	} else if (RendererRD::GI::get_singleton()->owns_voxel_gi(p_rid)) {
+		RendererRD::GI::get_singleton()->voxel_gi_free(p_rid);
 	} else if (RendererRD::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
 		RendererRD::LightStorage::get_singleton()->lightmap_free(p_rid);
 	} else if (RendererRD::LightStorage::get_singleton()->owns_light(p_rid)) {
