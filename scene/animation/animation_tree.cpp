@@ -276,7 +276,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	String new_path;
 	AnimationNode *new_parent;
 
-	//this is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations
+	// This is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations.
 	if (p_new_parent) {
 		new_parent = p_new_parent;
 		new_path = String(base_path) + String(p_subpath) + "/";
@@ -286,6 +286,9 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
 
+	// If tracks for blending don't exist for one of the animations, Rest or RESET animation is blended as init animation instead.
+	// Then, blend weight is 0 means that the init animation blend weight is 1.
+	// Therefore, the blending process must be executed even if the blend weight is 0.
 	if (!p_seek && p_optimize && !any_valid) {
 		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
 	}
@@ -1327,12 +1330,21 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (blend < CMP_EPSILON) {
 								continue; //nothing to blend
 							}
-							List<int> indices;
-							a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
 
-							for (int &F : indices) {
-								Variant value = a->track_get_key_value(i, F);
+							if (seeked) {
+								int idx = a->track_find_key(i, time);
+								if (idx < 0) {
+									continue;
+								}
+								Variant value = a->track_get_key_value(i, idx);
 								t->object->set_indexed(t->subpath, value);
+							} else {
+								List<int> indices;
+								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+								for (int &F : indices) {
+									Variant value = a->track_get_key_value(i, F);
+									t->object->set_indexed(t->subpath, value);
+								}
 							}
 						}
 
@@ -1341,20 +1353,27 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (blend < CMP_EPSILON) {
 							continue; //nothing to blend
 						}
-						if (!seeked && Math::is_zero_approx(delta)) {
-							continue;
-						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
-						List<int> indices;
-
-						a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
-
-						for (int &F : indices) {
-							StringName method = a->method_track_get_name(i, F);
-							Vector<Variant> params = a->method_track_get_params(i, F);
+						if (seeked) {
+							int idx = a->track_find_key(i, time);
+							if (idx < 0) {
+								continue;
+							}
+							StringName method = a->method_track_get_name(i, idx);
+							Vector<Variant> params = a->method_track_get_params(i, idx);
 							if (can_call) {
-								_call_object(t->object, method, params, true);
+								_call_object(t->object, method, params, false);
+							}
+						} else {
+							List<int> indices;
+							a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
+							for (int &F : indices) {
+								StringName method = a->method_track_get_name(i, F);
+								Vector<Variant> params = a->method_track_get_params(i, F);
+								if (can_call) {
+									_call_object(t->object, method, params, true);
+								}
 							}
 						}
 					} break;
