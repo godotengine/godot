@@ -1053,7 +1053,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	_update_name_dialog_library_dropdown();
 
 	name_dialog_op = TOOL_DUPLICATE_ANIM;
-	name_dialog->set_title("Duplicate Animation");
+	name_dialog->set_title(TTR("Duplicate Animation"));
 	name_title->set_text(TTR("Duplicated Animation Name:"));
 	name->set_text(new_name);
 	name_dialog->popup_centered(Size2(300, 90));
