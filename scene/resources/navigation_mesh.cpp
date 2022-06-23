@@ -272,6 +272,24 @@ bool NavigationMesh::get_filter_walkable_low_height_spans() const {
 	return filter_walkable_low_height_spans;
 }
 
+void NavigationMesh::set_filter_baking_aabb(const AABB &p_aabb) {
+	filter_baking_aabb = p_aabb;
+	notify_property_list_changed();
+}
+
+AABB NavigationMesh::get_filter_baking_aabb() const {
+	return filter_baking_aabb;
+}
+
+void NavigationMesh::set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset) {
+	filter_baking_aabb_offset = p_aabb_offset;
+	notify_property_list_changed();
+}
+
+Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
+	return filter_baking_aabb_offset;
+}
+
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 	vertices = p_vertices;
 	notify_property_list_changed();
@@ -469,6 +487,10 @@ void NavigationMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_filter_walkable_low_height_spans", "filter_walkable_low_height_spans"), &NavigationMesh::set_filter_walkable_low_height_spans);
 	ClassDB::bind_method(D_METHOD("get_filter_walkable_low_height_spans"), &NavigationMesh::get_filter_walkable_low_height_spans);
+	ClassDB::bind_method(D_METHOD("set_filter_baking_aabb", "baking_aabb"), &NavigationMesh::set_filter_baking_aabb);
+	ClassDB::bind_method(D_METHOD("get_filter_baking_aabb"), &NavigationMesh::get_filter_baking_aabb);
+	ClassDB::bind_method(D_METHOD("set_filter_baking_aabb_offset", "baking_aabb_offset"), &NavigationMesh::set_filter_baking_aabb_offset);
+	ClassDB::bind_method(D_METHOD("get_filter_baking_aabb_offset"), &NavigationMesh::get_filter_baking_aabb_offset);
 
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMesh::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMesh::get_vertices);
@@ -516,6 +538,8 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_walkable_low_height_spans"), "set_filter_walkable_low_height_spans", "get_filter_walkable_low_height_spans");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "filter_baking_aabb"), "set_filter_baking_aabb", "get_filter_baking_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "filter_baking_aabb_offset"), "set_filter_baking_aabb_offset", "get_filter_baking_aabb_offset");
 
 	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_WATERSHED);
 	BIND_ENUM_CONSTANT(SAMPLE_PARTITION_MONOTONE);

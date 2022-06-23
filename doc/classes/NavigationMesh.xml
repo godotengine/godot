@@ -107,6 +107,12 @@
 			The maximum allowed length for contour edges along the border of the mesh.
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
+		<member name="filter_baking_aabb" type="AABB" setter="set_filter_baking_aabb" getter="get_filter_baking_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			If the baking [AABB] has a volume the navigation mesh baking will be restricted to its enclosing area.
+		</member>
+		<member name="filter_baking_aabb_offset" type="Vector3" setter="set_filter_baking_aabb_offset" getter="get_filter_baking_aabb_offset" default="Vector3(0, 0, 0)">
+			The position offset applied to the [member filter_baking_aabb] [AABB].
+		</member>
 		<member name="filter_ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans" default="false">
 			If [code]true[/code], marks spans that are ledges as non-walkable.
 		</member>
