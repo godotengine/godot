@@ -324,7 +324,7 @@ Transform3D Node3D::get_relative_transform(const Node *p_parent) const {
 }
 
 void Node3D::set_position(const Vector3 &p_position) {
-	get_transform().origin = p_position;
+	data.local_transform.origin = p_position;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
