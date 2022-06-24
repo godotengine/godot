@@ -100,7 +100,7 @@
 		<method name="_get_minimum_size" qualifiers="virtual const">
 			<return type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
+				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member custom_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
@@ -157,7 +157,7 @@
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
 				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
-				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member minimum_size] to some non-zero value.
+				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member custom_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise, the viewport that instantiates it will not be able to calculate its minimum size reliably.
 				Example of usage with a custom-constructed node:
 				[codeblocks]
@@ -357,7 +357,7 @@
 		<method name="get_combined_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns combined minimum size from [member minimum_size] and [method get_minimum_size].
+				Returns combined minimum size from [member custom_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
@@ -389,7 +389,7 @@
 		<method name="get_minimum_size" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the minimum size for this control. See [member minimum_size].
+				Returns the minimum size for this control. See [member custom_minimum_size].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -939,7 +939,7 @@
 		<method name="update_minimum_size">
 			<return type="void" />
 			<description>
-				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member minimum_size] directly calls this method automatically.
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member custom_minimum_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -969,6 +969,9 @@
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
+		</member>
+		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
+			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
@@ -1026,9 +1029,6 @@
 		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
-		</member>
-		<member name="minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
-			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
