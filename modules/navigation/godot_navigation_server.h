@@ -110,6 +110,8 @@ public:
 	virtual Array map_get_regions(RID p_map) const override;
 	virtual Array map_get_agents(RID p_map) const override;
 
+	virtual void map_force_update(RID p_map) override;
+
 	virtual RID region_create() const override;
 
 	COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost);
