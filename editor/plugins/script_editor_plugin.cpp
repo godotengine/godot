@@ -1264,8 +1264,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			if (_test_script_times_on_disk()) {
 				return;
 			}
-
 			save_all_scripts();
+		} break;
+		case FLOAT_WINDOW: {
+			_on_float_window_requested();
 		} break;
 		case SEARCH_IN_FILES: {
 			_on_find_in_files_requested("");
@@ -3526,6 +3528,40 @@ void ScriptEditor::_script_changed() {
 	NodeDock::get_singleton()->update_lists();
 }
 
+void ScriptEditor::_on_float_window_requested() {
+	Control *base_editor = script_editor;
+
+	// Script editor current position
+	Point2 script_window_pos = base_editor->get_global_position() + get_tree()->get_root()->get_position();
+
+	// Create a new window
+	Window *window = memnew(Window);
+	window->set_title("Script Editor");
+	// Set the window size to the current script editor size
+	window->set_size(base_editor->get_size());
+	EditorNode::get_singleton()->get_main_control()->remove_child(script_editor);
+	base_editor->set_anchors_and_offsets_preset(LayoutPreset::PRESET_WIDE);
+	// Add the script editor to the window
+	window->add_child(base_editor);
+	window->set_wrap_controls(true);
+	window->set_position(script_window_pos); // Set the window position to match where the script editor is
+	window->set_transient(true);
+	window->connect("close_requested", callable_mp(this, &ScriptEditor::_script_floating_close_request), varray(base_editor));
+	// Add the window to the editor
+	EditorNode::get_singleton()->get_gui_base()->add_child(window);
+}
+
+void ScriptEditor::_script_floating_close_request(Control *p_control) {
+	// First, get the floating script editor window
+	Window *window = static_cast<Window *>(p_control->get_parent());
+	// Then remove the script editor from the window
+	window->remove_child(p_control);
+	// Next, add it back to the main window GUI
+	EditorNode::get_singleton()->get_main_control()->add_child(p_control);
+	// Now we can close the sub-window
+	window->queue_delete();
+}
+
 void ScriptEditor::_on_find_in_files_requested(String text) {
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
 	find_in_files_dialog->set_search_text(text);
@@ -3828,6 +3864,13 @@ ScriptEditor::ScriptEditor() {
 	MenuButton *debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
 	debug_menu->hide(); // Handled by EditorDebuggerNode below.
+
+	float_window = memnew(Button);
+	float_window->set_flat(true);
+	float_window->set_text(TTR("Float Window"));
+	float_window->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(FLOAT_WINDOW));
+	menu_hb->add_child(float_window);
+	float_window->set_tooltip(TTR("Make script editor a floating window."));
 
 	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 	debugger->set_script_debug_button(debug_menu);

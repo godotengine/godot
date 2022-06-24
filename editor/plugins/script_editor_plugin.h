@@ -200,6 +200,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_THEME,
 		FILE_RUN,
 		FILE_CLOSE,
+		FLOAT_WINDOW,
 		CLOSE_DOCS,
 		CLOSE_ALL,
 		CLOSE_OTHER_TABS,
@@ -254,6 +255,7 @@ class ScriptEditor : public PanelContainer {
 	PopupMenu *theme_submenu = nullptr;
 
 	Button *help_search = nullptr;
+	Button *float_window = nullptr;
 	Button *site_search = nullptr;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
@@ -448,6 +450,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
 
 	void _script_changed();
+	void _on_float_window_requested();
+	void _script_floating_close_request(Control *p_control);
 	int file_dialog_option;
 	void _file_dialog_action(String p_file);
 
