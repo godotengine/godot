@@ -1,3 +1,7 @@
+if not DEP_OIDN.found()
+    subdir_done()
+endif
+
 _module_denoise_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
 _lib_module_denoise = library('module_denoise', _module_denoise_srcs,
     dependencies: [godotcore_dep, DEP_OIDN]

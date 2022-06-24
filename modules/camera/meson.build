@@ -4,8 +4,8 @@ _modules_camera_srcs = files(
 
 if PLATFORM == 'windows'
     _modules_camera_srcs += files('camera_win.cpp')
-elif PLATFORM == 'osx'
-    _modules_camera_srcs += files('camera_osx.mm')
+elif PLATFORM == 'macos'
+    _modules_camera_srcs += files('camera_macos.mm')
 endif
 
 _lib_module_camera = library('module_camera', _modules_camera_srcs,

@@ -1,4 +1,5 @@
 subdir('effects')
+subdir('environment')
 
 # NOTE: do not use files() here
 _rd_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')

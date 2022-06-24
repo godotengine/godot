@@ -1,6 +1,7 @@
-_jpeg_compressor_srcs = files([
-    'jpgd.cpp'
-])
+_jpeg_compressor_srcs = files(
+    'jpgd.cpp',
+    'jpge.cpp',
+)
 
 _jpeg_compressor_incdirs = include_directories('.')
 

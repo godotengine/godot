@@ -5,42 +5,42 @@
 ################################################################################
 # Commands to always run
 ################################################################################
-_target_osx_logo = custom_target(
-                     'osx_logo',
+_target_macos_logo = custom_target(
+                     'macos_logo',
     output: ['logo.gen.h'],
     input: ['logo.png'],
-    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'osx'],
+    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'macos'],
     build_by_default: true
 )
-SOURCES += [_target_osx_logo]
+SOURCES += [_target_macos_logo]
 
 
 ################################################################################
 # Host Machine Specifics
 ################################################################################
-if PLATFORM == 'osx'
-    MAIN_SOURCES += files('godot_main_osx.mm')
+if PLATFORM == 'macos'
+    MAIN_SOURCES += files('godot_main_macos.mm')
 
-    _osx_srcs = files('joypad_osx.cpp',
-                      #'context_gl_osx.mm',
-                      'crash_handler_osx.mm',
-                      'dir_access_osx.mm',
-                      'display_server_osx.mm',
-                      'os_osx.mm',
-                      'vulkan_context_osx.mm',
+    _macos_srcs = files('joypad_macos.cpp',
+                      #'context_gl_macos.mm',
+                      'crash_handler_macos.mm',
+                      'dir_access_macos.mm',
+                      'display_server_macos.mm',
+                      'os_macos.mm',
+                      'vulkan_context_macos.mm',
                       'godot_application.mm',
                       'godot_application_delegate.mm',
                       'godot_content_view.mm',
-                      'godot_main_osx.mm',
+                      'godot_main_macos.mm',
                       'godot_window.mm',
                       'godot_window_delegate.mm',
-                      'key_mapping_osx.mm',
-                      'osx_terminal_logger.mm',
-                      'tts_osx.mm',
+                      'key_mapping_macos.mm',
+                      'macos_terminal_logger.mm',
+                      'tts_macos.mm',
                       )
-    CPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
-    OBJCPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DOSX_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED', '-fobjc-arc']
-    SOURCES += _osx_srcs
+    CPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DMACOS_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
+    OBJCPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DMACOS_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED', '-fobjc-arc']
+    SOURCES += _macos_srcs
     DEPENDENCIES += dependency('appleframeworks', modules: ['AppKit',
                                                             'IOKit',
                                                             'CoreAudio',

@@ -25,6 +25,7 @@ if get_option('builtin_zstd')
         'decompress/zstd_ddict.c',
         'decompress/zstd_decompress_block.c',
         'decompress/zstd_decompress.c',
+        'decompress/huf_decompress_amd64.S'
     ])
 
     _zstd_incdirs = include_directories('.')
