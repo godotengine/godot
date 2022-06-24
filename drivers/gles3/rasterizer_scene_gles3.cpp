@@ -867,7 +867,6 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::TIME, time, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.matrix[2][0], cm.matrix[0][0], cm.matrix[2][1], cm.matrix[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 
-		// Bind a vertex array or else OpenGL complains. We won't actually use it
 		glBindVertexArray(sky_globals.screen_triangle_array);
 
 		glViewport(0, 0, sky->radiance_size, sky->radiance_size);
@@ -2150,7 +2149,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		index_array_gl = mesh_storage->mesh_surface_get_index_buffer(mesh_surface, surf->lod_index);
 
 		if (prev_vertex_array_gl != vertex_array_gl) {
-			glBindVertexArray(vertex_array_gl);
+			if (vertex_array_gl != 0) {
+				glBindVertexArray(vertex_array_gl);
+			}
 			prev_vertex_array_gl = vertex_array_gl;
 		}
 
