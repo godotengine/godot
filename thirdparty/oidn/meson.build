@@ -1,3 +1,9 @@
+# This library is not portable to e.g. aarch64.
+if host_machine.system() != 'x86_64'
+    DEP_OIDN = dependency('', required: false)
+    subdir_done()
+endif
+
 # no _ on name, there is a subdir that needs this
 oidn_srcs = files([
     'core/api.cpp',

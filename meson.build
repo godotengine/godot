@@ -37,7 +37,7 @@ if PLATFORM == 'none'
         PLATFORM = 'windows'
     elif host_machine.system() == 'darwin'
         # Not strictly speaking true, but will work for now.
-        PLATFORM = meson.is_cross_build() ? 'iphone' : 'osx'
+        PLATFORM = meson.is_cross_build() ? 'ios' : 'macos'
     elif host_machine.system() == 'android'
         PLATFORM = 'android'
     endif
@@ -363,7 +363,7 @@ if PLATFORM == 'android'
                        DEPENDENCIES,
                        ANDROID_NDK_DEPS]
     )
-elif PLATFORM == 'iphone' or PLATFORM == 'tvos'
+elif PLATFORM == 'ios' or PLATFORM == 'tvos'
     EXEC_GODOT = static_library('godot', MAIN_SOURCES,
         dependencies: [DEP_GODOT_ALL, MODULE_DEPENDENCIES, DEPENDENCIES]
     )

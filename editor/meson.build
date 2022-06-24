@@ -4,10 +4,10 @@ if get_option('tools')
     # NOTE: do not use files() here
     _exporter_list = [
         'android',
-        'iphone',
+        'ios',
         'javascript',
         'linuxbsd',
-        'osx',
+        'macos',
         'uwp',
         'windows'
     ]

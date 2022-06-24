@@ -20,14 +20,14 @@ if get_option('builtin_vulkan')
         if _cpp_compiler_id != 'msvc'
             _vulkan_cpp_args += ['-DCM_GETIDLIST_FILTER_CLASS=0x00000200', '-DCM_GETIDLIST_FILTER_PRESENT=0x00000100']
         endif
-    elif PLATFORM == 'osx'
+    elif PLATFORM == 'macos'
         _vulkan_cpp_dep_args += ['-DVK_USE_PLATFORM_MACOS_MVK']
         _vulkan_cpp_args += [
             '-DSYSCONFDIR="/etc"',
             '-DFALLBACK_DATA_DIRS="/usr/local/share:/usr/share"',
             '-DFALLBACK_CONFIG_DIRS="/etc/xdg"'
         ]
-    elif PLATFORM == 'iphone'
+    elif PLATFORM == 'ios'
         _vulkan_cpp_dep_args += ['-DVK_USE_PLATFORM_IOS_MVK']
         _vulkan_cpp_args += [
             '-DSYSCONFDIR="/etc"',
