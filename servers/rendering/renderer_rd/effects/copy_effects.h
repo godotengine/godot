@@ -35,6 +35,13 @@
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy_to_fb.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cube_to_dp.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_downsampler.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_downsampler_raster.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_filter.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_filter_raster.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness_raster.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
@@ -189,6 +196,84 @@ private:
 
 	} copy_to_fb;
 
+	// Copy to DP
+
+	struct CopyToDPPushConstant {
+		float z_far;
+		float z_near;
+		float texel_size[2];
+		float screen_rect[4];
+	};
+
+	struct CopyToDP {
+		CubeToDpShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipeline;
+	} cube_to_dp;
+
+	// Cubemap effects
+
+	struct CubemapDownsamplerPushConstant {
+		uint32_t face_size;
+		uint32_t face_id;
+		float pad[2];
+	};
+
+	struct CubemapDownsampler {
+		CubemapDownsamplerPushConstant push_constant;
+		CubemapDownsamplerShaderRD compute_shader;
+		CubemapDownsamplerRasterShaderRD raster_shader;
+		RID shader_version;
+		RID compute_pipeline;
+		PipelineCacheRD raster_pipeline;
+	} cubemap_downsampler;
+
+	enum CubemapFilterMode {
+		FILTER_MODE_HIGH_QUALITY,
+		FILTER_MODE_LOW_QUALITY,
+		FILTER_MODE_HIGH_QUALITY_ARRAY,
+		FILTER_MODE_LOW_QUALITY_ARRAY,
+		FILTER_MODE_MAX,
+	};
+
+	struct CubemapFilterRasterPushConstant {
+		uint32_t mip_level;
+		uint32_t face_id;
+		float pad[2];
+	};
+
+	struct CubemapFilter {
+		CubemapFilterShaderRD compute_shader;
+		CubemapFilterRasterShaderRD raster_shader;
+		RID shader_version;
+		RID compute_pipelines[FILTER_MODE_MAX];
+		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
+
+		RID uniform_set;
+		RID image_uniform_set;
+		RID coefficient_buffer;
+		bool use_high_quality;
+
+	} filter;
+
+	struct CubemapRoughnessPushConstant {
+		uint32_t face_id;
+		uint32_t sample_count;
+		float roughness;
+		uint32_t use_direct_write;
+		float face_size;
+		float pad[3];
+	};
+
+	struct CubemapRoughness {
+		CubemapRoughnessPushConstant push_constant;
+		CubemapRoughnessShaderRD compute_shader;
+		CubemapRoughnessRasterShaderRD raster_shader;
+		RID shader_version;
+		RID compute_pipeline;
+		PipelineCacheRD raster_pipeline;
+	} roughness;
+
 	static CopyEffects *singleton;
 
 public:
@@ -196,6 +281,8 @@ public:
 
 	CopyEffects(bool p_prefer_raster_effects);
 	~CopyEffects();
+
+	bool get_prefer_raster_effects() { return prefer_raster_effects; }
 
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false, bool p_alpha_to_one = false);
 	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
@@ -213,6 +300,15 @@ public:
 	void make_mipmap_raster(RID p_source_rd_texture, RID p_dest_framebuffer, const Size2i &p_size);
 
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
+
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
+	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
+	void cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, const Size2i &p_size);
+	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
+	void cubemap_filter_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_mip_level);
+
+	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
+	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 };
 
 } // namespace RendererRD
