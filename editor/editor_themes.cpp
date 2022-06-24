@@ -464,6 +464,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color icon_hover_color = icon_normal_color * (dark_theme ? 1.15 : 1.45);
 	icon_hover_color.a = 1.0;
 	Color icon_focus_color = icon_hover_color;
+	Color icon_disabled_color = Color(icon_normal_color, 0.4);
 	// Make the pressed icon color overbright because icons are not completely white on a dark theme.
 	// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
 	Color icon_pressed_color = accent_color * (dark_theme ? 1.15 : 3.5);
@@ -738,10 +739,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "Button", font_focus_color);
 	theme->set_color("font_pressed_color", "Button", accent_color);
 	theme->set_color("font_disabled_color", "Button", font_disabled_color);
+
 	theme->set_color("icon_normal_color", "Button", icon_normal_color);
 	theme->set_color("icon_hover_color", "Button", icon_hover_color);
 	theme->set_color("icon_focus_color", "Button", icon_focus_color);
 	theme->set_color("icon_pressed_color", "Button", icon_pressed_color);
+	theme->set_color("icon_disabled_color", "Button", icon_disabled_color);
 
 	const float ACTION_BUTTON_EXTRA_MARGIN = 32 * EDSCALE;
 
@@ -768,7 +771,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// When pressed, don't tint the icons with the accent color, just leave them normal.
 	theme->set_color("icon_pressed_color", "EditorLogFilterButton", icon_normal_color);
 	// When unpressed, dim the icons.
-	theme->set_color("icon_normal_color", "EditorLogFilterButton", font_disabled_color);
+	theme->set_color("icon_normal_color", "EditorLogFilterButton", icon_disabled_color);
 	// When pressed, add a small bottom border to the buttons to better show their active state,
 	// similar to active tabs.
 	Ref<StyleBoxFlat> editor_log_button_pressed = style_widget_pressed->duplicate();
@@ -805,8 +808,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "OptionButton", font_focus_color);
 	theme->set_color("font_pressed_color", "OptionButton", accent_color);
 	theme->set_color("font_disabled_color", "OptionButton", font_disabled_color);
+
+	theme->set_color("icon_normal_color", "OptionButton", icon_normal_color);
 	theme->set_color("icon_hover_color", "OptionButton", icon_hover_color);
 	theme->set_color("icon_focus_color", "OptionButton", icon_focus_color);
+	theme->set_color("icon_pressed_color", "OptionButton", icon_pressed_color);
+	theme->set_color("icon_disabled_color", "OptionButton", icon_disabled_color);
+
 	theme->set_icon("arrow", "OptionButton", theme->get_icon(SNAME("GuiOptionArrow"), SNAME("EditorIcons")));
 	theme->set_constant("arrow_margin", "OptionButton", widget_default_margin.x - 2 * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
@@ -833,8 +841,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "CheckButton", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckButton", accent_color);
 	theme->set_color("font_disabled_color", "CheckButton", font_disabled_color);
+
+	theme->set_color("icon_normal_color", "CheckButton", icon_normal_color);
 	theme->set_color("icon_hover_color", "CheckButton", icon_hover_color);
 	theme->set_color("icon_focus_color", "CheckButton", icon_focus_color);
+	theme->set_color("icon_pressed_color", "CheckButton", icon_pressed_color);
+	theme->set_color("icon_disabled_color", "CheckButton", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
 	theme->set_constant("check_v_adjust", "CheckButton", 0 * EDSCALE);
@@ -864,8 +876,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_focus_color", "CheckBox", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckBox", accent_color);
 	theme->set_color("font_disabled_color", "CheckBox", font_disabled_color);
+
+	theme->set_color("icon_normal_color", "CheckBox", icon_normal_color);
 	theme->set_color("icon_hover_color", "CheckBox", icon_hover_color);
 	theme->set_color("icon_focus_color", "CheckBox", icon_focus_color);
+	theme->set_color("icon_pressed_color", "CheckBox", icon_pressed_color);
+	theme->set_color("icon_disabled_color", "CheckBox", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
 	theme->set_constant("check_v_adjust", "CheckBox", 0 * EDSCALE);
