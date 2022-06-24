@@ -155,6 +155,7 @@
 											<xs:attribute type="xs:string" name="name" />
 											<xs:attribute type="xs:string" name="value" />
 											<xs:attribute type="xs:string" name="enum" use="optional" />
+											<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>
 								</xs:complexType>

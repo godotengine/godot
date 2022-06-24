@@ -429,7 +429,7 @@ void DocTools::generate(bool p_basic_types) {
 					PropertyInfo retinfo = mb->get_return_info();
 
 					found_type = true;
-					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+					if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 						prop.enumeration = retinfo.class_name;
 						prop.type = "int";
 					} else if (retinfo.class_name != StringName()) {
@@ -575,6 +575,7 @@ void DocTools::generate(bool p_basic_types) {
 			constant.value = itos(ClassDB::get_integer_constant(name, E));
 			constant.is_value_valid = true;
 			constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
+			constant.is_bitfield = ClassDB::is_enum_bitfield(name, constant.enumeration);
 			c.constants.push_back(constant);
 		}
 
@@ -1244,6 +1245,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_attribute_value("enum");
 								}
+								if (parser->has_attribute("is_bitfield")) {
+									constant2.is_bitfield = parser->get_attribute_value("is_bitfield").to_lower() == "true";
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1424,7 +1428,11 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				const DocData::ConstantDoc &k = c.constants[i];
 				if (k.is_value_valid) {
 					if (!k.enumeration.is_empty()) {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+						if (k.is_bitfield) {
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\">");
+						} else {
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+						}
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
 					}

@@ -1105,7 +1105,11 @@ void EditorHelp::_update_doc() {
 
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(title_color);
-				class_desc->add_text("enum  ");
+				if (E.value.size() && E.value[0].is_bitfield) {
+					class_desc->add_text("flags  ");
+				} else {
+					class_desc->add_text("enum  ");
+				}
 				class_desc->pop();
 				String e = E.key;
 				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {

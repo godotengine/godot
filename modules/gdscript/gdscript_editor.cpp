@@ -569,7 +569,7 @@ static int _get_enum_constant_location(StringName p_class, StringName p_enum_con
 // END LOCATION METHODS
 
 static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg = true) {
-	if (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	if (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		String enum_name = p_info.class_name;
 		if (!enum_name.contains(".")) {
 			return enum_name;
@@ -1292,7 +1292,7 @@ static GDScriptCompletionIdentifier _type_from_property(const PropertyInfo &p_pr
 		return ci;
 	}
 
-	if (p_property.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+	if (p_property.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		ci.enumeration = p_property.class_name;
 	}
 
@@ -2407,7 +2407,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 					if (p_argidx < method_args) {
 						PropertyInfo arg_info = info.arguments[p_argidx];
-						if (arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+						if (arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							_find_enumeration_candidates(p_context, arg_info.class_name, r_result);
 						}
 					}

@@ -2865,7 +2865,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 							   " We only expected Object.free, but found '" +
 							itype.name + "." + imethod.name + "'.");
 				}
-			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				imethod.return_type.cname = return_info.class_name;
 				imethod.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
@@ -2903,7 +2903,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = orig_arg_name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
@@ -3011,7 +3011,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				ArgumentInterface iarg;
 				iarg.name = orig_arg_name;
 
-				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arginfo.type == Variant::INT && arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					iarg.type.cname = arginfo.class_name;
 					iarg.type.is_enum = true;
 				} else if (arginfo.class_name != StringName()) {
@@ -3075,9 +3075,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
+		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
 
-		for (const KeyValue<StringName, List<StringName>> &E : enum_map) {
+		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
 			StringName enum_proxy_cname = E.key;
 			String enum_proxy_name = enum_proxy_cname.operator String();
 			if (itype.find_property_by_proxy_name(enum_proxy_cname)) {
@@ -3087,7 +3087,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
 			EnumInterface ienum(enum_proxy_cname);
-			const List<StringName> &enum_constants = E.value;
+			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
 				int64_t *value = class_info->constant_map.getptr(constant_cname);
