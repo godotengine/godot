@@ -990,6 +990,10 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			p_output.append("\n" INDENT1 OPEN_BLOCK);
 		}
 
+		if (ienum.is_flags) {
+			p_output.append("\n" INDENT1 "[System.Flags]");
+		}
+
 		p_output.append("\n" INDENT1 "public enum ");
 		p_output.append(enum_proxy_name);
 		p_output.append(" : long");
@@ -1433,6 +1437,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	for (const EnumInterface &ienum : itype.enums) {
 		ERR_FAIL_COND_V(ienum.constants.is_empty(), ERR_BUG);
+
+		if (ienum.is_flags) {
+			output.append(MEMBER_BEGIN "[System.Flags]");
+		}
 
 		output.append(MEMBER_BEGIN "public enum ");
 		output.append(ienum.cname.operator String());
@@ -3087,6 +3095,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
 			EnumInterface ienum(enum_proxy_cname);
+			ienum.is_flags = E.value.is_bitfield;
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
@@ -3676,6 +3685,7 @@ void BindingsGenerator::_populate_global_constants() {
 
 			if (enum_name != StringName()) {
 				EnumInterface ienum(enum_name);
+				// TODO: ienum.is_flags is always false for core constants since they don't seem to support bitfield enums
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
