@@ -2324,11 +2324,11 @@ Error Image::save_exr(const String &p_path, bool p_grayscale) const {
 	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
 }
 
-Vector<uint8_t> Image::save_exr_to_buffer() const {
+Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
 	if (save_exr_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
-	return save_exr_buffer_func(Ref<Image>((Image *)this), false);
+	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale);
 }
 
 Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality) const {
