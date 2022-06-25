@@ -52,6 +52,14 @@ Error ResourceInteractiveLoader::wait() {
 	return err;
 }
 
+void ResourceInteractiveLoader::set_no_subresource_cache(bool p_no_subresource_cache) {
+	no_subresource_cache = p_no_subresource_cache;
+}
+
+bool ResourceInteractiveLoader::get_no_subresource_cache() {
+	return no_subresource_cache;
+}
+
 ResourceInteractiveLoader::~ResourceInteractiveLoader() {
 	if (path_loading != String()) {
 		ResourceLoader::_remove_from_loading_map_and_thread(path_loading, path_loading_thread);
@@ -112,6 +120,10 @@ void ResourceInteractiveLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait"), &ResourceInteractiveLoader::wait);
 	ClassDB::bind_method(D_METHOD("get_stage"), &ResourceInteractiveLoader::get_stage);
 	ClassDB::bind_method(D_METHOD("get_stage_count"), &ResourceInteractiveLoader::get_stage_count);
+	ClassDB::bind_method(D_METHOD("set_no_subresource_cache", "no_subresource_cache"), &ResourceInteractiveLoader::set_no_subresource_cache);
+	ClassDB::bind_method(D_METHOD("get_no_subresource_cache"), &ResourceInteractiveLoader::get_no_subresource_cache);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "no_subresource_cache"), "set_no_subresource_cache", "get_no_subresource_cache");
 }
 
 class ResourceInteractiveLoaderDefault : public ResourceInteractiveLoader {
@@ -152,22 +164,23 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 // here can trigger an infinite recursion otherwise, since `load` calls `load_interactive`
 // vice versa.
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	// Warning: See previous note about the risk of infinite recursion.
-	Ref<Resource> res = load(p_path, p_original_path, r_error);
+	Ref<Resource> res = load(p_path, p_original_path, r_error, p_no_subresource_cache);
 	if (res.is_null()) {
 		return Ref<ResourceInteractiveLoader>();
 	}
 
 	Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+	ril->set_no_subresource_cache(p_no_subresource_cache);
 	ril->resource = res;
 	return ril;
 }
 
-RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	// Check user-defined loader if there's any. Hard fail if it returns an error.
 	if (get_script_instance() && get_script_instance()->has_method("load")) {
-		Variant res = get_script_instance()->call("load", p_path, p_original_path);
+		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_no_subresource_cache);
 
 		if (res.get_type() == Variant::INT) { // Error code, abort.
 			if (r_error) {
@@ -183,7 +196,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 	}
 
 	// Warning: See previous note about the risk of infinite recursion.
-	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error);
+	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error, p_no_subresource_cache);
 	if (!ril.is_valid()) {
 		return RES();
 	}
@@ -236,7 +249,7 @@ Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<
 
 void ResourceFormatLoader::_bind_methods() {
 	{
-		MethodInfo info = MethodInfo(Variant::NIL, "load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"));
+		MethodInfo info = MethodInfo(Variant::NIL, "load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"), PropertyInfo(Variant::BOOL, "no_subresource_cache"));
 		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		ClassDB::add_virtual_method(get_class_static(), info);
 	}
@@ -259,7 +272,7 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 			continue;
 		}
 		found = true;
-		RES res = loader[i]->load(p_path, p_original_path != String() ? p_original_path : p_path, r_error);
+		RES res = loader[i]->load(p_path, p_original_path != String() ? p_original_path : p_path, r_error, p_no_cache);
 		if (res.is_null()) {
 			continue;
 		}
@@ -484,7 +497,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 			continue;
 		}
 		found = true;
-		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(path, local_path, r_error);
+		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(path, local_path, r_error, p_no_cache);
 		if (ril.is_null()) {
 			continue;
 		}

@@ -51,7 +51,7 @@ protected:
 
 public:
 	static _ResourceLoader *get_singleton() { return singleton; }
-	Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "");
+	Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false);
 	RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false);
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
