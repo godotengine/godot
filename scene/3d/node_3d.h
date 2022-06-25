@@ -81,7 +81,6 @@ private:
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
 		mutable Basis::EulerOrder rotation_order = Basis::EULER_ORDER_YXZ;
-		mutable Quaternion quaternion;
 		mutable Vector3 rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
 		mutable RotationEditMode rotation_edit_mode = ROTATION_EDIT_MODE_EULER;
