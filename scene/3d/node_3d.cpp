@@ -85,13 +85,10 @@ void Node3D::_notify_dirty() {
 }
 
 void Node3D::_update_local_transform() const {
-	if (this->get_rotation_edit_mode() == ROTATION_EDIT_MODE_EULER) {
-		data.local_transform.basis.set_euler(data.rotation, data.rotation_order);
-		data.local_transform.basis.scale_local(data.scale);
-	} else if (this->get_rotation_edit_mode() == ROTATION_EDIT_MODE_QUATERNION) {
-		data.local_transform.basis = Basis(data.quaternion);
-		data.local_transform.basis.scale_local(data.scale);
+	if (this->get_rotation_edit_mode() != ROTATION_EDIT_MODE_BASIS) {
+		data.local_transform = data.local_transform.orthogonalized();
 	}
+	data.local_transform.basis.set_euler_scale(data.rotation, data.scale);
 
 	data.dirty &= ~DIRTY_LOCAL;
 }
@@ -215,18 +212,7 @@ void Node3D::set_basis(const Basis &p_basis) {
 	set_transform(Transform3D(p_basis, data.local_transform.origin));
 }
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
-	if (data.dirty & DIRTY_VECTORS) {
-		data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
-		data.scale = get_transform().basis.get_scale();
-		data.dirty &= ~DIRTY_VECTORS;
-	}
-
-	data.quaternion = p_quaternion;
-	data.dirty |= DIRTY_LOCAL;
-	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
-	}
+	set_transform(Transform3D(Basis(p_quaternion), data.local_transform.origin));
 }
 
 void Node3D::set_transform(const Transform3D &p_transform) {
@@ -242,14 +228,7 @@ Basis Node3D::get_basis() const {
 	return get_transform().basis;
 }
 Quaternion Node3D::get_quaternion() const {
-	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
-		data.scale = get_transform().basis.get_scale();
-		data.dirty &= ~DIRTY_VECTORS;
-	}
-
-	return data.quaternion;
+	return Quaternion(get_transform().basis);
 }
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
@@ -276,9 +255,9 @@ Transform3D Node3D::get_global_transform() const {
 		}
 
 		if (data.parent && !data.top_level_active) {
-			data.global_transform = data.parent->get_global_transform() * get_transform();
+			data.global_transform = data.parent->get_global_transform() * data.local_transform;
 		} else {
-			data.global_transform = get_transform();
+			data.global_transform = data.local_transform;
 		}
 
 		if (data.disable_scale) {
@@ -335,13 +314,9 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 	if (data.rotation_edit_mode == p_mode) {
 		return;
 	}
-
-	data.quaternion = get_transform().basis.get_rotation_quaternion();
-	data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
-	data.scale = get_transform().basis.get_scale();
 	data.rotation_edit_mode = p_mode;
 
-	// Shearing is not allowed except in ROTATION_EDIT_MODE_BASIS, so validate local_transform.
+	// Shearing is not allowed except in ROTATION_EDIT_MODE_BASIS.
 	data.dirty |= DIRTY_LOCAL;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -365,9 +340,8 @@ void Node3D::set_rotation_order(RotationOrder p_order) {
 	ERR_FAIL_INDEX(int32_t(order), 6);
 
 	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.rotation = get_transform().basis.get_euler_normalized(order);
-		data.scale = get_transform().basis.get_scale();
+		data.rotation = data.local_transform.basis.get_euler_normalized(order);
+		data.scale = data.local_transform.basis.get_scale();
 		data.dirty &= ~DIRTY_VECTORS;
 	} else {
 		data.rotation = Basis::from_euler(data.rotation, data.rotation_order).get_euler_normalized(order);
@@ -385,8 +359,7 @@ Node3D::RotationOrder Node3D::get_rotation_order() const {
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.scale = get_transform().basis.get_scale();
+		data.scale = data.local_transform.basis.get_scale();
 		data.dirty &= ~DIRTY_VECTORS;
 	}
 
@@ -400,8 +373,7 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 
 void Node3D::set_scale(const Vector3 &p_scale) {
 	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
 		data.dirty &= ~DIRTY_VECTORS;
 	}
 
@@ -414,14 +386,14 @@ void Node3D::set_scale(const Vector3 &p_scale) {
 }
 
 Vector3 Node3D::get_position() const {
-	return get_transform().origin;
+	return data.local_transform.origin;
 }
 
 Vector3 Node3D::get_rotation() const {
 	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
-		data.scale = get_transform().basis.get_scale();
+		data.scale = data.local_transform.basis.get_scale();
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
+
 		data.dirty &= ~DIRTY_VECTORS;
 	}
 
@@ -430,9 +402,9 @@ Vector3 Node3D::get_rotation() const {
 
 Vector3 Node3D::get_scale() const {
 	if (data.dirty & DIRTY_VECTORS) {
-		data.quaternion = get_transform().basis.get_rotation_quaternion();
-		data.rotation = get_transform().basis.get_euler_normalized(data.rotation_order);
-		data.scale = get_transform().basis.get_scale();
+		data.scale = data.local_transform.basis.get_scale();
+		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
+
 		data.dirty &= ~DIRTY_VECTORS;
 	}
 
@@ -893,7 +865,7 @@ Variant Node3D::property_get_revert(const String &p_name) {
 	} else if (p_name == "quaternion") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Transform3D(variant).get_basis().get_rotation_quaternion();
+			r_ret = Quaternion(Transform3D(variant).get_basis());
 		} else {
 			return Quaternion();
 		}
