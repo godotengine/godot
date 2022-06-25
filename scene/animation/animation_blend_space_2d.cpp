@@ -502,7 +502,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE, false);
+					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -514,7 +514,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 
 			if (!found) {
 				//ignore
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, false);
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE);
 			}
 		}
 	} else {
@@ -539,16 +539,16 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, false);
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE);
 			length_internal = from + mind;
 
 			closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE);
 		}
 	}
 

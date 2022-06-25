@@ -36,6 +36,7 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/animation.h"
 
+class AnimationNodeAnimation;
 class AnimationNodeBlendTree;
 class AnimationNodeStartState;
 class AnimationNodeEndState;
@@ -44,6 +45,8 @@ class AnimationTree;
 
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
+
+	real_t blend_weight = 1.0;
 
 public:
 	enum FilterAction {
@@ -61,6 +64,13 @@ public:
 
 	friend class AnimationTree;
 
+	struct SyncGroup {
+		double leader_weight = 0.0;
+		double leader_length = 1.0;
+		Vector<double> lengths;
+		Vector<Ref<AnimationNodeAnimation>> nodes;
+	};
+
 	struct AnimationState {
 		Ref<Animation> animation;
 		double time = 0.0;
@@ -75,6 +85,7 @@ public:
 	struct State {
 		int track_count = 0;
 		HashMap<NodePath, int> track_map;
+		HashMap<StringName, SyncGroup> sync_groups;
 		List<AnimationState> animation_states;
 		bool valid = false;
 		AnimationPlayer *player = nullptr;
@@ -99,12 +110,12 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, real_t *r_max = nullptr);
+	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, real_t *r_max = nullptr);
 
 protected:
 	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_seek_root, real_t p_blend, int p_pingponged = 0);
-	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
-	double blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE);
+	double blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE);
 
 	void make_invalid(const String &p_reason);
 
@@ -151,6 +162,9 @@ public:
 	bool is_filter_enabled() const;
 
 	virtual bool has_filter() const;
+
+	void set_blend_weight(real_t weight);
+	real_t get_blend_weight() const;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
@@ -295,6 +309,7 @@ private:
 	bool properties_dirty = true;
 	void _tree_changed();
 	void _update_properties();
+	void _update_sync_groups();
 	List<PropertyInfo> properties;
 	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
 	HashMap<StringName, Variant> property_map;

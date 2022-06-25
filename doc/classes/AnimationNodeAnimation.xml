@@ -18,6 +18,10 @@
 		<member name="play_mode" type="int" setter="set_play_mode" getter="get_play_mode" enum="AnimationNodeAnimation.PlayMode" default="0">
 			Determines the playback direction of the animation.
 		</member>
+		<member name="playback_speed" type="float" setter="set_playback_speed" getter="get_playback_speed" default="1.0">
+		</member>
+		<member name="sync_group" type="StringName" setter="set_sync_group" getter="get_sync_group" default="&amp;&quot;&quot;">
+		</member>
 	</members>
 	<constants>
 		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">

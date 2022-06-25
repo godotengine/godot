@@ -38,9 +38,13 @@ class AnimationNodeAnimation : public AnimationRootNode {
 
 	StringName animation;
 	StringName time = "time";
+	StringName sync_group;
 
 	uint64_t last_version = 0;
 	bool skip = false;
+
+	double playback_speed = 1.0;
+	double sync_group_playback_speed = 1.0;
 
 public:
 	enum PlayMode {
@@ -58,11 +62,18 @@ public:
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
 
+	void set_sync_group(const StringName &p_name);
+	StringName get_sync_group() const;
+
 	void set_play_mode(PlayMode p_play_mode);
 	PlayMode get_play_mode() const;
 
 	void set_backward(bool p_backward);
 	bool is_backward() const;
+
+	void set_sync_group_playback_speed(double speed);
+	void set_playback_speed(double speed);
+	double get_playback_speed() const;
 
 	AnimationNodeAnimation();
 
@@ -94,8 +105,6 @@ private:
 	float autorestart_delay = 1.0;
 	float autorestart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
-
-	bool sync = false;
 
 	/*	bool active;
 	bool do_start;
@@ -134,9 +143,6 @@ public:
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
 
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
@@ -149,7 +155,6 @@ class AnimationNodeAdd2 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd2, AnimationNode);
 
 	StringName add_amount = PNAME("add_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -159,9 +164,6 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
@@ -173,7 +175,6 @@ class AnimationNodeAdd3 : public AnimationNode {
 	GDCLASS(AnimationNodeAdd3, AnimationNode);
 
 	StringName add_amount = PNAME("add_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -183,9 +184,6 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
@@ -197,7 +195,6 @@ class AnimationNodeBlend2 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend2, AnimationNode);
 
 	StringName blend_amount = PNAME("blend_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -209,9 +206,6 @@ public:
 	virtual String get_caption() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
 };
@@ -220,7 +214,6 @@ class AnimationNodeBlend3 : public AnimationNode {
 	GDCLASS(AnimationNodeBlend3, AnimationNode);
 
 	StringName blend_amount = PNAME("blend_amount");
-	bool sync;
 
 protected:
 	static void _bind_methods();
@@ -230,9 +223,6 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
 
 	double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeBlend3();

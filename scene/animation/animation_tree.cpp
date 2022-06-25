@@ -145,7 +145,7 @@ void AnimationNode::make_invalid(const String &p_reason) {
 	state->invalid_reasons += String::utf8("•  ") + p_reason;
 }
 
-double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_optimize) {
+double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -164,7 +164,7 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	//inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
-	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_optimize, &activity);
+	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_seek_root, p_blend, p_filter, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
@@ -175,11 +175,11 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 	return ret;
 }
 
-double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_optimize) {
-	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_optimize);
+double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter) {
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_seek_root, p_blend, p_filter);
 }
 
-double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, bool p_optimize, real_t *r_max) {
+double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter, real_t *r_max) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
 
@@ -191,8 +191,6 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 
 	real_t *blendw = p_node->blends.ptrw();
 	const real_t *blendr = blends.ptr();
-
-	bool any_valid = false;
 
 	if (has_filter() && is_filter_enabled() && p_filter != FILTER_IGNORE) {
 		for (int i = 0; i < blend_count; i++) {
@@ -218,9 +216,6 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
-						any_valid = true;
-					}
 				}
 
 			} break;
@@ -233,9 +228,6 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					}
 
 					blendw[i] = blendr[i] * p_blend;
-					if (blendw[i] > CMP_EPSILON) {
-						any_valid = true;
-					}
 				}
 
 			} break;
@@ -248,10 +240,6 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 					} else {
 						blendw[i] = blendr[i]; //not filtered, do not blend
 					}
-
-					if (blendw[i] > CMP_EPSILON) {
-						any_valid = true;
-					}
 				}
 
 			} break;
@@ -260,9 +248,6 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		for (int i = 0; i < blend_count; i++) {
 			//regular blend
 			blendw[i] = blendr[i] * p_blend;
-			if (blendw[i] > CMP_EPSILON) {
-				any_valid = true;
-			}
 		}
 	}
 
@@ -286,12 +271,11 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
 
+	p_node->set_blend_weight(p_blend * blend_weight);
+
 	// If tracks for blending don't exist for one of the animations, Rest or RESET animation is blended as init animation instead.
 	// Then, blend weight is 0 means that the init animation blend weight is 1.
 	// Therefore, the blending process must be executed even if the blend weight is 0.
-	if (!p_seek && p_optimize && !any_valid) {
-		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
-	}
 	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_seek_root, p_connections);
 }
 
@@ -392,6 +376,14 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 	}
 }
 
+void AnimationNode::set_blend_weight(real_t weight) {
+	blend_weight = CLAMP(weight, 0.0, 1.0);
+}
+
+real_t AnimationNode::get_blend_weight() const {
+	return blend_weight;
+}
+
 void AnimationNode::_validate_property(PropertyInfo &property) const {
 	if (!has_filter() && (property.name == "filter_enabled" || property.name == "filters")) {
 		property.usage = PROPERTY_USAGE_NONE;
@@ -423,8 +415,8 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
 	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "seek_root", "blend", "pingponged"), &AnimationNode::blend_animation, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "seek_root", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "seek_root", "blend", "filter", "optimize"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "seek_root", "blend", "filter"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE));
+	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "seek_root", "blend", "filter"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE));
 
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
@@ -861,6 +853,7 @@ static void _call_object(Object *p_object, const StringName &p_method, const Vec
 }
 void AnimationTree::_process_graph(double p_delta) {
 	_update_properties(); //if properties need updating, update them
+	_update_sync_groups();
 
 	//check all tracks, see if they need modification
 	root_motion_transform = Transform3D();
@@ -921,6 +914,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 		state.valid = true;
 		state.invalid_reasons = "";
+		state.sync_groups.clear();
 		state.animation_states.clear(); //will need to be re-created
 		state.player = player;
 		state.last_pass = process_pass;
@@ -959,7 +953,6 @@ void AnimationTree::_process_graph(double p_delta) {
 			Ref<Animation> a = as.animation;
 			double time = as.time;
 			double delta = as.delta;
-			real_t weight = as.blend;
 			bool seeked = as.seeked;
 			int pingponged = as.pingponged;
 #ifndef _3D_DISABLED
@@ -991,7 +984,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 
-				real_t blend = (*as.track_blends)[blend_idx] * weight;
+				real_t blend = (*as.track_blends)[blend_idx];
 
 				switch (ttype) {
 					case Animation::TYPE_POSITION_3D: {
@@ -1797,6 +1790,16 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 
 	for (const AnimationNode::ChildNode &E : children) {
 		_update_properties_for_node(p_base_path + E.name + "/", E.node);
+	}
+}
+
+void AnimationTree::_update_sync_groups() {
+	for (const auto &group : state.sync_groups) {
+		for (int i = 0; i < group.value.nodes.size(); ++i) {
+			Ref<AnimationNodeAnimation> node = group.value.nodes[i];
+			const double length = group.value.lengths[i];
+			node->set_sync_group_playback_speed(length / group.value.leader_length);
+		}
 	}
 }
 

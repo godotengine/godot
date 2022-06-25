@@ -26,8 +26,6 @@
 		</member>
 		<member name="mix_mode" type="int" setter="set_mix_mode" getter="get_mix_mode" enum="AnimationNodeOneShot.MixMode" default="0">
 		</member>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
-		</member>
 	</members>
 	<constants>
 		<constant name="MIX_MODE_BLEND" value="0" enum="MixMode">
