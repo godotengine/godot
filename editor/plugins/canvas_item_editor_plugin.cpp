@@ -5455,7 +5455,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	}
 	child->set_name(name);
 
-	Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(ResourceCache::get(path)));
+	Ref<Texture2D> texture = ResourceCache::get_ref(path);
 
 	if (parent) {
 		editor_data->get_undo_redo().add_do_method(parent, "add_child", child, true);

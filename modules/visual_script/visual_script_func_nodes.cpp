@@ -377,7 +377,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 			}
 
 			if (ResourceCache::has(base_script)) {
-				script = Ref<Resource>(ResourceCache::get(base_script));
+				script = ResourceCache::get_ref(base_script);
 			} else {
 				return;
 			}
@@ -587,7 +587,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 				}
 
 				if (ResourceCache::has(base_script)) {
-					Ref<Script> script = Ref<Resource>(ResourceCache::get(base_script));
+					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
 						property.hint = PROPERTY_HINT_METHOD_OF_SCRIPT;
 						property.hint_string = itos(script->get_instance_id());
@@ -1178,7 +1178,7 @@ void VisualScriptPropertySet::_update_cache() {
 				}
 
 				if (ResourceCache::has(base_script)) {
-					script = Ref<Resource>(ResourceCache::get(base_script));
+					script = ResourceCache::get_ref(base_script);
 				} else {
 					return;
 				}
@@ -1338,7 +1338,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 				}
 
 				if (ResourceCache::has(base_script)) {
-					Ref<Script> script = Ref<Resource>(ResourceCache::get(base_script));
+					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
 						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
 						property.hint_string = itos(script->get_instance_id());
@@ -1864,7 +1864,7 @@ void VisualScriptPropertyGet::_update_cache() {
 				}
 
 				if (ResourceCache::has(base_script)) {
-					script = Ref<Resource>(ResourceCache::get(base_script));
+					script = ResourceCache::get_ref(base_script);
 				} else {
 					return;
 				}
@@ -2044,7 +2044,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 				}
 
 				if (ResourceCache::has(base_script)) {
-					Ref<Script> script = Ref<Resource>(ResourceCache::get(base_script));
+					Ref<Script> script = ResourceCache::get_ref(base_script);
 					if (script.is_valid()) {
 						property.hint = PROPERTY_HINT_PROPERTY_OF_SCRIPT;
 						property.hint_string = itos(script->get_instance_id());
