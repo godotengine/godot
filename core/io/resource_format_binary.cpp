@@ -287,7 +287,13 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				case OBJECT_INTERNAL_RESOURCE: {
 					uint32_t index = f->get_32();
 					String path = res_path + "::" + itos(index);
-					RES res = ResourceLoader::load(path);
+					RES res;
+					if (internal_resources_cache.has(index)) {
+						res = internal_resources_cache[index];
+					} else {
+						res = ResourceLoader::load(path, "", no_subresource_cache);
+						internal_resources_cache[index] = res;
+					}
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
 					}
@@ -309,7 +315,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					RES res = ResourceLoader::load(path, exttype);
+					RES res = ResourceLoader::load(path, exttype, no_subresource_cache);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -333,7 +339,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
-						RES res = ResourceLoader::load(path, exttype);
+						RES res = ResourceLoader::load(path, exttype, no_subresource_cache);
 
 						if (res.is_null()) {
 							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -602,7 +608,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 		if (remaps.has(path)) {
 			path = remaps[path];
 		}
-		RES res = ResourceLoader::load(path, external_resources[s].type);
+		RES res = ResourceLoader::load(path, external_resources[s].type, no_subresource_cache);
 		if (res.is_null()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[s].type);
@@ -640,7 +646,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 			path = res_path + "::" + path;
 		}
 
-		if (ResourceCache::has(path)) {
+		if (!no_subresource_cache && ResourceCache::has(path)) {
 			//already loaded, don't do anything
 			stage++;
 			error = OK;
@@ -674,7 +680,9 @@ Error ResourceInteractiveLoaderBinary::poll() {
 
 	RES res = RES(r);
 
-	r->set_path(path);
+	if (!no_subresource_cache) {
+		r->set_path(path);
+	}
 	r->set_subindex(subindex);
 
 	int pc = f->get_32();
@@ -928,7 +936,7 @@ ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {
 	}
 }
 
-Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
+Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -939,6 +947,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ResourceInteractiveLoader>(), "Cannot open file '" + p_path + "'.");
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
+	ria->set_no_subresource_cache(p_no_subresource_cache);
 	String path = p_original_path != "" ? p_original_path : p_path;
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;

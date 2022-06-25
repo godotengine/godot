@@ -45,6 +45,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="no_subresource_cache" type="bool" setter="set_no_subresource_cache" getter="get_no_subresource_cache">
+			Configures whether nested resources, if included, should not be cached.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

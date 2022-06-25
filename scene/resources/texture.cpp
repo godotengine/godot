@@ -835,7 +835,7 @@ StreamTexture::~StreamTexture() {
 	VS::get_singleton()->free(texture);
 }
 
-RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderStreamTexture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	Ref<StreamTexture> st;
 	st.instance();
 	Error err = st->load(p_path);
@@ -2739,7 +2739,7 @@ void TextureArray::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureArray::create, DEFVAL(FLAGS_DEFAULT_TEXTURE_ARRAY));
 }
 
-RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}

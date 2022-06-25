@@ -46,8 +46,9 @@
 			<return type="Variant" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="original_path" type="String" />
+			<argument index="2" name="no_subresource_cache" type="bool" />
 			<description>
-				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
+				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [code]original_path[/code] will target the source file. If [code]no_subresource_cache[/code] is true, sub-resources should not be cached. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>
 		<method name="rename_dependencies" qualifiers="virtual">

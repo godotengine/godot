@@ -122,7 +122,7 @@ void ImageLoader::cleanup() {
 
 /////////////////
 
-RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_no_subresource_cache) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		if (r_error) {

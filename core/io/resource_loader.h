@@ -41,6 +41,8 @@ class ResourceInteractiveLoader : public Reference {
 	Thread::ID path_loading_thread;
 
 protected:
+	bool no_subresource_cache = false;
+
 	static void _bind_methods();
 
 public:
@@ -51,6 +53,8 @@ public:
 	virtual int get_stage_count() const = 0;
 	virtual void set_translation_remapped(bool p_remapped) = 0;
 	virtual Error wait();
+	virtual void set_no_subresource_cache(bool p_no_subresource_cache);
+	virtual bool get_no_subresource_cache();
 
 	ResourceInteractiveLoader() {}
 	~ResourceInteractiveLoader();
@@ -63,8 +67,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_no_subresource_cache = false);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_no_subresource_cache = false);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
