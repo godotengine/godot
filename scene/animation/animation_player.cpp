@@ -1201,11 +1201,15 @@ void AnimationPlayer::_animation_process(double p_delta) {
 					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 				}
 			} else {
-				//stop();
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
 					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
+
+					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
+						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
+						get_tree()->quit();
+					}
 				}
 			}
 			end_reached = false;
@@ -1892,6 +1896,14 @@ AnimationPlayer::AnimationMethodCallMode AnimationPlayer::get_method_call_mode()
 	return method_call_mode;
 }
 
+void AnimationPlayer::set_movie_quit_on_finish_enabled(bool p_enabled) {
+	movie_quit_on_finish = p_enabled;
+}
+
+bool AnimationPlayer::is_movie_quit_on_finish_enabled() const {
+	return movie_quit_on_finish;
+}
+
 void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 	if (processing == p_process && !p_force) {
 		return;
@@ -2112,6 +2124,9 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_method_call_mode", "mode"), &AnimationPlayer::set_method_call_mode);
 	ClassDB::bind_method(D_METHOD("get_method_call_mode"), &AnimationPlayer::get_method_call_mode);
 
+	ClassDB::bind_method(D_METHOD("set_movie_quit_on_finish_enabled"), &AnimationPlayer::set_movie_quit_on_finish_enabled);
+	ClassDB::bind_method(D_METHOD("is_movie_quit_on_finish_enabled"), &AnimationPlayer::is_movie_quit_on_finish_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
 
@@ -2132,6 +2147,8 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");
 
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));

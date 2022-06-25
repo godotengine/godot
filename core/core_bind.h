@@ -676,6 +676,9 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
+	String get_write_movie_path() const;
+
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
