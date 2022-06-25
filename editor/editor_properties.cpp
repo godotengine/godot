@@ -3601,7 +3601,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.greater = true;
 			} else if (slice == "or_lesser") {
 				hint.lesser = true;
-			} else if (slice == "noslider") {
+			} else if (slice == "no_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
