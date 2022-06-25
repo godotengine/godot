@@ -126,7 +126,11 @@ int ProgressBar::get_fill_mode() {
 }
 
 void ProgressBar::set_percent_visible(bool p_visible) {
+	if (percent_visible == p_visible) {
+		return;
+	}
 	percent_visible = p_visible;
+	update_minimum_size();
 	update();
 }
 
