@@ -112,6 +112,9 @@ struct CachedData {
 	GDMonoClass *class_ExportAttribute = nullptr;
 	GDMonoField *field_ExportAttribute_hint = nullptr;
 	GDMonoField *field_ExportAttribute_hintString = nullptr;
+	GDMonoClass *class_GlobalAttribute = nullptr;
+	GDMonoField *field_GlobalAttribute_name = nullptr;
+	GDMonoField *field_GlobalAttribute_iconPath = nullptr;
 	GDMonoClass *class_SignalAttribute = nullptr;
 	GDMonoClass *class_ToolAttribute = nullptr;
 	GDMonoClass *class_RPCAttribute = nullptr;
