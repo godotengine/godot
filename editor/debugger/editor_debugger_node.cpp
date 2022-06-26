@@ -229,6 +229,12 @@ void EditorDebuggerNode::stop() {
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
+
+		if (EditorNode::get_singleton()->is_movie_maker_enabled()) {
+			// Request attention in case the user was doing something else when movie recording is finished.
+			DisplayServer::get_singleton()->window_request_attention();
+		}
+
 		server.unref();
 	}
 	// Also close all debugging sessions.
