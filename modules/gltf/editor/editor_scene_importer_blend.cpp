@@ -98,7 +98,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 			parameters_arg += "export_materials='EXPORT',";
 		}
 	} else {
-		parameters_arg += "export_materials='PLACEHOLDER',";
+		parameters_arg += "export_materials='EXPORT',";
 	}
 	if (p_options.has(SNAME("blender/nodes/cameras")) && p_options[SNAME("blender/nodes/cameras")]) {
 		parameters_arg += "export_cameras=True,";
