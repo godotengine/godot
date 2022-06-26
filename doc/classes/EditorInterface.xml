@@ -152,6 +152,12 @@
 				Shows the given property on the given [code]object[/code] in the editor's Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins will not attempt to edit [code]object[/code].
 			</description>
 		</method>
+		<method name="is_movie_maker_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if Movie Maker mode is enabled in the editor. See also [method set_movie_maker_enabled]. See [MovieWriter] for more information.
+			</description>
+		</method>
 		<method name="is_playing_scene" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -232,6 +238,13 @@
 			<argument index="0" name="name" type="String" />
 			<description>
 				Sets the editor's current main screen to the one specified in [code]name[/code]. [code]name[/code] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+			</description>
+		</method>
+		<method name="set_movie_maker_enabled">
+			<return type="void" />
+			<argument index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether Movie Maker mode is enabled in the editor. See also [method is_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="set_plugin_enabled">
