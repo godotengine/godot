@@ -116,7 +116,7 @@ void LightmapGIData::_set_light_textures_data(const Array &p_data) {
 
 Array LightmapGIData::_get_light_textures_data() const {
 	Array ret;
-	if (light_texture.is_null()) {
+	if (light_texture.is_null() || light_texture->get_layers() == 0) {
 		return ret;
 	}
 
