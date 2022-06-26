@@ -449,6 +449,7 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 		icon = p_icon;
 		update();
 		update_minimum_size();
+		notify_property_list_changed();
 	}
 }
 
@@ -560,6 +561,11 @@ void Button::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
 	}
 	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+
+	if (icon.is_null()) {
+		p_list->erase(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"));
+		p_list->erase(PropertyInfo(Variant::BOOL, "expand_icon"));
+	}
 }
 
 void Button::_bind_methods() {
