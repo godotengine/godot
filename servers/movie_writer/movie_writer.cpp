@@ -105,6 +105,21 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
 	project_name = GLOBAL_GET("application/config/name");
+
+	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
+
+	// Check for available disk space and warn the user if needed.
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String path = p_base_path.get_basename();
+	if (path.is_relative_path()) {
+		path = "res://" + path;
+	}
+	dir->open(path);
+	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
+		// Less than 10 GiB available.
+		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
+	}
+
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));
