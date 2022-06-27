@@ -2693,12 +2693,18 @@ void _Thread::_start_func(void *ud) {
 		// We must check if we are in case b).
 		int target_param_count = 0;
 		int target_default_arg_count = 0;
+
 		Ref<Script> script = target_instance->get_script();
-		if (script.is_valid()) {
-			MethodInfo mi = script->get_method_info(t->target_method);
-			target_param_count = mi.arguments.size();
-			target_default_arg_count = mi.default_arguments.size();
-		} else {
+		while (script.is_valid()) {
+			if (script->has_method(t->target_method)) {
+				MethodInfo mi = script->get_method_info(t->target_method);
+				target_param_count = mi.arguments.size();
+				target_default_arg_count = mi.default_arguments.size();
+				break;
+			}
+			script = script->get_base_script();
+		}
+		if (script.is_null()) {
 			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_method);
 			if (method) {
 				target_param_count = method->get_argument_count();
