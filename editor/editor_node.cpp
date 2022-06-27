@@ -1654,7 +1654,7 @@ int EditorNode::_save_external_resources() {
 	}
 
 	for (const String &E : edited_resources) {
-		Ref<Resource> res = Ref<Resource>(ResourceCache::get(E));
+		Ref<Resource> res = ResourceCache::get_ref(E);
 		if (!res.is_valid()) {
 			continue; // Maybe it was erased in a thread, who knows.
 		}
