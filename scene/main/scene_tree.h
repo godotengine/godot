@@ -33,6 +33,7 @@
 
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
 
@@ -137,7 +138,11 @@ private:
 	int call_lock = 0;
 	HashSet<ObjectID> call_skip; // Skip erased nodes. Store ID instead of pointer to avoid false positives when node is freed and a new node is allocated at the pointed address.
 
-	List<ObjectID> delete_queue;
+	struct DeleteQueueElement {
+		ObjectID id;
+		int32_t child_list_id;
+	};
+	LocalVector<DeleteQueueElement> delete_queue;
 
 	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
