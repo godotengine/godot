@@ -4,7 +4,7 @@
  *
  *   The FreeType basic cache interface (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -26,6 +26,7 @@
 #include "ftccback.h"
 #include "ftcerror.h"
 
+#undef  FT_COMPONENT
 #define FT_COMPONENT  cache
 
 
@@ -108,12 +109,16 @@
     if ( error || !face )
       return result;
 
+#ifdef FT_DEBUG_LEVEL_TRACE
     if ( (FT_ULong)face->num_glyphs > FT_UINT_MAX || 0 > face->num_glyphs )
+    {
       FT_TRACE1(( "ftc_basic_family_get_count:"
-                  " the number of glyphs in this face is %ld,\n"
-                  "                           "
-                  " which is too much and thus truncated\n",
+                  " the number of glyphs in this face is %ld,\n",
                   face->num_glyphs ));
+      FT_TRACE1(( "                           "
+                  " which is too much and thus truncated\n" ));
+    }
+#endif
 
     if ( !error )
       result = (FT_UInt)face->num_glyphs;
@@ -178,7 +183,8 @@
       if ( !error )
       {
         if ( face->glyph->format == FT_GLYPH_FORMAT_BITMAP  ||
-             face->glyph->format == FT_GLYPH_FORMAT_OUTLINE )
+             face->glyph->format == FT_GLYPH_FORMAT_OUTLINE ||
+             face->glyph->format == FT_GLYPH_FORMAT_SVG     )
         {
           /* ok, copy it */
           FT_Glyph  glyph;

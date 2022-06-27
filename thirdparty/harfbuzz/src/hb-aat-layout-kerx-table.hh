@@ -82,8 +82,8 @@ struct KernPair
   }
 
   protected:
-  HBGlyphID	left;
-  HBGlyphID	right;
+  HBGlyphID16	left;
+  HBGlyphID16	right;
   FWORD		value;
   public:
   DEFINE_SIZE_STATIC (6);
@@ -775,11 +775,11 @@ struct KerxSubTable
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.format0, hb_forward<Ts> (ds)...));
-    case 1:	return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
-    case 2:	return_trace (c->dispatch (u.format2, hb_forward<Ts> (ds)...));
-    case 4:	return_trace (c->dispatch (u.format4, hb_forward<Ts> (ds)...));
-    case 6:	return_trace (c->dispatch (u.format6, hb_forward<Ts> (ds)...));
+    case 0:	return_trace (c->dispatch (u.format0, std::forward<Ts> (ds)...));
+    case 1:	return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2:	return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 4:	return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    case 6:	return_trace (c->dispatch (u.format6, std::forward<Ts> (ds)...));
     default:	return_trace (c->default_return_value ());
     }
   }

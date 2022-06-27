@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,16 @@
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/version_generated.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
+#include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/property_editor.h"
+#include "editor/shader_create_dialog.h"
+#include "scene/gui/split_container.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
@@ -46,8 +51,22 @@
 
 static bool saved_warnings_enabled = false;
 static bool saved_treat_warning_as_errors = false;
-static Map<ShaderWarning::Code, bool> saved_warnings;
+static HashMap<ShaderWarning::Code, bool> saved_warnings;
 static uint32_t saved_warning_flags = 0U;
+
+void ShaderTextEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (is_visible_in_tree()) {
+				_load_theme_settings();
+				if (warnings.size() > 0 && last_compile_result == OK) {
+					warnings_panel->clear();
+					_update_warning_panel();
+				}
+			}
+		} break;
+	}
+}
 
 Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 	return shader;
@@ -137,15 +156,25 @@ void ShaderTextEditor::_load_theme_settings() {
 			}
 		}
 
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())).size(); i++) {
-			built_ins.push_back(ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()))[i]);
+		const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+
+		for (int i = 0; i < modes.size(); i++) {
+			const ShaderLanguage::ModeInfo &info = modes[i];
+
+			if (!info.options.is_empty()) {
+				for (int j = 0; j < info.options.size(); j++) {
+					built_ins.push_back(String(info.name) + "_" + String(info.options[j]));
+				}
+			} else {
+				built_ins.push_back(String(info.name));
+			}
 		}
 	}
 
-	const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 
 	for (const String &E : built_ins) {
-		syntax_highlighter->add_keyword_color(E, member_variable_color);
+		syntax_highlighter->add_keyword_color(E, user_type_color);
 	}
 
 	// Colorize comments.
@@ -194,16 +223,22 @@ void ShaderTextEditor::_check_shader_mode() {
 
 static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
 	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
-	return RS::global_variable_type_get_shader_datatype(gvt);
+	return (ShaderLanguage::DataType)RS::global_variable_type_get_shader_datatype(gvt);
 }
 
-void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {
+void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	_check_shader_mode();
 
 	ShaderLanguage sl;
 	String calltip;
 
-	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type, r_options, calltip);
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_global_variable_type;
+
+	sl.complete(p_code, info, r_options, calltip);
 
 	get_text_editor()->set_code_hint(calltip);
 }
@@ -215,14 +250,20 @@ void ShaderTextEditor::_validate_script() {
 	//List<StringName> params;
 	//shader->get_param_list(&params);
 
+	ShaderLanguage::ShaderCompileInfo info;
+	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
+	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	info.global_variable_type_func = _get_global_variable_type;
+
 	ShaderLanguage sl;
 
 	sl.enable_warning_checking(saved_warnings_enabled);
 	sl.set_warning_flags(saved_warning_flags);
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderLanguage::VaryingFunctionNames(), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
+	last_compile_result = sl.compile(code, info);
 
-	if (err != OK) {
+	if (last_compile_result != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
@@ -237,14 +278,14 @@ void ShaderTextEditor::_validate_script() {
 		set_error("");
 	}
 
-	if (warnings.size() > 0 || err != OK) {
+	if (warnings.size() > 0 || last_compile_result != OK) {
 		warnings_panel->clear();
 	}
 	warnings.clear();
 	for (List<ShaderWarning>::Element *E = sl.get_warnings_ptr(); E; E = E->next()) {
 		warnings.push_back(E->get());
 	}
-	if (warnings.size() > 0 && err == OK) {
+	if (warnings.size() > 0 && last_compile_result == OK) {
 		warnings.sort_custom<WarningsComparator>();
 		_update_warning_panel();
 	} else {
@@ -270,15 +311,20 @@ void ShaderTextEditor::_update_warning_panel() {
 		}
 
 		warning_count++;
+		int line = w.get_line();
 
 		// First cell.
 		warnings_panel->push_cell();
-		warnings_panel->push_meta(w.get_line() - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.get_line()));
-		warnings_panel->add_text(" (" + w.get_name() + "):");
+		if (line != -1) {
+			warnings_panel->push_meta(line - 1);
+			warnings_panel->add_text(TTR("Line") + " " + itos(line));
+			warnings_panel->add_text(" (" + w.get_name() + "):");
+			warnings_panel->pop(); // Meta goto.
+		} else {
+			warnings_panel->add_text(w.get_name() + ":");
+		}
 		warnings_panel->pop(); // Color.
-		warnings_panel->pop(); // Meta goto.
 		warnings_panel->pop(); // Cell.
 
 		// Second cell.
@@ -384,7 +430,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/tutorials/shaders/shader_reference/index.html");
+			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -393,8 +439,16 @@ void ShaderEditor::_menu_option(int p_option) {
 }
 
 void ShaderEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		_check_for_external_edit();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			PopupMenu *popup = help_menu->get_popup();
+			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+		} break;
+
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			_check_for_external_edit();
+		} break;
 	}
 }
 
@@ -422,14 +476,6 @@ void ShaderEditor::_bind_methods() {
 }
 
 void ShaderEditor::ensure_select_current() {
-	/*
-	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
-		ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(tab_container->get_child(tab_container->get_current_tab()));
-		if (!ste)
-			return;
-		Ref<Shader> shader = ste->get_edited_shader();
-		get_scene()->get_root_node()->call("_resource_selected",shader);
-	}*/
 }
 
 void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
@@ -486,7 +532,7 @@ void ShaderEditor::_check_for_external_edit() {
 		return;
 	}
 
-	bool use_autoreload = bool(EDITOR_DEF("text_editor/behavior/files/auto_reload_scripts_on_external_change", false));
+	bool use_autoreload = bool(EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change"));
 	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
 		if (use_autoreload) {
 			_reload_shader_from_disk();
@@ -552,7 +598,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MOUSE_BUTTON_RIGHT && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			CodeEdit *tx = shader_editor->get_text_editor();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
@@ -613,7 +659,7 @@ void ShaderEditor::_update_bookmark_list() {
 		}
 
 		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->set_item_metadata(-1, bookmark_list[i]);
 	}
 }
 
@@ -644,12 +690,12 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
-	context_menu->set_position(get_global_transform().xform(p_position));
-	context_menu->set_size(Vector2(1, 1));
+	context_menu->set_position(get_screen_position() + p_position);
+	context_menu->reset_size();
 	context_menu->popup();
 }
 
-ShaderEditor::ShaderEditor(EditorNode *p_node) {
+ShaderEditor::ShaderEditor() {
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
@@ -738,7 +784,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
-	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
 
 	add_child(main_container);
@@ -747,7 +793,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", p_node->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
@@ -794,51 +840,216 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	_editor_settings_changed();
 }
 
+void ShaderEditorPlugin::_update_shader_list() {
+	shader_list->clear();
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		String text;
+		String path = edited_shaders[i].shader->get_path();
+		String _class = edited_shaders[i].shader->get_class();
+
+		if (path.is_resource_file()) {
+			text = path.get_file();
+		} else if (edited_shaders[i].shader->get_name() != "") {
+			text = edited_shaders[i].shader->get_name();
+		} else {
+			text = _class + ":" + itos(edited_shaders[i].shader->get_instance_id());
+		}
+
+		if (!shader_list->has_theme_icon(_class, SNAME("EditorIcons"))) {
+			_class = "Resource";
+		}
+		Ref<Texture2D> icon = shader_list->get_theme_icon(_class, SNAME("EditorIcons"));
+
+		shader_list->add_item(text, icon);
+		shader_list->set_item_tooltip(shader_list->get_item_count() - 1, path);
+	}
+
+	if (shader_tabs->get_tab_count()) {
+		shader_list->select(shader_tabs->get_current_tab());
+	}
+
+	for (int i = 1; i < FILE_MAX; i++) {
+		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), edited_shaders.size() == 0);
+	}
+}
+
 void ShaderEditorPlugin::edit(Object *p_object) {
 	Shader *s = Object::cast_to<Shader>(p_object);
-	shader_editor->edit(s);
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader.ptr() == s) {
+			// Exists, select.
+			shader_tabs->set_current_tab(i);
+			shader_list->select(i);
+			return;
+		}
+	}
+	// Add.
+	EditedShader es;
+	es.shader = Ref<Shader>(s);
+	Ref<VisualShader> vs = es.shader;
+	if (vs.is_valid()) {
+		es.visual_shader_editor = memnew(VisualShaderEditor);
+		es.visual_shader_editor->edit(vs.ptr());
+		shader_tabs->add_child(es.visual_shader_editor);
+	} else {
+		es.shader_editor = memnew(ShaderEditor);
+		es.shader_editor->edit(s);
+		shader_tabs->add_child(es.shader_editor);
+	}
+	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
+	edited_shaders.push_back(es);
+	_update_shader_list();
 }
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
-	Shader *shader = Object::cast_to<Shader>(p_object);
-	return shader != nullptr && shader->is_text_shader();
+	return Object::cast_to<Shader>(p_object) != nullptr;
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		editor->make_bottom_panel_item_visible(shader_editor);
-
-	} else {
-		button->hide();
-		if (shader_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
-		}
-		shader_editor->apply_shaders();
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(main_split);
 	}
 }
 
 void ShaderEditorPlugin::selected_notify() {
-	shader_editor->ensure_select_current();
+}
+
+ShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader == p_for_shader) {
+			return edited_shaders[i].shader_editor;
+		}
+	}
+	return nullptr;
 }
 
 void ShaderEditorPlugin::save_external_data() {
-	shader_editor->save_external_data();
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader_editor) {
+			edited_shaders[i].shader_editor->save_external_data();
+		}
+	}
 }
 
 void ShaderEditorPlugin::apply_changes() {
-	shader_editor->apply_shaders();
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader_editor) {
+			edited_shaders[i].shader_editor->apply_shaders();
+		}
+	}
 }
 
-ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	shader_editor = memnew(ShaderEditor(p_node));
+void ShaderEditorPlugin::_shader_selected(int p_index) {
+	shader_tabs->set_current_tab(p_index);
+}
 
-	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);
-	button->hide();
+void ShaderEditorPlugin::_close_shader(int p_index) {
+	int index = shader_tabs->get_current_tab();
+	ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+	Control *c = shader_tabs->get_tab_control(index);
+	memdelete(c);
+	edited_shaders.remove_at(index);
+	_update_shader_list();
+}
 
-	_2d = false;
+void ShaderEditorPlugin::_resource_saved(Object *obj) {
+	// May have been renamed on save.
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader.ptr() == obj) {
+			_update_shader_list();
+			return;
+		}
+	}
+}
+
+void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
+	switch (p_index) {
+		case FILE_NEW: {
+			String base_path = FileSystemDock::get_singleton()->get_current_path();
+			shader_create_dialog->config(base_path.plus_file("new_shader"), false, false, 0);
+			shader_create_dialog->popup_centered();
+		} break;
+		case FILE_OPEN: {
+			InspectorDock::get_singleton()->open_resource("Shader");
+		} break;
+		case FILE_SAVE: {
+			int index = shader_tabs->get_current_tab();
+			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			EditorNode::get_singleton()->save_resource(edited_shaders[index].shader);
+		} break;
+		case FILE_SAVE_AS: {
+			int index = shader_tabs->get_current_tab();
+			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			String path = edited_shaders[index].shader->get_path();
+			if (!path.is_resource_file()) {
+				path = "";
+			}
+			EditorNode::get_singleton()->save_resource_as(edited_shaders[index].shader, path);
+		} break;
+		case FILE_INSPECT: {
+			int index = shader_tabs->get_current_tab();
+			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
+			EditorNode::get_singleton()->push_item(edited_shaders[index].shader.ptr());
+		} break;
+		case FILE_CLOSE: {
+			_close_shader(shader_tabs->get_current_tab());
+		} break;
+	}
+}
+
+void ShaderEditorPlugin::_shader_created(Ref<Shader> p_shader) {
+	EditorNode::get_singleton()->push_item(p_shader.ptr());
+}
+
+ShaderEditorPlugin::ShaderEditorPlugin() {
+	main_split = memnew(HSplitContainer);
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+
+	HBoxContainer *file_hb = memnew(HBoxContainer);
+	vb->add_child(file_hb);
+	file_menu = memnew(MenuButton);
+	file_menu->set_text(TTR("File"));
+	file_menu->get_popup()->add_item(TTR("New Shader"), FILE_NEW);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_item(TTR("Load Shader"), FILE_OPEN);
+	file_menu->get_popup()->add_item(TTR("Save Shader"), FILE_SAVE);
+	file_menu->get_popup()->add_item(TTR("Save Shader As"), FILE_SAVE_AS);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_item(TTR("Open Shader in Inspector"), FILE_INSPECT);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_item(TTR("Close Shader"), FILE_CLOSE);
+	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
+	file_hb->add_child(file_menu);
+
+	for (int i = 1; i < FILE_MAX; i++) {
+		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), true);
+	}
+
+	shader_list = memnew(ItemList);
+	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(shader_list);
+	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
+
+	main_split->add_child(vb);
+	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
+
+	shader_tabs = memnew(TabContainer);
+	shader_tabs->set_tabs_visible(false);
+	shader_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_split->add_child(shader_tabs);
+	Ref<StyleBoxEmpty> empty;
+	empty.instantiate();
+	shader_tabs->add_theme_style_override("panel", empty);
+
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), main_split);
+
+	// Defer connect because Editor class is not in the binding system yet.
+	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), varray(), CONNECT_DEFERRED);
+
+	shader_create_dialog = memnew(ShaderCreateDialog);
+	vb->add_child(shader_create_dialog);
+	shader_create_dialog->connect("shader_created", callable_mp(this, &ShaderEditorPlugin::_shader_created));
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {

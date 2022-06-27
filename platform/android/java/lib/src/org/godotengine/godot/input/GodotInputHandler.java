@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,9 @@ import static org.godotengine.godot.utils.GLUtils.DEBUG;
 
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotRenderView;
-import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
+import android.content.Context;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
@@ -53,9 +54,9 @@ import java.util.Set;
 /**
  * Handles input related events for the {@link GodotRenderView} view.
  */
-public class GodotInputHandler implements InputDeviceListener {
+public class GodotInputHandler implements InputManager.InputDeviceListener {
 	private final GodotRenderView mRenderView;
-	private final InputManagerCompat mInputManager;
+	private final InputManager mInputManager;
 
 	private final String tag = this.getClass().getSimpleName();
 
@@ -64,7 +65,7 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public GodotInputHandler(GodotRenderView godotView) {
 		mRenderView = godotView;
-		mInputManager = InputManagerCompat.Factory.getInputManager(mRenderView.getView().getContext());
+		mInputManager = (InputManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_SERVICE);
 		mInputManager.registerInputDeviceListener(this, null);
 	}
 
@@ -185,6 +186,9 @@ public class GodotInputHandler implements InputDeviceListener {
 			if (mJoystickIds.indexOfKey(deviceId) >= 0) {
 				final int godotJoyId = mJoystickIds.get(deviceId);
 				Joystick joystick = mJoysticksDevices.get(deviceId);
+				if (joystick == null) {
+					return true;
+				}
 
 				for (int i = 0; i < joystick.axes.size(); i++) {
 					final int axis = joystick.axes.get(i);

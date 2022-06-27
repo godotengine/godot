@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,11 @@
 
 #include "camera_matrix.h"
 
+#include "core/math/aabb.h"
 #include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/math/transform_3d.h"
 #include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
@@ -346,6 +350,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	 */
 
 	Vector<Plane> planes;
+	planes.resize(6);
 
 	const real_t *matrix = (const real_t *)this->matrix;
 
@@ -360,7 +365,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[0] = p_transform.xform(new_plane);
 
 	///////--- Far Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[2],
@@ -371,7 +376,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[1] = p_transform.xform(new_plane);
 
 	///////--- Left Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[0],
@@ -382,7 +387,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[2] = p_transform.xform(new_plane);
 
 	///////--- Top Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[1],
@@ -393,7 +398,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[3] = p_transform.xform(new_plane);
 
 	///////--- Right Plane ---///////
 	new_plane = Plane(matrix[3] - matrix[0],
@@ -404,7 +409,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[4] = p_transform.xform(new_plane);
 
 	///////--- Bottom Plane ---///////
 	new_plane = Plane(matrix[3] + matrix[1],
@@ -415,7 +420,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	planes.push_back(p_transform.xform(new_plane));
+	planes.write[5] = p_transform.xform(new_plane);
 
 	return planes;
 }
@@ -431,9 +436,7 @@ void CameraMatrix::invert() {
 	int pvt_i[4], pvt_j[4]; /* Locations of pivot matrix */
 	real_t pvt_val; /* Value of current pivot element */
 	real_t hold; /* Temporary storage */
-	real_t determinat; /* Determinant */
-
-	determinat = 1.0;
+	real_t determinant = 1.0f;
 	for (k = 0; k < 4; k++) {
 		/** Locate k'th pivot element **/
 		pvt_val = matrix[k][k]; /** Initialize for search **/
@@ -441,7 +444,7 @@ void CameraMatrix::invert() {
 		pvt_j[k] = k;
 		for (i = k; i < 4; i++) {
 			for (j = k; j < 4; j++) {
-				if (Math::absd(matrix[i][j]) > Math::absd(pvt_val)) {
+				if (Math::abs(matrix[i][j]) > Math::abs(pvt_val)) {
 					pvt_i[k] = i;
 					pvt_j[k] = j;
 					pvt_val = matrix[i][j];
@@ -450,9 +453,9 @@ void CameraMatrix::invert() {
 		}
 
 		/** Product of pivots, gives determinant when finished **/
-		determinat *= pvt_val;
-		if (Math::absd(determinat) < 1e-7) {
-			return; //(false);  /** Matrix is singular (zero determinant). **/
+		determinant *= pvt_val;
+		if (Math::is_zero_approx(determinant)) {
+			return; /** Matrix is singular (zero determinant). **/
 		}
 
 		/** "Interchange" rows (with sign change stuff) **/
@@ -707,21 +710,26 @@ void CameraMatrix::scale_translate_to_fit(const AABB &p_aabb) {
 	matrix[3][3] = 1;
 }
 
+void CameraMatrix::add_jitter_offset(const Vector2 &p_offset) {
+	matrix[3][0] += p_offset.x;
+	matrix[3][1] += p_offset.y;
+}
+
 CameraMatrix::operator Transform3D() const {
 	Transform3D tr;
 	const real_t *m = &matrix[0][0];
 
-	tr.basis.elements[0][0] = m[0];
-	tr.basis.elements[1][0] = m[1];
-	tr.basis.elements[2][0] = m[2];
+	tr.basis.rows[0][0] = m[0];
+	tr.basis.rows[1][0] = m[1];
+	tr.basis.rows[2][0] = m[2];
 
-	tr.basis.elements[0][1] = m[4];
-	tr.basis.elements[1][1] = m[5];
-	tr.basis.elements[2][1] = m[6];
+	tr.basis.rows[0][1] = m[4];
+	tr.basis.rows[1][1] = m[5];
+	tr.basis.rows[2][1] = m[6];
 
-	tr.basis.elements[0][2] = m[8];
-	tr.basis.elements[1][2] = m[9];
-	tr.basis.elements[2][2] = m[10];
+	tr.basis.rows[0][2] = m[8];
+	tr.basis.rows[1][2] = m[9];
+	tr.basis.rows[2][2] = m[10];
 
 	tr.origin.x = m[12];
 	tr.origin.y = m[13];
@@ -734,17 +742,17 @@ CameraMatrix::CameraMatrix(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
 	real_t *m = &matrix[0][0];
 
-	m[0] = tr.basis.elements[0][0];
-	m[1] = tr.basis.elements[1][0];
-	m[2] = tr.basis.elements[2][0];
+	m[0] = tr.basis.rows[0][0];
+	m[1] = tr.basis.rows[1][0];
+	m[2] = tr.basis.rows[2][0];
 	m[3] = 0.0;
-	m[4] = tr.basis.elements[0][1];
-	m[5] = tr.basis.elements[1][1];
-	m[6] = tr.basis.elements[2][1];
+	m[4] = tr.basis.rows[0][1];
+	m[5] = tr.basis.rows[1][1];
+	m[6] = tr.basis.rows[2][1];
 	m[7] = 0.0;
-	m[8] = tr.basis.elements[0][2];
-	m[9] = tr.basis.elements[1][2];
-	m[10] = tr.basis.elements[2][2];
+	m[8] = tr.basis.rows[0][2];
+	m[9] = tr.basis.rows[1][2];
+	m[10] = tr.basis.rows[2][2];
 	m[11] = 0.0;
 	m[12] = tr.origin.x;
 	m[13] = tr.origin.y;

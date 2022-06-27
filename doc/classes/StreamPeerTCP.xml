@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" version="4.0">
+<class name="StreamPeerTCP" inherits="StreamPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		TCP stream peer.
 	</brief_description>
@@ -51,16 +51,16 @@
 				Returns the local port to which this peer is bound.
 			</description>
 		</method>
-		<method name="get_status">
+		<method name="get_status" qualifiers="const">
 			<return type="int" enum="StreamPeerTCP.Status" />
 			<description>
 				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
-		<method name="is_connected_to_host" qualifiers="const">
-			<return type="bool" />
+		<method name="poll">
+			<return type="int" enum="Error" />
 			<description>
-				Returns [code]true[/code] if this peer is currently connected or is connecting to a host, [code]false[/code] otherwise.
+				Poll the socket, updating its state. See [method get_status].
 			</description>
 		</method>
 		<method name="set_no_delay">

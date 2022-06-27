@@ -9,7 +9,7 @@
 //
 // ARM NEON version of speed-critical encoding functions.
 //
-// adapted from libvpx (http://www.webmproject.org/code/)
+// adapted from libvpx (https://www.webmproject.org/code/)
 
 #include "src/dsp/dsp.h"
 

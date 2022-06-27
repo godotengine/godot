@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ class CodeEdit : public TextEdit {
 
 public:
 	/* Keep enum in sync with:                                           */
-	/* /core/object/script_language.h - ScriptCodeCompletionOption::Kind */
+	/* /core/object/script_language.h - ScriptLanguage::CodeCompletionKind */
 	enum CodeCompletionKind {
 		KIND_CLASS,
 		KIND_FUNCTION,
@@ -58,7 +58,7 @@ private:
 	String indent_text = "\t";
 
 	bool auto_indent = false;
-	Set<char32_t> auto_indent_prefixes;
+	HashSet<char32_t> auto_indent_prefixes;
 
 	bool indent_using_spaces = false;
 	int _calculate_spaces_till_next_left_indent(int p_column) const;
@@ -176,7 +176,7 @@ private:
 	 *      ]
 	 *  ]
 	 */
-	Vector<Map<int, int>> delimiter_cache;
+	Vector<RBMap<int, int>> delimiter_cache;
 
 	void _update_delimiter_cache(int p_from_line = 0, int p_to_line = -1);
 	int _is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const;
@@ -208,15 +208,15 @@ private:
 	Color code_completion_existing_color = Color(0, 0, 0, 0);
 
 	bool code_completion_active = false;
-	Vector<ScriptCodeCompletionOption> code_completion_options;
+	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
 
-	Set<char32_t> code_completion_prefixes;
-	List<ScriptCodeCompletionOption> code_completion_option_submitted;
-	List<ScriptCodeCompletionOption> code_completion_option_sources;
+	HashSet<char32_t> code_completion_prefixes;
+	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
+	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 
 	void _filter_code_completion_candidates_impl();
@@ -398,7 +398,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const RES &p_icon = RES(), const Variant &p_value = Variant::NIL);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;

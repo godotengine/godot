@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,11 +59,10 @@ void FileAccessWindows::check_errors() const {
 }
 
 Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
+	_close();
+
 	path_src = p_path;
 	path = fix_path(p_path);
-	if (f) {
-		close();
-	}
 
 	const WCHAR *mode_string;
 
@@ -87,7 +86,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		if (!S_ISREG(st.st_mode)) {
 			return ERR_FILE_CANT_OPEN;
 		}
-	};
+	}
 
 #ifdef TOOLS_ENABLED
 	// Windows is case insensitive, but all other platforms are sensitive to it
@@ -99,7 +98,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		HANDLE f = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
 		if (f != INVALID_HANDLE_VALUE) {
 			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (fname != String()) {
+			if (!fname.is_empty()) {
 				String base_file = path.get_file();
 				if (base_file != fname && base_file.findn(fname) == 0) {
 					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
@@ -134,7 +133,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	}
 }
 
-void FileAccessWindows::close() {
+void FileAccessWindows::_close() {
 	if (!f) {
 		return;
 	}
@@ -142,7 +141,7 @@ void FileAccessWindows::close() {
 	fclose(f);
 	f = nullptr;
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		bool rename_error = true;
 		int attempts = 4;
 		while (rename_error && attempts) {
@@ -269,7 +268,7 @@ uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
-};
+}
 
 Error FileAccessWindows::get_error() const {
 	return last_error;
@@ -326,8 +325,9 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 
 uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	if (file.ends_with("/") && file != "/")
+	if (file.ends_with("/") && file != "/") {
 		file = file.substr(0, file.length() - 1);
+	}
 
 	struct _stat st;
 	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);
@@ -335,7 +335,8 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	if (rv == 0) {
 		return st.st_mtime;
 	} else {
-		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
+		print_verbose("Failed to get modified time for: " + p_file + "");
+		return 0;
 	}
 }
 
@@ -348,7 +349,7 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 }
 
 FileAccessWindows::~FileAccessWindows() {
-	close();
+	_close();
 }
 
 #endif // WINDOWS_ENABLED

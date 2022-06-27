@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
@@ -96,9 +96,9 @@ protected:
 	static EngineDebugger *singleton;
 	static ScriptDebugger *script_debugger;
 
-	static Map<StringName, Profiler> profilers;
-	static Map<StringName, Capture> captures;
-	static Map<String, CreatePeerFunc> protocols;
+	static HashMap<StringName, Profiler> profilers;
+	static HashMap<StringName, Capture> captures;
+	static HashMap<String, CreatePeerFunc> protocols;
 
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }

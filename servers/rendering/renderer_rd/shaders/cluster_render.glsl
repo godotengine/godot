@@ -9,7 +9,7 @@ layout(location = 0) in vec3 vertex_attrib;
 layout(location = 0) out float depth_interp;
 layout(location = 1) out flat uint element_index;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint base_index;
 	uint pad0;
 	uint pad1;

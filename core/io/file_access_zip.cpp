@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,20 +38,26 @@ ZipArchive *ZipArchive::instance = nullptr;
 
 extern "C" {
 
-static void *godot_open(void *data, const char *p_fname, int mode) {
+struct ZipData {
+	Ref<FileAccess> f;
+};
+
+static void *godot_open(voidpf opaque, const char *p_fname, int mode) {
 	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
 		return nullptr;
 	}
 
-	FileAccess *f = FileAccess::open(p_fname, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, nullptr);
+	Ref<FileAccess> f = FileAccess::open(p_fname, FileAccess::READ);
+	ERR_FAIL_COND_V(f.is_null(), nullptr);
 
-	return f;
+	ZipData *zd = memnew(ZipData);
+	zd->f = f;
+	return zd;
 }
 
-static uLong godot_read(void *data, void *fdata, void *buf, uLong size) {
-	FileAccess *f = (FileAccess *)fdata;
-	f->get_buffer((uint8_t *)buf, size);
+static uLong godot_read(voidpf opaque, voidpf stream, void *buf, uLong size) {
+	ZipData *zd = (ZipData *)stream;
+	zd->f->get_buffer((uint8_t *)buf, size);
 	return size;
 }
 
@@ -60,42 +66,38 @@ static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 }
 
 static long godot_tell(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)stream;
-	return f->get_position();
+	ZipData *zd = (ZipData *)stream;
+	return zd->f->get_position();
 }
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-	FileAccess *f = (FileAccess *)stream;
+	ZipData *zd = (ZipData *)stream;
 
 	uint64_t pos = offset;
 	switch (origin) {
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = f->get_position() + offset;
+			pos = zd->f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = f->get_length() + offset;
+			pos = zd->f->get_length() + offset;
 			break;
 		default:
 			break;
 	}
 
-	f->seek(pos);
+	zd->f->seek(pos);
 	return 0;
 }
 
 static int godot_close(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)stream;
-	if (f) {
-		f->close();
-		memdelete(f);
-		f = nullptr;
-	}
+	ZipData *zd = (ZipData *)stream;
+	memdelete(zd);
 	return 0;
 }
 
 static int godot_testerror(voidpf opaque, voidpf stream) {
-	FileAccess *f = (FileAccess *)stream;
-	return f->get_error() != OK ? 1 : 0;
+	ZipData *zd = (ZipData *)stream;
+	return zd->f->get_error() != OK ? 1 : 0;
 }
 
 static voidpf godot_alloc(voidpf opaque, uInt items, uInt size) {
@@ -189,7 +191,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 		f.package = pkg_num;
 		unzGetFilePos(zfile, &f.file_pos);
 
-		String fname = String("res://") + filename_inzip;
+		String fname = String("res://") + String::utf8(filename_inzip);
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -208,7 +210,7 @@ bool ZipArchive::file_exists(String p_name) const {
 	return files.has(p_name);
 }
 
-FileAccess *ZipArchive::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+Ref<FileAccess> ZipArchive::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessZip(p_path, *p_file));
 }
 
@@ -233,7 +235,7 @@ ZipArchive::~ZipArchive() {
 }
 
 Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
-	close();
+	_close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
 	ZipArchive *arch = ZipArchive::get_singleton();
@@ -247,7 +249,7 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessZip::close() {
+void FileAccessZip::_close() {
 	if (!zfile) {
 		return;
 	}
@@ -339,7 +341,7 @@ FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile 
 }
 
 FileAccessZip::~FileAccessZip() {
-	close();
+	_close();
 }
 
 #endif // MINIZIP_ENABLED

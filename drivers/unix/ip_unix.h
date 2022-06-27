@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class IPUnix : public IP {
 	static IP *_create_unix();
 
 public:
-	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const override;
+	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override;
 
 	static void make_default();
 	IPUnix();

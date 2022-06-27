@@ -35,10 +35,20 @@
 struct hb_bit_set_invertible_t
 {
   hb_bit_set_t s;
-  bool inverted;
+  bool inverted = false;
 
-  hb_bit_set_invertible_t () { init (); }
-  ~hb_bit_set_invertible_t () { fini (); }
+  hb_bit_set_invertible_t () = default;
+  hb_bit_set_invertible_t (const hb_bit_set_invertible_t& o) = default;
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other) : hb_bit_set_invertible_t () { hb_swap (*this, other); }
+  hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other) { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
+  {
+    if (likely (!a.s.successful || !b.s.successful))
+      return;
+    hb_swap (a.inverted, b.inverted);
+    hb_swap (a.s, b.s);
+  }
 
   void init () { s.init (); inverted = false; }
   void fini () { s.fini (); }
@@ -46,6 +56,7 @@ struct hb_bit_set_invertible_t
   bool in_error () const { return s.in_error (); }
   explicit operator bool () const { return !is_empty (); }
 
+  void alloc (unsigned sz) { s.alloc (sz); }
   void reset ()
   {
     s.reset ();
@@ -69,6 +80,8 @@ struct hb_bit_set_invertible_t
     next (&v);
     return v == INVALID;
   }
+  uint32_t hash () const { return s.hash () ^ inverted; }
+
   hb_codepoint_t get_min () const
   {
     hb_codepoint_t v = INVALID;
@@ -311,6 +324,14 @@ struct hb_bit_set_invertible_t
     s.previous (first);
     ++*first;
     return true;
+  }
+
+  unsigned int next_many (hb_codepoint_t  codepoint,
+			  hb_codepoint_t *out,
+			  unsigned int    size) const
+  {
+    return inverted ? s.next_many_inverted (codepoint, out, size)
+		    : s.next_many (codepoint, out, size);
   }
 
   static constexpr hb_codepoint_t INVALID = hb_bit_set_t::INVALID;

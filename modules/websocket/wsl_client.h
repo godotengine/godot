@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,7 @@ private:
 	Ref<WSLPeer> _peer;
 	Ref<StreamPeerTCP> _tcp;
 	Ref<StreamPeer> _connection;
+	ConnectionStatus _status = CONNECTION_DISCONNECTED;
 
 	CharString _request;
 	int _requested = 0;
@@ -59,28 +60,27 @@ private:
 	uint8_t _resp_buf[WSL_MAX_HEADER_SIZE];
 	int _resp_pos = 0;
 
-	String _response;
-
 	String _key;
 	String _host;
-	int _port;
-	Array ip_candidates;
+	uint16_t _port = 0;
+	Array _ip_candidates;
 	Vector<String> _protocols;
 	bool _use_ssl = false;
+	IP::ResolverID _resolver_id = IP::RESOLVER_INVALID_ID;
 
 	void _do_handshake();
 	bool _verify_headers(String &r_protocol);
 
 public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
-	int get_max_packet_size() const;
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IPAddress get_connected_host() const;
-	uint16_t get_connected_port() const;
-	virtual ConnectionStatus get_connection_status() const;
-	virtual void poll();
+	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
+	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
+	int get_max_packet_size() const override;
+	Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
+	void disconnect_from_host(int p_code = 1000, String p_reason = "") override;
+	IPAddress get_connected_host() const override;
+	uint16_t get_connected_port() const override;
+	virtual ConnectionStatus get_connection_status() const override;
+	virtual void poll() override;
 
 	WSLClient();
 	~WSLClient();

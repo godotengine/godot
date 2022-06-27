@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,12 +45,12 @@ class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value = 0;
+		int64_t value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
 
-		ConstantInterface(const String &p_name, const String &p_proxy_name, int p_value) {
+		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value) {
 			name = p_name;
 			proxy_name = p_proxy_name;
 			value = p_value;
@@ -86,6 +86,8 @@ class BindingsGenerator {
 	struct TypeReference {
 		StringName cname;
 		bool is_enum = false;
+
+		List<TypeReference> generic_type_parameters;
 
 		TypeReference() {}
 
@@ -135,6 +137,11 @@ class BindingsGenerator {
 		 * Determines if the method has a variable number of arguments (VarArg)
 		 */
 		bool is_vararg = false;
+
+		/**
+		 * Determines if the method is static.
+		 */
+		bool is_static = false;
 
 		/**
 		 * Virtual methods ("virtual" as defined by the Godot API) are methods that by default do nothing,
@@ -200,6 +207,8 @@ class BindingsGenerator {
 		 */
 		String name;
 		StringName cname;
+
+		int type_parameter_count;
 
 		/**
 		 * Identifier name of the base class.
@@ -366,6 +375,16 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
+		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
+			for (const MethodInterface &E : methods) {
+				if (E.proxy_name == p_proxy_name) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
 			for (const PropertyInterface &E : properties) {
 				if (E.cname == p_cname) {
@@ -386,8 +405,18 @@ class BindingsGenerator {
 			return nullptr;
 		}
 
-		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
-			for (const MethodInterface &E : methods) {
+		const SignalInterface *find_signal_by_name(const StringName &p_cname) const {
+			for (const SignalInterface &E : signals_) {
+				if (E.cname == p_cname) {
+					return &E;
+				}
+			}
+
+			return nullptr;
+		}
+
+		const SignalInterface *find_signal_by_proxy_name(const String &p_proxy_name) const {
+			for (const SignalInterface &E : signals_) {
 				if (E.proxy_name == p_proxy_name) {
 					return &E;
 				}
@@ -508,24 +537,24 @@ class BindingsGenerator {
 	bool log_print_enabled = true;
 	bool initialized = false;
 
-	OrderedHashMap<StringName, TypeInterface> obj_types;
+	HashMap<StringName, TypeInterface> obj_types;
 
-	Map<StringName, TypeInterface> placeholder_types;
-	Map<StringName, TypeInterface> builtin_types;
-	Map<StringName, TypeInterface> enum_types;
+	HashMap<StringName, TypeInterface> placeholder_types;
+	HashMap<StringName, TypeInterface> builtin_types;
+	HashMap<StringName, TypeInterface> enum_types;
 
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
 
 	List<InternalCall> method_icalls;
-	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
+	HashMap<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	List<const InternalCall *> generated_icall_funcs;
 
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName>> blacklisted_methods;
+	HashMap<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 
@@ -598,7 +627,7 @@ class BindingsGenerator {
 
 	private:
 		NameCache(const NameCache &);
-		NameCache &operator=(const NameCache &);
+		void operator=(const NameCache &);
 	};
 
 	NameCache name_cache;
@@ -638,6 +667,14 @@ class BindingsGenerator {
 
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
 
+	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
+	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
+
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
 
@@ -645,6 +682,8 @@ class BindingsGenerator {
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
 	const TypeInterface *_get_type_or_placeholder(const TypeReference &p_typeref);
+
+	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);

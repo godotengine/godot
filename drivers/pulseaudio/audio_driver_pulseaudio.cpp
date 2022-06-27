@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/version.h"
 
 #ifdef ALSAMIDI_ENABLED
 #include "drivers/alsa/asound-so_wrap.h"
 #endif
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	switch (pa_context_get_state(c)) {
 		case PA_CONTEXT_TERMINATED:
@@ -64,7 +65,7 @@ void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 }
 
 void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -83,7 +84,7 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 }
 
 void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -103,7 +104,7 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
 	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	ad->capture_default_device = i->default_source_name;
 	ad->default_device = i->default_sink_name;
@@ -191,7 +192,7 @@ Error AudioDriverPulseAudio::init_device() {
 	Error err = detect_channels();
 	if (err != OK) {
 		// This most likely means there are no sinks.
-		ERR_PRINT("PulseAudio: init device failed to detect number of channels");
+		ERR_PRINT("PulseAudio: init device failed to detect number of output channels");
 		return err;
 	}
 
@@ -211,7 +212,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 
 		default:
-			WARN_PRINT("PulseAudio: Unsupported number of channels: " + itos(pa_map.channels));
+			WARN_PRINT("PulseAudio: Unsupported number of output channels: " + itos(pa_map.channels));
 			pa_channel_map_init_stereo(&pa_map);
 			channels = 2;
 			break;
@@ -221,8 +222,8 @@ Error AudioDriverPulseAudio::init_device() {
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " channels");
-	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
+	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated output latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
@@ -293,7 +294,17 @@ Error AudioDriverPulseAudio::init() {
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
 
-	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), "Godot");
+	String context_name;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		context_name = VERSION_NAME " Editor";
+	} else {
+		context_name = GLOBAL_GET("application/config/name");
+		if (context_name.is_empty()) {
+			context_name = VERSION_NAME " Project";
+		}
+	}
+
+	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
 	ERR_FAIL_COND_V(pa_ctx == nullptr, ERR_CANT_OPEN);
 
 	pa_ready = 0;
@@ -368,7 +379,7 @@ float AudioDriverPulseAudio::get_latency() {
 }
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(p_udata);
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint64_t default_device_msec = OS::get_singleton()->get_ticks_msec();
@@ -577,7 +588,7 @@ AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 }
 
 void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -689,6 +700,8 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 	}
 
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+
 	pa_sample_spec spec;
 
 	spec.format = PA_SAMPLE_S16LE;
@@ -758,7 +771,7 @@ void AudioDriverPulseAudio::capture_set_device(const String &p_name) {
 }
 
 void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
-	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {

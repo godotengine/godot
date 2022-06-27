@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,7 @@ public:
 	int size() const;
 	bool is_empty() const;
 	void clear();
+	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
@@ -83,6 +84,9 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
+
+	void set_read_only(bool p_enable);
+	bool is_read_only() const;
 
 	const void *id() const;
 

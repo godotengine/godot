@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="RefCounted" version="4.0">
+<class name="Tween" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Lightweight object used for general-purpose animation via script, using [Tweener]s.
 	</brief_description>
 	<description>
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them.
 		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
-		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid. They can't be used for tweening values, but you can do manual interpolation with [method interpolate_value].
+		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
 		A [Tween] animation is composed of a sequence of [Tweener]s, which by default are executed one after another. You can create a sequence by appending [Tweener]s to the [Tween]. Animating something with a [Tweener] is called tweening. Example tweening sequence looks like this:
 		[codeblock]
 		var tween = get_tree().create_tween()
@@ -72,7 +72,14 @@
 				[b]Note:[/b] The [Tween] will become invalid after finished, but you can call [method stop] after the step, to keep it and reset.
 			</description>
 		</method>
-		<method name="interpolate_value">
+		<method name="get_total_elapsed_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the total time in seconds the [Tween] has been animating (i.e. time since it started, not counting pauses etc.). The time is affected by [method set_speed_scale] and [method stop] will reset it to [code]0[/code].
+				[b]Note:[/b] As it results from accumulating frame deltas, the time returned after the [Tween] has finished animating will be slightly greater than the actual [Tween] duration.
+			</description>
+		</method>
+		<method name="interpolate_value" qualifiers="static">
 			<return type="Variant" />
 			<argument index="0" name="initial_value" type="Variant" />
 			<argument index="1" name="delta_value" type="Variant" />
@@ -98,7 +105,7 @@
 		<method name="is_valid">
 			<return type="bool" />
 			<description>
-				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). [Tween] might become invalid when it has finished tweening or was killed, also when created with [code]Tween.new()[/code]. Invalid [Tween] can't have [Tweener]s appended, because it can't animate them. You can however still use [method interpolate_value].
+				Returns whether the [Tween] is valid. A valid [Tween] is a [Tween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [Tween]). [Tween] might become invalid when it has finished tweening or was killed, also when created with [code]Tween.new()[/code]. Invalid [Tween] can't have [Tweener]s appended, because it can't animate them.
 			</description>
 		</method>
 		<method name="kill">
@@ -146,7 +153,7 @@
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
 				Calling this method without arguments will make the [Tween] run infinitely, until it is either killed by [method kill] or by freeing bound node, or all the animated objects have been freed (which makes further animation impossible).
-				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. 0-duration looped animations (e.g. single [CallbackTweener] with no delay) are equivalent to infinite [code]while[/code] loops and will freeze your game.
+				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. 0-duration looped animations (e.g. single [CallbackTweener] with no delay or [PropertyTweener] with invalid node) are equivalent to infinite [code]while[/code] loops and will freeze your game. If a [Tween]'s lifetime depends on some node, always use [method bind_node].
 			</description>
 		</method>
 		<method name="set_parallel">
@@ -224,10 +231,10 @@
 				Example: creating an object that moves back and forth and jumps every few seconds.
 				[codeblock]
 				var tween = create_tween().set_loops()
-				tween.tween_property("position:x", 200, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", 200.0, 1).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
-				tween.tween_property("position:x", -200, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", -200.0, 1).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
 				[/codeblock]
@@ -267,16 +274,16 @@
 				Creates and appends a [PropertyTweener]. This method tweens a [code]property[/code] of an [code]object[/code] between an initial value and [code]final_val[/code] in a span of time equal to [code]duration[/code], in seconds. The initial value by default is a value at the time the tweening of the [PropertyTweener] start. For example:
 				[codeblock]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2(100, 200)
-				tween.tween_property($Sprite, "position", Vector2(200, 300)
+				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
+				tween.tween_property($Sprite, "position", Vector2(200, 300), 1)
 				[/codeblock]
 				will move the sprite to position (100, 200) and then to (200, 300). If you use [method PropertyTweener.from] or [method PropertyTweener.from_current], the starting position will be overwritten by the given value instead. See other methods in [PropertyTweener] to see how the tweening can be tweaked further.
 				[b]Note:[/b] You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using [code]"property:component"[/code] (eg. [code]position:x[/code]), where it would only apply to that particular component.
 				Example: moving object twice from the same position, with different transition types.
 				[codeblock]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300).as_relative().set_trans(Tween.TRANS_SINE)
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().set_trans(Tween.TRANS_SINE)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
 				[/codeblock]
 			</description>
 		</method>
@@ -303,46 +310,64 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [Tween] updates during physics frame.
+			The [Tween] updates during the physics frame.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [Tween] updates during idle
+			The [Tween] updates during the idle frame.
 		</constant>
 		<constant name="TWEEN_PAUSE_BOUND" value="0" enum="TweenPauseMode">
+			If the [Tween] has a bound node, it will process when that node can process (see [member Node.process_mode]). Otherwise it's the same as [constant TWEEN_PAUSE_STOP].
 		</constant>
 		<constant name="TWEEN_PAUSE_STOP" value="1" enum="TweenPauseMode">
+			If [SceneTree] is paused, the [Tween] will also pause.
 		</constant>
 		<constant name="TWEEN_PAUSE_PROCESS" value="2" enum="TweenPauseMode">
+			The [Tween] will process regardless of whether [SceneTree] is paused.
 		</constant>
 		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
+			The animation is interpolated linearly.
 		</constant>
 		<constant name="TRANS_SINE" value="1" enum="TransitionType">
+			The animation is interpolated using a sine function.
 		</constant>
 		<constant name="TRANS_QUINT" value="2" enum="TransitionType">
+			The animation is interpolated with a quintic (to the power of 5) function.
 		</constant>
 		<constant name="TRANS_QUART" value="3" enum="TransitionType">
+			The animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
 		<constant name="TRANS_QUAD" value="4" enum="TransitionType">
+			The animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
 		<constant name="TRANS_EXPO" value="5" enum="TransitionType">
+			The animation is interpolated with an exponential (to the power of x) function.
 		</constant>
 		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
+			The animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
 		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
+			The animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
 		<constant name="TRANS_CIRC" value="8" enum="TransitionType">
+			The animation is interpolated with a function using square roots.
 		</constant>
 		<constant name="TRANS_BOUNCE" value="9" enum="TransitionType">
+			The animation is interpolated by bouncing at the end.
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
+			The animation is interpolated backing out at ends.
 		</constant>
 		<constant name="EASE_IN" value="0" enum="EaseType">
+			The interpolation starts slowly and speeds up towards the end.
 		</constant>
 		<constant name="EASE_OUT" value="1" enum="EaseType">
+			The interpolation starts quickly and slows down towards the end.
 		</constant>
 		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is slowest at both ends.
 		</constant>
 		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
+			A combination of [constant EASE_IN] and [constant EASE_OUT]. The interpolation is fastest at both ends.
 		</constant>
 	</constants>
 </class>

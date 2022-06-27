@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -209,15 +209,6 @@ float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
 
 	H = H / (cx * cx + cy * cy);
 	return H;
-}
-
-AudioFilterSW::AudioFilterSW() {
-	sampling_rate = 44100;
-	resonance = 0.5;
-	cutoff = 5000;
-	gain = 1.0;
-	mode = LOWPASS;
-	stages = 1;
 }
 
 AudioFilterSW::Processor::Processor() {

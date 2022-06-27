@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -289,11 +289,11 @@ public:
 				e.touches_near = min_d < z_near;
 			} else {
 				//contains camera inside light
-				Plane base_plane(-xform.basis.get_axis(Vector3::AXIS_Z), xform.origin);
+				Plane base_plane(-xform.basis.get_column(Vector3::AXIS_Z), xform.origin);
 				float dist = base_plane.distance_to(Vector3());
 				if (dist >= 0 && dist < radius) {
 					//inside, check angle
-					float angle = Math::rad2deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_axis(Vector3::AXIS_Z))));
+					float angle = Math::rad2deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_column(Vector3::AXIS_Z))));
 					e.touches_near = angle < p_spot_aperture * 1.05; //overfit aperture a little due to cone overfit
 				} else {
 					e.touches_near = false;
@@ -331,9 +331,9 @@ public:
 		//extract scale and scale the matrix by it, makes things simpler
 		Vector3 scale = p_half_extents;
 		for (uint32_t i = 0; i < 3; i++) {
-			float s = xform.basis.elements[i].length();
+			float s = xform.basis.rows[i].length();
 			scale[i] *= s;
-			xform.basis.elements[i] /= s;
+			xform.basis.rows[i] /= s;
 		};
 
 		float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));

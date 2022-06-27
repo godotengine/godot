@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,44 +40,42 @@ class EditorSpinSlider : public Range {
 
 	String label;
 	String suffix;
-	int updown_offset;
-	bool hover_updown;
-	bool mouse_hover;
+	int updown_offset = -1;
+	bool hover_updown = false;
+	bool mouse_hover = false;
 
-	TextureRect *grabber;
-	int grabber_range;
+	TextureRect *grabber = nullptr;
+	int grabber_range = 1;
 
-	bool mouse_over_spin;
-	bool mouse_over_grabber;
-	bool mousewheel_over_grabber;
+	bool mouse_over_spin = false;
+	bool mouse_over_grabber = false;
+	bool mousewheel_over_grabber = false;
 
-	bool grabbing_grabber;
-	int grabbing_from;
-	float grabbing_ratio;
+	bool grabbing_grabber = false;
+	int grabbing_from = 0;
+	float grabbing_ratio = 0.0f;
 
-	bool grabbing_spinner_attempt;
-	bool grabbing_spinner;
+	bool grabbing_spinner_attempt = false;
+	bool grabbing_spinner = false;
 
-	bool read_only;
-	float grabbing_spinner_dist_cache;
+	bool read_only = false;
+	float grabbing_spinner_dist_cache = 0.0f;
 	Vector2 grabbing_spinner_mouse_pos;
-	double pre_grab_value;
+	double pre_grab_value = 0.0;
 
 	Popup *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
 	bool value_input_just_closed = false;
 	bool value_input_dirty = false;
 
+	bool hide_slider = false;
+	bool flat = false;
+
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
 	void _value_input_submitted(const String &);
 	void _value_focus_exited();
 	void _value_input_gui_input(const Ref<InputEvent> &p_event);
-	bool hide_slider;
-	bool flat;
-
-	bool use_custom_label_color;
-	Color custom_label_color;
 
 	void _evaluate_input_text();
 
@@ -111,8 +109,6 @@ public:
 
 	void set_flat(bool p_enable);
 	bool is_flat() const;
-
-	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();

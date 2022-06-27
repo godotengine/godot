@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,12 +39,13 @@ class NativeExtension : public Resource {
 	GDCLASS(NativeExtension, Resource)
 
 	void *library = nullptr; // pointer if valid,
+	String library_path;
 
 	struct Extension {
 		ObjectNativeExtension native_extension;
 	};
 
-	Map<StringName, Extension> extension_classes;
+	HashMap<StringName, Extension> extension_classes;
 
 	static void _register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	static void _register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
@@ -54,6 +55,7 @@ class NativeExtension : public Resource {
 	static void _register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
 	static void _register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
 	static void _unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name);
+	static void _get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
 
 	GDNativeInitialization initialization;
 	int32_t level_initialized = -1;
@@ -68,11 +70,10 @@ public:
 	void close_library();
 
 	enum InitializationLevel {
-		INITIALIZATION_LEVEL_CORE,
-		INITIALIZATION_LEVEL_SERVERS,
-		INITIALIZATION_LEVEL_SCENE,
-		INITIALIZATION_LEVEL_EDITOR,
-		INITIALIZATION_LEVEL_DRIVER,
+		INITIALIZATION_LEVEL_CORE = GDNATIVE_INITIALIZATION_CORE,
+		INITIALIZATION_LEVEL_SERVERS = GDNATIVE_INITIALIZATION_SERVERS,
+		INITIALIZATION_LEVEL_SCENE = GDNATIVE_INITIALIZATION_SCENE,
+		INITIALIZATION_LEVEL_EDITOR = GDNATIVE_INITIALIZATION_EDITOR
 	};
 
 	bool is_library_open() const;
@@ -90,7 +91,7 @@ VARIANT_ENUM_CAST(NativeExtension::InitializationLevel)
 
 class NativeExtensionResourceLoader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

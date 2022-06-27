@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,14 +46,14 @@ extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, co
 }
 
 static void _javascript_editor_init_callback() {
-	EditorNode::get_singleton()->add_editor_plugin(memnew(JavaScriptToolsEditorPlugin(EditorNode::get_singleton())));
+	EditorNode::get_singleton()->add_editor_plugin(memnew(JavaScriptToolsEditorPlugin));
 }
 
 void JavaScriptToolsEditorPlugin::initialize() {
 	EditorNode::add_init_callback(_javascript_editor_init_callback);
 }
 
-JavaScriptToolsEditorPlugin::JavaScriptToolsEditorPlugin(EditorNode *p_editor) {
+JavaScriptToolsEditorPlugin::JavaScriptToolsEditorPlugin() {
 	add_tool_menu_item("Download Project Source", callable_mp(this, &JavaScriptToolsEditorPlugin::_download_zip));
 }
 
@@ -64,10 +64,10 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	}
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 
-	FileAccess *src_f;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
-	// Name the downloded ZIP file to contain the project name and download date for easier organization.
+	// Name the downloaded ZIP file to contain the project name and download date for easier organization.
 	// Replace characters not allowed (or risky) in Windows file names with safe characters.
 	// In the project name, all invalid characters become an empty string so that a name
 	// like "Platformer 2: Godette's Revenge" becomes "platformer_2-_godette-s_revenge".
@@ -82,22 +82,22 @@ void JavaScriptToolsEditorPlugin::_download_zip(Variant p_v) {
 	const String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
 	_zip_recursive(resource_path, base_path, zip);
 	zipClose(zip, nullptr);
-	FileAccess *f = FileAccess::open(output_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!f, "Unable to create ZIP file.");
-	Vector<uint8_t> buf;
-	buf.resize(f->get_length());
-	f->get_buffer(buf.ptrw(), buf.size());
-	godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+	{
+		Ref<FileAccess> f = FileAccess::open(output_path, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Unable to create ZIP file.");
+		Vector<uint8_t> buf;
+		buf.resize(f->get_length());
+		f->get_buffer(buf.ptrw(), buf.size());
+		godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+	}
 
-	f->close();
-	memdelete(f);
 	// Remove the temporary file since it was sent to the user's native filesystem as a download.
 	DirAccess::remove_file_or_error(output_path);
 }
 
 void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, zipFile p_zip) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		WARN_PRINT("Unable to open file for zipping: " + p_path);
 		return;
 	}
@@ -105,8 +105,6 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 	uint64_t len = f->get_length();
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
-	f->close();
-	memdelete(f);
 
 	String path = p_path.replace_first(p_base_path, "");
 	zipOpenNewFileInZip(p_zip,
@@ -124,8 +122,8 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 }
 
 void JavaScriptToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zipFile p_zip) {
-	DirAccess *dir = DirAccess::open(p_path);
-	if (!dir) {
+	Ref<DirAccess> dir = DirAccess::open(p_path);
+	if (dir.is_null()) {
 		WARN_PRINT("Unable to open directory for zipping: " + p_path);
 		return;
 	}

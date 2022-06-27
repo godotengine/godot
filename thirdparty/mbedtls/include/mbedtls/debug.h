@@ -5,13 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -24,41 +18,20 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_DEBUG_H
 #define MBEDTLS_DEBUG_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "ssl.h"
+#include "mbedtls/ssl.h"
 
 #if defined(MBEDTLS_ECP_C)
-#include "ecp.h"
+#include "mbedtls/ecp.h"
 #endif
 
 #if defined(MBEDTLS_DEBUG_C)
@@ -107,6 +80,55 @@
 
 #endif /* MBEDTLS_DEBUG_C */
 
+/**
+ * \def MBEDTLS_PRINTF_ATTRIBUTE
+ *
+ * Mark a function as having printf attributes, and thus enable checking
+ * via -wFormat and other flags. This does nothing on builds with compilers
+ * that do not support the format attribute
+ *
+ * Module:  library/debug.c
+ * Caller:
+ *
+ * This module provides debugging functions.
+ */
+#if defined(__has_attribute)
+#if __has_attribute(format)
+#if defined(__MINGW32__) && __USE_MINGW_ANSI_STDIO == 1
+#define MBEDTLS_PRINTF_ATTRIBUTE(string_index, first_to_check)    \
+    __attribute__((__format__ (gnu_printf, string_index, first_to_check)))
+#else /* defined(__MINGW32__) && __USE_MINGW_ANSI_STDIO == 1 */
+#define MBEDTLS_PRINTF_ATTRIBUTE(string_index, first_to_check)    \
+    __attribute__((format(printf, string_index, first_to_check)))
+#endif
+#else /* __has_attribute(format) */
+#define MBEDTLS_PRINTF_ATTRIBUTE(string_index, first_to_check)
+#endif /* __has_attribute(format) */
+#else /* defined(__has_attribute) */
+#define MBEDTLS_PRINTF_ATTRIBUTE(string_index, first_to_check)
+#endif
+
+/**
+ * \def MBEDTLS_PRINTF_SIZET
+ *
+ * MBEDTLS_PRINTF_xxx: Due to issues with older window compilers
+ * and MinGW we need to define the printf specifier for size_t
+ * and long long per platform.
+ *
+ * Module:  library/debug.c
+ * Caller:
+ *
+ * This module provides debugging functions.
+ */
+#if (defined(__MINGW32__) && __USE_MINGW_ANSI_STDIO == 0) || (defined(_MSC_VER) && _MSC_VER < 1800)
+   #include <inttypes.h>
+   #define MBEDTLS_PRINTF_SIZET     PRIuPTR
+   #define MBEDTLS_PRINTF_LONGLONG  "I64d"
+#else /* (defined(__MINGW32__)  && __USE_MINGW_ANSI_STDIO == 0) || (defined(_MSC_VER) && _MSC_VER < 1800) */
+   #define MBEDTLS_PRINTF_SIZET     "zu"
+   #define MBEDTLS_PRINTF_LONGLONG  "lld"
+#endif /* (defined(__MINGW32__)  && __USE_MINGW_ANSI_STDIO == 0) || (defined(_MSC_VER) && _MSC_VER < 1800) */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -145,7 +167,7 @@ void mbedtls_debug_set_threshold( int threshold );
  */
 void mbedtls_debug_print_msg( const mbedtls_ssl_context *ssl, int level,
                               const char *file, int line,
-                              const char *format, ... );
+                              const char *format, ... ) MBEDTLS_PRINTF_ATTRIBUTE(5, 6);
 
 /**
  * \brief   Print the return value of a function to the debug output. This
@@ -287,4 +309,3 @@ void mbedtls_debug_printf_ecdh( const mbedtls_ssl_context *ssl, int level,
 #endif
 
 #endif /* debug.h */
-

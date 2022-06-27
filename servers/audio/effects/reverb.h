@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2006
 
 #ifndef REVERB_H
 #define REVERB_H
@@ -77,12 +75,13 @@ private:
 
 	Comb comb[MAX_COMBS];
 	AllPass allpass[MAX_ALLPASS];
-	float *input_buffer;
+	float *input_buffer = nullptr;
 	float *echo_buffer = nullptr;
-	int echo_buffer_size;
-	int echo_buffer_pos;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
 
-	float hpf_h1, hpf_h2 = 0;
+	float hpf_h1 = 0.0f;
+	float hpf_h2 = 0.0f;
 
 	struct Parameters {
 		float room_size;
@@ -120,4 +119,4 @@ public:
 	~Reverb();
 };
 
-#endif
+#endif // REVERB_H

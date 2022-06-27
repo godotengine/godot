@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,12 +115,12 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		case Variant::TRANSFORM2D: {
 			SETUP_TYPE(Transform2D)
 
-			/**/ TRY_TRANSFER_FIELD("xx", elements[0][0])
-			else TRY_TRANSFER_FIELD("xy", elements[0][1])
-			else TRY_TRANSFER_FIELD("yx", elements[1][0])
-			else TRY_TRANSFER_FIELD("yy", elements[1][1])
-			else TRY_TRANSFER_FIELD("ox", elements[2][0])
-			else TRY_TRANSFER_FIELD("oy", elements[2][1])
+			/**/ TRY_TRANSFER_FIELD("xx", columns[0][0])
+			else TRY_TRANSFER_FIELD("xy", columns[0][1])
+			else TRY_TRANSFER_FIELD("yx", columns[1][0])
+			else TRY_TRANSFER_FIELD("yy", columns[1][1])
+			else TRY_TRANSFER_FIELD("ox", columns[2][0])
+			else TRY_TRANSFER_FIELD("oy", columns[2][1])
 
 			return target;
 		}
@@ -128,15 +128,15 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		case Variant::BASIS: {
 			SETUP_TYPE(Basis)
 
-			/**/ TRY_TRANSFER_FIELD("xx", elements[0][0])
-			else TRY_TRANSFER_FIELD("xy", elements[0][1])
-			else TRY_TRANSFER_FIELD("xz", elements[0][2])
-			else TRY_TRANSFER_FIELD("yx", elements[1][0])
-			else TRY_TRANSFER_FIELD("yy", elements[1][1])
-			else TRY_TRANSFER_FIELD("yz", elements[1][2])
-			else TRY_TRANSFER_FIELD("zx", elements[2][0])
-			else TRY_TRANSFER_FIELD("zy", elements[2][1])
-			else TRY_TRANSFER_FIELD("zz", elements[2][2])
+			/**/ TRY_TRANSFER_FIELD("xx", rows[0][0])
+			else TRY_TRANSFER_FIELD("xy", rows[0][1])
+			else TRY_TRANSFER_FIELD("xz", rows[0][2])
+			else TRY_TRANSFER_FIELD("yx", rows[1][0])
+			else TRY_TRANSFER_FIELD("yy", rows[1][1])
+			else TRY_TRANSFER_FIELD("yz", rows[1][2])
+			else TRY_TRANSFER_FIELD("zx", rows[2][0])
+			else TRY_TRANSFER_FIELD("zy", rows[2][1])
+			else TRY_TRANSFER_FIELD("zz", rows[2][2])
 
 			return target;
 		}
@@ -144,15 +144,15 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		case Variant::TRANSFORM3D: {
 			SETUP_TYPE(Transform3D)
 
-			/**/ TRY_TRANSFER_FIELD("xx", basis.elements[0][0])
-			else TRY_TRANSFER_FIELD("xy", basis.elements[0][1])
-			else TRY_TRANSFER_FIELD("xz", basis.elements[0][2])
-			else TRY_TRANSFER_FIELD("yx", basis.elements[1][0])
-			else TRY_TRANSFER_FIELD("yy", basis.elements[1][1])
-			else TRY_TRANSFER_FIELD("yz", basis.elements[1][2])
-			else TRY_TRANSFER_FIELD("zx", basis.elements[2][0])
-			else TRY_TRANSFER_FIELD("zy", basis.elements[2][1])
-			else TRY_TRANSFER_FIELD("zz", basis.elements[2][2])
+			/**/ TRY_TRANSFER_FIELD("xx", basis.rows[0][0])
+			else TRY_TRANSFER_FIELD("xy", basis.rows[0][1])
+			else TRY_TRANSFER_FIELD("xz", basis.rows[0][2])
+			else TRY_TRANSFER_FIELD("yx", basis.rows[1][0])
+			else TRY_TRANSFER_FIELD("yy", basis.rows[1][1])
+			else TRY_TRANSFER_FIELD("yz", basis.rows[1][2])
+			else TRY_TRANSFER_FIELD("zx", basis.rows[2][0])
+			else TRY_TRANSFER_FIELD("zy", basis.rows[2][1])
+			else TRY_TRANSFER_FIELD("zz", basis.rows[2][2])
 			else TRY_TRANSFER_FIELD("xo", origin.x)
 			else TRY_TRANSFER_FIELD("yo", origin.y)
 			else TRY_TRANSFER_FIELD("zo", origin.z)

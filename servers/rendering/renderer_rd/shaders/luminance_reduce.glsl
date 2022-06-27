@@ -28,7 +28,7 @@ layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D dest_lumin
 layout(set = 2, binding = 0) uniform sampler2D prev_luminance;
 #endif
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 source_size;
 	float max_luminance;
 	float min_luminance;

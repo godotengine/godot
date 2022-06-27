@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ public:
 	ObjectID remote_object_id;
 	String type_name;
 	List<PropertyInfo> prop_list;
-	Map<StringName, Variant> prop_values;
+	HashMap<StringName, Variant> prop_values;
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
 	String get_title();
@@ -68,9 +68,9 @@ class EditorDebuggerInspector : public EditorInspector {
 
 private:
 	ObjectID inspected_object_id;
-	Map<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
-	Set<RES> remote_dependencies;
-	EditorDebuggerRemoteObject *variables;
+	HashMap<ObjectID, EditorDebuggerRemoteObject *> remote_objects;
+	HashSet<Ref<Resource>> remote_dependencies;
+	EditorDebuggerRemoteObject *variables = nullptr;
 
 	void _object_selected(ObjectID p_object);
 	void _object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value);

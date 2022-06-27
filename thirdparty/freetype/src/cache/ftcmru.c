@@ -4,7 +4,7 @@
  *
  *   FreeType MRU support (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -262,6 +262,8 @@
       if ( list->clazz.node_done )
         list->clazz.node_done( node, list->data );
     }
+
+    /* zero new node in case of node_init failure */
     else if ( FT_ALLOC( node, list->clazz.node_size ) )
       goto Exit;
 

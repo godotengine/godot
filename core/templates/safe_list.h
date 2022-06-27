@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,8 +75,8 @@ public:
 	class Iterator {
 		friend class SafeList;
 
-		SafeListNode *cursor;
-		SafeList *list;
+		SafeListNode *cursor = nullptr;
+		SafeList *list = nullptr;
 
 		Iterator(SafeListNode *p_cursor, SafeList *p_list) :
 				cursor(p_cursor), list(p_list) {
@@ -203,7 +203,7 @@ public:
 	}
 
 	// Calling this will cause zero to many deallocations.
-	void maybe_cleanup() {
+	bool maybe_cleanup() {
 		SafeListNode *cursor = nullptr;
 		SafeListNode *new_graveyard_head = nullptr;
 		do {
@@ -212,7 +212,7 @@ public:
 			if (active_iterator_count.load() != 0) {
 				// It's not safe to clean up with an active iterator, because that iterator
 				// could be pointing to an element that we want to delete.
-				return;
+				return false;
 			}
 			// Any iterator created after this point will never point to a deleted node.
 			// Swap it out with the current graveyard head.
@@ -225,6 +225,17 @@ public:
 			tmp->deletion_fn(tmp->val);
 			memdelete_allocator<SafeListNode, A>(tmp);
 		}
+		return true;
+	}
+
+	~SafeList() {
+#ifdef DEBUG_ENABLED
+		if (!maybe_cleanup()) {
+			ERR_PRINT("There are still iterators around when destructing a SafeList. Memory will be leaked. This is a bug.");
+		}
+#else
+		maybe_cleanup();
+#endif
 	}
 };
 
@@ -253,8 +264,8 @@ public:
 	class Iterator {
 		friend class SafeList;
 
-		SafeListNode *cursor;
-		SafeList *list;
+		SafeListNode *cursor = nullptr;
+		SafeList *list = nullptr;
 
 	public:
 		Iterator(SafeListNode *p_cursor, SafeList *p_list) :
@@ -353,11 +364,11 @@ public:
 	}
 
 	// Calling this will cause zero to many deallocations.
-	void maybe_cleanup() {
+	bool maybe_cleanup() {
 		SafeListNode *cursor = graveyard_head;
 		if (active_iterator_count != 0) {
 			// It's not safe to clean up with an active iterator, because that iterator could be pointing to an element that we want to delete.
-			return;
+			return false;
 		}
 		graveyard_head = nullptr;
 		// Our graveyard list is now unreachable by any active iterators, detached from the main graveyard head and ready for deletion.
@@ -367,6 +378,17 @@ public:
 			tmp->deletion_fn(tmp->val);
 			memdelete_allocator<SafeListNode, A>(tmp);
 		}
+		return true;
+	}
+
+	~SafeList() {
+#ifdef DEBUG_ENABLED
+		if (!maybe_cleanup()) {
+			ERR_PRINT("There are still iterators around when destructing a SafeList. Memory will be leaked. This is a bug.");
+		}
+#else
+		maybe_cleanup();
+#endif
 	}
 };
 

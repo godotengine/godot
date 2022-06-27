@@ -34,7 +34,6 @@
 
 #include "basisu_transcoder_internal.h"
 #include "basisu_transcoder_uastc.h"
-#include "basisu_global_selector_palette.h"
 #include "basisu_file_headers.h"
 
 namespace basist
@@ -190,7 +189,7 @@ namespace basist
 		friend class basisu_transcoder;
 
 	public:
-		basisu_lowlevel_etc1s_transcoder(const basist::etc1_global_selector_codebook* pGlobal_sel_codebook);
+		basisu_lowlevel_etc1s_transcoder();
 
 		void set_global_codebooks(const basisu_lowlevel_etc1s_transcoder* pGlobal_codebook) { m_pGlobal_codebook = pGlobal_codebook; }
 		const basisu_lowlevel_etc1s_transcoder* get_global_codebooks() const { return m_pGlobal_codebook; }
@@ -248,17 +247,13 @@ namespace basist
 
 		typedef basisu::vector<selector> selector_vec;
 		const selector_vec& get_selectors() const { return m_local_selectors; }
-
-		const etc1_global_selector_codebook* get_global_sel_codebook() const { return m_pGlobal_sel_codebook; }
-
+				
 	private:
 		const basisu_lowlevel_etc1s_transcoder* m_pGlobal_codebook;
 
 		endpoint_vec m_local_endpoints;
 		selector_vec m_local_selectors;
-
-		const etc1_global_selector_codebook* m_pGlobal_sel_codebook;
-
+				
 		huffman_decoding_table m_endpoint_pred_model, m_delta_endpoint_model, m_selector_model, m_selector_history_buf_rle_model;
 
 		uint32_t m_selector_history_buf_size;
@@ -442,7 +437,7 @@ namespace basist
 		basisu_transcoder& operator= (const basisu_transcoder&);
 
 	public:
-		basisu_transcoder(const etc1_global_selector_codebook* pGlobal_sel_codebook);
+		basisu_transcoder();
 
 		// Validates the .basis file. This computes a crc16 over the entire file, so it's slow.
 		bool validate_file_checksums(const void* pData, uint32_t data_size, bool full_validation) const;
@@ -770,7 +765,7 @@ namespace basist
 	class ktx2_transcoder
 	{
 	public:
-		ktx2_transcoder(basist::etc1_global_selector_codebook* pGlobal_sel_codebook);
+		ktx2_transcoder();
 
 		// Frees all allocations, resets object.
 		void clear();

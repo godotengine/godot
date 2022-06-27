@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -152,17 +152,17 @@ void LightmapRaycasterEmbree::commit() {
 	rtcCommitScene(embree_scene);
 }
 
-void LightmapRaycasterEmbree::set_mesh_filter(const Set<int> &p_mesh_ids) {
-	for (Set<int>::Element *E = p_mesh_ids.front(); E; E = E->next()) {
-		rtcDisableGeometry(rtcGetGeometry(embree_scene, E->get()));
+void LightmapRaycasterEmbree::set_mesh_filter(const HashSet<int> &p_mesh_ids) {
+	for (const int &E : p_mesh_ids) {
+		rtcDisableGeometry(rtcGetGeometry(embree_scene, E));
 	}
 	rtcCommitScene(embree_scene);
 	filter_meshes = p_mesh_ids;
 }
 
 void LightmapRaycasterEmbree::clear_mesh_filter() {
-	for (Set<int>::Element *E = filter_meshes.front(); E; E = E->next()) {
-		rtcEnableGeometry(rtcGetGeometry(embree_scene, E->get()));
+	for (const int &E : filter_meshes) {
+		rtcEnableGeometry(rtcGetGeometry(embree_scene, E));
 	}
 	rtcCommitScene(embree_scene);
 	filter_meshes.clear();

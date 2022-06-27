@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,6 +227,9 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 			_update_transform_dependent();
 		} break;
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
+			if (Math::is_zero_approx(gravity_scale)) {
+				wakeup();
+			}
 			gravity_scale = p_value;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
@@ -267,7 +270,7 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
-			return center_of_mass;
+			return center_of_mass_local;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
@@ -457,15 +460,6 @@ void GodotBody3D::set_space(GodotSpace3D *p_space) {
 	}
 }
 
-void GodotBody3D::_compute_area_gravity_and_damping(const GodotArea3D *p_area) {
-	Vector3 area_gravity;
-	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
-	gravity += area_gravity;
-
-	total_linear_damp += p_area->get_linear_damp();
-	total_angular_damp += p_area->get_angular_damp();
-}
-
 void GodotBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
 	if (lock) {
 		locked_axis |= p_axis;
@@ -483,8 +477,16 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		return;
 	}
 
+	ERR_FAIL_COND(!get_space());
+
 	int ac = areas.size();
+
+	bool gravity_done = false;
+	bool linear_damp_done = false;
+	bool angular_damp_done = false;
+
 	bool stopped = false;
+
 	gravity = Vector3(0, 0, 0);
 
 	total_linear_damp = 0.0;
@@ -495,33 +497,89 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
-			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
-			switch (mode) {
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity_and_damping(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-				} break;
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-					gravity = Vector3(0, 0, 0);
-					total_linear_damp = 0.0;
-					total_angular_damp = 0.0;
-					_compute_area_gravity_and_damping(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-				} break;
-				default: {
+			if (!gravity_done) {
+				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+					Vector3 area_gravity;
+					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
+					switch (area_gravity_mode) {
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+							gravity += area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+						} break;
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+							gravity = area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+						} break;
+						default: {
+						}
+					}
 				}
 			}
+			if (!linear_damp_done) {
+				PhysicsServer3D::AreaSpaceOverrideMode area_linear_damp_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE);
+				if (area_linear_damp_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+					real_t area_linear_damp = aa[i].area->get_linear_damp();
+					switch (area_linear_damp_mode) {
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+							total_linear_damp += area_linear_damp;
+							linear_damp_done = area_linear_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+						} break;
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+							total_linear_damp = area_linear_damp;
+							linear_damp_done = area_linear_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+						} break;
+						default: {
+						}
+					}
+				}
+			}
+			if (!angular_damp_done) {
+				PhysicsServer3D::AreaSpaceOverrideMode area_angular_damp_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE);
+				if (area_angular_damp_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+					real_t area_angular_damp = aa[i].area->get_angular_damp();
+					switch (area_angular_damp_mode) {
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+							total_angular_damp += area_angular_damp;
+							angular_damp_done = area_angular_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+						} break;
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+							total_angular_damp = area_angular_damp;
+							angular_damp_done = area_angular_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+						} break;
+						default: {
+						}
+					}
+				}
+			}
+			stopped = gravity_done && linear_damp_done && angular_damp_done;
 		}
 	}
 
 	// Add default gravity and damping from space area.
 	if (!stopped) {
-		GodotArea3D *def_area = get_space()->get_default_area();
-		ERR_FAIL_COND(!def_area);
+		GodotArea3D *default_area = get_space()->get_default_area();
+		ERR_FAIL_COND(!default_area);
 
-		_compute_area_gravity_and_damping(def_area);
+		if (!gravity_done) {
+			Vector3 default_gravity;
+			default_area->compute_gravity(get_transform().get_origin(), default_gravity);
+			gravity += default_gravity;
+		}
+
+		if (!linear_damp_done) {
+			total_linear_damp += default_area->get_linear_damp();
+		}
+
+		if (!angular_damp_done) {
+			total_angular_damp += default_area->get_angular_damp();
+		}
 	}
 
 	// Override linear damping with body's value.
@@ -546,6 +604,9 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 
 	gravity *= gravity_scale;
 
+	prev_linear_velocity = linear_velocity;
+	prev_angular_velocity = angular_velocity;
+
 	Vector3 motion;
 	bool do_motion = false;
 
@@ -567,9 +628,8 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		if (!omit_force_integration) {
 			//overridden by direct state query
 
-			Vector3 force = gravity * mass;
-			force += applied_force;
-			Vector3 torque = applied_torque;
+			Vector3 force = gravity * mass + applied_force + constant_force;
+			Vector3 torque = applied_torque + constant_torque;
 
 			real_t damp = 1.0 - p_step * total_linear_damp;
 

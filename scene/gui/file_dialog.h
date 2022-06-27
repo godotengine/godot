@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,35 +65,34 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
 
-	Button *makedir;
+	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
-	//Button *action;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 	FileMode mode;
-	LineEdit *dir;
-	HBoxContainer *drives_container;
-	HBoxContainer *shortcuts_container;
-	OptionButton *drives;
-	Tree *tree;
-	HBoxContainer *file_box;
-	LineEdit *file;
-	OptionButton *filter;
-	AcceptDialog *mkdirerr;
-	AcceptDialog *exterr;
-	DirAccess *dir_access;
-	ConfirmationDialog *confirm_save;
+	LineEdit *dir = nullptr;
+	HBoxContainer *drives_container = nullptr;
+	HBoxContainer *shortcuts_container = nullptr;
+	OptionButton *drives = nullptr;
+	Tree *tree = nullptr;
+	HBoxContainer *file_box = nullptr;
+	LineEdit *file = nullptr;
+	OptionButton *filter = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
+	AcceptDialog *exterr = nullptr;
+	Ref<DirAccess> dir_access;
+	ConfirmationDialog *confirm_save = nullptr;
 
-	Label *message;
+	Label *message = nullptr;
 
-	Button *dir_prev;
-	Button *dir_next;
-	Button *dir_up;
+	Button *dir_prev = nullptr;
+	Button *dir_next = nullptr;
+	Button *dir_up = nullptr;
 
-	Button *refresh;
-	Button *show_hidden;
+	Button *refresh = nullptr;
+	Button *show_hidden = nullptr;
 
 	Vector<String> filters;
 
@@ -113,6 +112,8 @@ private:
 	void update_file_list();
 	void update_filters();
 
+	void _focus_file_text();
+
 	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _tree_selected();
 
@@ -130,9 +131,9 @@ private:
 	void _go_back();
 	void _go_forward();
 
-	void _update_drives();
+	void _update_drives(bool p_select = true);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 

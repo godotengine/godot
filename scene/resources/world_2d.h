@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef WORLD_2D_H
 #define WORLD_2D_H
 
-#include "core/config/project_settings.h"
 #include "core/io/resource.h"
+#include "scene/resources/world_2d.h"
 #include "servers/physics_server_2d.h"
 
 class VisibleOnScreenNotifier2D;
@@ -46,7 +46,7 @@ class World2D : public Resource {
 	RID space;
 	RID navigation_map;
 
-	Set<Viewport *> viewports;
+	HashSet<Viewport *> viewports;
 
 protected:
 	static void _bind_methods();
@@ -62,7 +62,7 @@ public:
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 
-	_FORCE_INLINE_ const Set<Viewport *> &get_viewports() { return viewports; }
+	_FORCE_INLINE_ const HashSet<Viewport *> &get_viewports() { return viewports; }
 
 	World2D();
 	~World2D();

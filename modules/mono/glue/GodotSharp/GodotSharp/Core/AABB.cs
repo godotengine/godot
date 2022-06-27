@@ -666,21 +666,40 @@ namespace Godot
             _size = new Vector3(width, height, depth);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the AABBs are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left AABB.</param>
+        /// <param name="right">The right AABB.</param>
+        /// <returns>Whether or not the AABBs are exactly equal.</returns>
         public static bool operator ==(AABB left, AABB right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the AABBs are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left AABB.</param>
+        /// <param name="right">The right AABB.</param>
+        /// <returns>Whether or not the AABBs are not equal.</returns>
         public static bool operator !=(AABB left, AABB right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this AABB and <paramref name="obj"/> are equal.
+        /// Returns <see langword="true"/> if the AABB is exactly equal
+        /// to the given object (<see paramref="obj"/>).
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="obj">The other object to compare.</param>
-        /// <returns>Whether or not the AABB structure and the other object are equal.</returns>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>Whether or not the AABB and the object are equal.</returns>
         public override bool Equals(object obj)
         {
             if (obj is AABB)
@@ -692,10 +711,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this AABB and <paramref name="other"/> are equal
+        /// Returns <see langword="true"/> if the AABBs are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
         /// </summary>
-        /// <param name="other">The other AABB to compare.</param>
-        /// <returns>Whether or not the AABBs are equal.</returns>
+        /// <param name="other">The other AABB.</param>
+        /// <returns>Whether or not the AABBs are exactly equal.</returns>
         public bool Equals(AABB other)
         {
             return _position == other._position && _size == other._size;

@@ -435,7 +435,7 @@ _hb_preprocess_text_vowel_constraints (const hb_ot_shape_plan_t *plan HB_UNUSED,
     default:
       break;
   }
-  buffer->swap_buffers ();
+  buffer->sync ();
 }
 
 

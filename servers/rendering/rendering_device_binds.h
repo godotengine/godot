@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -329,7 +329,7 @@ protected:
 class RDShaderFile : public Resource {
 	GDCLASS(RDShaderFile, Resource)
 
-	Map<StringName, Ref<RDShaderSPIRV>> versions;
+	HashMap<StringName, Ref<RDShaderSPIRV>> versions;
 	String base_error;
 
 public:
@@ -368,13 +368,13 @@ public:
 	}
 
 	void print_errors(const String &p_file) {
-		if (base_error != "") {
+		if (!base_error.is_empty()) {
 			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
 		} else {
 			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
-					if (error != String()) {
+					if (!error.is_empty()) {
 						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
 							"vertex",
 							"fragment",
@@ -441,23 +441,23 @@ public:
 	RD_SETGET(RD::UniformType, uniform_type)
 	RD_SETGET(int32_t, binding)
 
-	void add_id(const RID &p_id) { base.ids.push_back(p_id); }
-	void clear_ids() { base.ids.clear(); }
+	void add_id(const RID &p_id) { base.append_id(p_id); }
+	void clear_ids() { base.clear_ids(); }
 	Array get_ids() const {
 		Array ids;
-		for (int i = 0; i < base.ids.size(); i++) {
-			ids.push_back(base.ids[i]);
+		for (uint32_t i = 0; i < base.get_id_count(); i++) {
+			ids.push_back(base.get_id(i));
 		}
 		return ids;
 	}
 
 protected:
 	void _set_ids(const Array &p_ids) {
-		base.ids.clear();
+		base.clear_ids();
 		for (int i = 0; i < p_ids.size(); i++) {
 			RID id = p_ids[i];
 			ERR_FAIL_COND(id.is_null());
-			base.ids.push_back(id);
+			base.append_id(id);
 		}
 	}
 	static void _bind_methods() {

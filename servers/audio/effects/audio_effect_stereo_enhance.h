@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTSTEREOENHANCE_H
-#define AUDIOEFFECTSTEREOENHANCE_H
+#ifndef AUDIO_EFFECT_STEREO_ENHANCE_H
+#define AUDIO_EFFECT_STEREO_ENHANCE_H
 
 #include "servers/audio/audio_effect.h"
 
@@ -44,9 +44,9 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 		MAX_DELAY_MS = 50
 	};
 
-	float *delay_ringbuff;
-	unsigned int ringbuff_pos;
-	unsigned int ringbuff_mask;
+	float *delay_ringbuff = nullptr;
+	unsigned int ringbuff_pos = 0;
+	unsigned int ringbuff_mask = 0;
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
@@ -58,11 +58,11 @@ class AudioEffectStereoEnhance : public AudioEffect {
 	GDCLASS(AudioEffectStereoEnhance, AudioEffect);
 
 	friend class AudioEffectStereoEnhanceInstance;
-	float volume_db;
+	float volume_db = 0.0f;
 
-	float pan_pullout;
-	float time_pullout;
-	float surround;
+	float pan_pullout = 1.0f;
+	float time_pullout = 0.0f;
+	float surround = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -82,4 +82,4 @@ public:
 	AudioEffectStereoEnhance();
 };
 
-#endif // AUDIOEFFECTSTEREOENHANCE_H
+#endif // AUDIO_EFFECT_STEREO_ENHANCE_H

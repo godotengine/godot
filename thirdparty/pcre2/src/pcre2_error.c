@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -119,7 +119,7 @@ static const unsigned char compile_error_texts[] =
   /* 45 */
   "this version of PCRE2 does not have support for \\P, \\p, or \\X\0"
   "malformed \\P or \\p sequence\0"
-  "unknown property name after \\P or \\p\0"
+  "unknown property after \\P or \\p\0"
   "subpattern name is too long (maximum " XSTRING(MAX_NAME_SIZE) " code units)\0"
   "too many named subpatterns (maximum " XSTRING(MAX_NAME_COUNT) ")\0"
   /* 50 */
@@ -186,6 +186,7 @@ static const unsigned char compile_error_texts[] =
   "script runs require Unicode support, which this version of PCRE2 does not have\0"
   "too many capturing groups (maximum 65535)\0"
   "atomic assertion expected after (?( or (?(?C)\0"
+  "\\K is not allowed in lookarounds (but see PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK)\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -252,7 +253,7 @@ static const unsigned char match_error_texts[] =
   "unknown substring\0"
   /* 50 */
   "non-unique substring name\0"
-  "NULL argument passed\0"
+  "NULL argument passed with non-zero length\0"
   "nested recursion at the same subject position\0"
   "matching depth limit exceeded\0"
   "requested value is not available\0"

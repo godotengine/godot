@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" version="4.0">
+<class name="@GDScript" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
+		A list of GDScript-specific utility functions accessed in any script.
+		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
-		<link title="Random number generation">https://docs.godotengine.org/en/latest/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="Color8">
@@ -98,6 +98,7 @@
 				[codeblock]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead, this will return an empty array.
 			</description>
 		</method>
 		<method name="inst2dict">
@@ -160,48 +161,64 @@
 		<method name="print_debug" qualifiers="vararg">
 			<return type="void" />
 			<description>
-				Like [method @GlobalScope.print], but prints only when used in debug mode.
+				Like [method @GlobalScope.print], but includes the current stack frame when running with the debugger turned on.
+				Output in the console would look something like this:
+				[codeblock]
+				Test print
+				   At: res://test.gd:15:_process()
+				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead of the stack frame, this will print the thread ID.
 			</description>
 		</method>
 		<method name="print_stack">
 			<return type="void" />
 			<description>
-				Prints a stack track at code location, only works when running with debugger turned on.
+				Prints a stack trace at the current code location. Only works when running with debugger turned on.
 				Output in the console would look something like this:
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
+				[b]Note:[/b] Not supported for calling from threads. Instead of the stack trace, this will print the thread ID.
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
 			<return type="Array" />
 			<description>
-				Returns an array with the given range. Range can be 1 argument [code]N[/code] (0 to [code]N[/code] - 1), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). Returns an empty array if the range isn't valid (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
-				Returns an array with the given range. [code]range()[/code] can have 1 argument N ([code]0[/code] to [code]N - 1[/code]), two arguments ([code]initial[/code], [code]final - 1[/code]) or three arguments ([code]initial[/code], [code]final - 1[/code], [code]increment[/code]). [code]increment[/code] can be negative. If [code]increment[/code] is negative, [code]final - 1[/code] will become [code]final + 1[/code]. Also, the initial value must be greater than the final value for the loop to run.
+				Returns an array with the given range. [method range] can be called in three ways:
+				[code]range(n: int)[/code]: Starts from 0, increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The argument [code]n[/code] is [b]exclusive[/b].
+				[code]range(b: int, n: int)[/code]: Starts from [code]b[/code], increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively.
+				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
+				[method range] converts all arguments to [int] before processing.
+				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
+				Examples:
 				[codeblock]
-				print(range(4))
-				print(range(2, 5))
-				print(range(0, 6, 2))
-				[/codeblock]
-				Output:
-				[codeblock]
-				[0, 1, 2, 3]
-				[2, 3, 4]
-				[0, 2, 4]
+				print(range(4))        # Prints [0, 1, 2, 3]
+				print(range(2, 5))     # Prints [2, 3, 4]
+				print(range(0, 6, 2))  # Prints [0, 2, 4]
+				print(range(4, 1, -1)) # Prints [4, 3, 2]
 				[/codeblock]
 				To iterate over an [Array] backwards, use:
 				[codeblock]
 				var array = [3, 6, 9]
-				var i := array.size() - 1
-				while i &gt;= 0:
-				    print(array[i])
-				    i -= 1
+				for i in range(array.size(), 0, -1):
+				    print(array[i - 1])
 				[/codeblock]
 				Output:
 				[codeblock]
 				9
 				6
 				3
+				[/codeblock]
+				To iterate over [float], convert them in the loop.
+				[codeblock]
+				for i in range (3, 0, -1):
+				    print(i / 10.0)
+				[/codeblock]
+				Output:
+				[codeblock]
+				0.3
+				0.2
+				0.1
 				[/codeblock]
 			</description>
 		</method>

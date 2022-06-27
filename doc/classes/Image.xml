@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" version="4.0">
+<class name="Image" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
-		<link title="Importing images">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html</link>
+		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="adjust_bcs">
@@ -26,7 +26,7 @@
 			<argument index="1" name="src_rect" type="Rect2" />
 			<argument index="2" name="dst" type="Vector2" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code].
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<argument index="2" name="src_rect" type="Rect2" />
 			<argument index="3" name="dst" type="Vector2" />
 			<description>
-				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code], clipped accordingly to both image bounds. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -45,7 +45,7 @@
 			<argument index="1" name="src_rect" type="Rect2" />
 			<argument index="2" name="dst" type="Vector2" />
 			<description>
-				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code].
+				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -55,7 +55,7 @@
 			<argument index="2" name="src_rect" type="Rect2" />
 			<argument index="3" name="dst" type="Vector2" />
 			<description>
-				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
+				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code], clipped accordingly to both image bounds. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
 		</method>
 		<method name="bump_map_to_normal_map">
@@ -86,6 +86,15 @@
 			<argument index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<argument index="2" name="lossy_quality" type="float" default="0.7" />
 			<description>
+			</description>
+		</method>
+		<method name="compute_image_metrics">
+			<return type="Dictionary" />
+			<argument index="0" name="compared_image" type="Image" />
+			<argument index="1" name="use_luma" type="bool" />
+			<description>
+				Compute image metrics on the current image and the compared image.
+				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
 			</description>
 		</method>
 		<method name="convert">
@@ -135,7 +144,7 @@
 			<return type="int" enum="Error" />
 			<description>
 				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
-				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC, PVRTC1. The formats ETC1 and ETC2 are not supported.
+				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
@@ -144,7 +153,7 @@
 				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
 			</description>
 		</method>
-		<method name="detect_used_channels">
+		<method name="detect_used_channels" qualifiers="const">
 			<return type="int" enum="Image.UsedChannels" />
 			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
@@ -154,7 +163,15 @@
 			<return type="void" />
 			<argument index="0" name="color" type="Color" />
 			<description>
-				Fills the image with a given [Color].
+				Fills the image with [code]color[/code].
+			</description>
+		</method>
+		<method name="fill_rect">
+			<return type="void" />
+			<argument index="0" name="rect" type="Rect2" />
+			<argument index="1" name="color" type="Color" />
+			<description>
+				Fills [code]rect[/code] with [code]color[/code].
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
@@ -278,7 +295,7 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
+				Loads an image from file [code]path[/code]. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
 				See also [ImageTexture] description for usage examples.
 			</description>
@@ -363,16 +380,59 @@
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
+		<method name="save_exr_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="grayscale" type="bool" default="false" />
+			<description>
+				Saves the image as an EXR file to a byte array. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_jpg" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to [code]path[/code] with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_jpg_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to a byte array with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+			</description>
+		</method>
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Saves the image as a PNG file to [code]path[/code].
+				Saves the image as a PNG file to the file at [code]path[/code].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Saves the image as a PNG file to a byte array.
+			</description>
+		</method>
+		<method name="save_webp" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="lossy" type="bool" default="false" />
+			<argument index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to the file at [code]path[/code]. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+			</description>
+		</method>
+		<method name="save_webp_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="lossy" type="bool" default="false" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="set_pixel">
@@ -444,7 +504,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PackedByteArray(),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmaps&quot;: false, &quot;width&quot;: 0 }">
 			Holds all the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
@@ -535,52 +595,38 @@
 		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
 		</constant>
-		<constant name="FORMAT_PVRTC1_2" value="25" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 2-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
-		</constant>
-		<constant name="FORMAT_PVRTC1_2A" value="26" enum="Format">
-			Same as [constant FORMAT_PVRTC1_2], but with an alpha component.
-		</constant>
-		<constant name="FORMAT_PVRTC1_4" value="27" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 4-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
-		</constant>
-		<constant name="FORMAT_PVRTC1_4A" value="28" enum="Format">
-			Same as [constant FORMAT_PVRTC1_4], but with an alpha component.
-		</constant>
-		<constant name="FORMAT_ETC" value="29" enum="Format">
+		<constant name="FORMAT_ETC" value="25" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
 		</constant>
-		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
+		<constant name="FORMAT_ETC2_R11" value="26" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
 		</constant>
-		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
+		<constant name="FORMAT_ETC2_R11S" value="27" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
 		</constant>
-		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
+		<constant name="FORMAT_ETC2_RG11" value="28" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
 		</constant>
-		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
+		<constant name="FORMAT_ETC2_RG11S" value="29" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
+		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
+		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
-		<constant name="FORMAT_ETC2_RA_AS_RG" value="37" enum="Format">
+		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT5_RA_AS_RG" value="38" enum="Format">
+		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
 		</constant>
-		<constant name="FORMAT_MAX" value="39" enum="Format">
+		<constant name="FORMAT_MAX" value="35" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -614,16 +660,13 @@
 		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 			Use S3TC compression.
 		</constant>
-		<constant name="COMPRESS_PVRTC1_4" value="1" enum="CompressMode">
-			Use PVRTC1 4-bpp compression.
-		</constant>
-		<constant name="COMPRESS_ETC" value="2" enum="CompressMode">
+		<constant name="COMPRESS_ETC" value="1" enum="CompressMode">
 			Use ETC compression.
 		</constant>
-		<constant name="COMPRESS_ETC2" value="3" enum="CompressMode">
+		<constant name="COMPRESS_ETC2" value="2" enum="CompressMode">
 			Use ETC2 compression.
 		</constant>
-		<constant name="COMPRESS_BPTC" value="4" enum="CompressMode">
+		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
 			Use BPTC compression.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">

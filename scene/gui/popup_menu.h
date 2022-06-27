@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,7 @@ class PopupMenu : public Popup {
 		Variant metadata;
 		String submenu;
 		String tooltip;
-		uint32_t accel = 0;
+		Key accel = Key::NONE;
 		int _ofs_cache = 0;
 		int _height_cache = 0;
 		int h_ofs = 0;
@@ -87,12 +87,13 @@ class PopupMenu : public Popup {
 	};
 
 	bool close_allowed = false;
+	bool activated_by_keyboard = false;
 
 	Timer *minimum_lifetime_timer = nullptr;
-	Timer *submenu_timer;
+	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	int initial_button_mask = 0;
+	MouseButton initial_button_mask = MouseButton::NONE;
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
@@ -103,12 +104,11 @@ class PopupMenu : public Popup {
 
 	int _get_item_height(int p_item) const;
 	int _get_items_total_height() const;
-	void _scroll_to_item(int p_item);
 
 	void _shape_item(int p_item);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
-	void _activate_submenu(int p_over);
+	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
 	uint64_t popup_time_msec = 0;
@@ -117,7 +117,7 @@ class PopupMenu : public Popup {
 	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
-	Map<Ref<Shortcut>, int> shortcut_refcount;
+	HashMap<Ref<Shortcut>, int> shortcut_refcount;
 
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
@@ -126,9 +126,9 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
-	MarginContainer *margin_container;
-	ScrollContainer *scroll_container;
-	Control *control;
+	MarginContainer *margin_container = nullptr;
+	ScrollContainer *scroll_container = nullptr;
+	Control *control = nullptr;
 
 	void _draw_items();
 	void _draw_background();
@@ -148,14 +148,16 @@ public:
 	// this value should be updated to reflect the new size.
 	static const int ITEM_PROPERTY_SIZE = 10;
 
-	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_radio_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
-	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	virtual void _parent_focused() override;
 
-	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, uint32_t p_accel = 0);
+	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_radio_check_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+	void add_icon_radio_check_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
+
+	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, Key p_accel = Key::NONE);
 
 	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
@@ -175,7 +177,7 @@ public:
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
-	void set_item_accelerator(int p_idx, uint32_t p_accel);
+	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_submenu(int p_idx, const String &p_submenu);
@@ -184,7 +186,7 @@ public:
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
-	void set_item_h_offset(int p_idx, int p_offset);
+	void set_item_horizontal_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
@@ -200,7 +202,7 @@ public:
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
-	uint32_t get_item_accelerator(int p_idx) const;
+	Key get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 	String get_item_submenu(int p_idx) const;
@@ -210,12 +212,16 @@ public:
 	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
+	int get_item_horizontal_offset(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	void set_current_index(int p_idx);
 	int get_current_index() const;
 
 	void set_item_count(int p_count);
 	int get_item_count() const;
+
+	void scroll_to_item(int p_item);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
 	void activate_item(int p_item);

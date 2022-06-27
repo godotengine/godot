@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,9 @@
 #include "color_names.inc"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
+
+#include "thirdparty/misc/ok_color.h"
 
 uint32_t Color::to_argb32() const {
 	uint32_t c = (uint8_t)Math::round(a * 255);
@@ -107,6 +109,39 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
+String _to_hex(float p_val) {
+	int v = Math::round(p_val * 255);
+	v = CLAMP(v, 0, 255);
+	String ret;
+
+	for (int i = 0; i < 2; i++) {
+		char32_t c[2] = { 0, 0 };
+		int lv = v & 0xF;
+		if (lv < 10) {
+			c[0] = '0' + lv;
+		} else {
+			c[0] = 'a' + lv - 10;
+		}
+
+		v >>= 4;
+		String cs = (const char32_t *)c;
+		ret = cs + ret;
+	}
+
+	return ret;
+}
+
+String Color::to_html(bool p_alpha) const {
+	String txt;
+	txt += _to_hex(r);
+	txt += _to_hex(g);
+	txt += _to_hex(b);
+	if (p_alpha) {
+		txt += _to_hex(a);
+	}
+	return txt;
+}
+
 float Color::get_h() const {
 	float min = MIN(r, g);
 	min = MIN(min, b);
@@ -128,9 +163,9 @@ float Color::get_h() const {
 		h = 4 + (r - g) / delta; // between magenta & cyan
 	}
 
-	h /= 6.0;
+	h /= 6.0f;
 	if (h < 0) {
-		h += 1.0;
+		h += 1.0f;
 	}
 
 	return h;
@@ -164,7 +199,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 		return;
 	}
 
-	p_h *= 6.0;
+	p_h *= 6.0f;
 	p_h = Math::fmod(p_h, 6);
 	i = Math::floor(p_h);
 
@@ -207,6 +242,20 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	}
 }
 
+void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	ok_color::HSL hsl;
+	hsl.h = p_h;
+	hsl.s = p_s;
+	hsl.l = p_l;
+	ok_color new_ok_color;
+	ok_color::RGB rgb = new_ok_color.okhsl_to_srgb(hsl);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
 bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
@@ -220,47 +269,33 @@ Color Color::clamp(const Color &p_min, const Color &p_max) const {
 }
 
 void Color::invert() {
-	r = 1.0 - r;
-	g = 1.0 - g;
-	b = 1.0 - b;
+	r = 1.0f - r;
+	g = 1.0f - g;
+	b = 1.0f - b;
 }
 
 Color Color::hex(uint32_t p_hex) {
-	float a = (p_hex & 0xFF) / 255.0;
+	float a = (p_hex & 0xFF) / 255.0f;
 	p_hex >>= 8;
-	float b = (p_hex & 0xFF) / 255.0;
+	float b = (p_hex & 0xFF) / 255.0f;
 	p_hex >>= 8;
-	float g = (p_hex & 0xFF) / 255.0;
+	float g = (p_hex & 0xFF) / 255.0f;
 	p_hex >>= 8;
-	float r = (p_hex & 0xFF) / 255.0;
+	float r = (p_hex & 0xFF) / 255.0f;
 
 	return Color(r, g, b, a);
 }
 
 Color Color::hex64(uint64_t p_hex) {
-	float a = (p_hex & 0xFFFF) / 65535.0;
+	float a = (p_hex & 0xFFFF) / 65535.0f;
 	p_hex >>= 16;
-	float b = (p_hex & 0xFFFF) / 65535.0;
+	float b = (p_hex & 0xFFFF) / 65535.0f;
 	p_hex >>= 16;
-	float g = (p_hex & 0xFFFF) / 65535.0;
+	float g = (p_hex & 0xFFFF) / 65535.0f;
 	p_hex >>= 16;
-	float r = (p_hex & 0xFFFF) / 65535.0;
+	float r = (p_hex & 0xFFFF) / 65535.0f;
 
 	return Color(r, g, b, a);
-}
-
-Color Color::from_rgbe9995(uint32_t p_rgbe) {
-	float r = p_rgbe & 0x1ff;
-	float g = (p_rgbe >> 9) & 0x1ff;
-	float b = (p_rgbe >> 18) & 0x1ff;
-	float e = (p_rgbe >> 27);
-	float m = Math::pow(2, e - 15.0 - 9.0);
-
-	float rd = r * m;
-	float gd = g * m;
-	float bd = b * m;
-
-	return Color(rd, gd, bd, 1.0f);
 }
 
 static int _parse_col4(const String &p_str, int p_ofs) {
@@ -314,18 +349,18 @@ Color Color::html(const String &p_rgba) {
 
 	float r, g, b, a = 1.0;
 	if (is_shorthand) {
-		r = _parse_col4(color, 0) / 15.0;
-		g = _parse_col4(color, 1) / 15.0;
-		b = _parse_col4(color, 2) / 15.0;
+		r = _parse_col4(color, 0) / 15.0f;
+		g = _parse_col4(color, 1) / 15.0f;
+		b = _parse_col4(color, 2) / 15.0f;
 		if (alpha) {
-			a = _parse_col4(color, 3) / 15.0;
+			a = _parse_col4(color, 3) / 15.0f;
 		}
 	} else {
-		r = _parse_col8(color, 0) / 255.0;
-		g = _parse_col8(color, 2) / 255.0;
-		b = _parse_col8(color, 4) / 255.0;
+		r = _parse_col8(color, 0) / 255.0f;
+		g = _parse_col8(color, 2) / 255.0f;
+		b = _parse_col8(color, 4) / 255.0f;
 		if (alpha) {
-			a = _parse_col8(color, 6) / 255.0;
+			a = _parse_col8(color, 6) / 255.0f;
 		}
 	}
 	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_rgba + ".");
@@ -428,43 +463,24 @@ Color Color::from_string(const String &p_string, const Color &p_default) {
 	}
 }
 
-String _to_hex(float p_val) {
-	int v = Math::round(p_val * 255);
-	v = CLAMP(v, 0, 255);
-	String ret;
-
-	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
-		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
-	}
-
-	return ret;
-}
-
-String Color::to_html(bool p_alpha) const {
-	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
-	if (p_alpha) {
-		txt += _to_hex(a);
-	}
-	return txt;
-}
-
-Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	Color c;
-	c.set_hsv(p_h, p_s, p_v, p_a);
+	c.set_hsv(p_h, p_s, p_v, p_alpha);
 	return c;
+}
+
+Color Color::from_rgbe9995(uint32_t p_rgbe) {
+	float r = p_rgbe & 0x1ff;
+	float g = (p_rgbe >> 9) & 0x1ff;
+	float b = (p_rgbe >> 18) & 0x1ff;
+	float e = (p_rgbe >> 27);
+	float m = Math::pow(2, e - 15.0f - 9.0f);
+
+	float rd = r * m;
+	float gd = g * m;
+	float bd = b * m;
+
+	return Color(rd, gd, bd, 1.0f);
 }
 
 Color::operator String() const {
@@ -563,8 +579,53 @@ void Color::operator/=(float p_scalar) {
 
 Color Color::operator-() const {
 	return Color(
-			1.0 - r,
-			1.0 - g,
-			1.0 - b,
-			1.0 - a);
+			1.0f - r,
+			1.0f - g,
+			1.0f - b,
+			1.0f - a);
+}
+
+Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+float Color::get_ok_hsl_h() const {
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSL ok_hsl = new_ok_color.srgb_to_okhsl(rgb);
+	if (Math::is_nan(ok_hsl.h)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsl.h, 0.0f, 1.0f);
+}
+
+float Color::get_ok_hsl_s() const {
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSL ok_hsl = new_ok_color.srgb_to_okhsl(rgb);
+	if (Math::is_nan(ok_hsl.s)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsl.s, 0.0f, 1.0f);
+}
+
+float Color::get_ok_hsl_l() const {
+	ok_color::RGB rgb;
+	rgb.r = r;
+	rgb.g = g;
+	rgb.b = b;
+	ok_color new_ok_color;
+	ok_color::HSL ok_hsl = new_ok_color.srgb_to_okhsl(rgb);
+	if (Math::is_nan(ok_hsl.l)) {
+		return 0.0f;
+	}
+	return CLAMP(ok_hsl.l, 0.0f, 1.0f);
 }

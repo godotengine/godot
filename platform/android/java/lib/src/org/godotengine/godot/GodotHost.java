@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,8 +60,16 @@ public interface GodotHost {
 	default void onGodotForceQuit(Godot instance) {}
 
 	/**
-	 * Invoked on the GL thread when the Godot instance wants to be restarted. It's up to the host
+	 * Invoked on the UI thread when the Godot instance wants to be restarted. It's up to the host
 	 * to perform the appropriate action(s).
 	 */
 	default void onGodotRestartRequested(Godot instance) {}
+
+	/**
+	 * Invoked on the UI thread when a new Godot instance is requested. It's up to the host to
+	 * perform the appropriate action(s).
+	 *
+	 * @param args Arguments used to initialize the new instance.
+	 */
+	default void onNewGodotInstanceRequested(String[] args) {}
 }

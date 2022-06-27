@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,13 +122,13 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 			}
 
 			property.hint_string += String(E->get());
-			if (animation == E) {
+			if (animation == E->get()) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string == String()) {
+			if (property.hint_string.is_empty()) {
 				property.hint_string = String(animation);
 			} else {
 				property.hint_string = String(animation) + "," + property.hint_string;
@@ -158,14 +158,14 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			double speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0) {
-				return; //do nothing
-			}
-
 			double remaining = get_process_delta_time();
 
 			while (remaining) {
+				double speed = frames->get_animation_speed(animation) * speed_scale;
+				if (speed == 0) {
+					return; // Do nothing.
+				}
+
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
@@ -247,7 +247,6 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false);
-
 		} break;
 	}
 }
@@ -366,7 +365,7 @@ void AnimatedSprite2D::_res_changed() {
 	update();
 }
 
-void AnimatedSprite2D::_set_playing(bool p_playing) {
+void AnimatedSprite2D::set_playing(bool p_playing) {
 	if (playing == p_playing) {
 		return;
 	}
@@ -375,7 +374,7 @@ void AnimatedSprite2D::_set_playing(bool p_playing) {
 	set_process_internal(playing);
 }
 
-bool AnimatedSprite2D::_is_playing() const {
+bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
@@ -389,15 +388,12 @@ void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backward
 		}
 	}
 
-	_set_playing(true);
+	is_over = false;
+	set_playing(true);
 }
 
 void AnimatedSprite2D::stop() {
-	_set_playing(false);
-}
-
-bool AnimatedSprite2D::is_playing() const {
-	return playing;
+	set_playing(false);
 }
 
 double AnimatedSprite2D::_get_frame_duration() {
@@ -421,7 +417,7 @@ void AnimatedSprite2D::_reset_timeout() {
 
 void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(frames->get_animation_names().find(p_animation) == -1, vformat("There is no animation with name '%s'.", p_animation));
+	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
 
 	if (animation == p_animation) {
 		return;
@@ -442,10 +438,21 @@ TypedArray<String> AnimatedSprite2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (frames.is_null()) {
-		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames."));
 	}
 
 	return warnings;
+}
+
+void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		for (const StringName &name : al) {
+			r_options->push_back(String(name).quote());
+		}
+	}
+	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
 void AnimatedSprite2D::_bind_methods() {
@@ -455,12 +462,11 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite2D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite2D::get_animation);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite2D::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite2D::_is_playing);
+	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite2D::set_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
-	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite2D::is_centered);
@@ -488,10 +494,10 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }

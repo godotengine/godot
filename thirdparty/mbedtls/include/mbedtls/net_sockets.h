@@ -21,13 +21,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -40,55 +34,47 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 #ifndef MBEDTLS_NET_SOCKETS_H
 #define MBEDTLS_NET_SOCKETS_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
+#include "mbedtls/config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "ssl.h"
+#include "mbedtls/ssl.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
-#define MBEDTLS_ERR_NET_SOCKET_FAILED                     -0x0042  /**< Failed to open a socket. */
-#define MBEDTLS_ERR_NET_CONNECT_FAILED                    -0x0044  /**< The connection to the given server / port failed. */
-#define MBEDTLS_ERR_NET_BIND_FAILED                       -0x0046  /**< Binding of the socket failed. */
-#define MBEDTLS_ERR_NET_LISTEN_FAILED                     -0x0048  /**< Could not listen on the socket. */
-#define MBEDTLS_ERR_NET_ACCEPT_FAILED                     -0x004A  /**< Could not accept the incoming connection. */
-#define MBEDTLS_ERR_NET_RECV_FAILED                       -0x004C  /**< Reading information from the socket failed. */
-#define MBEDTLS_ERR_NET_SEND_FAILED                       -0x004E  /**< Sending information through the socket failed. */
-#define MBEDTLS_ERR_NET_CONN_RESET                        -0x0050  /**< Connection was reset by peer. */
-#define MBEDTLS_ERR_NET_UNKNOWN_HOST                      -0x0052  /**< Failed to get an IP address for the given hostname. */
-#define MBEDTLS_ERR_NET_BUFFER_TOO_SMALL                  -0x0043  /**< Buffer is too small to hold the data. */
-#define MBEDTLS_ERR_NET_INVALID_CONTEXT                   -0x0045  /**< The context is invalid, eg because it was free()ed. */
-#define MBEDTLS_ERR_NET_POLL_FAILED                       -0x0047  /**< Polling the net context failed. */
-#define MBEDTLS_ERR_NET_BAD_INPUT_DATA                    -0x0049  /**< Input invalid. */
+/** Failed to open a socket. */
+#define MBEDTLS_ERR_NET_SOCKET_FAILED                     -0x0042
+/** The connection to the given server / port failed. */
+#define MBEDTLS_ERR_NET_CONNECT_FAILED                    -0x0044
+/** Binding of the socket failed. */
+#define MBEDTLS_ERR_NET_BIND_FAILED                       -0x0046
+/** Could not listen on the socket. */
+#define MBEDTLS_ERR_NET_LISTEN_FAILED                     -0x0048
+/** Could not accept the incoming connection. */
+#define MBEDTLS_ERR_NET_ACCEPT_FAILED                     -0x004A
+/** Reading information from the socket failed. */
+#define MBEDTLS_ERR_NET_RECV_FAILED                       -0x004C
+/** Sending information through the socket failed. */
+#define MBEDTLS_ERR_NET_SEND_FAILED                       -0x004E
+/** Connection was reset by peer. */
+#define MBEDTLS_ERR_NET_CONN_RESET                        -0x0050
+/** Failed to get an IP address for the given hostname. */
+#define MBEDTLS_ERR_NET_UNKNOWN_HOST                      -0x0052
+/** Buffer is too small to hold the data. */
+#define MBEDTLS_ERR_NET_BUFFER_TOO_SMALL                  -0x0043
+/** The context is invalid, eg because it was free()ed. */
+#define MBEDTLS_ERR_NET_INVALID_CONTEXT                   -0x0045
+/** Polling the net context failed. */
+#define MBEDTLS_ERR_NET_POLL_FAILED                       -0x0047
+/** Input invalid. */
+#define MBEDTLS_ERR_NET_BAD_INPUT_DATA                    -0x0049
 
 #define MBEDTLS_NET_LISTEN_BACKLOG         10 /**< The backlog that listen() should use. */
 
@@ -293,6 +279,13 @@ int mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len );
  */
 int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
                       uint32_t timeout );
+
+/**
+ * \brief          Closes down the connection and free associated data
+ *
+ * \param ctx      The context to close
+ */
+void mbedtls_net_close( mbedtls_net_context *ctx );
 
 /**
  * \brief          Gracefully shutdown the connection and free associated data

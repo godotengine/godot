@@ -84,7 +84,7 @@ struct AttachList
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -248,9 +248,9 @@ struct CaretValue
     TRACE_DISPATCH (this, u.format);
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, hb_forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, hb_forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, hb_forward<Ts> (ds)...));
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -371,7 +371,7 @@ struct LigCaretList
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset ();
+    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -585,17 +585,16 @@ struct GDEF
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
-      this->table = hb_sanitize_context_t ().reference_table<GDEF> (face);
-      if (unlikely (this->table->is_blocklisted (this->table.get_blob (), face)))
+      table = hb_sanitize_context_t ().reference_table<GDEF> (face);
+      if (unlikely (table->is_blocklisted (table.get_blob (), face)))
       {
-	hb_blob_destroy (this->table.get_blob ());
-	this->table = hb_blob_get_empty ();
+	hb_blob_destroy (table.get_blob ());
+	table = hb_blob_get_empty ();
       }
     }
-
-    void fini () { this->table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     hb_blob_ptr_t<GDEF> table;
   };
@@ -715,7 +714,9 @@ struct GDEF
   DEFINE_SIZE_MIN (12);
 };
 
-struct GDEF_accelerator_t : GDEF::accelerator_t {};
+struct GDEF_accelerator_t : GDEF::accelerator_t {
+  GDEF_accelerator_t (hb_face_t *face) : GDEF::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,15 +41,17 @@
 #include "scene/main/timer.h"
 #include "servers/rendering/rendering_device_binds.h"
 
+class ItemList;
+
 class ShaderFileEditor : public PanelContainer {
 	GDCLASS(ShaderFileEditor, PanelContainer);
 
 	Ref<RDShaderFile> shader_file;
 
-	HBoxContainer *stage_hb;
-	ItemList *versions;
+	HBoxContainer *stage_hb = nullptr;
+	ItemList *versions = nullptr;
 	Button *stages[RD::SHADER_STAGE_MAX];
-	RichTextLabel *error_text;
+	RichTextLabel *error_text = nullptr;
 
 	void _update_version(const StringName &p_version_txt, const RenderingDevice::ShaderStage p_stage);
 	void _version_selected(int p_stage);
@@ -66,15 +68,14 @@ public:
 	static ShaderFileEditor *singleton;
 	void edit(const Ref<RDShaderFile> &p_shader);
 
-	ShaderFileEditor(EditorNode *p_node);
+	ShaderFileEditor();
 };
 
 class ShaderFileEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
-	ShaderFileEditor *shader_editor;
-	EditorNode *editor;
-	Button *button;
+	ShaderFileEditor *shader_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "ShaderFile"; }
@@ -85,7 +86,7 @@ public:
 
 	ShaderFileEditor *get_shader_editor() const { return shader_editor; }
 
-	ShaderFileEditorPlugin(EditorNode *p_node);
+	ShaderFileEditorPlugin();
 	~ShaderFileEditorPlugin();
 };
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,7 +84,7 @@ private:
 
 	String download_to_file;
 
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 
 	int body_len = -1;
 	SafeNumeric<int> downloaded;
@@ -96,7 +96,7 @@ private:
 
 	int max_redirects = 8;
 
-	int timeout = 0;
+	double timeout = 0;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -144,18 +144,20 @@ public:
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
-	void set_timeout(int p_timeout);
-	int get_timeout();
+	void set_timeout(double p_timeout);
+	double get_timeout();
 
 	void _timeout();
 
 	int get_downloaded_bytes() const;
 	int get_body_size() const;
 
+	void set_http_proxy(const String &p_host, int p_port);
+	void set_https_proxy(const String &p_host, int p_port);
+
 	HTTPRequest();
-	~HTTPRequest();
 };
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);

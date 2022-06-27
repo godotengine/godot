@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ int add_path(int p_argc, char **p_args) {
 	p_args[p_argc] = nullptr;
 
 	return p_argc;
-};
+}
 
 int add_cmdline(int p_argc, char **p_args) {
 	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
@@ -67,12 +67,12 @@ int add_cmdline(int p_argc, char **p_args) {
 			continue;
 		}
 		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	};
+	}
 
 	p_args[p_argc] = nullptr;
 
 	return p_argc;
-};
+}
 
 int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
@@ -103,7 +103,7 @@ int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	char *fargv[64];
 	for (int i = 0; i < argc; i++) {
 		fargv[i] = argv[i];
-	};
+	}
 	fargv[argc] = nullptr;
 	argc = add_path(argc, fargv);
 	argc = add_cmdline(argc, fargv);
@@ -119,10 +119,10 @@ int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	os->initialize_modules();
 
 	return 0;
-};
+}
 
 void iphone_finish() {
 	printf("iphone_finish\n");
 	Main::cleanup();
 	delete os;
-};
+}

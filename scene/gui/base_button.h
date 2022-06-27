@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef BASE_BUTTON_H
 #define BASE_BUTTON_H
 
+#include "core/input/shortcut.h"
 #include "scene/gui/control.h"
 
 class ButtonGroup;
@@ -45,7 +46,7 @@ public:
 	};
 
 private:
-	int button_mask = MOUSE_BUTTON_MASK_LEFT;
+	MouseButton button_mask = MouseButton::MASK_LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
 	bool keep_pressed_outside = false;
@@ -76,10 +77,10 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
-	bool _is_focus_owner_in_shorcut_context() const;
+	bool _is_focus_owner_in_shortcut_context() const;
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
@@ -118,8 +119,8 @@ public:
 	void set_keep_pressed_outside(bool p_on);
 	bool is_keep_pressed_outside() const;
 
-	void set_button_mask(int p_mask);
-	int get_button_mask() const;
+	void set_button_mask(MouseButton p_mask);
+	MouseButton get_button_mask() const;
 
 	void set_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_shortcut() const;
@@ -142,7 +143,7 @@ VARIANT_ENUM_CAST(BaseButton::ActionMode)
 class ButtonGroup : public Resource {
 	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
-	Set<BaseButton *> buttons;
+	HashSet<BaseButton *> buttons;
 
 protected:
 	static void _bind_methods();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,6 @@
 #ifndef DISPLAY_SERVER_X11_H
 #define DISPLAY_SERVER_X11_H
 
-#include "drivers/gles3/rasterizer_platforms.h"
-
 #ifdef X11_ENABLED
 
 #include "servers/display_server.h"
@@ -47,6 +45,10 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
+
+#if defined(SPEECHD_ENABLED)
+#include "tts_linux.h"
+#endif
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_x11.h"
@@ -98,8 +100,8 @@ class DisplayServerX11 : public DisplayServer {
 	Atom xdnd_finished;
 	Atom xdnd_selection;
 	Atom xdnd_aware;
-	Atom requested;
-	int xdnd_version;
+	Atom requested = None;
+	int xdnd_version = 5;
 
 #if defined(GLES3_ENABLED)
 	GLManager_X11 *gl_manager = nullptr;
@@ -110,8 +112,12 @@ class DisplayServerX11 : public DisplayServer {
 #endif
 
 #if defined(DBUS_ENABLED)
-	FreeDesktopScreenSaver *screensaver;
+	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool keep_screen_on = false;
+#endif
+
+#ifdef SPEECHD_ENABLED
+	TTS_Linux *tts = nullptr;
 #endif
 
 	struct WindowData {
@@ -131,11 +137,10 @@ class DisplayServerX11 : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		Set<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		ObjectID instance_id;
 
-		bool menu_type = false;
 		bool no_focus = false;
 
 		//better to guess on the fly, given WM can change it
@@ -145,48 +150,59 @@ class DisplayServerX11 : public DisplayServer {
 		bool borderless = false;
 		bool resize_disabled = false;
 		Vector2i last_position_before_fs;
-		bool focused = false;
+		bool focused = true;
 		bool minimized = false;
+		bool is_popup = false;
+
+		Rect2i parent_safe_rect;
 
 		unsigned int focus_order = 0;
 	};
 
-	Map<WindowID, WindowData> windows;
+	HashMap<WindowID, WindowData> windows;
+
+	unsigned int last_mouse_monitor_mask = 0;
+	Vector2i last_mouse_monitor_pos;
+	uint64_t time_since_popup = 0;
+
+	List<WindowID> popup_list;
+
+	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 
 	String internal_clipboard;
 	String internal_clipboard_primary;
-	Window xdnd_source_window;
+	Window xdnd_source_window = 0;
 	::Display *x11_display;
-	char *xmbstring;
-	int xmblen;
-	unsigned long last_timestamp;
-	::Time last_keyrelease_time;
+	char *xmbstring = nullptr;
+	int xmblen = 0;
+	unsigned long last_timestamp = 0;
+	::Time last_keyrelease_time = 0;
 	::XIM xim;
 	::XIMStyle xim_style;
 	static void _xim_destroy_callback(::XIM im, ::XPointer client_data,
 			::XPointer call_data);
 
 	Point2i last_mouse_pos;
-	bool last_mouse_pos_valid;
-	Point2i last_click_pos;
-	uint64_t last_click_ms;
-	int last_click_button_index;
-	MouseButton last_button_state = MOUSE_BUTTON_NONE;
+	bool last_mouse_pos_valid = false;
+	Point2i last_click_pos = Point2i(-100, -100);
+	uint64_t last_click_ms = 0;
+	MouseButton last_click_button_index = MouseButton::NONE;
+	MouseButton last_button_state = MouseButton::NONE;
 	bool app_focused = false;
 	uint64_t time_since_no_focus = 0;
 
 	struct {
 		int opcode;
 		Vector<int> touch_devices;
-		Map<int, Vector2> absolute_devices;
-		Map<int, Vector2> pen_pressure_range;
-		Map<int, Vector2> pen_tilt_x_range;
-		Map<int, Vector2> pen_tilt_y_range;
+		HashMap<int, Vector2> absolute_devices;
+		HashMap<int, Vector2> pen_pressure_range;
+		HashMap<int, Vector2> pen_tilt_x_range;
+		HashMap<int, Vector2> pen_tilt_y_range;
 		XIEventMask all_event_mask;
-		Map<int, Vector2> state;
+		HashMap<int, Vector2> state;
 		double pressure;
 		bool pressure_supported;
 		Vector2 tilt;
@@ -205,7 +221,7 @@ class DisplayServerX11 : public DisplayServer {
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
 
-	MouseMode mouse_mode;
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
@@ -217,31 +233,27 @@ class DisplayServerX11 : public DisplayServer {
 	String _clipboard_get(Atom p_source, Window x11_window) const;
 	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
-	//bool minimized;
-	//bool window_has_focus;
-	bool do_mouse_warp;
+	bool do_mouse_warp = false;
 
-	const char *cursor_theme;
-	int cursor_size;
+	const char *cursor_theme = nullptr;
+	int cursor_size = 0;
 	XcursorImage *img[CURSOR_MAX];
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
-	CursorShape current_cursor;
-	Map<CursorShape, Vector<Variant>> cursors_cache;
+	CursorShape current_cursor = CURSOR_ARROW;
+	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
-	bool layered_window;
+	bool layered_window = false;
 
 	String rendering_driver;
-	//bool window_focused;
-	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 	void set_wm_above(bool p_enabled);
 
 	typedef xrr_monitor_info *(*xrr_get_monitors_t)(Display *dpy, Window window, Bool get_active, int *nmonitors);
 	typedef void (*xrr_free_monitors_t)(xrr_monitor_info *monitors);
-	xrr_get_monitors_t xrr_get_monitors;
-	xrr_free_monitors_t xrr_free_monitors;
-	void *xrandr_handle;
+	xrr_get_monitors_t xrr_get_monitors = nullptr;
+	xrr_free_monitors_t xrr_free_monitors = nullptr;
+	void *xrandr_handle = nullptr;
 	Bool xrandr_ext_ok;
 
 	struct Property {
@@ -283,15 +295,29 @@ protected:
 	void _window_changed(XEvent *event);
 
 public:
+	bool mouse_process_popups();
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+
+#ifdef SPEECHD_ENABLED
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+#endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual Point2i mouse_get_absolute_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
@@ -304,6 +330,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 #if defined(DBUS_ENABLED)
@@ -317,7 +344,13 @@ public:
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
+
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
+
+	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_attach_instance_id(ObjectID p_instance, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual ObjectID window_get_attached_instance_id(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -374,7 +407,7 @@ public:
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

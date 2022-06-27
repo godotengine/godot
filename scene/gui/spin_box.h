@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,16 +38,16 @@
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
-	LineEdit *line_edit;
+	LineEdit *line_edit = nullptr;
 	int last_w = 0;
 	bool update_on_text_changed = false;
 
-	Timer *range_click_timer;
+	Timer *range_click_timer = nullptr;
 	void _range_click_timeout();
 	void _release_mouse();
 
 	void _text_submitted(const String &p_string);
-	virtual void _value_changed(double) override;
+	virtual void _value_changed(double p_value) override;
 	void _text_changed(const String &p_string);
 
 	String prefix;
@@ -79,8 +79,8 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(LineEdit::Align p_align);
-	LineEdit::Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	void set_editable(bool p_enabled);
 	bool is_editable() const;

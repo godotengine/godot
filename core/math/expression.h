@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,6 +85,7 @@ private:
 		TK_OP_MUL,
 		TK_OP_DIV,
 		TK_OP_MOD,
+		TK_OP_POW,
 		TK_OP_SHIFT_LEFT,
 		TK_OP_SHIFT_RIGHT,
 		TK_OP_BIT_AND,
@@ -147,7 +148,7 @@ private:
 		bool is_op = false;
 		union {
 			Variant::Operator op;
-			ENode *node;
+			ENode *node = nullptr;
 		};
 	};
 

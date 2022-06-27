@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,7 +108,7 @@ Variant WeakRef::get_ref() const {
 	}
 	RefCounted *r = cast_to<RefCounted>(obj);
 	if (r) {
-		return REF(r);
+		return Ref<RefCounted>(r);
 	}
 
 	return obj;
@@ -118,7 +118,7 @@ void WeakRef::set_obj(Object *p_object) {
 	ref = p_object ? p_object->get_instance_id() : ObjectID();
 }
 
-void WeakRef::set_ref(const REF &p_ref) {
+void WeakRef::set_ref(const Ref<RefCounted> &p_ref) {
 	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #include "animation_track_editor_plugins.h"
 
 #include "editor/audio_stream_preview.h"
-#include "editor_resource_preview.h"
-#include "editor_scale.h"
+#include "editor/editor_resource_preview.h"
+#include "editor/editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
@@ -145,20 +145,19 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	}
 
 	for (int i = 0; i < color_samples.size() - 1; i++) {
-		Vector<Vector2> points;
-		Vector<Color> colors;
+		Vector<Vector2> points = {
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from),
+			Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh),
+			Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh)
+		};
 
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i + 1) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i + 1]);
-
-		points.push_back(Vector2(Math::lerp(x_from, x_to, float(i) / (color_samples.size() - 1)), y_from + fh));
-		colors.push_back(color_samples[i]);
+		Vector<Color> colors = {
+			color_samples[i],
+			color_samples[i + 1],
+			color_samples[i + 1],
+			color_samples[i]
+		};
 
 		draw_primitive(points, colors, Vector<Vector2>());
 	}
@@ -340,11 +339,11 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -699,7 +698,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 
 		int limit = to_x - from_x - 4;
 		if (limit > 0) {
-			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HALIGN_LEFT, -1, font_size, color);
+			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		}
 
 		if (p_selected) {
@@ -713,11 +712,11 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }
@@ -967,7 +966,6 @@ void AnimationTrackEditTypeAudio::_bind_methods() {
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
-	len_resizing = false;
 }
 
 bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
@@ -1081,12 +1079,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 				len_resizing_index = i;
 			}
 		}
-
-		if (use_hsize_cursor) {
-			set_default_cursor_shape(CURSOR_HSIZE);
-		} else {
-			set_default_cursor_shape(CURSOR_ARROW);
-		}
+		over_drag_position = use_hsize_cursor;
 	}
 
 	if (len_resizing && mm.is_valid()) {
@@ -1098,7 +1091,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && over_drag_position) {
 		len_resizing = true;
 		len_resizing_start = mb->is_shift_pressed();
 		len_resizing_from_px = mb->get_position().x;
@@ -1108,7 +1101,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_LEFT) {
+	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
 			float prev_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), len_resizing_index);
@@ -1125,7 +1118,6 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 			get_undo_redo()->commit_action();
 		}
 
-		len_resizing = false;
 		len_resizing_index = -1;
 		update();
 		accept_event();
@@ -1133,6 +1125,14 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	AnimationTrackEdit::gui_input(p_event);
+}
+
+Control::CursorShape AnimationTrackEditTypeAudio::get_cursor_shape(const Point2 &p_pos) const {
+	if (over_drag_position || len_resizing) {
+		return Control::CURSOR_HSIZE;
+	} else {
+		return get_default_cursor_shape();
+	}
 }
 
 ////////////////////
@@ -1272,7 +1272,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 
 		int limit = to_x - from_x - 4;
 		if (limit > 0) {
-			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HALIGN_LEFT, -1, font_size, color);
+			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), anim, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 		}
 
 		if (p_selected) {
@@ -1286,11 +1286,11 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-		draw_rect(rect, color);
+		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-			draw_rect(rect, accent, false);
+			draw_rect_clipped(rect, accent, false);
 		}
 	}
 }

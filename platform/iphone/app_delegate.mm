@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "app_delegate.h"
+
 #include "core/config/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "godot_view.h"
@@ -76,7 +77,7 @@ static ViewController *mainViewController = nil;
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);
 		return NO;
-	};
+	}
 
 	ViewController *viewController = [[ViewController alloc] init];
 	viewController.godotView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
@@ -99,7 +100,7 @@ static ViewController *mainViewController = nil;
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
 
 	return YES;
-};
+}
 
 - (void)onAudioInterruption:(NSNotification *)notification {
 	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
@@ -111,17 +112,17 @@ static ViewController *mainViewController = nil;
 			OSIPhone::get_singleton()->on_focus_in();
 		}
 	}
-};
+}
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 	}
-};
+}
 
 - (void)applicationWillTerminate:(UIApplication *)application {
 	iphone_finish();
-};
+}
 
 // When application goes to background (e.g. user switches to another app or presses Home),
 // then applicationWillResignActive -> applicationDidEnterBackground are called.

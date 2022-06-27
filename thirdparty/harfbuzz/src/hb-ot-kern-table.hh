@@ -134,11 +134,11 @@ struct KernSubTable
     switch (subtable_type) {
     case 0:	return_trace (c->dispatch (u.format0));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (u.header.apple ? c->dispatch (u.format1, hb_forward<Ts> (ds)...) : c->default_return_value ());
+    case 1:	return_trace (u.header.apple ? c->dispatch (u.format1, std::forward<Ts> (ds)...) : c->default_return_value ());
 #endif
     case 2:	return_trace (c->dispatch (u.format2));
 #ifndef HB_NO_AAT_SHAPE
-    case 3:	return_trace (u.header.apple ? c->dispatch (u.format3, hb_forward<Ts> (ds)...) : c->default_return_value ());
+    case 3:	return_trace (u.header.apple ? c->dispatch (u.format3, std::forward<Ts> (ds)...) : c->default_return_value ());
 #endif
     default:	return_trace (c->default_return_value ());
     }
@@ -325,9 +325,9 @@ struct kern
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.ot, hb_forward<Ts> (ds)...));
+    case 0:	return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.aat, hb_forward<Ts> (ds)...));
+    case 1:	return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }

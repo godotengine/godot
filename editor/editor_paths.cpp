@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
-#include "main/main.h" // For `is_project_manager`.
+#include "main/main.h"
 
 EditorPaths *EditorPaths::singleton = nullptr;
 
@@ -91,8 +91,13 @@ EditorPaths::EditorPaths() {
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+
+	// On macOS, look outside .app bundle, since .app bundle is read-only.
+	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.plus_file("..").simplify_path().ends_with("Contents")) {
+		exe_path = exe_path.plus_file("../../..").simplify_path();
+	}
 	{
-		DirAccessRef d = DirAccess::create_for_path(exe_path);
+		Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
 
 		if (d->file_exists(exe_path + "/._sc_")) {
 			self_contained = true;
@@ -131,12 +136,12 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
-	paths_valid = (data_path != "" && config_path != "" && cache_path != "");
+	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
 	ERR_FAIL_COND_MSG(!paths_valid, "Editor data, config, or cache paths are invalid.");
 
 	// Validate or create each dir and its relevant subdirectories.
 
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	// Data dir.
 	{
@@ -188,11 +193,11 @@ EditorPaths::EditorPaths() {
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
 
-	if (Main::is_project_manager() || Main::is_cmdline_tool()) {
+	if (Engine::get_singleton()->is_project_manager_hint() || Main::is_cmdline_tool()) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {
-		DirAccessRef dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> dir_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (dir_res->change_dir(project_data_dir) != OK) {
 			dir_res->make_dir_recursive(project_data_dir);
 			if (dir_res->change_dir(project_data_dir) != OK) {
@@ -205,10 +210,9 @@ EditorPaths::EditorPaths() {
 		String project_data_gdignore_file_path = project_data_dir.plus_file(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
-			FileAccessRef f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
-			if (f) {
+			Ref<FileAccess> f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+			if (f.is_valid()) {
 				f->store_line("");
-				f->close();
 			} else {
 				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path);
 			}

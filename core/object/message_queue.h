@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,11 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
-#include "core/object/class_db.h"
+#include "core/object/object_id.h"
 #include "core/os/thread_safe.h"
+#include "core/variant/variant.h"
+
+class Object;
 
 class MessageQueue {
 	_THREAD_SAFE_CLASS_
@@ -59,10 +62,10 @@ class MessageQueue {
 		};
 	};
 
-	uint8_t *buffer;
+	uint8_t *buffer = nullptr;
 	uint32_t buffer_end = 0;
 	uint32_t buffer_max_used = 0;
-	uint32_t buffer_size;
+	uint32_t buffer_size = 0;
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
 
@@ -73,14 +76,42 @@ class MessageQueue {
 public:
 	static MessageQueue *get_singleton();
 
-	Error push_call(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
-	Error push_call(ObjectID p_id, const StringName &p_method, VARIANT_ARG_LIST);
+	Error push_callp(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	Error push_call(ObjectID p_id, const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return push_callp(p_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
 	Error push_notification(ObjectID p_id, int p_notification);
 	Error push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value);
-	Error push_callable(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false);
-	Error push_callable(const Callable &p_callable, VARIANT_ARG_LIST);
+	Error push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false);
 
-	Error push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
+	template <typename... VarArgs>
+	Error push_callable(const Callable &p_callable, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return push_callablep(p_callable, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
+	Error push_callp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	Error push_call(Object *p_object, const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		return push_callp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+
 	Error push_notification(Object *p_object, int p_notification);
 	Error push_set(Object *p_object, const StringName &p_prop, const Variant &p_value);
 

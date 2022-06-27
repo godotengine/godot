@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #include "multimesh_editor_plugin.h"
 
+#include "editor/editor_node.h"
+#include "editor/scene_tree_editor.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
@@ -48,7 +50,7 @@ void MultiMeshEditor::_populate() {
 
 	Ref<Mesh> mesh;
 
-	if (mesh_source->get_text() == "") {
+	if (mesh_source->get_text().is_empty()) {
 		Ref<MultiMesh> multimesh;
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
@@ -89,7 +91,7 @@ void MultiMeshEditor::_populate() {
 		}
 	}
 
-	if (surface_source->get_text() == "") {
+	if (surface_source->get_text().is_empty()) {
 		err_dialog->set_text(TTR("No surface source specified."));
 		err_dialog->popup_centered();
 		return;
@@ -103,9 +105,9 @@ void MultiMeshEditor::_populate() {
 		return;
 	}
 
-	GeometryInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
+	MeshInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
-	if (!ss_instance) {
+	if (!ss_instance || !ss_instance->get_mesh().is_valid()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered();
 		return;
@@ -113,7 +115,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform3D geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
+	Vector<Face3> geometry = ss_instance->get_mesh()->get_faces();
 
 	if (geometry.size() == 0) {
 		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
@@ -139,7 +141,7 @@ void MultiMeshEditor::_populate() {
 	const Face3 *r = faces.ptr();
 
 	float area_accum = 0;
-	Map<float, int> triangle_area_map;
+	RBMap<float, int> triangle_area_map;
 	for (int i = 0; i < facecount; i++) {
 		float area = r[i].get_area();
 		if (area < CMP_EPSILON) {
@@ -178,9 +180,9 @@ void MultiMeshEditor::_populate() {
 	for (int i = 0; i < instance_count; i++) {
 		float areapos = Math::random(0.0f, area_accum);
 
-		Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
+		RBMap<float, int>::Iterator E = triangle_area_map.find_closest(areapos);
 		ERR_FAIL_COND(!E);
-		int index = E->get();
+		int index = E->value;
 		ERR_FAIL_INDEX(index, facecount);
 
 		// ok FINALLY get face
@@ -198,9 +200,9 @@ void MultiMeshEditor::_populate() {
 
 		Basis post_xform;
 
-		post_xform.rotate(xform.basis.get_axis(1), -Math::random(-_rotate_random, _rotate_random) * Math_PI);
-		post_xform.rotate(xform.basis.get_axis(2), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
-		post_xform.rotate(xform.basis.get_axis(0), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
+		post_xform.rotate(xform.basis.get_column(1), -Math::random(-_rotate_random, _rotate_random) * Math_PI);
+		post_xform.rotate(xform.basis.get_column(2), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
+		post_xform.rotate(xform.basis.get_column(0), -Math::random(-_tilt_random, _tilt_random) * Math_PI);
 
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
@@ -375,10 +377,9 @@ void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	multimesh_editor = memnew(MultiMeshEditor);
-	editor->get_main_control()->add_child(multimesh_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
 }

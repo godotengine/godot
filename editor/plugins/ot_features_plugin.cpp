@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,8 @@
 
 #include "ot_features_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "scene/3d/label_3d.h"
+#include "scene/resources/primitive_meshes.h"
 
 void OpenTypeFeaturesEditor::_value_changed(double val) {
 	if (setting) {
@@ -48,12 +49,15 @@ void OpenTypeFeaturesEditor::update_property() {
 }
 
 void OpenTypeFeaturesEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			Color base = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
-		button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-		button->set_size(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"))->get_size());
-		spin->set_custom_label_color(true, base);
+			button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			button->set_size(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"))->get_size());
+			spin->add_theme_color_override("label_color", base);
+		} break;
 	}
 }
 
@@ -95,10 +99,19 @@ OpenTypeFeaturesEditor::OpenTypeFeaturesEditor() {
 /*************************************************************************/
 
 void OpenTypeFeaturesAdd::_add_feature(int p_option) {
-	get_edited_object()->set("opentype_features/" + TS->tag_to_name(p_option), 1);
+	edited_object->set("opentype_features/" + TS->tag_to_name(p_option), 1);
 }
 
-void OpenTypeFeaturesAdd::update_property() {
+void OpenTypeFeaturesAdd::_features_menu() {
+	Size2 size = get_size();
+	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->reset_size();
+	menu->popup();
+}
+
+void OpenTypeFeaturesAdd::setup(Object *p_object) {
+	edited_object = p_object;
+
 	menu->clear();
 	menu_ss->clear();
 	menu_cv->clear();
@@ -106,7 +119,28 @@ void OpenTypeFeaturesAdd::update_property() {
 	bool have_ss = false;
 	bool have_cv = false;
 	bool have_cu = false;
-	Dictionary features = Object::cast_to<Control>(get_edited_object())->get_theme_font(SNAME("font"))->get_feature_list();
+
+	Ref<Font> font;
+
+	Control *ctrl = Object::cast_to<Control>(edited_object);
+	if (ctrl != nullptr) {
+		font = ctrl->get_theme_font(SNAME("font"));
+	}
+	Label3D *l3d = Object::cast_to<Label3D>(edited_object);
+	if (l3d != nullptr) {
+		font = l3d->_get_font_or_default();
+	}
+	TextMesh *tm = Object::cast_to<TextMesh>(edited_object);
+	if (tm != nullptr) {
+		font = tm->_get_font_or_default();
+	}
+
+	if (font.is_null()) {
+		return;
+	}
+
+	Dictionary features = font->get_feature_list();
+
 	for (const Variant *ftr = features.next(nullptr); ftr != nullptr; ftr = features.next(ftr)) {
 		String ftr_name = TS->tag_to_name(*ftr);
 		if (ftr_name.begins_with("stylistic_set_")) {
@@ -133,17 +167,15 @@ void OpenTypeFeaturesAdd::update_property() {
 	}
 }
 
-void OpenTypeFeaturesAdd::_features_menu() {
-	Size2 size = get_size();
-	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
-	menu->popup();
-}
-
 void OpenTypeFeaturesAdd::_notification(int p_what) {
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		set_label("");
-		button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		button->set_size(get_theme_icon(SNAME("Add"), SNAME("EditorIcons"))->get_size());
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -151,6 +183,8 @@ void OpenTypeFeaturesAdd::_bind_methods() {
 }
 
 OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
+	set_text(TTR("Add Feature..."));
+
 	menu = memnew(PopupMenu);
 	add_child(menu);
 
@@ -166,13 +200,6 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 	menu_cu->set_name("CUMenu");
 	menu->add_child(menu_cu);
 
-	button = memnew(Button);
-	button->set_flat(true);
-	button->set_text(RTR("Add feature..."));
-	button->set_tooltip(RTR("Add feature..."));
-	add_child(button);
-
-	button->connect("pressed", callable_mp(this, &OpenTypeFeaturesAdd::_features_menu));
 	menu->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_cv->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
 	menu_ss->connect("id_pressed", callable_mp(this, &OpenTypeFeaturesAdd::_add_feature));
@@ -182,19 +209,14 @@ OpenTypeFeaturesAdd::OpenTypeFeaturesAdd() {
 /*************************************************************************/
 
 bool EditorInspectorPluginOpenTypeFeatures::can_handle(Object *p_object) {
-	return (Object::cast_to<Control>(p_object) != nullptr);
-}
-
-void EditorInspectorPluginOpenTypeFeatures::parse_begin(Object *p_object) {
-}
-
-void EditorInspectorPluginOpenTypeFeatures::parse_category(Object *p_object, const String &p_parse_category) {
+	return (Object::cast_to<Control>(p_object) != nullptr) || (Object::cast_to<Label3D>(p_object) != nullptr) || (Object::cast_to<TextMesh>(p_object) != nullptr);
 }
 
 bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "opentype_features/_new") {
 		OpenTypeFeaturesAdd *editor = memnew(OpenTypeFeaturesAdd);
-		add_property_editor(p_path, editor);
+		editor->setup(p_object);
+		add_custom_control(editor);
 		return true;
 	} else if (p_path.begins_with("opentype_features")) {
 		OpenTypeFeaturesEditor *editor = memnew(OpenTypeFeaturesEditor);
@@ -206,7 +228,7 @@ bool EditorInspectorPluginOpenTypeFeatures::parse_property(Object *p_object, con
 
 /*************************************************************************/
 
-OpenTypeFeaturesEditorPlugin::OpenTypeFeaturesEditorPlugin(EditorNode *p_node) {
+OpenTypeFeaturesEditorPlugin::OpenTypeFeaturesEditorPlugin() {
 	Ref<EditorInspectorPluginOpenTypeFeatures> ftr_plugin;
 	ftr_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(ftr_plugin);

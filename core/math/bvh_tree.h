@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,12 +48,17 @@
 #include "core/templates/pooled_list.h"
 #include <limits.h>
 
-#define BVHABB_CLASS BVH_ABB<Bounds, Point>
+#define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
+
+// not sure if this is better yet so making optional
+#define BVH_EXPAND_LEAF_AABBS
 
 // never do these checks in release
-#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+#ifdef DEV_ENABLED
 //#define BVH_VERBOSE
 //#define BVH_VERBOSE_TREE
+//#define BVH_VERBOSE_PAIRING
+//#define BVH_VERBOSE_MOVES
 
 //#define BVH_VERBOSE_FRAME
 //#define BVH_CHECKS
@@ -148,7 +153,25 @@ public:
 	}
 };
 
-template <class T, int MAX_CHILDREN, int MAX_ITEMS, bool USE_PAIRS = false, class Bounds = AABB, class Point = Vector3>
+template <class T>
+class BVH_DummyPairTestFunction {
+public:
+	static bool user_collision_check(T *p_a, T *p_b) {
+		// return false if no collision, decided by masks etc
+		return true;
+	}
+};
+
+template <class T>
+class BVH_DummyCullTestFunction {
+public:
+	static bool user_cull_check(T *p_a, T *p_b) {
+		// return false if no collision
+		return true;
+	}
+};
+
+template <class T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, class BOUNDS = AABB, class POINT = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
@@ -165,6 +188,11 @@ public:
 		// (as these ids are stored as negative numbers in the node)
 		uint32_t dummy_leaf_id;
 		_leaves.request(dummy_leaf_id);
+
+		// In many cases you may want to change this default in the client code,
+		// or expose this value to the user.
+		// This default may make sense for a typically scaled 3d game, but maybe not for 2d on a pixel scale.
+		params_set_pairing_expansion(0.1);
 	}
 
 private:
@@ -189,7 +217,7 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_old_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 		parent.children[child_num] = p_new_child_id;
 
 		TNode &new_child = _nodes[p_new_child_id];
@@ -201,7 +229,7 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 
 		parent.remove_child_internal(child_num);
 
@@ -234,7 +262,7 @@ private:
 				change_root_node(sibling_id, p_tree_id);
 
 				// delete the old root node as no longer needed
-				_nodes.free(p_parent_id);
+				node_free_node_and_leaf(p_parent_id);
 			}
 
 			return;
@@ -247,7 +275,19 @@ private:
 		}
 
 		// put the node on the free list to recycle
-		_nodes.free(p_parent_id);
+		node_free_node_and_leaf(p_parent_id);
+	}
+
+	// A node can either be a node, or a node AND a leaf combo.
+	// Both must be deleted to prevent a leak.
+	void node_free_node_and_leaf(uint32_t p_node_id) {
+		TNode &node = _nodes[p_node_id];
+		if (node.is_leaf()) {
+			int leaf_id = node.get_leaf_id();
+			_leaves.free(leaf_id);
+		}
+
+		_nodes.free(p_node_id);
 	}
 
 	void change_root_node(uint32_t p_new_root_id, uint32_t p_tree_id) {
@@ -339,7 +379,7 @@ private:
 				refit_upward(parent_id);
 
 				// put the node on the free list to recycle
-				_nodes.free(owner_node_id);
+				node_free_node_and_leaf(owner_node_id);
 			}
 
 			// else if no parent, it is the root node. Do not delete

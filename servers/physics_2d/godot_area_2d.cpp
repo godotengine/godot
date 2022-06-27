@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,18 +121,21 @@ void GodotArea2D::set_area_monitor_callback(const Callable &p_callback) {
 	}
 }
 
-void GodotArea2D::set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode p_mode) {
-	bool do_override = p_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
-	if (do_override == (space_override_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)) {
+void GodotArea2D::_set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode &r_mode, PhysicsServer2D::AreaSpaceOverrideMode p_new_mode) {
+	bool do_override = p_new_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	if (do_override == (r_mode != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)) {
 		return;
 	}
 	_unregister_shapes();
-	space_override_mode = p_mode;
+	r_mode = p_new_mode;
 	_shape_changed();
 }
 
 void GodotArea2D::set_param(PhysicsServer2D::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
+		case PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+			_set_space_override_mode(gravity_override_mode, (PhysicsServer2D::AreaSpaceOverrideMode)(int)p_value);
+			break;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY:
 			gravity = p_value;
 			break;
@@ -148,8 +151,14 @@ void GodotArea2D::set_param(PhysicsServer2D::AreaParameter p_param, const Varian
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			point_attenuation = p_value;
 			break;
+		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer2D::AreaSpaceOverrideMode)(int)p_value);
+			break;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP:
 			linear_damp = p_value;
+			break;
+		case PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(angular_damping_override_mode, (PhysicsServer2D::AreaSpaceOverrideMode)(int)p_value);
 			break;
 		case PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP:
 			angular_damp = p_value;
@@ -162,6 +171,8 @@ void GodotArea2D::set_param(PhysicsServer2D::AreaParameter p_param, const Varian
 
 Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 	switch (p_param) {
+		case PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+			return gravity_override_mode;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY:
 			return gravity;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR:
@@ -172,8 +183,12 @@ Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 			return gravity_distance_scale;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return point_attenuation;
+		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+			return linear_damping_override_mode;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP:
 			return linear_damp;
+		case PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+			return angular_damping_override_mode;
 		case PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP:
 			return angular_damp;
 		case PhysicsServer2D::AREA_PARAM_PRIORITY:
@@ -198,6 +213,7 @@ void GodotArea2D::set_monitorable(bool p_monitorable) {
 
 	monitorable = p_monitorable;
 	_set_static(!monitorable);
+	_shapes_changed();
 }
 
 void GodotArea2D::call_queries() {
@@ -209,22 +225,24 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
-				if (E->get().state == 0) { // Nothing happened
-					Map<BodyKey, BodyState>::Element *next = E->next();
-					monitored_bodies.erase(E);
+			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
+				if (E->value.state == 0) { // Nothing happened
+					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					++next;
+					monitored_bodies.remove(E);
 					E = next;
 					continue;
 				}
 
-				res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
-				res[1] = E->key().rid;
-				res[2] = E->key().instance_id;
-				res[3] = E->key().body_shape;
-				res[4] = E->key().area_shape;
+				res[0] = E->value.state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+				res[1] = E->key.rid;
+				res[2] = E->key.instance_id;
+				res[3] = E->key.body_shape;
+				res[4] = E->key.area_shape;
 
-				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_bodies.erase(E);
+				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				++next;
+				monitored_bodies.remove(E);
 				E = next;
 
 				Callable::CallError ce;
@@ -245,22 +263,24 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
-				if (E->get().state == 0) { // Nothing happened
-					Map<BodyKey, BodyState>::Element *next = E->next();
-					monitored_areas.erase(E);
+			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
+				if (E->value.state == 0) { // Nothing happened
+					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+					++next;
+					monitored_areas.remove(E);
 					E = next;
 					continue;
 				}
 
-				res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
-				res[1] = E->key().rid;
-				res[2] = E->key().instance_id;
-				res[3] = E->key().body_shape;
-				res[4] = E->key().area_shape;
+				res[0] = E->value.state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+				res[1] = E->key.rid;
+				res[2] = E->key.instance_id;
+				res[3] = E->key.body_shape;
+				res[4] = E->key.area_shape;
 
-				Map<BodyKey, BodyState>::Element *next = E->next();
-				monitored_areas.erase(E);
+				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
+				++next;
+				monitored_areas.remove(E);
 				E = next;
 
 				Callable::CallError ce;

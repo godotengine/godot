@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,7 +112,7 @@ public:
 	_FORCE_INLINE_ void set_instance_id(const ObjectID &p_instance_id) { instance_id = p_instance_id; }
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return instance_id; }
 
-	void _shape_changed();
+	void _shape_changed() override;
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	void add_shape(GodotShape3D *p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
@@ -169,11 +169,11 @@ public:
 		return p_other->collision_layer & collision_mask;
 	}
 
-	_FORCE_INLINE_ bool interacts_with(GodotCollisionObject3D *p_other) const {
+	_FORCE_INLINE_ bool interacts_with(const GodotCollisionObject3D *p_other) const {
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 
-	void remove_shape(GodotShape3D *p_shape);
+	void remove_shape(GodotShape3D *p_shape) override;
 	void remove_shape(int p_index);
 
 	virtual void set_space(GodotSpace3D *p_space) = 0;

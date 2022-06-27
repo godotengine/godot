@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,27 +36,26 @@
 
 int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	ERR_FAIL_COND_V(!ready, 0);
-	ERR_FAIL_COND_V(!active, 0);
+
+	if (!active) {
+		return 0;
+	}
 
 	int todo = p_frames;
 
 	int start_buffer = 0;
 
-	int frames_mixed_this_step = p_frames;
-
-	while (todo && active) {
+	while (todo > 0 && active) {
 		AudioFrame *buffer = p_buffer;
 		if (start_buffer > 0) {
 			buffer = buffer + start_buffer;
 		}
 		int mixed = _mix_frames_vorbis(buffer, todo);
-		if (mixed < 0) {
-			return 0;
-		}
+		ERR_FAIL_COND_V(mixed < 0, 0);
 		todo -= mixed;
 		frames_mixed += mixed;
 		start_buffer += mixed;
-		if (!have_packets_left) {
+		if (!have_packets_left && !have_samples_left) {
 			//end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
 			if (vorbis_stream->loop && is_not_empty) {
@@ -67,16 +66,14 @@ int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 				// we still have buffer to fill, start from this element in the next iteration.
 				start_buffer = p_frames - todo;
 			} else {
-				frames_mixed_this_step = p_frames - todo;
 				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
 				}
 				active = false;
-				todo = 0;
 			}
 		}
 	}
-	return frames_mixed_this_step;
+	return p_frames - todo;
 }
 
 int AudioStreamPlaybackOGGVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p_frames) {
@@ -110,7 +107,7 @@ int AudioStreamPlaybackOGGVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
 			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].r = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
@@ -166,7 +163,7 @@ void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
-	_begin_resample();
+	begin_resample();
 }
 
 void AudioStreamPlaybackOGGVorbis::stop() {
@@ -350,7 +347,6 @@ void AudioStreamOGGVorbis::maybe_update_info() {
 	vorbis_info_init(&info);
 	vorbis_comment_init(&comment);
 
-	int packet_count = 0;
 	Ref<OGGPacketSequencePlayback> packet_sequence_playback = packet_sequence->instance_playback();
 
 	for (int i = 0; i < 3; i++) {
@@ -369,8 +365,6 @@ void AudioStreamOGGVorbis::maybe_update_info() {
 
 		err = vorbis_synthesis_headerin(&info, &comment, packet);
 		ERR_FAIL_COND_MSG(err != 0, "Error parsing header packet " + itos(i) + ": " + itos(err));
-
-		packet_count++;
 	}
 
 	packet_sequence->set_sampling_rate(info.rate);

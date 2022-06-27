@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,15 +39,6 @@
 class TextLine : public RefCounted {
 	GDCLASS(TextLine, RefCounted);
 
-public:
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
 private:
 	RID rid;
 	int spacing_top = 0;
@@ -57,8 +48,8 @@ private:
 
 	float width = -1.0;
 	uint16_t flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
-	HAlign align = HALIGN_LEFT;
-	OverrunBehavior overrun_behavior = OVERRUN_TRIM_ELLIPSIS;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
 	Vector<float> tab_stops;
 
@@ -86,20 +77,20 @@ public:
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
 
-	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
-	bool add_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER, int p_length = 1);
-	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlign p_inline_align = INLINE_ALIGN_CENTER);
+	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant());
+	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1);
+	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER);
 
-	void set_align(HAlign p_align);
-	HAlign get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
 	void set_flags(uint16_t p_flags);
 	uint16_t get_flags() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -124,7 +115,5 @@ public:
 	TextLine();
 	~TextLine();
 };
-
-VARIANT_ENUM_CAST(TextLine::OverrunBehavior);
 
 #endif // TEXT_LINE_H

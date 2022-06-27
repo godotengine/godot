@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,8 +115,8 @@
 
 - (void)deleteText:(NSInteger)charactersToDelete {
 	for (int i = 0; i < charactersToDelete; i++) {
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-		DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, false);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, true);
+		DisplayServerIPhone::get_singleton()->key(Key::BACKSPACE, false);
 	}
 }
 
@@ -129,10 +129,10 @@
 
 		switch (character) {
 			case 10:
-				character = KEY_ENTER;
+				character = (int)Key::ENTER;
 				break;
 			case 8198:
-				character = KEY_SPACE;
+				character = (int)Key::SPACE;
 				break;
 			default:
 				break;

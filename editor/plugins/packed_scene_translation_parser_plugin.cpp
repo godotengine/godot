@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 	// These properties are translated with the tr() function in the C++ code when being set or updated.
 
 	Error err;
-	RES loaded_res = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	if (err) {
 		ERR_PRINT("Failed to load " + p_path);
 		return err;
@@ -132,10 +132,7 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("script");
 
 	// Exception list (to prevent false positives).
-	exception_list.insert("LineEdit", Vector<StringName>());
-	exception_list["LineEdit"].append("text");
-	exception_list.insert("TextEdit", Vector<StringName>());
-	exception_list["TextEdit"].append("text");
-	exception_list.insert("CodeEdit", Vector<StringName>());
-	exception_list["CodeEdit"].append("text");
+	exception_list.insert("LineEdit", { "text" });
+	exception_list.insert("TextEdit", { "text" });
+	exception_list.insert("CodeEdit", { "text" });
 }

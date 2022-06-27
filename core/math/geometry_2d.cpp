@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,14 +74,14 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> p
 struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;
-	int idx;
+	int idx = 0;
 	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; };
 };
 
 struct _AtlasWorkRectResult {
 	Vector<_AtlasWorkRect> result;
-	int max_w;
-	int max_h;
+	int max_w = 0;
+	int max_h = 0;
 };
 
 void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
@@ -218,10 +218,10 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * SCALE_FACTOR, p_polypath_a[i].y * SCALE_FACTOR);
+		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
 	}
 	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * SCALE_FACTOR, p_polypath_b[i].y * SCALE_FACTOR);
+		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
 	}
 	Clipper clp;
 	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
@@ -246,8 +246,8 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}
@@ -290,17 +290,17 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 			et = etOpenRound;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25 * SCALE_FACTOR); // Defaults from ClipperOffset.
+	ClipperOffset co(2.0, 0.25f * (real_t)SCALE_FACTOR); // Defaults from ClipperOffset.
 	Path path;
 
 	// Need to scale points (Clipper's requirement for robust computation).
 	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * SCALE_FACTOR, p_polypath[i].y * SCALE_FACTOR);
+		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
 	}
 	co.AddPath(path, jt, et);
 
 	Paths paths;
-	co.Execute(paths, p_delta * SCALE_FACTOR); // Inflate/deflate.
+	co.Execute(paths, p_delta * (real_t)SCALE_FACTOR); // Inflate/deflate.
 
 	// Have to scale points down now.
 	Vector<Vector<Point2>> polypaths;
@@ -312,8 +312,8 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 
 		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
 			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / SCALE_FACTOR));
+					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
+					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
 		}
 		polypaths.push_back(polypath);
 	}

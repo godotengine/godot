@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,8 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle3D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_estimate_radius", "estimate_radius"), &NavigationObstacle3D::set_estimate_radius);
 	ClassDB::bind_method(D_METHOD("is_radius_estimated"), &NavigationObstacle3D::is_radius_estimated);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &NavigationObstacle3D::set_radius);
@@ -54,28 +56,52 @@ void NavigationObstacle3D::_validate_property(PropertyInfo &p_property) const {
 
 void NavigationObstacle3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			initialize_agent();
+		case NOTIFICATION_ENTER_TREE: {
 			parent_node3d = Object::cast_to<Node3D>(get_parent());
+			reevaluate_agent_radius();
 			if (parent_node3d != nullptr) {
 				// place agent on navigation map first or else the RVO agent callback creation fails silently later
 				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), parent_node3d->get_world_3d()->get_navigation_map());
 			}
 			set_physics_process_internal(true);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			parent_node3d = nullptr;
 			set_physics_process_internal(false);
 		} break;
+
 		case NOTIFICATION_PARENTED: {
 			parent_node3d = Object::cast_to<Node3D>(get_parent());
 			reevaluate_agent_radius();
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			parent_node3d = nullptr;
 		} break;
+
+		case NOTIFICATION_PAUSED: {
+			if (parent_node3d && !parent_node3d->can_process()) {
+				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node3d && parent_node3d->can_process() && !(map_before_pause == RID())) {
+				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			if (parent_node3d && !parent_node3d->can_process()) {
+				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
+				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
+			} else if (parent_node3d && parent_node3d->can_process() && !(map_before_pause == RID())) {
+				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
+				map_before_pause = RID();
+			}
+		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (parent_node3d) {
+			if (parent_node3d && parent_node3d->is_inside_tree()) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, parent_node3d->get_global_transform().origin);
 
 				PhysicsBody3D *rigid = Object::cast_to<PhysicsBody3D>(get_parent());
@@ -91,6 +117,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 NavigationObstacle3D::NavigationObstacle3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
+	initialize_agent();
 }
 
 NavigationObstacle3D::~NavigationObstacle3D() {
@@ -102,7 +129,12 @@ TypedArray<String> NavigationObstacle3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		warnings.push_back(TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object."));
+		warnings.push_back(RTR("The NavigationObstacle3D only serves to provide collision avoidance to a Node3D inheriting parent object."));
+	}
+
+	if (Object::cast_to<StaticBody3D>(get_parent())) {
+		warnings.push_back(RTR("The NavigationObstacle3D is intended for constantly moving bodies like CharacterBody3D or RigidDynamicBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+							   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail"));
 	}
 
 	return warnings;
@@ -118,19 +150,19 @@ void NavigationObstacle3D::initialize_agent() {
 void NavigationObstacle3D::reevaluate_agent_radius() {
 	if (!estimate_radius) {
 		NavigationServer3D::get_singleton()->agent_set_radius(agent, radius);
-	} else if (parent_node3d) {
+	} else if (parent_node3d && parent_node3d->is_inside_tree()) {
 		NavigationServer3D::get_singleton()->agent_set_radius(agent, estimate_agent_radius());
 	}
 }
 
 real_t NavigationObstacle3D::estimate_agent_radius() const {
-	if (parent_node3d) {
+	if (parent_node3d && parent_node3d->is_inside_tree()) {
 		// Estimate the radius of this physics body
 		real_t radius = 0.0;
 		for (int i(0); i < parent_node3d->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(parent_node3d->get_child(i));
-			if (cs) {
+			if (cs && cs->is_inside_tree()) {
 				// Take the distance between the Body center to the shape center
 				real_t r = cs->get_transform().origin.length();
 				if (cs->get_shape().is_valid()) {
@@ -141,6 +173,9 @@ real_t NavigationObstacle3D::estimate_agent_radius() const {
 				r *= MAX(s.x, MAX(s.y, s.z));
 				// Takes the biggest radius
 				radius = MAX(radius, r);
+			} else if (cs && !cs->is_inside_tree()) {
+				WARN_PRINT("A CollisionShape3D of the NavigationObstacle3D parent node was not inside the SceneTree when estimating the obstacle radius."
+						   "\nMove the NavigationObstacle3D to a child position below any CollisionShape3D node of the parent node so the CollisionShape3D is already inside the SceneTree.");
 			}
 		}
 

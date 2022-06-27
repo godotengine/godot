@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_import_plugin.h"
+
 #include "core/object/script_language.h"
 
 EditorImportPlugin::EditorImportPlugin() {
@@ -57,6 +58,7 @@ void EditorImportPlugin::get_recognized_extensions(List<String> *p_extensions) c
 		for (int i = 0; i < extensions.size(); i++) {
 			p_extensions->push_back(extensions[i]);
 		}
+		return;
 	}
 	ERR_FAIL_MSG("Unimplemented _get_recognized_extensions in add-on.");
 }
@@ -109,12 +111,12 @@ int EditorImportPlugin::get_import_order() const {
 	ERR_FAIL_V_MSG(-1, "Unimplemented _get_import_order in add-on.");
 }
 
-void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
+void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
 	Array needed;
 	needed.push_back("name");
 	needed.push_back("default_value");
 	Array options;
-	if (GDVIRTUAL_CALL(_get_import_options, p_preset, options)) {
+	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {
 			Dictionary d = options[i];
 			ERR_FAIL_COND(!d.has_all(needed));
@@ -139,34 +141,35 @@ void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption>
 			ImportOption option(PropertyInfo(default_value.get_type(), name, hint, hint_string, usage), default_value);
 			r_options->push_back(option);
 		}
+		return;
 	}
 
 	ERR_FAIL_MSG("Unimplemented _get_import_options in add-on.");
 }
 
-bool EditorImportPlugin::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorImportPlugin::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	Dictionary d;
-	Map<StringName, Variant>::Element *E = p_options.front();
+	HashMap<StringName, Variant>::ConstIterator E = p_options.begin();
 	while (E) {
-		d[E->key()] = E->get();
-		E = E->next();
+		d[E->key] = E->value;
+		++E;
 	}
 	bool visible;
-	if (GDVIRTUAL_CALL(_get_option_visibility, p_option, d, visible)) {
+	if (GDVIRTUAL_CALL(_get_option_visibility, p_path, p_option, d, visible)) {
 		return visible;
 	}
 
 	ERR_FAIL_V_MSG(false, "Unimplemented _get_option_visibility in add-on.");
 }
 
-Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Dictionary options;
 	Array platform_variants, gen_files;
 
-	Map<StringName, Variant>::Element *E = p_options.front();
+	HashMap<StringName, Variant>::ConstIterator E = p_options.begin();
 	while (E) {
-		options[E->key()] = E->get();
-		E = E->next();
+		options[E->key] = E->value;
+		++E;
 	}
 
 	int err;
@@ -190,11 +193,11 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_preset_count)
 	GDVIRTUAL_BIND(_get_preset_name, "preset_index")
 	GDVIRTUAL_BIND(_get_recognized_extensions)
-	GDVIRTUAL_BIND(_get_import_options, "preset_index")
+	GDVIRTUAL_BIND(_get_import_options, "path", "preset_index")
 	GDVIRTUAL_BIND(_get_save_extension)
 	GDVIRTUAL_BIND(_get_resource_type)
 	GDVIRTUAL_BIND(_get_priority)
 	GDVIRTUAL_BIND(_get_import_order)
-	GDVIRTUAL_BIND(_get_option_visibility, "option_name", "options")
+	GDVIRTUAL_BIND(_get_option_visibility, "path", "option_name", "options")
 	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options", "platform_variants", "gen_files");
 }

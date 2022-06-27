@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,15 +36,15 @@
 class Node2D : public CanvasItem {
 	GDCLASS(Node2D, CanvasItem);
 
-	Point2 pos;
-	real_t angle = 0.0;
-	Size2 _scale = Vector2(1, 1);
+	Point2 position;
+	real_t rotation = 0.0;
+	Size2 scale = Vector2(1, 1);
 	real_t skew = 0.0;
 	int z_index = 0;
 	bool z_relative = true;
 	bool y_sort_enabled = false;
 
-	Transform2D _mat;
+	Transform2D transform;
 
 	bool _xform_dirty = false;
 
@@ -92,12 +92,14 @@ public:
 
 	Point2 get_global_position() const;
 	real_t get_global_rotation() const;
+	real_t get_global_skew() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
-	void set_global_rotation(real_t p_radians);
+	void set_global_rotation(const real_t p_radians);
+	void set_global_skew(const real_t p_radians);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);

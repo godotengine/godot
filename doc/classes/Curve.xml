@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" version="4.0">
+<class name="Curve" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A mathematic curve.
 	</brief_description>
@@ -36,12 +36,6 @@
 			<return type="void" />
 			<description>
 				Removes all points from the curve.
-			</description>
-		</method>
-		<method name="get_point_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="get_point_left_mode" qualifiers="const">
@@ -158,6 +152,9 @@
 		</member>
 		<member name="min_value" type="float" setter="set_min_value" getter="get_min_value" default="0.0">
 			The minimum value the curve can reach.
+		</member>
+		<member name="point_count" type="int" setter="set_point_count" getter="get_point_count" default="0">
+			The number of points describing the curve.
 		</member>
 	</members>
 	<signals>

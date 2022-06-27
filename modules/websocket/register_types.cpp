@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
 #include "emws_client.h"
@@ -40,10 +42,11 @@
 #include "wsl_client.h"
 #include "wsl_server.h"
 #endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_server.h"
+#include "editor/editor_debugger_server_websocket.h"
 #include "editor/editor_node.h"
-#include "editor_debugger_server_websocket.h"
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -52,25 +55,33 @@ static void _editor_init_callback() {
 }
 #endif
 
-void register_websocket_types() {
+void initialize_websocket_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 #ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
+		EMWSPeer::make_default();
+		EMWSClient::make_default();
+		EMWSServer::make_default();
 #else
-	WSLPeer::make_default();
-	WSLClient::make_default();
-	WSLServer::make_default();
+		WSLPeer::make_default();
+		WSLClient::make_default();
+		WSLServer::make_default();
 #endif
 
-	GDREGISTER_VIRTUAL_CLASS(WebSocketMultiplayerPeer);
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
+		GDREGISTER_ABSTRACT_CLASS(WebSocketMultiplayerPeer);
+		ClassDB::register_custom_instance_class<WebSocketServer>();
+		ClassDB::register_custom_instance_class<WebSocketClient>();
+		ClassDB::register_custom_instance_class<WebSocketPeer>();
+	}
 
 #ifdef TOOLS_ENABLED
-	EditorNode::add_init_callback(&_editor_init_callback);
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorNode::add_init_callback(&_editor_init_callback);
+	}
 #endif
 }
 
-void unregister_websocket_types() {}
+void uninitialize_websocket_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

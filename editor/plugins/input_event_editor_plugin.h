@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,16 +33,16 @@
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 
-class InputEventConfigContainer : public HBoxContainer {
-	GDCLASS(InputEventConfigContainer, HBoxContainer);
+class InputEventConfigContainer : public VBoxContainer {
+	GDCLASS(InputEventConfigContainer, VBoxContainer);
 
-	Label *input_event_text;
-	Button *open_config_button;
+	Label *input_event_text = nullptr;
+	Button *open_config_button = nullptr;
 
 	Ref<InputEvent> input_event;
-	InputEventConfigurationDialog *config_dialog;
+	InputEventConfigurationDialog *config_dialog = nullptr;
 
 	void _config_dialog_confirmed();
 	void _configure_pressed();
@@ -50,10 +50,10 @@ class InputEventConfigContainer : public HBoxContainer {
 	void _event_changed();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	void set_event(const Ref<InputEvent> &p_event);
 
 	InputEventConfigContainer();
@@ -73,7 +73,7 @@ class InputEventEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "InputEvent"; }
 
-	InputEventEditorPlugin(EditorNode *p_node);
+	InputEventEditorPlugin();
 };
 
 #endif // INPUT_EVENT_EDITOR_PLUGIN_H

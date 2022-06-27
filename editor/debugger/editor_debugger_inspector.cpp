@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,15 +55,20 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 }
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->clear(); //sorry, no want category
-	for (const PropertyInfo &E : prop_list) {
-		p_list->push_back(E);
+	p_list->clear(); // Sorry, no want category.
+	for (const PropertyInfo &prop : prop_list) {
+		if (prop.name == "script") {
+			// Skip the script property, it's always added by the non-virtual method.
+			continue;
+		}
+
+		p_list->push_back(prop);
 	}
 }
 
 String EditorDebuggerRemoteObject::get_title() {
 	if (remote_object_id.is_valid()) {
-		return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
+		return vformat(TTR("Remote %s:"), String(type_name)) + " " + itos(remote_object_id);
 	} else {
 		return "<null>";
 	}
@@ -102,14 +107,13 @@ void EditorDebuggerInspector::_bind_methods() {
 
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE:
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
-			break;
-		case NOTIFICATION_ENTER_TREE:
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
 			edit(variables);
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -142,7 +146,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	debugObj->prop_list.clear();
 	int new_props_added = 0;
-	Set<String> changed;
+	HashSet<String> changed;
 	for (int i = 0; i < obj.properties.size(); i++) {
 		PropertyInfo &pinfo = obj.properties[i].first;
 		Variant &var = obj.properties[i].second;
@@ -150,10 +154,10 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		if (pinfo.type == Variant::OBJECT) {
 			if (var.get_type() == Variant::STRING) {
 				String path = var;
-				if (path.find("::") != -1) {
+				if (path.contains("::")) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
-					RES dependency = ResourceLoader::load(base_path);
+					Ref<Resource> dependency = ResourceLoader::load(base_path);
 					if (dependency.is_valid()) {
 						remote_dependencies.insert(dependency);
 					}
@@ -162,7 +166,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 				if (pinfo.hint_string == "Script") {
 					if (debugObj->get_script() != var) {
-						debugObj->set_script(REF());
+						debugObj->set_script(Ref<RefCounted>());
 						Ref<Script> script(var);
 						if (!script.is_null()) {
 							ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
@@ -189,8 +193,8 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 
 	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
-		for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
-			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E->get());
+		for (const String &E : changed) {
+			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E);
 		}
 	} else {
 		//full update, because props were added or removed
@@ -202,7 +206,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 void EditorDebuggerInspector::clear_cache() {
 	for (const KeyValue<ObjectID, EditorDebuggerRemoteObject *> &E : remote_objects) {
 		EditorNode *editor = EditorNode::get_singleton();
-		if (editor->get_editor_history()->get_current() == E.value->get_instance_id()) {
+		if (editor->get_editor_selection_history()->get_current() == E.value->get_instance_id()) {
 			editor->push_item(nullptr);
 		}
 		memdelete(E.value);
@@ -257,13 +261,26 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	variables->prop_values[type + n] = v;
 	variables->update();
 	edit(variables);
+
+	// To prevent constantly resizing when using filtering.
+	int size_x = get_size().x;
+	if (size_x > get_custom_minimum_size().x) {
+		set_custom_minimum_size(Size2(size_x, 0));
+	}
 }
 
 void EditorDebuggerInspector::clear_stack_variables() {
 	variables->clear();
 	variables->update();
+	set_custom_minimum_size(Size2(0, 0));
 }
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
-	return variables->get_variant(p_var);
+	for (KeyValue<StringName, Variant> &E : variables->prop_values) {
+		String v = E.key.operator String();
+		if (v.get_slice("/", 1) == p_var) {
+			return variables->get_variant(v);
+		}
+	}
+	return String();
 }

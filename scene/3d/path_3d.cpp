@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,6 @@
 /*************************************************************************/
 
 #include "path_3d.h"
-
-void Path3D::_notification(int p_what) {
-}
 
 void Path3D::_curve_changed() {
 	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
@@ -149,7 +146,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		Vector3 sideways = up.cross(forward).normalized();
 		up = forward.cross(sideways).normalized();
 
-		t.basis.set(sideways, up, forward);
+		t.basis.set_columns(sideways, up, forward);
 		t.basis.scale_local(scale);
 
 		t.origin = pos + sideways * h_offset + up * v_offset;
@@ -160,10 +157,14 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		// for a discussion about why not Frenet frame.
 
 		t.origin = pos;
-
-		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
-			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
-			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
+		if (p_update_xyz_rot && prev_offset != offset) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
+			real_t sample_distance = bi * 0.01;
+			Vector3 t_prev_pos_a = c->interpolate_baked(prev_offset - sample_distance, cubic);
+			Vector3 t_prev_pos_b = c->interpolate_baked(prev_offset + sample_distance, cubic);
+			Vector3 t_cur_pos_a = c->interpolate_baked(offset - sample_distance, cubic);
+			Vector3 t_cur_pos_b = c->interpolate_baked(offset + sample_distance, cubic);
+			Vector3 t_prev = (t_prev_pos_a - t_prev_pos_b).normalized();
+			Vector3 t_cur = (t_cur_pos_a - t_cur_pos_b).normalized();
 
 			Vector3 axis = t_prev.cross(t_cur);
 			real_t dot = t_prev.dot(t_cur);
@@ -223,8 +224,8 @@ void PathFollow3D::_notification(int p_what) {
 					_update_transform(false);
 				}
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;
@@ -256,11 +257,11 @@ TypedArray<String> PathFollow3D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path3D>(get_parent())) {
-			warnings.push_back(TTR("PathFollow3D only works when set as a child of a Path3D node."));
+			warnings.push_back(RTR("PathFollow3D only works when set as a child of a Path3D node."));
 		} else {
 			Path3D *path = Object::cast_to<Path3D>(get_parent());
 			if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-				warnings.push_back(TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
+				warnings.push_back(RTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
 			}
 		}
 	}
@@ -290,10 +291,10 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:m"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -306,14 +307,14 @@ void PathFollow3D::_bind_methods() {
 }
 
 void PathFollow3D::set_offset(real_t p_offset) {
-	delta_offset = p_offset - offset;
+	prev_offset = offset;
 	offset = p_offset;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {
 			real_t path_length = path->get_curve()->get_baked_length();
 
-			if (loop) {
+			if (loop && path_length) {
 				offset = Math::fposmod(offset, path_length);
 				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
 					offset = path_length;

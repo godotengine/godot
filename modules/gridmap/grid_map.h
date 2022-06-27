@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,8 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class PhysicsMaterial;
+
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
 
@@ -54,8 +56,14 @@ class GridMap : public Node3D {
 		};
 		uint64_t key = 0;
 
+		static uint32_t hash(const IndexKey &p_key) {
+			return hash_one_uint64(p_key.key);
+		}
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
 			return key < p_key.key;
+		}
+		_FORCE_INLINE_ bool operator==(const IndexKey &p_key) const {
+			return key == p_key.key;
 		}
 
 		_FORCE_INLINE_ operator Vector3i() const {
@@ -90,6 +98,7 @@ class GridMap : public Node3D {
 		struct NavMesh {
 			RID region;
 			Transform3D xform;
+			RID navmesh_debug_instance;
 		};
 
 		struct MultimeshInstance {
@@ -105,13 +114,13 @@ class GridMap : public Node3D {
 		};
 
 		Vector<MultimeshInstance> multimesh_instances;
-		Set<IndexKey> cells;
+		HashSet<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
 
 		bool dirty = false;
 		RID static_body;
-		Map<IndexKey, NavMesh> navmesh_ids;
+		HashMap<IndexKey, NavMesh> navmesh_ids;
 	};
 
 	union OctantKey {
@@ -124,8 +133,11 @@ class GridMap : public Node3D {
 
 		uint64_t key = 0;
 
-		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-			return key < p_key.key;
+		static uint32_t hash(const OctantKey &p_key) {
+			return hash_one_uint64(p_key.key);
+		}
+		_FORCE_INLINE_ bool operator==(const OctantKey &p_key) const {
+			return key == p_key.key;
 		}
 
 		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
@@ -134,6 +146,7 @@ class GridMap : public Node3D {
 
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
 	uint32_t navigation_layers = 1;
 
@@ -147,18 +160,12 @@ class GridMap : public Node3D {
 	bool center_z = true;
 	float cell_scale = 1.0;
 
-	bool clip = false;
-	bool clip_above = true;
-	int clip_floor = 0;
-
 	bool recreating_octants = false;
-
-	Vector3::Axis clip_axis = Vector3::AXIS_Z;
 
 	Ref<MeshLibrary> mesh_library;
 
-	Map<OctantKey, Octant *> octant_map;
-	Map<IndexKey, Cell> cell_map;
+	HashMap<OctantKey, Octant *, OctantKey> octant_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_map;
 
 	void _recreate_octant_data();
 
@@ -184,7 +191,7 @@ class GridMap : public Node3D {
 	void _queue_octants_dirty();
 	void _update_octants_callback();
 
-	void resource_changed(const RES &p_res);
+	void resource_changed(const Ref<Resource> &p_res);
 
 	void _clear_internal();
 
@@ -223,11 +230,19 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	void set_physics_material(Ref<PhysicsMaterial> p_material);
+	Ref<PhysicsMaterial> get_physics_material() const;
+
+	Array get_collision_shapes() const;
+
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
-	void set_navigation_layers(uint32_t p_layers);
-	uint32_t get_navigation_layers();
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
@@ -252,14 +267,13 @@ public:
 	Vector3i world_to_map(const Vector3 &p_world_position) const;
 	Vector3 map_to_world(const Vector3i &p_map_position) const;
 
-	void set_clip(bool p_enabled, bool p_clip_above = true, int p_floor = 0, Vector3::Axis p_axis = Vector3::AXIS_X);
-
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_item(int p_item) const;
 
-	Array get_meshes();
+	Array get_meshes() const;
 
 	void clear_baked_meshes();
 	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);

@@ -15,6 +15,7 @@
    *   General Remarks
    *
    * @sections:
+   *   preamble
    *   header_inclusion
    *   user_allocation
    *
@@ -61,6 +62,7 @@
    *   cid_fonts
    *   pfr_fonts
    *   winfnt_fonts
+   *   svg_fonts
    *   font_formats
    *   gasp_table
    *
@@ -81,6 +83,7 @@
    *   t1_cid_driver
    *   tt_driver
    *   pcf_driver
+   *   ot_svg_driver
    *   properties
    *   parameter_tags
    *   lcd_rendering
@@ -123,6 +126,7 @@
    *   gzip
    *   lzw
    *   bzip2
+   *   debugging_apis
    *
    */
 

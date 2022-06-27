@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "light_occluder_2d.h"
-#include "core/math/geometry_2d.h"
 
 #include "core/config/engine.h"
+#include "core/math/geometry_2d.h"
 
 #define LINE_GRAB_WIDTH 8
 
@@ -158,42 +158,46 @@ void LightOccluder2D::_poly_changed() {
 }
 
 void LightOccluder2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_CANVAS) {
-		RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
-		RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-		RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
+			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+			RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (occluder_polygon.is_valid()) {
-				Vector<Vector2> poly = occluder_polygon->get_polygon();
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+		} break;
 
-				if (poly.size()) {
-					if (occluder_polygon->is_closed()) {
-						Vector<Color> color;
-						color.push_back(Color(0, 0, 0, 0.6));
-						draw_polygon(Variant(poly), color);
-					} else {
-						int ps = poly.size();
-						const Vector2 *r = poly.ptr();
-						for (int i = 0; i < ps - 1; i++) {
-							draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (occluder_polygon.is_valid()) {
+					Vector<Vector2> poly = occluder_polygon->get_polygon();
+
+					if (poly.size()) {
+						if (occluder_polygon->is_closed()) {
+							Vector<Color> color;
+							color.push_back(Color(0, 0, 0, 0.6));
+							draw_polygon(Variant(poly), color);
+						} else {
+							int ps = poly.size();
+							const Vector2 *r = poly.ptr();
+							for (int i = 0; i < ps - 1; i++) {
+								draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+							}
 						}
 					}
 				}
 			}
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_CANVAS) {
-		RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		case NOTIFICATION_EXIT_CANVAS: {
+			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		} break;
 	}
 }
 
@@ -246,11 +250,11 @@ TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
-		warnings.push_back(TTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
+		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		warnings.push_back(TTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
+		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
 	return warnings;
@@ -281,7 +285,6 @@ void LightOccluder2D::_bind_methods() {
 
 LightOccluder2D::LightOccluder2D() {
 	occluder = RS::get_singleton()->canvas_light_occluder_create();
-	mask = 1;
 
 	set_notify_transform(true);
 	set_as_sdf_collision(true);

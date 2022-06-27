@@ -158,6 +158,7 @@ namespace Godot
             {"YELLOWGREEN", new Color(0.60f, 0.80f, 0.20f)},
         };
 
+#pragma warning disable CS1591 // Disable warning: "Missing XML comment for publicly visible type or member"
         public static Color AliceBlue { get { return namedColors["ALICEBLUE"]; } }
         public static Color AntiqueWhite { get { return namedColors["ANTIQUEWHITE"]; } }
         public static Color Aqua { get { return namedColors["AQUA"]; } }
@@ -304,5 +305,6 @@ namespace Godot
         public static Color WhiteSmoke { get { return namedColors["WHITESMOKE"]; } }
         public static Color Yellow { get { return namedColors["YELLOW"]; } }
         public static Color YellowGreen { get { return namedColors["YELLOWGREEN"]; } }
+#pragma warning restore CS1591
     }
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,12 @@ private:
 	};
 	JSKeyEvent key_event;
 
+#ifdef GLES3_ENABLED
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
+#endif
+
+	HashMap<int, CharString> utterance_ids;
+
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
@@ -62,18 +68,18 @@ private:
 	String clipboard;
 	Point2 touches[32];
 
+	Array voices;
+
 	char canvas_id[256] = { 0 };
 	bool cursor_inside_canvas = true;
 	CursorShape cursor_shape = CURSOR_ARROW;
 	Point2i last_click_pos = Point2(-100, -100); // TODO check this again.
 	uint64_t last_click_ms = 0;
-	int last_click_button_index = -1;
+	MouseButton last_click_button_index = MouseButton::NONE;
 
 	bool swap_cancel_ok = false;
 
 	// utilities
-	static void focus_canvas();
-	static bool is_canvas_focused();
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod);
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
@@ -87,6 +93,7 @@ private:
 	static void vk_input_text_callback(const char *p_text, int p_cursor);
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	void process_joypads();
+	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
 
 	static Vector<String> get_rendering_drivers_func();
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
@@ -95,6 +102,7 @@ private:
 
 	static void request_quit_callback();
 	static void window_blur_callback();
+	static void update_voices_callback(int p_size, const char **p_voice);
 	static void update_clipboard_callback(const char *p_text);
 	static void send_window_event_callback(int p_notification);
 	static void drop_files_js_callback(char **p_filev, int p_filec);
@@ -113,14 +121,25 @@ public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
+	// tts
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+
 	// cursor
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual Point2i mouse_get_position() const override;
 
 	// touch
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -136,6 +155,7 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;

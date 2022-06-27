@@ -263,7 +263,7 @@ struct fvar
     if (coords_length && *coords_length)
     {
       hb_array_t<const HBFixed> instanceCoords = instance->get_coordinates (axisCount)
-							 .sub_array (0, *coords_length);
+							 .sub_array (0, coords_length);
       for (unsigned int i = 0; i < instanceCoords.length; i++)
 	coords[i] = instanceCoords.arrayZ[i].to_float ();
     }

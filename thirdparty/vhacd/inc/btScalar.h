@@ -74,7 +74,7 @@ inline int32_t btGetVersion()
 
 // -- GODOT start --
 //#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION))
-#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION)) && (!defined(_M_ARM))
+#if (defined(_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined(BT_USE_DOUBLE_PRECISION)) && (!defined(_M_ARM)) && (!defined(_M_ARM64))
 // -- GODOT end --
 #define BT_USE_SSE
 #include <emmintrin.h>

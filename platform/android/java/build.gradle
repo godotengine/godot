@@ -1,17 +1,24 @@
-apply from: 'app/config.gradle'
-
 buildscript {
     apply from: 'app/config.gradle'
 
     repositories {
         google()
         mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath libraries.androidGradlePlugin
         classpath libraries.kotlinGradlePlugin
+        classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
     }
 }
+
+plugins {
+    id 'io.github.gradle-nexus.publish-plugin'
+}
+
+apply from: 'app/config.gradle'
+apply from: 'scripts/publish-root.gradle'
 
 allprojects {
     repositories {
@@ -22,21 +29,22 @@ allprojects {
 
 ext {
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ["release", "debug"]
+    supportedTargetsMap = [release: "release", dev: "debug", debug: "release_debug"]
+    supportedFlavors = ["editor", "template"]
 
-    // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
-    // This command is usually used by Android Studio.
+    // Used by gradle to specify which architecture to build for by default when running
+    // `./gradlew build` (this command is usually used by Android Studio).
     // If building manually on the command line, it's recommended to use the
-    // `./gradlew generateGodotTemplates` build command instead after running the `scons` command.
-    // The defaultAbi must be one of the {supportedAbis} values.
-    defaultAbi = "arm64v8"
+    // `./gradlew generateGodotTemplates` build command instead after running the `scons` command(s).
+    // The {selectedAbis} values must be from the {supportedAbis} values.
+    selectedAbis = ["arm64v8"]
 }
 
 def rootDir = "../../.."
 def binDir = "$rootDir/bin/"
 
-def getSconsTaskName(String buildType) {
-    return "compileGodotNativeLibs" + buildType.capitalize()
+def getSconsTaskName(String flavor, String buildType, String abi) {
+    return "compileGodotNativeLibs" + flavor.capitalize() + buildType.capitalize() + abi.capitalize()
 }
 
 /**
@@ -48,6 +56,17 @@ task copyDebugBinaryToBin(type: Copy) {
     from('app/build/outputs/apk/debug')
     into(binDir)
     include('android_debug.apk')
+}
+
+/**
+ * Copy the generated 'android_dev.apk' binary template into the Godot bin directory.
+ * Depends on the app build task to ensure the binary is generated prior to copying.
+ */
+task copyDevBinaryToBin(type: Copy) {
+    dependsOn ':app:assembleDev'
+    from('app/build/outputs/apk/dev')
+    into(binDir)
+    include('android_dev.apk')
 }
 
 /**
@@ -66,7 +85,7 @@ task copyReleaseBinaryToBin(type: Copy) {
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
 task copyDebugAARToAppModule(type: Copy) {
-    dependsOn ':lib:assembleDebug'
+    dependsOn ':lib:assembleTemplateDebug'
     from('lib/build/outputs/aar')
     into('app/libs/debug')
     include('godot-lib.debug.aar')
@@ -77,10 +96,32 @@ task copyDebugAARToAppModule(type: Copy) {
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
 task copyDebugAARToBin(type: Copy) {
-    dependsOn ':lib:assembleDebug'
+    dependsOn ':lib:assembleTemplateDebug'
     from('lib/build/outputs/aar')
     into(binDir)
     include('godot-lib.debug.aar')
+}
+
+/**
+ * Copy the Godot android library archive dev file into the app module dev libs directory.
+ * Depends on the library build task to ensure the AAR file is generated prior to copying.
+ */
+task copyDevAARToAppModule(type: Copy) {
+    dependsOn ':lib:assembleTemplateDev'
+    from('lib/build/outputs/aar')
+    into('app/libs/dev')
+    include('godot-lib.dev.aar')
+}
+
+/**
+ * Copy the Godot android library archive dev file into the root bin directory.
+ * Depends on the library build task to ensure the AAR file is generated prior to copying.
+ */
+task copyDevAARToBin(type: Copy) {
+    dependsOn ':lib:assembleTemplateDev'
+    from('lib/build/outputs/aar')
+    into(binDir)
+    include('godot-lib.dev.aar')
 }
 
 /**
@@ -88,7 +129,7 @@ task copyDebugAARToBin(type: Copy) {
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
 task copyReleaseAARToAppModule(type: Copy) {
-    dependsOn ':lib:assembleRelease'
+    dependsOn ':lib:assembleTemplateRelease'
     from('lib/build/outputs/aar')
     into('app/libs/release')
     include('godot-lib.release.aar')
@@ -99,7 +140,7 @@ task copyReleaseAARToAppModule(type: Copy) {
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
 task copyReleaseAARToBin(type: Copy) {
-    dependsOn ':lib:assembleRelease'
+    dependsOn ':lib:assembleTemplateRelease'
     from('lib/build/outputs/aar')
     into(binDir)
     include('godot-lib.release.aar')
@@ -107,7 +148,7 @@ task copyReleaseAARToBin(type: Copy) {
 
 /**
  * Generate Godot custom build template by zipping the source files from the app directory, as well
- * as the AAR files generated by 'copyDebugAAR' and 'copyReleaseAAR'.
+ * as the AAR files generated by 'copyDebugAAR', 'copyDevAAR' and 'copyReleaseAAR'.
  * The zip file also includes some gradle tools to allow building of the custom build.
  */
 task zipCustomBuild(type: Zip) {
@@ -124,8 +165,21 @@ task zipCustomBuild(type: Zip) {
 def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
-    for (String buildType : supportedTargets) {
-        excludedTasks += ":lib:" + getSconsTaskName(buildType)
+    if (!isAndroidStudio()) {
+        logger.lifecycle("Excluding Android studio build tasks")
+        for (String flavor : supportedFlavors) {
+            for (String buildType : supportedTargetsMap.keySet()) {
+                if (buildType == "release" && flavor == "editor") {
+                    // The editor can't be used with target=release as debugging tools are then not
+                    // included, and it would crash on errors instead of reporting them.
+                    continue
+                }
+
+                for (String abi : selectedAbis) {
+                    excludedTasks += ":lib:" + getSconsTaskName(flavor, buildType, abi)
+                }
+            }
+        }
     }
     return excludedTasks
 }
@@ -134,7 +188,7 @@ def templateBuildTasks() {
     def tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedTargets) {
+    for (String target : supportedTargetsMap.keySet()) {
         File targetLibs = new File("lib/libs/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
@@ -153,6 +207,55 @@ def templateBuildTasks() {
     }
 
     return tasks
+}
+
+def isAndroidStudio() {
+    def sysProps = System.getProperties()
+    return sysProps != null && sysProps['idea.platform.prefix'] != null
+}
+
+task copyEditorDebugBinaryToBin(type: Copy) {
+    dependsOn ':editor:assembleDebug'
+    from('editor/build/outputs/apk/debug')
+    into(binDir)
+    include('android_editor.apk')
+}
+
+task copyEditorDevBinaryToBin(type: Copy) {
+    dependsOn ':editor:assembleDev'
+    from('editor/build/outputs/apk/dev')
+    into(binDir)
+    include('android_editor_dev.apk')
+}
+
+/**
+ * Generate the Godot Editor Android apk.
+ *
+ * Note: The Godot 'tools' shared libraries must have been generated (via scons) prior to running
+ * this gradle task. The task will only build the apk(s) for which the shared libraries is
+ * available.
+ */
+task generateGodotEditor {
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+
+    def tasks = []
+
+    for (String target : supportedTargetsMap.keySet()) {
+        if (target == "release") {
+            // The editor can't be used with target=release as debugging tools are then not
+            // included, and it would crash on errors instead of reporting them.
+            continue
+        }
+        File targetLibs = new File("lib/libs/tools/" + target)
+        if (targetLibs != null
+            && targetLibs.isDirectory()
+            && targetLibs.listFiles() != null
+            && targetLibs.listFiles().length > 0) {
+            tasks += "copyEditor${target.capitalize()}BinaryToBin"
+        }
+    }
+
+    dependsOn = tasks
 }
 
 /**
@@ -179,7 +282,27 @@ task generateDevTemplate {
 }
 
 /**
- * Clean the generated artifacts.
+ * Clean the generated editor artifacts.
+ */
+task cleanGodotEditor(type: Delete) {
+    // Delete the generated native tools libs
+    delete("lib/libs/tools")
+
+    // Delete the library generated AAR files
+    delete("lib/build/outputs/aar")
+
+    // Delete the generated binary apks
+    delete("editor/build/outputs/apk")
+
+    // Delete the Godot editor apks in the Godot bin directory
+    delete("$binDir/android_editor.apk")
+    delete("$binDir/android_editor_dev.apk")
+
+    finalizedBy getTasksByName("clean", true)
+}
+
+/**
+ * Clean the generated template artifacts.
  */
 task cleanGodotTemplates(type: Delete) {
     // Delete the generated native libs
@@ -196,9 +319,11 @@ task cleanGodotTemplates(type: Delete) {
 
     // Delete the Godot templates in the Godot bin directory
     delete("$binDir/android_debug.apk")
+    delete("$binDir/android_dev.apk")
     delete("$binDir/android_release.apk")
     delete("$binDir/android_source.zip")
     delete("$binDir/godot-lib.debug.aar")
+    delete("$binDir/godot-lib.dev.aar")
     delete("$binDir/godot-lib.release.aar")
 
     finalizedBy getTasksByName("clean", true)

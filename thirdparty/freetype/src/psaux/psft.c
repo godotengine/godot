@@ -742,13 +742,13 @@
     /* For ordinary fonts get the character data stored in the face record. */
     {
       glyph_data.pointer = type1->charstrings[glyph_index];
-      glyph_data.length  = (FT_Int)type1->charstrings_len[glyph_index];
+      glyph_data.length  = type1->charstrings_len[glyph_index];
     }
 
     if ( !error )
     {
       FT_Byte*  charstring_base = (FT_Byte*)glyph_data.pointer;
-      FT_ULong  charstring_len  = (FT_ULong)glyph_data.length;
+      FT_ULong  charstring_len  = glyph_data.length;
 
 
       FT_ASSERT( charstring_base + charstring_len >= charstring_base );
@@ -778,7 +778,7 @@
     face = (T1_Face)decoder->builder.face;
 
     data.pointer = buf->start;
-    data.length  = (FT_Int)( buf->end - buf->start );
+    data.length  = (FT_UInt)( buf->end - buf->start );
 
     if ( face->root.internal->incremental_interface )
       face->root.internal->incremental_interface->funcs->free_glyph_data(

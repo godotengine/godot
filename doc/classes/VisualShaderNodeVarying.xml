@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeVarying" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="varying_name" type="String" setter="set_varying_name" getter="get_varying_name" default="&quot;[None]&quot;">
+		</member>
+		<member name="varying_type" type="int" setter="set_varying_type" getter="get_varying_type" enum="VisualShader.VaryingType" default="0">
+		</member>
+	</members>
+</class>

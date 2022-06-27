@@ -8,6 +8,7 @@ android_files = [
     "file_access_android.cpp",
     "audio_driver_opensl.cpp",
     "dir_access_jandroid.cpp",
+    "tts_android.cpp",
     "thread_jandroid.cpp",
     "net_socket_android.cpp",
     "java_godot_lib_jni.cpp",
@@ -18,6 +19,7 @@ android_files = [
     "jni_utils.cpp",
     "android_keys_utils.cpp",
     "display_server_android.cpp",
+    "plugin/godot_plugin_jni.cpp",
     "vulkan/vulkan_context_android.cpp",
 ]
 
@@ -52,10 +54,17 @@ else:
 if lib_arch_dir != "":
     if env["target"] == "release":
         lib_type_dir = "release"
-    else:  # release_debug, debug
+    elif env["target"] == "release_debug":
         lib_type_dir = "debug"
+    else:  # debug
+        lib_type_dir = "dev"
 
-    out_dir = "#platform/android/java/lib/libs/" + lib_type_dir + "/" + lib_arch_dir
+    if env["tools"]:
+        lib_tools_dir = "tools/"
+    else:
+        lib_tools_dir = ""
+
+    out_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/" + lib_arch_dir
     env_android.Command(
         out_dir + "/libgodot_android.so", "#bin/libgodot" + env["SHLIBSUFFIX"], Move("$TARGET", "$SOURCE")
     )

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ public:
 	}
 
 	uint64_t move(uint64_t p_idx, uint64_t p_bin) {
-		ERR_FAIL_COND_V(p_idx >= array.size(), -1);
+		ERR_FAIL_UNSIGNED_INDEX_V(p_idx, array.size(), -1);
 
 		uint64_t current_bin = bin_limits.size() - 1;
 		while (p_idx > bin_limits[current_bin]) {
@@ -112,8 +112,8 @@ public:
 		return current_idx;
 	}
 
-	void remove(uint64_t p_idx) {
-		ERR_FAIL_COND(p_idx >= array.size());
+	void remove_at(uint64_t p_idx) {
+		ERR_FAIL_UNSIGNED_INDEX(p_idx, array.size());
 		uint64_t new_idx = move(p_idx, 0);
 		uint64_t swap_idx = array.size() - 1;
 

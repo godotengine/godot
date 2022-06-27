@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +70,7 @@ public:
 		GUTTER_TYPE_CUSTOM
 	};
 
-	/* Contex Menu. */
+	/* Context Menu. */
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,
@@ -120,8 +120,7 @@ private:
 		bool clickable = false;
 		bool overwritable = false;
 
-		ObjectID custom_draw_obj = ObjectID();
-		StringName custom_draw_callback;
+		Callable custom_draw_callback;
 	};
 
 	class Text {
@@ -159,6 +158,7 @@ private:
 		mutable Vector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
+		int font_height = 0;
 
 		Dictionary opentype_features;
 		String language;
@@ -189,6 +189,7 @@ private:
 		int get_max_width() const;
 
 		void set_width(float p_width);
+		float get_width() const;
 		int get_line_wrap_amount(int p_line) const;
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
@@ -204,12 +205,13 @@ private:
 			}
 		}
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void insert(int p_at, const String &p_text, const Array &p_bidi_override);
-		void remove(int p_at);
+		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
+		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
 
@@ -245,9 +247,23 @@ private:
 
 	bool setting_text = false;
 
+	bool alt_start = false;
+	uint32_t alt_code = 0;
+
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
+
+	// Placeholder
+	String placeholder_text = "";
+	Array placeholder_bidi_override;
+	Ref<TextParagraph> placeholder_data_buf;
+	int placeholder_line_height = -1;
+	int placeholder_max_width = -1;
+
+	Vector<String> placeholder_wraped_rows;
+
+	void _update_placeholder();
 
 	/* Initialise to opposite first, so we get past the early-out in set_editable. */
 	bool editable = false;
@@ -258,7 +274,7 @@ private:
 	Dictionary opentype_features;
 	String language = "";
 
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	void _clear();
@@ -271,7 +287,7 @@ private:
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
 
-	// Overridable actions
+	// Overridable actions.
 	String cut_copy_line = "";
 
 	// Context menu.
@@ -280,7 +296,7 @@ private:
 	PopupMenu *menu_ctl = nullptr;
 
 	void _generate_context_menu();
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	/* Versioning */
 	struct TextOperation {
@@ -312,7 +328,7 @@ private:
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos = nullptr;
 
-	Timer *idle_detect;
+	Timer *idle_detect = nullptr;
 
 	uint32_t version = 0;
 	uint32_t saved_version = 0;
@@ -331,11 +347,17 @@ private:
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const;
 
 	/* Tooltip. */
-	ObjectID tooltip_obj_id;
-	StringName tooltip_func;
-	Variant tooltip_ud;
+	Callable tooltip_callback;
 
 	/* Mouse */
+	struct LineDrawingCache {
+		int y_offset = 0;
+		Vector<int> first_visible_chars;
+		Vector<int> last_visible_chars;
+	};
+
+	HashMap<int, LineDrawingCache> line_drawing_cache;
+
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
 	/* Caret. */
@@ -361,11 +383,14 @@ private:
 	bool draw_caret = true;
 
 	bool caret_blink_enabled = false;
-	Timer *caret_blink_timer;
+	Timer *caret_blink_timer = nullptr;
 
 	bool move_caret_on_right_click = true;
 
-	bool caret_mid_grapheme_enabled = false;
+	bool caret_mid_grapheme_enabled = true;
+
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
 
 	void _emit_caret_changed();
 
@@ -392,10 +417,12 @@ private:
 		int to_column = 0;
 
 		bool shiftclick_left = false;
+		bool drag_attempt = false;
 	} selection;
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	Color font_selected_color = Color(1, 1, 1);
 	Color selection_color = Color(1, 1, 1);
@@ -403,7 +430,7 @@ private:
 
 	bool dragging_selection = false;
 
-	Timer *click_select_held;
+	Timer *click_select_held = nullptr;
 	uint64_t last_dblclk = 0;
 	Vector2 last_dblclk_pos;
 	void _click_selection_held();
@@ -415,7 +442,7 @@ private:
 	void _pre_shift_selection();
 	void _post_shift_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
 
 	int wrap_at_column = 0;
@@ -426,8 +453,8 @@ private:
 	void _update_caret_wrap_offset();
 
 	/* Viewport. */
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	bool scroll_past_end_of_file_enabled = false;
 
@@ -455,14 +482,14 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	// Minimap
+	// Minimap.
 	bool draw_minimap = false;
 
 	int minimap_width = 80;
 	Point2 minimap_char_size = Point2(1, 2);
 	int minimap_line_spacing = 1;
 
-	// minimap scroll
+	// Minimap scroll.
 	bool minimap_clicked = false;
 	bool hovering_minimap = false;
 	bool dragging_minimap = false;
@@ -485,7 +512,6 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	Map<int, Dictionary> syntax_highlighting_cache;
 
 	Dictionary _get_line_syntax_highlighting(int p_line);
 
@@ -501,6 +527,7 @@ private:
 	int font_size = 16;
 	Color font_color = Color(1, 1, 1);
 	Color font_readonly_color = Color(1, 1, 1);
+	Color font_placeholder_color = Color(1, 1, 1, 0.6);
 
 	int outline_size = 0;
 	Color outline_color = Color(1, 1, 1);
@@ -599,12 +626,17 @@ protected:
 
 public:
 	/* General overrides. */
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+	bool alt_input(const Ref<InputEvent> &p_gui_input);
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
-	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
+	void set_tooltip_request_func(const Callable &p_tooltip_callback);
 
 	/* Text */
 	// Text properties.
@@ -623,8 +655,8 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
@@ -653,6 +685,9 @@ public:
 	void set_text(const String &p_text);
 	String get_text() const;
 	int get_line_count() const;
+
+	void set_placeholder(const String &p_text);
+	String get_placeholder() const;
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;
@@ -716,10 +751,14 @@ public:
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
-	Point2i get_line_column_at_pos(const Point2i &p_pos) const;
+	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_pos_at_line_column(int p_line, int p_column) const;
+	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
 	bool is_dragging_cursor() const;
+	bool is_mouse_over_selection(bool p_edges = true) const;
 
 	/* Caret */
 	void set_caret_type(CaretType p_type);
@@ -757,6 +796,9 @@ public:
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
+
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 
@@ -782,7 +824,7 @@ public:
 	void deselect();
 	void delete_selection();
 
-	/* line wrapping. */
+	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);
 	LineWrappingMode get_line_wrapping_mode() const;
 
@@ -822,6 +864,7 @@ public:
 	int get_last_full_visible_line_wrap_index() const;
 
 	int get_visible_line_count() const;
+	int get_visible_line_count_in_range(int p_from, int p_to) const;
 	int get_total_visible_line_count() const;
 
 	// Auto Adjust
@@ -863,7 +906,7 @@ public:
 
 	void merge_gutters(int p_from_line, int p_to_line);
 
-	void set_gutter_custom_draw(int p_gutter, Object *p_object, const StringName &p_callback);
+	void set_gutter_custom_draw(int p_gutter, const Callable &p_draw_callback);
 
 	// Line gutters.
 	void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata);
@@ -905,7 +948,7 @@ public:
 	void set_draw_spaces(bool p_enabled);
 	bool is_drawing_spaces() const;
 
-	TextEdit();
+	TextEdit(const String &p_placeholder = String());
 };
 
 VARIANT_ENUM_CAST(TextEdit::CaretType);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,6 +79,7 @@ private:
 	ENetHost *host = nullptr;
 	List<Ref<ENetPacketPeer>> peers;
 
+	EventType _parse_event(const ENetEvent &p_event, Event &r_event);
 	Error _create(ENetAddress *p_address, int p_max_peers, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth);
 	Array _service(int p_timeout = 0);
 	void _broadcast(int p_channel, PackedByteArray p_packet, int p_flags);
@@ -110,6 +111,7 @@ public:
 	void destroy();
 	Ref<ENetPacketPeer> connect_to_host(const String &p_address, int p_port, int p_channels, int p_data = 0);
 	EventType service(int p_timeout, Event &r_event);
+	int check_events(EventType &r_type, Event &r_event);
 	void flush();
 	void bandwidth_limit(int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	void channel_limit(int p_max_channels);

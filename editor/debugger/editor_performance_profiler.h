@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef EDITOR_PERFORMANCE_PROFILER_H
 #define EDITOR_PERFORMANCE_PROFILER_H
 
-#include "core/templates/map.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/rb_map.h"
 #include "main/performance.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -59,14 +59,14 @@ private:
 		void reset();
 	};
 
-	OrderedHashMap<StringName, Monitor> monitors;
+	HashMap<StringName, Monitor> monitors;
 
-	Map<StringName, TreeItem *> base_map;
-	Tree *monitor_tree;
-	Control *monitor_draw;
-	Label *info_message;
+	HashMap<StringName, TreeItem *> base_map;
+	Tree *monitor_tree = nullptr;
+	Control *monitor_draw = nullptr;
+	Label *info_message = nullptr;
 	StringName marker_key;
-	int marker_frame;
+	int marker_frame = 0;
 	const int MARGIN = 4;
 	const int POINT_SEPARATION = 5;
 	const int MARKER_MARGIN = 2;

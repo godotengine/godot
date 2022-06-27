@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,14 +37,13 @@
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);
-	OBJ_CATEGORY("3D Physics Nodes");
 
 	Ref<Shape3D> shape;
 
 	uint32_t owner_id = 0;
 	CollisionObject3D *parent = nullptr;
 
-	void resource_changed(RES res);
+	void resource_changed(Ref<Resource> res);
 	bool disabled = false;
 
 protected:

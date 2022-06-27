@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +38,11 @@ class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
 public:
-	enum TabAlign {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_MAX
+	enum AlignmentMode {
+		ALIGNMENT_LEFT,
+		ALIGNMENT_CENTER,
+		ALIGNMENT_RIGHT,
+		ALIGNMENT_MAX,
 	};
 
 	enum CloseButtonDisplayPolicy {
@@ -63,16 +63,19 @@ private:
 
 		Ref<TextLine> text_buf;
 		Ref<Texture2D> icon;
-		int ofs_cache = 0;
 		bool disabled = false;
+		bool hidden = false;
+		int ofs_cache = 0;
 		int size_cache = 0;
 		int size_text = 0;
-		int x_cache = 0;
-		int x_size_cache = 0;
 
 		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
+
+		Tab() {
+			text_buf.instantiate();
+		}
 	};
 
 	int offset = 0;
@@ -83,7 +86,7 @@ private:
 	Vector<Tab> tabs;
 	int current = 0;
 	int previous = 0;
-	TabAlign tab_align = ALIGN_CENTER;
+	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
@@ -95,9 +98,11 @@ private:
 	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
 
 	int hover = -1; // Hovered tab.
-	int min_width = 0;
+	int max_width = 0;
 	bool scrolling_enabled = true;
 	bool drag_to_rearrange_enabled = false;
+	bool dragging_valid_tab = false;
+	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
 	int get_tab_width(int p_idx) const;
@@ -109,16 +114,19 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
-	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
@@ -140,23 +148,30 @@ public:
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
-	bool get_tab_disabled(int p_tab) const;
+	bool is_tab_disabled(int p_tab) const;
 
-	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
-	Ref<Texture2D> get_tab_right_button(int p_tab) const;
+	void set_tab_hidden(int p_tab, bool p_hidden);
+	bool is_tab_hidden(int p_tab) const;
 
-	void set_tab_align(TabAlign p_align);
-	TabAlign get_tab_align() const;
+	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
+
+	int get_tab_idx_at_point(const Point2 &p_point) const;
+
+	void set_tab_alignment(AlignmentMode p_alignment);
+	AlignmentMode get_tab_alignment() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
-	void move_tab(int from, int to);
+	void move_tab(int p_from, int p_to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
 
+	void set_tab_count(int p_count);
 	int get_tab_count() const;
+
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 	int get_previous_tab() const;
@@ -177,11 +192,16 @@ public:
 	void set_tabs_rearrange_group(int p_group_id);
 	int get_tabs_rearrange_group() const;
 
+	void set_scroll_to_selected(bool p_enabled);
+	bool get_scroll_to_selected() const;
+
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
 
 	void ensure_tab_visible(int p_idx);
-	void set_min_width(int p_width);
+
+	void set_max_tab_width(int p_width);
+	int get_max_tab_width() const;
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
@@ -189,7 +209,7 @@ public:
 	TabBar();
 };
 
-VARIANT_ENUM_CAST(TabBar::TabAlign);
+VARIANT_ENUM_CAST(TabBar::AlignmentMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
 
 #endif // TAB_BAR_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define MESH_LIBRARY_H
 
 #include "core/io/resource.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "shape_3d.h"
@@ -56,7 +56,7 @@ public:
 		Ref<NavigationMesh> navmesh;
 	};
 
-	Map<int, Item> item_map;
+	RBMap<int, Item> item_map;
 
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;

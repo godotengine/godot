@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,8 +74,7 @@ struct _IP_ResolverPrivate {
 	Semaphore sem;
 
 	Thread thread;
-	//Semaphore* semaphore;
-	bool thread_abort;
+	bool thread_abort = false;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
@@ -98,13 +97,18 @@ struct _IP_ResolverPrivate {
 			if (queue[i].status.get() != IP::RESOLVER_STATUS_WAITING) {
 				continue;
 			}
+			// We might be overriding another result, but we don't care as long as the result is valid.
+			if (response.size()) {
+				String key = get_cache_key(hostname, type);
+				cache[key] = response;
+			}
 			queue[i].response = response;
 			queue[i].status.set(response.is_empty() ? IP::RESOLVER_STATUS_ERROR : IP::RESOLVER_STATUS_DONE);
 		}
 	}
 
 	static void _thread_function(void *self) {
-		_IP_ResolverPrivate *ipr = (_IP_ResolverPrivate *)self;
+		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(self);
 
 		while (!ipr->thread_abort) {
 			ipr->sem.wait();
@@ -120,30 +124,8 @@ struct _IP_ResolverPrivate {
 };
 
 IPAddress IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
-	List<IPAddress> res;
-	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
-
-	resolver->mutex.lock();
-	if (resolver->cache.has(key)) {
-		res = resolver->cache[key];
-	} else {
-		// This should be run unlocked so the resolver thread can keep
-		// resolving other requests.
-		resolver->mutex.unlock();
-		_resolve_hostname(res, p_hostname, p_type);
-		resolver->mutex.lock();
-		// We might be overriding another result, but we don't care (they are the
-		// same hostname).
-		resolver->cache[key] = res;
-	}
-	resolver->mutex.unlock();
-
-	for (int i = 0; i < res.size(); ++i) {
-		if (res[i].is_valid()) {
-			return res[i];
-		}
-	}
-	return IPAddress();
+	const Array addresses = resolve_hostname_addresses(p_hostname, p_type);
+	return addresses.size() ? addresses[0].operator IPAddress() : IPAddress();
 }
 
 Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
@@ -159,17 +141,16 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 		resolver->mutex.unlock();
 		_resolve_hostname(res, p_hostname, p_type);
 		resolver->mutex.lock();
-		// We might be overriding another result, but we don't care (they are the
-		// same hostname).
-		resolver->cache[key] = res;
+		// We might be overriding another result, but we don't care as long as the result is valid.
+		if (res.size()) {
+			resolver->cache[key] = res;
+		}
 	}
 	resolver->mutex.unlock();
 
 	Array result;
 	for (int i = 0; i < res.size(); ++i) {
-		if (res[i].is_valid()) {
-			result.push_back(String(res[i]));
-		}
+		result.push_back(String(res[i]));
 	}
 	return result;
 }
@@ -204,7 +185,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 }
 
 IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE);
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IP::RESOLVER_STATUS_NONE, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	IP::ResolverStatus res = resolver->queue[p_id].status.get();
 	if (res == IP::RESOLVER_STATUS_NONE) {
@@ -215,7 +196,7 @@ IP::ResolverStatus IP::get_resolve_item_status(ResolverID p_id) const {
 }
 
 IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, IPAddress());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, IPAddress(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	MutexLock lock(resolver->mutex);
 
@@ -235,7 +216,7 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 }
 
 Array IP::get_resolve_item_addresses(ResolverID p_id) const {
-	ERR_FAIL_INDEX_V(p_id, IP::RESOLVER_MAX_QUERIES, Array());
+	ERR_FAIL_INDEX_V_MSG(p_id, IP::RESOLVER_MAX_QUERIES, Array(), vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 	MutexLock lock(resolver->mutex);
 
 	if (resolver->queue[p_id].status.get() != IP::RESOLVER_STATUS_DONE) {
@@ -255,7 +236,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 }
 
 void IP::erase_resolve_item(ResolverID p_id) {
-	ERR_FAIL_INDEX(p_id, IP::RESOLVER_MAX_QUERIES);
+	ERR_FAIL_INDEX_MSG(p_id, IP::RESOLVER_MAX_QUERIES, vformat("Too many concurrent DNS resolver queries (%d, but should be %d at most). Try performing less network requests at once.", p_id, IP::RESOLVER_MAX_QUERIES));
 
 	resolver->queue[p_id].status.set(IP::RESOLVER_STATUS_NONE);
 }
@@ -286,7 +267,7 @@ Array IP::_get_local_addresses() const {
 
 Array IP::_get_local_interfaces() const {
 	Array results;
-	Map<String, Interface_Info> interfaces;
+	HashMap<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (KeyValue<String, Interface_Info> &E : interfaces) {
 		Interface_Info &c = E.value;
@@ -308,7 +289,7 @@ Array IP::_get_local_interfaces() const {
 }
 
 void IP::get_local_addresses(List<IPAddress> *r_addresses) const {
-	Map<String, Interface_Info> interfaces;
+	HashMap<String, Interface_Info> interfaces;
 	get_local_interfaces(&interfaces);
 	for (const KeyValue<String, Interface_Info> &E : interfaces) {
 		for (const IPAddress &F : E.value.ip_addresses) {

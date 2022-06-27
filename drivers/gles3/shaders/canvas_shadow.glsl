@@ -10,18 +10,18 @@ precision highp float;
 precision highp int;
 #endif
 
-layout(location = 0) highp vec3 vertex;
+layout(location = 0) in highp vec3 vertex;
 
 uniform highp mat4 projection_matrix;
 /* clang-format on */
 uniform highp mat4 light_matrix;
-uniform highp mat4 world_matrix;
+uniform highp mat4 model_matrix;
 uniform highp float distance_norm;
 
 out highp vec4 position_interp;
 
 void main() {
-	gl_Position = projection_matrix * (light_matrix * (world_matrix * vec4(vertex, 1.0)));
+	gl_Position = projection_matrix * (light_matrix * (model_matrix * vec4(vertex, 1.0)));
 	position_interp = gl_Position;
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 	for (int p = n - 1, q = 0; q < n; p = q++) {
 		A += c[p].cross(c[q]);
 	}
-	return A * 0.5;
+	return A * 0.5f;
 }
 
 /* `is_inside_triangle` decides if a point P is inside the triangle
@@ -70,9 +70,9 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	bCROSScp = bx * cpy - by * cpx;
 
 	if (include_edges) {
-		return ((aCROSSbp > 0.0) && (bCROSScp > 0.0) && (cCROSSap > 0.0));
+		return ((aCROSSbp > 0.0f) && (bCROSScp > 0.0f) && (cCROSSap > 0.0f));
 	} else {
-		return ((aCROSSbp >= 0.0) && (bCROSScp >= 0.0) && (cCROSSap >= 0.0));
+		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 	}
 }
 
@@ -128,7 +128,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	/* we want a counter-clockwise polygon in V */
 
-	if (0.0 < get_area(contour)) {
+	if (0.0f < get_area(contour)) {
 		for (int v = 0; v < n; v++) {
 			V.write[v] = v;
 		}

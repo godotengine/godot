@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -592,7 +592,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		bake_cells.write[p_idx].albedo[2] = 0;
 
 		float alpha_average = 0;
-		int children_found = 0;
 
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
@@ -603,8 +602,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 
 			_fixup_plot(child, p_level + 1);
 			alpha_average += bake_cells[child].alpha;
-
-			children_found++;
 		}
 
 		bake_cells.write[p_idx].alpha = alpha_average / 8.0;
@@ -777,8 +774,8 @@ Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
 	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
-	int *v = (int *)&(d[n]);
-	float *z = (float *)&v[n];
+	int *v = reinterpret_cast<int *>(&(d[n]));
+	float *z = reinterpret_cast<float *>(&v[n]);
 
 	int k = 0;
 	v[0] = 0;
@@ -872,7 +869,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 			if (d == 0) {
 				w[i] = 0;
 			} else {
-				w[i] = MIN(d, 254) + 1;
+				w[i] = MIN(d, 254u) + 1;
 			}
 		}
 	}

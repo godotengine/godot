@@ -180,6 +180,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Cubic interpolates between two values by a normalized value with pre and post values.
+        /// </summary>
+        /// <param name="from">The start value for interpolation.</param>
+        /// <param name="to">The destination value for interpolation.</param>
+        /// <param name="pre">The value which before "from" value for interpolation.</param>
+        /// <param name="post">The value which after "to" value for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public static real_t CubicInterpolate(real_t from, real_t to, real_t pre, real_t post, real_t weight)
+        {
+            return 0.5f *
+                    ((from * 2.0f) +
+                            (-pre + to) * weight +
+                            (2.0f * pre - 5.0f * from + 4.0f * to - post) * (weight * weight) +
+                            (-pre + 3.0f * from - 3.0f * to + post) * (weight * weight * weight));
+        }
+
+        /// <summary>
         /// Converts an angle expressed in degrees to radians.
         /// </summary>
         /// <param name="deg">An angle expressed in degrees.</param>
@@ -258,10 +276,14 @@ namespace Godot
         /// Returns a normalized value considering the given range.
         /// This is the opposite of <see cref="Lerp(real_t, real_t, real_t)"/>.
         /// </summary>
-        /// <param name="from">The interpolated value.</param>
+        /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting value of the inverse interpolation.</returns>
+        /// <param name="weight">The interpolated value.</param>
+        /// <returns>
+        /// The resulting value of the inverse interpolation.
+        /// The returned value will be between 0.0 and 1.0 if <paramref name="weight"/> is
+        /// between <paramref name="from"/> and <paramref name="to"/> (inclusive).
+        /// </returns>
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
             return (weight - from) / (to - from);
@@ -498,6 +520,21 @@ namespace Godot
         }
 
         /// <summary>
+        /// Maps a <paramref name="value"/> from [<paramref name="inFrom"/>, <paramref name="inTo"/>]
+        /// to [<paramref name="outFrom"/>, <paramref name="outTo"/>].
+        /// </summary>
+        /// <param name="value">The value to map.</param>
+        /// <param name="inFrom">The start value for the input interpolation.</param>
+        /// <param name="inTo">The destination value for the input interpolation.</param>
+        /// <param name="outFrom">The start value for the output interpolation.</param>
+        /// <param name="outTo">The destination value for the output interpolation.</param>
+        /// <returns>The resulting mapped value mapped.</returns>
+        public static real_t RangeLerp(real_t value, real_t inFrom, real_t inTo, real_t outFrom, real_t outTo)
+        {
+            return Lerp(outFrom, outTo, InverseLerp(inFrom, inTo, value));
+        }
+
+        /// <summary>
         /// Rounds <paramref name="s"/> to the nearest whole number,
         /// with halfway cases rounded towards the nearest multiple of two.
         /// </summary>
@@ -624,7 +661,7 @@ namespace Godot
         /// </summary>
         /// <param name="s">The value to snap.</param>
         /// <param name="step">The step size to snap to.</param>
-        /// <returns></returns>
+        /// <returns>The snapped value.</returns>
         public static real_t Snapped(real_t s, real_t step)
         {
             if (step != 0f)
@@ -692,6 +729,24 @@ namespace Godot
                 return min;
             }
             return min + ((((value - min) % range) + range) % range);
+        }
+
+        private static real_t Fract(real_t value)
+        {
+            return value - (real_t)Math.Floor(value);
+        }
+
+        /// <summary>
+        /// Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code].
+        /// If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave).
+        /// If [code]length[/code] is less than zero, it becomes positive.
+        /// </summary>
+        /// <param name="value">The value to pingpong.</param>
+        /// <param name="length">The maximum value of the function.</param>
+        /// <returns>The ping-ponged value.</returns>
+        public static real_t PingPong(real_t value, real_t length)
+        {
+            return (length != (real_t)0.0) ? Abs(Fract((value - length) / (length * (real_t)2.0)) * length * (real_t)2.0 - length) : (real_t)0.0;
         }
     }
 }

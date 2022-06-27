@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,9 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mix)
+	if (mix) {
 		mutex.unlock();
+	}
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -74,12 +75,10 @@ void AudioDriverOpenSL::_buffer_callback(
 void AudioDriverOpenSL::_buffer_callbacks(
 		SLAndroidSimpleBufferQueueItf queueItf,
 		void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_buffer_callback(queueItf);
 }
-
-AudioDriverOpenSL *AudioDriverOpenSL::s_ad = nullptr;
 
 const char *AudioDriverOpenSL::get_name() const {
 	return "Android";
@@ -132,8 +131,6 @@ void AudioDriverOpenSL::start() {
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, BUFFER_COUNT };
-	//bufferQueue.locatorType = SL_DATALOCATOR_BUFFERQUEUE;
-	//bufferQueue.numBuffers = BUFFER_COUNT; /* Four buffers in our buffer queue */
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
@@ -154,13 +151,8 @@ void AudioDriverOpenSL::start() {
 	locator_outputmix.outputMix = OutputMix;
 	audioSink.pLocator = (void *)&locator_outputmix;
 	audioSink.pFormat = nullptr;
-	/* Initialize the context for Buffer queue callbacks */
-	//cntxt.pDataBase = (void*)&pcmData;
-	//cntxt.pData = cntxt.pDataBase;
-	//cntxt.size = sizeof(pcmData);
 
 	/* Create the music player */
-
 	{
 		const SLInterfaceID ids[2] = { SL_IID_BUFFERQUEUE, SL_IID_EFFECTSEND };
 		const SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
@@ -207,7 +199,7 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 }
 
 void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf queueItf, void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_record_buffer_callback(queueItf);
 }
@@ -312,13 +304,15 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 }
 
 void AudioDriverOpenSL::lock() {
-	if (active)
+	if (active) {
 		mutex.lock();
+	}
 }
 
 void AudioDriverOpenSL::unlock() {
-	if (active)
+	if (active) {
 		mutex.unlock();
+	}
 }
 
 void AudioDriverOpenSL::finish() {
@@ -338,5 +332,4 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 }
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
-	s_ad = this;
 }

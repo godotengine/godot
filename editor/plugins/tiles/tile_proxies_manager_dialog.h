@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,7 @@
 #ifndef TILE_PROXIES_MANAGER_DIALOG_H
 #define TILE_PROXIES_MANAGER_DIALOG_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
@@ -45,25 +43,25 @@ private:
 	int commited_actions_count = 0;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = nullptr;
 
 	TileMapCell from;
 	TileMapCell to;
 
 	// GUI
-	ItemList *source_level_list;
-	ItemList *coords_level_list;
-	ItemList *alternative_level_list;
+	ItemList *source_level_list = nullptr;
+	ItemList *coords_level_list = nullptr;
+	ItemList *alternative_level_list = nullptr;
 
-	EditorPropertyInteger *source_from_property_editor;
-	EditorPropertyVector2i *coords_from_property_editor;
-	EditorPropertyInteger *alternative_from_property_editor;
-	EditorPropertyInteger *source_to_property_editor;
-	EditorPropertyVector2i *coords_to_property_editor;
-	EditorPropertyInteger *alternative_to_property_editor;
+	EditorPropertyInteger *source_from_property_editor = nullptr;
+	EditorPropertyVector2i *coords_from_property_editor = nullptr;
+	EditorPropertyInteger *alternative_from_property_editor = nullptr;
+	EditorPropertyInteger *source_to_property_editor = nullptr;
+	EditorPropertyVector2i *coords_to_property_editor = nullptr;
+	EditorPropertyInteger *alternative_to_property_editor = nullptr;
 
-	PopupMenu *popup_menu;
-	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list);
+	PopupMenu *popup_menu = nullptr;
+	void _right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index);
 	void _menu_id_pressed(int p_id);
 	void _delete_selected_bindings();
 	void _update_lists();

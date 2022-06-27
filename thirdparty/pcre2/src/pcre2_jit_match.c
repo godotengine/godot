@@ -120,7 +120,7 @@ else if ((options & PCRE2_PARTIAL_SOFT) != 0)
 if (functions == NULL || functions->executable_funcs[index] == NULL)
   return PCRE2_ERROR_JIT_BADOPTION;
 
-/* Sanity checks should be handled by pcre_exec. */
+/* Sanity checks should be handled by pcre2_match. */
 arguments.str = subject + start_offset;
 arguments.begin = subject;
 arguments.end = subject + length;

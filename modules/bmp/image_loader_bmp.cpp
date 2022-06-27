@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,8 +200,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 	return err;
 }
 
-Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
-		bool p_force_linear, float p_scale) {
+Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 
@@ -241,7 +240,6 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 				case BI_CMYKRLE8:
 				case BI_CMYKRLE4: {
 					// Stop parsing.
-					f->close();
 					ERR_FAIL_V_MSG(ERR_UNAVAILABLE,
 							vformat("Compressed BMP files are not supported: %s", f->get_path()));
 				} break;
@@ -283,7 +281,6 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 				err = convert_to_image(p_image, bmp_buffer_r,
 						bmp_color_table_r, color_table_size, bmp_header);
 			}
-			f->close();
 		}
 	}
 	return err;
@@ -294,12 +291,14 @@ void ImageLoaderBMP::get_recognized_extensions(List<String> *p_extensions) const
 }
 
 static Ref<Image> _bmp_mem_loader_func(const uint8_t *p_bmp, int p_size) {
-	FileAccessMemory memfile;
-	Error open_memfile_error = memfile.open_custom(p_bmp, p_size);
+	Ref<FileAccessMemory> memfile;
+	memfile.instantiate();
+	Error open_memfile_error = memfile->open_custom(p_bmp, p_size);
 	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for BMP image buffer.");
+
 	Ref<Image> img;
 	img.instantiate();
-	Error load_error = ImageLoaderBMP().load_image(img, &memfile, false, 1.0f);
+	Error load_error = ImageLoaderBMP().load_image(img, memfile, false, 1.0f);
 	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load BMP image.");
 	return img;
 }

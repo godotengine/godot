@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +40,17 @@
 #if defined _MSC_VER
 #pragma section("pck", read)
 __declspec(allocate("pck")) static char dummy[8] = { 0 };
+
+// Dummy function to prevent LTO from discarding "pck" section.
+extern "C" char *__cdecl pck_section_dummy_call() {
+	return &dummy[0];
+};
+#if defined _AMD64_
+#pragma comment(linker, "/include:pck_section_dummy_call")
+#elif defined _X86_
+#pragma comment(linker, "/include:_pck_section_dummy_call")
+#endif
+
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
@@ -158,8 +169,9 @@ int widechar_main(int argc, wchar_t **argv) {
 		return 255;
 	}
 
-	if (Main::start())
+	if (Main::start()) {
 		os.run();
+	}
 	Main::cleanup();
 
 	for (int i = 0; i < argc; ++i) {
@@ -168,7 +180,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	delete[] argv_utf8;
 
 	return os.get_exit_code();
-};
+}
 
 int _main() {
 	LPWSTR *wc_argv;

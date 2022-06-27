@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #include "variant_construct.h"
 
 struct VariantConstructData {
-	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error);
-	Variant::ValidatedConstructor validated_construct;
-	Variant::PTRConstructor ptr_construct;
-	Variant::Type (*get_argument_type)(int);
-	int argument_count;
+	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedConstructor validated_construct = nullptr;
+	Variant::PTRConstructor ptr_construct = nullptr;
+	Variant::Type (*get_argument_type)(int) = nullptr;
+	int argument_count = 0;
 	Vector<String> arg_names;
 };
 
@@ -140,7 +140,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<Basis>>(sarray());
 	add_constructor<VariantConstructor<Basis, Basis>>(sarray("from"));
 	add_constructor<VariantConstructor<Basis, Quaternion>>(sarray("from"));
-	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "phi"));
+	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "angle"));
 	add_constructor<VariantConstructor<Basis, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis"));
 
 	add_constructor<VariantConstructNoArgs<Transform3D>>(sarray());

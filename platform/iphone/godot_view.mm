@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "godot_view.h"
+
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #import "display_layer.h"
@@ -153,6 +154,8 @@ static const float earth_gravity = 9.80665;
 
 	[self initTouches];
 
+	self.multipleTouchEnabled = YES;
+
 	// Configure and start accelerometer
 	if (!self.motionManager) {
 		self.motionManager = [[CMMotionManager alloc] init];
@@ -226,8 +229,9 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:YES];
 
 		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
-			;
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource) {
+			// Continue.
+		}
 
 		// We are good to go, resume the CADisplayLink
 		[self.displayLink setPaused:NO];
@@ -336,7 +340,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
+- (void)godotTouchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touchesSet containsObject:[tlist objectAtIndex:i]]) {
@@ -349,7 +353,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
@@ -363,7 +367,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
@@ -377,7 +381,7 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [event.allTouches allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {

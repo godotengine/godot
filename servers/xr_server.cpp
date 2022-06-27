@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,10 +64,6 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "primary_interface"), "set_primary_interface", "get_primary_interface");
-
-	ClassDB::bind_method(D_METHOD("get_last_process_usec"), &XRServer::get_last_process_usec);
-	ClassDB::bind_method(D_METHOD("get_last_commit_usec"), &XRServer::get_last_commit_usec);
-	ClassDB::bind_method(D_METHOD("get_last_frame_usec"), &XRServer::get_last_frame_usec);
 
 	BIND_ENUM_CONSTANT(TRACKER_HEAD);
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
@@ -135,13 +131,13 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	// remove our tilt
 	if (p_rotation_mode == 1) {
 		// take the Y out of our Z
-		new_reference_frame.basis.set_axis(2, Vector3(new_reference_frame.basis.elements[0][2], 0.0, new_reference_frame.basis.elements[2][2]).normalized());
+		new_reference_frame.basis.set_column(2, Vector3(new_reference_frame.basis.rows[0][2], 0.0, new_reference_frame.basis.rows[2][2]).normalized());
 
 		// Y is straight up
-		new_reference_frame.basis.set_axis(1, Vector3(0.0, 1.0, 0.0));
+		new_reference_frame.basis.set_column(1, Vector3(0.0, 1.0, 0.0));
 
 		// and X is our cross reference
-		new_reference_frame.basis.set_axis(0, new_reference_frame.basis.get_axis(1).cross(new_reference_frame.basis.get_axis(2)).normalized());
+		new_reference_frame.basis.set_column(0, new_reference_frame.basis.get_column(1).cross(new_reference_frame.basis.get_column(2)).normalized());
 	} else if (p_rotation_mode == 2) {
 		// remove our rotation, we're only interesting in centering on position
 		new_reference_frame.basis = Basis();
@@ -188,12 +184,12 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 		};
 	};
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
 
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
-	interfaces.remove(idx);
+	interfaces.remove_at(idx);
 };
 
 int XRServer::get_interface_count() const {
@@ -215,7 +211,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, nullptr);
+	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
 
 	return interfaces[idx];
 };
@@ -351,25 +347,11 @@ PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker
 	return arr;
 }
 
-uint64_t XRServer::get_last_process_usec() {
-	return last_process_usec;
-};
-
-uint64_t XRServer::get_last_commit_usec() {
-	return last_commit_usec;
-};
-
-uint64_t XRServer::get_last_frame_usec() {
-	return last_frame_usec;
-};
-
 void XRServer::_process() {
-	/* called from renderer_viewport.draw_viewports right before we start drawing our viewports */
+	// called from our main game loop before we handle physics and game logic
+	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
-	/* mark for our frame timing */
-	last_process_usec = OS::get_singleton()->get_ticks_usec();
-
-	/* process all active interfaces */
+	// process all active interfaces
 	for (int i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference
@@ -379,13 +361,32 @@ void XRServer::_process() {
 	};
 };
 
-void XRServer::_mark_commit() {
-	/* time this */
-	last_commit_usec = OS::get_singleton()->get_ticks_usec();
+void XRServer::pre_render() {
+	// called from RendererViewport.draw_viewports right before we start drawing our viewports
+	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
-	/* now store our difference as we may overwrite last_process_usec before this is accessed */
-	last_frame_usec = last_commit_usec - last_process_usec;
-};
+	// process all active interfaces
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (!interfaces[i].is_valid()) {
+			// ignore, not a valid reference
+		} else if (interfaces[i]->is_initialized()) {
+			interfaces.write[i]->pre_render();
+		};
+	};
+}
+
+void XRServer::end_frame() {
+	// called from RenderingServerDefault after Vulkan queues have been submitted
+
+	// process all active interfaces
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (!interfaces[i].is_valid()) {
+			// ignore, not a valid reference
+		} else if (interfaces[i]->is_initialized()) {
+			interfaces.write[i]->end_frame();
+		};
+	};
+}
 
 XRServer::XRServer() {
 	singleton = this;
@@ -396,7 +397,7 @@ XRServer::~XRServer() {
 	primary_interface.unref();
 
 	while (interfaces.size() > 0) {
-		interfaces.remove(0);
+		interfaces.remove_at(0);
 	}
 
 	// TODO pretty sure there is a clear function or something...

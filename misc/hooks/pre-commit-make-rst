@@ -9,4 +9,4 @@ if [[ "$py_ver" != "3" ]]; then
   PYTHON+=3
 fi
 
-$PYTHON doc/tools/make_rst.py doc/classes modules --dry-run
+$PYTHON doc/tools/make_rst.py doc/classes modules --dry-run --color

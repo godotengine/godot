@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,7 +115,7 @@ Error GDScriptLanguageProtocol::LSPeer::send_data() {
 		// Response sent
 		if (res_sent >= c_res.size() - 1) {
 			res_sent = 0;
-			res_queue.remove(0);
+			res_queue.remove_at(0);
 		}
 	}
 	return OK;
@@ -126,7 +126,7 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	ERR_FAIL_COND_V_MSG(clients.size() >= LSP_MAX_CLIENTS, FAILED, "Max client limits reached");
 	Ref<LSPeer> peer = memnew(LSPeer);
 	peer->connection = tcp_peer;
-	clients.set(next_client_id, peer);
+	clients.insert(next_client_id, peer);
 	next_client_id++;
 	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
@@ -229,28 +229,33 @@ void GDScriptLanguageProtocol::poll() {
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
-	const int *id = nullptr;
-	while ((id = clients.next(id))) {
-		Ref<LSPeer> peer = clients.get(*id);
+
+	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
+	while (E != clients.end()) {
+		Ref<LSPeer> peer = E->value;
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
-			on_client_disconnected(*id);
-			id = nullptr;
+			on_client_disconnected(E->key);
+			E = clients.begin();
+			continue;
 		} else {
 			if (peer->connection->get_available_bytes() > 0) {
-				latest_client_id = *id;
+				latest_client_id = E->key;
 				Error err = peer->handle_data();
 				if (err != OK && err != ERR_BUSY) {
-					on_client_disconnected(*id);
-					id = nullptr;
+					on_client_disconnected(E->key);
+					E = clients.begin();
+					continue;
 				}
 			}
 			Error err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(*id);
-				id = nullptr;
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
 			}
 		}
+		++E;
 	}
 }
 
@@ -259,9 +264,8 @@ Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *id = nullptr;
-	while ((id = clients.next(id))) {
-		Ref<LSPeer> peer = clients.get(*id);
+	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
+		Ref<LSPeer> peer = clients.get(E.key);
 		peer->connection->disconnect_from_host();
 	}
 

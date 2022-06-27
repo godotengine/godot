@@ -1,6 +1,6 @@
 #define LIGHT_BAKE_DISABLED 0
-#define LIGHT_BAKE_DYNAMIC 1
-#define LIGHT_BAKE_STATIC 2
+#define LIGHT_BAKE_STATIC 1
+#define LIGHT_BAKE_DYNAMIC 2
 
 struct LightData { //this structure needs to be as packed as possible
 	highp vec3 position;
@@ -76,10 +76,6 @@ struct DirectionalLightData {
 	highp mat4 shadow_matrix2;
 	highp mat4 shadow_matrix3;
 	highp mat4 shadow_matrix4;
-	mediump vec4 shadow_color1;
-	mediump vec4 shadow_color2;
-	mediump vec4 shadow_color3;
-	mediump vec4 shadow_color4;
 	highp vec2 uv_scale1;
 	highp vec2 uv_scale2;
 	highp vec2 uv_scale3;

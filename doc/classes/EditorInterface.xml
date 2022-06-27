@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" version="4.0">
+<class name="EditorInterface" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -21,7 +21,17 @@
 			<return type="void" />
 			<argument index="0" name="resource" type="Resource" />
 			<description>
-				Edits the given [Resource].
+				Edits the given [Resource]. If the resource is a [Script] you can also edit it with [method edit_script] to specify the line and column position.
+			</description>
+		</method>
+		<method name="edit_script">
+			<return type="void" />
+			<argument index="0" name="script" type="Script" />
+			<argument index="1" name="line" type="int" default="-1" />
+			<argument index="2" name="column" type="int" default="0" />
+			<argument index="3" name="grab_focus" type="bool" default="true" />
+			<description>
+				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
 			</description>
 		</method>
 		<method name="get_base_control">

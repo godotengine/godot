@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_COMPILER_H
 #define GDSCRIPT_COMPILER_H
 
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
 #include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
@@ -39,8 +39,8 @@
 
 class GDScriptCompiler {
 	const GDScriptParser *parser = nullptr;
-	Set<GDScript *> parsed_classes;
-	Set<GDScript *> parsing_classes;
+	HashSet<GDScript *> parsed_classes;
+	HashSet<GDScript *> parsing_classes;
 	GDScript *main_script = nullptr;
 
 	struct CodeGen {
@@ -49,9 +49,9 @@ class GDScriptCompiler {
 		const GDScriptParser::FunctionNode *function_node = nullptr;
 		StringName function_name;
 		GDScriptCodeGenerator *generator = nullptr;
-		Map<StringName, GDScriptCodeGenerator::Address> parameters;
-		Map<StringName, GDScriptCodeGenerator::Address> locals;
-		List<Map<StringName, GDScriptCodeGenerator::Address>> locals_stack;
+		HashMap<StringName, GDScriptCodeGenerator::Address> parameters;
+		HashMap<StringName, GDScriptCodeGenerator::Address> locals;
+		List<HashMap<StringName, GDScriptCodeGenerator::Address>> locals_stack;
 
 		GDScriptCodeGenerator::Address add_local(const StringName &p_name, const GDScriptDataType &p_type) {
 			uint32_t addr = generator->add_local(p_name, p_type);
@@ -101,7 +101,7 @@ class GDScriptCompiler {
 		}
 
 		void start_block() {
-			Map<StringName, GDScriptCodeGenerator::Address> old_locals = locals;
+			HashMap<StringName, GDScriptCodeGenerator::Address> old_locals = locals;
 			locals_stack.push_back(old_locals);
 			generator->start_block();
 		}

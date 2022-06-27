@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,8 +61,8 @@ static int __bsr_clz32(uint32_t x) {
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed; // The seed the current generator state started from.
-	uint64_t current_inc;
+	uint64_t current_seed = 0; // The seed the current generator state started from.
+	uint64_t current_inc = 0;
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
@@ -129,7 +129,7 @@ public:
 		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(randd()))); // Box-Muller transform
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
-		return p_mean + p_deviation * (cos(Math_TAU * randf()) * sqrt(-2.0 * log(randf()))); // Box-Muller transform
+		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(randf()))); // Box-Muller transform
 	}
 
 	double random(double p_from, double p_to);

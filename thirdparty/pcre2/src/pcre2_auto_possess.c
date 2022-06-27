@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -123,18 +123,21 @@ opcode is used to select the column. The values are as follows:
 */
 
 static const uint8_t propposstab[PT_TABSIZE][PT_TABSIZE] = {
-/* ANY LAMP GC  PC  SC ALNUM SPACE PXSPACE WORD CLIST UCNC */
-  { 0,  0,  0,  0,  0,    0,    0,      0,   0,    0,   0 },  /* PT_ANY */
-  { 0,  3,  0,  0,  0,    3,    1,      1,   0,    0,   0 },  /* PT_LAMP */
-  { 0,  0,  2,  4,  0,    9,   10,     10,  11,    0,   0 },  /* PT_GC */
-  { 0,  0,  5,  2,  0,   15,   16,     16,  17,    0,   0 },  /* PT_PC */
-  { 0,  0,  0,  0,  2,    0,    0,      0,   0,    0,   0 },  /* PT_SC */
-  { 0,  3,  6, 12,  0,    3,    1,      1,   0,    0,   0 },  /* PT_ALNUM */
-  { 0,  1,  7, 13,  0,    1,    3,      3,   1,    0,   0 },  /* PT_SPACE */
-  { 0,  1,  7, 13,  0,    1,    3,      3,   1,    0,   0 },  /* PT_PXSPACE */
-  { 0,  0,  8, 14,  0,    0,    1,      1,   3,    0,   0 },  /* PT_WORD */
-  { 0,  0,  0,  0,  0,    0,    0,      0,   0,    0,   0 },  /* PT_CLIST */
-  { 0,  0,  0,  0,  0,    0,    0,      0,   0,    0,   3 }   /* PT_UCNC */
+/* ANY LAMP GC  PC  SC  SCX ALNUM SPACE PXSPACE WORD CLIST UCNC BIDICL BOOL */
+  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_ANY */
+  { 0,  3,  0,  0,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_LAMP */
+  { 0,  0,  2,  4,  0,   0,    9,   10,     10,  11,    0,   0,    0,    0 },  /* PT_GC */
+  { 0,  0,  5,  2,  0,   0,   15,   16,     16,  17,    0,   0,    0,    0 },  /* PT_PC */
+  { 0,  0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SC */
+  { 0,  0,  0,  0,  2,   2,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_SCX */
+  { 0,  3,  6, 12,  0,   0,    3,    1,      1,   0,    0,   0,    0,    0 },  /* PT_ALNUM */
+  { 0,  1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_SPACE */
+  { 0,  1,  7, 13,  0,   0,    1,    3,      3,   1,    0,   0,    0,    0 },  /* PT_PXSPACE */
+  { 0,  0,  8, 14,  0,   0,    0,    1,      1,   3,    0,   0,    0,    0 },  /* PT_WORD */
+  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_CLIST */
+  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   3,    0,    0 },  /* PT_UCNC */
+  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 },  /* PT_BIDICL */
+  { 0,  0,  0,  0,  0,   0,    0,    0,      0,   0,    0,   0,    0,    0 }   /* PT_BOOL */
 };
 
 /* This table is used to check whether auto-possessification is possible
@@ -196,6 +199,7 @@ static BOOL
 check_char_prop(uint32_t c, unsigned int ptype, unsigned int pdata,
   BOOL negated)
 {
+BOOL ok;
 const uint32_t *p;
 const ucd_record *prop = GET_UCD(c);
 
@@ -214,6 +218,11 @@ switch(ptype)
 
   case PT_SC:
   return (pdata == prop->script) == negated;
+
+  case PT_SCX:
+  ok = (pdata == prop->script
+        || MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), pdata) != 0);
+  return ok == negated;
 
   /* These are specials */
 
@@ -251,6 +260,14 @@ switch(ptype)
     if (c == *p++) return negated;
     }
   break;  /* Control never reaches here */
+
+  /* Haven't yet thought these through. */
+
+  case PT_BIDICL:
+  return FALSE;
+
+  case PT_BOOL:
+  return FALSE;
   }
 
 return FALSE;
@@ -490,6 +507,7 @@ switch(c)
   list[2] = (uint32_t)(end - code);
   return end;
   }
+
 return NULL;    /* Opcode not accepted */
 }
 
@@ -1186,12 +1204,16 @@ for (;;)
     c = *repeat_opcode;
     if (c >= OP_CRSTAR && c <= OP_CRMINRANGE)
       {
-      /* end must not be NULL. */
-      end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
+      /* The return from get_chr_property_list() will never be NULL when
+      *code (aka c) is one of the three class opcodes. However, gcc with
+      -fanalyzer notes that a NULL return is possible, and grumbles. Hence we
+      put in a check. */
 
+      end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
       list[1] = (c & 1) == 0;
 
-      if (compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
+      if (end != NULL &&
+          compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
         {
         switch (c)
           {

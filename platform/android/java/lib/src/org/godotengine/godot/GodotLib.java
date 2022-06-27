@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 package org.godotengine.godot;
+
+import org.godotengine.godot.gl.GodotRenderer;
 
 import android.app.Activity;
 import android.hardware.SensorEvent;
@@ -68,16 +70,15 @@ public class GodotLib {
 	 * @param p_surface
 	 * @param p_width
 	 * @param p_height
-	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
 	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
 	 * Invoked on the render thread when the underlying Android surface is created or recreated.
 	 * @param p_surface
-	 * @param p_32_bits
 	 */
-	public static native void newcontext(Surface p_surface, boolean p_32_bits);
+	public static native void newcontext(Surface p_surface);
 
 	/**
 	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
@@ -86,9 +87,14 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
-	public static native void step();
+	public static native boolean step();
+
+	/**
+	 * TTS callback.
+	 */
+	public static native void ttsCallback(int event, int id, int pos);
 
 	/**
 	 * Forward touch events from the main thread to the GL thread.
@@ -106,11 +112,6 @@ public class GodotLib {
 	 * Forward double_tap events from the main thread to the GL thread.
 	 */
 	public static native void doubleTap(int buttonMask, int x, int y);
-
-	/**
-	 * Forward scroll events from the main thread to the GL thread.
-	 */
-	public static native void scroll(int x, int y);
 
 	/**
 	 * Forward accelerometer sensor events from the main thread to the GL thread.

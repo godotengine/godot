@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,6 @@ class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);
 
 public:
-	enum Align {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,
@@ -78,18 +71,20 @@ public:
 	};
 
 private:
-	Align align = ALIGN_LEFT;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
+
+	bool alt_start = false;
+	uint32_t alt_code = 0;
 
 	String undo_text;
 	String text;
 	String placeholder;
 	String placeholder_translated;
 	String secret_character = "*";
-	float placeholder_alpha = 0.6;
 	String ime_text;
 	Point2 ime_selection;
 
@@ -104,7 +99,7 @@ private:
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
-	bool caret_mid_grapheme_enabled = false;
+	bool caret_mid_grapheme_enabled = true;
 
 	int caret_column = 0;
 	int scroll_offset = 0;
@@ -114,7 +109,7 @@ private:
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextDirection input_direction = TEXT_DIRECTION_LTR;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 	bool draw_control_chars = false;
 
@@ -129,7 +124,11 @@ private:
 
 	bool middle_mouse_paste_enabled = true;
 
+	bool drag_action = false;
+	bool drag_caret_force_displayed = false;
+
 	Ref<Texture2D> right_icon;
+	bool flat = false;
 
 	struct Selection {
 		int begin = 0;
@@ -169,7 +168,7 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
-	int _get_menu_action_accelerator(const String &p_action);
+	Key _get_menu_action_accelerator(const String &p_action);
 
 	void _shape();
 	void _fit_to_width();
@@ -206,6 +205,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -214,8 +214,8 @@ protected:
 	void _validate_property(PropertyInfo &property) const override;
 
 public:
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
@@ -256,17 +256,14 @@ public:
 	void set_draw_control_chars(bool p_draw_control_chars);
 	bool get_draw_control_chars() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_placeholder(String p_text);
 	String get_placeholder() const;
-
-	void set_placeholder_alpha(float p_alpha);
-	float get_placeholder_alpha() const;
 
 	void set_caret_column(int p_column);
 	int get_caret_column() const;
@@ -332,15 +329,17 @@ public:
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
 
+	void set_flat(bool p_enabled);
+	bool is_flat() const;
+
 	virtual bool is_text_field() const override;
 
 	void show_virtual_keyboard();
 
-	LineEdit();
+	LineEdit(const String &p_placeholder = String());
 	~LineEdit();
 };
 
-VARIANT_ENUM_CAST(LineEdit::Align);
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
 #endif

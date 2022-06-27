@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,47 +33,9 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
-#include "editor_node.h"
-#include "progress_dialog.h"
-
-void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
-	if (p_check) {
-		if (p_item->get_custom_color(0) == Color()) {
-			p_item->set_checked(0, true);
-		}
-	} else {
-		p_item->set_checked(0, false);
-	}
-
-	if (p_item->get_first_child()) {
-		_update_subitems(p_item->get_first_child(), p_check);
-	}
-
-	if (!p_first && p_item->get_next()) {
-		_update_subitems(p_item->get_next(), p_check);
-	}
-}
-
-void EditorAssetInstaller::_uncheck_parent(TreeItem *p_item) {
-	if (!p_item) {
-		return;
-	}
-
-	bool any_checked = false;
-	TreeItem *item = p_item->get_first_child();
-	while (item) {
-		if (item->is_checked(0)) {
-			any_checked = true;
-			break;
-		}
-		item = item->get_next();
-	}
-
-	if (!any_checked) {
-		p_item->set_checked(0, false);
-		_uncheck_parent(p_item->get_parent());
-	}
-}
+#include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
+#include "editor/progress_dialog.h"
 
 void EditorAssetInstaller::_item_edited() {
 	if (updating) {
@@ -85,30 +47,25 @@ void EditorAssetInstaller::_item_edited() {
 		return;
 	}
 
-	String path = item->get_metadata(0);
-
 	updating = true;
-	if (path == String() || item == tree->get_root()) { //a dir or root
-		_update_subitems(item, item->is_checked(0), true);
-	}
-
-	if (item->is_checked(0)) {
-		while (item) {
-			item->set_checked(0, true);
-			item = item->get_parent();
-		}
-	} else {
-		_uncheck_parent(item->get_parent());
-	}
+	item->propagate_check(0);
 	updating = false;
+}
+
+void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) {
+	TreeItem *affected_item = Object::cast_to<TreeItem>(p_obj);
+	if (affected_item && affected_item->get_custom_color(0) != Color()) {
+		affected_item->set_checked(0, false);
+		affected_item->propagate_check(0, false);
+	}
 }
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	package_path = p_path;
-	Set<String> files_sorted;
+	HashSet<String> files_sorted;
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -124,13 +81,13 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String name = fname;
+		String name = String::utf8(fname);
 		files_sorted.insert(name);
 
 		ret = unzGoToNextFile(pkg);
 	}
 
-	Map<String, Ref<Texture2D>> extension_guess;
+	HashMap<String, Ref<Texture2D>> extension_guess;
 	{
 		extension_guess["bmp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["dds"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
@@ -140,7 +97,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["jpeg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["png"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["svg"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
-		extension_guess["svgz"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["tga"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 		extension_guess["webp"] = tree->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons"));
 
@@ -194,12 +150,12 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	root->set_icon(0, tree->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	root->set_text(0, "res://");
 	root->set_editable(0, true);
-	Map<String, TreeItem *> dir_map;
+	HashMap<String, TreeItem *> dir_map;
 
 	int num_file_conflicts = 0;
 
-	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
-		String path = E->get();
+	for (const String &E : files_sorted) {
+		String path = E;
 		int depth = p_depth;
 		bool skip = false;
 		while (depth > 0) {
@@ -212,7 +168,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			depth--;
 		}
 
-		if (skip || path == String()) {
+		if (skip || path.is_empty()) {
 			continue;
 		}
 
@@ -260,6 +216,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 				ti->set_custom_color(0, tree->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
+				ti->propagate_check(0);
 			} else {
 				ti->set_tooltip(0, res_path);
 			}
@@ -267,7 +224,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			ti->set_metadata(0, res_path);
 		}
 
-		status_map[E->get()] = ti;
+		status_map[E] = ti;
 	}
 
 	if (num_file_conflicts >= 1) {
@@ -276,13 +233,13 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		asset_contents->set_text(vformat(TTR("Contents of asset \"%s\" - No files conflict with your project:"), asset_name));
 	}
 
-	popup_centered_ratio();
+	popup_centered_ratio(0.5);
 	updating = false;
 }
 
 void EditorAssetInstaller::ok_pressed() {
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
@@ -302,12 +259,15 @@ void EditorAssetInstaller::ok_pressed() {
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
-		String name = fname;
+		String name = String::utf8(fname);
 
-		if (status_map.has(name) && status_map[name]->is_checked(0)) {
+		if (status_map.has(name) && (status_map[name]->is_checked(0) || status_map[name]->is_indeterminate(0))) {
 			String path = status_map[name]->get_metadata(0);
-			if (path == String()) { // a dir
+			if (path.is_empty()) { // a dir
 
 				String dirpath;
 				TreeItem *t = status_map[name];
@@ -320,10 +280,8 @@ void EditorAssetInstaller::ok_pressed() {
 					dirpath = dirpath.substr(0, dirpath.length() - 1);
 				}
 
-				DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
-				memdelete(da);
-
 			} else {
 				Vector<uint8_t> data;
 				data.resize(info.uncompressed_size);
@@ -333,10 +291,9 @@ void EditorAssetInstaller::ok_pressed() {
 				unzReadCurrentFile(pkg, data.ptrw(), data.size());
 				unzCloseCurrentFile(pkg);
 
-				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
-				if (f) {
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
-					memdelete(f);
 				} else {
 					failed_files.push_back(path);
 				}
@@ -393,14 +350,13 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	tree = memnew(Tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_edited));
+	tree->connect("check_propagated_to_item", callable_mp(this, &EditorAssetInstaller::_check_propagated_to_item));
 	vb->add_child(tree);
 
 	error = memnew(AcceptDialog);
 	add_child(error);
 	get_ok_button()->set_text(TTR("Install"));
 	set_title(TTR("Asset Installer"));
-
-	updating = false;
 
 	set_hide_on_ok(true);
 }

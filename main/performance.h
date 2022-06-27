@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define PERFORMANCE_H
 
 #include "core/object/class_db.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
@@ -58,7 +58,7 @@ class Performance : public Object {
 		Variant call(bool &r_error, String &r_error_message);
 	};
 
-	OrderedHashMap<StringName, MonitorCall> _monitor_map;
+	HashMap<StringName, MonitorCall> _monitor_map;
 	uint64_t _monitor_modification_time;
 
 public:

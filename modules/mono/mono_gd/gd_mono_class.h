@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define GD_MONO_CLASS_H
 
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"
@@ -70,11 +70,11 @@ class GDMonoClass {
 	StringName namespace_name;
 	StringName class_name;
 
-	MonoClass *mono_class;
-	GDMonoAssembly *assembly;
+	MonoClass *mono_class = nullptr;
+	GDMonoAssembly *assembly = nullptr;
 
 	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 	// This contains both the original method names and remapped method names from the native Godot identifiers to the C# functions.
 	// Most method-related functions refer to this and it's possible this is unintuitive for outside users; this may be a prime location for refactoring or renaming.
@@ -85,15 +85,15 @@ class GDMonoClass {
 	Vector<GDMonoMethod *> method_list;
 
 	bool fields_fetched;
-	Map<StringName, GDMonoField *> fields;
+	HashMap<StringName, GDMonoField *> fields;
 	Vector<GDMonoField *> fields_list;
 
 	bool properties_fetched;
-	Map<StringName, GDMonoProperty *> properties;
+	HashMap<StringName, GDMonoProperty *> properties;
 	Vector<GDMonoProperty *> properties_list;
 
 	bool delegates_fetched;
-	Map<StringName, GDMonoClass *> delegates;
+	HashMap<StringName, GDMonoClass *> delegates;
 	Vector<GDMonoClass *> delegates_list;
 
 	friend class GDMonoAssembly;

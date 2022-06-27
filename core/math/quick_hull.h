@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/set.h"
 
 class QuickHull {
 public:
@@ -44,8 +44,15 @@ public:
 			uint64_t id = 0;
 		};
 
+		static uint32_t hash(const Edge &p_edge) {
+			return hash_one_uint64(p_edge.id);
+		}
+
 		bool operator<(const Edge &p_edge) const {
 			return id < p_edge.id;
+		}
+		bool operator==(const Edge &p_edge) const {
+			return id == p_edge.id;
 		}
 
 		Edge(int p_vtx_a = 0, int p_vtx_b = 0) {

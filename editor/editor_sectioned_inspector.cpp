@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,23 @@
 
 #include "editor_sectioned_inspector.h"
 
-#include "editor_scale.h"
+#include "editor/editor_property_name_processor.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+
+static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
+	if (p_property_path.findn(p_filter) != -1) {
+		return true;
+	}
+
+	const Vector<String> sections = p_property_path.split("/");
+	for (int i = 0; i < sections.size(); i++) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
+			return true;
+		}
+	}
+	return false;
+}
 
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
@@ -45,7 +61,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -60,7 +76,7 @@ class SectionedInspectorFilter : public Object {
 		}
 
 		String name = p_name;
-		if (section != "") {
+		if (!section.is_empty()) {
 			name = section + "/" + name;
 		}
 
@@ -89,7 +105,7 @@ class SectionedInspectorFilter : public Object {
 
 			if (pi.name.begins_with(section + "/")) {
 				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1) {
+				if (!allow_sub && pi.name.contains("/")) {
 					continue;
 				}
 				p_list->push_back(pi);
@@ -155,7 +171,7 @@ String SectionedInspector::get_current_section() const {
 String SectionedInspector::get_full_item_path(const String &p_item) {
 	String base = get_current_section();
 
-	if (base != "") {
+	if (!base.is_empty()) {
 		return base + "/" + p_item;
 	} else {
 		return p_item;
@@ -220,6 +236,9 @@ void SectionedInspector::update_category_list() {
 		filter = search_box->get_text();
 	}
 
+	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
+
 	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
@@ -227,11 +246,11 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
+		if (pi.name.contains(":") || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
 			continue;
 		}
 
-		if (!filter.is_empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
+		if (!filter.is_empty() && !_property_path_matches(pi.name, filter, name_style)) {
 			continue;
 		}
 
@@ -259,7 +278,12 @@ void SectionedInspector::update_category_list() {
 			if (!section_map.has(metasection)) {
 				TreeItem *ms = sections->create_item(parent);
 				section_map[metasection] = ms;
-				ms->set_text(0, sectionarr[i].capitalize());
+
+				const String text = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], name_style);
+				const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], tooltip_style);
+
+				ms->set_text(0, text);
+				ms->set_tooltip(0, tooltip);
 				ms->set_metadata(0, metasection);
 				ms->set_selectable(0, false);
 			}
@@ -286,6 +310,14 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 
 void SectionedInspector::_search_changed(const String &p_what) {
 	update_category_list();
+}
+
+void SectionedInspector::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
+	}
 }
 
 EditorInspector *SectionedInspector::get_inspector() {
@@ -321,6 +353,7 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

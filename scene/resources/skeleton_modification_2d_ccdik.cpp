@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,8 +205,8 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	} else {
 		// How to rotate from the tip: get the difference of rotation needed from the tip to the target, from the perspective of the joint.
 		// Because we are only using the offset, we do not need to account for the bone angle of the Bone2D node.
-		float joint_to_tip = operation_transform.get_origin().angle_to_point(p_tip->get_global_position());
-		float joint_to_target = operation_transform.get_origin().angle_to_point(p_target->get_global_position());
+		float joint_to_tip = p_tip->get_global_position().angle_to_point(operation_transform.get_origin());
+		float joint_to_target = p_target->get_global_position().angle_to_point(operation_transform.get_origin());
 		operation_transform.set_rotation(
 				operation_transform.get_rotation() + (joint_to_target - joint_to_tip));
 	}

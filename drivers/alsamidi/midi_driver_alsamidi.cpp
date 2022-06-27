@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,7 +73,7 @@ static int get_message_size(uint8_t message) {
 }
 
 void MIDIDriverALSAMidi::thread_func(void *p_udata) {
-	MIDIDriverALSAMidi *md = (MIDIDriverALSAMidi *)p_udata;
+	MIDIDriverALSAMidi *md = static_cast<MIDIDriverALSAMidi *>(p_udata);
 	uint64_t timestamp = 0;
 	uint8_t buffer[256];
 	int expected_size = 255;

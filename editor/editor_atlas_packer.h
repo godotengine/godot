@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef EDITOR_ATLAS_PACKER_H
 #define EDITOR_ATLAS_PACKER_H
 
-#include "core/math/vector2.h"
-
 #include "core/templates/vector.h"
 #include "scene/resources/bit_map.h"
+
+struct Vector2;
+struct Vector2i;
 
 class EditorAtlasPacker {
 public:
@@ -65,8 +66,6 @@ private:
 			return area > p_bm.area;
 		}
 	};
-
-	static void _plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices);
 
 public:
 	static void chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size = 2048, int p_cell_resolution = 4);

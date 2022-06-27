@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
+#include "core/debugger/engine_profiler.h"
 #include "core/extension/native_extension.h"
 #include "core/extension/native_extension_manager.h"
 #include "core/input/input.h"
@@ -48,6 +49,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/io/missing_resource.h"
 #include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
@@ -69,8 +71,8 @@
 #include "core/math/triangle_mesh.h"
 #include "core/multiplayer/multiplayer_api.h"
 #include "core/multiplayer/multiplayer_peer.h"
-#include "core/multiplayer/multiplayer_replicator.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
@@ -108,6 +110,8 @@ extern void unregister_global_constants();
 
 static ResourceUID *resource_uid = nullptr;
 
+static bool _is_core_extensions_registered = false;
+
 void register_core_types() {
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
@@ -139,20 +143,25 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 
-	GDREGISTER_VIRTUAL_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(Script);
+	GDREGISTER_ABSTRACT_CLASS(ScriptLanguage);
+
+	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
+	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
 	GDREGISTER_CLASS(Resource);
+	GDREGISTER_VIRTUAL_CLASS(MissingResource);
 	GDREGISTER_CLASS(Image);
 
 	GDREGISTER_CLASS(Shortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEvent);
-	GDREGISTER_VIRTUAL_CLASS(InputEventWithModifiers);
-	GDREGISTER_VIRTUAL_CLASS(InputEventFromWindow);
+	GDREGISTER_ABSTRACT_CLASS(InputEvent);
+	GDREGISTER_ABSTRACT_CLASS(InputEventWithModifiers);
+	GDREGISTER_ABSTRACT_CLASS(InputEventFromWindow);
 	GDREGISTER_CLASS(InputEventKey);
 	GDREGISTER_CLASS(InputEventShortcut);
-	GDREGISTER_VIRTUAL_CLASS(InputEventMouse);
+	GDREGISTER_ABSTRACT_CLASS(InputEventMouse);
 	GDREGISTER_CLASS(InputEventMouseButton);
 	GDREGISTER_CLASS(InputEventMouseMotion);
 	GDREGISTER_CLASS(InputEventJoypadButton);
@@ -160,21 +169,21 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventScreenDrag);
 	GDREGISTER_CLASS(InputEventScreenTouch);
 	GDREGISTER_CLASS(InputEventAction);
-	GDREGISTER_VIRTUAL_CLASS(InputEventGesture);
+	GDREGISTER_ABSTRACT_CLASS(InputEventGesture);
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
 	GDREGISTER_CLASS(InputEventMIDI);
 
 	// Network
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 
-	GDREGISTER_VIRTUAL_CLASS(StreamPeer);
+	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
-	GDREGISTER_VIRTUAL_CLASS(PacketPeer);
+	GDREGISTER_ABSTRACT_CLASS(PacketPeer);
 	GDREGISTER_CLASS(PacketPeerExtension);
 	GDREGISTER_CLASS(PacketPeerStream);
 	GDREGISTER_CLASS(PacketPeerUDP);
@@ -198,9 +207,8 @@ void register_core_types() {
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
 
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeer);
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeerExtension);
-	GDREGISTER_VIRTUAL_CLASS(MultiplayerReplicator);
+	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
+	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -225,19 +233,21 @@ void register_core_types() {
 	GDREGISTER_CLASS(PCKPacker);
 
 	GDREGISTER_CLASS(PackedDataContainer);
-	GDREGISTER_VIRTUAL_CLASS(PackedDataContainerRef);
-	GDREGISTER_CLASS(AStar);
+	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
+	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceImporter);
+	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(NativeExtension);
 
-	GDREGISTER_VIRTUAL_CLASS(NativeExtensionManager);
+	GDREGISTER_ABSTRACT_CLASS(NativeExtensionManager);
 
-	GDREGISTER_VIRTUAL_CLASS(ResourceUID);
+	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
+
+	GDREGISTER_CLASS(EngineProfiler);
 
 	resource_uid = memnew(ResourceUID);
 
@@ -258,6 +268,9 @@ void register_core_types() {
 	_classdb = memnew(core_bind::special::ClassDB);
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
+
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
+	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 }
 
 void register_core_settings() {
@@ -273,7 +286,7 @@ void register_core_settings() {
 
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
-	GDREGISTER_VIRTUAL_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(IP);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
 	GDREGISTER_CLASS(core_bind::Geometry3D);
 	GDREGISTER_CLASS(core_bind::ResourceLoader);
@@ -283,7 +296,7 @@ void register_core_singletons() {
 	GDREGISTER_CLASS(core_bind::special::ClassDB);
 	GDREGISTER_CLASS(core_bind::Marshalls);
 	GDREGISTER_CLASS(TranslationServer);
-	GDREGISTER_VIRTUAL_CLASS(Input);
+	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);
@@ -313,11 +326,16 @@ void register_core_extensions() {
 	NativeExtension::initialize_native_extensions();
 	native_extension_manager->load_extensions();
 	native_extension_manager->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	_is_core_extensions_registered = true;
+}
+
+void unregister_core_extensions() {
+	if (_is_core_extensions_registered) {
+		native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
+	}
 }
 
 void unregister_core_types() {
-	native_extension_manager->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_CORE);
-
 	memdelete(native_extension_manager);
 
 	memdelete(resource_uid);

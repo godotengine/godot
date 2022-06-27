@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,13 +50,11 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
-
 	~GPUParticlesCollision3D();
 };
 
-class GPUParticlesCollisionSphere : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSphere, GPUParticlesCollision3D);
+class GPUParticlesCollisionSphere3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSphere3D, GPUParticlesCollision3D);
 
 	real_t radius = 1.0;
 
@@ -69,12 +67,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionSphere();
-	~GPUParticlesCollisionSphere();
+	GPUParticlesCollisionSphere3D();
+	~GPUParticlesCollisionSphere3D();
 };
 
-class GPUParticlesCollisionBox : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionBox, GPUParticlesCollision3D);
+class GPUParticlesCollisionBox3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionBox3D, GPUParticlesCollision3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 
@@ -87,12 +85,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionBox();
-	~GPUParticlesCollisionBox();
+	GPUParticlesCollisionBox3D();
+	~GPUParticlesCollisionBox3D();
 };
 
-class GPUParticlesCollisionSDF : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSDF, GPUParticlesCollision3D);
+class GPUParticlesCollisionSDF3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSDF3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -184,14 +182,14 @@ public:
 	static BakeStepFunc bake_step_function;
 	static BakeEndFunc bake_end_function;
 
-	GPUParticlesCollisionSDF();
-	~GPUParticlesCollisionSDF();
+	GPUParticlesCollisionSDF3D();
+	~GPUParticlesCollisionSDF3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionSDF::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionSDF3D::Resolution)
 
-class GPUParticlesCollisionHeightField : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionHeightField, GPUParticlesCollision3D);
+class GPUParticlesCollisionHeightField3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionHeightField3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -213,7 +211,6 @@ private:
 	Vector3 extents = Vector3(1, 1, 1);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
-	float follow_camera_push_ratio = 0.1;
 
 	UpdateMode update_mode = UPDATE_MODE_WHEN_MOVED;
 
@@ -231,20 +228,17 @@ public:
 	void set_update_mode(UpdateMode p_update_mode);
 	UpdateMode get_update_mode() const;
 
-	void set_follow_camera_mode(bool p_enabled);
-	bool is_follow_camera_mode_enabled() const;
-
-	void set_follow_camera_push_ratio(float p_ratio);
-	float get_follow_camera_push_ratio() const;
+	void set_follow_camera_enabled(bool p_enabled);
+	bool is_follow_camera_enabled() const;
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionHeightField();
-	~GPUParticlesCollisionHeightField();
+	GPUParticlesCollisionHeightField3D();
+	~GPUParticlesCollisionHeightField3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::Resolution)
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::UpdateMode)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
 
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);
@@ -274,13 +268,11 @@ public:
 	void set_directionality(real_t p_directionality);
 	real_t get_directionality() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
-
 	~GPUParticlesAttractor3D();
 };
 
-class GPUParticlesAttractorSphere : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorSphere, GPUParticlesAttractor3D);
+class GPUParticlesAttractorSphere3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorSphere3D, GPUParticlesAttractor3D);
 
 	real_t radius = 1.0;
 
@@ -293,12 +285,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorSphere();
-	~GPUParticlesAttractorSphere();
+	GPUParticlesAttractorSphere3D();
+	~GPUParticlesAttractorSphere3D();
 };
 
-class GPUParticlesAttractorBox : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorBox, GPUParticlesAttractor3D);
+class GPUParticlesAttractorBox3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorBox3D, GPUParticlesAttractor3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 
@@ -311,12 +303,12 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorBox();
-	~GPUParticlesAttractorBox();
+	GPUParticlesAttractorBox3D();
+	~GPUParticlesAttractorBox3D();
 };
 
-class GPUParticlesAttractorVectorField : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorVectorField, GPUParticlesAttractor3D);
+class GPUParticlesAttractorVectorField3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorVectorField3D, GPUParticlesAttractor3D);
 
 	Vector3 extents = Vector3(1, 1, 1);
 	Ref<Texture3D> texture;
@@ -333,8 +325,8 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorVectorField();
-	~GPUParticlesAttractorVectorField();
+	GPUParticlesAttractorVectorField3D();
+	~GPUParticlesAttractorVectorField3D();
 };
 
 #endif // GPU_PARTICLES_COLLISION_3D_H

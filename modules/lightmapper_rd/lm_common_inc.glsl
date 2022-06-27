@@ -51,8 +51,9 @@ struct Light {
 	float cos_spot_angle;
 	float inv_spot_attenuation;
 
+	float shadow_blur;
 	bool static_bake;
-	uint pad[3];
+	uint pad[2];
 };
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer Lights {

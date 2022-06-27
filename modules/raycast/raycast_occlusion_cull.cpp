@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 	td.z_near = p_cam_projection.get_z_near();
 	td.z_far = p_cam_projection.get_z_far() * 1.05f;
 	td.camera_pos = p_cam_transform.origin;
-	td.camera_dir = -p_cam_transform.basis.get_axis(2);
+	td.camera_dir = -p_cam_transform.basis.get_column(2);
 	td.camera_orthogonal = p_cam_orthogonal;
 
 	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
@@ -223,9 +223,9 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 	occluder->vertices = p_vertices;
 	occluder->indices = p_indices;
 
-	for (Set<InstanceID>::Element *E = occluder->users.front(); E; E = E->next()) {
-		RID scenario_rid = E->get().scenario;
-		RID instance_rid = E->get().instance;
+	for (const InstanceID &E : occluder->users) {
+		RID scenario_rid = E.scenario;
+		RID instance_rid = E.instance;
 		ERR_CONTINUE(!scenarios.has(scenario_rid));
 		Scenario &scenario = scenarios[scenario_rid];
 		ERR_CONTINUE(!scenario.instances.has(instance_rid));
@@ -270,12 +270,13 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 	OccluderInstance &instance = scenario.instances[p_instance];
 
+	bool changed = false;
+
 	if (instance.removed) {
 		instance.removed = false;
 		scenario.removed_instances.erase(p_instance);
+		changed = true; // It was removed and re-added, we might have missed some changes
 	}
-
-	bool changed = false;
 
 	if (instance.occluder != p_occluder) {
 		Occluder *old_occluder = occluder_owner.get_or_null(instance.occluder);
@@ -453,10 +454,9 @@ bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
 	next_scene = rtcNewScene(raycast_singleton->ebr_device);
 	rtcSetSceneBuildQuality(next_scene, RTCBuildQuality(raycast_singleton->build_quality));
 
-	const RID *inst_rid = nullptr;
-	while ((inst_rid = instances.next(inst_rid))) {
-		OccluderInstance *occ_inst = instances.getptr(*inst_rid);
-		Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
+	for (const KeyValue<RID, OccluderInstance> &E : instances) {
+		const OccluderInstance *occ_inst = &E.value;
+		const Occluder *occ = raycast_singleton->occluder_owner.get_or_null(occ_inst->occluder);
 
 		if (!occ || !occ_inst->enabled) {
 			continue;
@@ -547,7 +547,7 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_thread_pool);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count, p_thread_pool);
-	buffer.sort_rays(-p_cam_transform.basis.get_axis(2), p_cam_orthogonal);
+	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
 	buffer.update_mips();
 }
 
@@ -572,9 +572,8 @@ void RaycastOcclusionCull::set_build_quality(RS::ViewportOcclusionCullingBuildQu
 
 	build_quality = p_quality;
 
-	const RID *scenario_rid = nullptr;
-	while ((scenario_rid = scenarios.next(scenario_rid))) {
-		scenarios[*scenario_rid].dirty = true;
+	for (KeyValue<RID, Scenario> &K : scenarios) {
+		K.value.dirty = true;
 	}
 }
 
@@ -595,9 +594,8 @@ RaycastOcclusionCull::RaycastOcclusionCull() {
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {
-	const RID *scenario_rid = nullptr;
-	while ((scenario_rid = scenarios.next(scenario_rid))) {
-		Scenario &scenario = scenarios[*scenario_rid];
+	for (KeyValue<RID, Scenario> &K : scenarios) {
+		Scenario &scenario = K.value;
 		if (scenario.commit_thread) {
 			scenario.commit_thread->wait_to_finish();
 			memdelete(scenario.commit_thread);

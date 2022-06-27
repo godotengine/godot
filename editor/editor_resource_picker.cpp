@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,15 @@
 
 #include "editor_resource_picker.h"
 
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor_node.h"
-#include "editor_scale.h"
-#include "editor_settings.h"
-#include "filesystem_dock.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/quick_open.h"
+#include "editor/scene_tree_dock.h"
 
 HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
 
@@ -46,24 +50,26 @@ void EditorResourcePicker::_update_resource() {
 	preview_rect->set_texture(Ref<Texture2D>());
 	assign_button->set_custom_minimum_size(Size2(1, 1));
 
-	if (edited_resource == RES()) {
+	if (edited_resource == Ref<Resource>()) {
 		assign_button->set_icon(Ref<Texture2D>());
 		assign_button->set_text(TTR("[empty]"));
+		assign_button->set_tooltip("");
 	} else {
 		assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
-		if (edited_resource->get_name() != String()) {
+		if (!edited_resource->get_name().is_empty()) {
 			assign_button->set_text(edited_resource->get_name());
 		} else if (edited_resource->get_path().is_resource_file()) {
 			assign_button->set_text(edited_resource->get_path().get_file());
-			assign_button->set_tooltip(edited_resource->get_path());
 		} else {
 			assign_button->set_text(edited_resource->get_class());
 		}
 
+		String resource_path;
 		if (edited_resource->get_path().is_resource_file()) {
-			assign_button->set_tooltip(edited_resource->get_path());
+			resource_path = edited_resource->get_path() + "\n";
 		}
+		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 
 		// Preview will override the above, so called at the end.
 		EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
@@ -75,16 +81,17 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		return;
 	}
 
-	String type = edited_resource->get_class_name();
-	if (ClassDB::is_parent_class(type, "Script")) {
-		assign_button->set_text(edited_resource->get_path().get_file());
+	Ref<Script> script = edited_resource;
+	if (script.is_valid()) {
+		assign_button->set_text(script->get_path().get_file());
 		return;
 	}
 
 	if (p_preview.is_valid()) {
-		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("hseparation"), SNAME("Button")));
+		preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_default_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
-		if (type == "GradientTexture") {
+		// Resource-specific stretching.
+		if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
 			preview_rect->set_stretch_mode(TextureRect::STRETCH_SCALE);
 			assign_button->set_custom_minimum_size(Size2(1, 1));
 		} else {
@@ -110,10 +117,10 @@ void EditorResourcePicker::_resource_selected() {
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
-	RES loaded_resource = ResourceLoader::load(p_path);
+	Ref<Resource> loaded_resource = ResourceLoader::load(p_path);
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
-	if (base_type != "") {
+	if (!base_type.is_empty()) {
 		bool any_type_matches = false;
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -143,7 +150,7 @@ void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
-	edit_menu->set_as_minsize();
+	edit_menu->reset_size();
 	int ms = edit_menu->get_contents_minimum_size().width;
 	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
 	edit_menu->set_position(popup_pos);
@@ -177,10 +184,10 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to copy/paste resource.
-	RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
+	Ref<Resource> cb = EditorSettings::get_singleton()->get_resource_clipboard();
 	bool paste_valid = false;
 	if (cb.is_valid()) {
-		if (base_type == "") {
+		if (base_type.is_empty()) {
 			paste_valid = true;
 		} else {
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
@@ -233,7 +240,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
 			}
 
-			Set<String> valid_extensions;
+			HashSet<String> valid_extensions;
 			for (const String &E : extensions) {
 				valid_extensions.insert(E);
 			}
@@ -246,8 +253,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			file_dialog->clear_filters();
-			for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-				file_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+			for (const String &E : valid_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
@@ -271,7 +278,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_CLEAR: {
-			edited_resource = RES();
+			edited_resource = Ref<Resource>();
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
@@ -321,17 +328,24 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_PASTE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (edited_resource->is_built_in() && EditorNode::get_singleton()->get_edited_scene() &&
+					edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
+				// Automatically make resource unique if it belongs to another scene.
+				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+				return;
+			}
+
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
-			FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+			FileSystemDock *file_system_dock = FileSystemDock::get_singleton();
 			file_system_dock->navigate_to_path(edited_resource->get_path());
 
 			// Ensure that the FileSystem dock is visible.
 			TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
-			tab_container->set_current_tab(file_system_dock->get_index());
+			tab_container->set_current_tab(tab_container->get_tab_idx_from_control(file_system_dock));
 		} break;
 
 		default: {
@@ -375,7 +389,9 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 
-			edited_resource = RES(resp);
+			EditorNode::get_editor_data().instantiate_object_properties(obj);
+
+			edited_resource = Ref<Resource>(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();
 		} break;
@@ -385,16 +401,15 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	_ensure_resource_menu();
 	// If a subclass implements this method, use it to replace all create items.
-	if (get_script_instance() && get_script_instance()->has_method("_set_create_options")) {
-		get_script_instance()->call("_set_create_options", p_menu_node);
+	if (GDVIRTUAL_CALL(_set_create_options, p_menu_node)) {
 		return;
 	}
 
 	// By default provide generic "New ..." options.
-	if (base_type != "") {
+	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		Set<String> allowed_types;
+		HashSet<String> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
 		Vector<EditorData::CustomType> custom_resources;
@@ -402,8 +417,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 		}
 
-		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-			const String &t = E->get();
+		for (const String &E : allowed_types) {
+			const String &t = E;
 
 			bool is_custom_resource = false;
 			Ref<Texture2D> icon;
@@ -442,8 +457,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	if (get_script_instance() && get_script_instance()->has_method("_handle_menu_selected")) {
-		return get_script_instance()->call("_handle_menu_selected", p_which);
+	bool success;
+	if (GDVIRTUAL_CALL(_handle_menu_selected, p_which, success)) {
+		return success;
 	}
 
 	return false;
@@ -464,18 +480,18 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == MOUSE_BUTTON_RIGHT) {
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->set_as_minsize();
+			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();
 		}
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *p_vector) const {
+void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const {
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
@@ -514,12 +530,14 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, Set<String> *
 		}
 
 		if (p_with_convert) {
-			if (base == "StandardMaterial3D") {
+			if (base == "BaseMaterial3D") {
 				p_vector->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
 				p_vector->insert("Shader");
 			} else if (base == "Font") {
 				p_vector->insert("FontData");
+			} else if (base == "Texture2D") {
+				p_vector->insert("Image");
 			}
 		}
 	}
@@ -550,7 +568,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		res = drag_data["resource"];
 	}
 
-	Set<String> allowed_types;
+	HashSet<String> allowed_types;
 	_get_allowed_types(true, &allowed_types);
 
 	if (res.is_valid() && _is_type_valid(res->get_class(), allowed_types)) {
@@ -571,7 +589,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 			String file = files[0];
 
 			String file_type = EditorFileSystem::get_singleton()->get_file_type(file);
-			if (file_type != "" && _is_type_valid(file_type, allowed_types)) {
+			if (!file_type.is_empty() && _is_type_valid(file_type, allowed_types)) {
 				return true;
 			}
 		}
@@ -580,9 +598,9 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	return false;
 }
 
-bool EditorResourcePicker::_is_type_valid(const String p_type_name, Set<String> p_allowed_types) const {
-	for (Set<String>::Element *E = p_allowed_types.front(); E; E = E->next()) {
-		String at = E->get().strip_edges();
+bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const {
+	for (const String &E : p_allowed_types) {
+		String at = E.strip_edges();
 		if (p_type_name == at || ClassDB::is_parent_class(p_type_name, at) || EditorNode::get_editor_data().script_class_is_parent(p_type_name, at)) {
 			return true;
 		}
@@ -628,32 +646,52 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		Set<String> allowed_types;
+		HashSet<String> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
 		// If the accepted dropped resource is from the extended list, it requires conversion.
 		if (!_is_type_valid(dropped_resource->get_class(), allowed_types)) {
-			for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-				String at = E->get().strip_edges();
+			for (const String &E : allowed_types) {
+				String at = E.strip_edges();
 
-				if (at == "StandardMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
-					Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+				if (at == "BaseMaterial3D" && Ref<Texture2D>(dropped_resource).is_valid()) {
+					// Use existing resource if possible and only replace its data.
+					Ref<StandardMaterial3D> mat = edited_resource;
+					if (!mat.is_valid()) {
+						mat.instantiate();
+					}
 					mat->set_texture(StandardMaterial3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
-				if (at == "ShaderMaterial" && ClassDB::is_parent_class(dropped_resource->get_class(), "Shader")) {
-					Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
+				if (at == "ShaderMaterial" && Ref<Shader>(dropped_resource).is_valid()) {
+					Ref<ShaderMaterial> mat = edited_resource;
+					if (!mat.is_valid()) {
+						mat.instantiate();
+					}
 					mat->set_shader(dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
 
-				if (at == "Font" && ClassDB::is_parent_class(dropped_resource->get_class(), "FontData")) {
-					Ref<Font> font = memnew(Font);
+				if (at == "Font" && Ref<FontData>(dropped_resource).is_valid()) {
+					Ref<Font> font = edited_resource;
+					if (!font.is_valid()) {
+						font.instantiate();
+					}
 					font->add_data(dropped_resource);
 					dropped_resource = font;
+					break;
+				}
+
+				if (at == "Texture2D" && Ref<Image>(dropped_resource).is_valid()) {
+					Ref<ImageTexture> texture = edited_resource;
+					if (!texture.is_valid()) {
+						texture.instantiate();
+					}
+					texture->create_from_image(dropped_resource);
+					dropped_resource = texture;
 					break;
 				}
 			}
@@ -682,8 +720,8 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_set_create_options", PropertyInfo(Variant::OBJECT, "menu_node")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("_handle_menu_selected", PropertyInfo(Variant::INT, "id")));
+	GDVIRTUAL_BIND(_set_create_options, "menu_node");
+	GDVIRTUAL_BIND(_handle_menu_selected, "id");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
@@ -730,7 +768,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		Set<String> allowed_types;
+		HashSet<String> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;
@@ -746,7 +784,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 		}
 	} else {
 		// Call the method to build the cache immediately.
-		Set<String> allowed_types;
+		HashSet<String> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 	}
 }
@@ -756,7 +794,7 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	Set<String> allowed_types;
+	HashSet<String> allowed_types;
 	_get_allowed_types(false, &allowed_types);
 
 	Vector<String> types;
@@ -764,22 +802,23 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 
 	int i = 0;
 	String *w = types.ptrw();
-	for (Set<String>::Element *E = allowed_types.front(); E; E = E->next(), i++) {
-		w[i] = E->get();
+	for (const String &E : allowed_types) {
+		w[i] = E;
+		i++;
 	}
 
 	return types;
 }
 
-void EditorResourcePicker::set_edited_resource(RES p_resource) {
+void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	if (!p_resource.is_valid()) {
-		edited_resource = RES();
+		edited_resource = Ref<Resource>();
 		_update_resource();
 		return;
 	}
 
 	if (!base_type.is_empty()) {
-		Set<String> allowed_types;
+		HashSet<String> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;
@@ -799,7 +838,7 @@ void EditorResourcePicker::set_edited_resource(RES p_resource) {
 	_update_resource();
 }
 
-RES EditorResourcePicker::get_edited_resource() {
+Ref<Resource> EditorResourcePicker::get_edited_resource() {
 	return edited_resource;
 }
 
@@ -838,6 +877,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed), varray(false));
 }
+
 EditorResourcePicker::EditorResourcePicker() {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
@@ -850,7 +890,7 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
 
 	preview_rect = memnew(TextureRect);
-	preview_rect->set_expand(true);
+	preview_rect->set_ignore_texture_size(true);
 	preview_rect->set_anchors_and_offsets_preset(PRESET_WIDE);
 	preview_rect->set_offset(SIDE_TOP, 1);
 	preview_rect->set_offset(SIDE_BOTTOM, -1);
@@ -863,6 +903,8 @@ EditorResourcePicker::EditorResourcePicker() {
 	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+
+	add_theme_constant_override("separation", 0);
 }
 
 // EditorScriptPicker
@@ -874,7 +916,12 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
-	menu_node->add_icon_item(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+	if (script_owner) {
+		Ref<Script> script = script_owner->get_script();
+		if (script.is_valid()) {
+			menu_node->add_icon_item(get_theme_icon(SNAME("ScriptExtend"), SNAME("EditorIcons")), TTR("Extend Script"), OBJ_MENU_EXTEND_SCRIPT);
+		}
+	}
 	menu_node->add_separator();
 }
 
@@ -882,14 +929,14 @@ bool EditorScriptPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, false);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, false);
 			}
 			return true;
 		}
 
 		case OBJ_MENU_EXTEND_SCRIPT: {
 			if (script_owner) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(script_owner, true);
+				SceneTreeDock::get_singleton()->open_script_dialog(script_owner, true);
 			}
 			return true;
 		}
@@ -934,7 +981,7 @@ bool EditorShaderPicker::handle_menu_selected(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_NEW_SHADER: {
 			if (material.is_valid()) {
-				EditorNode::get_singleton()->get_scene_tree_dock()->open_shader_dialog(material, preferred_mode);
+				SceneTreeDock::get_singleton()->open_shader_dialog(material, preferred_mode);
 				return true;
 			}
 		} break;

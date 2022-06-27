@@ -8,7 +8,7 @@ import os
 from io import StringIO
 from platform_methods import subprocess_main
 
-
+# See also `scene/resources/default_theme/default_theme_icons_builders.py`.
 def make_editor_icons_action(target, source, env):
 
     dst = target[0]

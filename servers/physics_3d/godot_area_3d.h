@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,10 @@ class GodotSoftBody3D;
 class GodotConstraint3D;
 
 class GodotArea3D : public GodotCollisionObject3D {
-	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer3D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer3D::AreaSpaceOverrideMode linear_damping_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	PhysicsServer3D::AreaSpaceOverrideMode angular_damping_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+
 	real_t gravity = 9.80665;
 	Vector3 gravity_vector = Vector3(0, -1, 0);
 	bool gravity_is_point = false;
@@ -69,16 +72,15 @@ class GodotArea3D : public GodotCollisionObject3D {
 		uint32_t body_shape = 0;
 		uint32_t area_shape = 0;
 
-		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
-			if (rid == p_key.rid) {
-				if (body_shape == p_key.body_shape) {
-					return area_shape < p_key.area_shape;
-				} else {
-					return body_shape < p_key.body_shape;
-				}
-			} else {
-				return rid < p_key.rid;
-			}
+		static uint32_t hash(const BodyKey &p_key) {
+			uint32_t h = hash_one_uint64(p_key.rid.get_id());
+			h = hash_murmur3_one_64(p_key.instance_id, h);
+			h = hash_murmur3_one_32(p_key.area_shape, h);
+			return hash_fmix32(hash_murmur3_one_32(p_key.body_shape, h));
+		}
+
+		_FORCE_INLINE_ bool operator==(const BodyKey &p_key) const {
+			return rid == p_key.rid && instance_id == p_key.instance_id && body_shape == p_key.body_shape && area_shape == p_key.area_shape;
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
@@ -93,14 +95,16 @@ class GodotArea3D : public GodotCollisionObject3D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
-	Map<BodyKey, BodyState> monitored_soft_bodies;
-	Map<BodyKey, BodyState> monitored_bodies;
-	Map<BodyKey, BodyState> monitored_areas;
+	HashMap<BodyKey, BodyState, BodyKey> monitored_soft_bodies;
+	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
+	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
-	Set<GodotConstraint3D *> constraints;
+	HashSet<GodotConstraint3D *> constraints;
 
-	virtual void _shapes_changed();
+	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
+
+	void _set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode &r_mode, PhysicsServer3D::AreaSpaceOverrideMode p_new_mode);
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
@@ -120,9 +124,6 @@ public:
 
 	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
-
-	void set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode p_mode);
-	PhysicsServer3D::AreaSpaceOverrideMode get_space_override_mode() const { return space_override_mode; }
 
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }
@@ -162,7 +163,7 @@ public:
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
-	_FORCE_INLINE_ const Set<GodotConstraint3D *> &get_constraints() const { return constraints; }
+	_FORCE_INLINE_ const HashSet<GodotConstraint3D *> &get_constraints() const { return constraints; }
 	_FORCE_INLINE_ void clear_constraints() { constraints.clear(); }
 
 	void set_monitorable(bool p_monitorable);
@@ -170,7 +171,7 @@ public:
 
 	void set_transform(const Transform3D &p_transform);
 
-	void set_space(GodotSpace3D *p_space);
+	void set_space(GodotSpace3D *p_space) override;
 
 	void call_queries();
 

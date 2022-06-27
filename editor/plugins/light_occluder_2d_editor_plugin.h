@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class LightOccluder2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(LightOccluder2DEditor, AbstractPolygon2DEditor);
 
-	LightOccluder2D *node;
+	LightOccluder2D *node = nullptr;
 
 	Ref<OccluderPolygon2D> _ensure_occluder() const;
 
@@ -56,14 +56,14 @@ protected:
 	virtual void _create_resource() override;
 
 public:
-	LightOccluder2DEditor(EditorNode *p_editor);
+	LightOccluder2DEditor();
 };
 
 class LightOccluder2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(LightOccluder2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	LightOccluder2DEditorPlugin(EditorNode *p_node);
+	LightOccluder2DEditorPlugin();
 };
 
 #endif // LIGHT_OCCLUDER_2D_EDITOR_PLUGIN_H

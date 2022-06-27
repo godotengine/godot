@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "test_macros.h"
 
-Map<String, TestFunc> *test_commands = nullptr;
+HashMap<String, TestFunc> *test_commands = nullptr;
 
 int register_test_command(String p_command, TestFunc p_function) {
 	if (!test_commands) {
-		test_commands = new Map<String, TestFunc>;
+		test_commands = new HashMap<String, TestFunc>;
 	}
 	test_commands->insert(p_command, p_function);
 	return 0;

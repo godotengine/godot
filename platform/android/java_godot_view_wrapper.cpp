@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 	JNIEnv *env = get_jni_env();
-	ERR_FAIL_COND(env == nullptr);
+	ERR_FAIL_NULL(env);
 
 	_godot_view = env->NewGlobalRef(godot_view);
 
@@ -48,27 +48,27 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 }
 
 void GodotJavaViewWrapper::request_pointer_capture() {
-	if (_request_pointer_capture != 0) {
+	if (_request_pointer_capture != nullptr) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(_godot_view, _request_pointer_capture);
 	}
 }
 
 void GodotJavaViewWrapper::release_pointer_capture() {
-	if (_request_pointer_capture != 0) {
+	if (_request_pointer_capture != nullptr) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(_godot_view, _release_pointer_capture);
 	}
 }
 
 void GodotJavaViewWrapper::set_pointer_icon(int pointer_type) {
-	if (_set_pointer_icon != 0) {
+	if (_set_pointer_icon != nullptr) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_COND(env == nullptr);
+		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(_godot_view, _set_pointer_icon, pointer_type);
 	}
@@ -76,7 +76,7 @@ void GodotJavaViewWrapper::set_pointer_icon(int pointer_type) {
 
 GodotJavaViewWrapper::~GodotJavaViewWrapper() {
 	JNIEnv *env = get_jni_env();
-	ERR_FAIL_COND(env == nullptr);
+	ERR_FAIL_NULL(env);
 
 	env->DeleteGlobalRef(_godot_view);
 	env->DeleteGlobalRef(_cls);

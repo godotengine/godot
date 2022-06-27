@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "animation_blend_space_2d.h"
 
+#include "animation_blend_tree.h"
 #include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -133,7 +134,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 			}
 		}
 		if (erase) {
-			triangles.remove(i);
+			triangles.remove_at(i);
 
 			i--;
 		}
@@ -223,7 +224,7 @@ int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
-	triangles.remove(p_triangle);
+	triangles.remove_at(p_triangle);
 }
 
 int AnimationNodeBlendSpace2D::get_triangle_count() const {
@@ -431,13 +432,13 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
+double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_seek_root) {
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
 	int closest = get_parameter(this->closest);
 	double length_internal = get_parameter(this->length_internal);
-	float mind = 0.0; //time of min distance point
+	double mind = 0.0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
 		if (triangles.size() == 0) {
@@ -501,7 +502,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					float t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, blend_weights[j], FILTER_IGNORE, false);
+					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE, false);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -513,7 +514,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 
 			if (!found) {
 				//ignore
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, 0, FILTER_IGNORE, false);
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, false);
 			}
 		}
 	} else {
@@ -529,19 +530,25 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 		}
 
 		if (new_closest != closest && new_closest != -1) {
-			float from = 0.0;
+			double from = 0.0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
+				//for ping-pong loop
+				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[closest].node);
+				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
+				if (!na_c.is_null() && !na_n.is_null()) {
+					na_n->set_backward(na_c->is_backward());
+				}
 				//see how much animation remains
-				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, 0.0, FILTER_IGNORE, false);
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, false);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, false);
 			length_internal = from + mind;
 
 			closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
 		}
 	}
 

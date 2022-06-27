@@ -10,13 +10,55 @@ import os
 import pickle
 import sys
 import time
+from types import ModuleType
 from collections import OrderedDict
+from importlib.util import spec_from_file_location, module_from_spec
+
+# Explicitly resolve the helper modules, this is done to avoid clash with
+# modules of the same name that might be randomly added (e.g. someone adding
+# an `editor.py` file at the root of the module creates a clash with the editor
+# folder when doing `import editor.template_builder`)
+
+
+def _helper_module(name, path):
+    spec = spec_from_file_location(name, path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    # Ensure the module's parents are in loaded to avoid loading the wrong parent
+    # when doing "import foo.bar" while only "foo.bar" as declared as helper module
+    child_module = module
+    parent_name = name
+    while True:
+        try:
+            parent_name, child_name = parent_name.rsplit(".", 1)
+        except ValueError:
+            break
+        try:
+            parent_module = sys.modules[parent_name]
+        except KeyError:
+            parent_module = ModuleType(parent_name)
+            sys.modules[parent_name] = parent_module
+        setattr(parent_module, child_name, child_module)
+
+
+_helper_module("gles3_builders", "gles3_builders.py")
+_helper_module("glsl_builders", "glsl_builders.py")
+_helper_module("methods", "methods.py")
+_helper_module("platform_methods", "platform_methods.py")
+_helper_module("version", "version.py")
+_helper_module("core.core_builders", "core/core_builders.py")
+_helper_module("main.main_builders", "main/main_builders.py")
+_helper_module("modules.modules_builders", "modules/modules_builders.py")
 
 # Local
 import methods
 import glsl_builders
 import gles3_builders
-from platform_methods import run_in_subprocess
+
+if methods.get_cmdline_bool("tools", True):
+    _helper_module("editor.editor_builders", "editor/editor_builders.py")
+    _helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Scan possible build platforms
 
@@ -61,11 +103,13 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
-    custom_tools = ["mingw"]
+if platform_arg == "android":
+    custom_tools = ["clang", "clang++", "as", "ar", "link"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
+elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
+    custom_tools = ["mingw"]
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -128,20 +172,23 @@ opts.Add(BoolVariable("production", "Set defaults to build Godot for use in prod
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 
 # Components
-opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
+opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 video driver", True))
+opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
-opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
+opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
+opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
@@ -150,12 +197,11 @@ opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable",
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("disable_classes", "Disable given classes (comma separated)", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
-opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
+opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Thirdparty libraries
-opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
@@ -320,9 +366,23 @@ if env_base["target"] == "debug":
     # working on the engine itself.
     env_base.Append(CPPDEFINES=["DEV_ENABLED"])
 
+# SCons speed optimization controlled by the `fast_unsafe` option, which provide
+# more than 10 s speed up for incremental rebuilds.
+# Unsafe as they reduce the certainty of rebuilding all changed files, so it's
+# enabled by default for `debug` builds, and can be overridden from command line.
+# Ref: https://github.com/SCons/scons/wiki/GoFastButton
+if methods.get_cmdline_bool("fast_unsafe", env_base["target"] == "debug"):
+    # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
+    env_base.Decider("MD5-timestamp")
+    env_base.SetOption("implicit_cache", 1)
+    env_base.SetOption("max_drift", 60)
+
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
+if not env_base.File("#main/splash_editor.png").exists():
+    # Force disabling editor splash if missing.
+    env_base["no_editor_splash"] = True
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
@@ -337,19 +397,17 @@ if selected_platform in platform_list:
     sys.path.insert(0, tmppath)
     import detect
 
-    if "create" in dir(detect):
-        env = detect.create(env_base)
-    else:
-        env = env_base.Clone()
+    env = env_base.Clone()
 
-    # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-    from SCons import __version__ as scons_raw_version
+    if env["compiledb"]:
+        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
+        from SCons import __version__ as scons_raw_version
 
-    scons_ver = env._get_major_minor_revision(scons_raw_version)
+        scons_ver = env._get_major_minor_revision(scons_raw_version)
 
-    if scons_ver >= (4, 0, 0):
-        env.Tool("compilation_db")
-        env.Alias("compiledb", env.CompilationDatabase())
+        if scons_ver >= (4, 0, 0):
+            env.Tool("compilation_db")
+            env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
     # manually by the user.
@@ -559,10 +617,10 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
                 if cc_version_major == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
+                if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+                    env.Append(CCFLAGS=["-Wno-error=return-type"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
-        else:  # always enable those errors
-            env.Append(CCFLAGS=["-Werror=return-type"])
 
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()
@@ -574,7 +632,8 @@ if selected_platform in platform_list:
 
     if env["target"] == "release":
         if env["tools"]:
-            print("Error: The editor can only be built with `target=debug` or `target=release_debug`.")
+            print("ERROR: The editor can only be built with `target=debug` or `target=release_debug`.")
+            print("       Use `tools=no target=release` to build a release export template.")
             Exit(255)
         suffix += ".opt"
         env.Append(CPPDEFINES=["NDEBUG"])
@@ -683,7 +742,7 @@ if selected_platform in platform_list:
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
-    editor_module_list = ["freetype"]
+    editor_module_list = []
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
             "Build option 'module_"
@@ -706,19 +765,13 @@ if selected_platform in platform_list:
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
+        "GLES3_GLSL": env.Builder(
+            action=env.Run(gles3_builders.build_gles3_headers, 'Building GLES3 GLSL header: "$TARGET"'),
+            suffix="glsl.gen.h",
+            src_suffix=".glsl",
+        ),
     }
     env.Append(BUILDERS=GLSL_BUILDERS)
-
-    if not env["platform"] == "server":
-        env.Append(
-            BUILDERS={
-                "GLES3_GLSL": env.Builder(
-                    action=run_in_subprocess(gles3_builders.build_gles3_headers),
-                    suffix="glsl.gen.h",
-                    src_suffix=".glsl",
-                )
-            }
-        )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
@@ -779,6 +832,7 @@ elif selected_platform != "":
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():
+    # FIXME: This method mixes both cosmetic progress stuff and cache handling...
     methods.show_progress(env)
     # TODO: replace this with `env.Dump(format="json")`
     # once we start requiring SCons 4.0 as min version.

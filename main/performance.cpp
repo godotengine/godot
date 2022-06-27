@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -247,8 +247,8 @@ Array Performance::get_custom_monitor_names() {
 	Array return_array;
 	return_array.resize(_monitor_map.size());
 	int index = 0;
-	for (OrderedHashMap<StringName, MonitorCall>::Element i = _monitor_map.front(); i; i = i.next()) {
-		return_array.set(index, i.key());
+	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {
+		return_array.set(index, i.key);
 		index++;
 	}
 	return return_array;

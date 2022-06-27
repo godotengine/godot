@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCMultiplayerPeer" inherits="MultiplayerPeer" version="4.0">
+<class name="WebRTCMultiplayerPeer" inherits="MultiplayerPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A simple interface to create a peer-to-peer mesh network composed of [WebRTCPeerConnection] that is compatible with the [MultiplayerAPI].
 	</brief_description>
@@ -32,7 +32,7 @@
 			<return type="Dictionary" />
 			<argument index="0" name="peer_id" type="int" />
 			<description>
-				Return a dictionary representation of the peer with given [code]peer_id[/code] with three keys. [code]connection[/code] containing the [WebRTCPeerConnection] to this peer, [code]channels[/code] an array of three [WebRTCDataChannel], and [code]connected[/code] a boolean representing if the peer connection is currently connected (all three channels are open).
+				Returns a dictionary representation of the peer with given [code]peer_id[/code] with three keys. [code]connection[/code] containing the [WebRTCPeerConnection] to this peer, [code]channels[/code] an array of three [WebRTCDataChannel], and [code]connected[/code] a boolean representing if the peer connection is currently connected (all three channels are open).
 			</description>
 		</method>
 		<method name="get_peers">

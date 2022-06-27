@@ -119,7 +119,7 @@ namespace GodotTools.Build
 
         private void IssueActivated(int idx)
         {
-            if (idx < 0 || idx >= _issuesList.GetItemCount())
+            if (idx < 0 || idx >= _issuesList.ItemCount)
                 throw new IndexOutOfRangeException("Item list index out of range");
 
             // Get correct issue idx from issue list
@@ -193,7 +193,7 @@ namespace GodotTools.Build
                     string itemText = lineBreakIdx == -1 ? text : text.Substring(0, lineBreakIdx);
                     _issuesList.AddItem(itemText, issue.Warning ? warningIcon : errorIcon);
 
-                    int index = _issuesList.GetItemCount() - 1;
+                    int index = _issuesList.ItemCount - 1;
                     _issuesList.SetItemTooltip(index, tooltip);
                     _issuesList.SetItemMetadata(index, i);
                 }
@@ -207,7 +207,7 @@ namespace GodotTools.Build
 
             _issuesList.Clear();
 
-            var issue = new BuildIssue {Message = cause, Warning = false};
+            var issue = new BuildIssue { Message = cause, Warning = false };
 
             ErrorCount += 1;
             _issues.Add(issue);
@@ -334,8 +334,13 @@ namespace GodotTools.Build
             }
         }
 
-        private void IssuesListRmbSelected(int index, Vector2 atPosition)
+        private void IssuesListClicked(int index, Vector2 atPosition, int mouseButtonIndex)
         {
+            if (mouseButtonIndex != (int)MouseButton.Right)
+            {
+                return;
+            }
+
             _ = index; // Unused
 
             _issuesListContextMenu.Clear();
@@ -348,9 +353,9 @@ namespace GodotTools.Build
                     label: "Copy Error".TTR(), (int)IssuesContextMenuOption.Copy);
             }
 
-            if (_issuesListContextMenu.GetItemCount() > 0)
+            if (_issuesListContextMenu.ItemCount > 0)
             {
-                _issuesListContextMenu.Position = (Vector2i)(_issuesList.RectGlobalPosition + atPosition);
+                _issuesListContextMenu.Position = (Vector2i)(_issuesList.GlobalPosition + atPosition);
                 _issuesListContextMenu.Popup();
             }
         }
@@ -375,7 +380,7 @@ namespace GodotTools.Build
             };
             _issuesList.ItemActivated += IssueActivated;
             _issuesList.AllowRmbSelect = true;
-            _issuesList.ItemRmbSelected += IssuesListRmbSelected;
+            _issuesList.ItemClicked += IssuesListClicked;
             hsc.AddChild(_issuesList);
 
             _issuesListContextMenu = new PopupMenu();

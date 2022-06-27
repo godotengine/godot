@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -196,10 +196,8 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_constant_count = constant_map.size();
 		function->constants.resize(constant_map.size());
 		function->_constants_ptr = function->constants.ptrw();
-		const Variant *K = nullptr;
-		while ((K = constant_map.next(K))) {
-			int idx = constant_map[*K];
-			function->constants.write[idx] = *K;
+		for (const KeyValue<Variant, int> &K : constant_map) {
+			function->constants.write[K.value] = K.key;
 		}
 	} else {
 		function->_constants_ptr = nullptr;
@@ -468,7 +466,7 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS, 1);
 			break;
 		case Variant::TRANSFORM3D:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM, 1);
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D, 1);
 			break;
 		case Variant::COLOR:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);
@@ -688,6 +686,7 @@ void GDScriptByteCodeGenerator::write_ternary_false_expr(const Address &p_expr) 
 void GDScriptByteCodeGenerator::write_end_ternary() {
 	patch_jump(ternary_jump_skip_pos.back()->get());
 	ternary_jump_skip_pos.pop_back();
+	ternary_result.pop_back();
 }
 
 void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address &p_index, const Address &p_source) {
@@ -1079,6 +1078,24 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 	append(Variant::get_validated_builtin_method(p_type, p_method));
 }
 
+void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) {
+	bool is_validated = false;
+
+	MethodBind *method = ClassDB::get_method(p_class, p_method);
+
+	if (!is_validated) {
+		// Perform regular call.
+		append(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
+		for (int i = 0; i < p_arguments.size(); i++) {
+			append(p_arguments[i]);
+		}
+		append(p_target);
+		append(method);
+		append(p_arguments.size());
+		return;
+	}
+}
+
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -1192,8 +1209,8 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 	append(p_function_name);
 }
 
-void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures) {
-	append(GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
+void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) {
+	append(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
 	for (int i = 0; i < p_captures.size(); i++) {
 		append(p_captures[i]);
 	}

@@ -360,6 +360,16 @@ struct IndexSubtable
 
 struct IndexSubtableRecord
 {
+  /* XXX Remove this and fix by not inserting it into vector. */
+  IndexSubtableRecord& operator = (const IndexSubtableRecord &o)
+  {
+    firstGlyphIndex = o.firstGlyphIndex;
+    lastGlyphIndex = o.lastGlyphIndex;
+    offsetToSubtable = (unsigned) o.offsetToSubtable;
+    assert (offsetToSubtable.is_null ());
+    return *this;
+  }
+
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
@@ -508,8 +518,8 @@ struct IndexSubtableRecord
 						   offset, length, format);
   }
 
-  HBGlyphID			firstGlyphIndex;
-  HBGlyphID			lastGlyphIndex;
+  HBGlyphID16			firstGlyphIndex;
+  HBGlyphID16			lastGlyphIndex;
   Offset32To<IndexSubtable>	offsetToSubtable;
   public:
   DEFINE_SIZE_STATIC (8);
@@ -679,8 +689,8 @@ struct BitmapSizeTable
   HBUINT32		colorRef;
   SBitLineMetrics	horizontal;
   SBitLineMetrics	vertical;
-  HBGlyphID		startGlyphIndex;
-  HBGlyphID		endGlyphIndex;
+  HBGlyphID16		startGlyphIndex;
+  HBGlyphID16		endGlyphIndex;
   HBUINT8		ppemX;
   HBUINT8		ppemY;
   HBUINT8		bitDepth;
@@ -809,15 +819,14 @@ struct CBDT
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
-      cblc = hb_sanitize_context_t ().reference_table<CBLC> (face);
-      cbdt = hb_sanitize_context_t ().reference_table<CBDT> (face);
+      this->cblc = hb_sanitize_context_t ().reference_table<CBLC> (face);
+      this->cbdt = hb_sanitize_context_t ().reference_table<CBDT> (face);
 
       upem = hb_face_get_upem (face);
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
       this->cblc.destroy ();
       this->cbdt.destroy ();
@@ -978,7 +987,10 @@ CBLC::subset (hb_subset_context_t *c) const
   return_trace (CBLC::sink_cbdt (c, &cbdt_prime));
 }
 
-struct CBDT_accelerator_t : CBDT::accelerator_t {};
+struct CBDT_accelerator_t : CBDT::accelerator_t {
+  CBDT_accelerator_t (hb_face_t *face) : CBDT::accelerator_t (face) {}
+};
+
 
 } /* namespace OT */
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ private:
 	PhysicsServer3D::BodyMode body_mode = PhysicsServer3D::BODY_MODE_STATIC;
 
 	struct ShapeData {
-		Object *owner = nullptr;
+		ObjectID owner_id;
 		Transform3D xform;
 		struct ShapeBase {
 			RID debug_shape;
@@ -71,14 +71,14 @@ private:
 
 	int total_subshapes = 0;
 
-	Map<uint32_t, ShapeData> shapes;
+	RBMap<uint32_t, ShapeData> shapes;
 
 	bool only_update_transform_changes = false; // This is used for sync to physics.
 
 	bool capture_input_on_drag = false;
 	bool ray_pickable = true;
 
-	Set<uint32_t> debug_shapes_to_update;
+	HashSet<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
 	Transform3D debug_shape_old_transform;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,21 +68,21 @@ private:
 public:
 	Error read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string);
 	void set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size);
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	virtual int get_max_packet_size() const { return _packet_buffer.size(); };
-	virtual int get_current_outbound_buffered_amount() const;
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	virtual int get_max_packet_size() const override { return _packet_buffer.size(); };
+	virtual int get_current_outbound_buffered_amount() const override;
 
-	virtual void close(int p_code = 1000, String p_reason = "");
-	virtual bool is_connected_to_host() const;
-	virtual IPAddress get_connected_host() const;
-	virtual uint16_t get_connected_port() const;
+	virtual void close(int p_code = 1000, String p_reason = "") override;
+	virtual bool is_connected_to_host() const override;
+	virtual IPAddress get_connected_host() const override;
+	virtual uint16_t get_connected_port() const override;
 
-	virtual WriteMode get_write_mode() const;
-	virtual void set_write_mode(WriteMode p_mode);
-	virtual bool was_string_packet() const;
-	virtual void set_no_delay(bool p_enabled);
+	virtual WriteMode get_write_mode() const override;
+	virtual void set_write_mode(WriteMode p_mode) override;
+	virtual bool was_string_packet() const override;
+	virtual void set_no_delay(bool p_enabled) override;
 
 	EMWSPeer();
 	~EMWSPeer();

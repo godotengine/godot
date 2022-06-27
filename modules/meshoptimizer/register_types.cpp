@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,17 +32,31 @@
 #include "scene/resources/surface_tool.h"
 #include "thirdparty/meshoptimizer/meshoptimizer.h"
 
-void register_meshoptimizer_types() {
+void initialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	SurfaceTool::optimize_vertex_cache_func = meshopt_optimizeVertexCache;
 	SurfaceTool::simplify_func = meshopt_simplify;
 	SurfaceTool::simplify_with_attrib_func = meshopt_simplifyWithAttributes;
 	SurfaceTool::simplify_scale_func = meshopt_simplifyScale;
 	SurfaceTool::simplify_sloppy_func = meshopt_simplifySloppy;
+	SurfaceTool::generate_remap_func = meshopt_generateVertexRemap;
+	SurfaceTool::remap_vertex_func = meshopt_remapVertexBuffer;
+	SurfaceTool::remap_index_func = meshopt_remapIndexBuffer;
 }
 
-void unregister_meshoptimizer_types() {
+void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	SurfaceTool::optimize_vertex_cache_func = nullptr;
 	SurfaceTool::simplify_func = nullptr;
 	SurfaceTool::simplify_scale_func = nullptr;
 	SurfaceTool::simplify_sloppy_func = nullptr;
+	SurfaceTool::generate_remap_func = nullptr;
+	SurfaceTool::remap_vertex_func = nullptr;
+	SurfaceTool::remap_index_func = nullptr;
 }

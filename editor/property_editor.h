@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef PROPERTY_EDITOR_H
 #define PROPERTY_EDITOR_H
 
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -46,8 +46,9 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-class PropertyValueEvaluator;
 class CreateDialog;
+class EditorFileDialog;
+class PropertyValueEvaluator;
 class PropertySelector;
 
 class EditorResourceConversionPlugin : public RefCounted {
@@ -57,8 +58,8 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC(String, _converts_to)
-	GDVIRTUAL1RC(bool, _handles, RES)
-	GDVIRTUAL1RC(RES, _convert, RES)
+	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
+	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
 
 public:
 	virtual String converts_to() const;
@@ -94,48 +95,50 @@ class CustomPropertyEditor : public PopupPanel {
 		EASING_OUT_IN
 	};
 
-	PopupMenu *menu;
-	SceneTreeDialog *scene_tree;
-	EditorFileDialog *file;
-	ConfirmationDialog *error;
+	PopupMenu *menu = nullptr;
+	SceneTreeDialog *scene_tree = nullptr;
+	EditorFileDialog *file = nullptr;
+	EditorLocaleDialog *locale = nullptr;
+	ConfirmationDialog *error = nullptr;
 	String name;
 	Variant::Type type;
 	Variant v;
 	List<String> field_names;
-	int hint;
+	int hint = 0;
 	String hint_text;
 	HBoxContainer *value_hboxes[MAX_VALUE_EDITORS / 4];
-	VBoxContainer *value_vbox;
+	VBoxContainer *value_vbox = nullptr;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
 	int focused_value_editor;
 	Label *value_label[MAX_VALUE_EDITORS];
 	HScrollBar *scroll[4];
-	HBoxContainer *action_hboxes;
+	HBoxContainer *action_hboxes = nullptr;
 	Button *action_buttons[MAX_ACTION_BUTTONS];
-	MenuButton *type_button;
+	MenuButton *type_button = nullptr;
 	Vector<String> inheritors_array;
-	TextureRect *texture_preview;
-	ColorPicker *color_picker;
-	TextEdit *text_edit;
-	bool read_only;
-	bool picking_viewport;
-	GridContainer *checks20gc;
+	TextureRect *texture_preview = nullptr;
+	ColorPicker *color_picker = nullptr;
+	TextEdit *text_edit = nullptr;
+	bool read_only = false;
+	bool picking_viewport = false;
+	GridContainer *checks20gc = nullptr;
 	CheckBox *checks20[20];
-	SpinBox *spinbox;
-	HSlider *slider;
+	SpinBox *spinbox = nullptr;
+	HSlider *slider = nullptr;
 
-	Control *easing_draw;
-	CreateDialog *create_dialog;
-	PropertySelector *property_select;
+	Control *easing_draw = nullptr;
+	CreateDialog *create_dialog = nullptr;
+	PropertySelector *property_select = nullptr;
 
-	Object *owner;
+	Object *owner = nullptr;
 
-	bool updating;
+	bool updating = false;
 
-	PropertyValueEvaluator *evaluator;
+	PropertyValueEvaluator *evaluator = nullptr;
 
 	void _text_edit_changed();
 	void _file_selected(String p_file);
+	void _locale_selected(String p_locale);
 	void _modified(String p_string);
 
 	real_t _parse_real_expression(String text);

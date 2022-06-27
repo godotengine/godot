@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,9 @@
 
 #include "node_dock.h"
 
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "connections_dialog.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
@@ -51,9 +52,12 @@ void NodeDock::_bind_methods() {
 }
 
 void NodeDock::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
-		groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
+			groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -112,7 +116,7 @@ NodeDock::NodeDock() {
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
 
-	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
+	connections = memnew(ConnectionsDock);
 	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -128,8 +132,12 @@ NodeDock::NodeDock() {
 	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
-	select_a_node->set_valign(Label::VALIGN_CENTER);
-	select_a_node->set_align(Label::ALIGN_CENTER);
-	select_a_node->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	add_child(select_a_node);
+}
+
+NodeDock::~NodeDock() {
+	singleton = nullptr;
 }

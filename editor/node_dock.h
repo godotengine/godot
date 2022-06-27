@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,29 +31,34 @@
 #ifndef NODE_DOCK_H
 #define NODE_DOCK_H
 
-#include "connections_dialog.h"
 #include "groups_editor.h"
+
+class ConnectionsDock;
 
 class NodeDock : public VBoxContainer {
 	GDCLASS(NodeDock, VBoxContainer);
 
-	Button *connections_button;
-	Button *groups_button;
+	Button *connections_button = nullptr;
+	Button *groups_button = nullptr;
 
-	ConnectionsDock *connections;
-	GroupsEditor *groups;
+	ConnectionsDock *connections = nullptr;
+	GroupsEditor *groups = nullptr;
 
-	HBoxContainer *mode_hb;
+	HBoxContainer *mode_hb = nullptr;
 
-	Label *select_a_node;
+	Label *select_a_node = nullptr;
+
+private:
+	static NodeDock *singleton;
+
+public:
+	static NodeDock *get_singleton() { return singleton; }
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	static NodeDock *singleton;
-
 	void set_node(Node *p_node);
 
 	void show_groups();
@@ -62,6 +67,7 @@ public:
 	void update_lists();
 
 	NodeDock();
+	~NodeDock();
 };
 
 #endif // NODE_DOCK_H

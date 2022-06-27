@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,16 +89,16 @@ void ExtendGDScriptParser::update_symbols() {
 
 		for (int i = 0; i < class_symbol.children.size(); i++) {
 			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
-			members.set(symbol.name, &symbol);
+			members.insert(symbol.name, &symbol);
 
 			// cache level one inner classes
 			if (symbol.kind == lsp::SymbolKind::Class) {
 				ClassMembers inner_class;
 				for (int j = 0; j < symbol.children.size(); j++) {
 					const lsp::DocumentSymbol &s = symbol.children[j];
-					inner_class.set(s.name, &s);
+					inner_class.insert(s.name, &s);
 				}
-				inner_classes.set(symbol.name, inner_class);
+				inner_classes.insert(symbol.name, inner_class);
 			}
 		}
 	}
@@ -108,7 +108,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	document_links.clear();
 
 	GDScriptTokenizer tokenizer;
-	FileAccessRef fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	Ref<FileAccess> fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	tokenizer.set_source_code(p_code);
 	while (true) {
 		GDScriptTokenizer::Token token = tokenizer.scan();
@@ -212,12 +212,12 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				const Variant &default_value = m.constant->initializer->reduced_value;
 				String value_text;
 				if (default_value.get_type() == Variant::OBJECT) {
-					RES res = default_value;
+					Ref<Resource> res = default_value;
 					if (res.is_valid() && !res->get_path().is_empty()) {
 						value_text = "preload(\"" + res->get_path() + "\")";
 						if (symbol.documentation.is_empty()) {
-							if (Map<String, ExtendGDScriptParser *>::Element *S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
-								symbol.documentation = S->get()->class_symbol.documentation;
+							if (HashMap<String, ExtendGDScriptParser *>::Iterator S = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(res->get_path())) {
+								symbol.documentation = S->value->class_symbol.documentation;
 							}
 						}
 					} else {
@@ -269,7 +269,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
-					symbol.detail += m.signal->parameters[i]->identifier->name;
+					symbol.detail += m.signal->parameters[j]->identifier->name;
 				}
 				symbol.detail += ")";
 
@@ -541,7 +541,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	for (int c = p_position.character; c >= 0; c--) {
 		start_pos = c;
 		char32_t ch = line[c];
-		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+		bool valid_char = is_ascii_identifier_char(ch);
 		if (!valid_char) {
 			break;
 		}
@@ -550,7 +550,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	int end_pos = p_position.character;
 	for (int c = p_position.character; c < line.length(); c++) {
 		char32_t ch = line[c];
-		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+		bool valid_char = is_ascii_identifier_char(ch);
 		if (!valid_char) {
 			break;
 		}
@@ -661,30 +661,22 @@ const List<lsp::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 
 const Array &ExtendGDScriptParser::get_member_completions() {
 	if (member_completions.is_empty()) {
-		const String *name = members.next(nullptr);
-		while (name) {
-			const lsp::DocumentSymbol *symbol = members.get(*name);
+		for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
+			const lsp::DocumentSymbol *symbol = E.value;
 			lsp::CompletionItem item = symbol->make_completion_item();
-			item.data = JOIN_SYMBOLS(path, *name);
+			item.data = JOIN_SYMBOLS(path, E.key);
 			member_completions.push_back(item.to_json());
-
-			name = members.next(name);
 		}
 
-		const String *_class = inner_classes.next(nullptr);
-		while (_class) {
-			const ClassMembers *inner_class = inner_classes.getptr(*_class);
-			const String *member_name = inner_class->next(nullptr);
-			while (member_name) {
-				const lsp::DocumentSymbol *symbol = inner_class->get(*member_name);
+		for (const KeyValue<String, ClassMembers> &E : inner_classes) {
+			const ClassMembers *inner_class = &E.value;
+
+			for (const KeyValue<String, const lsp::DocumentSymbol *> &F : *inner_class) {
+				const lsp::DocumentSymbol *symbol = F.value;
 				lsp::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(*_class, *member_name));
+				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(E.key, F.key));
 				member_completions.push_back(item.to_json());
-
-				member_name = inner_class->next(member_name);
 			}
-
-			_class = inner_classes.next(_class);
 		}
 	}
 

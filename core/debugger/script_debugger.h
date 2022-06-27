@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,8 @@
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 
 class ScriptDebugger {
@@ -44,7 +44,7 @@ class ScriptDebugger {
 	int depth = -1;
 	bool skip_breakpoints = false;
 
-	Map<int, Set<StringName>> breakpoints;
+	HashMap<int, HashSet<StringName>> breakpoints;
 
 	ScriptLanguage *break_lang = nullptr;
 	Vector<StackInfo> error_stack_info;
@@ -66,7 +66,7 @@ public:
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
-	const Map<int, Set<StringName>> &get_breakpoints() const { return breakpoints; }
+	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 
 	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	ScriptLanguage *get_break_language() const;

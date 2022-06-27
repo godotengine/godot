@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,6 @@
 #include <stdio.h>
 
 class DirAccessJAndroid : public DirAccess {
-	//AAssetDir* aad;
-
 	static jobject io;
 	static jclass cls;
 
@@ -46,12 +44,12 @@ class DirAccessJAndroid : public DirAccess {
 	static jmethodID _dir_close;
 	static jmethodID _dir_is_dir;
 
-	int id;
+	int id = 0;
 
 	String current_dir;
 	String current;
 
-	static DirAccess *create_fs();
+	static Ref<DirAccess> create_fs();
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing
@@ -64,7 +62,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true) const; ///< return current dir location
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);

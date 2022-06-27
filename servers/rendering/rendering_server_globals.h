@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,15 @@
 #ifndef RENDERING_SERVER_GLOBALS_H
 #define RENDERING_SERVER_GLOBALS_H
 
+#include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/storage/light_storage.h"
+#include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/particles_storage.h"
+#include "servers/rendering/storage/texture_storage.h"
 
 class RendererCanvasCull;
 class RendererViewport;
@@ -43,6 +49,12 @@ class RenderingServerGlobals {
 public:
 	static bool threaded;
 
+	static RendererLightStorage *light_storage;
+	static RendererMaterialStorage *material_storage;
+	static RendererMeshStorage *mesh_storage;
+	static RendererParticlesStorage *particles_storage;
+	static RendererTextureStorage *texture_storage;
+	static RendererGI *gi;
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;
 	static RendererCompositor *rasterizer;

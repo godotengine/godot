@@ -70,7 +70,7 @@ layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2DArray de
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 atlas_size; // x used for light probe mode total probes
 	uint ray_count;
 	uint ray_to;
@@ -235,19 +235,39 @@ uint trace_ray(vec3 p_from, vec3 p_to
 	return RAY_MISS;
 }
 
-const float PI = 3.14159265f;
-const float GOLDEN_ANGLE = PI * (3.0 - sqrt(5.0));
-
-vec3 vogel_hemisphere(uint p_index, uint p_count, float p_offset) {
-	float r = sqrt(float(p_index) + 0.5f) / sqrt(float(p_count));
-	float theta = float(p_index) * GOLDEN_ANGLE + p_offset;
-	float y = cos(r * PI * 0.5);
-	float l = sin(r * PI * 0.5);
-	return vec3(l * cos(theta), l * sin(theta), y);
+// https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+uint hash(uint value) {
+	uint state = value * 747796405u + 2891336453u;
+	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
 }
 
-float quick_hash(vec2 pos) {
-	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
+uint random_seed(ivec3 seed) {
+	return hash(seed.x ^ hash(seed.y ^ hash(seed.z)));
+}
+
+// generates a random value in range [0.0, 1.0)
+float randomize(inout uint value) {
+	value = hash(value);
+	return float(value / 4294967296.0);
+}
+
+const float PI = 3.14159265f;
+
+// http://www.realtimerendering.com/raytracinggems/unofficial_RayTracingGems_v1.4.pdf (chapter 15)
+vec3 generate_hemisphere_uniform_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	float factor = sqrt(1 - (noise1 * noise1));
+	return vec3(factor * cos(noise2), factor * sin(noise2), noise1);
+}
+
+vec3 generate_hemisphere_cosine_weighted_direction(inout uint noise) {
+	float noise1 = randomize(noise);
+	float noise2 = randomize(noise) * 2.0 * PI;
+
+	return vec3(sqrt(noise1) * cos(noise2), sqrt(noise1) * sin(noise2), sqrt(1.0 - noise1));
 }
 
 float get_omni_attenuation(float distance, float inv_range, float decay) {
@@ -296,19 +316,24 @@ void main() {
 
 	for (uint i = 0; i < params.light_count; i++) {
 		vec3 light_pos;
+		float dist;
 		float attenuation;
+		float soft_shadowing_disk_size;
 		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL) {
 			vec3 light_vec = lights.data[i].direction;
 			light_pos = position - light_vec * length(params.world_size);
+			dist = length(params.world_size);
 			attenuation = 1.0;
+			soft_shadowing_disk_size = lights.data[i].size;
 		} else {
 			light_pos = lights.data[i].position;
-			float d = distance(position, light_pos);
-			if (d > lights.data[i].range) {
+			dist = distance(position, light_pos);
+			if (dist > lights.data[i].range) {
 				continue;
 			}
+			soft_shadowing_disk_size = lights.data[i].size / dist;
 
-			attenuation = get_omni_attenuation(d, 1.0 / lights.data[i].range, lights.data[i].attenuation);
+			attenuation = get_omni_attenuation(dist, 1.0 / lights.data[i].range, lights.data[i].attenuation);
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
 				vec3 rel = normalize(position - light_pos);
@@ -332,27 +357,70 @@ void main() {
 			continue; //no need to do anything
 		}
 
-		if (trace_ray(position + light_dir * params.bias, light_pos) == RAY_MISS) {
-			vec3 light = lights.data[i].color * lights.data[i].energy * attenuation;
-			if (lights.data[i].static_bake) {
-				static_light += light;
+		float penumbra = 0.0;
+		if (lights.data[i].size > 0.0) {
+			vec3 light_to_point = -light_dir;
+			vec3 aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+			vec3 light_to_point_tan = normalize(cross(light_to_point, aux));
+			vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
+
+			const uint shadowing_rays_check_penumbra_denom = 2;
+			uint shadowing_ray_count = params.ray_count;
+
+			uint hits = 0;
+			uint noise = random_seed(ivec3(atlas_pos, 43573547 /* some prime */));
+			vec3 light_disk_to_point = light_to_point;
+			for (uint j = 0; j < shadowing_ray_count; j++) {
+				// Optimization:
+				// Once already traced an important proportion of rays, if all are hits or misses,
+				// assume we're not in the penumbra so we can infer the rest would have the same result
+				if (j == shadowing_ray_count / shadowing_rays_check_penumbra_denom) {
+					if (hits == j) {
+						// Assume totally lit
+						hits = shadowing_ray_count;
+						break;
+					} else if (hits == 0) {
+						// Assume totally dark
+						hits = 0;
+						break;
+					}
+				}
+
+				float r = randomize(noise);
+				float a = randomize(noise) * 2.0 * PI;
+				vec2 disk_sample = (r * vec2(cos(a), sin(a))) * soft_shadowing_disk_size * lights.data[i].shadow_blur;
+				light_disk_to_point = normalize(light_to_point + disk_sample.x * light_to_point_tan + disk_sample.y * light_to_point_bitan);
+
+				if (trace_ray(position - light_disk_to_point * params.bias, position - light_disk_to_point * dist) == RAY_MISS) {
+					hits++;
+				}
+			}
+			penumbra = float(hits) / float(shadowing_ray_count);
+		} else {
+			if (trace_ray(position + light_dir * params.bias, light_pos) == RAY_MISS) {
+				penumbra = 1.0;
+			}
+		}
+
+		vec3 light = lights.data[i].color * lights.data[i].energy * attenuation * penumbra;
+		if (lights.data[i].static_bake) {
+			static_light += light;
 #ifdef USE_SH_LIGHTMAPS
 
-				float c[4] = float[](
-						0.282095, //l0
-						0.488603 * light_dir.y, //l1n1
-						0.488603 * light_dir.z, //l1n0
-						0.488603 * light_dir.x //l1p1
-				);
+			float c[4] = float[](
+					0.282095, //l0
+					0.488603 * light_dir.y, //l1n1
+					0.488603 * light_dir.z, //l1n0
+					0.488603 * light_dir.x //l1p1
+			);
 
-				for (uint j = 0; j < 4; j++) {
-					sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
-				}
+			for (uint j = 0; j < 4; j++) {
+				sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
+			}
 #endif
 
-			} else {
-				dynamic_light += light;
-			}
+		} else {
+			dynamic_light += light;
 		}
 	}
 
@@ -404,8 +472,9 @@ void main() {
 #endif
 	vec3 light_average = vec3(0.0);
 	float active_rays = 0.0;
+	uint noise = random_seed(ivec3(params.ray_from, atlas_pos));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = normal_mat * vogel_hemisphere(i, params.ray_count, quick_hash(vec2(atlas_pos)));
+		vec3 ray_dir = normal_mat * generate_hemisphere_cosine_weighted_direction(noise);
 
 		uint tidx;
 		vec3 barycentric;
@@ -550,8 +619,9 @@ void main() {
 			vec4(0.0),
 			vec4(0.0));
 
+	uint noise = random_seed(ivec3(params.ray_from, probe_index, 49502741 /* some prime */));
 	for (uint i = params.ray_from; i < params.ray_to; i++) {
-		vec3 ray_dir = vogel_hemisphere(i, params.ray_count, quick_hash(vec2(float(probe_index), 0.0)));
+		vec3 ray_dir = generate_hemisphere_uniform_direction(noise);
 		if (bool(i & 1)) {
 			//throw to both sides, so alternate them
 			ray_dir.z *= -1.0;

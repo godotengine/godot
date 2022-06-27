@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 #define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
 #include "editor/editor_translation_parser.h"
 #include "modules/gdscript/gdscript_parser.h"
 
@@ -44,9 +44,9 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
 	StringName trn_func = "tr_n";
-	Set<StringName> assignment_patterns;
-	Set<StringName> first_arg_patterns;
-	Set<StringName> second_arg_patterns;
+	HashSet<StringName> assignment_patterns;
+	HashSet<StringName> first_arg_patterns;
+	HashSet<StringName> second_arg_patterns;
 	// FileDialog patterns.
 	StringName fd_add_filter = "add_filter";
 	StringName fd_set_filter = "set_filters";

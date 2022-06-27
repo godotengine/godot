@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,7 @@ public:
 		SHAPE_HSV_RECTANGLE,
 		SHAPE_HSV_WHEEL,
 		SHAPE_VHS_CIRCLE,
+		SHAPE_OKHSL_CIRCLE,
 
 		SHAPE_MAX
 	};
@@ -75,6 +76,7 @@ public:
 private:
 	static Ref<Shader> wheel_shader;
 	static Ref<Shader> circle_shader;
+	static Ref<Shader> circle_ok_color_shader;
 	static List<Color> preset_cache;
 
 	Control *screen = nullptr;
@@ -124,7 +126,7 @@ private:
 	float h = 0.0;
 	float s = 0.0;
 	float v = 0.0;
-	Color last_hsv;
+	Color last_color;
 
 	void _html_submitted(const String &p_html);
 	void _value_changed(double);
@@ -160,6 +162,8 @@ public:
 
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
+
+	int get_preset_size();
 
 	void _set_pick_color(const Color &p_color, bool p_update_sliders);
 	void set_pick_color(const Color &p_color);
@@ -231,7 +235,7 @@ public:
 	ColorPicker *get_picker();
 	PopupPanel *get_popup();
 
-	ColorPickerButton();
+	ColorPickerButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);

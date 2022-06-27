@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,16 +34,20 @@
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
-#include "editor_node.h"
-#include "editor_scale.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
-		update_plugins();
-	} else if (p_what == Node::NOTIFICATION_READY) {
-		plugin_config_dialog->connect("plugin_ready", Callable(EditorNode::get_singleton(), "_on_plugin_ready"));
-		plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+	switch (p_what) {
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			update_plugins();
+		} break;
+
+		case Node::NOTIFICATION_READY: {
+			plugin_config_dialog->connect("plugin_ready", Callable(EditorNode::get_singleton(), "_on_plugin_ready"));
+			plugin_list->connect("button_clicked", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+		} break;
 	}
 }
 
@@ -142,7 +146,10 @@ void EditorPluginSettings::_create_clicked() {
 	plugin_config_dialog->popup_centered();
 }
 
-void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -157,7 +164,7 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();
@@ -165,7 +172,7 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 
 	Vector<String> plugins;
 	da->list_dir_begin();
-	for (String path = da->get_next(); path != String(); path = da->get_next()) {
+	for (String path = da->get_next(); !path.is_empty(); path = da->get_next()) {
 		if (path[0] == '.' || !da->current_is_dir()) {
 			continue;
 		}
@@ -196,12 +203,9 @@ EditorPluginSettings::EditorPluginSettings() {
 	l->set_theme_type_variation("HeaderSmall");
 	title_hb->add_child(l);
 	title_hb->add_spacer();
-	create_plugin = memnew(Button(TTR("Create")));
+	Button *create_plugin = memnew(Button(TTR("Create New Plugin")));
 	create_plugin->connect("pressed", callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin);
-	update_list = memnew(Button(TTR("Update")));
-	update_list->connect("pressed", callable_mp(this, &EditorPluginSettings::update_plugins));
-	title_hb->add_child(update_list);
 	add_child(title_hb);
 
 	plugin_list = memnew(Tree);
@@ -236,6 +240,4 @@ EditorPluginSettings::EditorPluginSettings() {
 	mc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(mc);
-
-	updating = false;
 }

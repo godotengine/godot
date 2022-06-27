@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "display_server_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
@@ -37,6 +38,7 @@
 #include "ios.h"
 #import "keyboard_input_view.h"
 #include "os_iphone.h"
+#include "tts_ios.h"
 #import "view_controller.h"
 
 #import <Foundation/Foundation.h>
@@ -51,9 +53,14 @@ DisplayServerIPhone *DisplayServerIPhone::get_singleton() {
 DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
+	// Init TTS
+	tts = [[TTS_IOS alloc] init];
+
 #if defined(GLES3_ENABLED)
 	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
 	// again,
+	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
+	// We are hardcoding the rendering_driver to "vulkan" down below
 
 	if (rendering_driver == "opengl_es") {
 		bool gl_initialization_error = false;
@@ -131,18 +138,16 @@ DisplayServerIPhone::DisplayServerIPhone(const String &p_rendering_driver, Windo
 
 DisplayServerIPhone::~DisplayServerIPhone() {
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-			rendering_device_vulkan = nullptr;
-		}
+	if (rendering_device_vulkan) {
+		rendering_device_vulkan->finalize();
+		memdelete(rendering_device_vulkan);
+		rendering_device_vulkan = nullptr;
+	}
 
-		if (context_vulkan) {
-			context_vulkan->window_destroy(MAIN_WINDOW_ID);
-			memdelete(context_vulkan);
-			context_vulkan = nullptr;
-		}
+	if (context_vulkan) {
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+		memdelete(context_vulkan);
+		context_vulkan = nullptr;
 	}
 #endif
 }
@@ -231,7 +236,7 @@ void DisplayServerIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_presse
 		ev->set_position(Vector2(p_x, p_y));
 		perform_event(ev);
 	}
-};
+}
 
 void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
@@ -241,16 +246,16 @@ void DisplayServerIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int 
 		ev->set_position(Vector2(p_x, p_y));
 		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
 		perform_event(ev);
-	};
-};
+	}
+}
 
 void DisplayServerIPhone::perform_event(const Ref<InputEvent> &p_event) {
 	Input::get_singleton()->parse_input_event(p_event);
-};
+}
 
 void DisplayServerIPhone::touches_cancelled(int p_idx) {
 	touch_press(p_idx, -1, -1, false, false);
-};
+}
 
 // MARK: Keyboard
 
@@ -261,15 +266,15 @@ void DisplayServerIPhone::key(Key p_key, bool p_pressed) {
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_key);
+	ev->set_unicode((char32_t)p_key);
 	perform_event(ev);
-};
+}
 
 // MARK: Motion
 
 void DisplayServerIPhone::update_gravity(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
-};
+}
 
 void DisplayServerIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 	// Found out the Z should not be negated! Pass as is!
@@ -279,21 +284,20 @@ void DisplayServerIPhone::update_accelerometer(float p_x, float p_y, float p_z) 
 			p_z / kDisplayServerIPhoneAcceleration);
 
 	Input::get_singleton()->set_accelerometer(v_accelerometer);
-};
+}
 
 void DisplayServerIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_magnetometer(Vector3(p_x, p_y, p_z));
-};
+}
 
 void DisplayServerIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
 	Input::get_singleton()->set_gyroscope(Vector3(p_x, p_y, p_z));
-};
+}
 
 // MARK: -
 
 bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		// case FEATURE_CONSOLE_WINDOW:
 		// case FEATURE_CURSOR_SHAPE:
 		// case FEATURE_CUSTOM_CURSOR_SHAPE:
 		// case FEATURE_GLOBAL_MENU:
@@ -310,6 +314,7 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 		case FEATURE_ORIENTATION:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_VIRTUAL_KEYBOARD:
+		case FEATURE_TEXT_TO_SPEECH:
 			return true;
 		default:
 			return false;
@@ -318,6 +323,57 @@ bool DisplayServerIPhone::has_feature(Feature p_feature) const {
 
 String DisplayServerIPhone::get_name() const {
 	return "iPhone";
+}
+
+bool DisplayServerIPhone::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isSpeaking];
+}
+
+bool DisplayServerIPhone::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return [tts isPaused];
+}
+
+Array DisplayServerIPhone::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, Array());
+	return [tts getVoices];
+}
+
+void DisplayServerIPhone::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
+}
+
+void DisplayServerIPhone::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	[tts pauseSpeaking];
+}
+
+void DisplayServerIPhone::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	[tts resumeSpeaking];
+}
+
+void DisplayServerIPhone::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	[tts stopSpeaking];
+}
+
+Rect2i DisplayServerIPhone::get_display_safe_area() const {
+	if (@available(iOS 11, *)) {
+		UIEdgeInsets insets = UIEdgeInsetsZero;
+		UIView *view = AppDelegate.viewController.godotView;
+		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+			insets = [view safeAreaInsets];
+		}
+		float scale = screen_get_scale();
+		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+		return Rect2i(screen_get_position() + insets_position, screen_get_size() - insets_size);
+	} else {
+		return Rect2i(screen_get_position(), screen_get_size());
+	}
 }
 
 int DisplayServerIPhone::get_screen_count() const {
@@ -339,22 +395,7 @@ Size2i DisplayServerIPhone::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerIPhone::screen_get_usable_rect(int p_screen) const {
-	if (@available(iOS 11, *)) {
-		UIEdgeInsets insets = UIEdgeInsetsZero;
-		UIView *view = AppDelegate.viewController.godotView;
-
-		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
-			insets = [view safeAreaInsets];
-		}
-
-		float scale = screen_get_scale(p_screen);
-		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
-		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
-
-		return Rect2i(screen_get_position(p_screen) + insets_position, screen_get_size(p_screen) - insets_size);
-	} else {
-		return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
-	}
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
@@ -394,6 +435,10 @@ int DisplayServerIPhone::screen_get_dpi(int p_screen) const {
 	}
 }
 
+float DisplayServerIPhone::screen_get_refresh_rate(int p_screen) const {
+	return [UIScreen mainScreen].maximumFramesPerSecond;
+}
+
 float DisplayServerIPhone::screen_get_scale(int p_screen) const {
 	return [UIScreen mainScreen].nativeScale;
 }
@@ -406,6 +451,24 @@ Vector<DisplayServer::WindowID> DisplayServerIPhone::get_window_list() const {
 
 DisplayServer::WindowID DisplayServerIPhone::get_window_at_screen_position(const Point2i &p_position) const {
 	return MAIN_WINDOW_ID;
+}
+
+int64_t DisplayServerIPhone::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+	switch (p_handle_type) {
+		case DISPLAY_HANDLE: {
+			return 0; // Not supported.
+		}
+		case WINDOW_HANDLE: {
+			return (int64_t)AppDelegate.viewController;
+		}
+		case WINDOW_VIEW: {
+			return (int64_t)AppDelegate.viewController.godotView;
+		}
+		default: {
+			return 0;
+		}
+	}
 }
 
 void DisplayServerIPhone::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -499,7 +562,7 @@ void DisplayServerIPhone::window_move_to_foreground(WindowID p_window) {
 
 float DisplayServerIPhone::screen_get_max_scale() const {
 	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
-};
+}
 
 void DisplayServerIPhone::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
@@ -565,10 +628,8 @@ void DisplayServerIPhone::resize_window(CGSize viewSize) {
 	Size2i size = Size2i(viewSize.width, viewSize.height) * screen_get_max_scale();
 
 #if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (context_vulkan) {
-			context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
-		}
+	if (context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, size.x, size.y);
 	}
 #endif
 

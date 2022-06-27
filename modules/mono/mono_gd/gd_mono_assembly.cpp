@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -412,10 +412,10 @@ GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const Stri
 GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
 	ERR_FAIL_NULL_V(image, nullptr);
 
-	Map<MonoClass *, GDMonoClass *>::Element *match = cached_raw.find(p_mono_class);
+	HashMap<MonoClass *, GDMonoClass *>::Iterator match = cached_raw.find(p_mono_class);
 
 	if (match) {
-		return match->value();
+		return match->value;
 	}
 
 	StringName namespace_name = String::utf8(mono_class_get_namespace(p_mono_class));

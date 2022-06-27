@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,21 +31,22 @@
 #ifndef CODE_EDITOR_H
 #define CODE_EDITOR_H
 
-#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
-	Label *line_label;
-	LineEdit *line;
+	Label *line_label = nullptr;
+	LineEdit *line = nullptr;
 
-	CodeEdit *text_editor;
+	CodeEdit *text_editor = nullptr;
 
 	virtual void ok_pressed() override;
 
@@ -61,32 +62,35 @@ class CodeTextEditor;
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
-	LineEdit *search_text;
-	Label *matches_label;
-	Button *find_prev;
-	Button *find_next;
-	CheckBox *case_sensitive;
-	CheckBox *whole_words;
-	TextureButton *hide_button;
+	LineEdit *search_text = nullptr;
+	Label *matches_label = nullptr;
+	Button *find_prev = nullptr;
+	Button *find_next = nullptr;
+	CheckBox *case_sensitive = nullptr;
+	CheckBox *whole_words = nullptr;
+	TextureButton *hide_button = nullptr;
 
-	LineEdit *replace_text;
-	Button *replace;
-	Button *replace_all;
-	CheckBox *selection_only;
+	LineEdit *replace_text = nullptr;
+	Button *replace = nullptr;
+	Button *replace_all = nullptr;
+	CheckBox *selection_only = nullptr;
 
-	VBoxContainer *vbc_lineedit;
-	HBoxContainer *hbc_button_replace;
-	HBoxContainer *hbc_option_replace;
+	VBoxContainer *vbc_lineedit = nullptr;
+	HBoxContainer *hbc_button_replace = nullptr;
+	HBoxContainer *hbc_option_replace = nullptr;
 
 	CodeTextEditor *base_text_editor = nullptr;
-	CodeEdit *text_editor;
+	CodeEdit *text_editor = nullptr;
 
-	int result_line;
-	int result_col;
-	int results_count;
+	uint32_t flags = 0;
 
-	bool replace_all_mode;
-	bool preserve_cursor;
+	int result_line = 0;
+	int result_col = 0;
+	int results_count = -1;
+	int results_count_to_current = -1;
+
+	bool replace_all_mode = false;
+	bool preserve_cursor = false;
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
@@ -130,33 +134,36 @@ public:
 	bool search_prev();
 	bool search_next();
 
+	bool needs_to_count_results = true;
+	bool line_col_changed_for_result = false;
+
 	FindReplaceBar();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
 
-	CodeEdit *text_editor;
+	CodeEdit *text_editor = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;
-	HBoxContainer *status_bar;
+	HBoxContainer *status_bar = nullptr;
 
-	Button *toggle_scripts_button;
-	Button *error_button;
-	Button *warning_button;
+	Button *toggle_scripts_button = nullptr;
+	Button *error_button = nullptr;
+	Button *warning_button = nullptr;
 
-	Label *line_and_col_txt;
+	Label *line_and_col_txt = nullptr;
 
-	Label *info;
-	Timer *idle;
-	Timer *code_complete_timer;
+	Label *info = nullptr;
+	Timer *idle = nullptr;
+	Timer *code_complete_timer = nullptr;
 
-	Timer *font_resize_timer;
+	Timer *font_resize_timer = nullptr;
 	int font_resize_val;
 	real_t font_size;
 
-	Label *error;
+	Label *error = nullptr;
 	int error_line;
 	int error_column;
 
@@ -165,7 +172,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _update_text_editor_theme();
 	void _complete_request();
-	Ref<Texture2D> _get_completion_icon(const ScriptCodeCompletionOption &p_option);
+	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
 	void _font_resize_timeout();
 	bool _add_font_size(int p_delta);
 
@@ -180,7 +187,7 @@ class CodeTextEditor : public VBoxContainer {
 	Color completion_string_color;
 	Color completion_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
-	void *code_complete_ud;
+	void *code_complete_ud = nullptr;
 
 	void _error_button_pressed();
 	void _warning_button_pressed();
@@ -188,13 +195,15 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
+	void _update_status_bar_theme();
+
 	void _delete_line(int p_line);
 	void _toggle_scripts_pressed();
 
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {}
+	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
@@ -203,8 +212,8 @@ protected:
 	void _notification(int);
 	static void _bind_methods();
 
-	bool is_warnings_panel_opened;
-	bool is_errors_panel_opened;
+	bool is_warnings_panel_opened = false;
+	bool is_errors_panel_opened = false;
 
 public:
 	void trim_trailing_whitespace();

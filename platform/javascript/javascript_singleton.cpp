@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "api/javascript_singleton.h"
+
 #include "emscripten.h"
+#include "os_javascript.h"
 
 extern "C" {
 extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
@@ -79,7 +81,7 @@ protected:
 public:
 	Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const override;
 	void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = nullptr) override;
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) override;
 	JavaScriptObjectImpl() {}
 	JavaScriptObjectImpl(int p_id) { _js_id = p_id; }
 	~JavaScriptObjectImpl() {
@@ -205,7 +207,7 @@ int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_w
 			break;
 		case Variant::INT: {
 			const int64_t tmp = v->operator int64_t();
-			if (tmp >= 1 << 31) {
+			if (tmp >= 1LL << 31) {
 				r_val->r = (double)tmp;
 				return Variant::FLOAT;
 			}
@@ -229,7 +231,7 @@ int JavaScriptObjectImpl::_variant2js(const void **p_args, int p_pos, godot_js_w
 	return type;
 }
 
-Variant JavaScriptObjectImpl::call(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) {
+Variant JavaScriptObjectImpl::callp(const StringName &p_method, const Variant **p_args, int p_argc, Callable::CallError &r_error) {
 	godot_js_wrapper_ex exchange;
 	const String method = p_method;
 	void *lock = nullptr;
@@ -354,4 +356,11 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
 void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 	godot_js_os_download_buffer(p_arr.ptr(), p_arr.size(), p_name.utf8().get_data(), p_mime.utf8().get_data());
+}
+
+bool JavaScript::pwa_needs_update() const {
+	return OS_JavaScript::get_singleton()->pwa_needs_update();
+}
+Error JavaScript::pwa_update() {
+	return OS_JavaScript::get_singleton()->pwa_update();
 }

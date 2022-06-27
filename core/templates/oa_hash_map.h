@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -145,7 +145,7 @@ private:
 		uint32_t old_capacity = capacity;
 
 		// Capacity can't be 0.
-		capacity = MAX(1, p_new_capacity);
+		capacity = MAX(1u, p_new_capacity);
 
 		TKey *old_keys = keys;
 		TValue *old_values = values;
@@ -246,13 +246,17 @@ public:
 		return false;
 	}
 
-	/**
-	 * returns true if the value was found, false otherwise.
-	 *
-	 * if r_data is not nullptr then the value will be written to the object
-	 * it points to.
-	 */
-	TValue *lookup_ptr(const TKey &p_key) const {
+	const TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return nullptr;
+	}
+
+	TValue *lookup_ptr(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -306,7 +310,7 @@ public:
 		bool valid;
 
 		const TKey *key;
-		TValue *value;
+		TValue *value = nullptr;
 
 	private:
 		uint32_t pos;
@@ -353,7 +357,7 @@ public:
 		(*this) = p_other;
 	}
 
-	OAHashMap &operator=(const OAHashMap &p_other) {
+	void operator=(const OAHashMap &p_other) {
 		if (capacity != 0) {
 			clear();
 		}
@@ -363,12 +367,11 @@ public:
 		for (Iterator it = p_other.iter(); it.valid; it = p_other.next_iter(it)) {
 			set(*it.key, *it.value);
 		}
-		return *this;
 	}
 
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 		// Capacity can't be 0.
-		capacity = MAX(1, p_initial_capacity);
+		capacity = MAX(1u, p_initial_capacity);
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));

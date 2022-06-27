@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ String ResourceImporterOGGVorbis::get_resource_type() const {
 	return "AudioStreamOGGVorbis";
 }
 
-bool ResourceImporterOGGVorbis::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterOGGVorbis::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -69,18 +69,17 @@ String ResourceImporterOGGVorbis::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterOGGVorbis::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 }
 
-Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
 
 	uint64_t len = f->get_length();
 
@@ -89,8 +88,6 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 	uint8_t *w = file_data.ptrw();
 
 	f->get_buffer(w, len);
-
-	memdelete(f);
 
 	Ref<AudioStreamOGGVorbis> ogg_vorbis_stream;
 	ogg_vorbis_stream.instantiate();
@@ -136,11 +133,11 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 		// Have a page now.
 		if (!initialized_stream) {
-			ogg_stream_init(&stream_state, ogg_page_serialno(&page));
-			ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
+			if (ogg_stream_init(&stream_state, ogg_page_serialno(&page))) {
+				ERR_FAIL_V_MSG(Error::ERR_OUT_OF_MEMORY, "Failed allocating memory for OGG Vorbis stream.");
+			}
 			initialized_stream = true;
 		}
-		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
 		ogg_stream_pagein(&stream_state, &page);
 		ERR_FAIL_COND_V_MSG((err = ogg_stream_check(&stream_state)), Error::ERR_INVALID_DATA, "Ogg stream error " + itos(err));
 		int desync_iters = 0;
@@ -160,10 +157,12 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 				break;
 			}
 			if (packet_count == 0 && vorbis_synthesis_idheader(&packet) == 0) {
-				WARN_PRINT("Found a non-vorbis-header packet in a header position");
+				print_verbose("Found a non-vorbis-header packet in a header position");
 				// Clearly this logical stream is not a vorbis stream, so destroy it and try again with the next page.
-				ogg_stream_destroy(&stream_state);
-				initialized_stream = false;
+				if (initialized_stream) {
+					ogg_stream_clear(&stream_state);
+					initialized_stream = false;
+				}
 				break;
 			}
 			granule_pos = packet.granulepos;
@@ -177,6 +176,14 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 		if (initialized_stream) {
 			ogg_packet_sequence->push_page(granule_pos, packet_data);
 		}
+	}
+	if (initialized_stream) {
+		ogg_stream_clear(&stream_state);
+	}
+	ogg_sync_clear(&sync_state);
+
+	if (ogg_packet_sequence->get_packet_granule_positions().is_empty()) {
+		ERR_FAIL_V_MSG(Error::ERR_FILE_CORRUPT, "OGG Vorbis decoding failed. Check that your data is a valid OGG Vorbis audio stream.");
 	}
 
 	ogg_vorbis_stream->set_packet_sequence(ogg_packet_sequence);

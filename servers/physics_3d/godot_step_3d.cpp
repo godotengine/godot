@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 	}
 
 	for (const KeyValue<GodotConstraint3D *, int> &E : p_body->get_constraint_map()) {
-		GodotConstraint3D *constraint = (GodotConstraint3D *)E.key;
+		GodotConstraint3D *constraint = const_cast<GodotConstraint3D *>(E.key);
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -87,8 +87,8 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 void GodotStep3D::_populate_island_soft_body(GodotSoftBody3D *p_soft_body, LocalVector<GodotBody3D *> &p_body_island, LocalVector<GodotConstraint3D *> &p_constraint_island) {
 	p_soft_body->set_island_step(_step);
 
-	for (Set<GodotConstraint3D *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
-		GodotConstraint3D *constraint = (GodotConstraint3D *)E->get();
+	for (const GodotConstraint3D *E : p_soft_body->get_constraints()) {
+		GodotConstraint3D *constraint = const_cast<GodotConstraint3D *>(E);
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -181,14 +181,14 @@ void GodotStep3D::_check_suspend(const LocalVector<GodotBody3D *> &p_body_island
 	}
 }
 
-void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) {
+void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	p_space->lock(); // can't access space during this
 
 	p_space->setup(); //update inertias, etc
 
 	p_space->set_last_step(p_delta);
 
-	iterations = p_iterations;
+	iterations = p_space->get_solver_iterations();
 	delta = p_delta;
 
 	const SelfList<GodotBody3D>::List *body_list = &p_space->get_active_body_list();
@@ -220,6 +220,9 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	p_space->set_active_objects(active_count);
 
+	// Update the broadphase to register collision pairs.
+	p_space->update();
+
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
@@ -233,8 +236,8 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 	const SelfList<GodotArea3D>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<GodotConstraint3D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-			GodotConstraint3D *constraint = E->get();
+		for (GodotConstraint3D *E : aml.first()->self()->get_constraints()) {
+			GodotConstraint3D *constraint = E;
 			if (constraint->get_island_step() == _step) {
 				continue;
 			}
@@ -359,11 +362,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	// Warning: _solve_island modifies the constraint islands for optimization purpose,
 	// their content is not reliable after these calls and shouldn't be used anymore.
-	if (island_count > 1) {
-		work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
-	} else if (island_count > 0) {
-		_solve_island(0);
-	}
+	work_pool.do_work(island_count, this, &GodotStep3D::_solve_island, nullptr);
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -402,7 +401,6 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta, int p_iterations) 
 
 	all_constraints.clear();
 
-	p_space->update();
 	p_space->unlock();
 	_step++;
 }

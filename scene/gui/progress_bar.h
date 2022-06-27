@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,11 +43,27 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum FillMode {
+		FILL_BEGIN_TO_END,
+		FILL_END_TO_BEGIN,
+		FILL_TOP_TO_BOTTOM,
+		FILL_BOTTOM_TO_TOP,
+		FILL_MODE_MAX
+	};
+
+	void set_fill_mode(int p_fill);
+	int get_fill_mode();
+
 	void set_percent_visible(bool p_visible);
 	bool is_percent_visible() const;
 
 	Size2 get_minimum_size() const override;
 	ProgressBar();
+
+private:
+	FillMode mode = FILL_BEGIN_TO_END;
 };
+
+VARIANT_ENUM_CAST(ProgressBar::FillMode);
 
 #endif // PROGRESS_BAR_H

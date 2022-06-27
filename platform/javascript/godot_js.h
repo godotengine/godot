@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +49,8 @@ extern void godot_js_os_fs_sync(void (*p_callback)());
 extern int godot_js_os_execute(const char *p_json);
 extern void godot_js_os_shell_open(const char *p_uri);
 extern int godot_js_os_hw_concurrency_get();
+extern int godot_js_pwa_cb(void (*p_callback)());
+extern int godot_js_pwa_update();
 
 // Input
 extern void godot_js_input_mouse_button_cb(int (*p_callback)(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers));
@@ -64,6 +66,15 @@ extern int godot_js_input_gamepad_sample_count();
 extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
 extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
 extern void godot_js_input_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
+
+// TTS
+extern int godot_js_tts_is_speaking();
+extern int godot_js_tts_is_paused();
+extern int godot_js_tts_get_voices(void (*p_callback)(int p_size, const char **p_voices));
+extern void godot_js_tts_speak(const char *p_text, const char *p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, void (*p_callback)(int p_event, int p_id, int p_pos));
+extern void godot_js_tts_pause();
+extern void godot_js_tts_resume();
+extern void godot_js_tts_stop();
 
 // Display
 extern int godot_js_display_screen_dpi_get();
@@ -107,6 +118,7 @@ extern void godot_js_display_notification_cb(void (*p_callback)(int p_notificati
 
 // Display Virtual Keyboard
 extern int godot_js_display_vk_available();
+extern int godot_js_display_tts_available();
 extern void godot_js_display_vk_cb(void (*p_input)(const char *p_text, int p_cursor));
 extern void godot_js_display_vk_show(const char *p_text, int p_multiline, int p_start, int p_end);
 extern void godot_js_display_vk_hide();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,29 +31,23 @@
 #ifndef IMPORT_DEFAULTS_EDITOR_H
 #define IMPORT_DEFAULTS_EDITOR_H
 
-#include "core/object/undo_redo.h"
-#include "editor/action_map_editor.h"
-#include "editor/editor_data.h"
-#include "editor/editor_plugin_settings.h"
-#include "editor/editor_sectioned_inspector.h"
-#include "editor/localization_editor.h"
-#include "editor/shader_globals_editor.h"
-#include "editor_autoload_settings.h"
-#include "scene/gui/center_container.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/option_button.h"
 
 class ImportDefaultsEditorSettings;
+class EditorInspector;
 
 class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
-	OptionButton *importers;
-	Button *save_defaults;
-	Button *reset_defaults;
+	OptionButton *importers = nullptr;
+	Button *save_defaults = nullptr;
+	Button *reset_defaults = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	ImportDefaultsEditorSettings *settings;
+	ImportDefaultsEditorSettings *settings = nullptr;
 
 	void _update_importer();
 	void _importer_selected(int p_index);

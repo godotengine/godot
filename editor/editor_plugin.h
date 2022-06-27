@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-class EditorNode;
+
 class Node3D;
 class Camera3D;
 class EditorCommandPalette;
@@ -74,6 +74,7 @@ public:
 	Control *get_editor_main_control();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
+	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
 	void open_scene_from_path(const String &scene_path);
 	void reload_scene_from_path(const String &scene_path);
 
@@ -216,8 +217,10 @@ public:
 	void remove_control_from_bottom_panel(Control *p_control);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callable);
-	void add_tool_submenu_item(const String &p_name, Object *p_submenu);
+	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	PopupMenu *get_export_as_menu();
 
 	void set_input_event_forwarding_always_enabled();
 	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
@@ -276,7 +279,7 @@ public:
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 
-	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
@@ -288,10 +291,10 @@ public:
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
-	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
+	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
-	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
@@ -310,7 +313,7 @@ public:
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
 VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 
-typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
+typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
@@ -321,15 +324,15 @@ class EditorPlugins {
 	static int creation_func_count;
 
 	template <class T>
-	static EditorPlugin *creator(EditorNode *p_node) {
-		return memnew(T(p_node));
+	static EditorPlugin *creator() {
+		return memnew(T);
 	}
 
 public:
 	static int get_plugin_count() { return creation_func_count; }
-	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
+	static EditorPlugin *create(int p_idx) {
 		ERR_FAIL_INDEX_V(p_idx, creation_func_count, nullptr);
-		return creation_funcs[p_idx](p_editor);
+		return creation_funcs[p_idx]();
 	}
 
 	template <class T>

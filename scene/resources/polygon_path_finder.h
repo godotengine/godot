@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,21 +38,23 @@ class PolygonPathFinder : public Resource {
 
 	struct Point {
 		Vector2 pos;
-		Set<int> connections;
+		HashSet<int> connections;
 		float distance = 0.0;
 		float penalty = 0.0;
 		int prev = 0;
 	};
 
-	struct Edge {
-		int points[2] = {};
+	union Edge {
+		struct {
+			int32_t points[2];
+		};
+		uint64_t key = 0;
 
-		_FORCE_INLINE_ bool operator<(const Edge &p_edge) const {
-			if (points[0] == p_edge.points[0]) {
-				return points[1] < p_edge.points[1];
-			} else {
-				return points[0] < p_edge.points[0];
-			}
+		_FORCE_INLINE_ bool operator==(const Edge &p_edge) const {
+			return key == p_edge.key;
+		}
+		_FORCE_INLINE_ static uint32_t hash(const Edge &p_edge) {
+			return hash_one_uint64(p_edge.key);
 		}
 
 		Edge(int a = 0, int b = 0) {
@@ -68,7 +70,7 @@ class PolygonPathFinder : public Resource {
 	Rect2 bounds;
 
 	Vector<Point> points;
-	Set<Edge> edges;
+	HashSet<Edge, Edge> edges;
 
 	bool _is_point_inside(const Vector2 &p_point) const;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +36,6 @@
 #include "core/math/rect2.h"
 
 /**
- *	@author Juan Linietsky <reduzio@gmail.com>
- *
  * Image storage class. This is used to store an image in user memory, as well as
  * providing some basic methods for image manipulation.
  * Images can be loaded from a file, or registered into the Render object as textures.
@@ -47,17 +45,27 @@ class Image;
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
+typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
+typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
+typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
+typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
 
 class Image : public Resource {
 	GDCLASS(Image, Resource);
 
 public:
 	static SavePNGFunc save_png_func;
+	static SaveJPGFunc save_jpg_func;
 	static SaveEXRFunc save_exr_func;
 	static SavePNGBufferFunc save_png_buffer_func;
+	static SaveEXRBufferFunc save_exr_buffer_func;
+	static SaveJPGBufferFunc save_jpg_buffer_func;
+	static SaveWebPFunc save_webp_func;
+	static SaveWebPBufferFunc save_webp_buffer_func;
 
 	enum {
 		MAX_WIDTH = (1 << 24), // force a limit somehow
@@ -91,10 +99,6 @@ public:
 		FORMAT_BPTC_RGBA, //btpc bc7
 		FORMAT_BPTC_RGBF, //float bc6h
 		FORMAT_BPTC_RGBFU, //unsigned float bc6hu
-		FORMAT_PVRTC1_2, //pvrtc1
-		FORMAT_PVRTC1_2A,
-		FORMAT_PVRTC1_4,
-		FORMAT_PVRTC1_4A,
 		FORMAT_ETC, //etc1
 		FORMAT_ETC2_R11, //etc2
 		FORMAT_ETC2_R11S, //signed, NOT srgb.
@@ -138,11 +142,9 @@ public:
 
 	static void (*_image_compress_bc_func)(Image *, float, UsedChannels p_channels);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
-	static void (*_image_compress_pvrtc1_4bpp_func)(Image *);
 	static void (*_image_compress_etc1_func)(Image *, float);
 	static void (*_image_compress_etc2_func)(Image *, float, UsedChannels p_channels);
 
-	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_bptc)(Image *);
 	static void (*_image_decompress_etc1)(Image *);
@@ -155,6 +157,7 @@ public:
 	static Ref<Image> (*png_unpacker)(const Vector<uint8_t> &p_buffer);
 	static Vector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
 	static Ref<Image> (*basis_universal_unpacker)(const Vector<uint8_t> &p_buffer);
+	static Ref<Image> (*basis_universal_unpacker_ptr)(const uint8_t *p_data, int p_size);
 
 	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const;
 	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);
@@ -163,14 +166,6 @@ protected:
 	static void _bind_methods();
 
 private:
-	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-		create(p_width, p_height, p_use_mipmaps, p_format);
-	}
-
-	void _create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
-	}
-
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
 	int width = 0;
@@ -190,8 +185,12 @@ private:
 	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1, int *r_mm_width = nullptr, int *r_mm_height = nullptr);
 	bool _can_modify(Format p_format) const;
 
-	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel);
-	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel);
+	_FORCE_INLINE_ void _get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
+
+	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel);
+	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel);
+
+	_FORCE_INLINE_ void _repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count);
 
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -292,8 +291,21 @@ public:
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
+	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Vector<uint8_t> save_png_to_buffer() const;
+	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
+	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale) const;
 	Error save_exr(const String &p_path, bool p_grayscale) const;
+	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
+	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
+
+	void create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+		create(p_width, p_height, p_use_mipmaps, p_format);
+	}
+
+	void create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
+	}
 
 	/**
 	 * create an empty image
@@ -332,7 +344,6 @@ public:
 
 	enum CompressMode {
 		COMPRESS_S3TC,
-		COMPRESS_PVRTC1_4,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
 		COMPRESS_BPTC,
@@ -362,7 +373,8 @@ public:
 	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
-	void fill(const Color &c);
+	void fill(const Color &p_color);
+	void fill_rect(const Rect2 &p_rect, const Color &p_color);
 
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
@@ -385,7 +397,7 @@ public:
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const override;
 
-	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
+	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC) const;
 	void optimize_channels();
 
 	Color get_pixelv(const Point2i &p_point) const;
@@ -405,6 +417,8 @@ public:
 		mipmaps = p_image->mipmaps;
 		data = p_image->data;
 	}
+
+	Dictionary compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric = true);
 };
 
 VARIANT_ENUM_CAST(Image::Format)

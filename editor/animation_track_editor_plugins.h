@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +81,7 @@ class AnimationTrackEditSpriteFrame : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
 
 	ObjectID id;
-	bool is_coords;
+	bool is_coords = false;
 
 public:
 	virtual int get_key_height() const override;
@@ -92,7 +92,7 @@ public:
 	void set_node(Object *p_object);
 	void set_as_coords();
 
-	AnimationTrackEditSpriteFrame() { is_coords = false; }
+	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -114,11 +114,12 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 
 	void _preview_changed(ObjectID p_which);
 
-	bool len_resizing;
-	bool len_resizing_start;
-	int len_resizing_index;
-	float len_resizing_from_px;
-	float len_resizing_rel;
+	bool len_resizing = false;
+	bool len_resizing_start = false;
+	int len_resizing_index = 0;
+	float len_resizing_from_px = 0.0f;
+	float len_resizing_rel = 0.0f;
+	bool over_drag_position = false;
 
 protected:
 	static void _bind_methods();
@@ -133,6 +134,8 @@ public:
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	AnimationTrackEditTypeAudio();
 };

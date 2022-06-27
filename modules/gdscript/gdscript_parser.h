@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 #include "gdscript_cache.h"
@@ -106,8 +106,7 @@ public:
 			NATIVE,
 			SCRIPT,
 			CLASS, // GDScript.
-			ENUM, // Full enumeration.
-			ENUM_VALUE, // Value from enumeration.
+			ENUM, // Enumeration.
 			VARIANT, // Can be any type.
 			UNRESOLVED,
 		};
@@ -133,7 +132,7 @@ public:
 		ClassNode *class_type = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
-		Map<StringName, int> enum_values; // For enums.
+		HashMap<StringName, int> enum_values; // For enums.
 
 		_FORCE_INLINE_ bool is_set() const { return kind != UNRESOLVED; }
 		_FORCE_INLINE_ bool has_no_type() const { return type_source == UNDETECTED; }
@@ -185,8 +184,6 @@ public:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
 				case ENUM:
-					return native_type == p_other.native_type;
-				case ENUM_VALUE:
 					return native_type == p_other.native_type && enum_type == p_other.enum_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
@@ -203,7 +200,7 @@ public:
 			return !(this->operator==(p_other));
 		}
 
-		DataType &operator=(const DataType &p_other) {
+		void operator=(const DataType &p_other) {
 			kind = p_other.kind;
 			type_source = p_other.type_source;
 			is_constant = p_other.is_constant;
@@ -221,7 +218,6 @@ public:
 			if (p_other.has_container_element_type()) {
 				set_container_element_type(p_other.get_container_element_type());
 			}
-			return *this;
 		}
 
 		DataType() = default;
@@ -298,6 +294,7 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
+		Vector<uint32_t> ignored_warnings;
 
 		DataType datatype;
 
@@ -315,7 +312,7 @@ public:
 		bool is_constant = false;
 		Variant reduced_value;
 
-		virtual bool is_expression() const { return true; }
+		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
 
 	protected:
@@ -363,6 +360,7 @@ public:
 			OP_MULTIPLICATION,
 			OP_DIVISION,
 			OP_MODULO,
+			OP_POWER,
 			OP_BIT_SHIFT_LEFT,
 			OP_BIT_SHIFT_RIGHT,
 			OP_BIT_AND,
@@ -396,6 +394,7 @@ public:
 			OP_MULTIPLICATION,
 			OP_DIVISION,
 			OP_MODULO,
+			OP_POWER,
 			OP_BIT_LEFT_SHIFT,
 			OP_BIT_RIGHT_SHIFT,
 			OP_BIT_AND,
@@ -750,8 +749,10 @@ public:
 	};
 
 	struct GetNodeNode : public ExpressionNode {
-		LiteralNode *string = nullptr;
-		Vector<IdentifierNode *> chain;
+		String full_path;
+#ifdef DEBUG_ENABLED
+		bool use_dollar = true;
+#endif
 
 		GetNodeNode() {
 			type = GET_NODE;
@@ -770,6 +771,7 @@ public:
 			LOCAL_BIND, // Pattern bind.
 			MEMBER_VARIABLE,
 			MEMBER_CONSTANT,
+			INHERITED_VARIABLE,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -802,7 +804,8 @@ public:
 		FunctionNode *function = nullptr;
 		FunctionNode *parent_function = nullptr;
 		Vector<IdentifierNode *> captures;
-		Map<StringName, int> captures_indices;
+		HashMap<StringName, int> captures_indices;
+		bool use_self = false;
 
 		bool has_name() const {
 			return function && function->identifier;
@@ -1149,7 +1152,7 @@ public:
 		COMPLETION_ASSIGN, // Assignment based on type (e.g. enum values).
 		COMPLETION_ATTRIBUTE, // After id.| to look for members.
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
-		COMPLETION_BUILT_IN_TYPE_CONSTANT, // Constants inside a built-in type (e.g. Color.blue).
+		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
 		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
 		COMPLETION_GET_NODE, // Get node with $ notation.
@@ -1204,8 +1207,9 @@ private:
 	List<ParserError> errors;
 #ifdef DEBUG_ENABLED
 	List<GDScriptWarning> warnings;
-	Set<String> ignored_warnings;
-	Set<int> unsafe_lines;
+	HashSet<String> ignored_warnings;
+	HashSet<uint32_t> ignored_warning_codes;
+	HashSet<int> unsafe_lines;
 #endif
 
 	GDScriptTokenizer tokenizer;
@@ -1263,6 +1267,7 @@ private:
 		PREC_FACTOR,
 		PREC_SIGN,
 		PREC_BIT_NOT,
+		PREC_POWER,
 		PREC_TYPE_TEST,
 		PREC_AWAIT,
 		PREC_CALL,
@@ -1416,7 +1421,7 @@ public:
 	}
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const Set<int> &get_unsafe_lines() const { return unsafe_lines; }
+	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
 #endif
 

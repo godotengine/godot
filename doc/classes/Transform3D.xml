@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform3D" version="4.0">
+<class name="Transform3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3D transformation (3×4 matrix).
 	</brief_description>
@@ -8,9 +8,9 @@
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
-		<link title="Math documentation index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
-		<link title="Matrices and transforms">https://docs.godotengine.org/en/latest/tutorials/math/matrices_and_transforms.html</link>
-		<link title="Using 3D transforms">https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html</link>
 		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
@@ -60,13 +60,13 @@
 			<argument index="0" name="xform" type="Transform3D" />
 			<argument index="1" name="weight" type="float" />
 			<description>
-				Interpolates the transform to other Transform3D by weight amount (on the range of 0.0 to 1.0).
+				Returns a transform interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use [method affine_inverse] for transforms with scaling).
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -88,29 +88,37 @@
 		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				Returns a copy of the transform rotated around the given [code]axis[/code] by the given [code]angle[/code] (in radians), using matrix multiplication. The [code]axis[/code] must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="scale" type="Vector3" />
 			<description>
-				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
+				Returns a copy of the transform with its basis and origin scaled by the given [code]scale[/code] factor, using matrix multiplication.
+			</description>
+		</method>
+		<method name="sphere_interpolate_with" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="xform" type="Transform3D" />
+			<argument index="1" name="weight" type="float" />
+			<description>
+				Returns a transform spherically interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="offset" type="Vector3" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
@@ -140,37 +148,38 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="PackedVector3Array" />
-			<argument index="0" name="right" type="PackedVector3Array" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator *">
-			<return type="Transform3D" />
-			<argument index="0" name="right" type="Transform3D" />
-			<description>
+				Returns [code]true[/code] if the transforms are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="AABB" />
 			<argument index="0" name="right" type="AABB" />
 			<description>
+				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="PackedVector3Array" />
+			<argument index="0" name="right" type="PackedVector3Array" />
+			<description>
+				Transforms (multiplies) each element of the [Vector3] array by the given [Transform3D] matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform3D" />
+			<argument index="0" name="right" type="Transform3D" />
+			<description>
+				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
 			<argument index="0" name="right" type="Vector3" />
 			<description>
+				Transforms (multiplies) the [Vector3] by the given [Transform3D] matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -189,13 +198,10 @@
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<argument index="0" name="right" type="Transform3D" />
 			<description>
+				Returns [code]true[/code] if the transforms are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
 	</operators>

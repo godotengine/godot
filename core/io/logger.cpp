@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,28 +115,21 @@ void Logger::logf_error(const char *p_format, ...) {
 	va_end(argp);
 }
 
-void RotatedFileLogger::close_file() {
-	if (file) {
-		memdelete(file);
-		file = nullptr;
-	}
-}
-
 void RotatedFileLogger::clear_old_backups() {
 	int max_backups = max_files - 1; // -1 for the current file
 
 	String basename = base_path.get_file().get_basename();
 	String extension = base_path.get_extension();
 
-	DirAccess *da = DirAccess::open(base_path.get_base_dir());
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+	if (da.is_null()) {
 		return;
 	}
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	Set<String> backups;
-	while (f != String()) {
+	HashSet<String> backups;
+	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
@@ -144,45 +137,42 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > max_backups) {
+	if (backups.size() > (uint32_t)max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (Set<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
-			da->remove(E->get());
+		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
+			da->remove(*E);
 		}
 	}
-
-	memdelete(da);
 }
 
 void RotatedFileLogger::rotate_file() {
-	close_file();
+	file.unref();
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
 			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
 			String backup_name = base_path.get_basename() + timestamp;
-			if (base_path.get_extension() != String()) {
+			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
 			}
 
-			DirAccess *da = DirAccess::open(base_path.get_base_dir());
-			if (da) {
+			Ref<DirAccess> da = DirAccess::open(base_path.get_base_dir());
+			if (da.is_valid()) {
 				da->copy(base_path, backup_name);
-				memdelete(da);
 			}
 			clear_old_backups();
 		}
 	} else {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_USERDATA);
-		if (da) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_USERDATA);
+		if (da.is_valid()) {
 			da->make_dir_recursive(base_path.get_base_dir());
-			memdelete(da);
 		}
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
+	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
 }
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
@@ -196,7 +186,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		return;
 	}
 
-	if (file) {
+	if (file.is_valid()) {
 		const int static_buf_size = 512;
 		char static_buf[static_buf_size];
 		char *buf = static_buf;
@@ -220,10 +210,6 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			file->flush();
 		}
 	}
-}
-
-RotatedFileLogger::~RotatedFileLogger() {
-	close_file();
 }
 
 void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -266,7 +252,7 @@ void CompositeLogger::log_error(const char *p_function, const char *p_file, int 
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	}
 }
 

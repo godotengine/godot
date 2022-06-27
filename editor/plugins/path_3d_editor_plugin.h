@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,20 +35,21 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
+#include "scene/gui/separator.h"
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
-	Path3D *path;
+	Path3D *path = nullptr;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
 
 public:
-	virtual String get_handle_name(int p_idx) const override;
-	virtual Variant get_handle_value(int p_id) const override;
-	virtual void set_handle(int p_id, Camera3D *p_camera, const Point2 &p_point) override;
-	virtual void commit_handle(int p_id, const Variant &p_restore, bool p_cancel = false) override;
+	virtual String get_handle_name(int p_id, bool p_secondary) const override;
+	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
+	virtual void set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr);
@@ -69,21 +70,21 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
-	Separator *sep;
-	Button *curve_create;
-	Button *curve_edit;
-	Button *curve_del;
-	Button *curve_close;
-	MenuButton *handle_menu;
+	Separator *sep = nullptr;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
-	EditorNode *editor;
+	Path3D *path = nullptr;
 
-	Path3D *path;
+	void _update_theme();
 
 	void _mode_changed(int p_idx);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
-	bool handle_clicked;
+	bool handle_clicked = false;
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
 
@@ -113,7 +114,7 @@ public:
 	bool is_handle_clicked() { return handle_clicked; }
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
-	Path3DEditorPlugin(EditorNode *p_node);
+	Path3DEditorPlugin();
 	~Path3DEditorPlugin();
 };
 

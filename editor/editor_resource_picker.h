@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,13 @@
 #ifndef EDITOR_RESOURCE_PICKER_H
 #define EDITOR_RESOURCE_PICKER_H
 
-#include "editor_file_dialog.h"
-#include "quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/texture_rect.h"
+
+class EditorFileDialog;
+class EditorQuickOpen;
 
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
@@ -44,16 +45,16 @@ class EditorResourcePicker : public HBoxContainer {
 	static HashMap<StringName, List<StringName>> allowed_types_cache;
 
 	String base_type;
-	RES edited_resource;
+	Ref<Resource> edited_resource;
 
 	bool editable = true;
 	bool dropping = false;
 
 	Vector<String> inheritors_array;
 
-	Button *assign_button;
-	TextureRect *preview_rect;
-	Button *edit_button;
+	Button *assign_button = nullptr;
+	TextureRect *preview_rect = nullptr;
+	Button *edit_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
 
@@ -88,9 +89,9 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
 
-	void _get_allowed_types(bool p_with_convert, Set<String> *p_vector) const;
+	void _get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, Set<String> p_allowed_types) const;
+	bool _is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -102,6 +103,9 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	GDVIRTUAL1(_set_create_options, Object *)
+	GDVIRTUAL1R(bool, _handle_menu_selected, int)
+
 public:
 	static void clear_caches();
 
@@ -109,8 +113,8 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
-	void set_edited_resource(RES p_resource);
-	RES get_edited_resource();
+	void set_edited_resource(Ref<Resource> p_resource);
+	Ref<Resource> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

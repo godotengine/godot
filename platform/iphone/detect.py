@@ -47,8 +47,11 @@ def configure(env):
     if env["target"].startswith("release"):
         env.Append(CPPDEFINES=["NDEBUG", ("NS_BLOCK_ASSERTIONS", 1)])
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["-O2", "-ftree-vectorize", "-fomit-frame-pointer"])
-            env.Append(LINKFLAGS=["-O2"])
+            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
+            # when using `target=release_debug`.
+            opt = "-O3" if env["target"] == "release" else "-O2"
+            env.Append(CCFLAGS=[opt, "-ftree-vectorize", "-fomit-frame-pointer"])
+            env.Append(LINKFLAGS=[opt])
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Os", "-ftree-vectorize"])
             env.Append(LINKFLAGS=["-Os"])
@@ -62,16 +65,9 @@ def configure(env):
         env.Append(LINKFLAGS=["-flto"])
 
     ## Architecture
-    if env["arch"] == "x86":  # i386
-        env["bits"] = "32"
-    elif env["arch"] == "x86_64":
-        env["bits"] = "64"
-    elif env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32":  # arm
-        env["arch"] = "arm"
-        env["bits"] = "32"
-    else:  # armv64
+    env["bits"] = "64"
+    if env["arch"] != "x86_64":
         env["arch"] = "arm64"
-        env["bits"] = "64"
 
     ## Compiler configuration
 
@@ -108,27 +104,14 @@ def configure(env):
         detect_darwin_sdk_path("iphone", env)
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
 
-    if env["arch"] == "x86" or env["arch"] == "x86_64":
+    if env["arch"] == "x86_64":
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
-        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
         env.Append(
             CCFLAGS=(
-                "-fobjc-arc -arch "
-                + arch_flag
-                + " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
+                "-fobjc-arc -arch x86_64"
+                " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
                 " -fasm-blocks -isysroot $IPHONESDK"
             ).split()
-        )
-    elif env["arch"] == "arm":
-        env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing"
-                " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
-                " -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb"
-                ' "-DIBOutlet=__attribute__((iboutlet))"'
-                ' "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"'
-                ' "-DIBAction=void)__attribute__((ibaction)" -MMD -MT dependencies'.split()
-            )
         )
     elif env["arch"] == "arm64":
         env.Append(
@@ -140,7 +123,6 @@ def configure(env):
             )
         )
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
-        env.Append(CPPDEFINES=["LIBYUV_DISABLE_NEON"])
 
     # Disable exceptions on non-tools (template) builds
     if not env["tools"]:

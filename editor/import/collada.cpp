@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ Transform3D Collada::get_root_transform() const {
 	return unit_scale_transform;
 }
 
-void Collada::Vertex::fix_unit_scale(Collada &state) {
+void Collada::Vertex::fix_unit_scale(const Collada &state) {
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 	vertex *= state.state.unit_scale;
 #endif
@@ -105,15 +105,15 @@ Transform3D Collada::fix_transform(const Transform3D &p_transform) {
 static Transform3D _read_transform_from_array(const Vector<float> &array, int ofs = 0) {
 	Transform3D tr;
 	// i wonder why collada matrices are transposed, given that's opposed to opengl..
-	tr.basis.elements[0][0] = array[0 + ofs];
-	tr.basis.elements[0][1] = array[1 + ofs];
-	tr.basis.elements[0][2] = array[2 + ofs];
-	tr.basis.elements[1][0] = array[4 + ofs];
-	tr.basis.elements[1][1] = array[5 + ofs];
-	tr.basis.elements[1][2] = array[6 + ofs];
-	tr.basis.elements[2][0] = array[8 + ofs];
-	tr.basis.elements[2][1] = array[9 + ofs];
-	tr.basis.elements[2][2] = array[10 + ofs];
+	tr.basis.rows[0][0] = array[0 + ofs];
+	tr.basis.rows[0][1] = array[1 + ofs];
+	tr.basis.rows[0][2] = array[2 + ofs];
+	tr.basis.rows[1][0] = array[4 + ofs];
+	tr.basis.rows[1][1] = array[5 + ofs];
+	tr.basis.rows[1][2] = array[6 + ofs];
+	tr.basis.rows[2][0] = array[8 + ofs];
+	tr.basis.rows[2][1] = array[9 + ofs];
+	tr.basis.rows[2][2] = array[10 + ofs];
 	tr.origin.x = array[3 + ofs];
 	tr.origin.y = array[7 + ofs];
 	tr.origin.z = array[11 + ofs];
@@ -122,7 +122,7 @@ static Transform3D _read_transform_from_array(const Vector<float> &array, int of
 
 /* STRUCTURES */
 
-Transform3D Collada::Node::compute_transform(Collada &state) const {
+Transform3D Collada::Node::compute_transform(const Collada &state) const {
 	Transform3D xform;
 
 	for (int i = 0; i < xform_list.size(); i++) {
@@ -210,15 +210,15 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 				ret.resize(16);
 				Transform3D tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
-				ret.write[0] = interp.basis.elements[0][0];
-				ret.write[1] = interp.basis.elements[0][1];
-				ret.write[2] = interp.basis.elements[0][2];
-				ret.write[4] = interp.basis.elements[1][0];
-				ret.write[5] = interp.basis.elements[1][1];
-				ret.write[6] = interp.basis.elements[1][2];
-				ret.write[8] = interp.basis.elements[2][0];
-				ret.write[9] = interp.basis.elements[2][1];
-				ret.write[10] = interp.basis.elements[2][2];
+				ret.write[0] = interp.basis.rows[0][0];
+				ret.write[1] = interp.basis.rows[0][1];
+				ret.write[2] = interp.basis.rows[0][2];
+				ret.write[4] = interp.basis.rows[1][0];
+				ret.write[5] = interp.basis.rows[1][1];
+				ret.write[6] = interp.basis.rows[1][2];
+				ret.write[8] = interp.basis.rows[2][0];
+				ret.write[9] = interp.basis.rows[2][1];
+				ret.write[10] = interp.basis.rows[2][2];
 				ret.write[3] = interp.origin.x;
 				ret.write[7] = interp.origin.y;
 				ret.write[11] = interp.origin.z;
@@ -287,7 +287,7 @@ void Collada::_parse_image(XMLParser &parser) {
 	if (state.version < State::Version(1, 4, 0)) {
 		/* <1.4 */
 		String path = parser.get_attribute_value("source").strip_edges();
-		if (path.find("://") == -1 && path.is_relative_path()) {
+		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
 		}
@@ -300,7 +300,7 @@ void Collada::_parse_image(XMLParser &parser) {
 					parser.read();
 					String path = parser.get_node_data().strip_edges().uri_decode();
 
-					if (path.find("://") == -1 && path.is_relative_path()) {
+					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
 						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
@@ -411,8 +411,9 @@ Vector<String> Collada::_read_string_array(XMLParser &parser) {
 }
 
 Transform3D Collada::_read_transform(XMLParser &parser) {
-	if (parser.is_empty())
+	if (parser.is_empty()) {
 		return Transform3D();
+	}
 
 	Vector<String> array;
 	while (parser.read() == OK) {
@@ -1008,11 +1009,6 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 							String source = _uri_to_id(parser.get_attribute_value("source"));
 
 							if (semantic == "TEXCOORD") {
-								/*
-								if (parser.has_attribute("set"))// a texcoord
-									semantic+=parser.get_attribute_value("set");
-								else
-									semantic="TEXCOORD0";*/
 								semantic = "TEXCOORD" + itos(last_ref++);
 							}
 							int offset = parser.get_attribute_value("offset").to_int();
@@ -1193,11 +1189,6 @@ void Collada::_parse_skin_controller(XMLParser &parser, String p_id) {
 
 				skindata.weights = weights;
 			}
-			/*
-			else if (!parser.is_empty())
-				parser.skip_section();
-			*/
-
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "skin") {
 			break;
 		}
@@ -1257,19 +1248,8 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 				}
 			} else if (section == "Name_array" || section == "IDREF_array") {
 				// create a new array and read it.
-
-				/*
-				if (section=="IDREF_array")
-					morphdata.use_idrefs=true;
-				*/
 				if (morphdata.sources.has(current_source)) {
 					morphdata.sources[current_source].sarray = _read_string_array(parser);
-					/*
-					if (section=="IDREF_array") {
-						Vector<String> sa = morphdata.sources[current_source].sarray;
-						for(int i=0;i<sa.size();i++)
-							state.idref_joints.insert(sa[i]);
-					}*/
 					COLLADA_PRINT("section: " + current_source + " read " + itos(morphdata.sources[current_source].array.size()) + " values.");
 				}
 			} else if (section == "technique_common") {
@@ -1302,11 +1282,6 @@ void Collada::_parse_morph_controller(XMLParser &parser, String p_id) {
 					}
 				}
 			}
-			/*
-			else if (!parser.is_empty())
-				parser.skip_section();
-			*/
-
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "morph") {
 			break;
 		}
@@ -1362,7 +1337,7 @@ Collada::Node *Collada::_parse_visual_instance_geometry(XMLParser &parser) {
 			} else if (parser.get_node_name() == "skeleton") {
 				parser.read();
 				String uri = _uri_to_id(parser.get_node_data());
-				if (uri != "") {
+				if (!uri.is_empty()) {
 					geom->skeletons.push_back(uri);
 				}
 			}
@@ -1464,7 +1439,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 
 	bool found_name = false;
 
-	if (id == "") {
+	if (id.is_empty()) {
 		id = "%NODEID%" + itos(Math::rand());
 
 	} else {
@@ -1479,7 +1454,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 	Node *node = nullptr;
 
 	name = parser.has_attribute("name") ? parser.get_attribute_value_safe("name") : parser.get_attribute_value_safe("id");
-	if (name == "") {
+	if (name.is_empty()) {
 		name = id;
 	} else {
 		found_name = true;
@@ -1499,7 +1474,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 			joint->sid = parser.get_attribute_value_safe("name");
 		}
 
-		if (joint->sid != "") {
+		if (!joint->sid.is_empty()) {
 			state.sid_to_node_map[joint->sid] = id;
 		}
 
@@ -1670,12 +1645,12 @@ void Collada::_parse_animation(XMLParser &parser) {
 		return;
 	}
 
-	Map<String, Vector<float>> float_sources;
-	Map<String, Vector<String>> string_sources;
-	Map<String, int> source_strides;
-	Map<String, Map<String, String>> samplers;
-	Map<String, Vector<String>> source_param_names;
-	Map<String, Vector<String>> source_param_types;
+	HashMap<String, Vector<float>> float_sources;
+	HashMap<String, Vector<String>> string_sources;
+	HashMap<String, int> source_strides;
+	HashMap<String, HashMap<String, String>> samplers;
+	HashMap<String, Vector<String>> source_param_names;
+	HashMap<String, Vector<String>> source_param_types;
 
 	String id = "";
 	if (parser.has_attribute("id")) {
@@ -1696,21 +1671,21 @@ void Collada::_parse_animation(XMLParser &parser) {
 				source_param_types[current_source] = Vector<String>();
 
 			} else if (name == "float_array") {
-				if (current_source != "") {
+				if (!current_source.is_empty()) {
 					float_sources[current_source] = _read_float_array(parser);
 				}
 
 			} else if (name == "Name_array") {
-				if (current_source != "") {
+				if (!current_source.is_empty()) {
 					string_sources[current_source] = _read_string_array(parser);
 				}
 			} else if (name == "accessor") {
-				if (current_source != "" && parser.has_attribute("stride")) {
+				if (!current_source.is_empty() && parser.has_attribute("stride")) {
 					source_strides[current_source] = parser.get_attribute_value("stride").to_int();
 				}
 			} else if (name == "sampler") {
 				current_sampler = parser.get_attribute_value("id");
-				samplers[current_sampler] = Map<String, String>();
+				samplers[current_sampler] = HashMap<String, String>();
 			} else if (name == "param") {
 				if (parser.has_attribute("name")) {
 					source_param_names[current_source].push_back(parser.get_attribute_value("name"));
@@ -1725,7 +1700,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 
 			} else if (name == "input") {
-				if (current_sampler != "") {
+				if (!current_sampler.is_empty()) {
 					samplers[current_sampler][parser.get_attribute_value("semantic")] = parser.get_attribute_value("source");
 				}
 
@@ -1743,7 +1718,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 		String source = _uri_to_id(channel_sources[i]);
 		String target = channel_targets[i];
 		ERR_CONTINUE(!samplers.has(source));
-		Map<String, String> &sampler = samplers[source];
+		HashMap<String, String> &sampler = samplers[source];
 
 		ERR_CONTINUE(!sampler.has("INPUT")); //no input semantic? wtf?
 		String input_id = _uri_to_id(sampler["INPUT"]);
@@ -1831,14 +1806,14 @@ void Collada::_parse_animation(XMLParser &parser) {
 				}
 			}
 
-			if (target.find("/") != -1) { //transform component
+			if (target.contains("/")) { //transform component
 				track.target = target.get_slicec('/', 0);
 				track.param = target.get_slicec('/', 1);
-				if (track.param.find(".") != -1) {
+				if (track.param.contains(".")) {
 					track.component = track.param.get_slice(".", 1).to_upper();
 				}
 				track.param = track.param.get_slice(".", 0);
-				if (names.size() > 1 && track.component == "") {
+				if (names.size() > 1 && track.component.is_empty()) {
 					//this is a guess because the collada spec is ambiguous here...
 					//i suppose if you have many names (outputs) you can't use a component and i should abide to that.
 					track.component = name;
@@ -1855,7 +1830,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 
 			state.referenced_tracks[target].push_back(state.animation_tracks.size() - 1);
 
-			if (id != "") {
+			if (!id.is_empty()) {
 				if (!state.by_id_tracks.has(id)) {
 					state.by_id_tracks[id] = Vector<int>();
 				}
@@ -1953,10 +1928,10 @@ void Collada::_parse_library(XMLParser &parser) {
 				while (parser.read() == OK) {
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 						if (parser.get_node_name() == "mesh") {
-							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
 							_parse_mesh_geometry(parser, id, name2);
 						} else if (parser.get_node_name() == "spline") {
-							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							state.mesh_name_map[id] = (!name2.is_empty()) ? name2 : id;
 							_parse_curve_geometry(parser, id, name2);
 						} else if (!parser.is_empty()) {
 							parser.skip_section();
@@ -2024,7 +1999,7 @@ void Collada::_create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton
 bool Collada::_remove_node(Node *p_parent, Node *p_node) {
 	for (int i = 0; i < p_parent->children.size(); i++) {
 		if (p_parent->children[i] == p_node) {
-			p_parent->children.remove(i);
+			p_parent->children.remove_at(i);
 			return true;
 		}
 		if (_remove_node(p_parent->children[i], p_node)) {
@@ -2038,7 +2013,7 @@ bool Collada::_remove_node(Node *p_parent, Node *p_node) {
 void Collada::_remove_node(VisualScene *p_vscene, Node *p_node) {
 	for (int i = 0; i < p_vscene->root_nodes.size(); i++) {
 		if (p_vscene->root_nodes[i] == p_node) {
-			p_vscene->root_nodes.remove(i);
+			p_vscene->root_nodes.remove_at(i);
 			return;
 		}
 		if (_remove_node(p_vscene->root_nodes[i], p_node)) {
@@ -2054,7 +2029,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 		NodeGeometry *gnode = static_cast<NodeGeometry *>(p_node);
 		if (gnode->controller) {
 			// recount skeletons used
-			Set<NodeSkeleton *> skeletons;
+			HashSet<NodeSkeleton *> skeletons;
 
 			for (int i = 0; i < gnode->skeletons.size(); i++) {
 				String nodeid = gnode->skeletons[i];
@@ -2074,11 +2049,11 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 			if (skeletons.size() > 1) {
 				//do the merger!!
-				Set<NodeSkeleton *>::Element *E = skeletons.front();
-				NodeSkeleton *base = E->get();
+				HashSet<NodeSkeleton *>::Iterator E = skeletons.begin();
+				NodeSkeleton *base = *E;
 
-				for (E = E->next(); E; E = E->next()) {
-					NodeSkeleton *merged = E->get();
+				for (++E; E; ++E) {
+					NodeSkeleton *merged = *E;
 					_remove_node(p_vscene, merged);
 					for (int i = 0; i < merged->children.size(); i++) {
 						_joint_set_owner(merged->children[i], base);
@@ -2271,7 +2246,7 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 
 	for (int i = 0; i < p_node->children.size(); i++) {
 		if (_move_geometry_to_skeletons(p_vscene, p_node->children[i], p_mgeom)) {
-			p_node->children.remove(i);
+			p_node->children.remove_at(i);
 			i--;
 		}
 	}
@@ -2286,7 +2261,7 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 		if (nj->controller) {
 			String base = nj->source;
 
-			while (base != "" && !state.mesh_data_map.has(base)) {
+			while (!base.is_empty() && !state.mesh_data_map.has(base)) {
 				if (state.skin_controller_data_map.has(base)) {
 					SkinControllerData &sk = state.skin_controller_data_map[base];
 					base = sk.base;
@@ -2325,7 +2300,7 @@ void Collada::_optimize() {
 		for (int i = 0; i < vs.root_nodes.size(); i++) {
 			List<Node *> mgeom;
 			if (_move_geometry_to_skeletons(&vs, vs.root_nodes[i], &mgeom)) {
-				vs.root_nodes.remove(i);
+				vs.root_nodes.remove_at(i);
 				i--;
 			}
 

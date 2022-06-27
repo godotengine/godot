@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "multi_node_edit.h"
 
 #include "core/math/math_fieldwise.h"
-#include "editor_node.h"
+#include "editor/editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -75,7 +75,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 			ur->add_do_property(n, name, path);
 		} else {
 			Variant new_value;
-			if (p_field == "") {
+			if (p_field.is_empty()) {
 				// whole value
 				new_value = p_value;
 			} else {
@@ -87,8 +87,6 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		ur->add_undo_property(n, name, n->get(name));
 	}
-	ur->add_do_method(EditorNode::get_singleton()->get_inspector(), "refresh");
-	ur->add_undo_method(EditorNode::get_singleton()->get_inspector(), "refresh");
 
 	ur->commit_action();
 	return true;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,9 @@ private:
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
 
+	float panning_strength = 1.0f;
+	float cached_global_panning_strength = 1.0f;
+
 protected:
 	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
@@ -122,6 +125,9 @@ public:
 
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;
+
+	void set_panning_strength(float p_panning_strength);
+	float get_panning_strength() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
 

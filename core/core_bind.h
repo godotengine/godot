@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,14 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
+#include "core/debugger/engine_profiler.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -71,9 +73,9 @@ public:
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false);
 	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
-	RES load_threaded_get(const String &p_path);
+	Ref<Resource> load_threaded_get(const String &p_path);
 
-	RES load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
@@ -93,6 +95,7 @@ protected:
 
 public:
 	enum SaverFlags {
+		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,
@@ -104,8 +107,8 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
-	Vector<String> get_recognized_extensions(const RES &p_resource);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags);
+	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 
 	ResourceSaver() { singleton = this; }
 };
@@ -161,14 +164,16 @@ public:
 	int get_low_processor_usage_mode_sleep_usec() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
+	void crash(const String &p_message);
 
 	String get_executable_path() const;
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false);
-	int create_process(const String &p_path, const Vector<String> &p_arguments);
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
 	bool has_environment(const String &p_var) const;
@@ -195,9 +200,9 @@ public:
 
 	String get_unique_id() const;
 
-	String get_keycode_string(uint32_t p_code) const;
-	bool is_keycode_unicode(uint32_t p_unicode) const;
-	int find_keycode_from_string(const String &p_code) const;
+	String get_keycode_string(Key p_code) const;
+	bool is_keycode_unicode(char32_t p_unicode) const;
+	Key find_keycode_from_string(const String &p_code) const;
 
 	void set_use_file_access_save_and_swap(bool p_enable);
 
@@ -216,6 +221,7 @@ public:
 	bool is_stdout_verbose() const;
 
 	int get_processor_count() const;
+	String get_processor_name() const;
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,
@@ -230,6 +236,7 @@ public:
 
 	String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
+	Error move_to_trash(const String &p_path) const;
 	String get_user_data_dir() const;
 	String get_config_dir() const;
 	String get_data_dir() const;
@@ -237,6 +244,7 @@ public:
 
 	Error set_thread_name(const String &p_name);
 	Thread::ID get_thread_caller_id() const;
+	Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
 
@@ -343,7 +351,7 @@ public:
 class File : public RefCounted {
 	GDCLASS(File, RefCounted);
 
-	FileAccess *f = nullptr;
+	Ref<FileAccess> f;
 	bool big_endian = false;
 
 protected:
@@ -431,18 +439,20 @@ public:
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);
 
-	bool file_exists(const String &p_name) const; // Return true if a file exists.
+	static bool file_exists(const String &p_name); // Return true if a file exists.
 
 	uint64_t get_modified_time(const String &p_file) const;
 
 	File() {}
-	virtual ~File();
 };
 
 class Directory : public RefCounted {
 	GDCLASS(Directory, RefCounted);
-	DirAccess *d;
+	Ref<DirAccess> d;
+
 	bool dir_open = false;
+	bool include_navigational = false;
+	bool include_hidden = false;
 
 protected:
 	static void _bind_methods();
@@ -452,11 +462,19 @@ public:
 
 	bool is_open() const;
 
-	Error list_dir_begin(bool p_show_navigational = false, bool p_show_hidden = false); // This starts dir listing.
+	Error list_dir_begin();
 	String get_next();
 	bool current_is_dir() const;
-
 	void list_dir_end();
+
+	PackedStringArray get_files();
+	PackedStringArray get_directories();
+	PackedStringArray _get_contents(bool p_directories);
+
+	void set_include_navigational(bool p_enable);
+	bool get_include_navigational() const;
+	void set_include_hidden(bool p_enable);
+	bool get_include_hidden() const;
 
 	int get_drive_count();
 	String get_drive(int p_drive);
@@ -478,11 +496,6 @@ public:
 	Error remove(String p_name);
 
 	Directory();
-	virtual ~Directory();
-
-private:
-	bool _list_skip_navigational = false;
-	bool _list_skip_hidden = false;
 };
 
 class Marshalls : public Object {
@@ -538,7 +551,6 @@ class Thread : public RefCounted {
 
 protected:
 	Variant ret;
-	Variant userdata;
 	SafeFlag running;
 	Callable target_callable;
 	::Thread thread;
@@ -553,7 +565,7 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_started() const;
 	bool is_alive() const;
@@ -591,8 +603,7 @@ public:
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	StringName get_category(const StringName &p_node) const;
+	int64_t get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 
 	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -652,6 +663,10 @@ public:
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
+	void register_script_language(ScriptLanguage *p_language);
+	int get_script_language_count();
+	ScriptLanguage *get_script_language(int p_index) const;
+
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
@@ -664,25 +679,8 @@ public:
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
-	class ProfilerCallable {
-		friend class EngineDebugger;
-
-		Callable callable_toggle;
-		Callable callable_add;
-		Callable callable_tick;
-
-	public:
-		ProfilerCallable() {}
-
-		ProfilerCallable(const Callable &p_toggle, const Callable &p_add, const Callable &p_tick) {
-			callable_toggle = p_toggle;
-			callable_add = p_add;
-			callable_tick = p_tick;
-		}
-	};
-
-	Map<StringName, Callable> captures;
-	Map<StringName, ProfilerCallable> profilers;
+	HashMap<StringName, Callable> captures;
+	HashMap<StringName, Ref<EngineProfiler>> profilers;
 
 protected:
 	static void _bind_methods();
@@ -693,7 +691,7 @@ public:
 
 	bool is_active();
 
-	void register_profiler(const StringName &p_name, const Callable &p_toggle, const Callable &p_add, const Callable &p_tick);
+	void register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler);
 	void unregister_profiler(const StringName &p_name);
 	bool is_profiling(const StringName &p_name);
 	bool has_profiler(const StringName &p_name);
@@ -706,9 +704,6 @@ public:
 
 	void send_message(const String &p_msg, const Array &p_data);
 
-	static void call_toggle(void *p_user, bool p_enable, const Array &p_opts);
-	static void call_add(void *p_user, const Array &p_data);
-	static void call_tick(void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time);
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 
 	EngineDebugger() { singleton = this; }

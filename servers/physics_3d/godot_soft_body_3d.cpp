@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "servers/rendering_server.h"
 
 // Based on Bullet soft body.
@@ -147,7 +147,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	}
 }
 
-void GodotSoftBody3D::update_rendering_server(RenderingServerHandler *p_rendering_server_handler) {
+void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
 	if (soft_mesh.is_null()) {
 		return;
 	}
@@ -245,7 +245,7 @@ void GodotSoftBody3D::update_area() {
 		const Vector3 a = x1 - x0;
 		const Vector3 b = x2 - x0;
 		const Vector3 cr = vec3_cross(a, b);
-		face.ra = cr.length();
+		face.ra = cr.length() * 0.5;
 	}
 
 	// Node area.
@@ -374,7 +374,7 @@ void GodotSoftBody3D::unpin_vertex(int p_index) {
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
-			pinned_vertices.remove(i);
+			pinned_vertices.remove_at(i);
 
 			if (!soft_mesh.is_null()) {
 				ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
@@ -429,33 +429,33 @@ uint32_t GodotSoftBody3D::get_node_count() const {
 }
 
 real_t GodotSoftBody3D::get_node_inv_mass(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), 0.0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), 0.0);
 	return nodes[p_node_index].im;
 }
 
 Vector3 GodotSoftBody3D::get_node_position(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].x;
 }
 
 Vector3 GodotSoftBody3D::get_node_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].v;
 }
 
 Vector3 GodotSoftBody3D::get_node_biased_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].bv;
 }
 
 void GodotSoftBody3D::apply_node_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.v += p_impulse * node.im;
 }
 
 void GodotSoftBody3D::apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.bv += p_impulse * node.im;
 }
@@ -465,7 +465,7 @@ uint32_t GodotSoftBody3D::get_face_count() const {
 }
 
 void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1, Vector3 &r_point_2, Vector3 &r_point_3) const {
-	ERR_FAIL_COND(p_face_index >= faces.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_face_index, faces.size());
 	const Face &face = faces[p_face_index];
 	r_point_1 = face.n[0]->x;
 	r_point_2 = face.n[1]->x;
@@ -473,7 +473,7 @@ void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1,
 }
 
 Vector3 GodotSoftBody3D::get_face_normal(uint32_t p_face_index) const {
-	ERR_FAIL_COND_V(p_face_index >= faces.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_face_index, faces.size(), Vector3());
 	return faces[p_face_index].normal;
 }
 
@@ -494,7 +494,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 		// Process vertices.
 		{
 			uint32_t vertex_count = 0;
-			Map<Vector3, uint32_t> unique_vertices;
+			HashMap<Vector3, uint32_t> unique_vertices;
 
 			vertices.resize(visual_vertex_count);
 			map_visual_to_physics.resize(visual_vertex_count);
@@ -502,11 +502,11 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 			for (int visual_vertex_index = 0; visual_vertex_index < visual_vertex_count; ++visual_vertex_index) {
 				const Vector3 &vertex = p_vertices[visual_vertex_index];
 
-				Map<Vector3, uint32_t>::Element *e = unique_vertices.find(vertex);
+				HashMap<Vector3, uint32_t>::Iterator e = unique_vertices.find(vertex);
 				uint32_t vertex_id;
 				if (e) {
 					// Already existing.
-					vertex_id = e->value();
+					vertex_id = e->value;
 				} else {
 					// Create new one.
 					vertex_id = vertex_count++;
@@ -917,9 +917,7 @@ void GodotSoftBody3D::add_velocity(const Vector3 &p_velocity) {
 	}
 }
 
-void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
-	int ac = areas.size();
-
+void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_areas) {
 	if (nodes.is_empty()) {
 		return;
 	}
@@ -932,7 +930,6 @@ void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
 
 	// Iterate over faces (try not to iterate elsewhere if possible).
 	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		bool stopped = false;
 		const Face &face = faces[i];
 
 		Vector3 wind_force(0, 0, 0);
@@ -941,24 +938,10 @@ void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
 		volume += vec3_dot(face.n[0]->x - org, vec3_cross(face.n[1]->x - org, face.n[2]->x - org));
 
 		// Compute nodal forces from area winds.
-		if (ac && p_has_wind_forces) {
-			const AreaCMP *aa = &areas[0];
-			for (j = ac - 1; j >= 0 && !stopped; j--) {
-				PhysicsServer3D::AreaSpaceOverrideMode mode = aa[j].area->get_space_override_mode();
-				switch (mode) {
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-						wind_force += _compute_area_windforce(aa[j].area, &face);
-						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-					} break;
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-					case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-						wind_force = _compute_area_windforce(aa[j].area, &face);
-						stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-					} break;
-					default: {
-					}
-				}
+		int wind_area_count = p_wind_areas.size();
+		if (wind_area_count > 0) {
+			for (j = 0; j < wind_area_count; j++) {
+				wind_force += _compute_area_windforce(p_wind_areas[j], &face);
 			}
 
 			for (j = 0; j < 3; j++) {
@@ -981,12 +964,6 @@ void GodotSoftBody3D::apply_forces(bool p_has_wind_forces) {
 	}
 }
 
-void GodotSoftBody3D::_compute_area_gravity(const GodotArea3D *p_area) {
-	Vector3 area_gravity;
-	p_area->compute_gravity(get_transform().get_origin(), area_gravity);
-	gravity += area_gravity;
-}
-
 Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, const Face *p_face) {
 	real_t wfm = p_area->get_wind_force_magnitude();
 	real_t waf = p_area->get_wind_attenuation_factor();
@@ -1004,44 +981,59 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 
 	ERR_FAIL_COND(!get_space());
 
-	GodotArea3D *def_area = get_space()->get_default_area();
-	ERR_FAIL_COND(!def_area);
-	gravity = def_area->get_gravity_vector() * def_area->get_gravity();
+	bool gravity_done = false;
+	Vector3 gravity;
+
+	LocalVector<GodotArea3D *> wind_areas;
 
 	int ac = areas.size();
-	bool stopped = false;
-	bool has_wind_forces = false;
-
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		for (int i = ac - 1; i >= 0 && !stopped; i--) {
-			// Avoids unnecessary loop in apply_forces().
-			has_wind_forces = has_wind_forces || aa[i].area->get_wind_force_magnitude() > CMP_EPSILON;
-
-			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
-			switch (mode) {
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
-					_compute_area_gravity(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
-				} break;
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-				case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
-					gravity = Vector3(0, 0, 0);
-					_compute_area_gravity(aa[i].area);
-					stopped = mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
-				} break;
-				default: {
+		for (int i = ac - 1; i >= 0; i--) {
+			if (!gravity_done) {
+				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+					Vector3 area_gravity;
+					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
+					switch (area_gravity_mode) {
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+							gravity += area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+						} break;
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+							gravity = Vector3(0, 0, 0);
+							gravity = area_gravity;
+							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+						} break;
+						default: {
+						}
+					}
 				}
+			}
+
+			if (aa[i].area->get_wind_force_magnitude() > CMP_EPSILON) {
+				wind_areas.push_back(aa[i].area);
 			}
 		}
 	}
 
+	// Add default gravity and damping from space area.
+	if (!gravity_done) {
+		GodotArea3D *default_area = get_space()->get_default_area();
+		ERR_FAIL_COND(!default_area);
+
+		Vector3 default_gravity;
+		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
+		gravity += default_gravity;
+	}
+
 	// Apply forces.
 	add_velocity(gravity * p_delta);
-	if (pressure_coefficient > CMP_EPSILON || has_wind_forces) {
-		apply_forces(has_wind_forces);
+	if (pressure_coefficient > CMP_EPSILON || !wind_areas.is_empty()) {
+		apply_forces(wind_areas);
 	}
 
 	// Avoid soft body from 'exploding' so use some upper threshold of maximum motion
@@ -1280,7 +1272,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	real_t hit_dist_sq = INFINITY;
 
 	static bool process_hit(uint32_t p_face_index, void *p_userdata) {
-		_SoftBodyIntersectSegmentInfo &query_info = *(_SoftBodyIntersectSegmentInfo *)(p_userdata);
+		_SoftBodyIntersectSegmentInfo &query_info = *(static_cast<_SoftBodyIntersectSegmentInfo *>(p_userdata));
 
 		Vector3 points[3];
 		query_info.soft_body->get_face_points(p_face_index, points[0], points[1], points[2]);
@@ -1300,7 +1292,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	}
 };
 
-bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
+bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	_SoftBodyIntersectSegmentInfo query_info;
 	query_info.soft_body = soft_body;
 	query_info.from = p_begin;

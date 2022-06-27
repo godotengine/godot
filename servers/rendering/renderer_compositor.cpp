@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/string/print_string.h"
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
+bool RendererCompositor::low_end = false;
 
 RendererCompositor *RendererCompositor::create() {
 	return _create_func();
@@ -45,7 +46,7 @@ bool RendererCompositor::is_xr_enabled() const {
 }
 
 RendererCompositor::RendererCompositor() {
-	xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 }
 
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

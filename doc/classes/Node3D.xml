@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node3D" inherits="Node" version="4.0">
+<class name="Node3D" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg2rad].
 	</description>
 	<tutorials>
-		<link title="Introduction to 3D">https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link title="Introduction to 3D">$DOCS_URL/tutorials/3d/introduction_to_3d.html</link>
 		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
@@ -132,6 +132,20 @@
 			<return type="void" />
 			<description>
 				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
+			</description>
+		</method>
+		<method name="property_can_revert">
+			<return type="bool" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value.
+			</description>
+		</method>
+		<method name="property_get_revert">
+			<return type="Variant" />
+			<argument index="0" name="name" type="String" />
+			<description>
+				Returns the default value of the Node3D property with given [code]name[/code].
 			</description>
 		</method>
 		<method name="rotate">
@@ -288,6 +302,7 @@
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
 			Scale part of the local transformation.
+			[b]Note:[/b] Mixed negative scales in 3D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, the scale values will either be all positive or all negative.
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.

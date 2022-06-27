@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,13 @@
 #ifndef PARTICLES_2D_EDITOR_PLUGIN_H
 #define PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/file_dialog.h"
+#include "scene/gui/spin_box.h"
+
+class EditorFileDialog;
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
@@ -55,30 +56,31 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 		EMISSION_MODE_BORDER_DIRECTED
 	};
 
-	GPUParticles2D *particles;
+	GPUParticles2D *particles = nullptr;
+	List<GPUParticles2D *> selected_particles;
 
-	EditorFileDialog *file;
-	EditorNode *editor;
+	EditorFileDialog *file = nullptr;
 
-	HBoxContainer *toolbar;
-	MenuButton *menu;
+	HBoxContainer *toolbar = nullptr;
+	MenuButton *menu = nullptr;
 
-	SpinBox *epoints;
+	SpinBox *epoints = nullptr;
 
-	ConfirmationDialog *generate_visibility_rect;
-	SpinBox *generate_seconds;
+	ConfirmationDialog *generate_visibility_rect = nullptr;
+	SpinBox *generate_seconds = nullptr;
 
-	ConfirmationDialog *emission_mask;
-	OptionButton *emission_mask_mode;
-	CheckBox *emission_colors;
+	ConfirmationDialog *emission_mask = nullptr;
+	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_colors = nullptr;
 
 	String source_emission_file;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
 	void _generate_visibility_rect();
 	void _generate_emission_mask();
+	void _selection_changed();
 
 protected:
 	void _notification(int p_what);
@@ -91,7 +93,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GPUParticles2DEditorPlugin(EditorNode *p_node);
+	GPUParticles2DEditorPlugin();
 	~GPUParticles2DEditorPlugin();
 };
 

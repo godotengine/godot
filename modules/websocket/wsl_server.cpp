@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
 	r_resource_name = req[1];
-	Map<String, String> headers;
+	HashMap<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i]);
@@ -58,17 +58,17 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 			headers[name] = value;
 		}
 	}
-#define _WSL_CHECK(NAME, VALUE)                                                         \
+#define WSL_CHECK(NAME, VALUE)                                                          \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define _WSL_CHECK_EX(NAME) \
+#define WSL_CHECK_EX(NAME) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME), false, "Missing header '" + String(NAME) + "'.");
-	_WSL_CHECK("upgrade", "websocket");
-	_WSL_CHECK("sec-websocket-version", "13");
-	_WSL_CHECK_EX("sec-websocket-key");
-	_WSL_CHECK_EX("connection");
-#undef _WSL_CHECK_EX
-#undef _WSL_CHECK
+	WSL_CHECK("upgrade", "websocket");
+	WSL_CHECK("sec-websocket-version", "13");
+	WSL_CHECK_EX("sec-websocket-key");
+	WSL_CHECK_EX("connection");
+#undef WSL_CHECK_EX
+#undef WSL_CHECK
 	key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
@@ -83,11 +83,11 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 				break;
 			}
 			// Found a protocol
-			if (protocol != "") {
+			if (!protocol.is_empty()) {
 				break;
 			}
 		}
-		if (protocol == "") { // Invalid protocol(s) requested
+		if (protocol.is_empty()) { // Invalid protocol(s) requested
 			return false;
 		}
 	} else if (p_protocols.size() > 0) { // No protocol requested, but we need one
@@ -96,7 +96,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name, const Vector<String> &p_extra_headers) {
 	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
 		print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", p_timeout * 0.001));
 		return ERR_TIMEOUT;
@@ -138,8 +138,11 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 				s += "Upgrade: websocket\r\n";
 				s += "Connection: Upgrade\r\n";
 				s += "Sec-WebSocket-Accept: " + WSLPeer::compute_key_response(key) + "\r\n";
-				if (protocol != "") {
+				if (!protocol.is_empty()) {
 					s += "Sec-WebSocket-Protocol: " + protocol + "\r\n";
+				}
+				for (int i = 0; i < p_extra_headers.size(); i++) {
+					s += p_extra_headers[i] + "\r\n";
 				}
 				s += "\r\n";
 				response = s.utf8();
@@ -167,6 +170,10 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 	return OK;
 }
 
+void WSLServer::set_extra_headers(const Vector<String> &p_headers) {
+	_extra_headers = p_headers;
+}
+
 Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
 	ERR_FAIL_COND_V(is_listening(), ERR_ALREADY_IN_USE);
 
@@ -183,7 +190,7 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 void WSLServer::poll() {
 	List<int> remove_ids;
 	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
-		Ref<WSLPeer> peer = (WSLPeer *)E.value.ptr();
+		Ref<WSLPeer> peer = const_cast<WSLPeer *>(static_cast<const WSLPeer *>(E.value.ptr()));
 		peer->poll();
 		if (!peer->is_connected_to_host()) {
 			_on_disconnect(E.key, peer->close_code != -1);
@@ -199,7 +206,7 @@ void WSLServer::poll() {
 	for (const Ref<PendingPeer> &E : _pending) {
 		String resource_name;
 		Ref<PendingPeer> ppeer = E;
-		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name);
+		Error err = ppeer->do_handshake(_protocols, handshake_timeout, resource_name, _extra_headers);
 		if (err == ERR_BUSY) {
 			continue;
 		} else if (err != OK) {
@@ -266,7 +273,7 @@ int WSLServer::get_max_packet_size() const {
 void WSLServer::stop() {
 	_server->stop();
 	for (const KeyValue<int, Ref<WebSocketPeer>> &E : _peer_map) {
-		Ref<WSLPeer> peer = (WSLPeer *)E.value.ptr();
+		Ref<WSLPeer> peer = const_cast<WSLPeer *>(static_cast<const WSLPeer *>(E.value.ptr()));
 		peer->close_now();
 	}
 	_pending.clear();

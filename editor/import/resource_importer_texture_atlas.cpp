@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,7 +59,7 @@ String ResourceImporterTextureAtlas::get_resource_type() const {
 	return "Texture2D";
 }
 
-bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -71,17 +71,18 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterTextureAtlas::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
 	return "atlas_file";
 }
 
-Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* If this happens, it's because the atlas_file field was not filled, so just import a broken texture */
 
 	//use an xpm because it's size independent, the editor images are vector and size dependent
@@ -134,7 +135,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	int max_y = MIN(y[2], height - p_offset.y - 1);
 	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
-			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt < width ? xt : width - 1); xi++) {
+			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt <= src_width ? xt : src_width); xi++) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -156,7 +157,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 				p_image->set_pixel(px, py, color);
 			}
 
-			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
+			for (int xi = (xf < src_width ? int(xf) : src_width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -187,7 +188,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	}
 }
 
-Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) {
+Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) {
 	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
@@ -196,10 +197,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	pack_data_files.resize(p_source_file_options.size());
 
 	int idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
-		const String &source = E->key();
-		const Map<StringName, Variant> &options = E->get();
+		const String &source = E.key;
+		const HashMap<StringName, Variant> &options = E.value;
 
 		Ref<Image> image;
 		image.instantiate();
@@ -210,14 +211,18 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		pack_data.is_cropped = options["crop_to_region"];
 
 		int mode = options["import_mode"];
+		bool trim_alpha_border_from_region = options["trim_alpha_border_from_region"];
 
 		if (mode == IMPORT_MODE_REGION) {
 			pack_data.is_mesh = false;
 
 			EditorAtlasPacker::Chart chart;
 
-			//clip a region from the image
-			Rect2 used_rect = image->get_used_rect();
+			Rect2 used_rect = Rect2(Vector2(), image->get_size());
+			if (trim_alpha_border_from_region) {
+				// Clip a region from the image.
+				used_rect = image->get_used_rect();
+			}
 			pack_data.region = used_rect;
 
 			chart.vertices.push_back(used_rect.position);
@@ -266,6 +271,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				pack_data.chart_vertices.push_back(polygons[j]);
 			}
 		}
+		idx++;
 	}
 
 	//pack the charts
@@ -300,10 +306,8 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//update cache if existing, else create
 	Ref<Texture2D> cache;
-	if (ResourceCache::has(p_group_file)) {
-		Resource *resptr = ResourceCache::get(p_group_file);
-		cache.reference_ptr(resptr);
-	} else {
+	cache = ResourceCache::get_ref(p_group_file);
+	if (!cache.is_valid()) {
 		Ref<ImageTexture> res_cache;
 		res_cache.instantiate();
 		res_cache->create_from_image(new_atlas);
@@ -313,7 +317,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//save the images
 	idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
 
 		Ref<Texture2D> texture;
@@ -389,8 +393,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			//mesh
 		}
 
-		String save_path = p_base_paths[E->key()] + ".res";
+		String save_path = p_base_paths[E.key] + ".res";
 		ResourceSaver::save(save_path, texture);
+		idx++;
 	}
 
 	return OK;

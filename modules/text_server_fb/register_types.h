@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,14 @@
 #ifndef TEXT_SERVER_FB_REGISTER_TYPES_H
 #define TEXT_SERVER_FB_REGISTER_TYPES_H
 
-#define MODULE_TEXT_SERVER_FB_HAS_PREREGISTER
+#ifdef GDEXTENSION
+#include <godot_cpp/core/class_db.hpp>
+using namespace godot;
+#else
+#include "modules/register_module_types.h"
+#endif
 
-void preregister_text_server_fb_types();
-void register_text_server_fb_types();
-void unregister_text_server_fb_types();
+void initialize_text_server_fb_module(ModuleInitializationLevel p_level);
+void uninitialize_text_server_fb_module(ModuleInitializationLevel p_level);
 
 #endif // TEXT_SERVER_FB_REGISTER_TYPES_H

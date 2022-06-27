@@ -111,27 +111,23 @@ public:
 
     void addStringOperand(const char* str)
     {
-        unsigned int word;
-        char* wordString = (char*)&word;
-        char* wordPtr = wordString;
-        int charCount = 0;
+        unsigned int word = 0;
+        unsigned int shiftAmount = 0;
         char c;
+
         do {
             c = *(str++);
-            *(wordPtr++) = c;
-            ++charCount;
-            if (charCount == 4) {
+            word |= ((unsigned int)c) << shiftAmount;
+            shiftAmount += 8;
+            if (shiftAmount == 32) {
                 addImmediateOperand(word);
-                wordPtr = wordString;
-                charCount = 0;
+                word = 0;
+                shiftAmount = 0;
             }
         } while (c != 0);
 
         // deal with partial last word
-        if (charCount > 0) {
-            // pad with 0s
-            for (; charCount < 4; ++charCount)
-                *(wordPtr++) = 0;
+        if (shiftAmount > 0) {
             addImmediateOperand(word);
         }
     }

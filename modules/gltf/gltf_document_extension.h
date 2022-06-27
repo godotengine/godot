@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,33 +31,31 @@
 #ifndef GLTF_DOCUMENT_EXTENSION_H
 #define GLTF_DOCUMENT_EXTENSION_H
 
-#include "core/io/resource.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
-#include "core/variant/variant.h"
-class GLTFDocument;
+#include "gltf_accessor.h"
+#include "gltf_node.h"
+#include "gltf_state.h"
+
 class GLTFDocumentExtension : public Resource {
 	GDCLASS(GLTFDocumentExtension, Resource);
-
-	Dictionary import_settings;
-	Dictionary export_settings;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual Array get_import_setting_keys() const;
-	virtual Variant get_import_setting(const StringName &p_key) const;
-	virtual void set_import_setting(const StringName &p_key, Variant p_var);
-	virtual Error import_preflight(Ref<GLTFDocument> p_document) { return OK; }
-	virtual Error import_post(Ref<GLTFDocument> p_document, Node *p_node) { return OK; }
-
-public:
-	virtual Array get_export_setting_keys() const;
-	virtual Variant get_export_setting(const StringName &p_key) const;
-	virtual void set_export_setting(const StringName &p_key, Variant p_var);
-	virtual Error export_preflight(Ref<GLTFDocument> p_document, Node *p_node) { return OK; }
-	virtual Error export_post(Ref<GLTFDocument> p_document) { return OK; }
+	virtual Error import_preflight(Ref<GLTFState> p_state);
+	virtual Error import_post_parse(Ref<GLTFState> p_state);
+	virtual Error export_post(Ref<GLTFState> p_state);
+	virtual Error import_post(Ref<GLTFState> p_state, Node *p_node);
+	virtual Error export_preflight(Node *p_state);
+	virtual Error import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
+	virtual Error export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
+	GDVIRTUAL1R(int, _import_preflight, Ref<GLTFState>);
+	GDVIRTUAL1R(int, _import_post_parse, Ref<GLTFState>);
+	GDVIRTUAL4R(int, _import_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
+	GDVIRTUAL2R(int, _import_post, Ref<GLTFState>, Node *);
+	GDVIRTUAL1R(int, _export_preflight, Node *);
+	GDVIRTUAL4R(int, _export_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
+	GDVIRTUAL1R(int, _export_post, Ref<GLTFState>);
 };
 
 #endif // GLTF_DOCUMENT_EXTENSION_H

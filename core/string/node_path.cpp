@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -293,12 +293,12 @@ void NodePath::simplify() {
 			break;
 		}
 		if (data->path[i].operator String() == ".") {
-			data->path.remove(i);
+			data->path.remove_at(i);
 			i--;
 		} else if (i > 0 && data->path[i].operator String() == ".." && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
 			//remove both
-			data->path.remove(i - 1);
-			data->path.remove(i - 1);
+			data->path.remove_at(i - 1);
+			data->path.remove_at(i - 1);
 			i -= 2;
 			if (data->path.size() == 0) {
 				data->path.push_back(".");
@@ -368,7 +368,7 @@ NodePath::NodePath(const String &p_path) {
 		for (int i = from; i <= path.length(); i++) {
 			if (path[i] == ':' || path[i] == 0) {
 				String str = path.substr(from, i - from);
-				if (str == "") {
+				if (str.is_empty()) {
 					if (path[i] == 0) {
 						continue; // Allow end-of-path :
 					}

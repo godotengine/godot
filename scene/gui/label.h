@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,60 +36,32 @@
 class Label : public Control {
 	GDCLASS(Label, Control);
 
-public:
-	enum Align {
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
-	};
-
-	enum VAlign {
-		VALIGN_TOP,
-		VALIGN_CENTER,
-		VALIGN_BOTTOM,
-		VALIGN_FILL
-	};
-
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
-
 private:
-	Align align = ALIGN_LEFT;
-	VAlign valign = VALIGN_TOP;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
-	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	bool clip = false;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
 	bool uppercase = false;
 
 	bool lines_dirty = true;
 	bool dirty = true;
+	bool font_dirty = true;
 	RID text_rid;
 	Vector<RID> lines_rid;
 
 	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	Control::StructuredTextParser st_parser = STRUCTURED_TEXT_DEFAULT;
+	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
 	float percent_visible = 1.0;
 
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
@@ -109,11 +81,11 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void set_align(Align p_align);
-	Align get_align() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
-	void set_valign(VAlign p_align);
-	VAlign get_valign() const;
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
 
 	void set_text(const String &p_string);
 	String get_text() const;
@@ -128,17 +100,20 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_structured_text_bidi_override(Control::StructuredTextParser p_parser);
-	Control::StructuredTextParser get_structured_text_bidi_override() const;
+	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
+	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
 	void set_structured_text_bidi_override_options(Array p_args);
 	Array get_structured_text_bidi_override_options() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
+
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
@@ -147,8 +122,8 @@ public:
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
@@ -166,10 +141,5 @@ public:
 	Label(const String &p_text = String());
 	~Label();
 };
-
-VARIANT_ENUM_CAST(Label::Align);
-VARIANT_ENUM_CAST(Label::VAlign);
-VARIANT_ENUM_CAST(Label::AutowrapMode);
-VARIANT_ENUM_CAST(Label::OverrunBehavior);
 
 #endif

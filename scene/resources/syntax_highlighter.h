@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ class SyntaxHighlighter : public Resource {
 	GDCLASS(SyntaxHighlighter, Resource)
 
 private:
-	Map<int, Dictionary> highlighting_cache;
+	RBMap<int, Dictionary> highlighting_cache;
 	void _lines_edited_from(int p_from_line, int p_to_line);
 
 protected:
@@ -83,7 +83,7 @@ private:
 		bool line_only = false;
 	};
 	Vector<ColorRegion> color_regions;
-	Map<int, int> color_region_cache;
+	HashMap<int, int> color_region_cache;
 
 	Dictionary keywords;
 	Dictionary member_keywords;

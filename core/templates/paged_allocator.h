@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,10 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
+	enum {
+		DEFAULT_PAGE_SIZE = 4096
+	};
+
 	template <class... Args>
 	T *alloc(const Args &&...p_args) {
 		if (thread_safe) {
@@ -86,10 +90,10 @@ public:
 		}
 		p_mem->~T();
 		available_pool[allocs_available >> page_shift][allocs_available & page_mask] = p_mem;
+		allocs_available++;
 		if (thread_safe) {
 			spin_lock.unlock();
 		}
-		allocs_available++;
 	}
 
 	void reset(bool p_allow_unfreed = false) {
@@ -121,7 +125,9 @@ public:
 		page_shift = get_shift_from_power_of_2(page_size);
 	}
 
-	PagedAllocator(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
+	// Power of 2 recommended because of alignment with OS page sizes.
+	// Even if element is bigger, it's still a multiple and gets rounded to amount of pages.
+	PagedAllocator(uint32_t p_page_size = DEFAULT_PAGE_SIZE) {
 		configure(p_page_size);
 	}
 

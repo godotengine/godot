@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,12 @@
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/gui/scroll_container.h"
+
+class HSlider;
+class Panel;
+class ScrollContainer;
+class SpinBox;
+class ViewPanner;
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
@@ -63,33 +68,38 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Button *uv_edit_mode[4];
 	Ref<ButtonGroup> uv_edit_group;
 
-	Polygon2D *node;
+	Polygon2D *node = nullptr;
 
 	UVMode uv_mode;
-	AcceptDialog *uv_edit;
+	AcceptDialog *uv_edit = nullptr;
 	Button *uv_button[UV_MODE_MAX];
-	Button *b_snap_enable;
-	Button *b_snap_grid;
-	Panel *uv_edit_draw;
-	HSlider *uv_zoom;
-	SpinBox *uv_zoom_value;
-	HScrollBar *uv_hscroll;
-	VScrollBar *uv_vscroll;
-	MenuButton *uv_menu;
-	TextureRect *uv_icon_zoom;
+	Button *b_snap_enable = nullptr;
+	Button *b_snap_grid = nullptr;
+	Panel *uv_edit_draw = nullptr;
+	HSlider *uv_zoom = nullptr;
+	SpinBox *uv_zoom_value = nullptr;
+	HScrollBar *uv_hscroll = nullptr;
+	VScrollBar *uv_vscroll = nullptr;
+	MenuButton *uv_menu = nullptr;
+	TextureRect *uv_icon_zoom = nullptr;
 
-	VBoxContainer *bone_scroll_main_vb;
-	ScrollContainer *bone_scroll;
-	VBoxContainer *bone_scroll_vb;
-	Button *sync_bones;
-	HSlider *bone_paint_strength;
-	SpinBox *bone_paint_radius;
-	Label *bone_paint_radius_label;
+	Ref<ViewPanner> uv_panner;
+	void _uv_scroll_callback(Vector2 p_scroll_vec, bool p_alt);
+	void _uv_pan_callback(Vector2 p_scroll_vec);
+	void _uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+
+	VBoxContainer *bone_scroll_main_vb = nullptr;
+	ScrollContainer *bone_scroll = nullptr;
+	VBoxContainer *bone_scroll_vb = nullptr;
+	Button *sync_bones = nullptr;
+	HSlider *bone_paint_strength = nullptr;
+	SpinBox *bone_paint_radius = nullptr;
+	Label *bone_paint_radius_label = nullptr;
 	bool bone_painting;
-	int bone_painting_bone;
+	int bone_painting_bone = 0;
 	Vector<float> prev_weights;
 	Vector2 bone_paint_pos;
-	AcceptDialog *grid_settings;
+	AcceptDialog *grid_settings = nullptr;
 
 	void _sync_bones();
 	void _update_bone_list();
@@ -100,7 +110,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector<Vector2> uv_create_uv_prev;
 	Vector<Vector2> uv_create_poly_prev;
 	Vector<Color> uv_create_colors_prev;
-	int uv_create_prev_internal_vertices;
+	int uv_create_prev_internal_vertices = 0;
 	Array uv_create_bones_prev;
 	Array polygons_prev;
 
@@ -113,9 +123,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
 
-	AcceptDialog *error;
+	AcceptDialog *error = nullptr;
 
-	Button *button_uv;
+	Button *button_uv = nullptr;
 
 	bool use_snap;
 	bool snap_show_grid;
@@ -160,14 +170,14 @@ protected:
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-	Polygon2DEditor(EditorNode *p_editor);
+	Polygon2DEditor();
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	Polygon2DEditorPlugin(EditorNode *p_node);
+	Polygon2DEditorPlugin();
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

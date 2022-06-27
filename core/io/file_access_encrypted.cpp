@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
+Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
 	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
@@ -99,7 +99,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 	return OK;
 }
 
-Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const String &p_key, Mode p_mode) {
+Error FileAccessEncrypted::open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode) {
 	String cs = p_key.md5_text();
 	ERR_FAIL_COND_V(cs.length() != 32, ERR_INVALID_PARAMETER);
 	Vector<uint8_t> key;
@@ -115,30 +115,11 @@ Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessEncrypted::close() {
-	if (!file) {
+void FileAccessEncrypted::_close() {
+	if (file.is_null()) {
 		return;
 	}
 
-	_release();
-
-	file->close();
-	memdelete(file);
-
-	file = nullptr;
-}
-
-void FileAccessEncrypted::release() {
-	if (!file) {
-		return;
-	}
-
-	_release();
-
-	file = nullptr;
-}
-
-void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
 		uint64_t len = data.size();
@@ -176,6 +157,8 @@ void FileAccessEncrypted::_release() {
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();
 	}
+
+	file.unref();
 }
 
 bool FileAccessEncrypted::is_open() const {
@@ -183,7 +166,7 @@ bool FileAccessEncrypted::is_open() const {
 }
 
 String FileAccessEncrypted::get_path() const {
-	if (file) {
+	if (file.is_valid()) {
 		return file->get_path();
 	} else {
 		return "";
@@ -191,7 +174,7 @@ String FileAccessEncrypted::get_path() const {
 }
 
 String FileAccessEncrypted::get_path_absolute() const {
-	if (file) {
+	if (file.is_valid()) {
 		return file->get_path_absolute();
 	} else {
 		return "";
@@ -291,11 +274,10 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 }
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
-	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
-	if (!fa) {
+	Ref<FileAccess> fa = FileAccess::open(p_name, FileAccess::READ);
+	if (fa.is_null()) {
 		return false;
 	}
-	memdelete(fa);
 	return true;
 }
 
@@ -313,7 +295,5 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {
-	if (file) {
-		close();
-	}
+	_close();
 }

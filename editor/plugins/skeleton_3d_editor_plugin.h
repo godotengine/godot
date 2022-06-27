@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "node_3d_editor_plugin.h"
@@ -61,10 +60,10 @@ class BoneTransformEditor : public VBoxContainer {
 
 	Rect2 background_rects[5];
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 	// String property;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	bool toggle_enabled = false;
 	bool updating = false;
@@ -109,31 +108,30 @@ class Skeleton3DEditor : public VBoxContainer {
 		Transform3D relative_rest; // Relative to skeleton node.
 	};
 
-	EditorNode *editor;
-	EditorInspectorPluginSkeleton *editor_plugin;
+	EditorInspectorPluginSkeleton *editor_plugin = nullptr;
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 
 	Tree *joint_tree = nullptr;
 	BoneTransformEditor *rest_editor = nullptr;
 	BoneTransformEditor *pose_editor = nullptr;
 
-	VSeparator *separator;
+	VSeparator *separator = nullptr;
 	MenuButton *skeleton_options = nullptr;
-	Button *edit_mode_button;
+	Button *edit_mode_button = nullptr;
 
 	bool edit_mode = false;
 
-	HBoxContainer *animation_hb;
-	Button *key_loc_button;
-	Button *key_rot_button;
-	Button *key_scale_button;
-	Button *key_insert_button;
-	Button *key_insert_all_button;
+	HBoxContainer *animation_hb = nullptr;
+	Button *key_loc_button = nullptr;
+	Button *key_rot_button = nullptr;
+	Button *key_scale_button = nullptr;
+	Button *key_insert_button = nullptr;
+	Button *key_insert_all_button = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
 
-	bool keyable;
+	bool keyable = false;
 
 	static Skeleton3DEditor *singleton;
 
@@ -165,7 +163,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void set_bone_options_enabled(const bool p_bone_options_enabled);
 
 	// Handle.
-	MeshInstance3D *handles_mesh_instance;
+	MeshInstance3D *handles_mesh_instance = nullptr;
 	Ref<ImmediateMesh> handles_mesh;
 	Ref<ShaderMaterial> handle_material;
 	Ref<Shader> handle_shader;
@@ -183,7 +181,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void _draw_handles();
 
 	void _joint_tree_selection_changed();
-	void _joint_tree_rmb_select(const Vector2 &p_pos);
+	void _joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _update_properties();
 
 	void _subgizmo_selection_change();
@@ -213,7 +211,7 @@ public:
 	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
 	Vector3 get_bone_original_scale() const { return bone_original_scale; };
 
-	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *skeleton);
+	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();
 };
 
@@ -222,8 +220,7 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 
 	friend class Skeleton3DEditorPlugin;
 
-	Skeleton3DEditor *skel_editor;
-	EditorNode *editor;
+	Skeleton3DEditor *skel_editor = nullptr;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
@@ -233,8 +230,7 @@ public:
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginSkeleton *skeleton_plugin;
-	EditorNode *editor;
+	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
@@ -244,7 +240,7 @@ public:
 
 	virtual String get_name() const override { return "Skeleton3D"; }
 
-	Skeleton3DEditorPlugin(EditorNode *p_node);
+	Skeleton3DEditorPlugin();
 };
 
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {

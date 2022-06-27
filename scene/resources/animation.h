@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,17 @@ public:
 		UPDATE_DISCRETE,
 		UPDATE_TRIGGER,
 		UPDATE_CAPTURE,
+	};
 
+	enum LoopMode {
+		LOOP_NONE,
+		LOOP_LINEAR,
+		LOOP_PINGPONG,
+	};
+
+	enum HandleMode {
+		HANDLE_MODE_FREE,
+		HANDLE_MODE_BALANCED,
 	};
 
 private:
@@ -152,10 +162,10 @@ private:
 	};
 
 	/* BEZIER TRACK */
-
 	struct BezierKey {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
+		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
 	};
 
@@ -170,7 +180,7 @@ private:
 	/* AUDIO TRACK */
 
 	struct AudioKey {
-		RES stream;
+		Ref<Resource> stream;
 		real_t start_offset = 0.0; //offset from start
 		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
 		AudioKey() {
@@ -208,7 +218,8 @@ private:
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
 	template <class K>
-	inline int _find(const Vector<K> &p_keys, double p_time) const;
+
+	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false) const;
 
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
@@ -221,7 +232,7 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const;
 
 	template <class T>
-	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
+	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <class T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
@@ -231,7 +242,8 @@ private:
 
 	double length = 1.0;
 	real_t step = 0.1;
-	bool loop = false;
+	LoopMode loop_mode = LOOP_NONE;
+	int pingponged = 0;
 
 	/* Animation compression page format (version 1):
 	 *
@@ -412,21 +424,23 @@ public:
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
-	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle);
+	int bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const HandleMode p_handle_mode = HandleMode::HANDLE_MODE_BALANCED);
+	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, double p_balanced_value_time_ratio = 1.0);
 	void bezier_track_set_key_value(int p_track, int p_index, real_t p_value);
-	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle);
-	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle);
+	void bezier_track_set_key_in_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
+	void bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle, double p_balanced_value_time_ratio = 1.0);
 	real_t bezier_track_get_key_value(int p_track, int p_index) const;
+	int bezier_track_get_key_handle_mode(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_in_handle(int p_track, int p_index) const;
 	Vector2 bezier_track_get_key_out_handle(int p_track, int p_index) const;
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
 
-	int audio_track_insert_key(int p_track, double p_time, const RES &p_stream, real_t p_start_offset = 0, real_t p_end_offset = 0);
-	void audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream);
+	int audio_track_insert_key(int p_track, double p_time, const Ref<Resource> &p_stream, real_t p_start_offset = 0, real_t p_end_offset = 0);
+	void audio_track_set_key_stream(int p_track, int p_key, const Ref<Resource> &p_stream);
 	void audio_track_set_key_start_offset(int p_track, int p_key, real_t p_offset);
 	void audio_track_set_key_end_offset(int p_track, int p_key, real_t p_offset);
-	RES audio_track_get_key_stream(int p_track, int p_key) const;
+	Ref<Resource> audio_track_get_key_stream(int p_track, int p_key) const;
 	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
 
@@ -438,23 +452,23 @@ public:
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
-	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
-	void set_loop(bool p_enabled);
-	bool has_loop() const;
+	void set_loop_mode(LoopMode p_loop_mode);
+	LoopMode get_loop_mode() const;
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
@@ -471,5 +485,7 @@ public:
 VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
+VARIANT_ENUM_CAST(Animation::HandleMode);
+VARIANT_ENUM_CAST(Animation::LoopMode);
 
 #endif

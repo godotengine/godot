@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,7 +133,7 @@ void SkeletonModificationStack3D::add_modification(Ref<SkeletonModification3D> p
 void SkeletonModificationStack3D::delete_modification(int p_mod_idx) {
 	const int modifications_size = modifications.size();
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
-	modifications.remove(p_mod_idx);
+	modifications.remove_at(p_mod_idx);
 }
 
 void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonModification3D> p_mod) {
@@ -141,7 +141,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 	ERR_FAIL_INDEX(p_mod_idx, modifications_size);
 
 	if (p_mod == nullptr) {
-		modifications.remove(p_mod_idx);
+		modifications.remove_at(p_mod_idx);
 	} else {
 		p_mod->_setup_modification(this);
 		modifications[p_mod_idx] = p_mod;
@@ -149,6 +149,7 @@ void SkeletonModificationStack3D::set_modification(int p_mod_idx, Ref<SkeletonMo
 }
 
 void SkeletonModificationStack3D::set_modification_count(int p_count) {
+	ERR_FAIL_COND_MSG(p_count < 0, "Modification count cannot be less than zero.");
 	modifications.resize(p_count);
 	notify_property_list_changed();
 }
@@ -216,7 +217,7 @@ void SkeletonModificationStack3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_modification_count", "get_modification_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Modifications,modifications/"), "set_modification_count", "get_modification_count");
 }
 
 SkeletonModificationStack3D::SkeletonModificationStack3D() {

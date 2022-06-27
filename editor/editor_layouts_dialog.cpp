@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,15 +46,15 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		switch (k->get_keycode()) {
-			case KEY_KP_ENTER:
-			case KEY_ENTER: {
+			case Key::KP_ENTER:
+			case Key::ENTER: {
 				if (get_hide_on_ok()) {
 					hide();
 				}
 				ok_pressed();
 				set_input_as_handled();
 			} break;
-			case KEY_ESCAPE: {
+			case Key::ESCAPE: {
 				hide();
 				set_input_as_handled();
 			} break;
@@ -74,7 +74,7 @@ void EditorLayoutsDialog::ok_pressed() {
 		for (int i = 0; i < selected_items.size(); ++i) {
 			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
-	} else if (name->is_visible() && name->get_text() != "") {
+	} else if (name->is_visible() && !name->get_text().is_empty()) {
 		emit_signal(SNAME("name_confirmed"), name->get_text());
 	}
 }

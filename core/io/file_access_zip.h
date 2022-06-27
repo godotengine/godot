@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 
 #include "thirdparty/minizip/unzip.h"
 
@@ -55,7 +55,7 @@ private:
 	};
 	Vector<Package> packages;
 
-	Map<String, File> files;
+	HashMap<String, File> files;
 
 	static ZipArchive *instance;
 
@@ -67,8 +67,8 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset);
-	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
+	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
 
 	static ZipArchive *get_singleton();
 
@@ -80,11 +80,12 @@ class FileAccessZip : public FileAccess {
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
-	mutable bool at_eof;
+	mutable bool at_eof = false;
+
+	void _close();
 
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

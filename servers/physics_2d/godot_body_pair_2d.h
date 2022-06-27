@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,13 +62,14 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
 		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
+		real_t acc_bias_impulse_center_of_mass = 0.0; // accumulated normal impulse for position bias applied to com
 		real_t mass_normal, mass_tangent = 0.0;
 		real_t bias = 0.0;
 
 		real_t depth = 0.0;
 		bool active = false;
+		bool used = false;
 		Vector2 rA, rB;
-		bool reused = false;
 		real_t bounce = 0.0;
 	};
 
@@ -78,10 +79,11 @@ class GodotBodyPair2D : public GodotConstraint2D {
 	Contact contacts[MAX_CONTACTS];
 	int contact_count = 0;
 	bool collided = false;
+	bool check_ccd = false;
 	bool oneway_disabled = false;
 	bool report_contacts_only = false;
 
-	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result = false);
+	bool _test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B);
 	void _validate_contacts();
 	static void _add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self);
 	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ private:
 	Ref<Environment> fallback_environment;
 	Ref<CameraEffects> camera_effects;
 
-	Set<Camera3D *> cameras;
+	HashSet<Camera3D *> cameras;
 
 protected:
 	static void _bind_methods();
@@ -77,7 +77,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	_FORCE_INLINE_ const Set<Camera3D *> &get_cameras() const { return cameras; }
+	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
 
 	PhysicsDirectSpaceState3D *get_direct_space_state();
 

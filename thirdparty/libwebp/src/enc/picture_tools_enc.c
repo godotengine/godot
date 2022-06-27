@@ -83,6 +83,19 @@ static int SmoothenBlock(const uint8_t* a_ptr, int a_stride, uint8_t* y_ptr,
   return (count == 0);
 }
 
+void WebPReplaceTransparentPixels(WebPPicture* const pic, uint32_t color) {
+  if (pic != NULL && pic->use_argb) {
+    int y = pic->height;
+    uint32_t* argb = pic->argb;
+    color &= 0xffffffu;   // force alpha=0
+    WebPInitAlphaProcessing();
+    while (y-- > 0) {
+      WebPAlphaReplace(argb, pic->width, color);
+      argb += pic->argb_stride;
+    }
+  }
+}
+
 void WebPCleanupTransparentArea(WebPPicture* pic) {
   int x, y, w, h;
   if (pic == NULL) return;
@@ -164,24 +177,6 @@ void WebPCleanupTransparentArea(WebPPicture* pic) {
 
 #undef SIZE
 #undef SIZE2
-
-void WebPCleanupTransparentAreaLossless(WebPPicture* const pic) {
-  int x, y, w, h;
-  uint32_t* argb;
-  assert(pic != NULL && pic->use_argb);
-  w = pic->width;
-  h = pic->height;
-  argb = pic->argb;
-
-  for (y = 0; y < h; ++y) {
-    for (x = 0; x < w; ++x) {
-      if ((argb[x] & 0xff000000) == 0) {
-        argb[x] = 0x00000000;
-      }
-    }
-    argb += pic->argb_stride;
-  }
-}
 
 //------------------------------------------------------------------------------
 // Blend color and remove transparency info

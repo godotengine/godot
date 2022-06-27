@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,11 +35,8 @@
 
 #include "nav_rid.h"
 #include "nav_utils.h"
-#include <vector>
 
-/**
-	@author AndreaCatania
-*/
+#include <vector>
 
 class NavMap;
 class NavRegion;
@@ -48,7 +45,9 @@ class NavRegion : public NavRid {
 	NavMap *map = nullptr;
 	Transform3D transform;
 	Ref<NavigationMesh> mesh;
-	uint32_t layers = 1;
+	uint32_t navigation_layers = 1;
+	float enter_cost = 0.0;
+	float travel_cost = 1.0;
 	Vector<gd::Edge::Connection> connections;
 
 	bool polygons_dirty = true;
@@ -68,8 +67,14 @@ public:
 		return map;
 	}
 
-	void set_layers(uint32_t p_layers);
-	uint32_t get_layers() const;
+	void set_enter_cost(float p_enter_cost) { enter_cost = MAX(p_enter_cost, 0.0); }
+	float get_enter_cost() const { return enter_cost; }
+
+	void set_travel_cost(float p_travel_cost) { travel_cost = MAX(p_travel_cost, 0.0); }
+	float get_travel_cost() const { return travel_cost; }
+
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
 
 	void set_transform(Transform3D transform);
 	const Transform3D &get_transform() const {

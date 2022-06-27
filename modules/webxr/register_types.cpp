@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,12 @@
 Ref<WebXRInterfaceJS> webxr;
 #endif
 
-void register_webxr_types() {
-	GDREGISTER_VIRTUAL_CLASS(WebXRInterface);
+void initialize_webxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	GDREGISTER_ABSTRACT_CLASS(WebXRInterface);
 
 #ifdef JAVASCRIPT_ENABLED
 	webxr.instantiate();
@@ -46,7 +50,11 @@ void register_webxr_types() {
 #endif
 }
 
-void unregister_webxr_types() {
+void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef JAVASCRIPT_ENABLED
 	if (webxr.is_valid()) {
 		// uninitialise our interface if it is initialised

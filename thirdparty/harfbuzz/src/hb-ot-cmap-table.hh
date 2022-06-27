@@ -44,7 +44,7 @@ struct CmapSubtableFormat0
   bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
   {
     hb_codepoint_t gid = codepoint < 256 ? glyphIdArray[codepoint] : 0;
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -93,140 +93,215 @@ struct CmapSubtableFormat0
 struct CmapSubtableFormat4
 {
 
+
   template<typename Iterator,
+      typename Writer,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBUINT16* serialize_endcode_array (hb_serialize_context_t *c,
-				     Iterator it)
+  void to_ranges (Iterator it, Writer& range_writer)
   {
-    HBUINT16 *endCode = c->start_embed<HBUINT16> ();
-    hb_codepoint_t prev_endcp = 0xFFFF;
+    hb_codepoint_t start_cp = 0, prev_run_start_cp = 0, run_start_cp = 0, end_cp = 0, last_gid = 0;
+    int run_length = 0 , delta = 0, prev_delta = 0;
 
-    for (const auto& _ : +it)
-    {
-      if (prev_endcp != 0xFFFF && prev_endcp + 1u != _.first)
+    enum {
+      FIRST_SUB_RANGE,
+      FOLLOWING_SUB_RANGE,
+    } mode;
+
+    while (it) {
+      // Start a new range
       {
-	HBUINT16 end_code;
-	end_code = prev_endcp;
-	c->copy<HBUINT16> (end_code);
+        const auto& pair = *it;
+        start_cp = pair.first;
+        prev_run_start_cp = start_cp;
+        run_start_cp = start_cp;
+        end_cp = start_cp;
+        last_gid = pair.second;
+        run_length = 1;
+        prev_delta = 0;
       }
-      prev_endcp = _.first;
+
+      delta = last_gid - start_cp;
+      mode = FIRST_SUB_RANGE;
+      it++;
+
+      while (it) {
+        // Process range
+        const auto& pair = *it;
+        hb_codepoint_t next_cp = pair.first;
+        hb_codepoint_t next_gid = pair.second;
+        if (next_cp != end_cp + 1) {
+          // Current range is over, stop processing.
+          break;
+        }
+
+        if (next_gid == last_gid + 1) {
+          // The current run continues.
+          end_cp = next_cp;
+          run_length++;
+          last_gid = next_gid;
+          it++;
+          continue;
+        }
+
+        // A new run is starting, decide if we want to commit the current run.
+        int split_cost = (mode == FIRST_SUB_RANGE) ? 8 : 16;
+        int run_cost = run_length * 2;
+        if (run_cost >= split_cost) {
+          commit_current_range(start_cp,
+                               prev_run_start_cp,
+                               run_start_cp,
+                               end_cp,
+                               delta,
+                               prev_delta,
+                               split_cost,
+                               range_writer);
+          start_cp = next_cp;
+        }
+
+        // Start the new run
+        mode = FOLLOWING_SUB_RANGE;
+        prev_run_start_cp = run_start_cp;
+        run_start_cp = next_cp;
+        end_cp = next_cp;
+        prev_delta = delta;
+        delta = next_gid - run_start_cp;
+        run_length = 1;
+        last_gid = next_gid;
+        it++;
+      }
+
+      // Finalize range
+      commit_current_range (start_cp,
+                            prev_run_start_cp,
+                            run_start_cp,
+                            end_cp,
+                            delta,
+                            prev_delta,
+                            8,
+                            range_writer);
     }
 
-    {
-      // last endCode
-      HBUINT16 endcode;
-      endcode = prev_endcp;
-      if (unlikely (!c->copy<HBUINT16> (endcode))) return nullptr;
-      // There must be a final entry with end_code == 0xFFFF.
-      if (prev_endcp != 0xFFFF)
-      {
-	HBUINT16 finalcode;
-	finalcode = 0xFFFF;
-	if (unlikely (!c->copy<HBUINT16> (finalcode))) return nullptr;
+    if (likely (end_cp != 0xFFFF)) {
+      range_writer (0xFFFF, 0xFFFF, 1);
+    }
+  }
+
+  /*
+   * Writes the current range as either one or two ranges depending on what is most efficient.
+   */
+  template<typename Writer>
+  void commit_current_range (hb_codepoint_t start,
+                             hb_codepoint_t prev_run_start,
+                             hb_codepoint_t run_start,
+                             hb_codepoint_t end,
+                             int run_delta,
+                             int previous_run_delta,
+                             int split_cost,
+                             Writer& range_writer) {
+    bool should_split = false;
+    if (start < run_start && run_start < end) {
+      int run_cost = (end - run_start + 1) * 2;
+      if (run_cost >= split_cost) {
+        should_split = true;
       }
     }
 
-    return endCode;
+    // TODO(grieger): handle case where delta is legitimately 0, mark range offset array instead?
+    if (should_split) {
+      if (start == prev_run_start)
+        range_writer (start, run_start - 1, previous_run_delta);
+      else
+        range_writer (start, run_start - 1, 0);
+      range_writer (run_start, end, run_delta);
+      return;
+    }
+
+
+    if (start == run_start) {
+      // Range is only a run
+      range_writer (start, end, run_delta);
+      return;
+    }
+
+    // Write only a single non-run range.
+    range_writer (start, end, 0);
   }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBUINT16* serialize_startcode_array (hb_serialize_context_t *c,
-				       Iterator it)
-  {
-    HBUINT16 *startCode = c->start_embed<HBUINT16> ();
-    hb_codepoint_t prev_cp = 0xFFFF;
+  unsigned serialize_find_segcount (Iterator it) {
+    struct Counter {
+      unsigned segcount = 0;
 
-    for (const auto& _ : +it)
-    {
-      if (prev_cp == 0xFFFF || prev_cp + 1u != _.first)
-      {
-	HBUINT16 start_code;
-	start_code = _.first;
-	c->copy<HBUINT16> (start_code);
+      void operator() (hb_codepoint_t start,
+                       hb_codepoint_t end,
+                       int delta) {
+        segcount++;
       }
+    } counter;
 
-      prev_cp = _.first;
-    }
-
-    // There must be a final entry with end_code == 0xFFFF.
-    if (it.len () == 0 || prev_cp != 0xFFFF)
-    {
-      HBUINT16 finalcode;
-      finalcode = 0xFFFF;
-      if (unlikely (!c->copy<HBUINT16> (finalcode))) return nullptr;
-    }
-
-    return startCode;
+    to_ranges (+it, counter);
+    return counter.segcount;
   }
+
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  HBINT16* serialize_idDelta_array (hb_serialize_context_t *c,
-				    Iterator it,
-				    HBUINT16 *endCode,
-				    HBUINT16 *startCode,
-				    unsigned segcount)
+  bool serialize_start_end_delta_arrays (hb_serialize_context_t *c,
+                                         Iterator it,
+                                         int segcount)
   {
-    unsigned i = 0;
-    hb_codepoint_t last_gid = 0, start_gid = 0, last_cp = 0xFFFF;
-    bool use_delta = true;
+    struct Writer {
+      hb_serialize_context_t *serializer_;
+      HBUINT16* end_code_;
+      HBUINT16* start_code_;
+      HBINT16* id_delta_;
+      int index_;
 
-    HBINT16 *idDelta = c->start_embed<HBINT16> ();
-    if ((char *)idDelta - (char *)startCode != (int) segcount * (int) HBINT16::static_size)
-      return nullptr;
-
-    for (const auto& _ : +it)
-    {
-      if (_.first == startCode[i])
-      {
-	use_delta = true;
-	start_gid = _.second;
+      Writer(hb_serialize_context_t *serializer)
+          : serializer_(serializer),
+            end_code_(nullptr),
+            start_code_(nullptr),
+            id_delta_(nullptr),
+            index_ (0) {}
+      void operator() (hb_codepoint_t start,
+                       hb_codepoint_t end,
+                       int delta) {
+        start_code_[index_] = start;
+        end_code_[index_] = end;
+        id_delta_[index_] = delta;
+        index_++;
       }
-      else if (_.second != last_gid + 1) use_delta = false;
+    } writer(c);
 
-      if (_.first == endCode[i])
-      {
-	HBINT16 delta;
-	if (use_delta) delta = (int)start_gid - (int)startCode[i];
-	else delta = 0;
-	c->copy<HBINT16> (delta);
+    writer.end_code_ = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
+    c->allocate_size<HBUINT16> (2); // padding
+    writer.start_code_ = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
+    writer.id_delta_ = c->allocate_size<HBINT16> (HBINT16::static_size * segcount);
 
-	i++;
-      }
+    if (unlikely (!writer.end_code_ || !writer.start_code_ || !writer.id_delta_)) return false;
 
-      last_gid = _.second;
-      last_cp = _.first;
-    }
-
-    if (it.len () == 0 || last_cp != 0xFFFF)
-    {
-      HBINT16 delta;
-      delta = 1;
-      if (unlikely (!c->copy<HBINT16> (delta))) return nullptr;
-    }
-
-    return idDelta;
+    to_ranges (+it, writer);
+    return true;
   }
 
   template<typename Iterator,
-	   hb_requires (hb_is_iterator (Iterator))>
+          hb_requires (hb_is_iterator (Iterator))>
   HBUINT16* serialize_rangeoffset_glyid (hb_serialize_context_t *c,
-					 Iterator it,
+                                         Iterator it,
 					 HBUINT16 *endCode,
 					 HBUINT16 *startCode,
 					 HBINT16 *idDelta,
 					 unsigned segcount)
   {
-    hb_hashmap_t<hb_codepoint_t, hb_codepoint_t> cp_to_gid;
-    + it | hb_sink (cp_to_gid);
+    hb_map_t cp_to_gid { it };
 
     HBUINT16 *idRangeOffset = c->allocate_size<HBUINT16> (HBUINT16::static_size * segcount);
     if (unlikely (!c->check_success (idRangeOffset))) return nullptr;
     if (unlikely ((char *)idRangeOffset - (char *)idDelta != (int) segcount * (int) HBINT16::static_size)) return nullptr;
 
     for (unsigned i : + hb_range (segcount)
-             | hb_filter ([&] (const unsigned _) { return idDelta[_] == 0; }))
+		      | hb_filter ([&] (const unsigned _) { return idDelta[_] == 0; }))
     {
       idRangeOffset[i] = 2 * (c->start_embed<HBUINT16> () - idRangeOffset - i);
       for (hb_codepoint_t cp = startCode[i]; cp <= endCode[i]; cp++)
@@ -251,30 +326,31 @@ struct CmapSubtableFormat4
 		 { return _.first <= 0xFFFF; })
     ;
 
-    if (format4_iter.len () == 0) return;
+    if (!format4_iter) return;
 
     unsigned table_initpos = c->length ();
     if (unlikely (!c->extend_min (this))) return;
     this->format = 4;
 
-    //serialize endCode[]
-    HBUINT16 *endCode = serialize_endcode_array (c, format4_iter);
-    if (unlikely (!endCode)) return;
+    hb_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> cp_to_gid {
+      format4_iter
+    };
 
-    unsigned segcount = (c->length () - min_size) / HBUINT16::static_size;
+    //serialize endCode[], startCode[], idDelta[]
+    HBUINT16* endCode = c->start_embed<HBUINT16> ();
+    unsigned segcount = serialize_find_segcount (cp_to_gid.iter());
+    if (unlikely (!serialize_start_end_delta_arrays (c, cp_to_gid.iter(), segcount)))
+      return;
 
-    // 2 bytes of padding.
-    if (unlikely (!c->allocate_size<HBUINT16> (HBUINT16::static_size))) return; // 2 bytes of padding.
+    HBUINT16 *startCode = endCode + segcount + 1;
+    HBINT16 *idDelta = ((HBINT16*)startCode) + segcount;
 
-   // serialize startCode[]
-    HBUINT16 *startCode = serialize_startcode_array (c, format4_iter);
-    if (unlikely (!startCode)) return;
-
-    //serialize idDelta[]
-    HBINT16 *idDelta = serialize_idDelta_array (c, format4_iter, endCode, startCode, segcount);
-    if (unlikely (!idDelta)) return;
-
-    HBUINT16 *idRangeOffset = serialize_rangeoffset_glyid (c, format4_iter, endCode, startCode, idDelta, segcount);
+    HBUINT16 *idRangeOffset = serialize_rangeoffset_glyid (c,
+                                                           cp_to_gid.iter (),
+                                                           endCode,
+                                                           startCode,
+                                                           idDelta,
+                                                           segcount);
     if (unlikely (!c->check_success (idRangeOffset))) return;
 
     this->length = c->length () - table_initpos;
@@ -305,7 +381,6 @@ struct CmapSubtableFormat4
   {
     accelerator_t () {}
     accelerator_t (const CmapSubtableFormat4 *subtable) { init (subtable); }
-    ~accelerator_t () { fini (); }
 
     void init (const CmapSubtableFormat4 *subtable)
     {
@@ -317,7 +392,6 @@ struct CmapSubtableFormat4
       glyphIdArray = idRangeOffset + segCount;
       glyphIdArrayLength = (subtable->length - 16 - 8 * segCount) / 2;
     }
-    void fini () {}
 
     bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
     {
@@ -339,7 +413,7 @@ struct CmapSubtableFormat4
 					  2,
 					  _hb_cmp_method<hb_codepoint_t, CustomRange, unsigned>,
 					  this->segCount + 1);
-      if (!found)
+      if (unlikely (!found))
 	return false;
       unsigned int i = found - endCount;
 
@@ -359,7 +433,7 @@ struct CmapSubtableFormat4
 	gid += this->idDelta[i];
       }
       gid &= 0xFFFFu;
-      if (!gid)
+      if (unlikely (!gid))
 	return false;
       *glyph = gid;
       return true;
@@ -378,14 +452,14 @@ struct CmapSubtableFormat4
 	hb_codepoint_t start = this->startCount[i];
 	hb_codepoint_t end = this->endCount[i];
 	unsigned int rangeOffset = this->idRangeOffset[i];
+        out->add_range(start, end);
 	if (rangeOffset == 0)
 	{
 	  for (hb_codepoint_t codepoint = start; codepoint <= end; codepoint++)
 	  {
 	    hb_codepoint_t gid = (codepoint + this->idDelta[i]) & 0xFFFFu;
 	    if (unlikely (!gid))
-	      continue;
-	    out->add (codepoint);
+              out->del(codepoint);
 	  }
 	}
 	else
@@ -394,11 +468,13 @@ struct CmapSubtableFormat4
 	  {
 	    unsigned int index = rangeOffset / 2 + (codepoint - this->startCount[i]) + i - this->segCount;
 	    if (unlikely (index >= this->glyphIdArrayLength))
+            {
+              out->del_range (codepoint, end);
 	      break;
+            }
 	    hb_codepoint_t gid = this->glyphIdArray[index];
 	    if (unlikely (!gid))
-	      continue;
-	    out->add (codepoint);
+              out->del(codepoint);
 	  }
 	}
       }
@@ -407,6 +483,8 @@ struct CmapSubtableFormat4
     void collect_mapping (hb_set_t *unicodes, /* OUT */
 			  hb_map_t *mapping /* OUT */) const
     {
+      // TODO(grieger): optimize similar to collect_unicodes
+      // (ie. use add_range())
       unsigned count = this->segCount;
       if (count && this->startCount[count - 1] == 0xFFFFu)
 	count--; /* Skip sentinel segment. */
@@ -558,7 +636,7 @@ struct CmapSubtableTrimmed
   {
     /* Rely on our implicit array bound-checking. */
     hb_codepoint_t gid = glyphIdArray[codepoint - startCharCode];
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -604,7 +682,7 @@ struct CmapSubtableTrimmed
   UINT		length;		/* Byte length of this subtable. */
   UINT		language;	/* Ignore. */
   UINT		startCharCode;	/* First character code covered. */
-  ArrayOf<HBGlyphID, UINT>
+  ArrayOf<HBGlyphID16, UINT>
 		glyphIdArray;	/* Array of glyph index values for character
 				 * codes in the range. */
   public:
@@ -612,7 +690,7 @@ struct CmapSubtableTrimmed
 };
 
 struct CmapSubtableFormat6  : CmapSubtableTrimmed<HBUINT16> {};
-struct CmapSubtableFormat10 : CmapSubtableTrimmed<HBUINT32 > {};
+struct CmapSubtableFormat10 : CmapSubtableTrimmed<HBUINT32> {};
 
 template <typename T>
 struct CmapSubtableLongSegmented
@@ -622,7 +700,7 @@ struct CmapSubtableLongSegmented
   bool get_glyph (hb_codepoint_t codepoint, hb_codepoint_t *glyph) const
   {
     hb_codepoint_t gid = T::group_get_glyph (groups.bsearch (codepoint), codepoint);
-    if (!gid)
+    if (unlikely (!gid))
       return false;
     *glyph = gid;
     return true;
@@ -652,7 +730,7 @@ struct CmapSubtableLongSegmented
       if (unlikely ((unsigned int) (gid + end - start) >= num_glyphs))
 	end = start + (hb_codepoint_t) num_glyphs - gid;
 
-      out->add_range (start, end);
+      out->add_range (start, hb_min (end, 0x10FFFFu));
     }
   }
 
@@ -660,11 +738,19 @@ struct CmapSubtableLongSegmented
 			hb_map_t *mapping, /* OUT */
 			unsigned num_glyphs) const
   {
+    hb_codepoint_t last_end = 0;
     for (unsigned i = 0; i < this->groups.len; i++)
     {
       hb_codepoint_t start = this->groups[i].startCharCode;
       hb_codepoint_t end = hb_min ((hb_codepoint_t) this->groups[i].endCharCode,
 				   (hb_codepoint_t) HB_UNICODE_MAX);
+      if (unlikely (start > end || start < last_end)) {
+        // Range is not in order and is invalid, skip it.
+        continue;
+      }
+      last_end = end;
+
+
       hb_codepoint_t gid = this->groups[i].glyphID;
       if (!gid)
       {
@@ -716,16 +802,16 @@ struct CmapSubtableFormat12 : CmapSubtableLongSegmented<CmapSubtableFormat12>
   void serialize (hb_serialize_context_t *c,
 		  Iterator it)
   {
-    if (it.len () == 0) return;
+    if (!it) return;
     unsigned table_initpos = c->length ();
     if (unlikely (!c->extend_min (this))) return;
 
-    hb_codepoint_t startCharCode = 0xFFFF, endCharCode = 0xFFFF;
+    hb_codepoint_t startCharCode = (hb_codepoint_t) -1, endCharCode = (hb_codepoint_t) -1;
     hb_codepoint_t glyphID = 0;
 
     for (const auto& _ : +it)
     {
-      if (startCharCode == 0xFFFF)
+      if (startCharCode == (hb_codepoint_t) -1)
       {
 	startCharCode = _.first;
 	endCharCode = _.first;
@@ -756,7 +842,7 @@ struct CmapSubtableFormat12 : CmapSubtableLongSegmented<CmapSubtableFormat12>
     this->format = 12;
     this->reserved = 0;
     this->length = c->length () - table_initpos;
-    this->groups.len = (this->length - min_size)/CmapSubtableLongGroup::static_size;
+    this->groups.len = (this->length - min_size) / CmapSubtableLongGroup::static_size;
   }
 
   static size_t get_sub_table_size (const hb_sorted_vector_t<CmapSubtableLongGroup> &groups_data)
@@ -821,7 +907,7 @@ struct DefaultUVS : SortedArray32Of<UnicodeValueRange>
       hb_codepoint_t first = arrayZ[i].startUnicodeValue;
       hb_codepoint_t last = hb_min ((hb_codepoint_t) (first + arrayZ[i].additionalCount),
 				    (hb_codepoint_t) HB_UNICODE_MAX);
-      out->add_range (first, last);
+      out->add_range (first, hb_min (last, 0x10FFFFu));
     }
   }
 
@@ -900,7 +986,7 @@ struct UVSMapping
   }
 
   HBUINT24	unicodeValue;	/* Base Unicode value of the UVS */
-  HBGlyphID	glyphID;	/* Glyph ID of the UVS */
+  HBGlyphID16	glyphID;	/* Glyph ID of the UVS */
   public:
   DEFINE_SIZE_STATIC (5);
 };
@@ -1386,6 +1472,37 @@ struct EncodingRecord
   DEFINE_SIZE_STATIC (8);
 };
 
+struct SubtableUnicodesCache {
+
+ private:
+  const void* base;
+  hb_hashmap_t<intptr_t, hb_set_t*> cached_unicodes;
+
+ public:
+  SubtableUnicodesCache(const void* cmap_base)
+      : base(cmap_base), cached_unicodes() {}
+  ~SubtableUnicodesCache()
+  {
+    for (hb_set_t* s : cached_unicodes.values()) {
+      hb_set_destroy (s);
+    }
+  }
+
+  hb_set_t* set_for(const EncodingRecord* record)
+  {
+    if (!cached_unicodes.has ((intptr_t) record)) {
+      hb_set_t* new_set = hb_set_create ();
+      if (!cached_unicodes.set ((intptr_t) record, new_set)) {
+        hb_set_destroy (new_set);
+        return hb_set_get_empty ();
+      }
+      (base+record->subtable).collect_unicodes (cached_unicodes.get ((intptr_t) record));
+    }
+    return cached_unicodes.get ((intptr_t) record);
+  }
+
+};
+
 struct cmap
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_cmap;
@@ -1405,6 +1522,7 @@ struct cmap
     unsigned format4objidx = 0, format12objidx = 0, format14objidx = 0;
     auto snap = c->snapshot ();
 
+    SubtableUnicodesCache unicodes_cache (base);
     for (const EncodingRecord& _ : encodingrec_iter)
     {
       if (c->in_error ())
@@ -1413,12 +1531,11 @@ struct cmap
       unsigned format = (base+_.subtable).u.format;
       if (format != 4 && format != 12 && format != 14) continue;
 
-      hb_set_t unicodes_set;
-      (base+_.subtable).collect_unicodes (&unicodes_set);
+      hb_set_t* unicodes_set = unicodes_cache.set_for (&_);
 
       if (!drop_format_4 && format == 4)
       {
-        c->copy (_, + it | hb_filter (unicodes_set, hb_first), 4u, base, plan, &format4objidx);
+        c->copy (_, + it | hb_filter (*unicodes_set, hb_first), 4u, base, plan, &format4objidx);
         if (c->in_error () && c->only_overflow ())
         {
           // cmap4 overflowed, reset and retry serialization without format 4 subtables.
@@ -1433,8 +1550,8 @@ struct cmap
 
       else if (format == 12)
       {
-        if (_can_drop (_, unicodes_set, base, + it | hb_map (hb_first), encodingrec_iter)) continue;
-        c->copy (_, + it | hb_filter (unicodes_set, hb_first), 12u, base, plan, &format12objidx);
+        if (_can_drop (_, *unicodes_set, base, unicodes_cache, + it | hb_map (hb_first), encodingrec_iter)) continue;
+        c->copy (_, + it | hb_filter (*unicodes_set, hb_first), 12u, base, plan, &format12objidx);
       }
       else if (format == 14) c->copy (_, it, 14u, base, plan, &format14objidx);
     }
@@ -1452,6 +1569,7 @@ struct cmap
   bool _can_drop (const EncodingRecord& cmap12,
                   const hb_set_t& cmap12_unicodes,
                   const void* base,
+                  SubtableUnicodesCache& unicodes_cache,
                   Iterator subset_unicodes,
                   EncodingRecordIterator encoding_records)
   {
@@ -1482,11 +1600,10 @@ struct cmap
           || (base+_.subtable).get_language() != target_language)
         continue;
 
-      hb_set_t sibling_unicodes;
-      (base+_.subtable).collect_unicodes (&sibling_unicodes);
+      hb_set_t* sibling_unicodes = unicodes_cache.set_for (&_);
 
       auto cmap12 = + subset_unicodes | hb_filter (cmap12_unicodes);
-      auto sibling = + subset_unicodes | hb_filter (sibling_unicodes);
+      auto sibling = + subset_unicodes | hb_filter (*sibling_unicodes);
       for (; cmap12 && sibling; cmap12++, sibling++)
       {
         unsigned a = *cmap12;
@@ -1543,7 +1660,7 @@ struct cmap
       unsigned format = (this + _.subtable).u.format;
       if (format == 12) has_format12 = true;
 
-      const EncodingRecord *table = hb_addressof (_);
+      const EncodingRecord *table = std::addressof (_);
       if      (_.platformID == 0 && _.encodingID ==  3) unicode_bmp = table;
       else if (_.platformID == 0 && _.encodingID ==  4) unicode_ucs4 = table;
       else if (_.platformID == 3 && _.encodingID ==  1) ms_bmp = table;
@@ -1554,13 +1671,7 @@ struct cmap
     if (unlikely (has_format12 && (!unicode_ucs4 && !ms_ucs4))) return_trace (false);
 
     auto it =
-    + hb_iter (c->plan->unicodes)
-    | hb_map ([&] (hb_codepoint_t _)
-	      {
-		hb_codepoint_t new_gid = HB_MAP_VALUE_INVALID;
-		c->plan->new_gid_for_codepoint (_, &new_gid);
-		return hb_pair_t<hb_codepoint_t, hb_codepoint_t> (_, new_gid);
-	      })
+    + c->plan->unicode_to_new_gid_list.iter ()
     | hb_filter ([&] (const hb_pair_t<hb_codepoint_t, hb_codepoint_t> _)
 		 { return (_.second != HB_MAP_VALUE_INVALID); })
     ;
@@ -1601,7 +1712,7 @@ struct cmap
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       this->table = hb_sanitize_context_t ().reference_table<cmap> (face);
       bool symbol;
@@ -1636,8 +1747,7 @@ struct cmap
 	}
       }
     }
-
-    void fini () { this->table.destroy (); }
+    ~accelerator_t () { this->table.destroy (); }
 
     bool get_nominal_glyph (hb_codepoint_t  unicode,
 			    hb_codepoint_t *glyph) const
@@ -1799,7 +1909,9 @@ struct cmap
   DEFINE_SIZE_ARRAY (4, encodingRecord);
 };
 
-struct cmap_accelerator_t : cmap::accelerator_t {};
+struct cmap_accelerator_t : cmap::accelerator_t {
+  cmap_accelerator_t (hb_face_t *face) : cmap::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

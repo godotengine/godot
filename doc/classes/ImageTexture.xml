@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture2D" version="4.0">
+<class name="ImageTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Texture2D] based on an [Image].
 	</brief_description>
@@ -18,7 +18,7 @@
 		var texture = load("res://icon.png")
 		$Sprite2D.texture = texture
 		[/codeblock]
-		This is because images have to be imported as a [StreamTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
+		This is because images have to be imported as a [CompressedTexture2D] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
 		[b]Note:[/b] The image can be retrieved from an imported texture using the [method Texture2D.get_image] method, which returns a copy of the image:
 		[codeblock]
 		var texture = load("res://icon.png")
@@ -28,7 +28,7 @@
 		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
 	</description>
 	<tutorials>
-		<link title="Importing images">https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html</link>
+		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="create_from_image">

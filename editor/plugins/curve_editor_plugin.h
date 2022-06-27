@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef CURVE_EDITOR_PLUGIN_H
 #define CURVE_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
@@ -100,8 +99,8 @@ private:
 	Transform2D _world_to_view;
 
 	Ref<Curve> _curve_ref;
-	PopupMenu *_context_menu;
-	PopupMenu *_presets_menu;
+	PopupMenu *_context_menu = nullptr;
+	PopupMenu *_presets_menu = nullptr;
 
 	Array _undo_data;
 	bool _has_undo_data;
@@ -129,7 +128,7 @@ class CurveEditorPlugin : public EditorPlugin {
 	GDCLASS(CurveEditorPlugin, EditorPlugin);
 
 public:
-	CurveEditorPlugin(EditorNode *p_node);
+	CurveEditorPlugin();
 
 	virtual String get_name() const override { return "Curve"; }
 };

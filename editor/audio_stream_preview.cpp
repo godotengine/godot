@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -101,7 +101,7 @@ void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
 }
 
 void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
-	Preview *preview = (Preview *)p_preview;
+	Preview *preview = static_cast<Preview *>(p_preview);
 
 	float muxbuff_chunk_s = 0.25;
 
@@ -214,25 +214,27 @@ void AudioStreamPreviewGenerator::_bind_methods() {
 AudioStreamPreviewGenerator *AudioStreamPreviewGenerator::singleton = nullptr;
 
 void AudioStreamPreviewGenerator::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		List<ObjectID> to_erase;
-		for (KeyValue<ObjectID, Preview> &E : previews) {
-			if (!E.value.generating.is_set()) {
-				if (E.value.thread) {
-					E.value.thread->wait_to_finish();
-					memdelete(E.value.thread);
-					E.value.thread = nullptr;
-				}
-				if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
-					to_erase.push_back(E.key);
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			List<ObjectID> to_erase;
+			for (KeyValue<ObjectID, Preview> &E : previews) {
+				if (!E.value.generating.is_set()) {
+					if (E.value.thread) {
+						E.value.thread->wait_to_finish();
+						memdelete(E.value.thread);
+						E.value.thread = nullptr;
+					}
+					if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
+						to_erase.push_back(E.key);
+					}
 				}
 			}
-		}
 
-		while (to_erase.front()) {
-			previews.erase(to_erase.front()->get());
-			to_erase.pop_front();
-		}
+			while (to_erase.front()) {
+				previews.erase(to_erase.front()->get());
+				to_erase.pop_front();
+			}
+		} break;
 	}
 }
 

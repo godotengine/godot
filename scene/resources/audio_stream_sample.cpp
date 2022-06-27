@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -299,7 +299,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset < loop_begin_fp) {
 				/* loopstart reached */
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_begin_fp + (loop_begin_fp - offset);
 					increment = -increment;
@@ -320,7 +320,7 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 			if (loop_format != AudioStreamSample::LOOP_DISABLED && offset >= loop_end_fp) {
 				/* loopend reached */
 
-				if (loop_format == AudioStreamSample::LOOP_PING_PONG) {
+				if (loop_format == AudioStreamSample::LOOP_PINGPONG) {
 					/* bounce ping pong */
 					offset = loop_end_fp - (offset - loop_end_fp);
 					increment = -increment;
@@ -556,9 +556,9 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 		file_path += ".wav";
 	}
 
-	FileAccessRef file = FileAccess::open(file_path, FileAccess::WRITE); //Overrides existing file if present
+	Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE); //Overrides existing file if present
 
-	ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
+	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_WRITE);
 
 	// Create WAV Header
 	file->store_string("RIFF"); //ChunkID
@@ -595,8 +595,6 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 			//Unimplemented
 			break;
 	}
-
-	file->close();
 
 	return OK;
 }
@@ -650,7 +648,7 @@ void AudioStreamSample::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LOOP_DISABLED);
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
-	BIND_ENUM_CONSTANT(LOOP_PING_PONG);
+	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
 

@@ -33,14 +33,23 @@
 // If BASISU_USE_HIGH_PRECISION_COLOR_DISTANCE is 1, quality in perceptual mode will be slightly greater, but at a large increase in encoding CPU time.
 #define BASISU_USE_HIGH_PRECISION_COLOR_DISTANCE (0)
 
+#if BASISU_SUPPORT_SSE
+// Declared in basisu_kernels_imp.h, but we can't include that here otherwise it would lead to circular type errors.
+extern void update_covar_matrix_16x16_sse41(uint32_t num_vecs, const void* pWeighted_vecs, const void* pOrigin, const uint32_t *pVec_indices, void* pMatrix16x16);
+#endif
+
 namespace basisu
 {
 	extern uint8_t g_hamming_dist[256];
 	extern const uint8_t g_debug_font8x8_basic[127 - 32 + 1][8];
 
+	// true if basisu_encoder_init() has been called and returned.
+	extern bool g_library_initialized;
+
 	// Encoder library initialization.
 	// This function MUST be called before encoding anything!
-	void basisu_encoder_init();
+	void basisu_encoder_init(bool use_opencl = false, bool opencl_force_serialization = false);
+	void basisu_encoder_deinit();
 
 	// basisu_kernels_sse.cpp - will be a no-op and g_cpu_supports_sse41 will always be false unless compiled with BASISU_SUPPORT_SSE=1
 	extern void detect_sse41();
@@ -51,8 +60,9 @@ namespace basisu
 	const bool g_cpu_supports_sse41 = false;
 #endif
 
+	void error_vprintf(const char* pFmt, va_list args);
 	void error_printf(const char *pFmt, ...);
-
+	
 	// Helpers
 
 	inline uint8_t clamp255(int32_t i)
@@ -170,18 +180,24 @@ namespace basisu
 	class running_stat
 	{
 	public:
-		running_stat() :
-			m_n(0),
-			m_old_m(0), m_new_m(0), m_old_s(0), m_new_s(0)
-		{
-		}
+		running_stat() { clear(); }
+
 		void clear()
 		{
 			m_n = 0;
+			m_total = 0;
+			m_old_m = 0;
+			m_new_m = 0;
+			m_old_s = 0;
+			m_new_s = 0;
+			m_min = 0;
+			m_max = 0;
 		}
+
 		void push(double x)
 		{
 			m_n++;
+			m_total += x;
 			if (m_n == 1)
 			{
 				m_old_m = m_new_m = x;
@@ -191,6 +207,7 @@ namespace basisu
 			}
 			else
 			{
+				// See Knuth TAOCP vol 2, 3rd edition, page 232
 				m_new_m = m_old_m + (x - m_old_m) / m_n;
 				m_new_s = m_old_s + (x - m_old_m) * (x - m_new_m);
 				m_old_m = m_new_m;
@@ -199,15 +216,23 @@ namespace basisu
 				m_max = basisu::maximum(x, m_max);
 			}
 		}
+
 		uint32_t get_num() const
 		{
 			return m_n;
 		}
+
+		double get_total() const
+		{
+			return m_total;
+		}
+
 		double get_mean() const
 		{
 			return (m_n > 0) ? m_new_m : 0.0;
 		}
 
+		// Returns sample variance
 		double get_variance() const
 		{
 			return ((m_n > 1) ? m_new_s / (m_n - 1) : 0.0);
@@ -230,7 +255,7 @@ namespace basisu
 
 	private:
 		uint32_t m_n;
-		double m_old_m, m_new_m, m_old_s, m_new_s, m_min, m_max;
+		double m_total, m_old_m, m_new_m, m_old_s, m_new_s, m_min, m_max;
 	};
 
 	// Linear algebra
@@ -401,6 +426,8 @@ namespace basisu
 	typedef vec<3, float> vec3F;
 	typedef vec<2, float> vec2F;
 	typedef vec<1, float> vec1F;
+
+	typedef vec<16, float> vec16F;
 		
 	template <uint32_t Rows, uint32_t Cols, typename T>
 	class matrix
@@ -504,6 +531,164 @@ namespace basisu
 			[pKeys](uint32_t a, uint32_t b) { return pKeys[a] < pKeys[b]; }
 		);
 	}
+
+	// 1-4 byte direct Radix sort.
+	template <typename T>
+	T* radix_sort(uint32_t num_vals, T* pBuf0, T* pBuf1, uint32_t key_ofs, uint32_t key_size)
+	{
+		assert(key_ofs < sizeof(T));
+		assert((key_size >= 1) && (key_size <= 4));
+
+		uint32_t hist[256 * 4];
+
+		memset(hist, 0, sizeof(hist[0]) * 256 * key_size);
+
+#define BASISU_GET_KEY(p) (*(uint32_t *)((uint8_t *)(p) + key_ofs))
+
+		if (key_size == 4)
+		{
+			T* p = pBuf0;
+			T* q = pBuf0 + num_vals;
+			for (; p != q; p++)
+			{
+				const uint32_t key = BASISU_GET_KEY(p);
+
+				hist[key & 0xFF]++;
+				hist[256 + ((key >> 8) & 0xFF)]++;
+				hist[512 + ((key >> 16) & 0xFF)]++;
+				hist[768 + ((key >> 24) & 0xFF)]++;
+			}
+		}
+		else if (key_size == 3)
+		{
+			T* p = pBuf0;
+			T* q = pBuf0 + num_vals;
+			for (; p != q; p++)
+			{
+				const uint32_t key = BASISU_GET_KEY(p);
+
+				hist[key & 0xFF]++;
+				hist[256 + ((key >> 8) & 0xFF)]++;
+				hist[512 + ((key >> 16) & 0xFF)]++;
+			}
+		}
+		else if (key_size == 2)
+		{
+			T* p = pBuf0;
+			T* q = pBuf0 + (num_vals >> 1) * 2;
+
+			for (; p != q; p += 2)
+			{
+				const uint32_t key0 = BASISU_GET_KEY(p);
+				const uint32_t key1 = BASISU_GET_KEY(p + 1);
+
+				hist[key0 & 0xFF]++;
+				hist[256 + ((key0 >> 8) & 0xFF)]++;
+
+				hist[key1 & 0xFF]++;
+				hist[256 + ((key1 >> 8) & 0xFF)]++;
+			}
+
+			if (num_vals & 1)
+			{
+				const uint32_t key = BASISU_GET_KEY(p);
+
+				hist[key & 0xFF]++;
+				hist[256 + ((key >> 8) & 0xFF)]++;
+			}
+		}
+		else
+		{
+			assert(key_size == 1);
+			if (key_size != 1)
+				return NULL;
+
+			T* p = pBuf0;
+			T* q = pBuf0 + (num_vals >> 1) * 2;
+
+			for (; p != q; p += 2)
+			{
+				const uint32_t key0 = BASISU_GET_KEY(p);
+				const uint32_t key1 = BASISU_GET_KEY(p + 1);
+
+				hist[key0 & 0xFF]++;
+				hist[key1 & 0xFF]++;
+			}
+
+			if (num_vals & 1)
+			{
+				const uint32_t key = BASISU_GET_KEY(p);
+				hist[key & 0xFF]++;
+			}
+		}
+
+		T* pCur = pBuf0;
+		T* pNew = pBuf1;
+
+		for (uint32_t pass = 0; pass < key_size; pass++)
+		{
+			const uint32_t* pHist = &hist[pass << 8];
+
+			uint32_t offsets[256];
+
+			uint32_t cur_ofs = 0;
+			for (uint32_t i = 0; i < 256; i += 2)
+			{
+				offsets[i] = cur_ofs;
+				cur_ofs += pHist[i];
+
+				offsets[i + 1] = cur_ofs;
+				cur_ofs += pHist[i + 1];
+			}
+
+			const uint32_t pass_shift = pass << 3;
+
+			T* p = pCur;
+			T* q = pCur + (num_vals >> 1) * 2;
+
+			for (; p != q; p += 2)
+			{
+				uint32_t c0 = (BASISU_GET_KEY(p) >> pass_shift) & 0xFF;
+				uint32_t c1 = (BASISU_GET_KEY(p + 1) >> pass_shift) & 0xFF;
+
+				if (c0 == c1)
+				{
+					uint32_t dst_offset0 = offsets[c0];
+
+					offsets[c0] = dst_offset0 + 2;
+
+					pNew[dst_offset0] = p[0];
+					pNew[dst_offset0 + 1] = p[1];
+				}
+				else
+				{
+					uint32_t dst_offset0 = offsets[c0]++;
+					uint32_t dst_offset1 = offsets[c1]++;
+
+					pNew[dst_offset0] = p[0];
+					pNew[dst_offset1] = p[1];
+				}
+			}
+
+			if (num_vals & 1)
+			{
+				uint32_t c = (BASISU_GET_KEY(p) >> pass_shift) & 0xFF;
+
+				uint32_t dst_offset = offsets[c];
+				offsets[c] = dst_offset + 1;
+
+				pNew[dst_offset] = *p;
+			}
+
+			T* t = pCur;
+			pCur = pNew;
+			pNew = t;
+		}
+
+		return pCur;
+	}
+
+#undef BASISU_GET_KEY
 	
 	// Very simple job pool with no dependencies.
 	class job_pool
@@ -805,17 +990,28 @@ namespace basisu
 			int dg = e1.g - e2.g;
 			int db = e1.b - e2.b;
 
+#if 0
 			int delta_l = dr * 27 + dg * 92 + db * 9;
 			int delta_cr = dr * 128 - delta_l;
 			int delta_cb = db * 128 - delta_l;
-
+															
 			uint32_t id = ((uint32_t)(delta_l * delta_l) >> 7U) +
 				((((uint32_t)(delta_cr * delta_cr) >> 7U) * 26U) >> 7U) +
 				((((uint32_t)(delta_cb * delta_cb) >> 7U) * 3U) >> 7U);
+#else
+			int64_t delta_l = dr * 27 + dg * 92 + db * 9;
+			int64_t delta_cr = dr * 128 - delta_l;
+			int64_t delta_cb = db * 128 - delta_l;
+
+			uint32_t id = ((uint32_t)((delta_l * delta_l) >> 7U)) +
+				((((uint32_t)((delta_cr * delta_cr) >> 7U)) * 26U) >> 7U) +
+				((((uint32_t)((delta_cb * delta_cb) >> 7U)) * 3U) >> 7U);
+#endif
 
 			if (alpha)
 			{
 				int da = (e1.a - e2.a) << 7;
+				// This shouldn't overflow if da is 255 or -255: 29.99 bits after squaring.
 				id += ((uint32_t)(da * da) >> 7U);
 			}
 
@@ -1258,7 +1454,7 @@ namespace basisu
             {
                codebook.resize(codebook.size() + 1);
                codebook.back() = cur.m_training_vecs;
-
+										
                if (node_stack.empty())
                   break;
 
@@ -1295,6 +1491,9 @@ namespace basisu
 
 			uint32_t total_leaf_nodes = 1;
 
+			//interval_timer tm;
+			//tm.start();
+
 			while ((var_heap.size()) && (total_leaf_nodes < max_size))
 			{
 				const uint32_t node_index = var_heap.get_top_index();
@@ -1314,6 +1513,8 @@ namespace basisu
 					}
 				}
 			}
+
+			//debug_printf("tree_vector_quant::generate %u: %3.3f secs\n", TrainingVectorType::num_elements, tm.get_elapsed_secs());
 
 			return true;
 		}
@@ -1443,17 +1644,32 @@ namespace basisu
 		{
 			const uint32_t N = TrainingVectorType::num_elements;
 
-			matrix<N, N, float> cmatrix(cZero);
+			matrix<N, N, float> cmatrix;
 
-			// Compute covariance matrix from weighted input vectors
-			for (uint32_t i = 0; i < node.m_training_vecs.size(); i++)
+			if ((N != 16) || (!g_cpu_supports_sse41))
 			{
-				const TrainingVectorType v(m_training_vecs[node.m_training_vecs[i]].first - node.m_origin);
-				const TrainingVectorType w(static_cast<float>(m_training_vecs[node.m_training_vecs[i]].second) * v);
+				cmatrix.set_zero();
 
-				for (uint32_t x = 0; x < N; x++)
-					for (uint32_t y = x; y < N; y++)
-						cmatrix[x][y] = cmatrix[x][y] + v[x] * w[y];
+				// Compute covariance matrix from weighted input vectors
+				for (uint32_t i = 0; i < node.m_training_vecs.size(); i++)
+				{
+					const TrainingVectorType v(m_training_vecs[node.m_training_vecs[i]].first - node.m_origin);
+					const TrainingVectorType w(static_cast<float>(m_training_vecs[node.m_training_vecs[i]].second) * v);
+
+					for (uint32_t x = 0; x < N; x++)
+						for (uint32_t y = x; y < N; y++)
+							cmatrix[x][y] = cmatrix[x][y] + v[x] * w[y];
+				}
+			}
+			else
+			{
+#if BASISU_SUPPORT_SSE
+				// Specialize the case with 16x16 matrices, which are quite expensive without SIMD.
+				// This SSE function takes pointers to void types, so do some sanity checks.
+				assert(sizeof(TrainingVectorType) == sizeof(float) * 16);
+				assert(sizeof(training_vec_with_weight) == sizeof(std::pair<vec16F, uint64_t>));
+				update_covar_matrix_16x16_sse41(node.m_training_vecs.size(), m_training_vecs.data(), &node.m_origin, node.m_training_vecs.data(), &cmatrix);
+#endif
 			}
 
 			const float renorm_scale = 1.0f / node.m_weight;
@@ -1632,8 +1848,19 @@ namespace basisu
 					}
 				}
 
+				// Node is unsplittable using the above algorithm - try something else to split it up.
 				if ((!l_weight) || (!r_weight))
 				{
+					l_children.resize(0);
+					new_l_child.set(0.0f);
+					l_ttsum = 0.0f;
+					l_weight = 0;
+
+					r_children.resize(0);
+					new_r_child.set(0.0f);
+					r_ttsum = 0.0f;
+					r_weight = 0;
+
 					TrainingVectorType firstVec;
 					for (uint32_t i = 0; i < node.m_training_vecs.size(); i++)
 					{
@@ -1660,7 +1887,7 @@ namespace basisu
 						}
 					}
 
-					if (!l_weight)
+					if ((!l_weight) || (!r_weight))
 						return false;
 				}
 
@@ -1839,31 +2066,67 @@ namespace basisu
 		uint32_t max_codebook_size, uint32_t max_parent_codebook_size,
 		basisu::vector<uint_vec>& codebook,
 		basisu::vector<uint_vec>& parent_codebook,
-		uint32_t max_threads, job_pool *pJob_pool)
+		uint32_t max_threads, job_pool *pJob_pool,
+		bool even_odd_input_pairs_equal)
 	{
 		typedef bit_hasher<typename Quantizer::training_vec_type> training_vec_bit_hasher;
+		
 		typedef std::unordered_map < typename Quantizer::training_vec_type, weighted_block_group, 
 			training_vec_bit_hasher> group_hash;
 		
+		//interval_timer tm;
+		//tm.start();
+
 		group_hash unique_vecs;
 
+		unique_vecs.reserve(20000);
+
 		weighted_block_group g;
-		g.m_indices.resize(1);
-
-		for (uint32_t i = 0; i < q.get_training_vecs().size(); i++)
+		
+		if (even_odd_input_pairs_equal)
 		{
-			g.m_total_weight = q.get_training_vecs()[i].second;
-			g.m_indices[0] = i;
+			g.m_indices.resize(2);
 
-			auto ins_res = unique_vecs.insert(std::make_pair(q.get_training_vecs()[i].first, g));
+			assert(q.get_training_vecs().size() >= 2 && (q.get_training_vecs().size() & 1) == 0);
 
-			if (!ins_res.second)
+			for (uint32_t i = 0; i < q.get_training_vecs().size(); i += 2)
 			{
-				(ins_res.first)->second.m_total_weight += g.m_total_weight;
-				(ins_res.first)->second.m_indices.push_back(i);
+				assert(q.get_training_vecs()[i].first == q.get_training_vecs()[i + 1].first);
+
+				g.m_total_weight = q.get_training_vecs()[i].second + q.get_training_vecs()[i + 1].second;
+				g.m_indices[0] = i;
+				g.m_indices[1] = i + 1;
+
+				auto ins_res = unique_vecs.insert(std::make_pair(q.get_training_vecs()[i].first, g));
+
+				if (!ins_res.second)
+				{
+					(ins_res.first)->second.m_total_weight += g.m_total_weight;
+					(ins_res.first)->second.m_indices.push_back(i);
+					(ins_res.first)->second.m_indices.push_back(i + 1);
+				}
+			}
+		}
+		else
+		{
+			g.m_indices.resize(1);
+
+			for (uint32_t i = 0; i < q.get_training_vecs().size(); i++)
+			{
+				g.m_total_weight = q.get_training_vecs()[i].second;
+				g.m_indices[0] = i;
+
+				auto ins_res = unique_vecs.insert(std::make_pair(q.get_training_vecs()[i].first, g));
+
+				if (!ins_res.second)
+				{
+					(ins_res.first)->second.m_total_weight += g.m_total_weight;
+					(ins_res.first)->second.m_indices.push_back(i);
+				}
 			}
 		}
 
+		//debug_printf("generate_hierarchical_codebook_threaded: %u training vectors, %u unique training vectors, %3.3f secs\n", q.get_total_training_vecs(), (uint32_t)unique_vecs.size(), tm.get_elapsed_secs());
 		debug_printf("generate_hierarchical_codebook_threaded: %u training vectors, %u unique training vectors\n", q.get_total_training_vecs(), (uint32_t)unique_vecs.size());
 
 		Quantizer group_quant;
@@ -2483,7 +2746,27 @@ namespace basisu
 			return *this;
 		}
 
-		image &crop(uint32_t w, uint32_t h, uint32_t p = UINT32_MAX, const color_rgba &background = g_black_color)
+		// pPixels MUST have been allocated using malloc() (basisu::vector will eventually use free() on the pointer).
+		image& grant_ownership(color_rgba* pPixels, uint32_t w, uint32_t h, uint32_t p = UINT32_MAX)
+		{
+			if (p == UINT32_MAX)
+				p = w;
+
+			clear();
+			
+			if ((!p) || (!w) || (!h))
+				return *this;
+
+			m_pixels.grant_ownership(pPixels, p * h, p * h);
+
+			m_width = w;
+			m_height = h;
+			m_pitch = p;
+
+			return *this;
+		}
+
+		image &crop(uint32_t w, uint32_t h, uint32_t p = UINT32_MAX, const color_rgba &background = g_black_color, bool init_image = true)
 		{
 			if (p == UINT32_MAX)
 				p = w;
@@ -2501,15 +2784,25 @@ namespace basisu
 			cur_state.swap(m_pixels);
 
 			m_pixels.resize(p * h);
-			
-			for (uint32_t y = 0; y < h; y++)
+
+			if (init_image)
 			{
-				for (uint32_t x = 0; x < w; x++)
+				if (m_width || m_height)
 				{
-					if ((x < m_width) && (y < m_height))
-						m_pixels[x + y * p] = cur_state[x + y * m_pitch];
-					else
-						m_pixels[x + y * p] = background;
+					for (uint32_t y = 0; y < h; y++)
+					{
+						for (uint32_t x = 0; x < w; x++)
+						{
+							if ((x < m_width) && (y < m_height))
+								m_pixels[x + y * p] = cur_state[x + y * m_pitch];
+							else
+								m_pixels[x + y * p] = background;
+						}
+					}
+				}
+				else
+				{
+					m_pixels.set_all(background);
 				}
 			}
 
@@ -2582,9 +2875,25 @@ namespace basisu
 
 		const image &extract_block_clamped(color_rgba *pDst, uint32_t src_x, uint32_t src_y, uint32_t w, uint32_t h) const
 		{
-			for (uint32_t y = 0; y < h; y++)
-				for (uint32_t x = 0; x < w; x++)
-					*pDst++ = get_clamped(src_x + x, src_y + y);
+			if (((src_x + w) > m_width) || ((src_y + h) > m_height))
+			{
+				// Slower clamping case
+				for (uint32_t y = 0; y < h; y++)
+					for (uint32_t x = 0; x < w; x++)
+						*pDst++ = get_clamped(src_x + x, src_y + y);
+			}
+			else
+			{
+				const color_rgba* pSrc = &m_pixels[src_x + src_y * m_pitch];
+
+				for (uint32_t y = 0; y < h; y++)
+				{
+					memcpy(pDst, pSrc, w * sizeof(color_rgba));
+					pSrc += m_pitch;
+					pDst += w;
+				}
+			}
+
 			return *this;
 		}
 
@@ -2939,21 +3248,18 @@ namespace basisu
 	};
 
 	// Image saving/loading/resampling
-	
+
 	bool load_png(const uint8_t* pBuf, size_t buf_size, image& img, const char* pFilename = nullptr);
 	bool load_png(const char* pFilename, image& img);
 	inline bool load_png(const std::string &filename, image &img) { return load_png(filename.c_str(), img); }
 
-	bool load_bmp(const char* pFilename, image& img);
-	inline bool load_bmp(const std::string &filename, image &img) { return load_bmp(filename.c_str(), img); }
-		
 	bool load_tga(const char* pFilename, image& img);
 	inline bool load_tga(const std::string &filename, image &img) { return load_tga(filename.c_str(), img); }
 
 	bool load_jpg(const char *pFilename, image& img);
 	inline bool load_jpg(const std::string &filename, image &img) { return load_jpg(filename.c_str(), img); }
 	
-	// Currently loads .BMP, .PNG, or .TGA.
+	// Currently loads .PNG, .TGA, or .JPG
 	bool load_image(const char* pFilename, image& img);
 	inline bool load_image(const std::string &filename, image &img) { return load_image(filename.c_str(), img); }
 
@@ -3121,6 +3427,29 @@ namespace basisu
 	}
 
 	void fill_buffer_with_random_bytes(void *pBuf, size_t size, uint32_t seed = 1);
+
+	const uint32_t cPixelBlockWidth = 4;
+	const uint32_t cPixelBlockHeight = 4;
+	const uint32_t cPixelBlockTotalPixels = cPixelBlockWidth * cPixelBlockHeight;
+
+	struct pixel_block
+	{
+		color_rgba m_pixels[cPixelBlockHeight][cPixelBlockWidth]; // [y][x]
+
+		inline const color_rgba& operator() (uint32_t x, uint32_t y) const { assert((x < cPixelBlockWidth) && (y < cPixelBlockHeight)); return m_pixels[y][x]; }
+		inline color_rgba& operator() (uint32_t x, uint32_t y) { assert((x < cPixelBlockWidth) && (y < cPixelBlockHeight)); return m_pixels[y][x]; }
+
+		inline const color_rgba* get_ptr() const { return &m_pixels[0][0]; }
+		inline color_rgba* get_ptr() { return &m_pixels[0][0]; }
+
+		inline void clear() { clear_obj(*this); }
+
+		inline bool operator== (const pixel_block& rhs) const
+		{
+			return memcmp(m_pixels, rhs.m_pixels, sizeof(m_pixels)) == 0;
+		}
+	};
+	typedef basisu::vector<pixel_block> pixel_block_vec;
 		
 } // namespace basisu
 

@@ -473,7 +473,7 @@ void edgeColoringByDistance(Shape &shape, double angleThreshold, unsigned long l
         edgeMatrix[i] = &edgeMatrixStorage[i*splineCount];
     int nextEdge = 0;
     for (; nextEdge < graphEdgeCount && !*graphEdgeDistances[nextEdge]; ++nextEdge) {
-        int elem = graphEdgeDistances[nextEdge]-distanceMatrixBase;
+        int elem = (int) (graphEdgeDistances[nextEdge]-distanceMatrixBase);
         int row = elem/splineCount;
         int col = elem%splineCount;
         edgeMatrix[row][col] = 1;
@@ -483,7 +483,7 @@ void edgeColoringByDistance(Shape &shape, double angleThreshold, unsigned long l
     std::vector<int> coloring(2*splineCount);
     colorSecondDegreeGraph(&coloring[0], &edgeMatrix[0], splineCount, seed);
     for (; nextEdge < graphEdgeCount; ++nextEdge) {
-        int elem = graphEdgeDistances[nextEdge]-distanceMatrixBase;
+        int elem = (int) (graphEdgeDistances[nextEdge]-distanceMatrixBase);
         tryAddEdge(&coloring[0], &edgeMatrix[0], splineCount, elem/splineCount, elem%splineCount, &coloring[splineCount]);
     }
 

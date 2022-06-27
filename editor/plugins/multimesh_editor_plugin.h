@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,36 +31,38 @@
 #ifndef MULTIMESH_EDITOR_PLUGIN_H
 #define MULTIMESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
+
+class SceneTreeDialog;
 
 class MultiMeshEditor : public Control {
 	GDCLASS(MultiMeshEditor, Control);
 
 	friend class MultiMeshEditorPlugin;
 
-	AcceptDialog *err_dialog;
-	MenuButton *options;
-	MultiMeshInstance3D *_last_pp_node;
-	bool browsing_source;
+	AcceptDialog *err_dialog = nullptr;
+	MenuButton *options = nullptr;
+	MultiMeshInstance3D *_last_pp_node = nullptr;
+	bool browsing_source = false;
 
-	Panel *panel;
-	MultiMeshInstance3D *node;
+	Panel *panel = nullptr;
+	MultiMeshInstance3D *node = nullptr;
 
-	LineEdit *surface_source;
-	LineEdit *mesh_source;
+	LineEdit *surface_source = nullptr;
+	LineEdit *mesh_source = nullptr;
 
-	SceneTreeDialog *std;
+	SceneTreeDialog *std = nullptr;
 
-	ConfirmationDialog *populate_dialog;
-	OptionButton *populate_axis;
-	HSlider *populate_rotate_random;
-	HSlider *populate_tilt_random;
-	SpinBox *populate_scale_random;
-	SpinBox *populate_scale;
-	SpinBox *populate_amount;
+	ConfirmationDialog *populate_dialog = nullptr;
+	OptionButton *populate_axis = nullptr;
+	HSlider *populate_rotate_random = nullptr;
+	HSlider *populate_tilt_random = nullptr;
+	SpinBox *populate_scale_random = nullptr;
+	SpinBox *populate_scale = nullptr;
+	SpinBox *populate_amount = nullptr;
 
 	enum Menu {
 		MENU_OPTION_POPULATE
@@ -83,8 +85,7 @@ public:
 class MultiMeshEditorPlugin : public EditorPlugin {
 	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
-	MultiMeshEditor *multimesh_editor;
-	EditorNode *editor;
+	MultiMeshEditor *multimesh_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MultiMesh"; }
@@ -93,7 +94,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	MultiMeshEditorPlugin(EditorNode *p_node);
+	MultiMeshEditorPlugin();
 	~MultiMeshEditorPlugin();
 };
 

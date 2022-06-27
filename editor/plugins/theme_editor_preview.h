@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,32 +32,21 @@
 #define THEME_EDITOR_PREVIEW_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/color_picker.h"
+#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/progress_bar.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
-#include "editor/editor_node.h"
+class ColorPickerButton;
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
-	ColorRect *preview_bg;
-	MarginContainer *preview_overlay;
-	Control *picker_overlay;
+	ScrollContainer *preview_container = nullptr;
+	ColorRect *preview_bg = nullptr;
+	MarginContainer *preview_overlay = nullptr;
+	Control *picker_overlay = nullptr;
 	Control *hovered_control = nullptr;
 
 	struct ThemeCache {
@@ -82,9 +71,9 @@ class ThemeEditorPreview : public VBoxContainer {
 	void _reset_picker_overlay();
 
 protected:
-	HBoxContainer *preview_toolbar;
-	MarginContainer *preview_content;
-	Button *picker_button;
+	HBoxContainer *preview_toolbar = nullptr;
+	MarginContainer *preview_content = nullptr;
+	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);
 
@@ -100,6 +89,11 @@ public:
 class DefaultThemeEditorPreview : public ThemeEditorPreview {
 	GDCLASS(DefaultThemeEditorPreview, ThemeEditorPreview);
 
+	ColorPickerButton *test_color_picker_button = nullptr;
+
+protected:
+	void _notification(int p_what);
+
 public:
 	DefaultThemeEditorPreview();
 };
@@ -109,7 +103,7 @@ class SceneThemeEditorPreview : public ThemeEditorPreview {
 
 	Ref<PackedScene> loaded_scene;
 
-	Button *reload_scene_button;
+	Button *reload_scene_button = nullptr;
 
 	void _reload_scene();
 

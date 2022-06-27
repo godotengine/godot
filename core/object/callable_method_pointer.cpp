@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,9 +85,9 @@ void CallableCustomMethodPointerBase::_setup(uint32_t *p_base_ptr, uint32_t p_pt
 	// Precompute hash.
 	for (uint32_t i = 0; i < comp_size; i++) {
 		if (i == 0) {
-			h = hash_djb2_one_32(comp_ptr[i]);
+			h = hash_murmur3_one_32(comp_ptr[i]);
 		} else {
-			h = hash_djb2_one_32(comp_ptr[i], h);
+			h = hash_murmur3_one_32(comp_ptr[i], h);
 		}
 	}
 }

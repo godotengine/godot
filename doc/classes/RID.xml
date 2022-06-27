@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RID" version="4.0">
+<class name="RID" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Handle for a [Resource]'s unique ID.
 	</brief_description>
@@ -30,13 +30,14 @@
 				Returns the ID of the referenced resource.
 			</description>
 		</method>
-	</methods>
-	<operators>
-		<operator name="operator !=">
+		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if [RID] is valid.
 			</description>
-		</operator>
+		</method>
+	</methods>
+	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="RID" />
@@ -52,11 +53,6 @@
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="RID" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

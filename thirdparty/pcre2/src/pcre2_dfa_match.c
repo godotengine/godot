@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -1193,6 +1193,11 @@ for (;;)
           OK = prop->script == code[2];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[2] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[2]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1238,6 +1243,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[2];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[2]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1451,6 +1465,11 @@ for (;;)
           OK = prop->script == code[3];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[3] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[3]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1496,6 +1515,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[3];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[3]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1692,6 +1720,11 @@ for (;;)
           OK = prop->script == code[3];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[3] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), code[3]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -1737,6 +1770,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[3];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[3]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -1958,6 +2000,12 @@ for (;;)
           OK = prop->script == code[1 + IMM2_SIZE + 2];
           break;
 
+          case PT_SCX:
+          OK = (prop->script == code[1 + IMM2_SIZE + 2] ||
+                MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop),
+                  code[1 + IMM2_SIZE + 2]) != 0);
+          break;
+
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
@@ -2003,6 +2051,15 @@ for (;;)
           OK = c == CHAR_DOLLAR_SIGN || c == CHAR_COMMERCIAL_AT ||
                c == CHAR_GRAVE_ACCENT || (c >= 0xa0 && c <= 0xd7ff) ||
                c >= 0xe000;
+          break;
+
+          case PT_BIDICL:
+          OK = UCD_BIDICLASS(c) == code[1 + IMM2_SIZE + 2];
+          break;
+
+          case PT_BOOL:
+          OK = MAPBIT(PRIV(ucd_boolprop_sets) +
+            UCD_BPROPS_PROP(prop), code[1 + IMM2_SIZE + 2]) != 0;
           break;
 
           /* Should never occur, but keep compilers from grumbling. */
@@ -3256,8 +3313,8 @@ BOOL has_first_cu = FALSE;
 BOOL has_req_cu = FALSE;
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
-BOOL memchr_not_found_first_cu = FALSE;
-BOOL memchr_not_found_first_cu2 = FALSE;
+PCRE2_SPTR memchr_found_first_cu = NULL;
+PCRE2_SPTR memchr_found_first_cu2 = NULL;
 #endif
 
 PCRE2_UCHAR first_cu = 0;
@@ -3285,8 +3342,15 @@ rws->next = NULL;
 rws->size = RWS_BASE_SIZE;
 rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
 
-/* A length equal to PCRE2_ZERO_TERMINATED implies a zero-terminated
-subject string. */
+/* Recognize NULL, length 0 as an empty string. */
+
+if (subject == NULL && length == 0) subject = (PCRE2_SPTR)"";
+
+/* Plausibility checks */
+
+if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
+if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
+  return PCRE2_ERROR_NULL;
 
 if (length == PCRE2_ZERO_TERMINATED)
   {
@@ -3294,11 +3358,6 @@ if (length == PCRE2_ZERO_TERMINATED)
   was_zero_terminated = 1;
   }
 
-/* Plausibility checks */
-
-if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
-if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
-  return PCRE2_ERROR_NULL;
 if (wscount < 20) return PCRE2_ERROR_DFA_WSSIZE;
 if (start_offset > length) return PCRE2_ERROR_BADOFFSET;
 
@@ -3648,13 +3707,7 @@ for (;;)
         }
       }
 
-    /* Not anchored. Advance to a unique first code unit if there is one. In
-    8-bit mode, the use of memchr() gives a big speed up, even though we have
-    to call it twice in caseless mode, in order to find the earliest occurrence
-    of the character in either of its cases. If a call to memchr() that
-    searches the rest of the subject fails to find one case, remember that in
-    order not to keep on repeating the search. This can make a huge difference
-    when the strings are very long and only one case is present. */
+    /* Not anchored. Advance to a unique first code unit if there is one. */
 
     else
       {
@@ -3662,43 +3715,68 @@ for (;;)
         {
         if (first_cu != first_cu2)  /* Caseless */
           {
+          /* In 16-bit and 32_bit modes we have to do our own search, so can
+          look for both cases at once. */
+
 #if PCRE2_CODE_UNIT_WIDTH != 8
           PCRE2_UCHAR smc;
           while (start_match < end_subject &&
                 (smc = UCHAR21TEST(start_match)) != first_cu &&
-                  smc != first_cu2)
+                 smc != first_cu2)
             start_match++;
+#else
+          /* In 8-bit mode, the use of memchr() gives a big speed up, even
+          though we have to call it twice in order to find the earliest
+          occurrence of the code unit in either of its cases. Caching is used
+          to remember the positions of previously found code units. This can
+          make a huge difference when the strings are very long and only one
+          case is actually present. */
 
-#else  /* 8-bit code units */
           PCRE2_SPTR pp1 = NULL;
           PCRE2_SPTR pp2 = NULL;
-          PCRE2_SIZE cu2size = end_subject - start_match;
+          PCRE2_SIZE searchlength = end_subject - start_match;
 
-          if (!memchr_not_found_first_cu)
+          /* If we haven't got a previously found position for first_cu, or if
+          the current starting position is later, we need to do a search. If
+          the code unit is not found, set it to the end. */
+
+          if (memchr_found_first_cu == NULL ||
+              start_match > memchr_found_first_cu)
             {
-            pp1 = memchr(start_match, first_cu, end_subject - start_match);
-            if (pp1 == NULL) memchr_not_found_first_cu = TRUE;
-              else cu2size = pp1 - start_match;
+            pp1 = memchr(start_match, first_cu, searchlength);
+            memchr_found_first_cu = (pp1 == NULL)? end_subject : pp1;
             }
 
-          /* If pp1 is not NULL, we have arranged to search only as far as pp1,
-          to see if the other case is earlier, so we can set "not found" only
-          when both searches have returned NULL. */
+          /* If the start is before a previously found position, use the
+          previous position, or NULL if a previous search failed. */
 
-          if (!memchr_not_found_first_cu2)
+          else pp1 = (memchr_found_first_cu == end_subject)? NULL :
+            memchr_found_first_cu;
+
+          /* Do the same thing for the other case. */
+
+          if (memchr_found_first_cu2 == NULL ||
+              start_match > memchr_found_first_cu2)
             {
-            pp2 = memchr(start_match, first_cu2, cu2size);
-            memchr_not_found_first_cu2 = (pp2 == NULL && pp1 == NULL);
+            pp2 = memchr(start_match, first_cu2, searchlength);
+            memchr_found_first_cu2 = (pp2 == NULL)? end_subject : pp2;
             }
+
+          else pp2 = (memchr_found_first_cu2 == end_subject)? NULL :
+            memchr_found_first_cu2;
+
+          /* Set the start to the end of the subject if neither case was found.
+          Otherwise, use the earlier found point. */
 
           if (pp1 == NULL)
             start_match = (pp2 == NULL)? end_subject : pp2;
           else
             start_match = (pp2 == NULL || pp1 < pp2)? pp1 : pp2;
-#endif
+
+#endif  /* 8-bit handling */
           }
 
-        /* The caseful case */
+        /* The caseful case is much simpler. */
 
         else
           {

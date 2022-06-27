@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class ArrayPrivate {
 public:
 	SafeRefCount refcount;
 	Vector<Variant> array;
-
+	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 };
 
@@ -51,6 +51,16 @@ void Array::_ref(const Array &p_from) const {
 	ArrayPrivate *_fp = p_from._p;
 
 	ERR_FAIL_COND(!_fp); // should NOT happen.
+
+	if (unlikely(_fp->read_only != nullptr)) {
+		// If p_from is a read-only array, just copy the contents to avoid further modification.
+		_unref();
+		_p = memnew(ArrayPrivate);
+		_p->refcount.init();
+		_p->array = _fp->array;
+		_p->typed = _fp->typed;
+		return;
+	}
 
 	if (_fp == _p) {
 		return; // whatever it is, nothing to do here move along
@@ -71,16 +81,27 @@ void Array::_unref() const {
 	}
 
 	if (_p->refcount.unref()) {
+		if (_p->read_only) {
+			memdelete(_p->read_only);
+		}
 		memdelete(_p);
 	}
 	_p = nullptr;
 }
 
 Variant &Array::operator[](int p_idx) {
+	if (unlikely(_p->read_only)) {
+		*_p->read_only = _p->array[p_idx];
+		return *_p->read_only;
+	}
 	return _p->array.write[p_idx];
 }
 
 const Variant &Array::operator[](int p_idx) const {
+	if (unlikely(_p->read_only)) {
+		*_p->read_only = _p->array[p_idx];
+		return *_p->read_only;
+	}
 	return _p->array[p_idx];
 }
 
@@ -93,6 +114,7 @@ bool Array::is_empty() const {
 }
 
 void Array::clear() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.clear();
 }
 
@@ -168,13 +190,13 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 		return 0;
 	}
 
-	uint32_t h = hash_djb2_one_32(Variant::ARRAY);
+	uint32_t h = hash_murmur3_one_32(Variant::ARRAY);
 
 	recursion_count++;
 	for (int i = 0; i < _p->array.size(); i++) {
-		h = hash_djb2_one_32(_p->array[i].recursive_hash(recursion_count), h);
+		h = hash_murmur3_one_32(_p->array[i].recursive_hash(recursion_count), h);
 	}
-	return h;
+	return hash_fmix32(h);
 }
 
 bool Array::_assign(const Array &p_array) {
@@ -224,34 +246,45 @@ bool Array::_assign(const Array &p_array) {
 }
 
 void Array::operator=(const Array &p_array) {
+	if (this == &p_array) {
+		return;
+	}
 	_ref(p_array);
 }
 
 void Array::push_back(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "push_back"));
 	_p->array.push_back(p_value);
 }
 
 void Array::append_array(const Array &p_array) {
-	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	for (int i = 0; i < p_array.size(); ++i) {
+		ERR_FAIL_COND(!_p->typed.validate(p_array[i], "append_array"));
+	}
 	_p->array.append_array(p_array._p->array);
 }
 
 Error Array::resize(int p_new_size) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	return _p->array.resize(p_new_size);
 }
 
 Error Array::insert(int p_pos, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "insert"), ERR_INVALID_PARAMETER);
 	return _p->array.insert(p_pos, p_value);
 }
 
 void Array::fill(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "fill"));
 	_p->array.fill(p_value);
 }
 
 void Array::erase(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "erase"));
 	_p->array.erase(p_value);
 }
@@ -322,11 +355,13 @@ bool Array::has(const Variant &p_value) const {
 	return _p->array.find(p_value, 0) != -1;
 }
 
-void Array::remove(int p_pos) {
-	_p->array.remove(p_pos);
+void Array::remove_at(int p_pos) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	_p->array.remove_at(p_pos);
 }
 
 void Array::set(int p_idx, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "set"));
 
 	operator[](p_idx) = p_value;
@@ -365,55 +400,34 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	return new_arr;
 }
 
-int Array::_clamp_slice_index(int p_index) const {
-	int arr_size = size();
-	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
-	if (fixed_index < 0) {
-		fixed_index = arr_size + fixed_index;
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
+	Array result;
+
+	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
+
+	const int s = size();
+
+	int begin = CLAMP(p_begin, -s, s);
+	if (begin < 0) {
+		begin += s;
 	}
-	return fixed_index;
-}
-
-Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
-
-	Array new_arr;
-
-	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
-
-	if (is_empty()) { // Don't try to slice empty arrays.
-		return new_arr;
-	}
-	if (p_step > 0) {
-		if (p_begin >= size() || p_end < -size()) {
-			return new_arr;
-		}
-	} else { // p_step < 0
-		if (p_begin < -size() || p_end >= size()) {
-			return new_arr;
-		}
+	int end = CLAMP(p_end, -s, s);
+	if (end < 0) {
+		end += s;
 	}
 
-	int begin = _clamp_slice_index(p_begin);
-	int end = _clamp_slice_index(p_end);
+	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
 
-	int new_arr_size = MAX(((end - begin + p_step) / p_step), 0);
-	new_arr.resize(new_arr_size);
+	int result_size = (end - begin) / p_step;
+	result.resize(result_size);
 
-	if (p_step > 0) {
-		int dest_idx = 0;
-		for (int idx = begin; idx <= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
-	} else { // p_step < 0
-		int dest_idx = 0;
-		for (int idx = begin; idx >= end; idx += p_step) {
-			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
-			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
-		}
+	for (int src_idx = begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
+		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
+		src_idx += p_step;
 	}
 
-	return new_arr;
+	return result;
 }
 
 Array Array::filter(const Callable &p_callable) const {
@@ -489,6 +503,50 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 	return ret;
 }
 
+bool Array::any(const Callable &p_callable) const {
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'any': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			// Return as early as possible when one of the conditions is `true`.
+			// This improves performance compared to relying on `filter(...).size() >= 1`.
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Array::all(const Callable &p_callable) const {
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'all': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (!(result.operator bool())) {
+			// Return as early as possible when one of the inverted conditions is `false`.
+			// This improves performance compared to relying on `filter(...).size() >= array_size().`.
+			return false;
+		}
+	}
+
+	return true;
+}
+
 struct _ArrayVariantSort {
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 		bool valid = false;
@@ -502,30 +560,17 @@ struct _ArrayVariantSort {
 };
 
 void Array::sort() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<_ArrayVariantSort>();
 }
 
-struct _ArrayVariantSortCustom {
-	Callable func;
-
-	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
-		const Variant *args[2] = { &p_l, &p_r };
-		Callable::CallError err;
-		Variant res;
-		func.call(args, 2, res, err);
-		ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
-				"Error calling sorting method: " + Variant::get_callable_error_text(func, args, 1, err));
-		return res;
-	}
-};
-
-void Array::sort_custom(Callable p_callable) {
-	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
-	avs.compare.func = p_callable;
-	avs.sort(_p->array.ptrw(), _p->array.size());
+void Array::sort_custom(const Callable &p_callable) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	_p->array.sort_custom<CallableComparator, true>(p_callable);
 }
 
 void Array::shuffle() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	const int n = _p->array.size();
 	if (n < 2) {
 		return;
@@ -545,25 +590,25 @@ int Array::bsearch(const Variant &p_value, bool p_before) {
 	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
 }
 
-int Array::bsearch_custom(const Variant &p_value, Callable p_callable, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "custom binary search"), -1);
 
-	SearchArray<Variant, _ArrayVariantSortCustom> avs;
-	avs.compare.func = p_callable;
-
-	return avs.bisect(_p->array.ptrw(), _p->array.size(), p_value, p_before);
+	return _p->array.bsearch_custom<CallableComparator>(p_value, p_before, p_callable);
 }
 
 void Array::reverse() {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.reverse();
 }
 
 void Array::push_front(const Variant &p_value) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "push_front"));
 	_p->array.insert(0, p_value);
 }
 
 Variant Array::pop_back() {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (!_p->array.is_empty()) {
 		const int n = _p->array.size() - 1;
 		const Variant ret = _p->array.get(n);
@@ -574,15 +619,17 @@ Variant Array::pop_back() {
 }
 
 Variant Array::pop_front() {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (!_p->array.is_empty()) {
 		const Variant ret = _p->array.get(0);
-		_p->array.remove(0);
+		_p->array.remove_at(0);
 		return ret;
 	}
 	return Variant();
 }
 
 Variant Array::pop_at(int p_pos) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Array is in read-only state.");
 	if (_p->array.is_empty()) {
 		// Return `null` without printing an error to mimic `pop_back()` and `pop_front()` behavior.
 		return Variant();
@@ -603,7 +650,7 @@ Variant Array::pop_at(int p_pos) {
 					_p->array.size()));
 
 	const Variant ret = _p->array.get(p_pos);
-	_p->array.remove(p_pos);
+	_p->array.remove_at(p_pos);
 	return ret;
 }
 
@@ -652,7 +699,7 @@ Variant Array::max() const {
 }
 
 const void *Array::id() const {
-	return _p->array.ptr();
+	return _p;
 }
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
@@ -667,6 +714,7 @@ bool Array::typed_assign(const Array &p_other) {
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed.type != Variant::NIL, "Type can only be set once.");
@@ -694,6 +742,22 @@ StringName Array::get_typed_class_name() const {
 
 Variant Array::get_typed_script() const {
 	return _p->typed.script;
+}
+
+void Array::set_read_only(bool p_enable) {
+	if (p_enable == bool(_p->read_only != nullptr)) {
+		return;
+	}
+	if (p_enable) {
+		_p->read_only = memnew(Variant);
+	} else {
+		memdelete(_p->read_only);
+		_p->read_only = nullptr;
+	}
+}
+
+bool Array::is_read_only() const {
+	return _p->read_only != nullptr;
 }
 
 Array::Array(const Array &p_from) {

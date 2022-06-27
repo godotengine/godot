@@ -130,6 +130,16 @@ typedef union _hb_var_int_t {
   int8_t i8[4];
 } hb_var_int_t;
 
+typedef union _hb_var_num_t {
+  float f;
+  uint32_t u32;
+  int32_t i32;
+  uint16_t u16[2];
+  int16_t i16[2];
+  uint8_t u8[4];
+  int8_t i8[4];
+} hb_var_num_t;
+
 
 /* hb_tag_t */
 
@@ -481,6 +491,7 @@ hb_language_get_default (void);
  * @HB_SCRIPT_TANGSA: `Tnsa`, Since: 3.0.0
  * @HB_SCRIPT_TOTO: `Toto`, Since: 3.0.0
  * @HB_SCRIPT_VITHKUQI: `Vith`, Since: 3.0.0
+ * @HB_SCRIPT_MATH: `Zmth`, Since: 3.4.0
  * @HB_SCRIPT_INVALID: No script set
  *
  * Data type for scripts. Each #hb_script_t's value is an #hb_tag_t corresponding
@@ -696,6 +707,11 @@ typedef enum
   HB_SCRIPT_TANGSA			= HB_TAG ('T','n','s','a'), /*14.0*/
   HB_SCRIPT_TOTO			= HB_TAG ('T','o','t','o'), /*14.0*/
   HB_SCRIPT_VITHKUQI			= HB_TAG ('V','i','t','h'), /*14.0*/
+
+  /*
+   * Since 3.4.0
+   */
+  HB_SCRIPT_MATH			= HB_TAG ('Z','m','t','h'),
 
   /* No script set. */
   HB_SCRIPT_INVALID			= HB_TAG_NONE,

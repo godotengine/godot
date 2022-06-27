@@ -1,18 +1,24 @@
 proto = """
 #define GDVIRTUAL$VER($RET m_name $ARG) \\
 StringName _gdvirtual_##m_name##_sn = #m_name;\\
-GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+mutable bool _gdvirtual_##m_name##_initialized = false;\\
+mutable GDNativeExtensionClassCallVirtual _gdvirtual_##m_name = nullptr;\\
+template<bool required>\\
 _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 	ScriptInstance *script_instance = ((Object*)(this))->get_script_instance();\\
 	if (script_instance) {\\
 		Callable::CallError ce; \\
 		$CALLSIARGS\\
-		$CALLSIBEGINscript_instance->call(_gdvirtual_##m_name##_sn, $CALLSIARGPASS, ce);\\
+		$CALLSIBEGINscript_instance->callp(_gdvirtual_##m_name##_sn, $CALLSIARGPASS, ce);\\
 		if (ce.error == Callable::CallError::CALL_OK) {\\
 			$CALLSIRET\\
 			return true;\\
 		}    \\
 	}\\
+    if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        _gdvirtual_##m_name##_initialized = true;\\
+    }\\
 	if (_gdvirtual_##m_name) {\\
 		$CALLPTRARGS\\
 		$CALLPTRRETDEF\\
@@ -20,6 +26,11 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_call($CALLARGS) $CONST { \\
 		$CALLPTRRET\\
 		return true;\\
 	}\\
+	\\
+	if (required) {\\
+	        ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");\\
+	        $RVOID\\
+    }\\
 \\
     return false;\\
 }\\
@@ -28,6 +39,10 @@ _FORCE_INLINE_ bool _gdvirtual_##m_name##_overridden() const { \\
 	if (script_instance) {\\
 	    return script_instance->has_method(_gdvirtual_##m_name##_sn);\\
 	}\\
+    if (unlikely(_get_extension() && !_gdvirtual_##m_name##_initialized)) {\\
+        _gdvirtual_##m_name = (_get_extension() && _get_extension()->get_virtual) ? _get_extension()->get_virtual(_get_extension()->class_userdata, #m_name) : (GDNativeExtensionClassCallVirtual) nullptr;\\
+        _gdvirtual_##m_name##_initialized = true;\\
+    }\\
 	if (_gdvirtual_##m_name) {\\
 	    return true;\\
 	}\\
@@ -52,10 +67,12 @@ def generate_version(argcount, const=False, returns=False):
     if returns:
         sproto += "R"
         s = s.replace("$RET", "m_ret, ")
+        s = s.replace("$RVOID", "(void)r_ret;")  # If required, may lead to uninitialized errors
         s = s.replace("$CALLPTRRETDEF", "PtrToArg<m_ret>::EncodeT ret;")
         method_info += "\tmethod_info.return_val = GetTypeInfo<m_ret>::get_class_info();\\\n"
     else:
         s = s.replace("$RET", "")
+        s = s.replace("$RVOID", "")
         s = s.replace("$CALLPTRRETDEF", "")
 
     if const:
@@ -114,9 +131,9 @@ def generate_version(argcount, const=False, returns=False):
             callargtext += ","
         callargtext += " m_ret& r_ret"
         s = s.replace("$CALLSIBEGIN", "Variant ret = ")
-        s = s.replace("$CALLSIRET", "r_ret = ret;")
+        s = s.replace("$CALLSIRET", "r_ret = VariantCaster<m_ret>::cast(ret);")
         s = s.replace("$CALLPTRRETPASS", "&ret")
-        s = s.replace("$CALLPTRRET", "r_ret = ret;")
+        s = s.replace("$CALLPTRRET", "r_ret = (m_ret)ret;")
     else:
         s = s.replace("$CALLSIBEGIN", "")
         s = s.replace("$CALLSIRET", "")

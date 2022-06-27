@@ -21,14 +21,14 @@ hello/world
 RID(0)
 Node::get_name
 Node::[signal]property_list_changed
-{hello:123}
-[hello, 123]
+{"hello":123}
+["hello", 123]
 [255, 0, 1]
 [-1, 0, 1]
 [-1, 0, 1]
 [-1, 0, 1]
 [-1, 0, 1]
-[hello, world]
+["hello", "world"]
 [(1, 1), (0, 0)]
 [(1, 1, 1), (0, 0, 0)]
 [(1, 0, 0, 1), (0, 0, 1, 1), (0, 1, 0, 1)]

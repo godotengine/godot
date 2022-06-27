@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,6 +73,7 @@ public:
 	enum EmissionShape {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
+		EMISSION_SHAPE_SPHERE_SURFACE,
 		EMISSION_SHAPE_BOX,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
@@ -108,6 +109,14 @@ private:
 
 		uint32_t key = 0;
 
+		static uint32_t hash(const MaterialKey &p_key) {
+			return hash_murmur3_one_32(p_key.key);
+		}
+
+		bool operator==(const MaterialKey &p_key) const {
+			return key == p_key.key;
+		}
+
 		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
 		}
@@ -118,7 +127,7 @@ private:
 		int users = 0;
 	};
 
-	static Map<MaterialKey, ShaderData> shader_map;
+	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 
 	MaterialKey current_key;
 
@@ -194,6 +203,7 @@ private:
 
 		StringName color;
 		StringName color_ramp;
+		StringName color_initial_ramp;
 
 		StringName emission_sphere_radius;
 		StringName emission_box_extents;
@@ -228,8 +238,8 @@ private:
 
 	bool is_initialized = false;
 	Vector3 direction;
-	float spread;
-	float flatness;
+	float spread = 0.0f;
+	float flatness = 0.0f;
 
 	float params_min[PARAM_MAX];
 	float params_max[PARAM_MAX];
@@ -237,38 +247,39 @@ private:
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
 	Ref<Texture2D> color_ramp;
+	Ref<Texture2D> color_initial_ramp;
 
 	bool particle_flags[PARTICLE_FLAG_MAX];
 
 	EmissionShape emission_shape;
-	float emission_sphere_radius;
+	float emission_sphere_radius = 0.0f;
 	Vector3 emission_box_extents;
 	Ref<Texture2D> emission_point_texture;
 	Ref<Texture2D> emission_normal_texture;
 	Ref<Texture2D> emission_color_texture;
 	Vector3 emission_ring_axis;
-	real_t emission_ring_height;
-	real_t emission_ring_radius;
-	real_t emission_ring_inner_radius;
+	real_t emission_ring_height = 0.0f;
+	real_t emission_ring_radius = 0.0f;
+	real_t emission_ring_inner_radius = 0.0f;
 	int emission_point_count = 1;
 
-	bool anim_loop;
+	bool anim_loop = false;
 
 	Vector3 gravity;
 
-	double lifetime_randomness;
+	double lifetime_randomness = 0.0;
 
 	SubEmitterMode sub_emitter_mode;
-	double sub_emitter_frequency;
-	int sub_emitter_amount_at_end;
-	bool sub_emitter_keep_velocity;
+	double sub_emitter_frequency = 0.0;
+	int sub_emitter_amount_at_end = 0;
+	bool sub_emitter_keep_velocity = false;
 	//do not save emission points here
 
-	bool attractor_interaction_enabled;
-	bool collision_enabled;
-	bool collision_scale;
-	float collision_friction;
-	float collision_bounce;
+	bool attractor_interaction_enabled = false;
+	bool collision_enabled = false;
+	bool collision_scale = false;
+	float collision_friction = 0.0f;
+	float collision_bounce = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -298,6 +309,9 @@ public:
 
 	void set_color_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_ramp() const;
+
+	void set_color_initial_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_color_initial_ramp() const;
 
 	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;

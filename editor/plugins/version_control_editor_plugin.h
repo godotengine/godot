@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,9 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
-#include "scene/gui/container.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 
@@ -56,48 +57,51 @@ private:
 	int staged_files_count;
 	List<StringName> available_addons;
 
-	PopupMenu *version_control_actions;
-	AcceptDialog *set_up_dialog;
-	VBoxContainer *set_up_vbc;
-	HBoxContainer *set_up_hbc;
-	Label *set_up_vcs_label;
-	OptionButton *set_up_choice;
-	PanelContainer *set_up_init_settings;
-	Button *set_up_init_button;
-	RichTextLabel *set_up_vcs_status;
-	Button *set_up_ok_button;
+	PopupMenu *version_control_actions = nullptr;
+	ConfirmationDialog *metadata_dialog = nullptr;
+	OptionButton *metadata_selection = nullptr;
+	AcceptDialog *set_up_dialog = nullptr;
+	VBoxContainer *set_up_vbc = nullptr;
+	HBoxContainer *set_up_hbc = nullptr;
+	Label *set_up_vcs_label = nullptr;
+	OptionButton *set_up_choice = nullptr;
+	PanelContainer *set_up_init_settings = nullptr;
+	Button *set_up_init_button = nullptr;
+	RichTextLabel *set_up_vcs_status = nullptr;
+	Button *set_up_ok_button = nullptr;
 
 	HashMap<ChangeType, String> change_type_to_strings;
 	HashMap<ChangeType, Color> change_type_to_color;
 
-	VBoxContainer *version_commit_dock;
-	VBoxContainer *commit_box_vbc;
-	HSplitContainer *stage_tools;
-	Tree *stage_files;
-	TreeItem *new_files;
-	TreeItem *modified_files;
-	TreeItem *renamed_files;
-	TreeItem *deleted_files;
-	TreeItem *typechange_files;
-	Label *staging_area_label;
-	HSplitContainer *stage_buttons;
-	Button *stage_all_button;
-	Button *stage_selected_button;
-	Button *refresh_button;
-	TextEdit *commit_message;
-	Button *commit_button;
-	Label *commit_status;
+	VBoxContainer *version_commit_dock = nullptr;
+	VBoxContainer *commit_box_vbc = nullptr;
+	HSplitContainer *stage_tools = nullptr;
+	Tree *stage_files = nullptr;
+	TreeItem *new_files = nullptr;
+	TreeItem *modified_files = nullptr;
+	TreeItem *renamed_files = nullptr;
+	TreeItem *deleted_files = nullptr;
+	TreeItem *typechange_files = nullptr;
+	Label *staging_area_label = nullptr;
+	HSplitContainer *stage_buttons = nullptr;
+	Button *stage_all_button = nullptr;
+	Button *stage_selected_button = nullptr;
+	Button *refresh_button = nullptr;
+	TextEdit *commit_message = nullptr;
+	Button *commit_button = nullptr;
+	Label *commit_status = nullptr;
 
-	PanelContainer *version_control_dock;
-	Button *version_control_dock_button;
-	VBoxContainer *diff_vbc;
-	HBoxContainer *diff_hbc;
-	Button *diff_refresh_button;
-	Label *diff_file_name;
-	Label *diff_heading;
-	RichTextLabel *diff;
+	PanelContainer *version_control_dock = nullptr;
+	Button *version_control_dock_button = nullptr;
+	VBoxContainer *diff_vbc = nullptr;
+	HBoxContainer *diff_hbc = nullptr;
+	Button *diff_refresh_button = nullptr;
+	Label *diff_file_name = nullptr;
+	Label *diff_heading = nullptr;
+	RichTextLabel *diff = nullptr;
 
 	void _populate_available_vcs_names();
+	void _create_vcs_metadata_files();
 	void _selected_a_vcs(int p_id);
 	void _initialize_vcs();
 	void _send_commit_msg();
@@ -121,6 +125,7 @@ protected:
 public:
 	static VersionControlEditorPlugin *get_singleton();
 
+	void popup_vcs_metadata_dialog();
 	void popup_vcs_set_up_dialog(const Control *p_gui_base);
 	void set_version_control_tool_button(Button *p_button) { version_control_dock_button = p_button; }
 

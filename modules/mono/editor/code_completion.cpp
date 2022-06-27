@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -120,11 +120,11 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		} break;
 		case CompletionKind::NODE_PATHS: {
 			{
-				// AutoLoads
-				OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				// Autoloads.
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-				for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-					const ProjectSettings::AutoloadInfo &info = E.value();
+				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+					const ProjectSettings::AutoloadInfo &info = E.value;
 					suggestions.push_back(quoted("/root/" + String(info.name)));
 				}
 			}
@@ -144,7 +144,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			}
 		} break;
 		case CompletionKind::SCENE_PATHS: {
-			DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			List<String> directories;
 			directories.push_back(dir_access->get_current_dir());
 
@@ -155,7 +155,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				dir_access->list_dir_begin();
 				String filename = dir_access->get_next();
 
-				while (filename != "") {
+				while (!filename.is_empty()) {
 					if (filename == "." || filename == "..") {
 						filename = dir_access->get_next();
 						continue;

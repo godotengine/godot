@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,8 @@ class BackgroundProgress : public HBoxContainer {
 		ProgressBar *progress = nullptr;
 	};
 
-	Map<String, Task> tasks;
-	Map<String, int> updates;
+	HashMap<String, Task> tasks;
+	HashMap<String, int> updates;
 	void _update();
 
 protected:
@@ -74,18 +74,18 @@ class ProgressDialog : public PopupPanel {
 		ProgressBar *progress = nullptr;
 		Label *state = nullptr;
 	};
-	HBoxContainer *cancel_hb;
-	Button *cancel;
+	HBoxContainer *cancel_hb = nullptr;
+	Button *cancel = nullptr;
 
-	Map<String, Task> tasks;
-	VBoxContainer *main;
+	HashMap<String, Task> tasks;
+	VBoxContainer *main = nullptr;
 	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;
 	void _popup();
 
 	void _cancel_pressed();
-	bool cancelled;
+	bool cancelled = false;
 
 protected:
 	void _notification(int p_what);

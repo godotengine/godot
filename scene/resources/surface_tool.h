@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,10 +84,22 @@ public:
 	static SimplifyScaleFunc simplify_scale_func;
 	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
 	static SimplifySloppyFunc simplify_sloppy_func;
+	typedef size_t (*GenerateRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const void *vertices, size_t vertex_count, size_t vertex_size);
+	static GenerateRemapFunc generate_remap_func;
+	typedef void (*RemapVertexFunc)(void *destination, const void *vertices, size_t vertex_count, size_t vertex_size, const unsigned int *remap);
+	static RemapVertexFunc remap_vertex_func;
+	typedef void (*RemapIndexFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const unsigned int *remap);
+	static RemapIndexFunc remap_index_func;
+	static void strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 private:
 	struct VertexHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
+	};
+
+	struct TriangleHasher {
+		static _FORCE_INLINE_ uint32_t hash(const int *p_triangle);
+		static _FORCE_INLINE_ bool compare(const int *p_lhs, const int *p_rhs);
 	};
 
 	struct WeightSort {
@@ -142,10 +154,10 @@ public:
 	void set_skin_weight_count(SkinWeightCount p_weights);
 	SkinWeightCount get_skin_weight_count() const;
 
-	void set_custom_format(int p_index, CustomFormat p_format);
-	CustomFormat get_custom_format(int p_index) const;
+	void set_custom_format(int p_channel_index, CustomFormat p_format);
+	CustomFormat get_custom_format(int p_channel_index) const;
 
-	Mesh::PrimitiveType get_primitive() const;
+	Mesh::PrimitiveType get_primitive_type() const;
 
 	void begin(Mesh::PrimitiveType p_primitive);
 
@@ -154,7 +166,7 @@ public:
 	void set_tangent(const Plane &p_tangent);
 	void set_uv(const Vector2 &p_uv);
 	void set_uv2(const Vector2 &p_uv2);
-	void set_custom(int p_index, const Color &p_custom);
+	void set_custom(int p_channel_index, const Color &p_custom);
 	void set_bones(const Vector<int> &p_bones);
 	void set_weights(const Vector<float> &p_weights);
 	void set_smooth_group(uint32_t p_group);
@@ -171,7 +183,7 @@ public:
 	void generate_tangents();
 
 	void optimize_indices_for_cache();
-	float get_max_axis_length() const;
+	AABB get_aabb() const;
 	Vector<int> generate_lod(float p_threshold, int p_target_index_count = 3);
 
 	void set_material(const Ref<Material> &p_material);
@@ -187,7 +199,7 @@ public:
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_compress_flags = 0);
 
 	SurfaceTool();
 };

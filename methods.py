@@ -105,14 +105,15 @@ def update_version(module_version_string=""):
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
+    f.write('#define VERSION_DOCS_BRANCH "' + str(version.docs) + '"\n')
+    f.write('#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH\n')
     f.write("#endif // VERSION_GENERATED_GEN_H\n")
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    fhash = open("core/version_hash.gen.h", "w")
+    fhash = open("core/version_hash.gen.cpp", "w")
     fhash.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    fhash.write("#ifndef VERSION_HASH_GEN_H\n")
-    fhash.write("#define VERSION_HASH_GEN_H\n")
+    fhash.write('#include "core/version.h"\n')
     githash = ""
     gitfolder = ".git"
 
@@ -130,8 +131,7 @@ def update_version(module_version_string=""):
         else:
             githash = head
 
-    fhash.write('#define VERSION_HASH "' + githash + '"\n')
-    fhash.write("#endif // VERSION_HASH_GEN_H\n")
+    fhash.write('const char *const VERSION_HASH = "' + githash + '";\n')
     fhash.close()
 
 
@@ -266,25 +266,19 @@ def write_disabled_classes(class_list):
 
 def write_modules(modules):
     includes_cpp = ""
-    preregister_cpp = ""
-    register_cpp = ""
-    unregister_cpp = ""
+    initialize_cpp = ""
+    uninitialize_cpp = ""
 
     for name, path in modules.items():
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
-                preregister_cpp += "\tpreregister_" + name + "_types();\n"
-                preregister_cpp += "#endif\n"
-                preregister_cpp += "#endif\n"
-                register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                register_cpp += "\tregister_" + name + "_types();\n"
-                register_cpp += "#endif\n"
-                unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                unregister_cpp += "\tunregister_" + name + "_types();\n"
-                unregister_cpp += "#endif\n"
+                initialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                initialize_cpp += "\tinitialize_" + name + "_module(p_level);\n"
+                initialize_cpp += "#endif\n"
+                uninitialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
+                uninitialize_cpp += "\tuninitialize_" + name + "_module(p_level);\n"
+                uninitialize_cpp += "#endif\n"
         except OSError:
             pass
 
@@ -296,22 +290,17 @@ def write_modules(modules):
 
 %s
 
-void preregister_module_types() {
+void initialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 
-void register_module_types() {
-%s
-}
-
-void unregister_module_types() {
+void uninitialize_modules(ModuleInitializationLevel p_level) {
 %s
 }
 """ % (
         includes_cpp,
-        preregister_cpp,
-        register_cpp,
-        unregister_cpp,
+        initialize_cpp,
+        uninitialize_cpp,
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -452,45 +441,39 @@ def no_verbose(sys, env):
     # Colors are disabled in non-TTY environments such as pipes. This means
     # that if output is redirected to a file, it will not contain color codes
     if sys.stdout.isatty():
-        colors["cyan"] = "\033[96m"
-        colors["purple"] = "\033[95m"
-        colors["blue"] = "\033[94m"
-        colors["green"] = "\033[92m"
-        colors["yellow"] = "\033[93m"
-        colors["red"] = "\033[91m"
-        colors["end"] = "\033[0m"
+        colors["blue"] = "\033[0;94m"
+        colors["bold_blue"] = "\033[1;94m"
+        colors["reset"] = "\033[0m"
     else:
-        colors["cyan"] = ""
-        colors["purple"] = ""
         colors["blue"] = ""
-        colors["green"] = ""
-        colors["yellow"] = ""
-        colors["red"] = ""
-        colors["end"] = ""
+        colors["bold_blue"] = ""
+        colors["reset"] = ""
 
-    compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    # There is a space before "..." to ensure that source file names can be
+    # Ctrl + clicked in the VS Code terminal.
+    compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    java_compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    compile_shared_source_message = "{}Compiling shared {}==> {}$SOURCE{}".format(
-        colors["blue"], colors["purple"], colors["yellow"], colors["end"]
+    compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_program_message = "{}Linking Program        {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_library_message = "{}Linking Static Library {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    ranlib_library_message = "{}Ranlib Library         {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    link_shared_library_message = "{}Linking Shared Library {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    java_library_message = "{}Creating Java Archive  {}==> {}$TARGET{}".format(
-        colors["red"], colors["purple"], colors["yellow"], colors["end"]
+    java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
 
     env.Append(CXXCOMSTR=[compile_source_message])
@@ -778,9 +761,10 @@ def generate_vs_project(env, num_jobs):
             env.vs_incs.append(str(header))
 
         module_configs = ModuleConfigs()
-        import modules.mono.build_scripts.mono_reg_utils as mono_reg
 
         if env.get("module_mono_enabled"):
+            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+
             mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
             if mono_root:
                 module_configs.add_mode(

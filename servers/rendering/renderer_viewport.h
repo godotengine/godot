@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
@@ -49,12 +50,16 @@ public:
 
 		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
 
-		float scale_3d = 1.0;
-
+		Size2i internal_size;
 		Size2i size;
 		RID camera;
 		RID scenario;
 
+		RS::ViewportScaling3DMode scaling_3d_mode;
+		float scaling_3d_scale = 1.0;
+		float fsr_sharpness = 0.2f;
+		float fsr_mipmap_bias = 0.0f;
+		bool fsr_enabled;
 		RS::ViewportUpdateMode update_mode;
 		RID render_target;
 		RID render_target_texture;
@@ -62,7 +67,11 @@ public:
 
 		RS::ViewportMSAA msaa;
 		RS::ViewportScreenSpaceAA screen_space_aa;
+		bool use_taa;
 		bool use_debanding;
+
+		RendererSceneRender::CameraData prev_camera_data;
+		uint64_t prev_camera_data_frame = 0;
 
 		bool use_occlusion_culling;
 		bool occlusion_buffer_dirty;
@@ -87,11 +96,11 @@ public:
 
 		RID shadow_atlas;
 		int shadow_atlas_size;
-		bool shadow_atlas_16_bits = false;
+		bool shadow_atlas_16_bits = true;
 
 		bool sdf_active;
 
-		float lod_threshold = 1.0;
+		float mesh_lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
 
@@ -125,7 +134,7 @@ public:
 		};
 
 		struct CanvasData {
-			CanvasBase *canvas;
+			CanvasBase *canvas = nullptr;
 			Transform2D transform;
 			int layer;
 			int sublayer;
@@ -133,7 +142,7 @@ public:
 
 		Transform2D global_transform;
 
-		Map<RID, CanvasData> canvas_map;
+		HashMap<RID, CanvasData> canvas_map;
 
 		RendererScene::RenderInfo render_info;
 
@@ -207,7 +216,6 @@ public:
 	void viewport_initialize(RID p_rid);
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
-	void viewport_set_scale_3d(RID p_viewport, float p_scale_3d);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
@@ -216,6 +224,12 @@ public:
 
 	void viewport_set_active(RID p_viewport, bool p_active);
 	void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport);
+
+	void viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode);
+	void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale);
+	void viewport_set_fsr_sharpness(RID p_viewport, float p_sharpness);
+	void viewport_set_fsr_mipmap_bias(RID p_viewport, float p_mipmap_bias);
+
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
@@ -223,6 +237,9 @@ public:
 
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
+
+	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);
+	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
 
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
@@ -238,16 +255,17 @@ public:
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
 	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
 
-	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = false);
+	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
+	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
 	void viewport_set_occlusion_culling_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality);
-	void viewport_set_lod_threshold(RID p_viewport, float p_pixels);
+	void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfoType p_type, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);
@@ -263,6 +281,8 @@ public:
 	void viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RS::CanvasItemTextureRepeat p_repeat);
 
 	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::ViewportSDFOversize p_over_size, RS::ViewportSDFScale p_scale);
+
+	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const;
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 

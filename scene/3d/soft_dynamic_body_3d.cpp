@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,12 +100,11 @@ SoftDynamicBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
-SoftDynamicBody3D::PinnedPoint &SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
+void SoftDynamicBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
 	point_index = obj.point_index;
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
 	offset = obj.offset;
-	return *this;
 }
 
 void SoftDynamicBody3D::_update_pickable() {
@@ -163,12 +162,13 @@ bool SoftDynamicBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 void SoftDynamicBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	const int pinned_points_indices_size = pinned_points.size();
 
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, PNAME("pinned_points")));
 
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
-		p_list->push_back(PropertyInfo(Variant::INT, "attachments/" + itos(i) + "/point_index"));
-		p_list->push_back(PropertyInfo(Variant::NODE_PATH, "attachments/" + itos(i) + "/spatial_attachment_path"));
-		p_list->push_back(PropertyInfo(Variant::VECTOR3, "attachments/" + itos(i) + "/offset"));
+		const String prefix = vformat("%s/%d/", PNAME("attachments"), i);
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("point_index")));
+		p_list->push_back(PropertyInfo(Variant::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
+		p_list->push_back(PropertyInfo(Variant::VECTOR3, prefix + PNAME("offset")));
 	}
 }
 
@@ -379,12 +379,12 @@ TypedArray<String> SoftDynamicBody3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (mesh.is_null()) {
-		warnings.push_back(TTR("This body will be ignored until you set a mesh."));
+		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
 	}
 
 	Transform3D t = get_transform();
-	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		warnings.push_back(TTR("Size changes to SoftDynamicBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+	if ((ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05)) {
+		warnings.push_back(RTR("Size changes to SoftDynamicBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
 	return warnings;
@@ -418,8 +418,8 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
 	}
 
-	if (!rendering_server_handler.is_ready(mesh_rid)) {
-		rendering_server_handler.prepare(mesh_rid, 0);
+	if (!rendering_server_handler->is_ready(mesh_rid)) {
+		rendering_server_handler->prepare(mesh_rid, 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
@@ -429,11 +429,11 @@ void SoftDynamicBody3D::_draw_soft_mesh() {
 
 	_update_physics_server();
 
-	rendering_server_handler.open();
-	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, &rendering_server_handler);
-	rendering_server_handler.close();
+	rendering_server_handler->open();
+	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, rendering_server_handler);
+	rendering_server_handler->close();
 
-	rendering_server_handler.commit_changes();
+	rendering_server_handler->commit_changes();
 }
 
 void SoftDynamicBody3D::_prepare_physics_server() {
@@ -689,10 +689,12 @@ bool SoftDynamicBody3D::is_ray_pickable() const {
 
 SoftDynamicBody3D::SoftDynamicBody3D() :
 		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
+	rendering_server_handler = memnew(SoftDynamicBodyRenderingServerHandler);
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 
 SoftDynamicBody3D::~SoftDynamicBody3D() {
+	memdelete(rendering_server_handler);
 	PhysicsServer3D::get_singleton()->free(physics_rid);
 }
 
@@ -773,7 +775,7 @@ void SoftDynamicBody3D::_reset_points_offsets() {
 void SoftDynamicBody3D::_remove_pinned_point(int p_point_index) {
 	const int id(_has_pinned_point(p_point_index));
 	if (-1 != id) {
-		pinned_points.remove(id);
+		pinned_points.remove_at(id);
 	}
 }
 

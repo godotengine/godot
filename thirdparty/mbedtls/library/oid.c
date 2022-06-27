@@ -4,13 +4,7 @@
  * \brief Object Identifier (OID) database
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
+ *  SPDX-License-Identifier: Apache-2.0
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -23,39 +17,15 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_OID_C)
 
 #include "mbedtls/oid.h"
 #include "mbedtls/rsa.h"
+#include "mbedtls/error.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -64,10 +34,6 @@
 #include "mbedtls/platform.h"
 #else
 #define mbedtls_snprintf snprintf
-#endif
-
-#if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
-#include "mbedtls/x509.h"
 #endif
 
 /*
@@ -180,7 +146,6 @@ int FN_NAME( ATTR1_TYPE ATTR1, ATTR2_TYPE ATTR2, const char **oid ,         \
     return( MBEDTLS_ERR_OID_NOT_FOUND );                                   \
 }
 
-#if defined(MBEDTLS_X509_USE_C) || defined(MBEDTLS_X509_CREATE_C)
 /*
  * For X520 attribute types
  */
@@ -287,24 +252,28 @@ typedef struct {
 static const oid_x509_ext_t oid_x509_ext[] =
 {
     {
-        { ADD_LEN( MBEDTLS_OID_BASIC_CONSTRAINTS ),    "id-ce-basicConstraints",   "Basic Constraints" },
-        MBEDTLS_X509_EXT_BASIC_CONSTRAINTS,
+        { ADD_LEN( MBEDTLS_OID_BASIC_CONSTRAINTS ),    "id-ce-basicConstraints",    "Basic Constraints" },
+        MBEDTLS_OID_X509_EXT_BASIC_CONSTRAINTS,
     },
     {
-        { ADD_LEN( MBEDTLS_OID_KEY_USAGE ),            "id-ce-keyUsage",           "Key Usage" },
-        MBEDTLS_X509_EXT_KEY_USAGE,
+        { ADD_LEN( MBEDTLS_OID_KEY_USAGE ),            "id-ce-keyUsage",            "Key Usage" },
+        MBEDTLS_OID_X509_EXT_KEY_USAGE,
     },
     {
-        { ADD_LEN( MBEDTLS_OID_EXTENDED_KEY_USAGE ),   "id-ce-extKeyUsage",        "Extended Key Usage" },
-        MBEDTLS_X509_EXT_EXTENDED_KEY_USAGE,
+        { ADD_LEN( MBEDTLS_OID_EXTENDED_KEY_USAGE ),   "id-ce-extKeyUsage",         "Extended Key Usage" },
+        MBEDTLS_OID_X509_EXT_EXTENDED_KEY_USAGE,
     },
     {
-        { ADD_LEN( MBEDTLS_OID_SUBJECT_ALT_NAME ),     "id-ce-subjectAltName",     "Subject Alt Name" },
-        MBEDTLS_X509_EXT_SUBJECT_ALT_NAME,
+        { ADD_LEN( MBEDTLS_OID_SUBJECT_ALT_NAME ),     "id-ce-subjectAltName",      "Subject Alt Name" },
+        MBEDTLS_OID_X509_EXT_SUBJECT_ALT_NAME,
     },
     {
-        { ADD_LEN( MBEDTLS_OID_NS_CERT_TYPE ),         "id-netscape-certtype",     "Netscape Certificate Type" },
-        MBEDTLS_X509_EXT_NS_CERT_TYPE,
+        { ADD_LEN( MBEDTLS_OID_NS_CERT_TYPE ),         "id-netscape-certtype",      "Netscape Certificate Type" },
+        MBEDTLS_OID_X509_EXT_NS_CERT_TYPE,
+    },
+    {
+        { ADD_LEN( MBEDTLS_OID_CERTIFICATE_POLICIES ), "id-ce-certificatePolicies", "Certificate Policies" },
+        MBEDTLS_OID_X509_EXT_CERTIFICATE_POLICIES,
     },
     {
         { NULL, 0, NULL, NULL },
@@ -317,18 +286,27 @@ FN_OID_GET_ATTR1(mbedtls_oid_get_x509_ext_type, oid_x509_ext_t, x509_ext, int, e
 
 static const mbedtls_oid_descriptor_t oid_ext_key_usage[] =
 {
-    { ADD_LEN( MBEDTLS_OID_SERVER_AUTH ),      "id-kp-serverAuth",      "TLS Web Server Authentication" },
-    { ADD_LEN( MBEDTLS_OID_CLIENT_AUTH ),      "id-kp-clientAuth",      "TLS Web Client Authentication" },
-    { ADD_LEN( MBEDTLS_OID_CODE_SIGNING ),     "id-kp-codeSigning",     "Code Signing" },
-    { ADD_LEN( MBEDTLS_OID_EMAIL_PROTECTION ), "id-kp-emailProtection", "E-mail Protection" },
-    { ADD_LEN( MBEDTLS_OID_TIME_STAMPING ),    "id-kp-timeStamping",    "Time Stamping" },
-    { ADD_LEN( MBEDTLS_OID_OCSP_SIGNING ),     "id-kp-OCSPSigning",     "OCSP Signing" },
+    { ADD_LEN( MBEDTLS_OID_SERVER_AUTH ),      "id-kp-serverAuth",       "TLS Web Server Authentication" },
+    { ADD_LEN( MBEDTLS_OID_CLIENT_AUTH ),      "id-kp-clientAuth",       "TLS Web Client Authentication" },
+    { ADD_LEN( MBEDTLS_OID_CODE_SIGNING ),     "id-kp-codeSigning",      "Code Signing" },
+    { ADD_LEN( MBEDTLS_OID_EMAIL_PROTECTION ), "id-kp-emailProtection",  "E-mail Protection" },
+    { ADD_LEN( MBEDTLS_OID_TIME_STAMPING ),    "id-kp-timeStamping",     "Time Stamping" },
+    { ADD_LEN( MBEDTLS_OID_OCSP_SIGNING ),     "id-kp-OCSPSigning",      "OCSP Signing" },
+    { ADD_LEN( MBEDTLS_OID_WISUN_FAN ),        "id-kp-wisun-fan-device", "Wi-SUN Alliance Field Area Network (FAN)" },
     { NULL, 0, NULL, NULL },
 };
 
 FN_OID_TYPED_FROM_ASN1(mbedtls_oid_descriptor_t, ext_key_usage, oid_ext_key_usage)
 FN_OID_GET_ATTR1(mbedtls_oid_get_extended_key_usage, mbedtls_oid_descriptor_t, ext_key_usage, const char *, description)
-#endif /* MBEDTLS_X509_USE_C || MBEDTLS_X509_CREATE_C */
+
+static const mbedtls_oid_descriptor_t oid_certificate_policies[] =
+{
+    { ADD_LEN( MBEDTLS_OID_ANY_POLICY ),      "anyPolicy",       "Any Policy" },
+    { NULL, 0, NULL, NULL },
+};
+
+FN_OID_TYPED_FROM_ASN1(mbedtls_oid_descriptor_t, certificate_policies, oid_certificate_policies)
+FN_OID_GET_ATTR1(mbedtls_oid_get_certificate_policies, mbedtls_oid_descriptor_t, certificate_policies, const char *, description)
 
 #if defined(MBEDTLS_MD_C)
 /*
@@ -644,6 +622,12 @@ static const oid_md_alg_t oid_md_alg[] =
         MBEDTLS_MD_SHA512,
     },
 #endif /* MBEDTLS_SHA512_C */
+#if defined(MBEDTLS_RIPEMD160_C)
+    {
+        { ADD_LEN( MBEDTLS_OID_DIGEST_ALG_RIPEMD160 ),       "id-ripemd160",       "RIPEMD-160" },
+        MBEDTLS_MD_RIPEMD160,
+    },
+#endif /* MBEDTLS_RIPEMD160_C */
     {
         { NULL, 0, NULL, NULL },
         MBEDTLS_MD_NONE,
@@ -743,7 +727,7 @@ FN_OID_GET_ATTR2(mbedtls_oid_get_pkcs12_pbe_alg, oid_pkcs12_pbe_alg_t, pkcs12_pb
 int mbedtls_oid_get_numeric_string( char *buf, size_t size,
                             const mbedtls_asn1_buf *oid )
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t i, n;
     unsigned int value;
     char *p;
@@ -771,7 +755,7 @@ int mbedtls_oid_get_numeric_string( char *buf, size_t size,
         if( !( oid->p[i] & 0x80 ) )
         {
             /* Last byte */
-            ret = mbedtls_snprintf( p, n, ".%d", value );
+            ret = mbedtls_snprintf( p, n, ".%u", value );
             OID_SAFE_SNPRINTF;
             value = 0;
         }

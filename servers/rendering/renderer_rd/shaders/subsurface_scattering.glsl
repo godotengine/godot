@@ -87,7 +87,7 @@ const vec4 skin_kernel[kernel_size] = vec4[](
 
 #endif //USE_11_SAMPLES
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	float camera_z_far;
 	float camera_z_near;

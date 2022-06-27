@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 Mutex ParticlesMaterial::material_mutex;
 SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
-Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
+HashMap<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData, ParticlesMaterial::MaterialKey> ParticlesMaterial::shader_map;
 ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = nullptr;
 
 void ParticlesMaterial::init_shaders() {
@@ -85,6 +85,7 @@ void ParticlesMaterial::init_shaders() {
 
 	shader_names->color = "color_value";
 	shader_names->color_ramp = "color_ramp";
+	shader_names->color_initial_ramp = "color_initial_ramp";
 
 	shader_names->emission_sphere_radius = "emission_sphere_radius";
 	shader_names->emission_box_extents = "emission_box_extents";
@@ -189,18 +190,21 @@ void ParticlesMaterial::_update_shader() {
 		case EMISSION_SHAPE_SPHERE: {
 			code += "uniform float emission_sphere_radius;\n";
 		} break;
+		case EMISSION_SHAPE_SPHERE_SURFACE: {
+			code += "uniform float emission_sphere_radius;\n";
+		} break;
 		case EMISSION_SHAPE_BOX: {
 			code += "uniform vec3 emission_box_extents;\n";
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
+			code += "uniform sampler2D emission_texture_normal : hint_default_black;\n";
 			[[fallthrough]];
 		}
 		case EMISSION_SHAPE_POINTS: {
-			code += "uniform sampler2D emission_texture_points : hint_black;\n";
+			code += "uniform sampler2D emission_texture_points : hint_default_black;\n";
 			code += "uniform int emission_texture_point_count;\n";
 			if (emission_color_texture.is_valid()) {
-				code += "uniform sampler2D emission_texture_color : hint_white;\n";
+				code += "uniform sampler2D emission_texture_color : hint_default_white;\n";
 			}
 		} break;
 		case EMISSION_SHAPE_RING: {
@@ -224,49 +228,53 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform bool sub_emitter_keep_velocity;\n";
 	}
 
-	code += "uniform vec4 color_value : hint_color;\n";
+	code += "uniform vec4 color_value : source_color;\n";
 
 	code += "uniform vec3 gravity;\n";
 
 	if (color_ramp.is_valid()) {
-		code += "uniform sampler2D color_ramp;\n";
+		code += "uniform sampler2D color_ramp : repeat_disable;\n";
+	}
+
+	if (color_initial_ramp.is_valid()) {
+		code += "uniform sampler2D color_initial_ramp : repeat_disable;\n";
 	}
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-		code += "uniform sampler2D linear_velocity_texture;\n";
+		code += "uniform sampler2D linear_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
-		code += "uniform sampler2D orbit_velocity_texture;\n";
+		code += "uniform sampler2D orbit_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "uniform sampler2D angular_velocity_texture;\n";
+		code += "uniform sampler2D angular_velocity_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_LINEAR_ACCEL].is_valid()) {
-		code += "uniform sampler2D linear_accel_texture;\n";
+		code += "uniform sampler2D linear_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_RADIAL_ACCEL].is_valid()) {
-		code += "uniform sampler2D radial_accel_texture;\n";
+		code += "uniform sampler2D radial_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_TANGENTIAL_ACCEL].is_valid()) {
-		code += "uniform sampler2D tangent_accel_texture;\n";
+		code += "uniform sampler2D tangent_accel_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_DAMPING].is_valid()) {
-		code += "uniform sampler2D damping_texture;\n";
+		code += "uniform sampler2D damping_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANGLE].is_valid()) {
-		code += "uniform sampler2D angle_texture;\n";
+		code += "uniform sampler2D angle_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_SCALE].is_valid()) {
-		code += "uniform sampler2D scale_texture;\n";
+		code += "uniform sampler2D scale_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_HUE_VARIATION].is_valid()) {
-		code += "uniform sampler2D hue_variation_texture;\n";
+		code += "uniform sampler2D hue_variation_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANIM_SPEED].is_valid()) {
-		code += "uniform sampler2D anim_speed_texture;\n";
+		code += "uniform sampler2D anim_speed_texture : repeat_disable;\n";
 	}
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
-		code += "uniform sampler2D anim_offset_texture;\n";
+		code += "uniform sampler2D anim_offset_texture : repeat_disable;\n";
 	}
 
 	if (collision_enabled) {
@@ -311,6 +319,9 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
+	if (color_initial_ramp.is_valid()) {
+		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
+	}
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
@@ -390,6 +401,13 @@ void ParticlesMaterial::_update_shader() {
 		case EMISSION_SHAPE_SPHERE: {
 			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
 			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float p = rand_from_seed(alt_seed);\n";
+			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
+			code += "		TRANSFORM[3].xyz = mix(vec3(0.0, 0.0, 0.0), vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s), p);\n";
+		} break;
+		case EMISSION_SHAPE_SPHERE_SURFACE: {
+			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
+			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
 			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
 			code += "		TRANSFORM[3].xyz = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);\n";
 		} break;
@@ -462,9 +480,19 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
+	if (color_initial_ramp.is_valid()) {
+		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
+	}
+
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
+
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
+		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+	}
 
 	code += "	CUSTOM.y += DELTA / LIFETIME;\n";
 	code += "	float tv = CUSTOM.y / CUSTOM.w;\n";
@@ -584,7 +612,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, rand_from_seed(alt_seed));\n";
 	code += "	base_angle += CUSTOM.y * LIFETIME * (tex_angular_velocity) * mix(angular_velocity_min,angular_velocity_max, rand_from_seed(alt_seed));\n";
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
-	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed)) + CUSTOM.y * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
+	code += "	CUSTOM.z = (tex_anim_offset) * mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed)) + tv * tex_anim_speed * mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n"; // angle
 
 	// apply color
 	// apply hue rotation
@@ -620,6 +648,12 @@ void ParticlesMaterial::_update_shader() {
 	} else {
 		code += "	COLOR = hue_rot_mat * color_value;\n";
 	}
+
+	if (color_initial_ramp.is_valid()) {
+		code += "	vec4 start_color = textureLod(color_initial_ramp, vec2(color_initial_rand, 0.0), 0.0);\n";
+		code += "	COLOR *= start_color;\n";
+	}
+
 	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	COLOR *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
 	}
@@ -694,11 +728,9 @@ void ParticlesMaterial::_update_shader() {
 				code += "	if (DELTA >= interval_rem) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_COLLISION: {
-				//not implemented yet
 				code += "	if (COLLIDED) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				//not implemented yet
 				code += "	float unit_delta = DELTA/LIFETIME;\n";
 				code += "	float end_time = CUSTOM.w * 0.95;\n"; // if we do at the end we might miss it, as it can just get deactivated by emitter
 				code += "	if (CUSTOM.y < end_time && (CUSTOM.y + unit_delta) >= end_time) emit_count = sub_emitter_amount_at_end;\n";
@@ -988,6 +1020,18 @@ Ref<Texture2D> ParticlesMaterial::get_color_ramp() const {
 	return color_ramp;
 }
 
+void ParticlesMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
+	color_initial_ramp = p_texture;
+	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_initial_ramp, tex_rid);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+Ref<Texture2D> ParticlesMaterial::get_color_initial_ramp() const {
+	return color_initial_ramp;
+}
+
 void ParticlesMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
 	particle_flags[p_particle_flag] = p_enable;
@@ -1135,7 +1179,7 @@ RID ParticlesMaterial::get_shader_rid() const {
 }
 
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
-	if (property.name == "emission_sphere_radius" && emission_shape != EMISSION_SHAPE_SPHERE) {
+	if (property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		property.usage = PROPERTY_USAGE_NONE;
 	}
 
@@ -1282,6 +1326,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticlesMaterial::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticlesMaterial::get_color_ramp);
 
+	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &ParticlesMaterial::set_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &ParticlesMaterial::get_color_initial_ramp);
+
 	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &ParticlesMaterial::set_particle_flag);
 	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &ParticlesMaterial::get_particle_flag);
 
@@ -1355,7 +1402,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_emission_point_texture", "get_emission_point_texture");
@@ -1413,7 +1460,8 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "scale_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture,CurveXYZTexture"), "set_param_texture", "get_param_texture", PARAM_SCALE);
 	ADD_GROUP("Color", "");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_initial_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_initial_ramp", "get_color_initial_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_min", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_min", "get_param_min", PARAM_HUE_VARIATION);
@@ -1429,7 +1477,7 @@ void ParticlesMaterial::_bind_methods() {
 
 	ADD_GROUP("Sub Emitter", "sub_emitter_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_mode", PROPERTY_HINT_ENUM, "Disabled,Constant,At End,At Collision"), "set_sub_emitter_mode", "get_sub_emitter_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sub_emitter_frequency", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:Hz"), "set_sub_emitter_frequency", "get_sub_emitter_frequency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_end", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_end", "get_sub_emitter_amount_at_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sub_emitter_keep_velocity"), "set_sub_emitter_keep_velocity", "get_sub_emitter_keep_velocity");
 
@@ -1462,6 +1510,7 @@ void ParticlesMaterial::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE);
+	BIND_ENUM_CONSTANT(EMISSION_SHAPE_SPHERE_SURFACE);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);

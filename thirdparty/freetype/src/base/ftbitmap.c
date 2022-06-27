@@ -4,7 +4,7 @@
  *
  *   FreeType utility functions for bitmaps (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -112,10 +112,10 @@
       target_size = (FT_ULong)target_pitch * target->rows;
 
       if ( target_size != size )
-        (void)FT_QREALLOC( target->buffer, target_size, size );
+        FT_MEM_QREALLOC( target->buffer, target_size, size );
     }
     else
-      (void)FT_QALLOC( target->buffer, size );
+      FT_MEM_QALLOC( target->buffer, size );
 
     if ( !error )
     {
@@ -480,7 +480,7 @@
      * A gamma of 2.2 is fair to assume.  And then, we need to
      * undo the premultiplication too.
      *
-     *   https://accessibility.kde.org/hsl-adjusted.php
+     *   http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#SideNotes
      *
      * We do the computation with integers only, applying a gamma of 2.0.
      * We guarantee 32-bit arithmetic to avoid overflow but the resulting
@@ -488,9 +488,9 @@
      *
      */
 
-    l = (  4732UL /* 0.0722 * 65536 */ * bgra[0] * bgra[0] +
-          46871UL /* 0.7152 * 65536 */ * bgra[1] * bgra[1] +
-          13933UL /* 0.2126 * 65536 */ * bgra[2] * bgra[2] ) >> 16;
+    l = (  4731UL /* 0.072186 * 65536 */ * bgra[0] * bgra[0] +
+          46868UL /* 0.715158 * 65536 */ * bgra[1] * bgra[1] +
+          13937UL /* 0.212656 * 65536 */ * bgra[2] * bgra[2] ) >> 16;
 
     /*
      * Final transparency can be determined as follows.
@@ -907,8 +907,8 @@
     final_rows  = ( final_ury - final_lly ) >> 6;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-    FT_TRACE5(( "FT_Bitmap_Blend:\n"
-                "  source bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
+    FT_TRACE5(( "FT_Bitmap_Blend:\n" ));
+    FT_TRACE5(( "  source bitmap: (%ld, %ld) -- (%ld, %ld); %d x %d\n",
       source_llx / 64, source_lly / 64,
       source_urx / 64, source_ury / 64,
       source_->width, source_->rows ));

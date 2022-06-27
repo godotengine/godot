@@ -67,9 +67,9 @@ struct cff2_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<>
   }
 };
 
-struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t>
+struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t, blend_arg_t>
 {
-  static void flush_args_and_op (op_code_t op, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_args_and_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     switch (op)
     {
@@ -97,7 +97,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     }
   }
 
-  static void flush_args (cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_args (cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     for (unsigned int i = 0; i < env.argStack.get_count ();)
     {
@@ -122,7 +122,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     SUPER::flush_args (env, param);
   }
 
-  static void flatten_blends (const blend_arg_t &arg, unsigned int i, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flatten_blends (const blend_arg_t &arg, unsigned int i, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     /* flatten the default values */
     str_encoder_t  encoder (param.flatStr);
@@ -149,7 +149,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
     encoder.encode_op (OpCode_blendcs);
   }
 
-  static void flush_op (op_code_t op, cff2_cs_interp_env_t &env, flatten_param_t& param)
+  static void flush_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
   {
     switch (op)
     {
@@ -163,13 +163,13 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
   }
 
   private:
-  typedef cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t> SUPER;
-  typedef cs_opset_t<blend_arg_t, cff2_cs_opset_flatten_t, cff2_cs_opset_flatten_t, cff2_cs_interp_env_t, flatten_param_t> CSOPSET;
+  typedef cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatten_param_t, blend_arg_t> SUPER;
+  typedef cs_opset_t<blend_arg_t, cff2_cs_opset_flatten_t, cff2_cs_opset_flatten_t, cff2_cs_interp_env_t<blend_arg_t>, flatten_param_t> CSOPSET;
 };
 
-struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t>
+struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t, blend_arg_t>
 {
-  static void process_op (op_code_t op, cff2_cs_interp_env_t &env, subr_subset_param_t& param)
+  static void process_op (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param)
   {
     switch (op) {
 
@@ -201,7 +201,7 @@ struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t
 
   protected:
   static void process_call_subr (op_code_t op, cs_type_t type,
-				 cff2_cs_interp_env_t &env, subr_subset_param_t& param,
+				 cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param,
 				 cff2_biased_subrs_t& subrs, hb_set_t *closure)
   {
     byte_str_ref_t    str_ref = env.str_ref;
@@ -212,15 +212,15 @@ struct cff2_cs_opset_subr_subset_t : cff2_cs_opset_t<cff2_cs_opset_subr_subset_t
   }
 
   private:
-  typedef cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t> SUPER;
+  typedef cff2_cs_opset_t<cff2_cs_opset_subr_subset_t, subr_subset_param_t, blend_arg_t> SUPER;
 };
 
-struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs, const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t, cff2_cs_opset_subr_subset_t>
+struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs, const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t<blend_arg_t>, cff2_cs_opset_subr_subset_t>
 {
   cff2_subr_subsetter_t (const OT::cff2::accelerator_subset_t &acc_, const hb_subset_plan_t *plan_)
     : subr_subsetter_t (acc_, plan_) {}
 
-  static void complete_parsed_str (cff2_cs_interp_env_t &env, subr_subset_param_t& param, parsed_cs_str_t &charstring)
+  static void complete_parsed_str (cff2_cs_interp_env_t<blend_arg_t> &env, subr_subset_param_t& param, parsed_cs_str_t &charstring)
   {
     /* vsindex is inserted at the beginning of the charstring as necessary */
     if (env.seen_vsindex ())
@@ -233,29 +233,6 @@ struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs
 };
 
 struct cff2_subset_plan {
-  cff2_subset_plan ()
-    : orig_fdcount (0),
-      subset_fdcount(1),
-      subset_fdselect_size (0),
-      subset_fdselect_format (0),
-      drop_hints (false),
-      desubroutinize (false)
-  {
-    subset_fdselect_ranges.init ();
-    fdmap.init ();
-    subset_charstrings.init ();
-    subset_globalsubrs.init ();
-    subset_localsubrs.init ();
-  }
-
-  ~cff2_subset_plan ()
-  {
-    subset_fdselect_ranges.fini ();
-    fdmap.fini ();
-    subset_charstrings.fini_deep ();
-    subset_globalsubrs.fini_deep ();
-    subset_localsubrs.fini_deep ();
-  }
 
   bool create (const OT::cff2::accelerator_subset_t &acc,
 	      hb_subset_plan_t *plan)
@@ -268,7 +245,7 @@ struct cff2_subset_plan {
     if (desubroutinize)
     {
       /* Flatten global & local subrs */
-      subr_flattener_t<const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t, cff2_cs_opset_flatten_t>
+      subr_flattener_t<const OT::cff2::accelerator_subset_t, cff2_cs_interp_env_t<blend_arg_t>, cff2_cs_opset_flatten_t>
 		    flattener(acc, plan);
       if (!flattener.flatten (subset_charstrings))
 	return false;
@@ -320,10 +297,10 @@ struct cff2_subset_plan {
 
   cff2_sub_table_info_t info;
 
-  unsigned int    orig_fdcount;
-  unsigned int    subset_fdcount;
-  unsigned int	  subset_fdselect_size;
-  unsigned int    subset_fdselect_format;
+  unsigned int    orig_fdcount = 0;
+  unsigned int    subset_fdcount = 1;
+  unsigned int	  subset_fdselect_size = 0;
+  unsigned int    subset_fdselect_format = 0;
   hb_vector_t<code_pair_t>   subset_fdselect_ranges;
 
   hb_inc_bimap_t   fdmap;
@@ -332,8 +309,8 @@ struct cff2_subset_plan {
   str_buff_vec_t	    subset_globalsubrs;
   hb_vector_t<str_buff_vec_t> subset_localsubrs;
 
-  bool	    drop_hints;
-  bool	    desubroutinize;
+  bool	    drop_hints = false;
+  bool	    desubroutinize = false;
 };
 
 static bool _serialize_cff2 (hb_serialize_context_t *c,
@@ -473,12 +450,8 @@ _hb_subset_cff2 (const OT::cff2::accelerator_subset_t  &acc,
 bool
 hb_subset_cff2 (hb_subset_context_t *c)
 {
-  OT::cff2::accelerator_subset_t acc;
-  acc.init (c->plan->source);
-  bool result = likely (acc.is_valid ()) && _hb_subset_cff2 (acc, c);
-  acc.fini ();
-
-  return result;
+  OT::cff2::accelerator_subset_t acc (c->plan->source);
+  return acc.is_valid () && _hb_subset_cff2 (acc, c);
 }
 
 #endif

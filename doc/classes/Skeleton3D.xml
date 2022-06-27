@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton3D" inherits="Node3D" version="4.0">
+<class name="Skeleton3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Skeleton for characters and animated objects.
 	</brief_description>
@@ -111,6 +111,14 @@
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the global pose override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_global_rest" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the global rest transform for [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override" qualifiers="const">
@@ -297,7 +305,7 @@
 			<argument index="3" name="persistent" type="bool" default="false" />
 			<description>
 				Sets the global pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! Use [method world_transform_to_global_pose] to convert a world transform, like one you can get from a [Node3D], to a global pose.
 			</description>
 		</method>
@@ -309,7 +317,7 @@
 			<argument index="3" name="persistent" type="bool" default="false" />
 			<description>
 				Sets the local pose transform, [code]pose[/code], for the bone at [code]bone_idx[/code].
-				[code]amount[/code] is the interpolation strengh that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
+				[code]amount[/code] is the interpolation strength that will be used when applying the pose, and [code]persistent[/code] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a local pose! Use [method global_pose_to_local_pose] to convert a global pose to a local pose.
 			</description>
 		</method>

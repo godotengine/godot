@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,9 +52,9 @@ int RegExMatch::_find(const Variant &p_name) const {
 		return i;
 
 	} else if (p_name.get_type() == Variant::STRING) {
-		const Map<String, int>::Element *found = names.find((String)p_name);
+		HashMap<String, int>::ConstIterator found = names.find((String)p_name);
 		if (found) {
-			return found->value();
+			return found->value;
 		}
 	}
 
@@ -75,8 +75,8 @@ int RegExMatch::get_group_count() const {
 Dictionary RegExMatch::get_names() const {
 	Dictionary result;
 
-	for (const Map<String, int>::Element *i = names.front(); i != nullptr; i = i->next()) {
-		result[i->key()] = i->value();
+	for (const KeyValue<String, int> &E : names) {
+		result[E.key] = E.value;
 	}
 
 	return result;

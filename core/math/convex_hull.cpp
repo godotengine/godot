@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -509,7 +509,7 @@ public:
 		Face() {
 		}
 
-		void init(Vertex *p_a, Vertex *p_b, Vertex *p_c) {
+		void init(Vertex *p_a, const Vertex *p_b, const Vertex *p_c) {
 			nearby_vertex = p_a;
 			origin = p_a->point;
 			dir0 = *p_b - *p_a;
@@ -606,15 +606,15 @@ private:
 	PagedAllocator<Face> face_pool;
 	LocalVector<Vertex *> original_vertices;
 	int32_t merge_stamp = 0;
-	int32_t min_axis = 0;
-	int32_t med_axis = 0;
-	int32_t max_axis = 0;
+	Vector3::Axis min_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis med_axis = Vector3::Axis::AXIS_X;
+	Vector3::Axis max_axis = Vector3::Axis::AXIS_X;
 	int32_t used_edge_pairs = 0;
 	int32_t max_used_edge_pairs = 0;
 
 	static Orientation get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t);
 	Edge *find_max_angle(bool p_ccw, const Vertex *p_start, const Point32 &p_s, const Point64 &p_rxs, const Point64 &p_ssxrxs, Rational64 &p_min_cot);
-	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1);
+	void find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1);
 
 	Edge *new_edge_pair(Vertex *p_from, Vertex *p_to);
 
@@ -666,7 +666,7 @@ public:
 		face_pool.reset(true);
 	}
 
-	Vertex *vertex_list;
+	Vertex *vertex_list = nullptr;
 
 	void compute(const Vector3 *p_coords, int32_t p_count);
 
@@ -1189,7 +1189,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const V
 	return min_edge;
 }
 
-void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, Vertex *p_stop0, Vertex *p_stop1) {
+void ConvexHullInternal::find_edge_for_coplanar_faces(Vertex *p_c0, Vertex *p_c1, Edge *&p_e0, Edge *&p_e1, const Vertex *p_stop0, const Vertex *p_stop1) {
 	Edge *start0 = p_e0;
 	Edge *start1 = p_e1;
 	Point32 et0 = start0 ? start0->target->point : p_c0->point;
@@ -1585,12 +1585,12 @@ void ConvexHullInternal::compute(const Vector3 *p_coords, int32_t p_count) {
 	}
 
 	Vector3 s = aabb.size;
-	max_axis = s.max_axis();
-	min_axis = s.min_axis();
+	max_axis = s.max_axis_index();
+	min_axis = s.min_axis_index();
 	if (min_axis == max_axis) {
-		min_axis = (max_axis + 1) % 3;
+		min_axis = Vector3::Axis((max_axis + 1) % 3);
 	}
-	med_axis = 3 - max_axis - min_axis;
+	med_axis = Vector3::Axis(3 - max_axis - min_axis);
 
 	s /= real_t(10216);
 	if (((med_axis + 1) % 3) != max_axis) {
@@ -1688,7 +1688,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 
 	while (stack.size() > 0) {
 		Vertex *v = stack[stack.size() - 1];
-		stack.remove(stack.size() - 1);
+		stack.remove_at(stack.size() - 1);
 		Edge *e = v->edges;
 		if (e) {
 			do {
@@ -2129,7 +2129,7 @@ bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<V
 	printf("Needed %d iterations to remove part\n", n);
 #endif
 
-	p_stack.resize(0);
+	p_stack.clear();
 	p_face->origin = shifted_origin;
 
 	return true;
@@ -2167,9 +2167,9 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 		return shift;
 	}
 
-	vertices.resize(0);
-	edges.resize(0);
-	faces.resize(0);
+	vertices.clear();
+	edges.clear();
+	faces.clear();
 
 	LocalVector<ConvexHullInternal::Vertex *> old_vertices;
 	get_vertex_copy(hull.vertex_list, old_vertices);

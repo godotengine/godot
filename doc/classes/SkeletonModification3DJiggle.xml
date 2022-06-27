@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonModification3DJiggle" inherits="SkeletonModification3D" version="4.0">
+<class name="SkeletonModification3DJiggle" inherits="SkeletonModification3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modification that jiggles bones as they move towards a target.
 	</brief_description>
@@ -56,7 +56,7 @@
 			<return type="bool" />
 			<argument index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is overriding the default jiggle joint data defined in the modification.
+				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is overriding the default jiggle joint data defined in the modification.
 			</description>
 		</method>
 		<method name="get_jiggle_joint_roll" qualifiers="const">
@@ -77,7 +77,7 @@
 			<return type="bool" />
 			<argument index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is using gravity or not.
+				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is using gravity or not.
 			</description>
 		</method>
 		<method name="get_use_colliders" qualifiers="const">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
@@ -84,7 +84,7 @@ void EditorTranslationParserPlugin::_bind_methods() {
 /////////////////////////
 
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
-	Set<String> extensions;
+	HashSet<String> extensions;
 	List<String> temp;
 	for (int i = 0; i < standard_parsers.size(); i++) {
 		standard_parsers[i]->get_recognized_extensions(&temp);
@@ -96,8 +96,8 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 	for (int i = 0; i < temp.size(); i++) {
 		extensions.insert(temp[i]);
 	}
-	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
-		r_extensions->push_back(E->get());
+	for (const String &E : extensions) {
+		r_extensions->push_back(E);
 	}
 }
 

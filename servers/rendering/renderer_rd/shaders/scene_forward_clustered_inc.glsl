@@ -2,6 +2,7 @@
 #define ROUGHNESS_MAX_LOD 5
 
 #define MAX_VOXEL_GI_INSTANCES 8
+#define MAX_VIEWS 2
 
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
 
@@ -12,16 +13,20 @@
 
 #endif
 
+#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#extension GL_EXT_multiview : enable
+#endif
+
 #include "cluster_data_inc.glsl"
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
 #endif
 
-layout(push_constant, binding = 0, std430) uniform DrawCall {
+layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
 	uint uv_offset;
 	uint pad0;
@@ -71,6 +76,9 @@ layout(set = 0, binding = 4) uniform sampler light_projector_sampler;
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
+
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO 1
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL 2
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -163,12 +171,16 @@ sdfgi;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-layout(set = 1, binding = 0, std140) uniform SceneData {
+struct SceneData {
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
+	mat4 inv_view_matrix;
+	mat4 view_matrix;
 
-	mat4 camera_matrix;
-	mat4 inv_camera_matrix;
+	// only used for multiview
+	mat4 projection_matrix_view[MAX_VIEWS];
+	mat4 inv_projection_matrix_view[MAX_VIEWS];
+	vec4 eye_offset[MAX_VIEWS];
 
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
@@ -201,14 +213,15 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float z_far;
 	float z_near;
 
-	bool ssao_enabled;
+	uint ss_effects_flags;
 	float ssao_light_affect;
 	float ssao_ao_affect;
 	bool roughness_limiter_enabled;
 
 	float roughness_limiter_amount;
 	float roughness_limiter_limit;
-	uvec2 roughness_limiter_pad;
+	float opaque_prepass_threshold;
+	uint roughness_limiter_pad;
 
 	mat4 sdf_to_bounds;
 
@@ -237,11 +250,19 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
+	vec2 taa_jitter;
+	uvec2 pad2;
+};
+
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
+	SceneData prev_data;
 }
-scene_data;
+scene_data_block;
 
 struct InstanceData {
 	mat4 transform;
+	mat4 prev_transform;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
@@ -296,27 +317,29 @@ layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
 layout(set = 1, binding = 9) uniform texture2D depth_buffer;
 layout(set = 1, binding = 10) uniform texture2D color_buffer;
 
+#ifdef USE_MULTIVIEW
+layout(set = 1, binding = 11) uniform texture2DArray normal_roughness_buffer;
+layout(set = 1, binding = 13) uniform texture2DArray ambient_buffer;
+layout(set = 1, binding = 14) uniform texture2DArray reflection_buffer;
+#else // USE_MULTIVIEW
 layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 12) uniform texture2D ao_buffer;
 layout(set = 1, binding = 13) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
+#endif
+layout(set = 1, binding = 12) uniform texture2D ao_buffer;
 layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
 layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
 
 struct VoxelGIData {
-	mat4 xform;
-	vec3 bounds;
-	float dynamic_range;
+	mat4 xform; // 64 - 64
 
-	float bias;
-	float normal_bias;
-	bool blend_ambient;
-	uint texture_slot;
+	vec3 bounds; // 12 - 76
+	float dynamic_range; // 4 - 80
 
-	float anisotropy_strength;
-	float ambient_occlusion;
-	float ambient_occlusion_size;
-	uint mipmaps;
+	float bias; // 4 - 84
+	float normal_bias; // 4 - 88
+	bool blend_ambient; // 4 - 92
+	uint mipmaps; // 4 - 96
 };
 
 layout(set = 1, binding = 17, std140) uniform VoxelGIs {
@@ -325,6 +348,8 @@ layout(set = 1, binding = 17, std140) uniform VoxelGIs {
 voxel_gi_instances;
 
 layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
+
+layout(set = 1, binding = 19) uniform texture2D ssil_buffer;
 
 #endif
 

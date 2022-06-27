@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "core/version.h"
-#include "core/version_hash.gen.h"
 #include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
@@ -81,8 +81,9 @@ public:
 
 	std::string name() { return std::string(sym->Name); }
 	std::string undecorated_name() {
-		if (*sym->Name == '\0')
+		if (*sym->Name == '\0') {
 			return "<couldn't map PC to fn name>";
+		}
 		std::vector<char> und_name(max_name_len);
 		UnDecorateSymbolName(sym->Name, &und_name[0], max_name_len, UNDNAME_COMPLETE);
 		return std::string(&und_name[0], strlen(&und_name[0]));
@@ -129,15 +130,32 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	fprintf(stderr, "\n================================================================\n");
-	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
-	if (OS::get_singleton()->get_main_loop())
+	// Tell MainLoop about the crash. This can be handled by users too in Node.
+	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+	}
+
+	print_error("\n================================================================");
+	print_error(vformat("%s: Program crashed", __FUNCTION__));
+
+	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
+	if (String(VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	} else {
+		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+	}
+	print_error(vformat("Dumping the backtrace. %s", msg));
 
 	// Load the symbols:
-	if (!SymInitialize(process, nullptr, false))
+	if (!SymInitialize(process, nullptr, false)) {
 		return EXCEPTION_CONTINUE_SEARCH;
+	}
 
 	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
 	EnumProcessModules(process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
@@ -172,20 +190,6 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
 	DWORD image_type = h->FileHeader.Machine;
 
-	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
-	}
-
-	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).length() != 0) {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME " (" VERSION_HASH ")\n");
-	} else {
-		fprintf(stderr, "Engine version: " VERSION_FULL_NAME "\n");
-	}
-	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
-
 	int n = 0;
 	do {
 		if (skip_first) {
@@ -194,22 +198,25 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			if (frame.AddrPC.Offset != 0) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
-				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line))
-					fprintf(stderr, "[%d] %s (%s:%d)\n", n, fnName.c_str(), line.FileName, line.LineNumber);
-				else
-					fprintf(stderr, "[%d] %s\n", n, fnName.c_str());
-			} else
-				fprintf(stderr, "[%d] ???\n", n);
+				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
+					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+				} else {
+					print_error(vformat("[%d] %s", n, fnName.c_str()));
+				}
+			} else {
+				print_error(vformat("[%d] ???", n));
+			}
 
 			n++;
 		}
 
-		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
+		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr)) {
 			break;
+		}
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 
-	fprintf(stderr, "-- END OF BACKTRACE --\n");
-	fprintf(stderr, "================================================================\n");
+	print_error("-- END OF BACKTRACE --");
+	print_error("================================================================");
 
 	SymCleanup(process);
 
@@ -226,8 +233,9 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::disable() {
-	if (disabled)
+	if (disabled) {
 		return;
+	}
 
 	disabled = true;
 }

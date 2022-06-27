@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,10 @@
 #define NAV_UTILS_H
 
 #include "core/math/vector3.h"
-
+#include "core/templates/hash_map.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/vector.h"
 #include <vector>
-
-/**
-	@author AndreaCatania
-*/
 
 class NavRegion;
 
@@ -52,15 +50,18 @@ union PointKey {
 	};
 
 	uint64_t key = 0;
-	bool operator<(const PointKey &p_key) const { return key < p_key.key; }
 };
 
 struct EdgeKey {
 	PointKey a;
 	PointKey b;
 
-	bool operator<(const EdgeKey &p_key) const {
-		return (a.key == p_key.a.key) ? (b.key < p_key.b.key) : (a.key < p_key.a.key);
+	static uint32_t hash(const EdgeKey &p_val) {
+		return hash_one_uint64(p_val.a.key) ^ hash_one_uint64(p_val.b.key);
+	}
+
+	bool operator==(const EdgeKey &p_key) const {
+		return (a.key == p_key.a.key) && (b.key == p_key.b.key);
 	}
 
 	EdgeKey(const PointKey &p_a = PointKey(), const PointKey &p_b = PointKey()) :
@@ -92,7 +93,7 @@ struct Edge {
 };
 
 struct Polygon {
-	NavRegion *owner;
+	NavRegion *owner = nullptr;
 
 	/// The points of this `Polygon`
 	std::vector<Point> points;
@@ -133,6 +134,12 @@ struct NavigationPoly {
 	bool operator!=(const NavigationPoly &other) const {
 		return !operator==(other);
 	}
+};
+
+struct ClosestPointQueryResult {
+	Vector3 point;
+	Vector3 normal;
+	RID owner;
 };
 
 } // namespace gd

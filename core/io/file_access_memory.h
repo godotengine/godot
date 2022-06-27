@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ class FileAccessMemory : public FileAccess {
 	uint64_t length = 0;
 	mutable uint64_t pos = 0;
 
-	static FileAccess *create();
+	static Ref<FileAccess> create();
 
 public:
 	static void register_file(String p_name, Vector<uint8_t> p_data);
@@ -46,7 +46,6 @@ public:
 
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

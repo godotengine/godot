@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,7 +86,7 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 
 void EditorProfiler::clear() {
 	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
-	metric_size = CLAMP(metric_size, 60, 1024);
+	metric_size = CLAMP(metric_size, 60, 10000);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);
 	total_metrics = 0;
@@ -198,18 +198,18 @@ void EditorProfiler::_update_plot() {
 	for (int i = 0; i < total_metrics; i++) {
 		const Metric &m = _get_frame_metric(i);
 
-		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
-			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
+		for (const StringName &E : plot_sigs) {
+			HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 			if (F) {
-				highest = MAX(F->get()->total_time, highest);
+				highest = MAX(F->value->total_time, highest);
 			}
 
-			const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
+			HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
 			if (G) {
 				if (use_self) {
-					highest = MAX(G->get()->self, highest);
+					highest = MAX(G->value->self, highest);
 				} else {
-					highest = MAX(G->get()->total, highest);
+					highest = MAX(G->value->total, highest);
 				}
 			}
 		}
@@ -225,7 +225,7 @@ void EditorProfiler::_update_plot() {
 
 		int *column = columnv.ptrw();
 
-		Map<StringName, int> prev_plots;
+		HashMap<StringName, int> prev_plots;
 
 		for (int i = 0; i < total_metrics * w / frame_metrics.size() - 1; i++) {
 			for (int j = 0; j < h * 4; j++) {
@@ -234,34 +234,34 @@ void EditorProfiler::_update_plot() {
 
 			int current = i * frame_metrics.size() / w;
 
-			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
+			for (const StringName &E : plot_sigs) {
 				const Metric &m = _get_frame_metric(current);
 
 				float value = 0;
 
-				const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
+				HashMap<StringName, Metric::Category *>::ConstIterator F = m.category_ptrs.find(E);
 				if (F) {
-					value = F->get()->total_time;
+					value = F->value->total_time;
 				}
 
-				const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
+				HashMap<StringName, Metric::Category::Item *>::ConstIterator G = m.item_ptrs.find(E);
 				if (G) {
 					if (use_self) {
-						value = G->get()->self;
+						value = G->value->self;
 					} else {
-						value = G->get()->total;
+						value = G->value->total;
 					}
 				}
 
 				int plot_pos = CLAMP(int(value * h / highest), 0, h - 1);
 
 				int prev_plot = plot_pos;
-				Map<StringName, int>::Element *H = prev_plots.find(E->get());
+				HashMap<StringName, int>::Iterator H = prev_plots.find(E);
 				if (H) {
-					prev_plot = H->get();
-					H->get() = plot_pos;
+					prev_plot = H->value;
+					H->value = plot_pos;
 				} else {
-					prev_plots[E->get()] = plot_pos;
+					prev_plots[E] = plot_pos;
 				}
 
 				plot_pos = h - plot_pos - 1;
@@ -271,7 +271,7 @@ void EditorProfiler::_update_plot() {
 					SWAP(prev_plot, plot_pos);
 				}
 
-				Color col = _get_color_from_signature(E->get());
+				Color col = _get_color_from_signature(E);
 
 				for (int j = prev_plot; j <= plot_pos; j++) {
 					column[j * 4 + 0] += Math::fast_ftoi(CLAMP(col.r * 255, 0, 255));
@@ -355,7 +355,7 @@ void EditorProfiler::_update_frame() {
 			item->set_metadata(0, it.signature);
 			item->set_metadata(1, it.script);
 			item->set_metadata(2, it.line);
-			item->set_text_align(2, TreeItem::ALIGN_RIGHT);
+			item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_RIGHT);
 			item->set_tooltip(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
@@ -393,9 +393,14 @@ void EditorProfiler::_clear_pressed() {
 }
 
 void EditorProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -438,7 +443,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int x = me->get_position().x - 1;
 		x = x * frame_metrics.size() / graph->get_size().width;
@@ -453,11 +458,12 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			x = frame_metrics.size() - 1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 			updating_frame = true;
 
-			if (x < total_metrics)
+			if (x < total_metrics) {
 				cursor_metric_edit->set_value(_get_frame_metric(x).frame_number);
+			}
 			updating_frame = false;
 
 			if (activate->is_pressed()) {
@@ -509,7 +515,7 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	}
 
 	// Different metrics may contain different number of categories.
-	Set<StringName> possible_signatures;
+	HashSet<StringName> possible_signatures;
 	for (int i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
 		if (!m.valid) {
@@ -524,13 +530,13 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	}
 
 	// Generate CSV header and cache indices.
-	Map<StringName, int> sig_map;
+	HashMap<StringName, int> sig_map;
 	Vector<String> signatures;
 	signatures.resize(possible_signatures.size());
 	int sig_index = 0;
-	for (const Set<StringName>::Element *E = possible_signatures.front(); E; E = E->next()) {
-		signatures.write[sig_index] = E->get();
-		sig_map[E->get()] = sig_index;
+	for (const StringName &E : possible_signatures) {
+		signatures.write[sig_index] = E;
+		sig_map[E] = sig_index;
 		sig_index++;
 	}
 	res.push_back(signatures);
@@ -645,7 +651,7 @@ EditorProfiler::EditorProfiler() {
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);
-	graph->set_expand(true);
+	graph->set_ignore_texture_size(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect("draw", callable_mp(this, &EditorProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorProfiler::_graph_tex_input));
@@ -654,11 +660,8 @@ EditorProfiler::EditorProfiler() {
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
+	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
-	total_metrics = 0;
-	last_metric = -1;
-	hover_metric = -1;
 
 	EDITOR_DEF("debugger/profiler_frame_max_functions", 64);
 
@@ -676,7 +679,4 @@ EditorProfiler::EditorProfiler() {
 
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
-
-	seeking = false;
-	graph_height = 1;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,6 +114,7 @@ typedef enum {
 	GDNATIVE_VARIANT_OP_NEGATE,
 	GDNATIVE_VARIANT_OP_POSITIVE,
 	GDNATIVE_VARIANT_OP_MODULE,
+	GDNATIVE_VARIANT_OP_POWER,
 	/* bitwise */
 	GDNATIVE_VARIANT_OP_SHIFT_LEFT,
 	GDNATIVE_VARIANT_OP_SHIFT_RIGHT,
@@ -194,6 +195,7 @@ typedef void *GDExtensionClassInstancePtr;
 
 typedef GDNativeBool (*GDNativeExtensionClassSet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value);
 typedef GDNativeBool (*GDNativeExtensionClassGet)(GDExtensionClassInstancePtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
+typedef uint64_t (*GDNativeExtensionClassGetRID)(GDExtensionClassInstancePtr p_instance);
 
 typedef struct {
 	uint32_t type;
@@ -204,14 +206,25 @@ typedef struct {
 	uint32_t usage;
 } GDNativePropertyInfo;
 
+typedef struct {
+	const char *name;
+	GDNativePropertyInfo return_value;
+	uint32_t flags; // From GDNativeExtensionClassMethodFlags
+	int32_t id;
+	GDNativePropertyInfo *arguments;
+	uint32_t argument_count;
+	GDNativeVariantPtr default_arguments;
+	uint32_t default_argument_count;
+} GDNativeMethodInfo;
+
 typedef const GDNativePropertyInfo *(*GDNativeExtensionClassGetPropertyList)(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 typedef void (*GDNativeExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_instance, const GDNativePropertyInfo *p_list);
 typedef void (*GDNativeExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what);
-typedef const char *(*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance);
+typedef void (*GDNativeExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDNativeStringPtr p_out);
 typedef void (*GDNativeExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
-typedef GDExtensionClassInstancePtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
+typedef GDNativeObjectPtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
 typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
 typedef void (*GDNativeExtensionClassObjectInstance)(GDExtensionClassInstancePtr p_instance, GDNativeObjectPtr p_object_instance);
 typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
@@ -227,14 +240,12 @@ typedef struct {
 	GDNativeExtensionClassUnreference unreference_func;
 	GDNativeExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
-	GDNativeExtensionClassObjectInstance object_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassGetVirtual get_virtual_func;
+	GDNativeExtensionClassGetRID get_rid_func;
 	void *class_userdata;
 } GDNativeExtensionClassCreationInfo;
 
 typedef void *GDNativeExtensionClassLibraryPtr;
-
-typedef const GDNativePropertyInfo *(*GDNativeExtensionClassGetPropertyList)(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 
 /* Method */
 
@@ -288,6 +299,79 @@ typedef struct {
 	GDNativeVariantPtr *default_arguments;
 } GDNativeExtensionClassMethodInfo;
 
+/* SCRIPT INSTANCE EXTENSION */
+
+typedef void *GDNativeExtensionScriptInstanceDataPtr; // Pointer to custom ScriptInstance native implementation
+
+typedef GDNativeBool (*GDNativeExtensionScriptInstanceSet)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value);
+typedef GDNativeBool (*GDNativeExtensionScriptInstanceGet)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeVariantPtr r_ret);
+typedef const GDNativePropertyInfo *(*GDNativeExtensionScriptInstanceGetPropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
+typedef void (*GDNativeExtensionScriptInstanceFreePropertyList)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativePropertyInfo *p_list);
+typedef GDNativeVariantType (*GDNativeExtensionScriptInstanceGetPropertyType)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name, GDNativeBool *r_is_valid);
+
+typedef GDNativeObjectPtr (*GDNativeExtensionScriptInstanceGetOwner)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+typedef void (*GDNativeExtensionScriptInstancePropertyStateAdd)(const GDNativeStringNamePtr p_name, const GDNativeVariantPtr p_value, void *p_userdata);
+typedef void (*GDNativeExtensionScriptInstanceGetPropertyState)(GDNativeExtensionScriptInstanceDataPtr p_instance, GDNativeExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata);
+
+typedef const GDNativeMethodInfo *(*GDNativeExtensionScriptInstanceGetMethodList)(GDNativeExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
+typedef void (*GDNativeExtensionScriptInstanceFreeMethodList)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeMethodInfo *p_list);
+
+typedef GDNativeBool (*GDNativeExtensionScriptInstanceHasMethod)(GDNativeExtensionScriptInstanceDataPtr p_instance, const GDNativeStringNamePtr p_name);
+
+typedef void (*GDNativeExtensionScriptInstanceCall)(GDNativeExtensionScriptInstanceDataPtr p_self, const GDNativeStringNamePtr p_method, const GDNativeVariantPtr *p_args, const GDNativeInt p_argument_count, GDNativeVariantPtr r_return, GDNativeCallError *r_error);
+typedef void (*GDNativeExtensionScriptInstanceNotification)(GDNativeExtensionScriptInstanceDataPtr p_instance, int32_t p_what);
+typedef const char *(*GDNativeExtensionScriptInstanceToString)(GDNativeExtensionScriptInstanceDataPtr p_instance, GDNativeBool *r_is_valid);
+
+typedef void (*GDNativeExtensionScriptInstanceRefCountIncremented)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+typedef GDNativeBool (*GDNativeExtensionScriptInstanceRefCountDecremented)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+
+typedef GDNativeObjectPtr (*GDNativeExtensionScriptInstanceGetScript)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+typedef GDNativeBool (*GDNativeExtensionScriptInstanceIsPlaceholder)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+
+typedef void *GDNativeExtensionScriptLanguagePtr;
+
+typedef GDNativeExtensionScriptLanguagePtr (*GDNativeExtensionScriptInstanceGetLanguage)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+
+typedef void (*GDNativeExtensionScriptInstanceFree)(GDNativeExtensionScriptInstanceDataPtr p_instance);
+
+typedef void *GDNativeScriptInstancePtr; // Pointer to ScriptInstance.
+
+typedef struct {
+	GDNativeExtensionScriptInstanceSet set_func;
+	GDNativeExtensionScriptInstanceGet get_func;
+	GDNativeExtensionScriptInstanceGetPropertyList get_property_list_func;
+	GDNativeExtensionScriptInstanceFreePropertyList free_property_list_func;
+	GDNativeExtensionScriptInstanceGetPropertyType get_property_type_func;
+
+	GDNativeExtensionScriptInstanceGetOwner get_owner_func;
+	GDNativeExtensionScriptInstanceGetPropertyState get_property_state_func;
+
+	GDNativeExtensionScriptInstanceGetMethodList get_method_list_func;
+	GDNativeExtensionScriptInstanceFreeMethodList free_method_list_func;
+
+	GDNativeExtensionScriptInstanceHasMethod has_method_func;
+
+	GDNativeExtensionScriptInstanceCall call_func;
+	GDNativeExtensionScriptInstanceNotification notification_func;
+
+	GDNativeExtensionScriptInstanceToString to_string_func;
+
+	GDNativeExtensionScriptInstanceRefCountIncremented refcount_incremented_func;
+	GDNativeExtensionScriptInstanceRefCountDecremented refcount_decremented_func;
+
+	GDNativeExtensionScriptInstanceGetScript get_script_func;
+
+	GDNativeExtensionScriptInstanceIsPlaceholder is_placeholder_func;
+
+	GDNativeExtensionScriptInstanceSet set_fallback_func;
+	GDNativeExtensionScriptInstanceGet get_fallback_func;
+
+	GDNativeExtensionScriptInstanceGetLanguage get_language_func;
+
+	GDNativeExtensionScriptInstanceFree free_func;
+
+} GDNativeExtensionScriptInstanceInfo;
+
 /* INTERFACE */
 
 typedef struct {
@@ -304,6 +388,8 @@ typedef struct {
 	void (*print_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
 	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
+
+	uint64_t (*get_native_struct_size)(const char *p_name);
 
 	/* GODOT VARIANT */
 
@@ -327,8 +413,11 @@ typedef struct {
 	GDNativeBool (*variant_iter_init)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid);
 	GDNativeBool (*variant_iter_next)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid);
 	void (*variant_iter_get)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeVariantPtr r_ret, GDNativeBool *r_valid);
+	GDNativeInt (*variant_hash)(const GDNativeVariantPtr p_self);
+	GDNativeInt (*variant_recursive_hash)(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count);
 	GDNativeBool (*variant_hash_compare)(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other);
 	GDNativeBool (*variant_booleanize)(const GDNativeVariantPtr p_self);
+	void (*variant_sub)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_dst);
 	void (*variant_blend)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst);
 	void (*variant_interpolate)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst);
 	void (*variant_duplicate)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep);
@@ -417,23 +506,33 @@ typedef struct {
 	GDNativeVariantPtr (*array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be an Array ptr
 	GDNativeVariantPtr (*array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be an Array ptr
 
+	/* Dictionary functions */
+
+	GDNativeVariantPtr (*dictionary_operator_index)(GDNativeTypePtr p_self, const GDNativeVariantPtr p_key); // p_self should be an Dictionary ptr
+	GDNativeVariantPtr (*dictionary_operator_index_const)(const GDNativeTypePtr p_self, const GDNativeVariantPtr p_key); // p_self should be an Dictionary ptr
+
 	/* OBJECT */
 
 	void (*object_method_bind_call)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeVariantPtr *p_args, GDNativeInt p_arg_count, GDNativeVariantPtr r_ret, GDNativeCallError *r_error);
 	void (*object_method_bind_ptrcall)(const GDNativeMethodBindPtr p_method_bind, GDNativeObjectPtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 	void (*object_destroy)(GDNativeObjectPtr p_o);
 	GDNativeObjectPtr (*global_get_singleton)(const char *p_name);
+
 	void *(*object_get_instance_binding)(GDNativeObjectPtr p_o, void *p_token, const GDNativeInstanceBindingCallbacks *p_callbacks);
 	void (*object_set_instance_binding)(GDNativeObjectPtr p_o, void *p_token, void *p_binding, const GDNativeInstanceBindingCallbacks *p_callbacks);
+
+	void (*object_set_instance)(GDNativeObjectPtr p_o, const char *p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 	GDNativeObjectPtr (*object_cast_to)(const GDNativeObjectPtr p_object, void *p_class_tag);
 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
 	GDObjectInstanceID (*object_get_instance_id)(const GDNativeObjectPtr p_object);
 
-	/* CLASSDB */
+	/* SCRIPT INSTANCE */
 
-	GDNativeClassConstructor (*classdb_get_constructor)(const char *p_classname, GDNativeExtensionPtr *r_extension);
-	GDNativeObjectPtr (*classdb_construct_object)(GDNativeClassConstructor p_constructor, GDNativeExtensionPtr p_extension);
+	GDNativeScriptInstancePtr (*script_instance_create)(const GDNativeExtensionScriptInstanceInfo *p_info, GDNativeExtensionScriptInstanceDataPtr p_instance_data);
+
+	/* CLASSDB */
+	GDNativeObjectPtr (*classdb_construct_object)(const char *p_classname); /* The passed class must be a built-in godot class, or an already-registered extension class. In both case, object_set_instance should be called to fully initialize the object. */
 	GDNativeMethodBindPtr (*classdb_get_method_bind)(const char *p_classname, const char *p_methodname, GDNativeInt p_hash);
 	void *(*classdb_get_class_tag)(const char *p_classname);
 
@@ -447,6 +546,9 @@ typedef struct {
 	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
 	void (*classdb_register_extension_class_signal)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
 	void (*classdb_unregister_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+
+	void (*get_library_path)(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
+
 } GDNativeInterface;
 
 /* INITIALIZATION */
@@ -456,7 +558,6 @@ typedef enum {
 	GDNATIVE_INITIALIZATION_SERVERS,
 	GDNATIVE_INITIALIZATION_SCENE,
 	GDNATIVE_INITIALIZATION_EDITOR,
-	GDNATIVE_INITIALIZATION_DRIVER,
 	GDNATIVE_MAX_INITIALIZATION_LEVEL,
 } GDNativeInitializationLevel;
 

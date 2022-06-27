@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,18 +30,20 @@
 
 #include "export_plugin.h"
 
+#include "core/config/project_settings.h"
+
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
 	if (!pkg) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:") + "\n" + p_template);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not open template for export: \"%s\"."), p_template));
 		return ERR_FILE_NOT_FOUND;
 	}
 
 	if (unzGoToFirstFile(pkg) != UNZ_OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid export template:") + "\n" + p_template);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Invalid export template: \"%s\"."), p_template));
 		unzClose(pkg);
 		return ERR_FILE_CORRUPT;
 	}
@@ -52,7 +54,12 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
-		String file = fname;
+		String file = String::utf8(fname);
+
+		// Skip folders.
+		if (file.ends_with("/")) {
+			continue;
+		}
 
 		// Skip service worker and offline page if not exporting pwa.
 		if (!pwa && (file == "godot.service.worker.js" || file == "godot.offline.html")) {
@@ -68,14 +75,13 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 
 		//write
 		String dst = p_dir.plus_file(file.replace("godot", p_name));
-		FileAccess *f = FileAccess::open(dst, FileAccess::WRITE);
-		if (!f) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + dst);
+		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
+		if (f.is_null()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
 		f->store_buffer(data.ptr(), data.size());
-		memdelete(f);
 
 	} while (unzGoToNextFile(pkg) == UNZ_OK);
 	unzClose(pkg);
@@ -83,17 +89,16 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 }
 
 Error EditorExportPlatformJavaScript::_write_or_error(const uint8_t *p_content, int p_size, String p_path) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	if (!f) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
 		return ERR_FILE_CANT_WRITE;
 	}
 	f->store_buffer(p_content, p_size);
-	memdelete(f);
 	return OK;
 }
 
-void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_replaces, Vector<uint8_t> &r_template) {
+void EditorExportPlatformJavaScript::_replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(r_template.ptr()), r_template.size());
 	String out;
 	Vector<String> lines = str_template.split("\n");
@@ -139,14 +144,13 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	}
 	if (p_preset->get("progressive_web_app/enabled")) {
 		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
-		head_include += "<script type='application/javascript'>window.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('" +
-				p_name + ".service.worker.js');}});</script>\n";
+		config["serviceWorker"] = p_name + ".service.worker.js";
 	}
 
 	// Replaces HTML string
 	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
-	Map<String, String> replaces;
+	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
 	replaces["$GODOT_PROJECT_NAME"] = ProjectSettings::get_singleton()->get_setting("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
@@ -164,7 +168,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + p_icon);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), p_icon));
 			return err;
 		}
 		if (icon->get_width() != p_size || icon->get_height() != p_size) {
@@ -176,7 +180,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 	}
 	const Error err = icon->save_png(icon_dest);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + icon_dest);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not write file: \"%s\"."), icon_dest));
 		return err;
 	}
 	Dictionary icon_dict;
@@ -188,48 +192,57 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 }
 
 Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
+	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
+	if (proj_name.is_empty()) {
+		proj_name = "Godot Game";
+	}
+
 	// Service worker
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	const ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	Map<String, String> replaces;
-	replaces["@GODOT_VERSION@"] = "1";
-	replaces["@GODOT_NAME@"] = name;
+	HashMap<String, String> replaces;
+	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
+	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
-	Array files;
-	replaces["@GODOT_OPT_CACHE@"] = Variant(files).to_json_string();
-	files.push_back(name + ".html");
-	files.push_back(name + ".js");
-	files.push_back(name + ".wasm");
-	files.push_back(name + ".pck");
-	files.push_back(name + ".offline.html");
+
+	// Files cached during worker install.
+	Array cache_files;
+	cache_files.push_back(name + ".html");
+	cache_files.push_back(name + ".js");
+	cache_files.push_back(name + ".offline.html");
 	if (p_preset->get("html/export_icon")) {
-		files.push_back(name + ".icon.png");
-		files.push_back(name + ".apple-touch-icon.png");
+		cache_files.push_back(name + ".icon.png");
+		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
-	if (mode == EXPORT_MODE_THREADS) {
-		files.push_back(name + ".worker.js");
-		files.push_back(name + ".audio.worklet.js");
-	} else if (mode == EXPORT_MODE_GDNATIVE) {
-		files.push_back(name + ".side.wasm");
+	if (mode & EXPORT_MODE_THREADS) {
+		cache_files.push_back(name + ".worker.js");
+		cache_files.push_back(name + ".audio.worklet.js");
+	}
+	replaces["@GODOT_CACHE@"] = Variant(cache_files).to_json_string();
+
+	// Heavy files that are cached on demand.
+	Array opt_cache_files;
+	opt_cache_files.push_back(name + ".wasm");
+	opt_cache_files.push_back(name + ".pck");
+	if (mode & EXPORT_MODE_GDNATIVE) {
+		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
-			files.push_back(p_shared_objects[i].path.get_file());
+			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["@GODOT_CACHE@"] = Variant(files).to_json_string();
+	replaces["@GODOT_OPT_CACHE@"] = Variant(opt_cache_files).to_json_string();
 
 	const String sw_path = dir.plus_file(name + ".service.worker.js");
 	Vector<uint8_t> sw;
 	{
-		FileAccess *f = FileAccess::open(sw_path, FileAccess::READ);
-		if (!f) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + sw_path);
+		Ref<FileAccess> f = FileAccess::open(sw_path, FileAccess::READ);
+		if (f.is_null()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PWA"), vformat(TTR("Could not read file: \"%s\"."), sw_path));
 			return ERR_FILE_CANT_READ;
 		}
 		sw.resize(f->get_length());
 		f->get_buffer(sw.ptrw(), sw.size());
-		memdelete(f);
-		f = nullptr;
 	}
 	_replace_strings(replaces, sw);
 	Error err = _write_or_error(sw.ptr(), sw.size(), dir.plus_file(name + ".service.worker.js"));
@@ -240,11 +253,11 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	// Custom offline page
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
 	if (!offline_page.is_empty()) {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + offline_dest);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PWA"), vformat(TTR("Could not read file: \"%s\"."), offline_dest));
 			return err;
 		}
 	}
@@ -256,10 +269,6 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	const int orientation = CLAMP(int(p_preset->get("progressive_web_app/orientation")), 0, 3);
 
 	Dictionary manifest;
-	String proj_name = ProjectSettings::get_singleton()->get_setting("application/config/name");
-	if (proj_name.is_empty()) {
-		proj_name = "Godot Game";
-	}
 	manifest["name"] = proj_name;
 	manifest["start_url"] = "./" + name + ".html";
 	manifest["display"] = String::utf8(modes[display]);
@@ -308,9 +317,10 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 		}
 	}
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	if (mode == EXPORT_MODE_THREADS) {
+	if (mode & EXPORT_MODE_THREADS) {
 		r_features->push_back("threads");
-	} else if (mode == EXPORT_MODE_GDNATIVE) {
+	}
+	if (mode & EXPORT_MODE_GDNATIVE) {
 		r_features->push_back("wasm32");
 	}
 }
@@ -333,9 +343,9 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_144x144", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_144x144", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 }
 
@@ -352,6 +362,15 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_logo() const {
 }
 
 bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+#ifndef DEV_ENABLED
+	// We don't provide export templates for the HTML5 platform currently as there
+	// is no suitable renderer to use with them. So we forbid exporting and tell
+	// users why. This is skipped in DEV_ENABLED so that contributors can still test
+	// the pipeline once we start having WebGL or WebGPU support.
+	r_error = "The HTML5 platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
+	return false;
+#endif
+
 	String err;
 	bool valid = false;
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
@@ -380,7 +399,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		String etc_error = test_etc2();
-		if (etc_error != String()) {
+		if (!etc_error.is_empty()) {
 			valid = false;
 			err += etc_error;
 		}
@@ -415,7 +434,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	// Find the correct template
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
-	if (template_path == String()) {
+	if (template_path.is_empty()) {
 		ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
 		template_path = find_export_template(_get_template_name(mode, p_debug));
 	}
@@ -424,31 +443,31 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return ERR_FILE_BAD_PATH;
 	}
 
-	if (template_path != String() && !FileAccess::exists(template_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Template file not found:") + "\n" + template_path);
+	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 
 	// Export pck and shared objects
 	Vector<SharedObject> shared_objects;
 	String pck_path = base_path + ".pck";
-	Error error = save_pack(p_preset, pck_path, &shared_objects);
+	Error error = save_pack(p_preset, p_debug, pck_path, &shared_objects);
 	if (error != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), pck_path));
 		return error;
 	}
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	for (int i = 0; i < shared_objects.size(); i++) {
-		String dst = base_dir.plus_file(shared_objects[i].path.get_file());
-		error = da->copy(shared_objects[i].path, dst);
-		if (error != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + shared_objects[i].path.get_file());
-			memdelete(da);
-			return error;
+
+	{
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		for (int i = 0; i < shared_objects.size(); i++) {
+			String dst = base_dir.plus_file(shared_objects[i].path.get_file());
+			error = da->copy(shared_objects[i].path, dst);
+			if (error != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), shared_objects[i].path.get_file()));
+				return error;
+			}
 		}
 	}
-	memdelete(da);
-	da = nullptr;
 
 	// Extract templates.
 	error = _extract_template(template_path, base_dir, base_name, pwa);
@@ -458,32 +477,25 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	// Parse generated file sizes (pck and wasm, to help show a meaningful loading bar).
 	Dictionary file_sizes;
-	FileAccess *f = nullptr;
-	f = FileAccess::open(pck_path, FileAccess::READ);
-	if (f) {
+	Ref<FileAccess> f = FileAccess::open(pck_path, FileAccess::READ);
+	if (f.is_valid()) {
 		file_sizes[pck_path.get_file()] = (uint64_t)f->get_length();
-		memdelete(f);
-		f = nullptr;
 	}
 	f = FileAccess::open(base_path + ".wasm", FileAccess::READ);
-	if (f) {
+	if (f.is_valid()) {
 		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
-		memdelete(f);
-		f = nullptr;
 	}
 
 	// Read the HTML shell file (custom or from template).
 	const String html_path = custom_html.is_empty() ? base_path + ".html" : custom_html;
 	Vector<uint8_t> html;
 	f = FileAccess::open(html_path, FileAccess::READ);
-	if (!f) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not read HTML shell:") + "\n" + html_path);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not read HTML shell: \"%s\"."), html_path));
 		return ERR_FILE_CANT_READ;
 	}
 	html.resize(f->get_length());
 	f->get_buffer(html.ptrw(), html.size());
-	memdelete(f);
-	f = nullptr;
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
@@ -497,7 +509,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	Ref<Image> splash = _get_project_splash();
 	const String splash_png_path = base_path + ".png";
 	if (splash->save_png(splash_png_path) != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + splash_png_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), splash_png_path));
 		return ERR_FILE_CANT_WRITE;
 	}
 
@@ -507,13 +519,13 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		Ref<Image> favicon = _get_project_icon();
 		const String favicon_png_path = base_path + ".icon.png";
 		if (favicon->save_png(favicon_png_path) != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + favicon_png_path);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), favicon_png_path));
 			return ERR_FILE_CANT_WRITE;
 		}
 		favicon->resize(180, 180);
 		const String apple_icon_png_path = base_path + ".apple-touch-icon.png";
 		if (favicon->save_png(apple_icon_png_path) != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + apple_icon_png_path);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), apple_icon_png_path));
 			return ERR_FILE_CANT_WRITE;
 		}
 	}
@@ -569,14 +581,15 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	}
 
 	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not create HTTP server directory:") + "\n" + dest);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Could not create HTTP server directory: %s."), dest));
 			return err;
 		}
 	}
+
 	const String basepath = dest.plus_file("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
@@ -619,7 +632,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		err = server->listen(bind_port, bind_ip, use_ssl, ssl_key, ssl_cert);
 	}
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error starting HTTP server:") + "\n" + itos(err));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
 	}
 
@@ -634,9 +647,9 @@ Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
 }
 
 void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
-	EditorExportPlatformJavaScript *ej = (EditorExportPlatformJavaScript *)data;
+	EditorExportPlatformJavaScript *ej = static_cast<EditorExportPlatformJavaScript *>(data);
 	while (!ej->server_quit) {
-		OS::get_singleton()->delay_usec(1000);
+		OS::get_singleton()->delay_usec(6900);
 		{
 			MutexLock lock(ej->server_lock);
 			ej->server->poll();
@@ -658,7 +671,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 	if (theme.is_valid()) {
-		stop_icon = theme->get_icon("Stop", "EditorIcons");
+		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
 	} else {
 		stop_icon.instantiate();
 	}

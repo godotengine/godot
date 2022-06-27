@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,9 @@ extern "C" {
 }
 
 struct CompressedString {
-	int orig_len;
+	int orig_len = 0;
 	CharString compressed;
-	int offset;
+	int offset = 0;
 };
 
 void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
@@ -53,7 +53,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int size = Math::larger_prime(keys.size());
 
 	Vector<Vector<Pair<int, CharString>>> buckets;
-	Vector<Map<uint32_t, int>> table;
+	Vector<HashMap<uint32_t, int>> table;
 	Vector<uint32_t> hfunc_table;
 	Vector<CompressedString> compressed;
 
@@ -108,7 +108,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
-		Map<uint32_t, int> &t = table.write[i];
+		HashMap<uint32_t, int> &t = table.write[i];
 
 		if (b.size() == 0) {
 			continue;
@@ -147,7 +147,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	int btindex = 0;
 
 	for (int i = 0; i < size; i++) {
-		const Map<uint32_t, int> &t = table[i];
+		const HashMap<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;

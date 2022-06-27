@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,10 @@
 /*************************************************************************/
 
 #include "shader_globals_editor.h"
-#include "editor_node.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
+#include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 	"bool",
@@ -91,7 +94,7 @@ protected:
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
 		if (type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
-			RES res = p_value;
+			Ref<Resource> res = p_value;
 			if (res.is_valid()) {
 				gv["value"] = res->get_path();
 			} else {
@@ -180,7 +183,7 @@ protected:
 					pinfo.type = Variant::VECTOR3;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_VEC4: {
-					pinfo.type = Variant::PLANE;
+					pinfo.type = Variant::QUATERNION;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_RECT2: {
 					pinfo.type = Variant::RECT2;
@@ -301,7 +304,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Vector3();
 		}
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
-			return Plane();
+			return Quaternion();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2: {
 			return Rect2();
@@ -372,7 +375,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 
 void ShaderGlobalsEditor::_variable_added() {
 	String var = variable_name->get_text().strip_edges();
-	if (var == "" || !var.is_valid_identifier()) {
+	if (var.is_empty() || !var.is_valid_identifier()) {
 		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid variable identifier name."));
 		return;
 	}
@@ -435,13 +438,16 @@ void ShaderGlobalsEditor::_bind_methods() {
 }
 
 void ShaderGlobalsEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree()) {
-			inspector->edit(interface);
-		}
-	}
-	if (p_what == NOTIFICATION_PREDELETE) {
-		inspector->edit(nullptr);
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				inspector->edit(interface);
+			}
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			inspector->edit(nullptr);
+		} break;
 	}
 }
 
@@ -471,7 +477,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(inspector);
 	inspector->set_use_wide_editors(true);
-	inspector->set_enable_capitalize_paths(false);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 	inspector->set_use_deletable_properties(true);
 	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), varray(), CONNECT_DEFERRED);
 

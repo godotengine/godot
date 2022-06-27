@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -242,7 +242,7 @@ Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, int p_port) {
 	return OK;
 }
 
-bool PacketPeerUDP::is_connected_to_host() const {
+bool PacketPeerUDP::is_socket_connected() const {
 	return connected;
 }
 
@@ -348,7 +348,7 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait"), &PacketPeerUDP::wait);
 	ClassDB::bind_method(D_METHOD("is_bound"), &PacketPeerUDP::is_bound);
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &PacketPeerUDP::connect_to_host);
-	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &PacketPeerUDP::is_connected_to_host);
+	ClassDB::bind_method(D_METHOD("is_socket_connected"), &PacketPeerUDP::is_socket_connected);
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	ClassDB::bind_method(D_METHOD("get_packet_port"), &PacketPeerUDP::get_packet_port);
 	ClassDB::bind_method(D_METHOD("get_local_port"), &PacketPeerUDP::get_local_port);

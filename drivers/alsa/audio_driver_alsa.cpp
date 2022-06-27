@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -181,7 +181,7 @@ Error AudioDriverALSA::init() {
 }
 
 void AudioDriverALSA::thread_func(void *p_udata) {
-	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
+	AudioDriverALSA *ad = static_cast<AudioDriverALSA *>(p_udata);
 
 	while (!ad->exit_thread) {
 		ad->lock();
@@ -283,9 +283,9 @@ Array AudioDriverALSA::get_device_list() {
 
 		if (name != nullptr && !strncmp(name, "plughw", 6)) {
 			if (desc) {
-				list.push_back(String(name) + ";" + String(desc));
+				list.push_back(String::utf8(name) + ";" + String::utf8(desc));
 			} else {
-				list.push_back(String(name));
+				list.push_back(String::utf8(name));
 			}
 		}
 

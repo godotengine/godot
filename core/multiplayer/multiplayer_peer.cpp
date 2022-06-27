@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,17 +36,18 @@ uint32_t MultiplayerPeer::generate_unique_id() const {
 	uint32_t hash = 0;
 
 	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
-		hash = hash_djb2_one_32(
+		hash = hash_murmur3_one_32(
 				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
 
+		hash = hash_fmix32(hash);
 		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
 	}
 

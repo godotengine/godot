@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,7 +62,7 @@ private:
 		CharString response;
 		int response_sent = 0;
 
-		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name);
+		Error do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, String &r_resource_name, const Vector<String> &p_extra_headers);
 	};
 
 	int _in_buf_size = DEF_BUF_SHIFT;
@@ -73,19 +73,21 @@ private:
 	List<Ref<PendingPeer>> _pending;
 	Ref<TCPServer> _server;
 	Vector<String> _protocols;
+	Vector<String> _extra_headers;
 
 public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
-	void stop();
-	bool is_listening() const;
-	int get_max_packet_size() const;
-	bool has_peer(int p_id) const;
-	Ref<WebSocketPeer> get_peer(int p_id) const;
-	IPAddress get_peer_address(int p_peer_id) const;
-	int get_peer_port(int p_peer_id) const;
-	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "");
-	virtual void poll();
+	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
+	void set_extra_headers(const Vector<String> &p_headers) override;
+	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) override;
+	void stop() override;
+	bool is_listening() const override;
+	int get_max_packet_size() const override;
+	bool has_peer(int p_id) const override;
+	Ref<WebSocketPeer> get_peer(int p_id) const override;
+	IPAddress get_peer_address(int p_peer_id) const override;
+	int get_peer_port(int p_peer_id) const override;
+	void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "") override;
+	virtual void poll() override;
 
 	WSLServer();
 	~WSLServer();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,17 @@
 #endif
 #endif
 
+// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
+#ifndef _NO_DISCARD_
+#define _NO_DISCARD_ [[nodiscard]]
+#endif
+
+// In some cases _NO_DISCARD_ will get false positives,
+// we can prevent the warning in specific cases by preceding the call with a cast.
+#ifndef _ALLOW_DISCARD_
+#define _ALLOW_DISCARD_ (void)
+#endif
+
 // Windows badly defines a lot of stuff we'll never use. Undefine it.
 #ifdef _WIN32
 #undef min // override standard definition
@@ -78,34 +89,43 @@
 #undef ERROR // override (really stupid) wingdi.h standard definition
 #undef DELETE // override (another really stupid) winnt.h standard definition
 #undef MessageBox // override winuser.h standard definition
-#undef MIN // override standard definition
-#undef MAX // override standard definition
-#undef CLAMP // override standard definition
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #endif
 
+// Make room for our constexpr's below by overriding potential system-specific macros.
+#undef ABS
+#undef SIGN
+#undef MIN
+#undef MAX
+#undef CLAMP
+
 // Generic ABS function, for math uses please use Math::abs.
-#ifndef ABS
-#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
-#endif
+template <typename T>
+constexpr T ABS(T m_v) {
+	return m_v < 0 ? -m_v : m_v;
+}
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
-#endif
+template <typename T>
+constexpr const T SIGN(const T m_v) {
+	return m_v == 0 ? 0.0f : (m_v < 0 ? -1.0f : +1.0f);
+}
 
-#ifndef MIN
-#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T, typename T2>
+constexpr auto MIN(const T m_a, const T2 m_b) {
+	return m_a < m_b ? m_a : m_b;
+}
 
-#ifndef MAX
-#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T, typename T2>
+constexpr auto MAX(const T m_a, const T2 m_b) {
+	return m_a > m_b ? m_a : m_b;
+}
 
-#ifndef CLAMP
-#define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
-#endif
+template <typename T, typename T2, typename T3>
+constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
+	return m_a < m_min ? m_min : (m_a > m_max ? m_max : m_a);
+}
 
 // Generic swap template.
 #ifndef SWAP

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
 #include "core/object/class_db.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -88,14 +87,14 @@ class AppxPackager {
 	};
 
 	String progress_task;
-	FileAccess *package = nullptr;
+	Ref<FileAccess> package;
 
-	Set<String> mime_types;
+	HashSet<String> mime_types;
 
 	Vector<FileMeta> file_metadata;
 
-	ZPOS64_T central_dir_offset;
-	ZPOS64_T end_of_central_dir_offset;
+	ZPOS64_T central_dir_offset = 0;
+	ZPOS64_T end_of_central_dir_offset = 0;
 	Vector<uint8_t> central_dir_data;
 
 	String hash_block(const uint8_t *p_block_data, size_t p_block_len);
@@ -139,7 +138,7 @@ class AppxPackager {
 
 public:
 	void set_progress_task(String p_task) { progress_task = p_task; }
-	void init(FileAccess *p_fa);
+	void init(Ref<FileAccess> p_fa);
 	Error add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
 	void finish();
 

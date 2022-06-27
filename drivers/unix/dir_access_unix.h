@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,13 +41,13 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
-	DIR *dir_stream;
+	DIR *dir_stream = nullptr;
 
-	static DirAccess *create_fs();
+	static Ref<DirAccess> create_fs();
 
 	String current_dir;
-	bool _cisdir;
-	bool _cishidden;
+	bool _cisdir = false;
+	bool _cishidden = false;
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
@@ -63,10 +63,11 @@ public:
 
 	virtual int get_drive_count();
 	virtual String get_drive(int p_drive);
+	virtual int get_current_drive();
 	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(bool p_include_drive = true); ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true) const; ///< return current dir location
 	virtual Error make_dir(String p_dir);
 
 	virtual bool file_exists(String p_file);

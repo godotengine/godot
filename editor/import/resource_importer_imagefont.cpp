@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,11 +55,11 @@ String ResourceImporterImageFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterImageFont::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
-void ResourceImporterImageFont::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterImageFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
@@ -85,7 +85,7 @@ bool ResourceImporterImageFont::_decode_range(const String &p_token, int32_t &r_
 	}
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
@@ -96,8 +96,10 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Ref<FontData> font;
 	font.instantiate();
 	font->set_antialiased(false);
+	font->set_generate_mipmaps(false);
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(base_size);
+	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_force_autohinter(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);
@@ -105,7 +107,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Ref<Image> img;
 	img.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + p_source_file + "\".");
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
 	font->set_texture_image(0, Vector2i(base_size, 0), 0, img);
 
 	int count = columns * rows;

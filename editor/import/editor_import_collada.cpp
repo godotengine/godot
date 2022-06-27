@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,34 +67,34 @@ struct ColladaImport {
 	bool use_mesh_builtin_materials = false;
 	float bake_fps = 15;
 
-	Map<String, NodeMap> node_map; //map from collada node to engine node
-	Map<String, String> node_name_map; //map from collada node to engine node
-	Map<String, Ref<ImporterMesh>> mesh_cache;
-	Map<String, Ref<Curve3D>> curve_cache;
-	Map<String, Ref<Material>> material_cache;
-	Map<Collada::Node *, Skeleton3D *> skeleton_map;
+	HashMap<String, NodeMap> node_map; //map from collada node to engine node
+	HashMap<String, String> node_name_map; //map from collada node to engine node
+	HashMap<String, Ref<ImporterMesh>> mesh_cache;
+	HashMap<String, Ref<Curve3D>> curve_cache;
+	HashMap<String, Ref<Material>> material_cache;
+	HashMap<Collada::Node *, Skeleton3D *> skeleton_map;
 
-	Map<Skeleton3D *, Map<String, int>> skeleton_bone_map;
+	HashMap<Skeleton3D *, HashMap<String, int>> skeleton_bone_map;
 
-	Set<String> valid_animated_nodes;
+	HashSet<String> valid_animated_nodes;
 	Vector<int> valid_animated_properties;
-	Map<String, bool> bones_with_animation;
+	HashMap<String, bool> bones_with_animation;
 
-	Set<String> mesh_unique_names;
-	Set<String> material_unique_names;
+	HashSet<String> mesh_unique_names;
+	HashSet<String> material_unique_names;
 
 	Error _populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent);
 	Error _create_scene_skeletons(Collada::Node *p_node);
 	Error _create_scene(Collada::Node *p_node, Node3D *p_parent);
 	Error _create_resources(Collada::Node *p_node, bool p_use_compression);
 	Error _create_material(const String &p_target);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes = Vector<Ref<ImporterMesh>>(), bool p_use_compression = false, bool p_use_mesh_material = false);
 	Error load(const String &p_path, int p_flags, bool p_force_make_tangents = false, bool p_use_compression = false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip, bool p_import_value_tracks);
 	void create_animations(bool p_import_value_tracks);
 
-	Set<String> tracks_in_clips;
+	HashSet<String> tracks_in_clips;
 	Vector<String> missing_textures;
 
 	void _pre_process_lights(Collada::Node *p_node);
@@ -303,7 +303,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 		} break;
 	}
 
-	if (p_node->name != "") {
+	if (!p_node->name.is_empty()) {
 		node->set_name(p_node->name);
 	}
 	NodeMap nm;
@@ -317,7 +317,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Node3D *p_parent) {
 	p_parent->add_child(node, true);
 	node->set_owner(scene);
 
-	if (p_node->empty_draw_type != "") {
+	if (!p_node->empty_draw_type.is_empty()) {
 		node->set_meta("empty_draw_type", Variant(p_node->empty_draw_type));
 	}
 
@@ -340,9 +340,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 
 	String base_name;
-	if (src_mat.name != "") {
+	if (!src_mat.name.is_empty()) {
 		base_name = src_mat.name;
-	} else if (effect.name != "") {
+	} else if (!effect.name.is_empty()) {
 		base_name = effect.name;
 	} else {
 		base_name = "Material";
@@ -360,9 +360,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// DIFFUSE
 
-	if (effect.diffuse.texture != "") {
+	if (!effect.diffuse.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.diffuse.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -381,9 +381,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// SPECULAR
 
-	if (effect.specular.texture != "") {
+	if (!effect.specular.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.specular.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -406,9 +406,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// EMISSION
 
-	if (effect.emission.texture != "") {
+	if (!effect.emission.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.emission.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -433,9 +433,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	// NORMAL
 
-	if (effect.bump.texture != "") {
+	if (!effect.bump.texture.is_empty()) {
 		String texfile = effect.get_texture_path(effect.bump.texture, collada);
-		if (texfile != "") {
+		if (!texfile.is_empty()) {
 			if (texfile.begins_with("/")) {
 				texfile = texfile.replace_first("/", "res://");
 			}
@@ -467,11 +467,11 @@ Error ColladaImport::_create_material(const String &p_target) {
 	return OK;
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p_mesh, const HashMap<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform3D &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ImporterMesh>> p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
 	bool local_xform_mirror = p_local_xform.basis.determinant() < 0;
 
 	if (p_morph_data) {
-		//add morphie target
+		//add morph target
 		ERR_FAIL_COND_V(!p_morph_data->targets.has("MORPH_TARGET"), ERR_INVALID_DATA);
 		String mt = p_morph_data->targets["MORPH_TARGET"];
 		ERR_FAIL_COND_V(!p_morph_data->sources.has(mt), ERR_INVALID_DATA);
@@ -525,7 +525,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				normal_ofs = vertex_ofs;
 			}
 
-			if (normal_source_id != "") {
+			if (!normal_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(normal_source_id), ERR_INVALID_DATA);
 				normal_src = &meshdata.sources[normal_source_id];
 			}
@@ -545,7 +545,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				binormal_ofs = vertex_ofs;
 			}
 
-			if (binormal_source_id != "") {
+			if (!binormal_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(binormal_source_id), ERR_INVALID_DATA);
 				binormal_src = &meshdata.sources[binormal_source_id];
 			}
@@ -565,7 +565,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				tangent_ofs = vertex_ofs;
 			}
 
-			if (tangent_source_id != "") {
+			if (!tangent_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(tangent_source_id), ERR_INVALID_DATA);
 				tangent_src = &meshdata.sources[tangent_source_id];
 			}
@@ -585,7 +585,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				uv_ofs = vertex_ofs;
 			}
 
-			if (uv_source_id != "") {
+			if (!uv_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(uv_source_id), ERR_INVALID_DATA);
 				uv_src = &meshdata.sources[uv_source_id];
 			}
@@ -605,7 +605,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				uv2_ofs = vertex_ofs;
 			}
 
-			if (uv2_source_id != "") {
+			if (!uv2_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(uv2_source_id), ERR_INVALID_DATA);
 				uv2_src = &meshdata.sources[uv2_source_id];
 			}
@@ -625,7 +625,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				color_ofs = vertex_ofs;
 			}
 
-			if (color_source_id != "") {
+			if (!color_source_id.is_empty()) {
 				ERR_FAIL_COND_V(!meshdata.sources.has(color_source_id), ERR_INVALID_DATA);
 				color_src = &meshdata.sources[color_source_id];
 			}
@@ -637,7 +637,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		/* ADD WEIGHTS IF EXIST */
 		/************************/
 
-		Map<int, Vector<Collada::Vertex::Weight>> pre_weights;
+		HashMap<int, Vector<Collada::Vertex::Weight>> pre_weights;
 
 		bool has_weights = false;
 
@@ -727,7 +727,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			has_weights = true;
 		}
 
-		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
+		RBSet<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
 
 		/**************************/
@@ -875,8 +875,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		Vector<Collada::Vertex> vertex_array; //there we go, vertex array
 
 		vertex_array.resize(vertex_set.size());
-		for (Set<Collada::Vertex>::Element *F = vertex_set.front(); F; F = F->next()) {
-			vertex_array.write[F->get().idx] = F->get();
+		for (const Collada::Vertex &F : vertex_set) {
+			vertex_array.write[F.idx] = F;
 		}
 
 		if (has_weights) {
@@ -914,7 +914,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 						material = material_cache[target];
 					}
 
-				} else if (p.material != "") {
+				} else if (!p.material.is_empty()) {
 					WARN_PRINT("Collada: Unreferenced material in geometry instance: " + p.material);
 				}
 			}
@@ -994,13 +994,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				Array a = p_morph_meshes[mi]->get_surface_arrays(surface);
 				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
 
-				if (has_weights) {
-					a[Mesh::ARRAY_WEIGHTS] = d[Mesh::ARRAY_WEIGHTS];
-					a[Mesh::ARRAY_BONES] = d[Mesh::ARRAY_BONES];
+				// Enforce blend shape mask array format
+				for (int mj = 0; mj < Mesh::ARRAY_MAX; mj++) {
+					if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1 << mj))) {
+						a[mj] = Variant();
+					}
 				}
-
-				a[Mesh::ARRAY_INDEX] = Variant();
-				//a.resize(Mesh::ARRAY_MAX); //no need for index
 				mr.push_back(a);
 			}
 
@@ -1128,7 +1127,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(nmsk.node);
 					ERR_FAIL_COND_V(!sk, ERR_INVALID_DATA);
 					ERR_FAIL_COND_V(!skeleton_bone_map.has(sk), ERR_INVALID_DATA);
-					Map<String, int> &bone_remap_map = skeleton_bone_map[sk];
+					HashMap<String, int> &bone_remap_map = skeleton_bone_map[sk];
 
 					meshid = skin->base;
 
@@ -1198,7 +1197,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					}
 				}
 
-				ERR_FAIL_COND_V_MSG(ngsource != "", ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
+				ERR_FAIL_COND_V_MSG(!ngsource.is_empty(), ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
 
 			} else {
 				meshid = ng2->source;
@@ -1215,13 +1214,13 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh = Ref<ImporterMesh>(memnew(ImporterMesh));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					String name = meshdata.name;
-					if (name == "") {
+					if (name.is_empty()) {
 						name = "Mesh";
 					}
 					int counter = 2;
 					while (mesh_unique_names.has(name)) {
 						name = meshdata.name;
-						if (name == "") {
+						if (name.is_empty()) {
 							name = "Mesh";
 						}
 						name += itos(counter++);
@@ -1261,7 +1260,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							}
 
 							mi->set_surface_material(i, material);
-						} else if (matname != "") {
+						} else if (!matname.is_empty()) {
 							WARN_PRINT("Collada: Unreferenced material in geometry instance: " + matname);
 						}
 					}
@@ -1343,7 +1342,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 				// test source(s)
 				String source = ng->source;
 
-				while (source != "") {
+				while (!source.is_empty()) {
 					if (collada.state.skin_controller_data_map.has(source)) {
 						const Collada::SkinControllerData &skin = collada.state.skin_controller_data_map[source];
 
@@ -1453,7 +1452,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		//main anim
 	}
 
-	Set<int> track_filter;
+	HashSet<int> track_filter;
 
 	if (p_clip == -1) {
 		for (int i = 0; i < collada.state.animation_clips.size(); i++) {
@@ -1508,14 +1507,14 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 	bool tracks_found = false;
 
-	for (Set<String>::Element *E = valid_animated_nodes.front(); E; E = E->next()) {
+	for (const String &E : valid_animated_nodes) {
 		// take snapshots
 
-		if (!collada.state.scene_map.has(E->get())) {
+		if (!collada.state.scene_map.has(E)) {
 			continue;
 		}
 
-		NodeMap &nm = node_map[E->get()];
+		NodeMap &nm = node_map[E];
 		String path = scene->get_path_to(nm.node);
 
 		if (nm.bone >= 0) {
@@ -1526,7 +1525,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 		bool found_anim = false;
 
-		Collada::Node *cn = collada.state.scene_map[E->get()];
+		Collada::Node *cn = collada.state.scene_map[E];
 		if (cn->ignore_anim) {
 			continue;
 		}
@@ -1535,7 +1534,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		bool has_rotation = false;
 		bool has_scale = false;
 
-		for (int i = 0; cn->xform_list.size(); i++) {
+		for (int i = 0; i < cn->xform_list.size(); i++) {
 			switch (cn->xform_list[i].op) {
 				case Collada::Node::XForm::OP_ROTATE: {
 					has_rotation = true;
@@ -1666,7 +1665,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 
 		if (nm.bone >= 0) {
 			if (found_anim) {
-				bones_with_animation[E->get()] = true;
+				bones_with_animation[E] = true;
 			}
 		}
 
@@ -1755,7 +1754,7 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}
@@ -1796,40 +1795,26 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 		AnimationPlayer *ap = memnew(AnimationPlayer);
 		for (int i = 0; i < state.animations.size(); i++) {
 			String name;
-			if (state.animations[i]->get_name() == "") {
+			if (state.animations[i]->get_name().is_empty()) {
 				name = "default";
 			} else {
 				name = state.animations[i]->get_name();
 			}
 
-			ap->add_animation(name, state.animations[i]);
+			Ref<AnimationLibrary> library;
+			if (!ap->has_animation_library("")) {
+				library.instantiate();
+				ap->add_animation_library("", library);
+			} else {
+				library = ap->get_animation_library("");
+			}
+			library->add_animation(name, state.animations[i]);
 		}
 		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
 	}
 
 	return state.scene;
-}
-
-Ref<Animation> EditorSceneFormatImporterCollada::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
-	ColladaImport state;
-
-	state.use_mesh_builtin_materials = false;
-
-	Error err = state.load(p_path, Collada::IMPORT_FLAG_ANIMATION, p_flags & EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load animation from file '" + p_path + "'.");
-
-	state.create_animations(true);
-	if (state.scene) {
-		memdelete(state.scene);
-	}
-
-	if (state.animations.size() == 0) {
-		return Ref<Animation>();
-	}
-	Ref<Animation> anim = state.animations[0];
-
-	return anim;
 }
 
 EditorSceneFormatImporterCollada::EditorSceneFormatImporterCollada() {

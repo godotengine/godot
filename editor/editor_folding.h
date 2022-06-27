@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,14 +37,14 @@ class EditorFolding {
 	Vector<String> _get_unfolds(const Object *p_object);
 	void _set_unfolds(Object *p_object, const Vector<String> &p_unfolds);
 
-	void _fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, Set<RES> &resources);
+	void _fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, HashSet<Ref<Resource>> &resources);
 
-	void _do_object_unfolds(Object *p_object, Set<RES> &resources);
-	void _do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resources);
+	void _do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> &resources);
+	void _do_node_unfolds(Node *p_root, Node *p_node, HashSet<Ref<Resource>> &resources);
 
 public:
-	void save_resource_folding(const RES &p_resource, const String &p_path);
-	void load_resource_folding(RES p_resource, const String &p_path);
+	void save_resource_folding(const Ref<Resource> &p_resource, const String &p_path);
+	void load_resource_folding(Ref<Resource> p_resource, const String &p_path);
 
 	void save_scene_folding(const Node *p_scene, const String &p_path);
 	void load_scene_folding(Node *p_scene, const String &p_path);

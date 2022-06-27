@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,18 +47,21 @@ public:
 private:
 	RID particles;
 
-	bool one_shot;
-	int amount;
-	double lifetime;
-	double pre_process_time;
-	real_t explosiveness_ratio;
-	real_t randomness_ratio;
-	double speed_scale;
+	bool one_shot = false;
+	int amount = 0;
+	double lifetime = 0.0;
+	double pre_process_time = 0.0;
+	real_t explosiveness_ratio = 0.0;
+	real_t randomness_ratio = 0.0;
+	double speed_scale = 0.0;
 	Rect2 visibility_rect;
-	bool local_coords;
-	int fixed_fps;
-	bool fractional_delta;
-
+	bool local_coords = false;
+	int fixed_fps = 0;
+	bool fractional_delta = false;
+	bool interpolate = true;
+#ifdef TOOLS_ENABLED
+	bool show_visibility_rect = false;
+#endif
 	Ref<Material> process_material;
 
 	DrawOrder draw_order;
@@ -77,11 +80,12 @@ private:
 
 	RID mesh;
 
+	void _attach_sub_emitter();
+
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
-
 	void _update_collision_size();
 
 public:
@@ -101,6 +105,10 @@ public:
 	void set_trail_length(double p_seconds);
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
+
+#ifdef TOOLS_ENABLED
+	void set_show_visibility_rect(bool p_show_visibility_rect);
+#endif
 
 	bool is_emitting() const;
 	int get_amount() const;
@@ -126,6 +134,9 @@ public:
 	void set_fractional_delta(bool p_enable);
 	bool get_fractional_delta() const;
 
+	void set_interpolate(bool p_enable);
+	bool get_interpolate() const;
+
 	void set_draw_order(DrawOrder p_order);
 	DrawOrder get_draw_order() const;
 
@@ -134,6 +145,19 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 
+	void set_sub_emitter(const NodePath &p_path);
+	NodePath get_sub_emitter() const;
+
+	enum EmitFlags {
+		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
+		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
+		EMIT_FLAG_VELOCITY = RS::PARTICLES_EMIT_FLAG_VELOCITY,
+		EMIT_FLAG_COLOR = RS::PARTICLES_EMIT_FLAG_COLOR,
+		EMIT_FLAG_CUSTOM = RS::PARTICLES_EMIT_FLAG_CUSTOM
+	};
+
+	void emit_particle(const Transform2D &p_transform, const Vector2 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+
 	void restart();
 	Rect2 capture_rect() const;
 	GPUParticles2D();
@@ -141,5 +165,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
+VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
 
 #endif // PARTICLES_2D_H

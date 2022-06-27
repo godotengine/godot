@@ -202,12 +202,12 @@ struct sbix
 
   struct accelerator_t
   {
-    void init (hb_face_t *face)
+    accelerator_t (hb_face_t *face)
     {
       table = hb_sanitize_context_t ().reference_table<sbix> (face);
       num_glyphs = face->get_num_glyphs ();
     }
-    void fini () { table.destroy (); }
+    ~accelerator_t () { table.destroy (); }
 
     bool has_data () const { return table->has_data (); }
 
@@ -407,7 +407,10 @@ struct sbix
   DEFINE_SIZE_ARRAY (8, strikes);
 };
 
-struct sbix_accelerator_t : sbix::accelerator_t {};
+struct sbix_accelerator_t : sbix::accelerator_t {
+  sbix_accelerator_t (hb_face_t *face) : sbix::accelerator_t (face) {}
+};
+
 
 } /* namespace OT */
 

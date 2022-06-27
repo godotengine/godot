@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,7 +51,7 @@ class Time : public Object {
 public:
 	static Time *get_singleton();
 
-	enum Month : uint8_t {
+	enum Month {
 		/// Start at 1 to follow Windows SYSTEMTIME structure
 		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
 		MONTH_JANUARY = 1,
@@ -85,10 +85,11 @@ public:
 	String get_datetime_string_from_unix_time(int64_t p_unix_time_val, bool p_use_space = false) const;
 	String get_date_string_from_unix_time(int64_t p_unix_time_val) const;
 	String get_time_string_from_unix_time(int64_t p_unix_time_val) const;
-	Dictionary get_datetime_dict_from_string(String p_datetime, bool p_weekday = true) const;
-	String get_datetime_string_from_dict(Dictionary p_datetime, bool p_use_space = false) const;
-	int64_t get_unix_time_from_datetime_dict(Dictionary p_datetime) const;
+	Dictionary get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday = true) const;
+	String get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space = false) const;
+	int64_t get_unix_time_from_datetime_dict(const Dictionary p_datetime) const;
 	int64_t get_unix_time_from_datetime_string(String p_datetime) const;
+	String get_offset_string_from_offset_minutes(int64_t p_offset_minutes) const;
 
 	// Methods that get information from OS.
 	Dictionary get_datetime_dict_from_system(bool p_utc = false) const;

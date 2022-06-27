@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "mesh_library.h"
+
+#include "box_shape_3d.h"
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -98,14 +100,14 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
-		String name = "item/" + itos(E.key) + "/";
-		p_list->push_back(PropertyInfo(Variant::STRING, name + "name"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + "mesh_transform"));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, name + "shapes"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + "navmesh_transform"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
+		String name = vformat("%s/%d/", PNAME("item"), E.key);
+		p_list->push_back(PropertyInfo(Variant::STRING, name + PNAME("name")));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, name + PNAME("shapes")));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
 
@@ -255,12 +257,35 @@ int MeshLibrary::get_last_unused_item_id() const {
 }
 
 void MeshLibrary::_set_item_shapes(int p_item, const Array &p_shapes) {
-	ERR_FAIL_COND(p_shapes.size() & 1);
+	Array arr_shapes = p_shapes;
+	int size = p_shapes.size();
+	if (size & 1) {
+		ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+		int prev_size = item_map[p_item].shapes.size() * 2;
+
+		if (prev_size < size) {
+			// Check if last element is a shape.
+			Ref<Shape3D> shape = arr_shapes[size - 1];
+			if (shape.is_null()) {
+				Ref<BoxShape3D> box_shape;
+				box_shape.instantiate();
+				arr_shapes[size - 1] = box_shape;
+			}
+
+			// Make sure the added element is a Transform3D.
+			arr_shapes.push_back(Transform3D());
+			size++;
+		} else {
+			size--;
+			arr_shapes.resize(size);
+		}
+	}
+
 	Vector<ShapeData> shapes;
-	for (int i = 0; i < p_shapes.size(); i += 2) {
+	for (int i = 0; i < size; i += 2) {
 		ShapeData sd;
-		sd.shape = p_shapes[i + 0];
-		sd.local_transform = p_shapes[i + 1];
+		sd.shape = arr_shapes[i + 0];
+		sd.local_transform = arr_shapes[i + 1];
 
 		if (sd.shape.is_valid()) {
 			shapes.push_back(sd);

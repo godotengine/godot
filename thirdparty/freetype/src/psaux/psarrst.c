@@ -65,7 +65,6 @@
     arrstack->error     = error;
     arrstack->sizeItem  = sizeItem;
     arrstack->allocated = 0;
-    arrstack->chunk     = 10;    /* chunks of 10 items */
     arrstack->count     = 0;
     arrstack->totalSize = 0;
     arrstack->ptr       = NULL;
@@ -110,7 +109,7 @@
 
       FT_ASSERT( newSize > 0 );   /* avoid realloc with zero size */
 
-      if ( !FT_REALLOC( arrstack->ptr, arrstack->totalSize, newSize ) )
+      if ( !FT_QREALLOC( arrstack->ptr, arrstack->totalSize, newSize ) )
       {
         arrstack->allocated = numElements;
         arrstack->totalSize = newSize;
@@ -216,9 +215,9 @@
 
     if ( arrstack->count == arrstack->allocated )
     {
-      /* grow the buffer by one chunk */
+      /* increase the buffer size */
       if ( !cf2_arrstack_setNumElements(
-             arrstack, arrstack->allocated + arrstack->chunk ) )
+             arrstack, arrstack->allocated * 2 + 16 ) )
       {
         /* on error, ignore the push */
         return;

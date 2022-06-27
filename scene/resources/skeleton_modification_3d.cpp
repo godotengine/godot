@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,9 @@
 void SkeletonModification3D::_execute(real_t p_delta) {
 	GDVIRTUAL_CALL(_execute, p_delta);
 
-	if (!enabled)
+	if (!enabled) {
 		return;
+	}
 }
 
 void SkeletonModification3D::_setup_modification(SkeletonModificationStack3D *p_stack) {

@@ -9,7 +9,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(set = 0, binding = 0) uniform sampler2D source_normal;
 layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_roughness;
 
-layout(push_constant, binding = 1, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	float curve;
 	uint pad;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 class DocTools {
 public:
 	String version;
-	Map<String, DocData::ClassDoc> class_list;
+	HashMap<String, DocData::ClassDoc> class_list;
 
 	static Error erase_classes(const String &p_dir);
 
@@ -47,7 +47,7 @@ public:
 	bool has_doc(const String &p_class_name);
 	void generate(bool p_basic_types = false);
 	Error load_classes(const String &p_dir);
-	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);
+	Error save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path);
 
 	Error _load(Ref<XMLParser> parser);
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);

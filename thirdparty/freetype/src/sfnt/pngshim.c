@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2022 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -270,7 +270,10 @@
 
     int         bitdepth, color_type, interlace;
     FT_Int      i;
-    png_byte*  *rows = NULL; /* pacify compiler */
+
+    /* `rows` gets modified within a 'setjmp' scope; */
+    /* we thus need the `volatile` keyword.          */
+    png_byte* *volatile  rows = NULL;
 
 
     if ( x_offset < 0 ||
@@ -364,7 +367,7 @@
     }
 
     /* transform transparency to alpha */
-    if ( png_get_valid(png, info, PNG_INFO_tRNS ) )
+    if ( png_get_valid( png, info, PNG_INFO_tRNS ) )
       png_set_tRNS_to_alpha( png );
 
     if ( bitdepth == 16 )
@@ -384,7 +387,7 @@
     png_set_filler( png, 0xFF, PNG_FILLER_AFTER );
 
     /* recheck header after setting EXPAND options */
-    png_read_update_info(png, info );
+    png_read_update_info( png, info );
     png_get_IHDR( png, info,
                   &imgWidth, &imgHeight,
                   &bitdepth, &color_type, &interlace,
@@ -427,7 +430,7 @@
         goto DestroyExit;
     }
 
-    if ( FT_NEW_ARRAY( rows, imgHeight ) )
+    if ( FT_QNEW_ARRAY( rows, imgHeight ) )
     {
       error = FT_THROW( Out_Of_Memory );
       goto DestroyExit;
@@ -438,11 +441,11 @@
 
     png_read_image( png, rows );
 
-    FT_FREE( rows );
-
     png_read_end( png, info );
 
   DestroyExit:
+    /* even if reading fails with longjmp, rows must be freed */
+    FT_FREE( rows );
     png_destroy_read_struct( &png, &info, NULL );
     FT_Stream_Close( &stream );
 

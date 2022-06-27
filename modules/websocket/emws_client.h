@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,15 +53,15 @@ private:
 	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
 
 public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IPAddress get_connected_host() const;
-	uint16_t get_connected_port() const;
-	virtual ConnectionStatus get_connection_status() const;
-	int get_max_packet_size() const;
-	virtual void poll();
+	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
+	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
+	Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
+	void disconnect_from_host(int p_code = 1000, String p_reason = "") override;
+	IPAddress get_connected_host() const override;
+	uint16_t get_connected_port() const override;
+	virtual ConnectionStatus get_connection_status() const override;
+	int get_max_packet_size() const override;
+	virtual void poll() override;
 	EMWSClient();
 	~EMWSClient();
 };

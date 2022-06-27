@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,10 @@
 
 #include "cpu_particles_3d_editor_plugin.h"
 
+#include "editor/editor_node.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene_tree_editor.h"
+#include "scene/gui/menu_button.h"
 
 void CPUParticles3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -40,8 +43,10 @@ void CPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void CPUParticles3DEditor::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
-		options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
+	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			options->set_icon(get_theme_icon(SNAME("CPUParticles3D"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -119,10 +124,9 @@ void CPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+CPUParticles3DEditorPlugin::CPUParticles3DEditorPlugin() {
 	particles_editor = memnew(CPUParticles3DEditor);
-	editor->get_main_control()->add_child(particles_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(particles_editor);
 
 	particles_editor->hide();
 }

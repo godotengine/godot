@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
-	Set<DrawEdge> edges;
+	HashSet<DrawEdge, DrawEdge> edges;
 
 	int index_count = faces.size();
 	ERR_FAIL_COND_V((index_count % 3) != 0, Vector<Vector3>());
@@ -50,9 +50,9 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 	points.resize(edges.size() * 2);
 	int idx = 0;
-	for (Set<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
-		points.write[idx + 0] = E->get().a;
-		points.write[idx + 1] = E->get().b;
+	for (const DrawEdge &E : edges) {
+		points.write[idx + 0] = E.a;
+		points.write[idx + 1] = E.b;
 		idx += 2;
 	}
 

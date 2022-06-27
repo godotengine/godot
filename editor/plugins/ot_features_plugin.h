@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef OT_FEATURES_PLUGIN_H
 #define OT_FEATURES_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 
@@ -39,7 +38,7 @@
 
 class OpenTypeFeaturesEditor : public EditorProperty {
 	GDCLASS(OpenTypeFeaturesEditor, EditorProperty);
-	EditorSpinSlider *spin;
+	EditorSpinSlider *spin = nullptr;
 	bool setting = true;
 	void _value_changed(double p_val);
 	Button *button = nullptr;
@@ -57,10 +56,10 @@ public:
 
 /*************************************************************************/
 
-class OpenTypeFeaturesAdd : public EditorProperty {
-	GDCLASS(OpenTypeFeaturesAdd, EditorProperty);
+class OpenTypeFeaturesAdd : public Button {
+	GDCLASS(OpenTypeFeaturesAdd, Button);
 
-	Button *button = nullptr;
+	Object *edited_object = nullptr;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_ss = nullptr;
 	PopupMenu *menu_cv = nullptr;
@@ -74,7 +73,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void update_property() override;
+	void setup(Object *p_object);
 
 	OpenTypeFeaturesAdd();
 };
@@ -86,8 +85,6 @@ class EditorInspectorPluginOpenTypeFeatures : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-	virtual void parse_category(Object *p_object, const String &p_parse_category) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
 };
 
@@ -97,7 +94,7 @@ class OpenTypeFeaturesEditorPlugin : public EditorPlugin {
 	GDCLASS(OpenTypeFeaturesEditorPlugin, EditorPlugin);
 
 public:
-	OpenTypeFeaturesEditorPlugin(EditorNode *p_node);
+	OpenTypeFeaturesEditorPlugin();
 
 	virtual String get_name() const override { return "OpenTypeFeatures"; }
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,12 +36,12 @@
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
-#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 
 class EditorHTTPServer : public RefCounted {
 private:
 	Ref<TCPServer> server;
-	Map<String, String> mimes;
+	HashMap<String, String> mimes;
 	Ref<StreamPeerTCP> tcp;
 	Ref<StreamPeerSSL> ssl;
 	Ref<StreamPeer> peer;
@@ -153,8 +153,8 @@ public:
 		}
 		const String ctype = mimes[req_ext];
 
-		FileAccess *f = FileAccess::open(filepath, FileAccess::READ);
-		ERR_FAIL_COND(!f);
+		Ref<FileAccess> f = FileAccess::open(filepath, FileAccess::READ);
+		ERR_FAIL_COND(f.is_null());
 		String s = "HTTP/1.1 200 OK\r\n";
 		s += "Connection: Close\r\n";
 		s += "Content-Type: " + ctype + "\r\n";
@@ -166,7 +166,6 @@ public:
 		CharString cs = s.utf8();
 		Error err = peer->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
 		if (err != OK) {
-			memdelete(f);
 			ERR_FAIL();
 		}
 
@@ -178,11 +177,9 @@ public:
 			}
 			err = peer->put_data(bytes, read);
 			if (err != OK) {
-				memdelete(f);
 				ERR_FAIL();
 			}
 		}
-		memdelete(f);
 	}
 
 	void poll() {

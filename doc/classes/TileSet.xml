@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" version="4.0">
+<class name="TileSet" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -13,7 +13,7 @@
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
-		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
 		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
 		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
@@ -51,7 +51,7 @@
 			<argument index="0" name="pattern" type="TileMapPattern" />
 			<argument index="1" name="index" type="int" default="-1" />
 			<description>
-				Adds a [TileMapPattern] to be stored in the TileSet resouce. If provided, insert it at the given [code]index[/code].
+				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [code]index[/code].
 			</description>
 		</method>
 		<method name="add_physics_layer">
@@ -113,7 +113,7 @@
 			<argument index="0" name="source_from" type="int" />
 			<argument index="1" name="coords_from" type="Vector2i" />
 			<description>
-				Returns the coodinate-level proxy for the given identifiers. The returned array contains the two proxie's target identifiers (source ID and atlas coords ID).
+				Returns the coordinate-level proxy for the given identifiers. The returned array contains the two target identifiers of the proxy (source ID and atlas coordinates ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
 			</description>
 		</method>
@@ -582,7 +582,7 @@
 			Diamond tile shape (for isometric look).
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
-			Rectangular tile shape with one row/colum out of two offset by half a tile.
+			Rectangular tile shape with one row/column out of two offset by half a tile.
 		</constant>
 		<constant name="TILE_SHAPE_HEXAGON" value="3" enum="TileShape">
 			Hexagonal tile shape.

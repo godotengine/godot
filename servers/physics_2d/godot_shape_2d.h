@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ class GodotShape2D {
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
-	Map<GodotShapeOwner2D *, int> owners;
+	HashMap<GodotShapeOwner2D *, int> owners;
 
 protected:
 	void configure(const Rect2 &p_aabb);
@@ -86,7 +86,7 @@ public:
 	void add_owner(GodotShapeOwner2D *p_owner);
 	void remove_owner(GodotShapeOwner2D *p_owner);
 	bool is_owner(GodotShapeOwner2D *p_owner) const;
-	const Map<GodotShapeOwner2D *, int> &get_owners() const;
+	const HashMap<GodotShapeOwner2D *, int> &get_owners() const;
 
 	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_xform, Vector2 *r_supports, int &r_amount) const {
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);
@@ -134,7 +134,7 @@ public:
 		real_t mina, maxa;                                                                                                                                          \
 		real_t minb, maxb;                                                                                                                                          \
 		Transform2D ofsb = p_transform;                                                                                                                             \
-		ofsb.elements[2] += p_cast;                                                                                                                                 \
+		ofsb.columns[2] += p_cast;                                                                                                                                  \
 		project_range(p_normal, p_transform, mina, maxa);                                                                                                           \
 		project_range(p_normal, ofsb, minb, maxb);                                                                                                                  \
 		r_min = MIN(mina, minb);                                                                                                                                    \

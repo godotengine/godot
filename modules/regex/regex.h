@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
@@ -48,7 +48,7 @@ class RegExMatch : public RefCounted {
 
 	String subject;
 	Vector<Range> data;
-	Map<String, int> names;
+	HashMap<String, int> names;
 
 	friend class RegEx;
 
@@ -71,7 +71,7 @@ public:
 class RegEx : public RefCounted {
 	GDCLASS(RegEx, RefCounted);
 
-	void *general_ctx;
+	void *general_ctx = nullptr;
 	void *code = nullptr;
 	String pattern;
 

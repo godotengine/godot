@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifdef IPHONE_ENABLED
 
 #include "os_iphone.h"
+
 #import "app_delegate.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -45,6 +46,7 @@
 #import <AudioToolbox/AudioServices.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
+#include <sys/sysctl.h>
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -168,7 +170,7 @@ void OSIPhone::delete_main_loop() {
 	if (main_loop) {
 		main_loop->finalize();
 		memdelete(main_loop);
-	};
+	}
 
 	main_loop = nullptr;
 }
@@ -197,17 +199,22 @@ void OSIPhone::finalize() {
 	deinitialize_modules();
 
 	// Already gets called
-	//    delete_main_loop();
+	//delete_main_loop();
 }
 
 // MARK: Dynamic Libraries
 
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	if (p_path.length() == 0) {
 		p_library_handle = RTLD_SELF;
+
+		if (r_resolved_path != nullptr) {
+			*r_resolved_path = p_path;
+		}
+
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
+	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path, r_resolved_path);
 }
 
 Error OSIPhone::close_dynamic_library(void *p_library_handle) {
@@ -230,12 +237,13 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 
 String OSIPhone::get_name() const {
 	return "iOS";
-};
+}
 
 String OSIPhone::get_model_name() const {
 	String model = ios->get_model();
-	if (model != "")
+	if (model != "") {
 		return model;
+	}
 
 	return OS_Unix::get_model_name();
 }
@@ -253,14 +261,12 @@ Error OSIPhone::shell_open(String p_uri) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
 
 	return OK;
-};
+}
 
 void OSIPhone::set_user_data_dir(String p_dir) {
-	DirAccess *da = DirAccess::open(p_dir);
-
+	Ref<DirAccess> da = DirAccess::open(p_dir);
 	user_data_dir = da->get_current_dir();
 	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
-	memdelete(da);
 }
 
 String OSIPhone::get_user_data_dir() const {
@@ -287,9 +293,22 @@ String OSIPhone::get_unique_id() const {
 	return String::utf8([uuid UTF8String]);
 }
 
+String OSIPhone::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
-	// iOS does not support duration for vibration
-	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	if (ios->supports_haptic_engine()) {
+		ios->vibrate_haptic_engine((float)p_duration_ms / 1000.f);
+	} else {
+		// iOS <13 does not support duration for vibration
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+	}
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

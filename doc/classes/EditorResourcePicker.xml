@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorResourcePicker" inherits="HBoxContainer" version="4.0">
+<class name="EditorResourcePicker" inherits="HBoxContainer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's control for selecting [Resource] type properties.
 	</brief_description>
@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="_handle_menu_selected" qualifiers="virtual">
-			<return type="void" />
+			<return type="bool" />
 			<argument index="0" name="id" type="int" />
 			<description>
 				This virtual method can be implemented to handle context menu items not handled by default. See [method _set_create_options].

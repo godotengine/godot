@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,22 +31,22 @@
 #ifndef TEXTURE_3D_EDITOR_PLUGIN_H
 #define TEXTURE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
 class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 
-	SpinBox *layer;
-	Label *info;
+	SpinBox *layer = nullptr;
+	Label *info = nullptr;
 	Ref<Texture3D> texture;
 
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> material;
 
-	Control *texture_rect;
+	Control *texture_rect = nullptr;
 
 	void _make_shaders();
 
@@ -88,7 +88,7 @@ class Texture3DEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Texture3D"; }
 
-	Texture3DEditorPlugin(EditorNode *p_node);
+	Texture3DEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

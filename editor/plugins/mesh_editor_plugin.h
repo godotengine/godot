@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef MESH_EDITOR_PLUGIN_H
 #define MESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
@@ -45,17 +44,17 @@ class MeshEditor : public SubViewportContainer {
 	float rot_x;
 	float rot_y;
 
-	SubViewport *viewport;
-	MeshInstance3D *mesh_instance;
-	Node3D *rotation;
-	DirectionalLight3D *light1;
-	DirectionalLight3D *light2;
-	Camera3D *camera;
+	SubViewport *viewport = nullptr;
+	MeshInstance3D *mesh_instance = nullptr;
+	Node3D *rotation = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
 
 	Ref<Mesh> mesh;
 
-	TextureButton *light_1_switch;
-	TextureButton *light_2_switch;
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
 
 	void _button_pressed(Node *p_button);
 	bool first_enter;
@@ -85,7 +84,7 @@ class MeshEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Mesh"; }
 
-	MeshEditorPlugin(EditorNode *p_node);
+	MeshEditorPlugin();
 };
 
 #endif

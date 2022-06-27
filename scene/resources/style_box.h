@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,8 +44,14 @@ class StyleBox : public Resource {
 	float margin[4];
 
 protected:
-	virtual float get_style_margin(Side p_side) const = 0;
+	virtual float get_style_margin(Side p_side) const;
 	static void _bind_methods();
+
+	GDVIRTUAL1RC(float, _get_style_margin, Side)
+	GDVIRTUAL2RC(bool, _test_mask, Point2, Rect2)
+	GDVIRTUAL0RC(Size2, _get_center_size)
+	GDVIRTUAL1RC(Rect2, _get_draw_rect, Rect2)
+	GDVIRTUAL2C(_draw, RID, Rect2)
 
 public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
@@ -56,7 +62,7 @@ public:
 	virtual Size2 get_center_size() const;
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const;
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	CanvasItem *get_current_item_drawn() const;
 
@@ -149,6 +155,7 @@ class StyleBoxFlat : public StyleBox {
 
 	bool draw_center = true;
 	bool blend_border = false;
+	Vector2 skew;
 	bool anti_aliased = true;
 
 	int corner_detail = 8;
@@ -193,6 +200,9 @@ public:
 
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;
+
+	void set_skew(Vector2 p_skew);
+	Vector2 get_skew() const;
 
 	void set_shadow_color(const Color &p_color);
 	Color get_shadow_color() const;

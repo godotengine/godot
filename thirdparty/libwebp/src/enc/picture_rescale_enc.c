@@ -164,22 +164,25 @@ int WebPPictureCrop(WebPPicture* pic,
 //------------------------------------------------------------------------------
 // Simple picture rescaler
 
-static void RescalePlane(const uint8_t* src,
-                         int src_width, int src_height, int src_stride,
-                         uint8_t* dst,
-                         int dst_width, int dst_height, int dst_stride,
-                         rescaler_t* const work,
-                         int num_channels) {
+static int RescalePlane(const uint8_t* src,
+                        int src_width, int src_height, int src_stride,
+                        uint8_t* dst,
+                        int dst_width, int dst_height, int dst_stride,
+                        rescaler_t* const work,
+                        int num_channels) {
   WebPRescaler rescaler;
   int y = 0;
-  WebPRescalerInit(&rescaler, src_width, src_height,
-                   dst, dst_width, dst_height, dst_stride,
-                   num_channels, work);
+  if (!WebPRescalerInit(&rescaler, src_width, src_height,
+                        dst, dst_width, dst_height, dst_stride,
+                        num_channels, work)) {
+    return 0;
+  }
   while (y < src_height) {
     y += WebPRescalerImport(&rescaler, src_height - y,
                             src + y * src_stride, src_stride);
     WebPRescalerExport(&rescaler);
   }
+  return 1;
 }
 
 static void AlphaMultiplyARGB(WebPPicture* const pic, int inverse) {
@@ -222,25 +225,28 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
     // If present, we need to rescale alpha first (for AlphaMultiplyY).
     if (pic->a != NULL) {
       WebPInitAlphaProcessing();
-      RescalePlane(pic->a, prev_width, prev_height, pic->a_stride,
-                   tmp.a, width, height, tmp.a_stride, work, 1);
+      if (!RescalePlane(pic->a, prev_width, prev_height, pic->a_stride,
+                        tmp.a, width, height, tmp.a_stride, work, 1)) {
+        return 0;
+      }
     }
 
     // We take transparency into account on the luma plane only. That's not
     // totally exact blending, but still is a good approximation.
     AlphaMultiplyY(pic, 0);
-    RescalePlane(pic->y, prev_width, prev_height, pic->y_stride,
-                 tmp.y, width, height, tmp.y_stride, work, 1);
+    if (!RescalePlane(pic->y, prev_width, prev_height, pic->y_stride,
+                      tmp.y, width, height, tmp.y_stride, work, 1) ||
+        !RescalePlane(pic->u,
+                      HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
+                      tmp.u,
+                      HALVE(width), HALVE(height), tmp.uv_stride, work, 1) ||
+        !RescalePlane(pic->v,
+                      HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
+                      tmp.v,
+                      HALVE(width), HALVE(height), tmp.uv_stride, work, 1)) {
+      return 0;
+    }
     AlphaMultiplyY(&tmp, 1);
-
-    RescalePlane(pic->u,
-                 HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
-                 tmp.u,
-                 HALVE(width), HALVE(height), tmp.uv_stride, work, 1);
-    RescalePlane(pic->v,
-                 HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
-                 tmp.v,
-                 HALVE(width), HALVE(height), tmp.uv_stride, work, 1);
   } else {
     work = (rescaler_t*)WebPSafeMalloc(2ULL * width * 4, sizeof(*work));
     if (work == NULL) {
@@ -252,11 +258,12 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
     // the premultiplication afterward (while preserving the alpha channel).
     WebPInitAlphaProcessing();
     AlphaMultiplyARGB(pic, 0);
-    RescalePlane((const uint8_t*)pic->argb, prev_width, prev_height,
-                 pic->argb_stride * 4,
-                 (uint8_t*)tmp.argb, width, height,
-                 tmp.argb_stride * 4,
-                 work, 4);
+    if (!RescalePlane((const uint8_t*)pic->argb, prev_width, prev_height,
+                      pic->argb_stride * 4,
+                      (uint8_t*)tmp.argb, width, height,
+                      tmp.argb_stride * 4, work, 4)) {
+      return 0;
+    }
     AlphaMultiplyARGB(&tmp, 1);
   }
   WebPPictureFree(pic);

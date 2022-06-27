@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,12 +97,13 @@ public:
 
 private:
 	TweenProcessMode process_mode = TweenProcessMode::TWEEN_PROCESS_IDLE;
-	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_STOP;
+	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_BOUND;
 	TransitionType default_transition = TransitionType::TRANS_LINEAR;
 	EaseType default_ease = EaseType::EASE_IN_OUT;
 	ObjectID bound_node;
 
 	Vector<List<Ref<Tweener>>> tweeners;
+	float total_time = 0;
 	int current_step = -1;
 	int loops = 1;
 	int loops_done = 0;
@@ -115,6 +116,9 @@ private:
 	bool valid = false;
 	bool default_parallel = false;
 	bool parallel_enabled = false;
+#ifdef DEBUG_ENABLED
+	bool is_infinite = false;
+#endif
 
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
@@ -138,7 +142,6 @@ public:
 	void kill();
 
 	bool is_running();
-	void set_valid(bool p_valid);
 	bool is_valid();
 	void clear();
 
@@ -159,14 +162,17 @@ public:
 	Ref<Tween> parallel();
 	Ref<Tween> chain();
 
-	real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
-	Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
+	static real_t run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
+	static Variant interpolate_variant(Variant p_initial_val, Variant p_delta_val, float p_time, float p_duration, Tween::TransitionType p_trans, Tween::EaseType p_ease);
 	Variant calculate_delta_value(Variant p_intial_val, Variant p_final_val);
 
 	bool step(float p_delta);
-	bool should_pause();
+	bool can_process(bool p_tree_paused) const;
+	Node *get_bound_node() const;
+	float get_total_time() const;
 
-	Tween() {}
+	Tween();
+	Tween(bool p_valid);
 };
 
 VARIANT_ENUM_CAST(Tween::TweenPauseMode);
@@ -273,6 +279,7 @@ private:
 	Ref<Tween> tween;
 	Variant initial_val;
 	Variant delta_val;
+	Variant final_val;
 	Callable callback;
 };
 

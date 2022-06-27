@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,8 @@
 
 package org.godotengine.godot;
 
-import android.content.ComponentName;
+import org.godotengine.godot.utils.ProcessPhoenix;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -65,16 +66,13 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		} else {
 			Log.v(TAG, "Creating new Godot fragment instance.");
 			godotFragment = initGodotInstance();
-			if (godotFragment == null) {
-				throw new IllegalStateException("Godot instance must be non-null.");
-			}
-
 			getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
 		}
 	}
 
 	@Override
 	public void onDestroy() {
+		Log.v(TAG, "Destroying Godot app...");
 		super.onDestroy();
 		onGodotForceQuit(godotFragment);
 	}
@@ -82,27 +80,21 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	@Override
 	public final void onGodotForceQuit(Godot instance) {
 		if (instance == godotFragment) {
-			System.exit(0);
+			Log.v(TAG, "Force quitting Godot instance");
+			ProcessPhoenix.forceQuit(this);
 		}
 	}
 
 	@Override
 	public final void onGodotRestartRequested(Godot instance) {
 		if (instance == godotFragment) {
-			// HACK:
-			//
-			// Currently it's very hard to properly deinitialize Godot on Android to restart the game
+			// It's very hard to properly de-initialize Godot on Android to restart the game
 			// from scratch. Therefore, we need to kill the whole app process and relaunch it.
 			//
 			// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
 			// releasing and reloading native libs or resetting their state somehow and clearing statics).
-			//
-			// Using instrumentation is a way of making the whole app process restart, because Android
-			// will kill any process of the same package which was already running.
-			//
-			Bundle args = new Bundle();
-			args.putParcelable("intent", getIntent());
-			startInstrumentation(new ComponentName(this, GodotInstrumentation.class), null, args);
+			Log.v(TAG, "Restarting Godot instance...");
+			ProcessPhoenix.triggerRebirth(this);
 		}
 	}
 

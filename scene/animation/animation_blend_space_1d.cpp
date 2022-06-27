@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -219,14 +219,14 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 	}
 }
 
-double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek) {
+double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_seek_root) {
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
 
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
-		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
 	}
 
 	double blend_pos = get_parameter(blend_position);
@@ -292,10 +292,10 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek) {
 
 	// actually blend the animations now
 
-	float max_time_remaining = 0.0;
+	double max_time_remaining = 0.0;
 
 	for (int i = 0; i < blend_points_used; i++) {
-		float remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, weights[i], FILTER_IGNORE, false);
+		double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, weights[i], FILTER_IGNORE, false);
 
 		max_time_remaining = MAX(max_time_remaining, remaining);
 	}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,14 +34,22 @@
 
 static Ref<ResourceFormatLoaderTheora> resource_loader_theora;
 
-void register_theora_types() {
+void initialize_theora_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	resource_loader_theora.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_theora, true);
 
 	GDREGISTER_CLASS(VideoStreamTheora);
 }
 
-void unregister_theora_types() {
+void uninitialize_theora_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	ResourceLoader::remove_resource_format_loader(resource_loader_theora);
 	resource_loader_theora.unref();
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPolygon" inherits="Resource" version="4.0">
+<class name="NavigationPolygon" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
 	</brief_description>
@@ -28,7 +28,7 @@
 		var polygon = NavigationPolygon.new()
 		var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
 		polygon.vertices = vertices
-		var indices = PackedInt32Array(0, 3, 1)
+		var indices = PackedInt32Array([0, 1, 2, 3])
 		polygon.add_polygon(indices)
 		$NavigationRegion2D.navpoly = polygon
 		[/gdscript]
@@ -36,7 +36,7 @@
 		var polygon = new NavigationPolygon();
 		var vertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
 		polygon.Vertices = vertices;
-		var indices = new int[] { 0, 3, 1 };
+		var indices = new int[] { 0, 1, 2, 3 };
 		polygon.AddPolygon(indices);
 		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").Navpoly = polygon;
 		[/csharp]
@@ -78,6 +78,12 @@
 			<return type="void" />
 			<description>
 				Clears the array of polygons, but it doesn't clear the array of outlines and vertices.
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="NavigationMesh" />
+			<description>
+				Returns the [NavigationMesh] resulting from this navigation polygon. This navmesh can be used to update the navmesh of a region with the [method NavigationServer3D.region_set_navmesh] API directly (as 2D uses the 3D server behind the scene).
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">

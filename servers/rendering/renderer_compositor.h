@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,17 @@
 #ifndef RENDERING_SERVER_COMPOSITOR_H
 #define RENDERING_SERVER_COMPOSITOR_H
 
-#include "core/math/camera_matrix.h"
-#include "core/templates/pair.h"
-#include "core/templates/self_list.h"
+#include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/storage/light_storage.h"
+#include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/particles_storage.h"
+#include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering_server.h"
+
 class RendererSceneRender;
 struct BlitToScreen {
 	RID render_target;
@@ -67,10 +71,18 @@ private:
 
 protected:
 	static RendererCompositor *(*_create_func)();
+	bool back_end = false;
+	static bool low_end;
 
 public:
 	static RendererCompositor *create();
 
+	virtual RendererLightStorage *get_light_storage() = 0;
+	virtual RendererMaterialStorage *get_material_storage() = 0;
+	virtual RendererMeshStorage *get_mesh_storage() = 0;
+	virtual RendererParticlesStorage *get_particles_storage() = 0;
+	virtual RendererTextureStorage *get_texture_storage() = 0;
+	virtual RendererGI *get_gi() = 0;
 	virtual RendererStorage *get_storage() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;
@@ -88,7 +100,7 @@ public:
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
 
-	virtual bool is_low_end() const = 0;
+	static bool is_low_end() { return low_end; };
 	virtual bool is_xr_enabled() const;
 
 	RendererCompositor();

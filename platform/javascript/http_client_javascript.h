@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ public:
 	bool is_response_chunked() const override;
 	int get_response_code() const override;
 	Error get_response_headers(List<String> *r_response) override;
-	int get_response_body_length() const override;
+	int64_t get_response_body_length() const override;
 	PackedByteArray read_response_body_chunk() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;

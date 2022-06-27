@@ -42,9 +42,22 @@ struct hb_sparseset_t
   ~hb_sparseset_t () { fini (); }
 
   hb_sparseset_t (const hb_sparseset_t& other) : hb_sparseset_t () { set (other); }
-  void operator= (const hb_sparseset_t& other) { set (other); }
-  // TODO Add move construtor/assign
-  // TODO Add constructor for Iterator
+  hb_sparseset_t (hb_sparseset_t&& other) : hb_sparseset_t () { s = std::move (other.s); }
+  hb_sparseset_t& operator = (const hb_sparseset_t& other) { set (other); return *this; }
+  hb_sparseset_t& operator = (hb_sparseset_t&& other) { s = std::move (other.s); return *this; }
+  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b) { hb_swap (a.s, b.s); }
+
+  hb_sparseset_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t ()
+  {
+    for (auto&& item : lst)
+      add (item);
+  }
+  template <typename Iterable,
+           hb_requires (hb_is_iterable (Iterable))>
+  hb_sparseset_t (const Iterable &o) : hb_sparseset_t ()
+  {
+    hb_copy (o, *this);
+  }
 
   void init_shallow () { s.init (); }
   void init ()
@@ -64,10 +77,12 @@ struct hb_sparseset_t
   void err () { s.err (); }
   bool in_error () const { return s.in_error (); }
 
+  void alloc (unsigned sz) { s.alloc (sz); }
   void reset () { s.reset (); }
   void clear () { s.clear (); }
   void invert () { s.invert (); }
   bool is_empty () const { return s.is_empty (); }
+  uint32_t hash () const { return s.hash (); }
 
   void add (hb_codepoint_t g) { s.add (g); }
   bool add_range (hb_codepoint_t a, hb_codepoint_t b) { return s.add_range (a, b); }
@@ -96,6 +111,7 @@ struct hb_sparseset_t
   typedef bool value_t;
   value_t operator [] (hb_codepoint_t k) const { return get (k); }
   bool has (hb_codepoint_t k) const { return (*this)[k] != SENTINEL; }
+
   /* Predicate. */
   bool operator () (hb_codepoint_t k) const { return has (k); }
 
@@ -111,6 +127,8 @@ struct hb_sparseset_t
   void set (const hb_sparseset_t &other) { s.set (other.s); }
 
   bool is_equal (const hb_sparseset_t &other) const { return s.is_equal (other.s); }
+  bool operator == (const hb_set_t &other) const { return is_equal (other); }
+  bool operator != (const hb_set_t &other) const { return !is_equal (other); }
 
   bool is_subset (const hb_sparseset_t &larger_set) const { return s.is_subset (larger_set.s); }
 
@@ -125,6 +143,8 @@ struct hb_sparseset_t
   { return s.next_range (first, last); }
   bool previous_range (hb_codepoint_t *first, hb_codepoint_t *last) const
   { return s.previous_range (first, last); }
+  unsigned int next_many (hb_codepoint_t codepoint, hb_codepoint_t *out, unsigned int size) const
+  { return s.next_many (codepoint, out, size); }
 
   unsigned int get_population () const { return s.get_population (); }
   hb_codepoint_t get_min () const { return s.get_min (); }
@@ -140,7 +160,22 @@ struct hb_sparseset_t
   operator iter_t () const { return iter (); }
 };
 
-struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t> {};
+struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
+{
+  using sparseset = hb_sparseset_t<hb_bit_set_invertible_t>;
+
+  ~hb_set_t () = default;
+  hb_set_t () : sparseset () {};
+  hb_set_t (std::nullptr_t) : hb_set_t () {};
+  hb_set_t (const hb_set_t &o) : sparseset ((sparseset &) o) {};
+  hb_set_t (hb_set_t&& o) : sparseset (std::move ((sparseset &) o)) {}
+  hb_set_t& operator = (const hb_set_t&) = default;
+  hb_set_t& operator = (hb_set_t&&) = default;
+  hb_set_t (std::initializer_list<hb_codepoint_t> lst) : sparseset (lst) {}
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  hb_set_t (const Iterable &o) : sparseset (o) {}
+};
 
 static_assert (hb_set_t::INVALID == HB_SET_VALUE_INVALID, "");
 

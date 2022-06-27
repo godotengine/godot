@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 #include "shader_create_dialog.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_scale.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
@@ -54,6 +57,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 			current_mode = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_mode", 0);
 			mode_menu->select(current_mode);
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
@@ -131,7 +135,7 @@ void ShaderCreateDialog::ok_pressed() {
 }
 
 void ShaderCreateDialog::_create_new() {
-	RES shader;
+	Ref<Resource> shader;
 
 	if (language_menu->get_selected() == int(SHADER_TYPE_TEXT)) {
 		Ref<Shader> text_shader;
@@ -180,7 +184,6 @@ void ShaderCreateDialog::_create_new() {
 		Ref<VisualShader> visual_shader;
 		visual_shader.instantiate();
 		shader = visual_shader;
-		visual_shader->set_engine_version(Engine::get_singleton()->get_version_info());
 		visual_shader->set_mode(Shader::Mode(current_mode));
 	}
 
@@ -201,7 +204,7 @@ void ShaderCreateDialog::_create_new() {
 
 void ShaderCreateDialog::_load_exist() {
 	String path = file_path->get_text();
-	RES p_shader = ResourceLoader::load(path, "Shader");
+	Ref<Resource> p_shader = ResourceLoader::load(path, "Shader");
 	if (p_shader.is_null()) {
 		alert->set_text(vformat(TTR("Error loading shader from %s"), path));
 		alert->popup_centered();
@@ -220,8 +223,8 @@ void ShaderCreateDialog::_language_changed(int p_language) {
 	String path = file_path->get_text();
 	String extension = "";
 
-	if (path != "") {
-		if (path.find(".") != -1) {
+	if (!path.is_empty()) {
+		if (path.contains(".")) {
 			extension = path.get_extension();
 		}
 		if (extension.length() == 0) {
@@ -303,13 +306,13 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_new_shader_created = true;
 
 	String path_error = _validate_path(p_path);
-	if (path_error != "") {
+	if (!path_error.is_empty()) {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
@@ -324,8 +327,8 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 	ok_pressed();
 }
 
-void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_mode) {
-	if (p_base_path != "") {
+void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
+	if (!p_base_path.is_empty()) {
 		initial_base_path = p_base_path.get_basename();
 		file_path->set_text(initial_base_path + "." + language_data[language_menu->get_selected()].default_extension);
 		current_language = language_menu->get_selected();
@@ -337,6 +340,11 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
+
+	if (p_preferred_type > -1) {
+		language_menu->select(p_preferred_type);
+		_language_changed(p_preferred_type);
+	}
 
 	if (p_preferred_mode > -1) {
 		mode_menu->select(p_preferred_mode);
@@ -350,10 +358,10 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String p = p_path.strip_edges();
 
-	if (p == "") {
+	if (p.is_empty()) {
 		return TTR("Path is empty.");
 	}
-	if (p.get_file().get_basename() == "") {
+	if (p.get_file().get_basename().is_empty()) {
 		return TTR("Filename is empty.");
 	}
 
@@ -362,18 +370,18 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		return TTR("Path is not local.");
 	}
 
-	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
 		return TTR("Invalid base path.");
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (f->dir_exists(p)) {
 		return TTR("A directory with the same name exists.");
 	}
 
 	String extension = p.get_extension();
-	Set<String> extensions;
+	HashSet<String> extensions;
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		for (const String &ext : language_data[i].extensions) {
@@ -520,7 +528,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in shaders can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
@@ -624,9 +632,9 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	add_child(file_browse);
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
-	alert->get_label()->set_valign(Label::VALIGN_CENTER);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);
 

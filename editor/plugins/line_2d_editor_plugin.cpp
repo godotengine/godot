@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,11 +56,8 @@ void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, con
 	undo_redo->add_undo_method(node, "set_points", p_previous);
 }
 
-Line2DEditor::Line2DEditor(EditorNode *p_editor) :
-		AbstractPolygon2DEditor(p_editor) {
-	node = nullptr;
-}
+Line2DEditor::Line2DEditor() {}
 
-Line2DEditorPlugin::Line2DEditorPlugin(EditorNode *p_node) :
-		AbstractPolygon2DEditorPlugin(p_node, memnew(Line2DEditor(p_node)), "Line2D") {
+Line2DEditorPlugin::Line2DEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(Line2DEditor), "Line2D") {
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
-Map<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
+RBMap<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
 Mutex ManagedCallable::instances_mutex;
 #endif
 
@@ -66,9 +66,8 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	// hmm
 	uint32_t hash = delegate_invoke->get_name().hash();
-	return hash_djb2_one_64(delegate_handle.handle, hash);
+	return hash_murmur3_one_64(delegate_handle.handle, hash);
 }
 
 String ManagedCallable::get_as_text() const {

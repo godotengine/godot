@@ -80,6 +80,23 @@ namespace Godot
         private static bool TypeIsGenericIDictionary(Type type) => type.GetGenericTypeDefinition() == typeof(IDictionary<,>);
 
         /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="FlagsAttribute"/> is applied to the given type.
+        /// </summary>
+        private static bool TypeHasFlagsAttribute(Type type) => type.IsDefined(typeof(FlagsAttribute), false);
+
+        /// <summary>
+        /// Returns the generic type definition of <paramref name="type"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the given <paramref name="type"/> is not a generic type.
+        /// That is, <see cref="Type.IsGenericType"/> returns <see langword="false"/>.
+        /// </exception>
+        private static void GetGenericTypeDefinition(Type type, out Type genericTypeDefinition)
+        {
+            genericTypeDefinition = type.GetGenericTypeDefinition();
+        }
+
+        /// <summary>
         /// Gets the element type for the given <paramref name="arrayType"/>.
         /// </summary>
         /// <param name="arrayType">Type for the generic array.</param>

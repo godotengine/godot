@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);
 
 	Ref<Shape3D> shape;
-	Set<RID> excluded_objects;
+	HashSet<RID> excluded_objects;
 	real_t spring_length = 1.0;
 	real_t current_spring_length = 0.0;
 	bool keep_child_basis = false;

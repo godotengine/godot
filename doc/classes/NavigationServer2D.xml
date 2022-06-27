@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer2D" inherits="Object" version="4.0">
+<class name="NavigationServer2D" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server interface for low-level 2D navigation access
 	</brief_description>
 	<description>
 		NavigationServer2D is the server responsible for all 2D navigation. It handles several objects, namely maps, regions and agents.
-		Maps are made up of regions, which are made of navigation polygons. Together, they define the navigable areas in the 2D world. For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
-		You may assign navigation layers to regions with [method NavigationServer2D.region_set_layers], which then can be checked upon when requesting a path with [method NavigationServer2D.map_get_path]. This allows allowing or forbidding some areas to 2D objects.
+		Maps are made up of regions, which are made of navigation polygons. Together, they define the navigable areas in the 2D world.
+		[b]Note:[/b] Most NavigationServer changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation related Nodes in the SceneTree or made through scripts.
+		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
+		You may assign navigation layers to regions with [method NavigationServer2D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer2D.map_get_path]. This allows allowing or forbidding some areas to 2D objects.
 		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
 		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
@@ -19,6 +21,13 @@
 			<return type="RID" />
 			<description>
 				Creates the agent.
+			</description>
+		</method>
+		<method name="agent_get_map" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="agent" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [code]agent[/code] is currently assigned to.
 			</description>
 		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
@@ -35,7 +44,8 @@
 			<argument index="2" name="method" type="StringName" />
 			<argument index="3" name="userdata" type="Variant" default="null" />
 			<description>
-				Callback called at the end of the RVO process.
+				Callback called at the end of the RVO process. If a callback is created manually and the agent is placed on a navigation map it will calculate avoidance for the agent and dispatch the calculated [code]safe_velocity[/code] to the [code]receiver[/code] object with a signal to the chosen [code]method[/code] name.
+				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]null[/code] object as the [code]receiver[/code].
 			</description>
 		</method>
 		<method name="agent_set_map" qualifiers="const">
@@ -110,17 +120,40 @@
 				Sets the current velocity of the agent.
 			</description>
 		</method>
-		<method name="free" qualifiers="const">
+		<method name="free_rid" qualifiers="const">
 			<return type="void" />
-			<argument index="0" name="object" type="RID" />
+			<argument index="0" name="rid" type="RID" />
 			<description>
-				Destroy the RID
+				Destroys the given RID.
+			</description>
+		</method>
+		<method name="get_maps" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
 		</method>
 		<method name="map_create" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Create a new map.
+			</description>
+		</method>
+		<method name="map_force_update">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				This function immediately forces synchronization of the specified navigation [code]map[/code] [RID]. By default navigation maps are only synchronized at the end of each physics frame. This function can be used to immediately (re)calculate all the navigation meshes and region connections of the navigation map. This makes it possible to query a navigation path for a changed map immediately and in the same frame (multiple times if needed).
+				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
+				Avoidance processing and dispatch of the [code]safe_velocity[/code] signals is untouched by this function and continues to happen for all maps and agents at the end of the physics frame.
+				[b]Note:[/b] With great power comes great responsibility. This function should only be used by users that really know what they are doing and have a good reason for it. Forcing an immediate update of a navigation map requires locking the NavigationServer and flushing the entire NavigationServer command queue. Not only can this severely impact the performance of a game but it can also introduce bugs if used inappropriately without much foresight.
+			</description>
+		</method>
+		<method name="map_get_agents" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [code]map[/code].
 			</description>
 		</method>
 		<method name="map_get_cell_size" qualifiers="const">
@@ -159,9 +192,16 @@
 			<argument index="1" name="origin" type="Vector2" />
 			<argument index="2" name="destination" type="Vector2" />
 			<argument index="3" name="optimize" type="bool" />
-			<argument index="4" name="layers" type="int" default="1" />
+			<argument index="4" name="navigation_layers" type="int" default="1" />
 			<description>
-				Returns the navigation path to reach the destination from the origin. [code]layers[/code] is a bitmask of all region layers that are allowed to be in the path.
+				Returns the navigation path to reach the destination from the origin. [code]navigation_layers[/code] is a bitmask of all region navigation layers that are allowed to be in the path.
+			</description>
+		</method>
+		<method name="map_get_regions" qualifiers="const">
+			<return type="Array" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [code]map[/code].
 			</description>
 		</method>
 		<method name="map_is_active" qualifiers="const">
@@ -224,19 +264,50 @@
 				Returns how many connections this [code]region[/code] has with other regions in the map.
 			</description>
 		</method>
-		<method name="region_get_layers" qualifiers="const">
+		<method name="region_get_enter_cost" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the [code]enter_cost[/code] of this [code]region[/code].
+			</description>
+		</method>
+		<method name="region_get_map" qualifiers="const">
+			<return type="RID" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [code]region[/code] is currently assigned to.
+			</description>
+		</method>
+		<method name="region_get_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="region" type="RID" />
 			<description>
-				Returns the region's layers.
+				Returns the region's navigation layers.
 			</description>
 		</method>
-		<method name="region_set_layers" qualifiers="const">
+		<method name="region_get_travel_cost" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="region" type="RID" />
+			<description>
+				Returns the [code]travel_cost[/code] of this [code]region[/code].
+			</description>
+		</method>
+		<method name="region_owns_point" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the provided [code]point[/code] in world space is currently owned by the provided navigation [code]region[/code]. Owned in this context means that one of the region's navigation mesh polygon faces has a possible position at the closest distance to this point compared to all other navigation meshes from other navigation regions that are also registered on the navigation map of the provided region.
+				If multiple navigation meshes have positions at equal distance the navigation region whose polygons are processed first wins the ownership. Polygons are processed in the same order that navigation regions were registered on the NavigationServer.
+				[b]Note:[/b] If navigation meshes from different navigation regions overlap (which should be avoided in general) the result might not be what is expected.
+			</description>
+		</method>
+		<method name="region_set_enter_cost" qualifiers="const">
 			<return type="void" />
 			<argument index="0" name="region" type="RID" />
-			<argument index="1" name="layers" type="int" />
+			<argument index="1" name="enter_cost" type="float" />
 			<description>
-				Set the region's layers. This allows selecting regions from a path request (when using [method NavigationServer2D.map_get_path]).
+				Sets the [code]enter_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
 		<method name="region_set_map" qualifiers="const">
@@ -245,6 +316,14 @@
 			<argument index="1" name="map" type="RID" />
 			<description>
 				Sets the map for the region.
+			</description>
+		</method>
+		<method name="region_set_navigation_layers" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="navigation_layers" type="int" />
+			<description>
+				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer2D.map_get_path]).
 			</description>
 		</method>
 		<method name="region_set_navpoly" qualifiers="const">
@@ -261,6 +340,14 @@
 			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets the global transformation for the region.
+			</description>
+		</method>
+		<method name="region_set_travel_cost" qualifiers="const">
+			<return type="void" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="travel_cost" type="float" />
+			<description>
+				Sets the [code]travel_cost[/code] for this [code]region[/code].
 			</description>
 		</method>
 	</methods>

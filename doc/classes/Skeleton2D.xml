@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton2D" inherits="Node2D" version="4.0">
+<class name="Skeleton2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Skeleton for 2D characters and animated objects.
 	</brief_description>
@@ -8,7 +8,7 @@
 		To setup different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. They can be applied by creating the desired number of modifications, which can be done by increasing [member SkeletonModificationStack2D.modification_count].
 	</description>
 	<tutorials>
-		<link title="2D skeletons">https://docs.godotengine.org/en/latest/tutorials/animation/2d_skeletons.html</link>
+		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
 		<method name="execute_modifications">

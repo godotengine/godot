@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,6 @@ class TextureRect : public Control {
 
 public:
 	enum StretchMode {
-		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
 		STRETCH_SCALE,
 		STRETCH_TILE,
 		STRETCH_KEEP,
@@ -49,11 +48,11 @@ public:
 	};
 
 private:
-	bool expand = false;
+	bool ignore_texture_size = false;
 	bool hflip = false;
 	bool vflip = false;
 	Ref<Texture2D> texture;
-	StretchMode stretch_mode = STRETCH_SCALE_ON_EXPAND;
+	StretchMode stretch_mode = STRETCH_SCALE;
 
 	void _texture_changed();
 
@@ -66,8 +65,8 @@ public:
 	void set_texture(const Ref<Texture2D> &p_tex);
 	Ref<Texture2D> get_texture() const;
 
-	void set_expand(bool p_expand);
-	bool has_expand() const;
+	void set_ignore_texture_size(bool p_ignore);
+	bool get_ignore_texture_size() const;
 
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;

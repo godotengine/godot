@@ -63,10 +63,13 @@ struct hb_ot_face_t
   hb_face_t *face; /* MUST be JUST before the lazy loaders. */
 #define HB_OT_TABLE(Namespace, Type) \
   hb_table_lazy_loader_t<Namespace::Type, HB_OT_TABLE_ORDER (Namespace, Type)> Type;
+#define HB_OT_CORE_TABLE(Namespace, Type) \
+  hb_table_lazy_loader_t<Namespace::Type, HB_OT_TABLE_ORDER (Namespace, Type), true> Type;
 #define HB_OT_ACCELERATOR(Namespace, Type) \
   hb_face_lazy_loader_t<Namespace::Type##_accelerator_t, HB_OT_TABLE_ORDER (Namespace, Type)> Type;
 #include "hb-ot-face-table-list.hh"
 #undef HB_OT_ACCELERATOR
+#undef HB_OT_CORE_TABLE
 #undef HB_OT_TABLE
 };
 

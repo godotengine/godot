@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "editor/editor_node.h"
+#include "editor_toaster.h"
+
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
-
-#include "editor_toaster.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 
@@ -103,6 +104,7 @@ void EditorToaster::_notification(int p_what) {
 				main_button->update();
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
@@ -113,32 +115,31 @@ void EditorToaster::_notification(int p_what) {
 			disable_notifications_button->set_icon(get_theme_icon(SNAME("NotificationDisabled"), SNAME("EditorIcons")));
 
 			// Styleboxes background.
-			info_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
+			info_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
 
-			warning_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
-			warning_panel_style_background->set_border_color(get_theme_color("warning_color", "Editor"));
+			warning_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
+			warning_panel_style_background->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
-			error_panel_style_background->set_bg_color(get_theme_color("base_color", "Editor"));
-			error_panel_style_background->set_border_color(get_theme_color("error_color", "Editor"));
+			error_panel_style_background->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")));
+			error_panel_style_background->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 			// Styleboxes progress.
-			info_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
+			info_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
 
-			warning_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
-			warning_panel_style_progress->set_border_color(get_theme_color("warning_color", "Editor"));
+			warning_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
+			warning_panel_style_progress->set_border_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 
-			error_panel_style_progress->set_bg_color(get_theme_color("base_color", "Editor").lightened(0.03));
-			error_panel_style_progress->set_border_color(get_theme_color("error_color", "Editor"));
+			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
+			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 			main_button->update();
 			disable_notifications_button->update();
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_update_vbox_position();
 			_update_disable_notifications_button();
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -158,11 +159,11 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 	if (p_editor_notify || (show_all_setting == 0 && in_dev) || show_all_setting == 1) {
 		String err_str;
 		if (p_errorexp && p_errorexp[0]) {
-			err_str = p_errorexp;
+			err_str = String::utf8(p_errorexp);
 		} else {
-			err_str = String(p_error);
+			err_str = String::utf8(p_error);
 		}
-		String tooltip_str = String(p_file) + ":" + itos(p_line);
+		String tooltip_str = String::utf8(p_file) + ":" + itos(p_line);
 
 		if (!p_editor_notify) {
 			if (p_type == ERR_HANDLER_WARNING) {
@@ -173,11 +174,7 @@ void EditorToaster::_error_handler(void *p_self, const char *p_func, const char 
 		}
 
 		Severity severity = (p_type == ERR_HANDLER_WARNING) ? SEVERITY_WARNING : SEVERITY_ERROR;
-		if (Thread::get_caller_id() != Thread::get_main_id()) {
-			EditorToaster::get_singleton()->call_deferred(SNAME("popup_str"), err_str, severity, tooltip_str);
-		} else {
-			EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
-		}
+		EditorToaster::get_singleton()->popup_str(err_str, severity, tooltip_str);
 	}
 }
 
@@ -237,6 +234,16 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 		to_delete[i]->queue_delete();
 		toasts.erase(to_delete[i]);
 	}
+
+	if (toasts.is_empty()) {
+		main_button->set_tooltip(TTR("No notifications."));
+		main_button->set_modulate(Color(0.5, 0.5, 0.5));
+		main_button->set_disabled(true);
+	} else {
+		main_button->set_tooltip(TTR("Show notifications."));
+		main_button->set_modulate(Color(1, 1, 1));
+		main_button->set_disabled(false);
+	}
 }
 
 void EditorToaster::_draw_button() {
@@ -260,13 +267,13 @@ void EditorToaster::_draw_button() {
 	real_t button_radius = main_button->get_size().x / 8;
 	switch (highest_severity) {
 		case SEVERITY_INFO:
-			color = get_theme_color("accent_color", "Editor");
+			color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 			break;
 		case SEVERITY_WARNING:
-			color = get_theme_color("warning_color", "Editor");
+			color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 			break;
 		case SEVERITY_ERROR:
-			color = get_theme_color("error_color", "Editor");
+			color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
 			break;
 		default:
 			break;
@@ -364,8 +371,9 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	if (p_time > 0.0) {
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
-		close_button->set_icon(get_theme_icon("Close", "EditorIcons"));
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 		close_button->connect("pressed", callable_bind(callable_mp(this, &EditorToaster::close), panel));
+		close_button->connect("theme_changed", callable_bind(callable_mp(this, &EditorToaster::_close_button_theme_changed), close_button));
 		hbox_container->add_child(close_button);
 	}
 
@@ -387,6 +395,19 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 }
 
 void EditorToaster::popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	if (is_processing_error) {
+		return;
+	}
+
+	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
+	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
+	is_processing_error = true;
+	call_deferred(SNAME("_popup_str"), p_message, p_severity, p_tooltip);
+	is_processing_error = false;
+}
+
+void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_tooltip) {
+	is_processing_error = true;
 	// Check if we already have a popup with the given message.
 	Control *control = nullptr;
 	for (KeyValue<Control *, Toast> element : toasts) {
@@ -428,6 +449,7 @@ void EditorToaster::popup_str(String p_message, Severity p_severity, String p_to
 	} else {
 		label->set_text(vformat("%s (%d)", p_message, toasts[control].count));
 	}
+	is_processing_error = false;
 }
 
 void EditorToaster::close(Control *p_control) {
@@ -436,8 +458,20 @@ void EditorToaster::close(Control *p_control) {
 	toasts[p_control].popped = false;
 }
 
+void EditorToaster::_close_button_theme_changed(Control *p_close_button) {
+	Button *close_button = Object::cast_to<Button>(p_close_button);
+	if (close_button) {
+		close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+	}
+}
+
 EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
+}
+
+void EditorToaster::_bind_methods() {
+	// Binding method to make it defer-able.
+	ClassDB::bind_method(D_METHOD("_popup_str", "message", "severity", "tooltip"), &EditorToaster::_popup_str);
 }
 
 EditorToaster::EditorToaster() {
@@ -484,6 +518,9 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
+	main_button->set_tooltip(TTR("No notifications."));
+	main_button->set_modulate(Color(0.5, 0.5, 0.5));
+	main_button->set_disabled(true);
 	main_button->set_flat(true);
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
@@ -497,6 +534,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
+	disable_notifications_button->set_tooltip(TTR("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled), varray(false));
 	disable_notifications_panel->add_child(disable_notifications_button);

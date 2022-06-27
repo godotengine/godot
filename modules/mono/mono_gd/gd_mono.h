@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,16 +94,16 @@ private:
 
 	UnhandledExceptionPolicy unhandled_exception_policy;
 
-	MonoDomain *root_domain;
-	MonoDomain *scripts_domain;
+	MonoDomain *root_domain = nullptr;
+	MonoDomain *scripts_domain = nullptr;
 
 	HashMap<int32_t, HashMap<String, GDMonoAssembly *>> assemblies;
 
-	GDMonoAssembly *corlib_assembly;
-	GDMonoAssembly *project_assembly;
+	GDMonoAssembly *corlib_assembly = nullptr;
+	GDMonoAssembly *project_assembly = nullptr;
 #ifdef TOOLS_ENABLED
-	GDMonoAssembly *tools_assembly;
-	GDMonoAssembly *tools_project_editor_assembly;
+	GDMonoAssembly *tools_assembly = nullptr;
+	GDMonoAssembly *tools_project_editor_assembly = nullptr;
 #endif
 
 	LoadedApiAssembly core_api_assembly;
@@ -150,7 +150,7 @@ private:
 	void _init_godot_api_hashes();
 	void _init_exception_policy();
 
-	GDMonoLog *gdmono_log;
+	GDMonoLog *gdmono_log = nullptr;
 
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	MonoRegInfo mono_reg_info;
@@ -250,7 +250,7 @@ public:
 namespace gdmono {
 
 class ScopeDomain {
-	MonoDomain *prev_domain;
+	MonoDomain *prev_domain = nullptr;
 
 public:
 	ScopeDomain(MonoDomain *p_domain) {
@@ -270,7 +270,7 @@ public:
 };
 
 class ScopeExitDomainUnload {
-	MonoDomain *domain;
+	MonoDomain *domain = nullptr;
 
 public:
 	ScopeExitDomainUnload(MonoDomain *p_domain) :

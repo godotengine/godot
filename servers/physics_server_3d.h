@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,9 @@
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/script_language.h"
+#include "core/variant/native_ptr.h"
 
 class PhysicsDirectSpaceState3D;
 
@@ -48,6 +51,7 @@ public:
 	virtual real_t get_total_linear_damp() const = 0;
 
 	virtual Vector3 get_center_of_mass() const = 0;
+	virtual Vector3 get_center_of_mass_local() const = 0;
 	virtual Basis get_principal_inertia_axes() const = 0;
 	virtual real_t get_inverse_mass() const = 0; // get the mass
 	virtual Vector3 get_inverse_inertia() const = 0; // get density of this body space
@@ -64,12 +68,23 @@ public:
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const = 0;
 
-	virtual void add_central_force(const Vector3 &p_force) = 0;
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
-	virtual void add_torque(const Vector3 &p_torque) = 0;
 	virtual void apply_central_impulse(const Vector3 &p_impulse) = 0;
 	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
+
+	virtual void apply_central_force(const Vector3 &p_force) = 0;
+	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void apply_torque(const Vector3 &p_torque) = 0;
+
+	virtual void add_constant_central_force(const Vector3 &p_force) = 0;
+	virtual void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void add_constant_torque(const Vector3 &p_torque) = 0;
+
+	virtual void set_constant_force(const Vector3 &p_force) = 0;
+	virtual Vector3 get_constant_force() const = 0;
+
+	virtual void set_constant_torque(const Vector3 &p_torque) = 0;
+	virtual Vector3 get_constant_torque() const = 0;
 
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
@@ -118,11 +133,14 @@ public:
 	struct RayParameters {
 		Vector3 from;
 		Vector3 to;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
+
+		bool hit_from_inside = false;
+		bool hit_back_faces = true;
 
 		bool pick_ray = false;
 	};
@@ -147,7 +165,7 @@ public:
 
 	struct PointParameters {
 		Vector3 position;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -161,7 +179,7 @@ public:
 		Transform3D transform;
 		Vector3 motion;
 		real_t margin = 0.0;
-		Set<RID> exclude;
+		HashSet<RID> exclude;
 		uint32_t collision_mask = UINT32_MAX;
 
 		bool collide_with_bodies = true;
@@ -187,13 +205,21 @@ public:
 	PhysicsDirectSpaceState3D();
 };
 
-class RenderingServerHandler {
-public:
-	virtual void set_vertex(int p_vertex_id, const void *p_vector3) = 0;
-	virtual void set_normal(int p_vertex_id, const void *p_vector3) = 0;
-	virtual void set_aabb(const AABB &p_aabb) = 0;
+class PhysicsServer3DRenderingServerHandler : public Object {
+	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
+protected:
+	GDVIRTUAL2(_set_vertex, int, GDNativeConstPtr<void>)
+	GDVIRTUAL2(_set_normal, int, GDNativeConstPtr<void>)
+	GDVIRTUAL1(_set_aabb, const AABB &)
 
-	virtual ~RenderingServerHandler() {}
+	static void _bind_methods();
+
+public:
+	virtual void set_vertex(int p_vertex_id, const void *p_vector3);
+	virtual void set_normal(int p_vertex_id, const void *p_vector3);
+	virtual void set_aabb(const AABB &p_aabb);
+
+	virtual ~PhysicsServer3DRenderingServerHandler() {}
 };
 
 class PhysicsTestMotionParameters3D;
@@ -259,12 +285,12 @@ public:
 	enum SpaceParameter {
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
-		SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,
+		SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION,
+		SPACE_PARAM_CONTACT_DEFAULT_BIAS,
 		SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD,
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
-		SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO,
-		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
+		SPACE_PARAM_SOLVER_ITERATIONS,
 	};
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
@@ -284,12 +310,15 @@ public:
 	//missing attenuation? missing better override?
 
 	enum AreaParameter {
+		AREA_PARAM_GRAVITY_OVERRIDE_MODE,
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
 		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
 		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
+		AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_LINEAR_DAMP,
+		AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_ANGULAR_DAMP,
 		AREA_PARAM_PRIORITY,
 		AREA_PARAM_WIND_FORCE_MAGNITUDE,
@@ -310,9 +339,6 @@ public:
 		AREA_SPACE_OVERRIDE_REPLACE,
 		AREA_SPACE_OVERRIDE_REPLACE_COMBINE
 	};
-
-	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
-	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
 	virtual void area_add_shape(RID p_area, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
@@ -430,20 +456,24 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const = 0;
 
-	//do something about it
-	virtual void body_set_applied_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual Vector3 body_get_applied_force(RID p_body) const = 0;
-
-	virtual void body_set_applied_torque(RID p_body, const Vector3 &p_torque) = 0;
-	virtual Vector3 body_get_applied_torque(RID p_body) const = 0;
-
-	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) = 0;
-	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
-	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) = 0;
-
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
+
+	virtual void body_apply_central_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual void body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_apply_torque(RID p_body, const Vector3 &p_torque) = 0;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual void body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) = 0;
+	virtual void body_add_constant_torque(RID p_body, const Vector3 &p_torque) = 0;
+
+	virtual void body_set_constant_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual Vector3 body_get_constant_force(RID p_body) const = 0;
+
+	virtual void body_set_constant_torque(RID p_body, const Vector3 &p_torque) = 0;
+	virtual Vector3 body_get_constant_torque(RID p_body) const = 0;
+
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 
 	enum BodyAxis {
@@ -490,8 +520,9 @@ public:
 		real_t margin = 0.001;
 		int max_collisions = 1;
 		bool collide_separation_ray = false;
-		Set<RID> exclude_bodies;
-		Set<ObjectID> exclude_objects;
+		HashSet<RID> exclude_bodies;
+		HashSet<ObjectID> exclude_objects;
+		bool recovery_as_collision = false;
 
 		MotionParameters() {}
 
@@ -533,7 +564,7 @@ public:
 
 	virtual RID soft_body_create() = 0;
 
-	virtual void soft_body_update_rendering_server(RID p_body, RenderingServerHandler *p_rendering_server_handler) = 0;
+	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) = 0;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID soft_body_get_space(RID p_body) const = 0;
@@ -605,7 +636,7 @@ public:
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) = 0;
 	virtual int joint_get_solver_priority(RID p_joint) const = 0;
 
-	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) = 0;
+	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) = 0;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const = 0;
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) = 0;
@@ -764,8 +795,6 @@ public:
 
 	virtual bool is_flushing_queries() const = 0;
 
-	virtual void set_collision_iterations(int p_iterations) = 0;
-
 	enum ProcessInfo {
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
@@ -804,6 +833,12 @@ public:
 	void set_collide_with_areas(bool p_enable) { parameters.collide_with_areas = p_enable; }
 	bool is_collide_with_areas_enabled() const { return parameters.collide_with_areas; }
 
+	void set_hit_from_inside(bool p_enable) { parameters.hit_from_inside = p_enable; }
+	bool is_hit_from_inside_enabled() const { return parameters.hit_from_inside; }
+
+	void set_hit_back_faces(bool p_enable) { parameters.hit_back_faces = p_enable; }
+	bool is_hit_back_faces_enabled() const { return parameters.hit_back_faces; }
+
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
 };
@@ -840,7 +875,7 @@ class PhysicsShapeQueryParameters3D : public RefCounted {
 
 	PhysicsDirectSpaceState3D::ShapeParameters parameters;
 
-	RES shape_ref;
+	Ref<Resource> shape_ref;
 
 protected:
 	static void _bind_methods();
@@ -848,8 +883,8 @@ protected:
 public:
 	const PhysicsDirectSpaceState3D::ShapeParameters &get_parameters() const { return parameters; }
 
-	void set_shape(const RES &p_shape_ref);
-	RES get_shape() const { return shape_ref; }
+	void set_shape(const Ref<Resource> &p_shape_ref);
+	Ref<Resource> get_shape() const { return shape_ref; }
 
 	void set_shape_rid(const RID &p_shape);
 	RID get_shape_rid() const { return parameters.shape_rid; }
@@ -907,6 +942,9 @@ public:
 
 	Array get_exclude_objects() const;
 	void set_exclude_objects(const Array &p_exclude);
+
+	bool is_recovery_as_collision_enabled() const { return parameters.recovery_as_collision; }
+	void set_recovery_as_collision_enabled(bool p_enabled) { parameters.recovery_as_collision = p_enabled; }
 };
 
 class PhysicsTestMotionResult3D : public RefCounted {
@@ -955,10 +993,9 @@ class PhysicsServer3DManager {
 				name(p_ci.name),
 				create_callback(p_ci.create_callback) {}
 
-		ClassInfo &operator=(const ClassInfo &p_ci) {
+		void operator=(const ClassInfo &p_ci) {
 			name = p_ci.name;
 			create_callback = p_ci.create_callback;
-			return *this;
 		}
 	};
 

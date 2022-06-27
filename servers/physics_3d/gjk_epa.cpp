@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ struct	MinkowskiDiff {
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
 
-	Vector3 (*get_support)(const GodotShape3D*, const Vector3&, real_t);
+	Vector3 (*get_support)(const GodotShape3D*, const Vector3&, real_t) = nullptr;
 
 	void Initialize(const GodotShape3D* shape0, const Transform3D& wtrs0, const real_t margin0,
 		const GodotShape3D* shape1, const Transform3D& wtrs1, const real_t margin1) {
@@ -191,13 +191,13 @@ struct	GJK
 		/* Fields		*/
 		tShape			m_shape;
 		Vector3		m_ray;
-		real_t		m_distance;
+		real_t		m_distance = 0.0f;
 		sSimplex		m_simplices[2];
 		sSV				m_store[4];
 		sSV*			m_free[4];
-		U				m_nfree;
-		U				m_current;
-		sSimplex*		m_simplex;
+		U				m_nfree = 0;
+		U				m_current = 0;
+		sSimplex*		m_simplex = nullptr;
 		eStatus::_		m_status;
 		/* Methods		*/
 		GJK()
@@ -548,12 +548,12 @@ struct	GJK
 		struct	sFace
 		{
 			Vector3	n;
-			real_t	d;
+			real_t	d = 0.0f;
 			sSV*		c[3];
 			sFace*		f[3];
 			sFace*		l[2];
 			U1			e[3];
-			U1			pass;
+			U1			pass = 0;
 		};
 		struct	sList
 		{
@@ -583,10 +583,10 @@ struct	GJK
 			eStatus::_		m_status;
 			GJK::sSimplex	m_result;
 			Vector3		m_normal;
-			real_t		m_depth;
+			real_t		m_depth = 0.0f;
 			sSV				m_sv_store[EPA_MAX_VERTICES];
 			sFace			m_fc_store[EPA_MAX_FACES];
-			U				m_nextsv;
+			U				m_nextsv = 0;
 			sList			m_hull;
 			sList			m_stock;
 			/* Methods		*/
@@ -918,7 +918,7 @@ bool Distance(	const GodotShape3D*	shape0,
 	{
 		results.status	=	gjk_status==GJK::eStatus::Inside?
 			sResults::Penetrating	:
-		sResults::GJK_Failed	;
+		sResults::GJK_Failed;
 		return(false);
 	}
 }
