@@ -165,6 +165,9 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
+			text->add_theme_font_size_override("font_size", get_theme_font_size("expression_size", "EditorFonts"));
+
 		} break;
 	}
 }
@@ -172,7 +175,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 void EditorPropertyMultilineText::_bind_methods() {
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText() {
+EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
@@ -189,6 +192,12 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
+	if (p_expression) {
+		expression = true;
+		Ref<EditorStandardSyntaxHighlighter> highlighter;
+		highlighter.instantiate();
+		text->set_syntax_highlighter(highlighter);
+	}
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -3770,6 +3779,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);

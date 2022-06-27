@@ -153,7 +153,7 @@ typedef enum {
 	GDNATIVE_CALL_ERROR_TOO_MANY_ARGUMENTS, /* expected is number of arguments */
 	GDNATIVE_CALL_ERROR_TOO_FEW_ARGUMENTS, /*  expected is number of arguments */
 	GDNATIVE_CALL_ERROR_INSTANCE_IS_NULL,
-
+	GDNATIVE_CALL_ERROR_METHOD_NOT_CONST, /* used for const call */
 } GDNativeCallErrorType;
 
 typedef struct {

@@ -3395,6 +3395,8 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 		err_text = "Method not found.";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
+	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Method not const in const instance";
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}
