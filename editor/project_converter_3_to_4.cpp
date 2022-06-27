@@ -110,6 +110,7 @@ static const char *enum_renames[][2] = {
 	{ "FORMAT_PVRTC2A", "FORMAT_PVRTC1_2A" }, // Image
 	{ "FORMAT_PVRTC4", "FORMAT_PVRTC1_4" }, // Image
 	{ "FORMAT_PVRTC4A", "FORMAT_PVRTC1_4A" }, // Image
+	{ "FUNC_FRAC", "FUNC_FRACT" }, // VisualShaderNodeVectorFunc
 	{ "INSTANCE_LIGHTMAP_CAPTURE", "INSTANCE_LIGHTMAP" }, // RenderingServer
 	{ "JOINT_6DOF", "JOINT_TYPE_6DOF" }, // PhysicsServer3D
 	{ "JOINT_CONE_TWIST", "JOINT_TYPE_CONE_TWIST" }, // PhysicsServer3D
@@ -124,12 +125,14 @@ static const char *enum_renames[][2] = {
 	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
 	{ "MODE_CHARACTER", "MODE_DYNAMIC_LOCKED" }, // RigidBody2D, RigidBody3D
+	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidDynamicBody
 	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, // FileDialog
 	{ "MODE_OPEN_DIR", "FILE_MODE_OPEN_DIR" }, // FileDialog
 	{ "MODE_OPEN_FILE", "FILE_MODE_OPEN_FILE" }, // FileDialog
 	{ "MODE_OPEN_FILES", "FILE_MODE_OPEN_FILES" }, // FileDialog
 	{ "MODE_RIGID", "MODE_DYNAMIC" }, // RigidBody2D, RigidBody3D
 	{ "MODE_SAVE_FILE", "FILE_MODE_SAVE_FILE" }, // FileDialog
+	{ "MODE_STATIC", "FREEZE_MODE_STATIC" }, // RigidDynamicBody
 	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, // MainLoop
 	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, // MainLoop
 	{ "NOTIFICATION_PATH_CHANGED", "NOTIFICATION_PATH_RENAMED" }, //Node
@@ -208,7 +211,6 @@ static const char *gdscript_function_renames[][2] = {
 	// { "set_v_offset", "set_drag_vertical_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"get_points","get_points_id"},// Astar, broke Line2D, Convexpolygonshape
 	// {"get_v_scroll","get_v_scroll_bar"},//ItemList, broke TextView
-	{ "RenderingServer", "get_tab_alignment" }, // Tab
 	{ "_about_to_show", "_about_to_popup" }, // ColorPickerButton
 	{ "_get_configuration_warning", "_get_configuration_warnings" }, // Node
 	{ "_set_current", "set_current" }, // Camera2D
@@ -217,17 +219,20 @@ static const char *gdscript_function_renames[][2] = {
 	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
 	{ "add_animation", "add_animation_library" }, // AnimationPlayer
 	{ "add_cancel", "add_cancel_button" }, // AcceptDialog
-	{ "add_central_force", "add_constant_central_force" }, //RigidDynamicBody2D
+	{ "add_central_force", "apply_central_force" }, //RigidDynamicBody2D
 	{ "add_child_below_node", "add_sibling" }, // Node
 	{ "add_color_override", "add_theme_color_override" }, // Control
 	{ "add_constant_override", "add_theme_constant_override" }, // Control
 	{ "add_font_override", "add_theme_font_override" }, // Control
-	{ "add_force", "add_constant_force" }, //RigidDynamicBody2D
+	{ "add_force", "apply_force" }, //RigidDynamicBody2D
 	{ "add_icon_override", "add_theme_icon_override" }, // Control
 	{ "add_scene_import_plugin", "add_scene_format_importer_plugin" }, //EditorPlugin
 	{ "add_stylebox_override", "add_theme_stylebox_override" }, // Control
-	{ "add_torque", "add_constant_torque" }, //RigidDynamicBody2D
+	{ "add_torque", "apply_torque" }, //RigidDynamicBody2D
+	{ "apply_changes", "_apply_changes" }, // EditorPlugin
 	{ "bind_child_node_to_bone", "set_bone_children" }, // Skeleton3D
+	{ "body_add_force", "body_apply_force" }, // PhysicsServer2D
+	{ "body_add_torque", "body_apply_torque" }, // PhysicsServer2D
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
 	{ "can_be_hidden", "_can_be_hidden" }, // EditorNode3DGizmoPlugin
 	{ "can_drop_data_fw", "_can_drop_data_fw" }, // ScriptEditor
@@ -239,6 +244,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "clip_polyline_with_polygon_2d", "clip_polyline_with_polygon" }, //Geometry2D
 	{ "commit_handle", "_commit_handle" }, // EditorNode3DGizmo
 	{ "convex_hull_2d", "convex_hull" }, // Geometry2D
+	{ "create_gizmo", "_create_gizmo" }, // EditorNode3DGizmoPlugin
 	{ "cursor_get_blink_speed", "get_caret_blink_speed" }, // TextEdit
 	{ "cursor_get_column", "get_caret_column" }, // TextEdit
 	{ "cursor_get_line", "get_caret_line" }, // TextEdit
@@ -251,8 +257,10 @@ static const char *gdscript_function_renames[][2] = {
 	{ "damped_string_joint_set_param", "damped_spring_joint_set_param" }, // PhysicsServer2D
 	{ "delete_char_at_cursor", "delete_char_at_caret" }, // LineEdit
 	{ "deselect_items", "deselect_all" }, // FileDialog
+	{ "disable_plugin", "_disable_plugin" }, // EditorPlugin
 	{ "drop_data_fw", "_drop_data_fw" }, // ScriptEditor
 	{ "exclude_polygons_2d", "exclude_polygons" }, // Geometry2D
+	{ "find_node", "find_child" }, // Node
 	{ "find_scancode_from_string", "find_keycode_from_string" }, // OS
 	{ "forward_canvas_draw_over_viewport", "_forward_canvas_draw_over_viewport" }, // EditorPlugin
 	{ "forward_canvas_force_draw_over_viewport", "_forward_canvas_force_draw_over_viewport" }, // EditorPlugin
@@ -287,7 +295,9 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_cull_mask_bit", "get_cull_mask_value" }, // Camera3D
 	{ "get_cursor_position", "get_caret_column" }, // LineEdit
 	{ "get_d", "get_distance" }, // LineShape2D
+	{ "get_drag_data", "_get_drag_data" }, // Control
 	{ "get_drag_data_fw", "_get_drag_data_fw" }, // ScriptEditor
+	{ "get_editor_description", "_get_editor_description" }, // Node
 	{ "get_editor_viewport", "get_viewport" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
 	{ "get_endian_swap", "is_big_endian" }, // File
@@ -327,6 +337,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_parameter_default_value", "_get_parameter_default_value" }, // AnimationNode
 	{ "get_parameter_list", "_get_parameter_list" }, // AnimationNode
 	{ "get_parent_spatial", "get_parent_node_3d" }, // Node3D
+	{ "get_pause_mode", "get_process_mode" }, // Node
 	{ "get_physical_scancode", "get_physical_keycode" }, // InputEventKey
 	{ "get_physical_scancode_with_modifiers", "get_physical_keycode_with_modifiers" }, // InputEventKey
 	{ "get_plugin_icon", "_get_plugin_icon" }, // EditorPlugin
@@ -392,8 +403,10 @@ static const char *gdscript_function_renames[][2] = {
 	{ "is_a_parent_of", "is_ancestor_of" }, // Node
 	{ "is_commiting_action", "is_committing_action" }, // UndoRedo
 	{ "is_doubleclick", "is_double_click" }, // InputEventMouseButton
+	{ "is_draw_red", "is_draw_warning" }, // EditorProperty
 	{ "is_h_drag_enabled", "is_drag_horizontal_enabled" }, // Camera2D
 	{ "is_handle_highlighted", "_is_handle_highlighted" }, // EditorNode3DGizmo, EditorNode3DGizmoPlugin
+	{ "is_inverting_faces", "get_flip_faces" }, // CSGPrimitive3D
 	{ "is_network_master", "is_multiplayer_authority" }, // Node
 	{ "is_network_server", "is_server" }, // Multiplayer API
 	{ "is_normalmap", "is_normal_map" }, // NoiseTexture
@@ -415,6 +428,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "line_intersects_line_2d", "line_intersects_line" }, // Geometry2D
 	{ "load_from_globals", "load_from_project_settings" }, // InputMap
 	{ "make_convex_from_brothers", "make_convex_from_siblings" }, // CollisionShape3D
+	{ "make_visible", "_make_visible" }, // EditorPlugin
 	{ "merge_polygons_2d", "merge_polygons" }, // Geometry2D
 	{ "mesh_surface_get_format", "mesh_surface_get_format_attribute_stride" }, // RenderingServer
 	{ "mesh_surface_update_region", "mesh_surface_update_attribute_region" }, // RenderingServer
@@ -438,6 +452,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "remove_color_override", "remove_theme_color_override" }, // Control
 	{ "remove_constant_override", "remove_theme_constant_override" }, // Control
 	{ "remove_font_override", "remove_theme_font_override" }, // Control
+	{ "remove_icon_override", "remove_theme_icon_override" }, // Control
 	{ "remove_scene_import_plugin", "remove_scene_format_importer_plugin" }, //EditorPlugin
 	{ "remove_stylebox_override", "remove_theme_stylebox_override" }, // Control
 	{ "rename_animation", "rename_animation_library" }, // AnimationPlayer
@@ -465,6 +480,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_cursor_position", "set_caret_column" }, // LineEdit
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
+	{ "set_draw_red", "set_draw_warning" }, // EditorProperty
 	{ "set_enabled_focus_mode", "set_focus_mode" }, // BaseButton
 	{ "set_endian_swap", "set_big_endian" }, // File
 	{ "set_expand_to_text_length", "set_expand_to_text_length_enabled" }, // LineEdit
@@ -477,6 +493,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_icon_align", "set_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
 	{ "set_interior_ambient_energy", "set_ambient_color_energy" }, // ReflectionProbe
+	{ "set_invert_faces", "set_flip_faces" }, // CSGPrimitive3D
 	{ "set_is_initialized", "_is_initialized" }, // XRInterface
 	{ "set_is_primary", "set_primary" }, // XRInterface
 	{ "set_iterations_per_second", "set_physics_ticks_per_second" }, // Engine
@@ -487,6 +504,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_mid_height", "set_height" }, // CapsuleMesh
 	{ "set_network_master", "set_multiplayer_authority" }, // Node
 	{ "set_network_peer", "set_multiplayer_peer" }, // Multiplayer API
+	{ "set_pause_mode", "set_process_mode" }, // Node
 	{ "set_physical_scancode", "set_physical_keycode" }, // InputEventKey
 	{ "set_refuse_new_network_connections", "set_refuse_new_connections" }, // Multiplayer API
 	{ "set_region", "set_region_enabled" }, // Sprite2D, Sprite broke AtlasTexture
@@ -1220,7 +1238,6 @@ static const char *class_renames[][2] = {
 	// { "Physics2DShapeQueryResult", "PhysicsShapeQueryResult2D" }, // Class is not visible in ClassDB
 	// { "PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D" }, // Class is not visible in ClassDB
 	// { "NativeScript","NativeExtension"}, ??
-	{ "AStar", "AStar3D" },
 	{ "ARVRAnchor", "XRAnchor3D" },
 	{ "ARVRCamera", "XRCamera3D" },
 	{ "ARVRController", "XRController3D" },
@@ -1229,6 +1246,7 @@ static const char *class_renames[][2] = {
 	{ "ARVROrigin", "XROrigin3D" },
 	{ "ARVRPositionalTracker", "XRPositionalTracker" },
 	{ "ARVRServer", "XRServer" },
+	{ "AStar", "AStar3D" },
 	{ "AnimatedSprite", "AnimatedSprite2D" },
 	{ "AnimationTreePlayer", "AnimationTree" },
 	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
@@ -1344,6 +1362,7 @@ static const char *class_renames[][2] = {
 	{ "ResourceInteractiveLoader", "ResourceLoader" },
 	{ "RigidBody", "RigidDynamicBody3D" },
 	{ "RigidBody2D", "RigidDynamicBody2D" },
+	{ "SceneTreeTween", "Tween" },
 	{ "Shape", "Shape3D" }, // Be careful, this will be used everywhere
 	{ "ShortCut", "Shortcut" },
 	{ "Skeleton", "Skeleton3D" },
@@ -2045,6 +2064,7 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("map_to_world(a, b,c)", "map_to_world(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
 	valid = valid & test_conversion_single_additional("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
@@ -2053,6 +2073,9 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("\taa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("\t    aa", "\taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("    \taa", "    \taa", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+
+	valid = valid & test_conversion_single_additional("apply_force(position, impulse)", "apply_force(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("apply_impulse(position, impulse)", "apply_impulse(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
 	valid = valid & test_conversion_single_additional("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_enums, "custom rename");
 
@@ -2993,14 +3016,39 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 				}
 			}
 		}
-
-		// TODO - add_surface_from_arrays - additional 4 argument
-		// ENetMultiplayerPeer.create_client - additional argument
-		// ENetMultiplayerPeer.create_server - additional argument
-		// Translation.get_message (and similar)
-		// TreeItem.move_after() - new argument
-		// TreeItem.move_before() - new argument
-		// UndoRedo.commit_action() - additional argument
+		//  apply_impulse(A, B)  ->   apply_impulse(B, A)
+		if (line.find("apply_impulse(") != -1) {
+			int start = line.find("apply_impulse(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "apply_impulse(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+				}
+			}
+		}
+		//  apply_force(A, B)  ->   apply_force(B, A)
+		if (line.find("apply_force(") != -1) {
+			int start = line.find("apply_force(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "apply_force(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+				}
+			}
+		}
+		//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
+		if (line.find("map_to_world(") != -1) {
+			int start = line.find("map_to_world(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 3) {
+					line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+				}
+			}
+		}
 	}
 
 	// Collect vector to string
@@ -3398,13 +3446,39 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 			}
 		}
 
-		// TODO - add_surface_from_arrays - additional 4 argument
-		// ENetMultiplayerPeer.create_client - additional argument
-		// ENetMultiplayerPeer.create_server - additional argument
-		// Translation.get_message (and similar)
-		// TreeItem.move_after() - new argument
-		// TreeItem.move_before() - new argument
-		// UndoRedo.commit_action() - additional argument
+		//  apply_impulse(A, B)  ->   apply_impulse(B, A)
+		if (line.find("apply_impulse(") != -1) {
+			int start = line.find("apply_impulse(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "apply_impulse(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+				}
+			}
+		}
+		//  apply_force(A, B)  ->   apply_force(B, A)
+		if (line.find("apply_force(") != -1) {
+			int start = line.find("apply_force(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "apply_force(" + parts[1] + ", " + parts[0] + ")" + line.substr(end + start);
+				}
+			}
+		}
+		//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
+		if (line.find("map_to_world(") != -1) {
+			int start = line.find("get_cell_item_orientation(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() == 3) {
+					line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+				}
+			}
+		}
 
 		if (old_line != line) {
 			found_things.append(simple_line_formatter(current_line, old_line, line));
