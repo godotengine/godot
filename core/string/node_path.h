@@ -39,6 +39,7 @@ class NodePath {
 		SafeRefCount refcount;
 		Vector<StringName> path;
 		Vector<StringName> subpath;
+		StringName concatenated_path;
 		StringName concatenated_subpath;
 		bool absolute;
 		bool has_slashes;
@@ -59,6 +60,7 @@ public:
 	StringName get_subname(int p_idx) const;
 	Vector<StringName> get_names() const;
 	Vector<StringName> get_subnames() const;
+	StringName get_concatenated_names() const;
 	StringName get_concatenated_subnames() const;
 
 	NodePath rel_path_to(const NodePath &p_np) const;

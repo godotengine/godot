@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bone_attachment_3d.h                                                 */
+/*  bone_map.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,75 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
+#ifndef BONE_MAP_H
+#define BONE_MAP_H
 
-#include "scene/3d/skeleton_3d.h"
-#ifdef TOOLS_ENABLED
-#include "scene/resources/bone_map.h"
-#endif // TOOLS_ENABLED
+#include "skeleton_profile.h"
 
-class BoneAttachment3D : public Node3D {
-	GDCLASS(BoneAttachment3D, Node3D);
+class BoneMap : public Resource {
+	GDCLASS(BoneMap, Resource);
 
-	bool bound = false;
-	String bone_name;
-	int bone_idx = -1;
+	Ref<SkeletonProfile> profile;
+	HashMap<StringName, StringName> bone_map;
 
-	bool override_pose = false;
-	int override_mode = 0;
-	bool _override_dirty = false;
-
-	enum OVERRIDE_MODES {
-		MODE_GLOBAL_POSE,
-		MODE_LOCAL_POSE,
-	};
-
-	bool use_external_skeleton = false;
-	NodePath external_skeleton_node;
-	ObjectID external_skeleton_node_cache;
-
-	void _check_bind();
-	void _check_unbind();
-
-	void _transform_changed();
-	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
+	void _update_profile();
+	void _validate_bone_map();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-
+	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
-#ifdef TOOLS_ENABLED
-	virtual void _notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Ref<BoneMap> p_bone_map);
-#endif // TOOLS_ENABLED
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	int get_profile_type() const;
+	void set_profile_type(const int p_profile_type);
 
-	void set_bone_name(const String &p_name);
-	String get_bone_name() const;
+	Ref<SkeletonProfile> get_profile() const;
+	void set_profile(const Ref<SkeletonProfile> &p_profile);
 
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
+	int get_skeleton_bone_name_count(const StringName p_skeleton_bone_name) const;
 
-	void set_override_pose(bool p_override);
-	bool get_override_pose() const;
-	void set_override_mode(int p_mode);
-	int get_override_mode() const;
+	StringName get_skeleton_bone_name(StringName p_profile_bone_name) const;
+	void set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name);
 
-	void set_use_external_skeleton(bool p_external_skeleton);
-	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
-	NodePath get_external_skeleton() const;
+	StringName find_profile_bone_name(StringName p_skeleton_bone_name) const;
 
-	virtual void on_bone_pose_update(int p_bone_index);
-
-	BoneAttachment3D();
+	BoneMap();
+	~BoneMap();
 };
 
-#endif // BONE_ATTACHMENT_H
+#endif // BONE_MAP_H

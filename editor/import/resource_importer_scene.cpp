@@ -232,6 +232,7 @@ void EditorScenePostImportPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_MATERIAL);
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_ANIMATION);
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE);
+	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE);
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_MAX);
 }
 
@@ -766,6 +767,27 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	}
 
 	{
+		//make sure this is unique
+		node_settings = node_settings.duplicate(true);
+		//fill node settings for this node with default values
+		List<ImportOption> iopts;
+		if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, &iopts);
+		} else if (Object::cast_to<AnimationPlayer>(p_node)) {
+			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
+		} else if (Object::cast_to<Skeleton3D>(p_node)) {
+			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE, &iopts);
+		} else {
+			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_NODE, &iopts);
+		}
+		for (const ImportOption &E : iopts) {
+			if (!node_settings.has(E.option.name)) {
+				node_settings[E.option.name] = E.default_value;
+			}
+		}
+	}
+
+	{
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE, p_root, p_node, Ref<Resource>(), node_settings);
@@ -779,6 +801,16 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
+			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
+				break;
+			}
+		}
+	}
+
+	if (Object::cast_to<Skeleton3D>(p_node)) {
+		ObjectID node_id = p_node->get_instance_id();
+		for (int i = 0; i < post_importer_plugins.size(); i++) {
+			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
 				break;
 			}
@@ -799,6 +831,16 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
+							{
+								//fill node settings for this node with default values
+								List<ImportOption> iopts;
+								get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MATERIAL, &iopts);
+								for (const ImportOption &E : iopts) {
+									if (!matdata.has(E.option.name)) {
+										matdata[E.option.name] = E.default_value;
+									}
+								}
+							}
 
 							for (int j = 0; j < post_importer_plugins.size(); j++) {
 								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
@@ -965,19 +1007,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
-
-		{
-			//make sure this is unique
-			node_settings = node_settings.duplicate(true);
-			//fill node settings for this node with default values
-			List<ImportOption> iopts;
-			get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
-			for (const ImportOption &E : iopts) {
-				if (!node_settings.has(E.option.name)) {
-					node_settings[E.option.name] = E.default_value;
-				}
-			}
-		}
 
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
@@ -1385,6 +1414,10 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
 			}
 		} break;
+		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, "BoneMap", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
+		} break;
 		default: {
 		}
 	}
@@ -1499,6 +1532,12 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 				}
 			}
 		} break;
+		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
+			const bool use_retarget = p_options["retarget/bone_map"].get_validated_object() != nullptr;
+			if (p_option != "retarget/bone_map" && p_option.begins_with("retarget/")) {
+				return use_retarget;
+			}
+		} break;
 		default: {
 		}
 	}
@@ -1533,6 +1572,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
+		} break;
+		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
 		} break;
 		default: {
 		}
@@ -1622,6 +1663,16 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 
 				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];
+					{
+						//fill node settings for this node with default values
+						List<ImportOption> iopts;
+						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MESH, &iopts);
+						for (const ImportOption &E : iopts) {
+							if (!mesh_settings.has(E.option.name)) {
+								mesh_settings[E.option.name] = E.default_value;
+							}
+						}
+					}
 
 					if (mesh_settings.has("generate/shadow_meshes")) {
 						int shadow_meshes = mesh_settings["generate/shadow_meshes"];

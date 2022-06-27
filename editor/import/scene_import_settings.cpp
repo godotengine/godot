@@ -339,6 +339,8 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
 			} else if (Object::cast_to<AnimationPlayer>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(p_node)) {
+				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
@@ -617,6 +619,13 @@ SceneImportSettings *SceneImportSettings::get_singleton() {
 	return singleton;
 }
 
+Node *SceneImportSettings::get_selected_node() {
+	if (selected_id == "") {
+		return nullptr;
+	}
+	return node_map[selected_id].node;
+}
+
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
@@ -657,6 +666,8 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 				scene_import_settings_data->hide_options = editing_animation;
 			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
+				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;

@@ -201,6 +201,7 @@ public:
 	void update_view();
 	void open_settings(const String &p_path, bool p_for_animation = false);
 	static SceneImportSettings *get_singleton();
+	Node *get_selected_node();
 	SceneImportSettings();
 	~SceneImportSettings();
 };
