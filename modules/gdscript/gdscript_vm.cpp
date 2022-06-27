@@ -311,6 +311,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
 		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
+		&&OPCODE_JUMP_IF_SHARED,                     \
 		&&OPCODE_RETURN,                             \
 		&&OPCODE_RETURN_TYPED_BUILTIN,               \
 		&&OPCODE_RETURN_TYPED_ARRAY,                 \
@@ -2358,6 +2359,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_JUMP_TO_DEF_ARGUMENT) {
 				CHECK_SPACE(2);
 				ip = _default_arg_ptr[defarg];
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_JUMP_IF_SHARED) {
+				CHECK_SPACE(3);
+
+				GET_INSTRUCTION_ARG(val, 0);
+
+				if (val->is_shared()) {
+					int to = _code_ptr[ip + 2];
+					GD_ERR_BREAK(to < 0 || to > _code_size);
+					ip = to;
+				} else {
+					ip += 3;
+				}
 			}
 			DISPATCH_OPCODE;
 
