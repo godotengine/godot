@@ -592,6 +592,9 @@
 		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.29)">
 			[Color] of the scrollbar in the code completion popup.
 		</theme_item>
+		<theme_item name="completion_scroll_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			[Color] of the scrollbar in the code completion popup when hovered.
+		</theme_item>
 		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
 			Background highlight [Color] for the current selected option item in the code completion popup.
 		</theme_item>
