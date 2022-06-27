@@ -1056,13 +1056,25 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Set back the values into their bases.
 				for (const ChainInfo &info : set_chain) {
-					if (!info.is_named) {
-						gen->write_set(info.base, info.key, assigned);
-						if (info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							gen->pop_temporary();
+					bool known_type = assigned.type.has_type;
+					bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
+
+					if (!known_type) {
+						// Jump shared values since they are already updated in-place.
+						gen->write_jump_if_shared(assigned);
+					}
+					if (known_type && !is_shared) {
+						if (!info.is_named) {
+							gen->write_set(info.base, info.key, assigned);
+							if (info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+								gen->pop_temporary();
+							}
+						} else {
+							gen->write_set_named(info.base, info.name, assigned);
 						}
-					} else {
-						gen->write_set_named(info.base, info.name, assigned);
+					}
+					if (!known_type) {
+						gen->write_end_jump_if_shared();
 					}
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
@@ -1070,19 +1082,35 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					assigned = info.base;
 				}
 
-				// If this is a class member property, also assign to it.
-				// This allow things like: position.x += 2.0
-				if (assign_class_member_property != StringName()) {
-					gen->write_set_member(assigned, assign_class_member_property);
-				}
-				// Same as above but for members
-				if (is_member_property) {
-					if (member_property_has_setter && !member_property_is_in_setter) {
-						Vector<GDScriptCodeGenerator::Address> args;
-						args.push_back(assigned);
-						gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), member_property_setter_function, args);
-					} else {
-						gen->write_assign(target_member_property, assigned);
+				bool known_type = assigned.type.has_type;
+				bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
+
+				if (!known_type || !is_shared) {
+					// If this is a class member property, also assign to it.
+					// This allow things like: position.x += 2.0
+					if (assign_class_member_property != StringName()) {
+						if (!known_type) {
+							gen->write_jump_if_shared(assigned);
+						}
+						gen->write_set_member(assigned, assign_class_member_property);
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
+					} else if (is_member_property) {
+						// Same as above but for script members.
+						if (!known_type) {
+							gen->write_jump_if_shared(assigned);
+						}
+						if (member_property_has_setter && !member_property_is_in_setter) {
+							Vector<GDScriptCodeGenerator::Address> args;
+							args.push_back(assigned);
+							gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), member_property_setter_function, args);
+						} else {
+							gen->write_assign(target_member_property, assigned);
+						}
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
 					}
 				}
 
