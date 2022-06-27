@@ -1196,7 +1196,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
 
 				if (expression.parse(line) == OK) {
-					Variant result = expression.execute(Array(), Variant(), false);
+					Variant result = expression.execute(Array(), Variant(), false, true);
 					if (expression.get_error_text().is_empty()) {
 						results.push_back(whitespace + result.get_construct_string());
 					} else {
