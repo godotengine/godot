@@ -474,6 +474,13 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	get_ok_button()->set_disabled(false);
 }
 
+void CreateDialog::select_base() {
+	if (search_options_types.is_empty()) {
+		_update_search();
+	}
+	select_type(base_type, false);
+}
+
 String CreateDialog::get_selected_type() {
 	TreeItem *selected = search_options->get_selected();
 	if (!selected) {

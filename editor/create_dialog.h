@@ -115,6 +115,7 @@ public:
 
 	void set_base_type(const String &p_base) { base_type = p_base; }
 	String get_base_type() const { return base_type; }
+	void select_base();
 
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 	String get_preferred_search_result_type() { return preferred_search_result_type; }
