@@ -107,7 +107,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));
 	fps = p_fps;
 	if ((mix_rate % fps) != 0) {
-		WARN_PRINT("Audio mix rate (" + itos(mix_rate) + ") can not be divided by fps (" + itos(fps) + "). Audio may go out of sync over time.");
+		WARN_PRINT("MovieWriter's audio mix rate (" + itos(mix_rate) + ") can not be divided by the recording FPS (" + itos(fps) + "). Audio may go out of sync over time.");
 	}
 
 	audio_channels = AudioDriverDummy::get_dummy_singleton()->get_channels();
@@ -128,15 +128,17 @@ void MovieWriter::_bind_methods() {
 	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block")
 	GDVIRTUAL_BIND(_write_end)
 
-	GLOBAL_DEF("editor/movie_writer/mix_rate_hz", 48000);
+	GLOBAL_DEF("editor/movie_writer/mix_rate", 48000);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/movie_writer/mix_rate", PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"));
 	GLOBAL_DEF("editor/movie_writer/speaker_mode", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/movie_writer/speaker_mode", PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"));
 	GLOBAL_DEF("editor/movie_writer/mjpeg_quality", 0.75);
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/movie_writer/mjpeg_quality", PropertyInfo(Variant::FLOAT, "editor/movie_writer/mjpeg_quality", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 	// used by the editor
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
 	GLOBAL_DEF_BASIC("editor/movie_writer/fps", 60);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/movie_writer/fps", PropertyInfo(Variant::INT, "editor/movie_writer/fps", PROPERTY_HINT_RANGE, "1,300,1"));
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/movie_writer/fps", PropertyInfo(Variant::INT, "editor/movie_writer/fps", PROPERTY_HINT_RANGE, "1,300,1,suffix:FPS"));
 }
 
 void MovieWriter::set_extensions_hint() {
@@ -301,6 +303,6 @@ void MovieWriterPNGWAV::write_end() {
 }
 
 MovieWriterPNGWAV::MovieWriterPNGWAV() {
-	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate_hz");
+	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
 	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 }
