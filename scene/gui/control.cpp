@@ -723,8 +723,20 @@ void Control::_notification(int p_notification) {
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
+			if (data.theme.is_null()) {
+				if (data.parent && (data.parent->data.theme_owner || data.parent->data.theme_owner_window)) {
+					data.theme_owner = data.parent->data.theme_owner;
+					data.theme_owner_window = data.parent->data.theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				} else if (data.parent_window && (data.parent_window->theme_owner || data.parent_window->theme_owner_window)) {
+					data.theme_owner = data.parent_window->theme_owner;
+					data.theme_owner_window = data.parent_window->theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				}
+			}
+
 			CanvasItem *node = this;
-			Control *parent_control = nullptr;
+			bool has_parent_control = false;
 
 			while (!node->is_set_as_top_level()) {
 				CanvasItem *parent = Object::cast_to<CanvasItem>(node->get_parent());
@@ -732,22 +744,19 @@ void Control::_notification(int p_notification) {
 					break;
 				}
 
-				parent_control = Object::cast_to<Control>(parent);
+				Control *parent_control = Object::cast_to<Control>(parent);
 				if (parent_control) {
+					has_parent_control = true;
 					break;
 				}
 
 				node = parent;
 			}
 
-			if (parent_control) {
+			if (has_parent_control) {
 				// Do nothing, has a parent control.
-				if (data.theme.is_null() && parent_control->data.theme_owner) {
-					data.theme_owner = parent_control->data.theme_owner;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
 			} else {
-				//is a regular root control or top_level
+				// Is a regular root control or top_level.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				data.RI = viewport->_gui_add_root_control(this);
@@ -758,7 +767,7 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
-				//connect viewport
+				// Connect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
