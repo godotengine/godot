@@ -1556,6 +1556,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector2, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector2, max_axis_index, sarray(), varray());
 	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
@@ -1643,6 +1644,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector3, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector3, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());

@@ -253,6 +253,27 @@ public:
 						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
 	}
 
+	static _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+		/* Formula from Wikipedia article on Bezier curves. */
+		double omt = (1.0 - p_t);
+		double omt2 = omt * omt;
+		double omt3 = omt2 * omt;
+		double t2 = p_t * p_t;
+		double t3 = t2 * p_t;
+
+		return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
+	}
+	static _ALWAYS_INLINE_ float bezier_interpolate(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
+		/* Formula from Wikipedia article on Bezier curves. */
+		float omt = (1.0f - p_t);
+		float omt2 = omt * omt;
+		float omt3 = omt2 * omt;
+		float t2 = p_t * p_t;
+		float t3 = t2 * p_t;
+
+		return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0f + p_control_2 * omt * t2 * 3.0f + p_end * t3;
+	}
+
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
 		double difference = fmod(p_to - p_from, Math_TAU);
 		double distance = fmod(2.0 * difference, Math_TAU) - difference;
