@@ -704,6 +704,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	SceneTreeDialog *scene_tree = nullptr;
 	NodePath base_hint;
 	bool use_path_from_scene_root = false;
+	bool pointer_mode = false;
 
 	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path);
@@ -714,6 +715,10 @@ class EditorPropertyNodePath : public EditorProperty {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool is_drop_valid(const Dictionary &p_drag_data) const;
 
+	String _get_meta_pointer_property() const;
+	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const override;
+	virtual StringName _get_revert_property() const override;
+
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
@@ -721,7 +726,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root = true);
+	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root = true, bool p_pointer_mode = false);
 	EditorPropertyNodePath();
 };
 

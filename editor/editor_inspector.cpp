@@ -406,7 +406,7 @@ Object *EditorProperty::get_edited_object() {
 	return object;
 }
 
-StringName EditorProperty::get_edited_property() {
+StringName EditorProperty::get_edited_property() const {
 	return property;
 }
 
@@ -437,14 +437,18 @@ Variant EditorPropertyRevert::get_property_revert_value(Object *p_object, const 
 	return PropertyUtils::get_property_default_value(p_object, p_property, r_is_valid);
 }
 
-bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property) {
+bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value) {
 	bool is_valid_revert = false;
 	Variant revert_value = EditorPropertyRevert::get_property_revert_value(p_object, p_property, &is_valid_revert);
 	if (!is_valid_revert) {
 		return false;
 	}
-	Variant current_value = p_object->get(p_property);
+	Variant current_value = p_custom_current_value ? *p_custom_current_value : p_object->get(p_property);
 	return PropertyUtils::is_property_value_different(current_value, revert_value);
+}
+
+StringName EditorProperty::_get_revert_property() const {
+	return property;
 }
 
 void EditorProperty::update_revert_and_pin_status() {
@@ -458,7 +462,8 @@ void EditorProperty::update_revert_and_pin_status() {
 		CRASH_COND(!node);
 		new_pinned = node->is_property_pinned(property);
 	}
-	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property) && !is_read_only();
+	Variant current = object->get(_get_revert_property());
+	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
 	if (new_can_revert != can_revert || new_pinned != pinned) {
 		can_revert = new_can_revert;
@@ -717,11 +722,15 @@ void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
 }
 
+Variant EditorProperty::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
+	return object->get(p_prop, &r_valid);
+}
+
 bool EditorProperty::is_cache_valid() const {
 	if (object) {
 		for (const KeyValue<StringName, Variant> &E : cache) {
 			bool valid;
-			Variant value = object->get(E.key, &valid);
+			Variant value = _get_cache_value(E.key, valid);
 			if (!valid || value != E.value) {
 				return false;
 			}
@@ -733,7 +742,7 @@ void EditorProperty::update_cache() {
 	cache.clear();
 	if (object && property != StringName()) {
 		bool valid;
-		Variant value = object->get(property, &valid);
+		Variant value = _get_cache_value(property, valid);
 		if (valid) {
 			cache[property] = value;
 		}
