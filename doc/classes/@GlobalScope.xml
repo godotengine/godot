@@ -1040,6 +1040,27 @@
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
+		<method name="wrap">
+			<return type="Variant" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="min" type="Variant" />
+			<argument index="2" name="max" type="Variant" />
+			<description>
+				Wraps the [Variant] [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				Variant types [int] and [float] (real) are supported. If any of the argument is [float] the result will be [float], otherwise it is [int].
+				[codeblock]
+				var a = wrap(4, 5, 10)
+				# a is 9 (int)
+
+				var a = wrap(7, 5, 10)
+				# a is 7 (int)
+
+				var a = wrap(10.5, 5, 10)
+				# a is 5.5 (float)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="wrapf">
 			<return type="float" />
 			<argument index="0" name="value" type="float" />

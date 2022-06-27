@@ -267,6 +267,52 @@ struct VariantUtilityFunctions {
 		return Math::db2linear(db);
 	}
 
+	static inline Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
+		Variant::Type x_type = p_x.get_type();
+		if (x_type != Variant::INT && x_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type min_type = p_min.get_type();
+		if (min_type != Variant::INT && min_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type max_type = p_max.get_type();
+		if (max_type != Variant::INT && max_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant value;
+
+		switch (x_type) {
+			case Variant::INT: {
+				if (x_type != min_type || x_type != max_type) {
+					value = wrapf((double)p_x, (double)p_min, (double)p_max);
+				} else {
+					value = wrapi((int)p_x, (int)p_min, (int)p_max);
+				}
+			} break;
+			case Variant::FLOAT: {
+				value = wrapf((double)p_x, (double)p_min, (double)p_max);
+			} break;
+			default:
+				break;
+		}
+
+		r_error.error = Callable::CallError::CALL_OK;
+		return value;
+	}
+
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		return Math::wrapi(value, min, max);
 	}
@@ -1216,6 +1262,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
 
+	FUNCBINDVR3(wrap, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
