@@ -85,12 +85,20 @@ void Node3D::_notify_dirty() {
 }
 
 void Node3D::_update_local_transform() const {
-	if (this->get_rotation_edit_mode() != ROTATION_EDIT_MODE_BASIS) {
-		data.local_transform = data.local_transform.orthogonalized();
-	}
-	data.local_transform.basis.set_euler_scale(data.rotation, data.scale);
+	// This function is called when the local transform (data.local_transform) is dirty and the right value is contained in the Euler rotation and scale.
 
-	data.dirty &= ~DIRTY_LOCAL;
+	data.local_transform.basis.set_euler_scale(data.euler_rotation, data.scale, data.euler_rotation_order);
+
+	data.dirty &= ~DIRTY_LOCAL_TRANSFORM;
+}
+
+void Node3D::_update_rotation_and_scale() const {
+	// This function is called when the Euler rotation (data.euler_rotation) is dirty and the right value is contained in the local transform
+
+	data.scale = data.local_transform.basis.get_scale();
+	data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
+
+	data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
 }
 
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
@@ -113,7 +121,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 #endif
 		get_tree()->xform_change_list.add(&xform_change);
 	}
-	data.dirty |= DIRTY_GLOBAL;
+	data.dirty |= DIRTY_GLOBAL_TRANSFORM;
 
 	data.children_lock--;
 }
@@ -137,12 +145,12 @@ void Node3D::_notification(int p_what) {
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
-					data.dirty = DIRTY_VECTORS; //global is always dirty upon entering a scene
+					data.dirty = DIRTY_EULER_ROTATION_AND_SCALE; // As local transform was updated, rot/scale should be dirty.
 				}
 				data.top_level_active = true;
 			}
 
-			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
+			data.dirty |= DIRTY_GLOBAL_TRANSFORM; // Global is always dirty upon entering a scene.
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
@@ -212,12 +220,27 @@ void Node3D::set_basis(const Basis &p_basis) {
 	set_transform(Transform3D(p_basis, data.local_transform.origin));
 }
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
-	set_transform(Transform3D(Basis(p_quaternion), data.local_transform.origin));
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		// We need the scale part, so if these are dirty, update it
+		data.scale = data.local_transform.basis.get_scale();
+		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
+	}
+	data.local_transform.basis = Basis(p_quaternion, data.scale);
+	// Rotscale should not be marked dirty because that would cause precision loss issues with the scale. Instead reconstruct rotation now.
+	data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
+
+	data.dirty = DIRTY_NONE;
+
+	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
 }
 
 void Node3D::set_transform(const Transform3D &p_transform) {
 	data.local_transform = p_transform;
-	data.dirty |= DIRTY_VECTORS;
+	data.dirty = DIRTY_EULER_ROTATION_AND_SCALE; // Make rot/scale dirty.
+
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -227,8 +250,13 @@ void Node3D::set_transform(const Transform3D &p_transform) {
 Basis Node3D::get_basis() const {
 	return get_transform().basis;
 }
+
 Quaternion Node3D::get_quaternion() const {
-	return Quaternion(get_transform().basis);
+	if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
+		_update_local_transform();
+	}
+
+	return data.local_transform.basis.get_rotation_quaternion();
 }
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
@@ -240,7 +268,7 @@ void Node3D::set_global_transform(const Transform3D &p_transform) {
 }
 
 Transform3D Node3D::get_transform() const {
-	if (data.dirty & DIRTY_LOCAL) {
+	if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
 		_update_local_transform();
 	}
 
@@ -249,8 +277,8 @@ Transform3D Node3D::get_transform() const {
 Transform3D Node3D::get_global_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
 
-	if (data.dirty & DIRTY_GLOBAL) {
-		if (data.dirty & DIRTY_LOCAL) {
+	if (data.dirty & DIRTY_GLOBAL_TRANSFORM) {
+		if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
 			_update_local_transform();
 		}
 
@@ -264,7 +292,7 @@ Transform3D Node3D::get_global_transform() const {
 			data.global_transform.basis.orthonormalize();
 		}
 
-		data.dirty &= ~DIRTY_GLOBAL;
+		data.dirty &= ~DIRTY_GLOBAL_TRANSFORM;
 	}
 
 	return data.global_transform;
@@ -314,13 +342,27 @@ void Node3D::set_rotation_edit_mode(RotationEditMode p_mode) {
 	if (data.rotation_edit_mode == p_mode) {
 		return;
 	}
+
+	bool transform_changed = false;
+	if (data.rotation_edit_mode == ROTATION_EDIT_MODE_BASIS && !(data.dirty & DIRTY_LOCAL_TRANSFORM)) {
+		data.local_transform.orthogonalize();
+		transform_changed = true;
+	}
+
 	data.rotation_edit_mode = p_mode;
 
-	// Shearing is not allowed except in ROTATION_EDIT_MODE_BASIS.
-	data.dirty |= DIRTY_LOCAL;
-	_propagate_transform_changed(this);
-	if (data.notify_local_transform) {
-		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	if (p_mode == ROTATION_EDIT_MODE_EULER && (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE)) {
+		// If going to Euler mode, ensure that vectors are _not_ dirty, else the retrieved value may be wrong.
+		// Otherwise keep what is there, so switching back and forth between modes does not break the vectors.
+
+		_update_rotation_and_scale();
+	}
+
+	if (transform_changed) {
+		_propagate_transform_changed(this);
+		if (data.notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
 	}
 
 	notify_property_list_changed();
@@ -333,38 +375,47 @@ Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
 void Node3D::set_rotation_order(RotationOrder p_order) {
 	Basis::EulerOrder order = Basis::EulerOrder(p_order);
 
-	if (data.rotation_order == order) {
+	if (data.euler_rotation_order == order) {
 		return;
 	}
 
 	ERR_FAIL_INDEX(int32_t(order), 6);
+	bool transform_changed = false;
 
-	if (data.dirty & DIRTY_VECTORS) {
-		data.rotation = data.local_transform.basis.get_euler_normalized(order);
-		data.scale = data.local_transform.basis.get_scale();
-		data.dirty &= ~DIRTY_VECTORS;
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		_update_rotation_and_scale();
+	} else if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
+		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(order);
+		transform_changed = true;
 	} else {
-		data.rotation = Basis::from_euler(data.rotation, data.rotation_order).get_euler_normalized(order);
+		data.dirty |= DIRTY_LOCAL_TRANSFORM;
+		transform_changed = true;
 	}
 
-	data.rotation_order = order;
-	//changing rotation order should not affect transform
+	data.euler_rotation_order = order;
 
-	notify_property_list_changed(); //will change rotation
+	if (transform_changed) {
+		_propagate_transform_changed(this);
+		if (data.notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
+	}
+	notify_property_list_changed(); // Will change the rotation property.
 }
 
 Node3D::RotationOrder Node3D::get_rotation_order() const {
-	return RotationOrder(data.rotation_order);
+	return RotationOrder(data.euler_rotation_order);
 }
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
-	if (data.dirty & DIRTY_VECTORS) {
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		// Update scale only if rotation and scale are dirty, as rotation will be overridden.
 		data.scale = data.local_transform.basis.get_scale();
-		data.dirty &= ~DIRTY_VECTORS;
+		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
 	}
 
-	data.rotation = p_euler_rad;
-	data.dirty |= DIRTY_LOCAL;
+	data.euler_rotation = p_euler_rad;
+	data.dirty = DIRTY_LOCAL_TRANSFORM;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -372,13 +423,14 @@ void Node3D::set_rotation(const Vector3 &p_euler_rad) {
 }
 
 void Node3D::set_scale(const Vector3 &p_scale) {
-	if (data.dirty & DIRTY_VECTORS) {
-		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
-		data.dirty &= ~DIRTY_VECTORS;
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		// Update rotation only if rotation and scale are dirty, as scale will be overridden.
+		data.euler_rotation = data.local_transform.basis.get_euler_normalized(data.euler_rotation_order);
+		data.dirty &= ~DIRTY_EULER_ROTATION_AND_SCALE;
 	}
 
 	data.scale = p_scale;
-	data.dirty |= DIRTY_LOCAL;
+	data.dirty = DIRTY_LOCAL_TRANSFORM;
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -390,22 +442,16 @@ Vector3 Node3D::get_position() const {
 }
 
 Vector3 Node3D::get_rotation() const {
-	if (data.dirty & DIRTY_VECTORS) {
-		data.scale = data.local_transform.basis.get_scale();
-		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
-
-		data.dirty &= ~DIRTY_VECTORS;
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		_update_rotation_and_scale();
 	}
 
-	return data.rotation;
+	return data.euler_rotation;
 }
 
 Vector3 Node3D::get_scale() const {
-	if (data.dirty & DIRTY_VECTORS) {
-		data.scale = data.local_transform.basis.get_scale();
-		data.rotation = data.local_transform.basis.get_euler_normalized(data.rotation_order);
-
-		data.dirty &= ~DIRTY_VECTORS;
+	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
+		_update_rotation_and_scale();
 	}
 
 	return data.scale;
@@ -865,14 +911,14 @@ Variant Node3D::property_get_revert(const String &p_name) {
 	} else if (p_name == "quaternion") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Quaternion(Transform3D(variant).get_basis());
+			r_ret = Quaternion(Transform3D(variant).get_basis().get_rotation_quaternion());
 		} else {
 			return Quaternion();
 		}
 	} else if (p_name == "rotation") {
 		Variant variant = PropertyUtils::get_property_default_value(this, "transform", &valid);
 		if (valid && variant.get_type() == Variant::Type::TRANSFORM3D) {
-			r_ret = Transform3D(variant).get_basis().get_euler_normalized(data.rotation_order);
+			r_ret = Transform3D(variant).get_basis().get_euler_normalized(data.euler_rotation_order);
 		} else {
 			return Vector3();
 		}

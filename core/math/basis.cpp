@@ -365,12 +365,12 @@ Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_angle) const {
 	return (*this) * Basis(p_axis, p_angle);
 }
 
-Basis Basis::rotated(const Vector3 &p_euler) const {
-	return Basis(p_euler) * (*this);
+Basis Basis::rotated(const Vector3 &p_euler, EulerOrder p_order) const {
+	return Basis::from_euler(p_euler, p_order) * (*this);
 }
 
-void Basis::rotate(const Vector3 &p_euler) {
-	*this = rotated(p_euler);
+void Basis::rotate(const Vector3 &p_euler, EulerOrder p_order) {
+	*this = rotated(p_euler, p_order);
 }
 
 Basis Basis::rotated(const Quaternion &p_quaternion) const {
@@ -935,9 +935,9 @@ void Basis::set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Ve
 	rotate(p_axis, p_angle);
 }
 
-void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale) {
+void Basis::set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale, EulerOrder p_order) {
 	_set_diagonal(p_scale);
-	rotate(p_euler);
+	rotate(p_euler, p_order);
 }
 
 void Basis::set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale) {
