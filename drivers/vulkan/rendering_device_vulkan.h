@@ -544,12 +544,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct UniformInfo {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
+		bool writable = false;
 		int binding = 0;
 		uint32_t stages = 0;
 		int length = 0; //size of arrays (in total elements), or ubos (in bytes * total elements)
 
 		bool operator!=(const UniformInfo &p_info) const {
-			return (binding != p_info.binding || type != p_info.type || stages != p_info.stages || length != p_info.length);
+			return (binding != p_info.binding || type != p_info.type || writable != p_info.writable || stages != p_info.stages || length != p_info.length);
 		}
 
 		bool operator<(const UniformInfo &p_info) const {
@@ -558,6 +559,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			}
 			if (type != p_info.type) {
 				return type < p_info.type;
+			}
+			if (writable != p_info.writable) {
+				return writable < p_info.writable;
 			}
 			if (stages != p_info.stages) {
 				return stages < p_info.stages;

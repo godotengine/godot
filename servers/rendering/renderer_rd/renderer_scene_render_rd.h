@@ -799,6 +799,7 @@ private:
 
 		RID fog_uniform_set;
 		RID copy_uniform_set;
+		RID process_uniform_set_density;
 		RID process_uniform_set;
 		RID process_uniform_set2;
 		RID sdfgi_uniform_set;

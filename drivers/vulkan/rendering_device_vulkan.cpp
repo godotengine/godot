@@ -4348,7 +4348,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 			if (!ret.is_empty()) {
 				ret += "\n";
 			}
-			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Length: " + itos(ui.length);
+			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length);
 		}
 	}
 	return ret;
@@ -4548,8 +4548,9 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 //version 1: initial
 //version 2: Added shader name
+//version 3: Added writable
 
-#define SHADER_BINARY_VERSION 2
+#define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4560,6 +4561,7 @@ struct RenderingDeviceVulkanShaderBinaryDataBinding {
 	uint32_t binding;
 	uint32_t stages;
 	uint32_t length; //size of arrays (in total elements), or ubos (in bytes * total elements)
+	uint32_t writable;
 };
 
 struct RenderingDeviceVulkanShaderBinarySpecializationConstant {
@@ -4642,6 +4644,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting descriptor bindings.");
 
+				uint32_t interface_vars_count = 0;
+				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, nullptr);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating interface variables.");
+
+				Vector<SpvReflectInterfaceVariable *> interface_vars;
+				interface_vars.resize(interface_vars_count);
+				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, interface_vars.ptrw());
+
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting interface variables.");
+
 				for (uint32_t j = 0; j < binding_count; j++) {
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
@@ -4719,6 +4733,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					} else {
 						info.length = 0;
 					}
+
+					SpvReflectInterfaceVariable *interface_var = nullptr;
+					for (uint32_t k = 0; k < interface_vars_count; k++) {
+						if (interface_vars[k]->spirv_id == binding.spirv_id) {
+							interface_var = interface_vars[k];
+							break;
+						}
+					}
+					ERR_FAIL_COND_V_MSG(!interface_var, Vector<uint8_t>(),
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed finding interface variable.");
+
+					info.writable = !(bool)(interface_var->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
 
 					info.binding = binding.binding;
 					uint32_t set = binding.set;
@@ -5087,6 +5113,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		for (uint32_t j = 0; j < set_count; j++) {
 			UniformInfo info;
 			info.type = UniformType(set_ptr[j].type);
+			info.writable = set_ptr[j].writable;
 			info.length = set_ptr[j].length;
 			info.binding = set_ptr[j].binding;
 			info.stages = set_ptr[j].stages;
