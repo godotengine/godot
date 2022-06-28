@@ -1510,7 +1510,7 @@ void OpenXRAPI::end_frame() {
 	}
 
 	if (frame_state.shouldRender && view_pose_valid && !image_acquired) {
-		print_line("OpenXR: No viewport was marked with use_xr, there is no rendered output!");
+		ERR_PRINT_ONCE("OpenXR: No viewport was marked with use_xr, there is no rendered output!");
 	}
 
 	// must have:
