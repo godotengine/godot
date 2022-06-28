@@ -68,6 +68,34 @@ StringName AnimationNodeStateMachineTransition::get_advance_condition_name() con
 	return advance_condition_name;
 }
 
+void AnimationNodeStateMachineTransition::set_advance_expression(const String &p_expression) {
+	advance_expression = p_expression;
+
+	String advance_expression_stripped = advance_expression.strip_edges();
+	if (advance_expression_stripped == String()) {
+		expression.unref();
+		return;
+	}
+
+	if (expression.is_null()) {
+		expression.instantiate();
+	}
+
+	expression->parse(advance_expression_stripped);
+}
+
+String AnimationNodeStateMachineTransition::get_advance_expression() const {
+	return advance_expression;
+}
+
+void AnimationNodeStateMachineTransition::set_advance_expression_base_node(const NodePath &p_expression_base_node) {
+	advance_expression_base_node = p_expression_base_node;
+}
+
+NodePath AnimationNodeStateMachineTransition::get_advance_expression_base_node() const {
+	return advance_expression_base_node;
+}
+
 void AnimationNodeStateMachineTransition::set_xfade_time(float p_xfade) {
 	ERR_FAIL_COND(p_xfade < 0);
 	xfade = p_xfade;
@@ -115,11 +143,22 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &AnimationNodeStateMachineTransition::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &AnimationNodeStateMachineTransition::get_priority);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
+	ClassDB::bind_method(D_METHOD("set_advance_expression", "text"), &AnimationNodeStateMachineTransition::set_advance_expression);
+	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
+
+	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "path"), &AnimationNodeStateMachineTransition::set_advance_expression_base_node);
+	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationNodeStateMachineTransition::get_advance_expression_base_node);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
+	ADD_GROUP("Switch", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
+	ADD_GROUP("Advance", "advance_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
+	ADD_GROUP("Disabling", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
@@ -575,6 +614,29 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 
 	if (advance_condition_name != StringName() && bool(state_machine->get_parameter(advance_condition_name))) {
 		return true;
+	}
+
+	if (transition->expression.is_valid()) {
+		AnimationTree *tree_base = state_machine->get_animation_tree();
+		ERR_FAIL_COND_V(tree_base == nullptr, false);
+
+		NodePath advance_expression_base_node_path;
+		if (!transition->advance_expression_base_node.is_empty()) {
+			advance_expression_base_node_path = transition->advance_expression_base_node;
+		} else {
+			advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
+		}
+
+		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
+		if (expression_base) {
+			Ref<Expression> exp = transition->expression;
+			bool ret = exp->execute(Array(), tree_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
+			if (!exp->has_execute_failed()) {
+				if (ret) {
+					return true;
+				}
+			}
+		}
 	}
 
 	return false;
