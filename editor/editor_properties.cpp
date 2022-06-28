@@ -3035,13 +3035,17 @@ String EditorPropertyNodePath::_get_meta_pointer_property() const {
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
 	if (p_prop == get_edited_property()) {
 		r_valid = true;
-		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(_get_meta_pointer_property(), &r_valid);
+		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(pointer_mode ? StringName(_get_meta_pointer_property()) : get_edited_property(), &r_valid);
 	}
 	return Variant();
 }
 
 StringName EditorPropertyNodePath::_get_revert_property() const {
-	return _get_meta_pointer_property();
+	if (pointer_mode) {
+		return _get_meta_pointer_property();
+	} else {
+		return get_edited_property();
+	}
 }
 
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
