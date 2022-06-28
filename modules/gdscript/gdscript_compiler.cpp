@@ -1059,22 +1059,22 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					bool known_type = assigned.type.has_type;
 					bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
 
-					if (!known_type) {
-						// Jump shared values since they are already updated in-place.
-						gen->write_jump_if_shared(assigned);
-					}
-					if (known_type && !is_shared) {
+					if (!known_type || !is_shared) {
+						if (!known_type) {
+							// Jump shared values since they are already updated in-place.
+							gen->write_jump_if_shared(assigned);
+						}
 						if (!info.is_named) {
 							gen->write_set(info.base, info.key, assigned);
-							if (info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-								gen->pop_temporary();
-							}
 						} else {
 							gen->write_set_named(info.base, info.name, assigned);
 						}
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
 					}
-					if (!known_type) {
-						gen->write_end_jump_if_shared();
+					if (!info.is_named && info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
 					}
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
