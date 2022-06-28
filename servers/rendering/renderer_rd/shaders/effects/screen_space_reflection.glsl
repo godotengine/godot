@@ -32,12 +32,17 @@ layout(push_constant, std430) uniform Params {
 	bool use_half_res;
 	uint metallic_mask;
 
-	mat4 projection;
+	uint view_index;
+	uint pad1;
+	uint pad2;
+	uint pad3;
 }
 params;
 
+#include "screen_space_reflection_inc.glsl"
+
 vec2 view_to_screen(vec3 view_pos, out float w) {
-	vec4 projected = params.projection * vec4(view_pos, 1.0);
+	vec4 projected = scene_data.projection[params.view_index] * vec4(view_pos, 1.0);
 	projected.xyz /= projected.w;
 	projected.xy = projected.xy * 0.5 + 0.5;
 	w = projected.w;
@@ -46,24 +51,16 @@ vec2 view_to_screen(vec3 view_pos, out float w) {
 
 #define M_PI 3.14159265359
 
-vec3 reconstructCSPosition(vec2 S, float z) {
-	if (params.orthogonal) {
-		return vec3((S.xy * params.proj_info.xy + params.proj_info.zw), z);
-	} else {
-		return vec3((S.xy * params.proj_info.xy + params.proj_info.zw) * z, z);
-	}
-}
-
 void main() {
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC.xy, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
 	vec2 pixel_size = 1.0 / vec2(params.screen_size);
-	vec2 uv = vec2(ssC) * pixel_size;
+	vec2 uv = vec2(ssC.xy) * pixel_size;
 
 	uv += pixel_size * 0.5;
 
@@ -77,7 +74,12 @@ void main() {
 	normal = normalize(normal);
 	normal.y = -normal.y; //because this code reads flipped
 
-	vec3 view_dir = normalize(vertex);
+	vec3 view_dir;
+	if (sc_multiview) {
+		view_dir = normalize(vertex + scene_data.eye_offset[params.view_index].xyz);
+	} else {
+		view_dir = normalize(vertex);
+	}
 	vec3 ray_dir = normalize(reflect(view_dir, normal));
 
 	if (dot(ray_dir, normal) < 0.001) {
@@ -154,6 +156,11 @@ void main() {
 		// convert to linear depth
 
 		depth = imageLoad(source_depth, ivec2(pos - 0.5)).r;
+		if (sc_multiview) {
+			depth = depth * 2.0 - 1.0;
+			depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
+			depth = -depth;
+		}
 
 		z_from = z_to;
 		z_to = z / w;
@@ -222,13 +229,16 @@ void main() {
 				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0f * h);
 			}
 		}
+
+		// Isn't this going to be overwritten after our endif?
 		final_color = imageLoad(source_diffuse, ivec2((final_pos - 0.5) * pixel_size));
 
 		imageStore(blur_radius_image, ssC, vec4(blur_radius / 255.0)); //stored in r8
 
-#endif
+#endif // MODE_ROUGH
 
 		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend);
+
 		//change blend by metallic
 		vec4 metallic_mask = unpackUnorm4x8(params.metallic_mask);
 		final_color.a *= dot(metallic_mask, texelFetch(source_metallic, ssC << 1, 0));
