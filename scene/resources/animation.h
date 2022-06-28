@@ -78,28 +78,34 @@ public:
 	};
 
 private:
-	struct Track {
+	struct BaseTrack {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // path to something
 		bool imported = false;
 		bool enabled = true;
-		Track() {}
-		virtual ~Track() {}
+		int32_t compressed_track = -1;
+		BaseTrack() {}
+		virtual ~BaseTrack() {}
 	};
 
 	struct Key {
 		real_t transition = 1.0;
 		double time = 0.0; // time in secs
+		double duration = 0.0; // duration in secs (0.0 duration is a trigger)
 	};
 
-	// transform key holds either Vector3 or Quaternion
 	template <class T>
 	struct TKey : public Key {
 		T value;
 	};
 
+	// Templated Track
+	template <class T>
+	struct Track : public BaseTrack {
+		Vector<TKey<T>> values;
+	};
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
 	const int32_t SCALE_TRACK_SIZE = 5;
@@ -107,105 +113,79 @@ private:
 
 	/* POSITION TRACK */
 
-	struct PositionTrack : public Track {
-		Vector<TKey<Vector3>> positions;
-		int32_t compressed_track = -1;
+	struct PositionTrack : public Track<Vector3> {
 		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
 	/* ROTATION TRACK */
 
-	struct RotationTrack : public Track {
-		Vector<TKey<Quaternion>> rotations;
-		int32_t compressed_track = -1;
+	struct RotationTrack : public Track<Quaternion> {
 		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
 	/* SCALE TRACK */
 
-	struct ScaleTrack : public Track {
-		Vector<TKey<Vector3>> scales;
-		int32_t compressed_track = -1;
+	struct ScaleTrack : public Track<Vector3> {
 		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
 	/* BLEND SHAPE TRACK */
 
-	struct BlendShapeTrack : public Track {
-		Vector<TKey<float>> blend_shapes;
-		int32_t compressed_track = -1;
+	struct BlendShapeTrack : public Track<float> {
 		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
 	/* PROPERTY VALUE TRACK */
 
-	struct ValueTrack : public Track {
+	struct ValueTrack : public Track<Variant> {
 		UpdateMode update_mode = UPDATE_CONTINUOUS;
 		bool update_on_seek = false;
-		Vector<TKey<Variant>> values;
-
-		ValueTrack() {
-			type = TYPE_VALUE;
-		}
+		ValueTrack() { type = TYPE_VALUE; }
 	};
 
 	/* METHOD TRACK */
 
-	struct MethodKey : public Key {
+	struct MethodHandle {
 		StringName method;
 		Vector<Variant> params;
 	};
 
-	struct MethodTrack : public Track {
-		Vector<MethodKey> methods;
+	struct MethodTrack : public Track<MethodHandle> {
 		MethodTrack() { type = TYPE_METHOD; }
 	};
 
 	/* BEZIER TRACK */
-	struct BezierKey {
+	struct BezierHandle {
 		Vector2 in_handle; //relative (x always <0)
 		Vector2 out_handle; //relative (x always >0)
 		HandleMode handle_mode = HANDLE_MODE_BALANCED;
 		real_t value = 0.0;
 	};
 
-	struct BezierTrack : public Track {
-		Vector<TKey<BezierKey>> values;
-
-		BezierTrack() {
-			type = TYPE_BEZIER;
-		}
+	struct BezierTrack : public Track<BezierHandle> {
+		BezierTrack() { type = TYPE_BEZIER; }
 	};
 
 	/* AUDIO TRACK */
 
-	struct AudioKey {
+	struct AudioHandle {
 		Ref<Resource> stream;
 		real_t start_offset = 0.0; //offset from start
 		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
-		AudioKey() {
-		}
+		AudioHandle() {}
 	};
 
-	struct AudioTrack : public Track {
-		Vector<TKey<AudioKey>> values;
-
-		AudioTrack() {
-			type = TYPE_AUDIO;
-		}
+	struct AudioTrack : public Track<AudioHandle> {
+		AudioTrack() { type = TYPE_AUDIO; }
 	};
 
 	/* AUDIO TRACK */
 
-	struct AnimationTrack : public Track {
-		Vector<TKey<StringName>> values;
-
-		AnimationTrack() {
-			type = TYPE_ANIMATION;
-		}
+	struct AnimationTrack : public Track<StringName> {
+		AnimationTrack() { type = TYPE_ANIMATION; }
 	};
 
-	Vector<Track *> tracks;
+	Vector<BaseTrack *> tracks;
 
 	/*
 	template<class T>
