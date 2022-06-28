@@ -1,11 +1,7 @@
 <!--
-Pull requests should always be made for the `master` branch first, as that's
-where development happens and the source of all future stable release branches.
+Please target the `master` branch in priority.
+PRs can target `3.x` if the same change was done in `master`, or is not relevant there.
 
-Relevant fixes are cherry-picked for stable branches as needed.
-
-Do not create a pull request for stable branches unless the change is already
-available in the `master` branch and it cannot be easily cherry-picked.
-Alternatively, if the change is only relevant for that branch (e.g. rendering
-fixes for the 3.2 branch).
+Relevant fixes are cherry-picked for stable branches as needed by maintainers.
+You can mention in the description if the change is compatible with `3.x`.
 -->
