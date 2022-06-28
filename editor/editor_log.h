@@ -48,6 +48,7 @@ public:
 	enum MessageType {
 		MSG_TYPE_STD,
 		MSG_TYPE_ERROR,
+		MSG_TYPE_STD_RICH,
 		MSG_TYPE_WARNING,
 		MSG_TYPE_EDITOR,
 	};
