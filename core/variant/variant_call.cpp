@@ -753,40 +753,56 @@ struct _VariantCall {
 	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedInt32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int32_t), dest, "Size didn't match array of size int32_t, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
 
 	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedInt64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int64_t), dest, "Size didn't match array of size int64_t, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
 
 	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedFloat32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(float), dest, "Size didn't match array of size float, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
 
 	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedFloat64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(double), dest, "Size didn't match array of size double, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
 
