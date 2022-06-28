@@ -382,7 +382,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 	emit_signal(SNAME("ramp_changed"));
 }
 
-void GradientEdit::set_ramp(const Vector<real_t> &p_offsets, const Vector<Color> &p_colors) {
+void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
 	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
 	points.clear();
 	for (int i = 0; i < p_offsets.size(); i++) {
@@ -396,8 +396,8 @@ void GradientEdit::set_ramp(const Vector<real_t> &p_offsets, const Vector<Color>
 	update();
 }
 
-Vector<real_t> GradientEdit::get_offsets() const {
-	Vector<real_t> ret;
+Vector<float> GradientEdit::get_offsets() const {
+	Vector<float> ret;
 	for (int i = 0; i < points.size(); i++) {
 		ret.push_back(points[i].offset);
 	}
