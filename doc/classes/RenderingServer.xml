@@ -52,11 +52,13 @@
 			<argument index="1" name="far_enable" type="bool" />
 			<argument index="2" name="far_distance" type="float" />
 			<argument index="3" name="far_transition" type="float" />
-			<argument index="4" name="near_enable" type="bool" />
-			<argument index="5" name="near_distance" type="float" />
-			<argument index="6" name="near_transition" type="float" />
-			<argument index="7" name="amount" type="float" />
+			<argument index="4" name="far_amount" type="float" />
+			<argument index="5" name="near_enable" type="bool" />
+			<argument index="6" name="near_distance" type="float" />
+			<argument index="7" name="near_transition" type="float" />
+			<argument index="8" name="near_amount" type="float" />
 			<description>
+				Sets the depth of field blur on the given [CameraEffects] resource. See [CameraEffects] for documentation on individual depth of field properties.
 			</description>
 		</method>
 		<method name="camera_effects_set_dof_blur_bokeh_shape">

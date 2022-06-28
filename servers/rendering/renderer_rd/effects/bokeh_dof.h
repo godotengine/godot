@@ -50,23 +50,24 @@ private:
 		float z_near;
 
 		uint32_t orthogonal;
-		float blur_size;
 		float blur_scale;
 		uint32_t steps;
-
 		uint32_t blur_near_active;
+
 		float blur_near_begin;
 		float blur_near_end;
+		float blur_near_size;
 		uint32_t blur_far_active;
 
 		float blur_far_begin;
 		float blur_far_end;
+		float blur_far_size;
 		uint32_t second_pass;
-		uint32_t half_size;
 
+		uint32_t half_size;
 		uint32_t use_jitter;
 		float jitter_seed;
-		uint32_t pad[2];
+		uint32_t pad;
 	};
 
 	enum BokehMode {
@@ -111,8 +112,8 @@ public:
 	BokehDOF(bool p_prefer_raster_effects);
 	~BokehDOF();
 
-	void bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
-	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	void bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, float p_far_bokeh_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_near_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, float p_dof_far_blur_amount, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_near_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 };
 
 } // namespace RendererRD

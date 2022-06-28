@@ -66,6 +66,15 @@ float CameraEffects::get_dof_blur_far_transition() const {
 	return dof_blur_far_transition;
 }
 
+void CameraEffects::set_dof_blur_far_amount(float p_amount) {
+	dof_blur_far_amount = p_amount;
+	_update_dof_blur();
+}
+
+float CameraEffects::get_dof_blur_far_amount() const {
+	return dof_blur_far_amount;
+}
+
 void CameraEffects::set_dof_blur_near_enabled(bool p_enabled) {
 	dof_blur_near_enabled = p_enabled;
 	_update_dof_blur();
@@ -94,13 +103,13 @@ float CameraEffects::get_dof_blur_near_transition() const {
 	return dof_blur_near_transition;
 }
 
-void CameraEffects::set_dof_blur_amount(float p_amount) {
-	dof_blur_amount = p_amount;
+void CameraEffects::set_dof_blur_near_amount(float p_amount) {
+	dof_blur_near_amount = p_amount;
 	_update_dof_blur();
 }
 
-float CameraEffects::get_dof_blur_amount() const {
-	return dof_blur_amount;
+float CameraEffects::get_dof_blur_near_amount() const {
+	return dof_blur_near_amount;
 }
 
 void CameraEffects::_update_dof_blur() {
@@ -109,10 +118,11 @@ void CameraEffects::_update_dof_blur() {
 			dof_blur_far_enabled,
 			dof_blur_far_distance,
 			dof_blur_far_transition,
+			dof_blur_far_amount,
 			dof_blur_near_enabled,
 			dof_blur_near_distance,
 			dof_blur_near_transition,
-			dof_blur_amount);
+			dof_blur_near_amount);
 }
 
 // Custom exposure
@@ -162,6 +172,8 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dof_blur_far_distance"), &CameraEffects::get_dof_blur_far_distance);
 	ClassDB::bind_method(D_METHOD("set_dof_blur_far_transition", "distance"), &CameraEffects::set_dof_blur_far_transition);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_far_transition"), &CameraEffects::get_dof_blur_far_transition);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_far_amount", "amount"), &CameraEffects::set_dof_blur_far_amount);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_far_amount"), &CameraEffects::get_dof_blur_far_amount);
 
 	ClassDB::bind_method(D_METHOD("set_dof_blur_near_enabled", "enabled"), &CameraEffects::set_dof_blur_near_enabled);
 	ClassDB::bind_method(D_METHOD("is_dof_blur_near_enabled"), &CameraEffects::is_dof_blur_near_enabled);
@@ -169,18 +181,18 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dof_blur_near_distance"), &CameraEffects::get_dof_blur_near_distance);
 	ClassDB::bind_method(D_METHOD("set_dof_blur_near_transition", "distance"), &CameraEffects::set_dof_blur_near_transition);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_near_transition"), &CameraEffects::get_dof_blur_near_transition);
-
-	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "amount"), &CameraEffects::set_dof_blur_amount);
-	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
+	ClassDB::bind_method(D_METHOD("set_dof_blur_near_amount", "amount"), &CameraEffects::set_dof_blur_near_amount);
+	ClassDB::bind_method(D_METHOD("get_dof_blur_near_amount"), &CameraEffects::get_dof_blur_near_amount);
 
 	ADD_GROUP("DOF Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_amount", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_dof_blur_far_amount", "get_dof_blur_far_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_near_enabled"), "set_dof_blur_near_enabled", "is_dof_blur_near_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp,suffix:m"), "set_dof_blur_near_distance", "get_dof_blur_near_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_near_transition", "get_dof_blur_near_transition");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dof_blur_amount", "get_dof_blur_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_near_amount", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_dof_blur_near_amount", "get_dof_blur_near_amount");
 
 	// Override exposure
 

@@ -44,12 +44,13 @@ private:
 	bool dof_blur_far_enabled = false;
 	float dof_blur_far_distance = 10.0;
 	float dof_blur_far_transition = 5.0;
+	float dof_blur_far_amount = 0.1;
 
 	bool dof_blur_near_enabled = false;
 	float dof_blur_near_distance = 2.0;
 	float dof_blur_near_transition = 1.0;
+	float dof_blur_near_amount = 0.1;
 
-	float dof_blur_amount = 0.1;
 	void _update_dof_blur();
 
 	// Override exposure
@@ -71,6 +72,8 @@ public:
 	float get_dof_blur_far_distance() const;
 	void set_dof_blur_far_transition(float p_distance);
 	float get_dof_blur_far_transition() const;
+	void set_dof_blur_far_amount(float p_amount);
+	float get_dof_blur_far_amount() const;
 
 	void set_dof_blur_near_enabled(bool p_enabled);
 	bool is_dof_blur_near_enabled() const;
@@ -78,9 +81,8 @@ public:
 	float get_dof_blur_near_distance() const;
 	void set_dof_blur_near_transition(float p_distance);
 	float get_dof_blur_near_transition() const;
-
-	void set_dof_blur_amount(float p_amount);
-	float get_dof_blur_amount() const;
+	void set_dof_blur_near_amount(float p_amount);
+	float get_dof_blur_near_amount() const;
 
 	// Override exposure
 	void set_override_exposure_enabled(bool p_enabled);
