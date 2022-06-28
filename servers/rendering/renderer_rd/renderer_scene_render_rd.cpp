@@ -3129,14 +3129,14 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		if (rb->view_count == 1) {
 			// copy as a convenience
 			RenderBuffers::View view;
-			view.view_texture = rb->internal_texture;
+			view.view_texture = rb->texture;
 			view.view_depth = rb->depth_texture;
 			view.view_fb = rb->texture_fb;
 			rb->views.push_back(view);
 		} else {
 			for (uint32_t i = 0; i < rb->view_count; i++) {
 				RenderBuffers::View view;
-				view.view_texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->internal_texture, i, 0);
+				view.view_texture = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->texture, i, 0);
 				view.view_depth = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->depth_texture, i, 0);
 
 				if (!_render_buffers_can_be_storage()) {
