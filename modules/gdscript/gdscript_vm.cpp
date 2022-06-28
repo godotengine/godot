@@ -1897,7 +1897,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(ret, Variant::OBJECT);
 				Object **ret_opaque = VariantInternal::get_object(ret);
 				method->ptrcall(base_obj, argptrs, ret_opaque);
-				VariantInternal::object_assign(ret, *ret_opaque); // Set so ID is correct too.
+				VariantInternal::update_object_id(ret);
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
