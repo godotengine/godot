@@ -601,19 +601,21 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
-	class_desc->add_newline();
-	class_desc->add_newline();
-
 	// Brief description
 	if (!cd.brief_description.is_empty()) {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
+		class_desc->add_newline();
+		class_desc->add_newline();
 		_add_text(DTR(cd.brief_description));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	} else {
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -628,11 +630,11 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->push_indent(1);
 		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
-		class_desc->push_indent(1);
 		_add_text(DTR(cd.description));
 		class_desc->pop();
 		class_desc->pop();
