@@ -1265,10 +1265,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		globals->set_disable_feature_overrides(true);
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
+#ifndef JAVASCRIPT_ENABLED
+		// Don't maximize the window on HTML5 to prevent an error message from being printed
+		// (as windows can't be maximized in HTML5).
 		if (!init_windowed) {
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
+#endif
 	}
 
 	if (!project_manager && !editor) {
