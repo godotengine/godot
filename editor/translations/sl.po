@@ -13,13 +13,14 @@
 # Alex <alexrixhardson@gmail.com>, 2019.
 # Andrew Poženel <andrej.pozenel@outlook.com>, 2020, 2022.
 # Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>, 2021.
+# Andrew Poženel <andrew.pozenel@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-04 10:56+0000\n"
-"Last-Translator: Andrew Poženel <andrej.pozenel@outlook.com>\n"
+"PO-Revision-Date: 2022-06-23 16:41+0000\n"
+"Last-Translator: Andrew Poženel <andrew.pozenel@protonmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -411,9 +412,8 @@ msgid "Pressed"
 msgstr "Prednastavitev..."
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Preglej"
+msgstr "Skenirna koda"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -421,7 +421,7 @@ msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
@@ -884,7 +884,7 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 #, fuzzy
@@ -3868,7 +3868,7 @@ msgstr ""
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Node"
-msgstr "Gradnik"
+msgstr "Vozlišče"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -7220,7 +7220,7 @@ msgstr ""
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 msgid "Slices"
@@ -8232,8 +8232,17 @@ msgid "New Anim"
 msgstr "Nova Animacija"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Ustvari Novo Animacijo"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Spremeni Ime Animacije:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Preimenuj Animacijo"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8254,11 +8263,6 @@ msgstr "Napaka: Neveljavno ime animacije!"
 #, fuzzy
 msgid "Animation name already exists!"
 msgstr "NAPAKA: Animacija s tem imenom že obstaja!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Preimenuj Animacijo"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8407,10 +8411,6 @@ msgstr ""
 #, fuzzy
 msgid "Pin AnimationPlayer"
 msgstr "Prilepi animacijo"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Ustvari Novo Animacijo"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -9834,7 +9834,7 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr ""
+msgstr "Raven 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -10062,7 +10062,7 @@ msgstr ""
 #: scene/resources/multimesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Mesh"
-msgstr ""
+msgstr "Geometrijski objekt"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -10965,7 +10965,7 @@ msgstr "Prejšnji zavihek"
 #: editor/plugins/script_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "File"
-msgstr ""
+msgstr "Datoteka"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -11421,7 +11421,7 @@ msgstr "Zaženi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr ""
+msgstr "Ortogonalno"
 
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
@@ -11587,7 +11587,7 @@ msgstr "Lastnosti"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -13649,7 +13649,7 @@ msgstr ""
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr ""
+msgstr "geslo SSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -18664,7 +18664,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "While"
-msgstr ""
+msgstr "Medtem ko"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "while (cond):"
@@ -18995,7 +18995,7 @@ msgstr "Odstrani Gradnik VizualnaSkripta"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "Donos"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
@@ -21913,6 +21913,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Napaka Pri Povezavi"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Izberi Glavno Sceno"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -23121,6 +23133,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Preoblikovanje Dialoga..."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -26893,7 +26912,7 @@ msgstr ""
 
 #: scene/resources/environment.cpp
 msgid "Bloom"
-msgstr ""
+msgstr "Učinek žarenja"
 
 #: scene/resources/environment.cpp
 msgid "HDR Threshold"
@@ -27352,6 +27371,15 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Baking AABB"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Mrežni Zamik:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

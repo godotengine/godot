@@ -3,21 +3,21 @@
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# Kristijan Fremen Velkovski <me@krisfremen.com>, 2021.
+# Kristijan Fremen Velkovski <me@krisfremen.com>, 2021, 2022.
 # Denis <densisman@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-11-18 13:37+0000\n"
-"Last-Translator: Denis <densisman@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:04+0000\n"
+"Last-Translator: Kristijan Fremen Velkovski <me@krisfremen.com>\n"
 "Language-Team: Macedonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/mk/>\n"
 "Language: mk\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n==1 || n%10==1 ? 0 : 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -25,28 +25,27 @@ msgstr ""
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
-msgstr ""
+msgstr "Табла со исечоци"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Својства на анимацијата."
+msgstr "Тековен Екран"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Излезен код"
 
 #: core/bind/core_bind.cpp
 msgid "V-Sync Enabled"
-msgstr ""
+msgstr "Вертикална Синхронизација е вклучена"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "Вертикална Синхронизација преку композитор"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Делта Измазнување"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
@@ -58,49 +57,49 @@ msgstr ""
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Чувај го екранот уклучен"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr ""
+msgstr "Минимална Големина на Прозорецот"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr ""
+msgstr "Максимална Големина на Прозорецот"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr ""
+msgstr "Ориентација на Екран"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
 msgid "Window"
-msgstr ""
+msgstr "Прозорец"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr ""
+msgstr "Без граници"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Уклучена е Транспарентоста По Пиксел"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
-msgstr ""
+msgstr "Цел екран"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Максимизирано"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr ""
+msgstr "Минимизирано"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Променлива големина"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -108,7 +107,7 @@ msgstr ""
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Position"
-msgstr ""
+msgstr "Позиција"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
 #: main/main.cpp modules/gridmap/grid_map.cpp
@@ -120,32 +119,31 @@ msgstr ""
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
 msgid "Size"
-msgstr ""
+msgstr "Големина"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Ендијанска размена"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Уреди"
+msgstr "Совет за уредник"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Печати грешни пораки"
 
 #: core/bind/core_bind.cpp
 msgid "Iterations Per Second"
-msgstr ""
+msgstr "Итерации во секунда"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr ""
+msgstr "Цел на FPS"
 
 #: core/bind/core_bind.cpp
 msgid "Time Scale"
-msgstr ""
+msgstr "Временска скала"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Physics Jitter Fix"
@@ -153,23 +151,23 @@ msgstr ""
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
-msgstr ""
+msgstr "Грешка"
 
 #: core/bind/core_bind.cpp
 msgid "Error String"
-msgstr ""
+msgstr "Текст на Грешка"
 
 #: core/bind/core_bind.cpp
 msgid "Error Line"
-msgstr ""
+msgstr "Линија за грешка"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
-msgstr ""
+msgstr "Резултат"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Меморија"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -180,11 +178,11 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Граници"
 
 #: core/command_queue_mt.cpp
 msgid "Command Queue"
-msgstr ""
+msgstr "Ред за наредби"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -7577,7 +7575,16 @@ msgid "New Anim"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -7596,11 +7603,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -7743,10 +7745,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -20230,6 +20228,17 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr ""
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Path Desired Distance"
+msgstr ""
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -21326,6 +21335,13 @@ msgstr ""
 
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
+msgstr ""
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
 msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
@@ -25096,6 +25112,14 @@ msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Baking AABB"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Baking AABB Offset"
 msgstr ""
 
 #: scene/resources/occluder_shape.cpp
