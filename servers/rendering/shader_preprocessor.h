@@ -44,6 +44,20 @@
 #include "scene/resources/shader_include.h"
 
 class ShaderPreprocessor {
+public:
+	enum CompletionType {
+		COMPLETION_TYPE_NONE,
+		COMPLETION_TYPE_DIRECTIVE,
+		COMPLETION_TYPE_PRAGMA_DIRECTIVE,
+		COMPLETION_TYPE_PRAGMA,
+		COMPLETION_TYPE_INCLUDE_PATH,
+	};
+
+	struct FilePosition {
+		String file;
+		int line = 0;
+	};
+
 private:
 	struct Token {
 		char32_t text;
@@ -113,14 +127,6 @@ private:
 		int end_line = -1;
 	};
 
-public:
-	enum CompletionType {
-		COMPLETION_TYPE_NONE,
-		COMPLETION_TYPE_DIRECTIVE,
-		COMPLETION_TYPE_PRAGMA_DIRECTIVE,
-		COMPLETION_TYPE_PRAGMA,
-	};
-
 	struct State {
 		RBMap<String, Define *> defines;
 		Vector<bool> skip_stack_else;
@@ -132,14 +138,14 @@ public:
 		String current_shader_type;
 		int shader_type_pos = -1;
 		String error;
-		int error_line = -1;
+		List<FilePosition> include_positions;
 		RBMap<String, Vector<SkippedCondition *>> skipped_conditions;
 		bool disabled = false;
 		CompletionType completion_type = COMPLETION_TYPE_NONE;
+		HashSet<Ref<ShaderInclude>> shader_includes;
 	};
 
 private:
-	String code;
 	LocalVector<char32_t> output;
 	State *state = nullptr;
 	bool state_owner = false;
@@ -175,21 +181,21 @@ private:
 	void set_error(const String &p_error, int p_line);
 	bool check_directive_before_type(Tokenizer *p_tokenizer, const String &p_directive);
 
-	static State *create_state();
 	static Define *create_define(const String &p_body);
 
 	void clear();
 
+	Error preprocess(State *p_state, const String &p_code, String &r_result);
+
 public:
-	Error preprocess(State *p_state, String &r_result);
-	Error preprocess(String &r_result);
+	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
 
-	State *get_state();
+	Error preprocess(const String &p_code, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 
-	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords = false);
+	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
 	static void get_pragma_list(List<String> *r_pragmas);
 
-	ShaderPreprocessor(const String &p_code);
+	ShaderPreprocessor();
 	~ShaderPreprocessor();
 };
 

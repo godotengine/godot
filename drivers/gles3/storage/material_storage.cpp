@@ -2462,6 +2462,13 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 }
 
+void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
+	GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->path_hint = p_path;
+}
+
 String MaterialStorage::shader_get_code(RID p_shader) const {
 	const GLES3::Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_COND_V(!shader, String());

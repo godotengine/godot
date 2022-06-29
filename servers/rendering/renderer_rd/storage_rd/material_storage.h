@@ -57,6 +57,7 @@ enum ShaderType {
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
+	virtual void set_path_hint(const String &p_hint) = 0;
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
 	virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
@@ -77,6 +78,7 @@ struct Material;
 struct Shader {
 	ShaderData *data = nullptr;
 	String code;
+	String path_hint;
 	ShaderType type;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
@@ -364,6 +366,7 @@ public:
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
 

@@ -55,6 +55,7 @@ private:
 	RID shader;
 	Mode mode = MODE_SPATIAL;
 	HashSet<Ref<ShaderInclude>> include_dependencies;
+	String code;
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
@@ -71,6 +72,8 @@ protected:
 public:
 	//void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
+
+	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 
 	void set_code(const String &p_code);
 	String get_code() const;

@@ -555,6 +555,15 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 
 	p_tokenizer->advance('"');
 	String path = tokens_to_string(p_tokenizer->advance('"'));
+	for (int i = 0; i < path.length(); i++) {
+		if (path[i] == '\n') {
+			break; //stop parsing
+		}
+		if (path[i] == CURSOR) {
+			state->completion_type = COMPLETION_TYPE_INCLUDE_PATH;
+			break;
+		}
+	}
 	path = path.substr(0, path.length() - 1);
 	p_tokenizer->skip_whitespace();
 
@@ -569,7 +578,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Ref<ShaderInclude> shader_inc = Object::cast_to<ShaderInclude>(*res);
+	Ref<ShaderInclude> shader_inc = res;
 	if (shader_inc.is_null()) {
 		set_error(RTR("Shader include resource type is wrong."), line);
 		return;
@@ -583,6 +592,8 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 			return;
 		}
 	}
+
+	state->shader_includes.insert(shader_inc);
 
 	const String real_path = shader_inc->get_path();
 	if (state->includes.has(real_path)) {
@@ -603,18 +614,26 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 
 	String old_include = state->current_include;
 	state->current_include = real_path;
-	ShaderPreprocessor processor(included);
+	ShaderPreprocessor processor;
 
 	int prev_condition_depth = state->condition_depth;
 	state->condition_depth = 0;
 
+	FilePosition fp;
+	fp.file = state->current_include;
+	fp.line = line;
+	state->include_positions.push_back(fp);
+
 	String result;
-	processor.preprocess(state, result);
+	processor.preprocess(state, included, result);
+	add_to_output("@@>" + real_path + "\n"); // Add token for enter include path
 	add_to_output(result);
+	add_to_output("\n@@<\n"); // Add token for exit include path
 
 	// Reset to last include if there are no errors. We want to use this as context.
 	if (state->error.is_empty()) {
 		state->current_include = old_include;
+		state->include_positions.pop_back();
 	} else {
 		return;
 	}
@@ -855,7 +874,9 @@ void ShaderPreprocessor::add_to_output(const String &p_str) {
 void ShaderPreprocessor::set_error(const String &p_error, int p_line) {
 	if (state->error.is_empty()) {
 		state->error = p_error;
-		state->error_line = p_line + 1;
+		FilePosition fp;
+		fp.line = p_line + 1;
+		state->include_positions.push_back(fp);
 	}
 }
 
@@ -865,18 +886,6 @@ bool ShaderPreprocessor::check_directive_before_type(Tokenizer *p_tokenizer, con
 		return false;
 	}
 	return true;
-}
-
-ShaderPreprocessor::State *ShaderPreprocessor::create_state() {
-	State *new_state = memnew(State);
-
-	String platform = OS::get_singleton()->get_name().replace(" ", "_").to_upper();
-	new_state->defines[platform] = create_define("true");
-
-	Engine *engine = Engine::get_singleton();
-	new_state->defines["EDITOR"] = create_define(engine->is_editor_hint() ? "true" : "false");
-
-	return new_state;
 }
 
 ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_body) {
@@ -903,18 +912,14 @@ void ShaderPreprocessor::clear() {
 	state = nullptr;
 }
 
-Error ShaderPreprocessor::preprocess(State *p_state, String &r_result) {
+Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, String &r_result) {
 	clear();
 
 	output.clear();
 
 	state = p_state;
-	if (state == nullptr) {
-		state = create_state();
-		state_owner = true;
-	}
 
-	CommentRemover remover(code);
+	CommentRemover remover(p_code);
 	String stripped = remover.strip();
 	String error = remover.get_error();
 	if (!error.is_empty()) {
@@ -923,7 +928,7 @@ Error ShaderPreprocessor::preprocess(State *p_state, String &r_result) {
 	}
 
 	// Track code hashes to prevent cyclic include.
-	uint64_t code_hash = code.hash64();
+	uint64_t code_hash = p_code.hash64();
 	state->cyclic_include_hashes.push_back(code_hash);
 
 	Tokenizer p_tokenizer(stripped);
@@ -990,12 +995,55 @@ Error ShaderPreprocessor::preprocess(State *p_state, String &r_result) {
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(String &r_result) {
-	return preprocess(nullptr, r_result);
-}
+Error ShaderPreprocessor::preprocess(const String &p_code, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, IncludeCompletionFunction p_include_completion_func) {
+	State pp_state;
+	Error err = preprocess(&pp_state, p_code, r_result);
+	if (err != OK) {
+		if (r_error_text) {
+			*r_error_text = pp_state.error;
+		}
+		if (r_error_position) {
+			*r_error_position = pp_state.include_positions;
+		}
+	}
+	if (r_includes) {
+		*r_includes = pp_state.shader_includes;
+	}
 
-ShaderPreprocessor::State *ShaderPreprocessor::get_state() {
-	return state;
+	if (r_completion_options) {
+		switch (pp_state.completion_type) {
+			case COMPLETION_TYPE_DIRECTIVE: {
+				List<String> options;
+				get_keyword_list(&options, true);
+
+				for (const String &E : options) {
+					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					r_completion_options->push_back(option);
+				}
+
+			} break;
+			case COMPLETION_TYPE_PRAGMA: {
+				List<String> options;
+
+				ShaderPreprocessor::get_pragma_list(&options);
+
+				for (const String &E : options) {
+					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					r_completion_options->push_back(option);
+				}
+
+			} break;
+			case COMPLETION_TYPE_INCLUDE_PATH: {
+				if (p_include_completion_func && r_completion_options) {
+					p_include_completion_func(r_completion_options);
+				}
+
+			} break;
+			default: {
+			}
+		}
+	}
+	return err;
 }
 
 void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords) {
@@ -1018,8 +1066,7 @@ void ShaderPreprocessor::get_pragma_list(List<String> *r_pragmas) {
 	r_pragmas->push_back("disable_preprocessor");
 }
 
-ShaderPreprocessor::ShaderPreprocessor(const String &p_code) :
-		code(p_code) {
+ShaderPreprocessor::ShaderPreprocessor() {
 }
 
 ShaderPreprocessor::~ShaderPreprocessor() {

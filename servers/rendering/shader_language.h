@@ -777,7 +777,6 @@ public:
 	static uint32_t get_datatype_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
-	static void get_preprocessor_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
@@ -869,6 +868,11 @@ public:
 
 	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
 
+	struct FilePosition {
+		String file;
+		int line = 0;
+	};
+
 private:
 	struct KeyWord {
 		TokenType token;
@@ -885,6 +889,8 @@ private:
 	bool error_set = false;
 	String error_str;
 	int error_line = 0;
+
+	Vector<FilePosition> include_positions;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -953,6 +959,7 @@ private:
 		error_line = tk_line;
 		error_set = true;
 		error_str = p_str;
+		include_positions.write[include_positions.size() - 1].line = tk_line;
 	}
 
 	void _set_expected_error(const String &p_what) {
@@ -1072,7 +1079,6 @@ private:
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _preprocess_shader(const String &p_code, String &r_result, int *r_completion_type = nullptr);
 	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
@@ -1094,8 +1100,6 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	static void get_shader_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies);
-	static String get_shader_type_and_dependencies(const String &p_code, HashSet<Ref<ShaderInclude>> *r_dependencies);
 
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
@@ -1110,6 +1114,7 @@ public:
 	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
+	Vector<FilePosition> get_include_positions();
 	int get_error_line();
 
 	ShaderNode *get_shader();

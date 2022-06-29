@@ -1968,6 +1968,10 @@ void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::
 	oc->cull_mode = p_mode;
 }
 
+void RendererCanvasRenderRD::CanvasShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	//compile
 

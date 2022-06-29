@@ -37,6 +37,10 @@
 
 using namespace RendererSceneRenderImplementation;
 
+void SceneShaderForwardClustered::ShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	//compile
 

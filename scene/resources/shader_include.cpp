@@ -30,6 +30,7 @@
 
 #include "shader_include.h"
 #include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_preprocessor.h"
 
 void ShaderInclude::_dependency_changed() {
 	emit_changed();
@@ -43,7 +44,11 @@ void ShaderInclude::set_code(const String &p_code) {
 		E->disconnect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
-	ShaderLanguage::get_shader_dependencies(p_code, &new_dependencies);
+	{
+		String pp_code;
+		ShaderPreprocessor preprocessor;
+		preprocessor.preprocess(p_code, pp_code, nullptr, nullptr, &new_dependencies);
+	}
 
 	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
 	dependencies = new_dependencies;

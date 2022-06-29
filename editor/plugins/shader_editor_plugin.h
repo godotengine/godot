@@ -67,6 +67,11 @@ class ShaderTextEditor : public CodeTextEditor {
 	void _check_shader_mode();
 	void _update_warning_panel();
 
+	bool block_shader_changed = false;
+	void _shader_changed();
+
+	uint32_t dependencies_version = 0; // Incremented if deps changed
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -75,6 +80,9 @@ protected:
 	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
+	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
+	uint32_t get_dependencies_version() const { return dependencies_version; }
+
 	virtual void _validate_script() override;
 
 	void reload_text();
@@ -135,6 +143,7 @@ class ShaderEditor : public PanelContainer {
 	ConfirmationDialog *disk_changed = nullptr;
 
 	ShaderTextEditor *shader_editor = nullptr;
+	bool compilation_success = true;
 
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
@@ -151,6 +160,13 @@ class ShaderEditor : public PanelContainer {
 	void _warning_clicked(Variant p_line);
 	void _update_warnings(bool p_validate);
 
+	void _script_validated(bool p_valid) {
+		compilation_success = p_valid;
+		emit_signal(SNAME("validation_changed"));
+	}
+
+	uint32_t dependencies_version = 0xFFFFFFFF;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -161,6 +177,7 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	bool was_compilation_successful() const { return compilation_success; }
 	void apply_shaders();
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
@@ -215,6 +232,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
+	void _update_shader_list_status();
 
 public:
 	virtual String get_name() const override { return "Shader"; }

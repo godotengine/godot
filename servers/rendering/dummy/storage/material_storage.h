@@ -63,6 +63,8 @@ public:
 	virtual void shader_free(RID p_rid) override{};
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override {}
+	virtual void shader_set_path_hint(RID p_shader, const String &p_code) override {}
+
 	virtual String shader_get_code(RID p_shader) const override { return ""; }
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override {}
 

@@ -3978,6 +3978,10 @@ void RendererSceneRenderRD::_setup_decals(const PagedArray<RID> &p_decals, const
 ////////////////////////////////////////////////////////////////////////////////
 // FOG SHADER
 
+void RendererSceneRenderRD::FogShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void RendererSceneRenderRD::FogShaderData::set_code(const String &p_code) {
 	//compile
 
