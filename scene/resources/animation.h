@@ -78,6 +78,12 @@ public:
 	};
 
 private:
+	struct Key {
+		real_t transition = 1.0;
+		double time = 0.0; // time in secs
+		double duration = 0.0; // duration in secs (0.0 duration is a trigger)
+	};
+
 	struct BaseTrack {
 		TrackType type = TrackType::TYPE_ANIMATION;
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
@@ -88,12 +94,11 @@ private:
 		int32_t compressed_track = -1;
 		BaseTrack() {}
 		virtual ~BaseTrack() {}
-	};
 
-	struct Key {
-		real_t transition = 1.0;
-		double time = 0.0; // time in secs
-		double duration = 0.0; // duration in secs (0.0 duration is a trigger)
+		virtual Key * write_key(int index) = 0;
+		virtual int get_values_size() { ERR_FAIL_V(-1); }
+		virtual void remove_key_at(int index) {ERR_FAIL(); }
+		virtual Key get_key(int index) { ERR_FAIL_V(Key()); }
 	};
 
 	template <class T>
@@ -105,6 +110,18 @@ private:
 	template <class T>
 	struct Track : public BaseTrack {
 		Vector<TKey<T>> values;
+		Key * write_key(int index) override {
+			return static_cast<Key *>(&values.write[index]);
+		}
+		Key get_key(int index) override {
+			return static_cast<Key>(values.write[index]);
+		}
+		int get_values_size() override {
+			return values.size();
+		}
+		void remove_key_at(int index) override {
+			values.remove_at(index);
+		}
 	};
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
