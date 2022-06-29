@@ -14,7 +14,7 @@ namespace Godot
     /// It consists of a three <see cref="Vector2"/> values: x, y, and the origin.
     ///
     /// For more information, read this documentation article:
-    /// https://docs.godotengine.org/en/3.4/tutorials/math/matrices_and_transforms.html
+    /// https://docs.godotengine.org/en/3.5/tutorials/math/matrices_and_transforms.html
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
