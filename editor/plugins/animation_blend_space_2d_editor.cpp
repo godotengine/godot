@@ -595,6 +595,7 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	auto_triangles->set_pressed(blend_space->get_auto_triangles());
 
+	sync->set_pressed(blend_space->is_using_sync());
 	interpolation->select(blend_space->get_blend_mode());
 
 	max_x_value->set_value(blend_space->get_max_space().x);
@@ -620,13 +621,15 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	}
 
 	updating = true;
-	undo_redo->create_action(TTR("Change BlendSpace2D Limits"));
+	undo_redo->create_action(TTR("Change BlendSpace2D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_sync", sync->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
 	undo_redo->add_do_method(this, "_update_space");
@@ -896,6 +899,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
+
+	top_hb->add_child(memnew(VSeparator));
+
+	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	sync = memnew(CheckBox);
+	top_hb->add_child(sync);
+	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 
