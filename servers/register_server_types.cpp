@@ -59,6 +59,7 @@
 #include "display_server.h"
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
+#include "movie_writer/movie_writer_pngwav.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
 #include "physics_2d/godot_physics_server_2d.h"

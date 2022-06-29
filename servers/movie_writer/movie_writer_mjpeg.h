@@ -70,4 +70,4 @@ public:
 	MovieWriterMJPEG();
 };
 
-#endif // MOVIE_WRITER_AVIJPEG_H
+#endif // MOVIE_WRITER_MJPEG_H
