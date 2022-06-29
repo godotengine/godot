@@ -316,6 +316,8 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
+	static bool is_available();
+
 	virtual String get_name() const { return "AssetLib"; }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object) {}
