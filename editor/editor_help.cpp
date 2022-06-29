@@ -63,6 +63,8 @@ void EditorHelp::_update_theme() {
 	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
 	doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
 	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+
+	doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -362,8 +364,9 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons) {
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	class_desc->pop();
-	class_desc->pop();
+	class_desc->pop(); // title font size
+	class_desc->pop(); // title font
+	class_desc->pop(); // title color
 
 	class_desc->add_newline();
 	class_desc->push_font(doc_code_font);
@@ -431,8 +434,9 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	String link_color_text = title_color.to_html(false);
-	class_desc->pop();
-	class_desc->pop();
+	class_desc->pop(); // title font size
+	class_desc->pop(); // title font
+	class_desc->pop(); // title color
 
 	class_desc->add_newline();
 	class_desc->add_newline();
@@ -535,15 +539,17 @@ void EditorHelp::_update_doc() {
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	class_desc->push_font(doc_title_font);
+	class_desc->push_font_size(doc_title_font_size);
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
 	class_desc->add_image(icon, icon->get_width(), icon->get_height());
 	class_desc->add_text(" ");
 	class_desc->push_color(headline_color);
 	_add_text(edited_class);
-	class_desc->pop();
-	class_desc->pop();
-	class_desc->pop();
+	class_desc->pop(); // color
+	class_desc->pop(); // color
+	class_desc->pop(); // font size
+	class_desc->pop(); // font
 	class_desc->add_newline();
 
 	// Inheritance tree
@@ -624,9 +630,11 @@ void EditorHelp::_update_doc() {
 		description_line = class_desc->get_paragraph_count() - 2;
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Description"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->add_newline();
 		class_desc->add_newline();
@@ -646,9 +654,11 @@ void EditorHelp::_update_doc() {
 	if (cd.tutorials.size()) {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Online Tutorials"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->push_indent(1);
 		class_desc->push_font(doc_code_font);
@@ -694,9 +704,11 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Properties"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->add_newline();
 		class_desc->push_font(doc_code_font);
@@ -858,6 +870,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Constructors"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Constructors"));
 		_update_method_list(cd.constructors, constructor_descriptions);
 	}
@@ -869,6 +882,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Methods"));
 		_update_method_list(methods, method_descriptions);
 	}
@@ -881,6 +895,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Operators"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Operators"));
 		_update_method_list(cd.operators, operator_descriptions);
 	}
@@ -890,9 +905,11 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Theme Properties"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Theme Properties"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->add_newline();
 		class_desc->add_newline();
@@ -916,13 +933,15 @@ void EditorHelp::_update_doc() {
 
 				class_desc->push_color(title_color);
 				class_desc->push_font(doc_title_font);
+				class_desc->push_font_size(doc_title_font_size);
 				if (data_type_names.has(theme_data_type)) {
 					class_desc->add_text(data_type_names[theme_data_type]);
 				} else {
 					class_desc->add_text("");
 				}
-				class_desc->pop();
-				class_desc->pop();
+				class_desc->pop(); // font size
+				class_desc->pop(); // font
+				class_desc->pop(); // color
 
 				class_desc->add_newline();
 				class_desc->add_newline();
@@ -984,9 +1003,11 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Signals"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Signals"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->add_newline();
 		class_desc->add_newline();
@@ -1070,9 +1091,11 @@ void EditorHelp::_update_doc() {
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_paragraph_count() - 2));
 			class_desc->push_color(title_color);
 			class_desc->push_font(doc_title_font);
+			class_desc->push_font_size(doc_title_font_size);
 			class_desc->add_text(TTR("Enumerations"));
-			class_desc->pop();
-			class_desc->pop();
+			class_desc->pop(); // font size
+			class_desc->pop(); // font
+			class_desc->pop(); // color
 			class_desc->push_indent(1);
 
 			class_desc->add_newline();
@@ -1174,9 +1197,11 @@ void EditorHelp::_update_doc() {
 			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_paragraph_count() - 2));
 			class_desc->push_color(title_color);
 			class_desc->push_font(doc_title_font);
+			class_desc->push_font_size(doc_title_font_size);
 			class_desc->add_text(TTR("Constants"));
-			class_desc->pop();
-			class_desc->pop();
+			class_desc->pop(); // font size
+			class_desc->pop(); // font
+			class_desc->pop(); // color
 			class_desc->push_indent(1);
 
 			class_desc->add_newline();
@@ -1235,9 +1260,11 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Property Descriptions"));
-		class_desc->pop();
-		class_desc->pop();
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
 
 		class_desc->add_newline();
 		class_desc->add_newline();
@@ -1401,6 +1428,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Constructor Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Constructor Descriptions"));
 		_update_method_descriptions(cd, cd.constructors, "constructor");
 	}
@@ -1410,6 +1438,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Method Descriptions"));
 		_update_method_descriptions(cd, methods, "method");
 	}
@@ -1419,6 +1448,7 @@ void EditorHelp::_update_doc() {
 		section_line.push_back(Pair<String, int>(TTR("Operator Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Operator Descriptions"));
 		_update_method_descriptions(cd, cd.operators, "operator");
 	}
