@@ -87,7 +87,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"PO-Revision-Date: 2022-06-26 16:16+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -96,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -387,9 +387,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nicht genügend Bytes zur Dekodierung oder ungültiges Format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Ungültige Eingabe %i (nicht übergeben) im Ausdruck"
+msgstr "Ungültige Eingabe %d (nicht übergeben) im Ausdruck"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -434,14 +433,12 @@ msgid "Max Size (KB)"
 msgstr "Maximalgröße (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Bewegungsmodus"
+msgstr "Mausmodus"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Eingang löschen"
+msgstr "Kumulierte Eingabe verwenden"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -718,14 +715,12 @@ msgid "Script Templates Search Path"
 msgstr "Suchpfad für Skriptvorlagen"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Autoladen beim Start"
+msgstr "Automatisches Laden der Versionskontrolle beim Start"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Versionsverwaltung"
+msgstr "Name des Plugins zur Versionskontrolle"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -1358,19 +1353,16 @@ msgid "Remove this track."
 msgstr "Diese Spur entfernen."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Zeit (s): "
+msgstr "Zeit (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Position"
+msgstr "Position:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Rotation"
+msgstr "Rotation:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1387,44 +1379,36 @@ msgid "Type:"
 msgstr "Typ:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Ungültige Exportvorlage:"
+msgstr "(Ungültig, erwarteter Typ: %s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing:"
-msgstr "Glätten Ein-Aus"
+msgstr "Glätten:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In-Handle:"
-msgstr "Eingehender Handle"
+msgstr "Eingehender Handle:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out-Handle:"
-msgstr "Ausgehender Handle"
+msgstr "Ausgehender Handle:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Stream:"
-msgstr "Stream"
+msgstr "Stream:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Neu starten (s):"
+msgstr "Start (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "Einblenden (s):"
+msgstr "Ende (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "Animationen:"
+msgstr "Animations-Clip:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1639,9 +1623,8 @@ msgid "Add Method Track Key"
 msgstr "Methodenaufrufsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
-msgstr "Methode nicht im Objekt gefunden: "
+msgstr "Methode nicht in Objekt gefunden:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2254,7 +2237,7 @@ msgstr "Öffnen"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Besitzer von: %s (Insgesamt: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2615,9 +2598,8 @@ msgid "There is no '%s' file."
 msgstr "Datei ‚%s‘ existiert nicht."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Layout"
+msgstr "Layout:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2820,22 +2802,19 @@ msgstr "Wählen"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Projektexport für Plattform:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with errors."
-msgstr "Dateipfade vervollständigen"
+msgstr "Fertiggestellt mit Fehlern."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Paket wurde erfolgreich installiert!"
+msgstr "Erfolgreich fertiggestellt."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Fehlgeschlagen:"
+msgstr "Fehlgeschlagen."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2850,29 +2829,24 @@ msgid "Packing"
 msgstr "Packe"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Speichern unter"
+msgstr "PCK speichern"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Ordner konnte nicht erstellt werden."
+msgstr "Datei „%s“ konnte nicht erstellt werden."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Projektdateien konnten nicht exportiert werden"
+msgstr "Projektdateien konnten nicht exportiert werden."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Datei kann nicht zum Schreiben geöffnet werden:"
+msgstr "Datei im Pfad „%s“kann nicht zum Lesen geöffnet werden."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Speichern unter"
+msgstr "ZIP speichern"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2993,30 +2967,25 @@ msgid "Custom release template not found."
 msgstr "Selbst konfigurierte Release-Exportvorlage nicht gefunden."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Vorlagen verwalten"
+msgstr "Vorlage vorbereiten"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Der angegebene Export-Pfad existiert nicht:"
+msgstr "Der angegebene Export-Pfad existiert nicht."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Vorlagendatei nicht gefunden:"
+msgstr "Vorlagendatei nicht gefunden: „%s“."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Ungültige Exportvorlage:"
+msgstr "Fehler beim Kopieren der Exportvorlage."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Versatz"
+msgstr "PCK-Einbettung"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -5206,9 +5175,8 @@ msgid "Size:"
 msgstr "Größe:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "Seite: "
+msgstr "Seite:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5304,9 +5272,8 @@ msgstr ""
 "Im Exportmenü kann eine Vorlage als ausführbar erstellt oder markiert werden."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "Projekt"
+msgstr "Projektdurchlauf"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -7210,9 +7177,8 @@ msgid "Generating Lightmaps"
 msgstr "Generiere Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh:"
-msgstr "Generierung für Mesh: "
+msgstr "Generierung für Mesh:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -7245,12 +7211,17 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: Verwendung der Textur als Normalen-Map in 3D festgestellt. Rot-Grün-"
+"Texturkompression wurde aktiviert um Speicherverbrauch zu reduzieren (der "
+"blaue Kanal wird verworfen)."
 
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: Verwendung der Textur in 3D festgestellt. Filter, Wiederholung, Mipmap-"
+"Erzeugung und VRAM-Texturkompression wurden aktiviert."
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -7931,8 +7902,17 @@ msgid "New Anim"
 msgstr "Neue Animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Neue Animation erstellen"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Animationsname ändern:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Animation umbenennen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7951,11 +7931,6 @@ msgstr "Ungültiger Animationsname!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Animationsname existiert bereits!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Animation umbenennen"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8100,10 +8075,6 @@ msgid "Pin AnimationPlayer"
 msgstr "Animationsspieler anheften"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Neue Animation erstellen"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
 msgstr "Animationsname:"
 
@@ -8219,9 +8190,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr "End-Animation festlegen. Hilfreich bei Sub-Transitionen."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition:"
-msgstr "Übergang: "
+msgstr "Übergang:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Play Mode:"
@@ -9989,9 +9959,8 @@ msgid "Volume"
 msgstr "Volumen"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source:"
-msgstr "Emissionsquelle: "
+msgstr "Emissionsquelle:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -11087,15 +11056,13 @@ msgstr "Verschiebung"
 
 #. TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scaling:"
-msgstr "Skalierung: "
+msgstr "Skalierung:"
 
 #. TRANSLATORS: Refers to changing the position of a node in the 3D editor.
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translating:"
-msgstr "Verschiebe: "
+msgstr "Verschiebung:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -11609,9 +11576,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Ungültige Geometrie, Mesh kann nicht ersetzt werden."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to MeshInstance2D"
-msgstr "Zu Mesh2D umwandeln"
+msgstr "Zu MeshInstance2D umwandeln"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -11642,19 +11608,16 @@ msgid "Sprite"
 msgstr "Bild"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Simplification:"
-msgstr "Vereinfachung: "
+msgstr "Vereinfachung:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Shrink (Pixels):"
-msgstr "Schrumpfen (Pixel): "
+msgstr "Schrumpfen (Pixel):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Grow (Pixels):"
-msgstr "Wachsen (Pixel): "
+msgstr "Wachsen (Pixel):"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
@@ -14250,9 +14213,8 @@ msgid "Export templates for this platform are missing:"
 msgstr "Export-Templates für diese Systeme fehlen:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Project Export"
-msgstr "Projektgründer"
+msgstr "Projektexport"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -15811,9 +15773,8 @@ msgid "Attach Node Script"
 msgstr "Node-Skript hinzufügen"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote %s:"
-msgstr "Fern "
+msgstr "Fern %s:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -16788,9 +16749,8 @@ msgid "Disabled GDNative Singleton"
 msgstr "GDNative Singleton wurde deaktiviert"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Libraries:"
-msgstr "Bibliotheken: "
+msgstr "Bibliotheken:"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 msgid "Class Name"
@@ -17211,17 +17171,15 @@ msgid "Mask"
 msgstr "Maske"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
-#, fuzzy
 msgid "Bake Navigation"
-msgstr "Navigation"
+msgstr "Navigation backen"
 
 #: modules/gridmap/grid_map.cpp scene/2d/navigation_2d.cpp
 #: scene/2d/navigation_agent_2d.cpp scene/2d/navigation_polygon.cpp
 #: scene/2d/tile_map.cpp scene/3d/navigation.cpp scene/3d/navigation_agent.cpp
 #: scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Navigation Layers"
-msgstr "Navigationsgefühl"
+msgstr "Navigationsschichten"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -17626,9 +17584,8 @@ msgstr ""
 "sein! Bitte entsprechendes Node anpassen."
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Node returned an invalid sequence output:"
-msgstr "Node gab ungültige Sequenzausgabe zurück: "
+msgstr "Node gab ungültige Sequenzausgabe zurück:"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -17637,9 +17594,8 @@ msgstr ""
 "melden Sie den Bug!"
 
 #: modules/visual_script/visual_script.cpp
-#, fuzzy
 msgid "Stack overflow with stack depth:"
-msgstr "Stack-Overflow mit Stack-Tiefe: "
+msgstr "Stack-Overflow mit Stack-Tiefe:"
 
 #: modules/visual_script/visual_script.cpp
 msgid "Visual Script"
@@ -18008,18 +17964,16 @@ msgid "for (elem) in (input):"
 msgstr "for (Element) in (Eingabe):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Input type not iterable:"
-msgstr "Eingabetyp nicht wiederholbar: "
+msgstr "Eingabetyp nicht iterierbar:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
 msgstr "Iterator wurde ungültig"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Iterator became invalid:"
-msgstr "Iterator wurde ungültig: "
+msgstr "Iterator wurde ungültig:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
@@ -18170,14 +18124,12 @@ msgid "Operator"
 msgstr "Operator"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid argument of type:"
-msgstr ": Ungültiger Parameter vom Typ: "
+msgstr "Ungültiges Argument vom Typ:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Invalid arguments:"
-msgstr ": Ungültige Parameter: "
+msgstr "Ungültige Argumente:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -18188,14 +18140,12 @@ msgid "Var Name"
 msgstr "Variablenname"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableGet not found in script:"
-msgstr "VariableGet nicht im Skript gefunden: "
+msgstr "VariableGet nicht im Skript gefunden:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableSet not found in script:"
-msgstr "VariableSet nicht im Skript gefunden: "
+msgstr "VariableSet nicht im Skript gefunden:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"
@@ -18816,19 +18766,16 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Code Signing"
-msgstr "Codesignierendes DMG"
+msgstr "Code-Signieren"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"‚apksigner‘ konnte nicht gefunden werden.\n"
-"Ist das Programm im Android SDK build-tools-Verzeichnis vorhanden?\n"
-"Das resultierende %s ist nicht signiert."
+"‚apksigner‘ konnte nicht gefunden werden. Ist die Anwendung im Android-SDK "
+"build-tools-Verzeichnis vorhanden? Das resultierende %s ist nicht signiert."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -18843,9 +18790,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "Keystore konnte nicht gefunden werden, Export fehlgeschlagen."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Unterprozess konnte nicht gestartet werden!"
+msgstr "Apksigner-Anwendung konnte nicht gestartet werden."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18879,9 +18825,8 @@ msgstr ""
 "Ungültiger Dateiname. Android APKs benötigen .apk als Dateinamenendung."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Nicht unterstütztes Exportformat!\n"
+msgstr "Nicht unterstütztes Exportformat!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18893,28 +18838,24 @@ msgstr ""
 "Menü benötigt."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Android-Build-Versionsinkompatibilität:\n"
-" Installierte Vorlage: %s\n"
-" Godot-Version: %s\n"
-"Bitte Android-Build-Vorlage im ‚Projekt‘-Menü neu installieren."
+"Android-Build-Versionsinkompatibilität: Installierte Vorlage: %s, Godot-"
+"Version: %s. Bitte Android-Build-Vorlage über das ‚Projekt‘-Menü neu "
+"installieren."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
-"Kann res://android/build/res/*.xml Dateien nicht mit Projektnamen "
-"überschreiben"
+"res://android/build/res/*.xml-Dateien können nicht mit Projektnamen "
+"überschrieben werden."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Konnte Projektdateien nicht als Gradle-Projekt exportieren\n"
+msgstr "Projektdateien konnten nicht als Gradle-Projekt exportiert werden."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -18925,15 +18866,13 @@ msgid "Building Android Project (gradle)"
 msgstr "Baue Android-Projekt (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Bauen des Android-Projekts fehlgeschlagen, Fehlerdetails befinden ich in der "
-"Textausgabe.\n"
-"Alternativ befindet sich die Android-Build-Dokumentation auf docs."
-"godotengine.org."
+"Textausgabe. Alternativ befindet sich die Android-Build-Dokumentation auf "
+"docs.godotengine.org."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -18948,31 +18887,25 @@ msgstr ""
 "im Gradle Projektverzeichnis erscheinen."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "Paket nicht gefunden: %s"
+msgstr "Paket nicht gefunden: „%s“."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "Erzeuge APK…"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Konnte keine APK-Vorlage zum Exportieren finden:\n"
-"%s"
+msgstr "Keine APK-Vorlage zum Exportieren gefunden: „%s“."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
 "Fehlende Bibliotheken in Exportvorlage für die ausgewählten Architekturen: "
-"%s.\n"
-"Es muss entweder eine Exportvorlage mit den allen benötigten Bibliotheken "
+"%s. Es muss entweder eine Exportvorlage mit allen benötigten Bibliotheken "
 "gebaut werden oder die angegebenen Architekturen müssen abgewählt werden."
 
 #: platform/android/export/export_plugin.cpp
@@ -18980,9 +18913,8 @@ msgid "Adding files..."
 msgstr "Füge Dateien hinzu…"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "Projektdateien konnten nicht exportiert werden"
+msgstr "Projektdateien konnten nicht exportiert werden."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19207,14 +19139,12 @@ msgstr "Eigene Hintergrundfarbe"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Prepare Templates"
-msgstr "Vorlagen verwalten"
+msgstr "Vorlagen vorbereiten"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Export template not found."
-msgstr "Selbst konfigurierte Release-Exportvorlage nicht gefunden."
+msgstr "Exportvorlage wurde nicht gefunden."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
@@ -19238,33 +19168,28 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Führe exportiertes HTML im Standard-Browser des Betriebssystems aus."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "Konnte Vorlage nicht zum Export öffnen:"
+msgstr "Vorlage zum Export konnte nicht geöffnet werden: „%s“."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "Ungültige Exportvorlage:"
+msgstr "Ungültige Exportvorlage: „%s“."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "Konnte Datei nicht schreiben:"
+msgstr "Datei konnte nicht geschrieben werden: „%s“."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Icon Creation"
-msgstr "Symbolbildbegrenzung"
+msgstr "Symbolbilderzeugung"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "Konnte Datei nicht lesen:"
+msgstr "Datei konnte nicht gelesen werden: „%s“."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
-msgstr ""
+msgstr "PWA"
 
 #: platform/javascript/export/export.cpp
 msgid "Variant"
@@ -19335,19 +19260,16 @@ msgid "Icon 512 X 512"
 msgstr "Symbol 512 X 512"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "Konnte HTML-Shell nicht lesen:"
+msgstr "HTML-Shell konnte nicht gelesen werden „%s“."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "Konnte HTTP-Server-Verzeichnis nicht erstellen:"
+msgstr "HTTP-Server-Verzeichnis konnte nicht erstellt werden: %s."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "Fehler beim Starten des HTTP-Servers:"
+msgstr "Fehler beim Starten des HTTP-Servers: %d."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -19611,32 +19533,28 @@ msgid "Apple Team ID"
 msgstr "Apple-Team-ID"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open icon file \"%s\"."
-msgstr "Projektdateien konnten nicht exportiert werden"
+msgstr "Symbolbilddatei „%s“ konnte nicht geöffnet werden."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Unterprozess konnte nicht gestartet werden!"
+msgstr "Xcrun-Anwendung konnte nicht gestartet werden."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization failed."
-msgstr "Beglaubigung"
+msgstr "Beglaubigung fehlgeschlagen."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
-msgstr ""
+msgstr "Beglaubigungsanfrage-UUID: „%s“"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "The notarization process generally takes less than an hour. When the process "
 "is completed, you'll receive an email."
 msgstr ""
-"Hinweis: Der Beglaubigungsprozess dauert gewöhnlich weniger als eine Stunde. "
-"Nach Ablauf wird eine Bestätigungsmail versandt."
+"Der Beglaubigungsprozess dauert gewöhnlich weniger als eine Stunde. Nach "
+"Ablauf wird eine Bestätigungsmail versandt."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19655,81 +19573,75 @@ msgstr ""
 "Anwendung geheftet werden (optional):"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Timestamping is not compatible with ad-hoc signature, and was disabled!"
 msgstr ""
-"Zeitstempel sind nicht mit Ad-hoc-Signaturen kompatibel, und werden "
+"Zeitstempel sind nicht mit Ad-hoc-Signaturen kompatibel, und wurden "
 "deaktiviert!"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"
 msgstr ""
 "Die abgehärtete Laufzeitumgebung ist nicht mit Ad-hoc-Signaturen kompatibel, "
-"und wird deaktiviert!"
+"und wurde deaktiviert!"
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign failed with error \"%s\"."
-msgstr ""
+msgstr "Eingebettetes CodeSign fehlgeschlagen mit Fehler „%s“."
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign require regex module."
-msgstr ""
+msgstr "Eingebettetes CodeSign benötigt Regex-Modul."
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
 msgstr ""
+"Codesign-Anwendung konnte nicht gestartet werden. Wurden die Xcode-"
+"Kommandozeilen-Hilfsprogramme installiert?"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
 msgstr "Keine Identität gefunden."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Cannot sign file %s."
-msgstr "Fehler beim Speichern von Datei: %s"
+msgstr "Datei %s konnte nicht signiert werden."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr ""
-"Relative symbolische Links werden von diesem Betriebssystem nicht "
-"unterstützt, das exportierte Projekt könnte fehlerhaft sein!"
+"Relative symbolische Links werden nicht unterstützt, exportiertes „%s“ "
+"könnte fehlerhaft sein!"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "DMG Creation"
-msgstr "Richtung"
+msgstr "DMG-Erzeugung"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Unterprozess konnte nicht gestartet werden!"
+msgstr "Hdiutil-Anwendung konnte nicht gestartet werden."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
-msgstr ""
+msgstr "„hdiutil create“ ist fehlgeschlagen - Datei existiert bereits."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed."
-msgstr ""
+msgstr "„hdiutil create“ ist fehlgeschlagen."
 
 #: platform/osx/export/export.cpp
 msgid "Creating app bundle"
 msgstr "Erzeuge App-Bundle"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export: \"%s\"."
-msgstr "Es konnte keine Vorlagen-App zum Exportieren gefunden werden:"
+msgstr "Es konnte keine Vorlagen-App zum Exportieren gefunden werden: „%s“."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid export format."
-msgstr "Ungültige Exportvorlage:"
+msgstr "Ungültiges Exportformat."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19740,12 +19652,11 @@ msgstr ""
 "unterstützt, das exportierte Projekt könnte fehlerhaft sein!"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
 "template archive."
 msgstr ""
-"Benötigte Vorlagen-Binary ‚%s‘ nicht gefunden. Es könnte im Vorlagen-Archiv "
+"Benötigte Vorlagen-Binary „%s“ nicht gefunden. Es könnte im Vorlagen-Archiv "
 "fehlen."
 
 #: platform/osx/export/export.cpp
@@ -19789,14 +19700,12 @@ msgid "Sending archive for notarization"
 msgstr "Sende Archiv zur Beglaubigung"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "ZIP Creation"
-msgstr "Projektion"
+msgstr "ZIP-Erstellung"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Konnte Projektdateien nicht als Gradle-Projekt exportieren\n"
+msgstr "Datei im Pfad „%s“ konnte nicht zum Lesen geöffnet werden."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20126,9 +20035,8 @@ msgid "Debug Algorithm"
 msgstr "Debug-Algorithmus"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "Temporäre Datei kann nicht entfernt werden:"
+msgstr "Temporäre Datei „%s“ konnte nicht umbenannt werden."
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
@@ -20171,76 +20079,68 @@ msgid "Trademarks"
 msgstr "Handelsmarken"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Resources Modification"
-msgstr "Pushnachrichten"
+msgstr "Ressourcen-Modifikationen"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find rcedit executable at \"%s\"."
-msgstr "Keystore konnte nicht gefunden werden, Export fehlgeschlagen."
+msgstr "Anwendung rcedit konnte nicht gefunden werden in „%s“."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find wine executable at \"%s\"."
-msgstr "Keystore konnte nicht gefunden werden, Export fehlgeschlagen."
+msgstr "Anwendung wine konnte nicht gefunden werden in „%s“."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start rcedit executable, configure rcedit path in the Editor "
 "Settings (Export > Windows > Rcedit)."
 msgstr ""
-"Das Rcedit-Werkzeug muss in den Editoreinstellungen (Export > Windows > "
-"Rcedit) festgelegt werden um Icon- oder Anwendungsinformation festlegen zu "
-"können."
+"Anwendung rcedit konnte nicht gestartet werden. Bitte rcedit-Pfad in "
+"Editoreinstellungen festlegen (Export > Windows > Rcedit)."
 
 #: platform/windows/export/export.cpp
 msgid ""
 "rcedit failed to modify executable:\n"
 "%s"
 msgstr ""
+"Modifikation der Anwendung durch rcedit fehlgeschlagen:\n"
+"%s"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find signtool executable at \"%s\"."
-msgstr "Keystore konnte nicht gefunden werden, Export fehlgeschlagen."
+msgstr "Anwendung signtool konnte nicht gefunden werden in: „%s“."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find osslsigncode executable at \"%s\"."
-msgstr "Keystore konnte nicht gefunden werden, Export fehlgeschlagen."
+msgstr "Anwendung osslsigncode konnte nicht gefunden werden in: „%s“."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid identity type."
-msgstr "Identitäts-Typ"
+msgstr "Ungültiger Identitäts-Typ."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid timestamp server."
-msgstr "Ungültiger Name."
+msgstr "Ungültiger Zeitstempelserver."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start signtool executable, configure signtool path in the Editor "
 "Settings (Export > Windows > Signtool)."
 msgstr ""
-"Das Rcedit-Werkzeug muss in den Editoreinstellungen (Export > Windows > "
-"Rcedit) festgelegt werden um Icon- oder Anwendungsinformation festlegen zu "
-"können."
+"Anwendung signtool konnte nicht gestartet werden. Bitte signtool-Pfad in "
+"Editoreinstellungen festlegen (Export > Windows > Signtool)."
 
 #: platform/windows/export/export.cpp
 msgid ""
 "Signtool failed to sign executable:\n"
 "%s"
 msgstr ""
+"Signieren der Anwendung durch Signtool ist fehlgeschlagen:\n"
+"%s"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "Temporäre Datei kann nicht entfernt werden:"
+msgstr "Fehler beim entfernen temporärer Datei „%s“."
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -20265,20 +20165,19 @@ msgstr "Ungültige Produktversion:"
 
 #: platform/windows/export/export.cpp
 msgid "Windows executables cannot be >= 4 GiB."
-msgstr ""
+msgstr "Windows-Anwendungen können nicht größer als 4 GiB sein."
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
-#, fuzzy
 msgid "Failed to open executable file \"%s\"."
-msgstr "Ungültige ausführbare Datei."
+msgstr "Fehler beim Öffnen von ausführbarer Datei „%s“."
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable file header corrupted."
-msgstr ""
+msgstr "Header von ausführbarer Datei beschädigt."
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable \"pck\" section not found."
-msgstr ""
+msgstr "„pck“-Sektor von ausführbarer Datei nicht gefunden."
 
 #: platform/windows/export/export.cpp
 msgid "Windows"
@@ -20299,6 +20198,8 @@ msgstr "Wine"
 #: platform/x11/export/export.cpp
 msgid "32-bit executables cannot have embedded data >= 4 GiB."
 msgstr ""
+"32-bit-Anwendungen können keine eingebetteten Daten größer als 4 GiB "
+"beinhalten."
 
 #: scene/2d/animated_sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/texture.cpp
@@ -21141,6 +21042,18 @@ msgstr "Zellen Größe"
 msgid "Edge Connection Margin"
 msgstr "Kantenverbindungsbegrenzung"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Gewünschte Zieldistanz"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr "Gewünschte Zieldistanz"
@@ -21200,14 +21113,12 @@ msgid "Navpoly"
 msgstr "Navpolygon"
 
 #: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Enter Cost"
-msgstr "Mitte unten"
+msgstr "Eintrittskosten"
 
 #: scene/2d/navigation_polygon.cpp scene/3d/navigation_mesh_instance.cpp
-#, fuzzy
 msgid "Travel Cost"
-msgstr "Reisen"
+msgstr "Reisekosten"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
@@ -22299,6 +22210,13 @@ msgstr "Software-Skinning"
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
 msgstr "Normalen transformieren"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -24756,14 +24674,12 @@ msgid "3D Physics"
 msgstr "3D-Physik"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "2D Navigation"
-msgstr "Navigation"
+msgstr "2D-Navigation"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "3D Navigation"
-msgstr "Navigation"
+msgstr "3D-Navigation"
 
 #: scene/register_scene_types.cpp
 msgid "Use hiDPI"
@@ -26049,14 +25965,12 @@ msgid "Visible Instance Count"
 msgstr "Sichtbare Instanzen Anzahl"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Sampling"
-msgstr "Skalierung: "
+msgstr "Abtastung"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Partition Type"
-msgstr "Probeneinteilunstyp"
+msgstr "Einteilungstyp"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Parsed Geometry Type"
@@ -26071,14 +25985,12 @@ msgid "Source Group Name"
 msgstr "Quellen-Gruppenname"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Cells"
-msgstr "Zelle"
+msgstr "Zellen"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Agents"
-msgstr "Agent"
+msgstr "Agenten"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -26089,18 +26001,16 @@ msgid "Max Slope"
 msgstr "Maximale Neigung"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Regions"
-msgstr "Bereich"
+msgstr "Bereiche"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Merge Size"
 msgstr "Größe der Zusammenführung"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Edges"
-msgstr "Kante"
+msgstr "Kanten"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Error"
@@ -26111,7 +26021,6 @@ msgid "Verts Per Poly"
 msgstr "Vert per Poly"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Details"
 msgstr "Details"
 
@@ -26132,9 +26041,18 @@ msgid "Ledge Spans"
 msgstr "Vorsprünge"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Walkable Low Height Spans"
-msgstr "Ablaufbare Abstände niedriger Höhe aussortiern"
+msgstr "Ablaufbare Abstände niedriger Höhe"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Erzeuge AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Grundversatz"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
@@ -26493,9 +26411,8 @@ msgid "Scenario"
 msgstr "Szenario"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Navigation Map"
-msgstr "Navigation"
+msgstr "Navigationskarte"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
@@ -26514,24 +26431,20 @@ msgid "Default Angular Damp"
 msgstr "Standard Winkeldämpfung"
 
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Default Map Up"
-msgstr "Standard Gleitkommaschritte"
+msgstr "Standard Kartenhoch"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Size"
-msgstr "Zellen Größe"
+msgstr "Standardzellgröße"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Height"
-msgstr "Zellenhöhe"
+msgstr "Standardzellhöhe"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Edge Connection Margin"
-msgstr "Kantenverbindungsbegrenzung"
+msgstr "Standard Kantenverbinungsabstand"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"

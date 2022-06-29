@@ -97,13 +97,15 @@
 # Zachary Dionne <zachary.dionne.01@gmail.com>, 2022.
 # Fares Setbel <fares.setbels@gmail.com>, 2022.
 # Nathan Hamy <hamynathan92@gmail.com>, 2022.
+# HOUA <ninjacowzx@gmail.com>, 2022.
+# DinosaurHorseSword <ewenlandry@mailfence.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-31 22:33+0000\n"
-"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:04+0000\n"
+"Last-Translator: DinosaurHorseSword <ewenlandry@mailfence.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -111,7 +113,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -142,9 +144,8 @@ msgid "Delta Smoothing"
 msgstr "Lissage de Delta"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Mode d'utilisation du processeur bas en ressources"
+msgstr "Mode d'Utilisation Faible du Processeur"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -281,9 +282,8 @@ msgid "Command Queue"
 msgstr "File d’Attente de Commandes"
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Multithreading Queue Size (KB)"
-msgstr "Taille de la file du Multi-tache (KB)"
+msgstr "Taille de la fille d'attente Multi-Tache (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
@@ -319,7 +319,7 @@ msgstr ""
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Mode De Blocage Activé"
 
 #: core/io/http_client.cpp
 msgid "Connection"
@@ -379,11 +379,11 @@ msgstr ""
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Tableau de données"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Blocage de la poignée de main"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
@@ -444,21 +444,19 @@ msgstr "État"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "File d'Attente de Message"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
 msgstr "Taille Maximale (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Mode déplacement"
+msgstr "Mode De Déplacement Souris"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Supprimer l'entrée"
+msgstr "Utiliser l'entrée accumulée"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -479,7 +477,7 @@ msgstr "Contrôle"
 
 #: core/os/input_event.cpp
 msgid "Meta"
-msgstr ""
+msgstr "Méta"
 
 #: core/os/input_event.cpp
 msgid "Command"
@@ -492,14 +490,12 @@ msgid "Pressed"
 msgstr "Pressé"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
 msgstr "Scancode"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical Scancode"
-msgstr "Touche physique"
+msgstr "Code de Scan Physique"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
@@ -507,12 +503,11 @@ msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr ""
+msgstr "Écho"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
-#, fuzzy
 msgid "Button Mask"
-msgstr "Bouton"
+msgstr "Masque Bouton"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
 msgid "Global Position"
@@ -531,7 +526,6 @@ msgid "Doubleclick"
 msgstr "Double clique"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Tilt"
 msgstr "Inclinaison"
 
@@ -572,7 +566,7 @@ msgstr "Action"
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Force"
 
 #: core/os/input_event.cpp
 msgid "Delta"
@@ -606,7 +600,7 @@ msgstr "Numéro du contrôleur"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
-msgstr ""
+msgstr "Valeur du controller"
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
@@ -619,9 +613,8 @@ msgid "Config"
 msgstr "Config"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Paramètres du projet..."
+msgstr "Remplacement Des Paramètres du Projet"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -663,9 +656,8 @@ msgid "Disable stderr"
 msgstr "Désactiver stderr"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Use Hidden Project Data Directory"
-msgstr "Utiliser un Répertoire de Données du Projet Caché"
+msgstr "Utiliser un Répertoire Caché Pour Les Données du Projet"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
@@ -678,15 +670,14 @@ msgstr "Nom du Répertoire Utilisateur Personnalisé"
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Tout afficher"
+msgstr "Affichage"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Largeur"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -694,23 +685,20 @@ msgstr ""
 #: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Lumière"
+msgstr "Hauteur"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Toujours Au Dessus"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Étendu à Gauche"
+msgstr "Tester la Largeur"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "En période de test"
+msgstr "Tester la Hauteur"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -734,9 +722,8 @@ msgid "Main Run Args"
 msgstr "Arguments de la scène principale :"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Chemin de la scène :"
+msgstr "Noms de scènes"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
@@ -747,14 +734,12 @@ msgid "Script Templates Search Path"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Système de contrôle de version"
+msgstr "Chargement automatique de la version de contrôle au démarrage"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Contrôle de version"
+msgstr "Nom de l'extension de version de contrôle"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -776,38 +761,33 @@ msgid "UI Cancel"
 msgstr "Annuler"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Focaliser le chemin"
+msgstr "Focus suivant"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Focaliser le chemin"
+msgstr "Focus précédent"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "En haut à gauche"
+msgstr "Gauche"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "En haut à droite"
+msgstr "Droite"
 
 #: core/project_settings.cpp
 msgid "UI Up"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Descendre"
+msgstr "Bas"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "UI Page Up"
-msgstr "Page :"
+msgstr "Page Haut"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
@@ -818,9 +798,8 @@ msgid "UI Home"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI End"
-msgstr "À la fin"
+msgstr "Fin"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -846,7 +825,7 @@ msgstr "3D"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Smooth Trimesh Collision"
-msgstr "Créer une collision Trimesh"
+msgstr "Collision Lisse Trimesh"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -903,9 +882,8 @@ msgid "Profiler"
 msgstr "Profileur"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "Faire fonction"
+msgstr "Nombre maximum de fonctions"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
 msgid "Compression"
@@ -949,12 +927,11 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr "TCP"
+msgstr "PCT (Protocole de Contrôle de Transmissions)"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "Connexions à la méthode :"
+msgstr "Délai d'expiration de la connexion en secondes"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -1126,9 +1103,8 @@ msgid "Scale"
 msgstr "Mode mise à l'échelle"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Follow Surface"
-msgstr "Remplir la surface"
+msgstr "Suivre la surface"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
@@ -8146,8 +8122,17 @@ msgid "New Anim"
 msgstr "Nouvelle animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Créer une nouvelle animation"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Modifier le nom de l'animation :"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Renommer l'animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8166,11 +8151,6 @@ msgstr "Nom d'animation invalide !"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Ce nom d'animation existe déjà !"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Renommer l'animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8315,10 +8295,6 @@ msgstr "Inclure les Gizmos (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Épingler AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Créer une nouvelle animation"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -9896,7 +9872,7 @@ msgstr "Créer le contour"
 #: scene/resources/multimesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Mesh"
-msgstr "Maillages"
+msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -21762,6 +21738,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Modifier la connexion :"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Choisissez distance :"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -23055,6 +23043,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Transformation annulée."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27168,7 +27163,7 @@ msgstr ""
 
 #: scene/resources/material.cpp
 msgid "Rim"
-msgstr ""
+msgstr "Bordure"
 
 #: scene/resources/material.cpp
 #, fuzzy
@@ -27399,6 +27394,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Générer AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Décalage :"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
