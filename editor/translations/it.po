@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-19 11:52+0000\n"
+"PO-Revision-Date: 2022-06-26 16:16+0000\n"
 "Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -7930,8 +7930,17 @@ msgid "New Anim"
 msgstr "Nuova Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Crea Nuova Animazione"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Cambia Nome Animazione:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Rinomina Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7950,11 +7959,6 @@ msgstr "Nome animazione non valido!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Nome animazione già esistente!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Rinomina Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8098,10 +8102,6 @@ msgstr "Includi Gizmo (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Fissa AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Crea Nuova Animazione"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -18905,10 +18905,8 @@ msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"Non è stato possibile trovare \"apksigner\".\n"
-"Verificare che il comando sia disponibile nella directory degli strumenti di "
-"compilazione Android SDK.\n"
-"Il %s risultato non è firmato."
+"'apksigner' non è stato trovato. Verificare che il comando sia disponibile "
+"nella directory build-tools di Android SDK. Il risultato %s non è firmato."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19008,9 +19006,8 @@ msgid ""
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
 "Compilazione del progetto Android fallita, controlla l'output per vedere gli "
-"errori.\n"
-"In alternativa, visita docs.godotengine.org per la documentazione della "
-"build Android."
+"errori. In alternativa, visita docs.godotengine.org per la documentazione "
+"della build Android."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -19045,10 +19042,9 @@ msgid ""
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"Mancano librerie nel template di esportazione per le architetture "
-"selezionate: %s.\n"
-"Si prega di costruire un template con tutte le librerie richieste, o "
-"deselezionare le architetture mancanti nel preset di esportazione."
+"Librerie mancanti nel modello di esportazione per le architetture "
+"selezionate: %s. Creare un modello con tutte le librerie richieste o "
+"deselezionare le architetture mancanti nella preimpostazione di esportazione."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
@@ -21363,6 +21359,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Modifica una connessione:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Scegli la Distanza:"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22648,6 +22656,13 @@ msgstr ""
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
 msgstr "Trasforma Normals"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27007,6 +27022,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Generando AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Scostamento:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

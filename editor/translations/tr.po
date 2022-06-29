@@ -72,13 +72,14 @@
 # Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
 # inci <incialien@gmail.com>, 2022.
 # Ramazan Aslan <legendraslan@gmail.com>, 2022.
+# paledega <paledega@yandex.ru>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-12 13:19+0000\n"
-"Last-Translator: Ramazan Aslan <legendraslan@gmail.com>\n"
+"PO-Revision-Date: 2022-06-26 16:16+0000\n"
+"Last-Translator: paledega <paledega@yandex.ru>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -86,7 +87,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -110,7 +111,7 @@ msgstr "V-Sync Etkinleştirildi"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "Compositor Üzerinden V-Sync"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
@@ -467,8 +468,9 @@ msgid "Pressed"
 msgstr "Basılmış"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Scancode"
-msgstr "Tuş Kodu"
+msgstr "Tarama kodu"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -909,6 +911,7 @@ msgid "Modules"
 msgstr "Modüller"
 
 #: core/register_core_types.cpp
+#, fuzzy
 msgid "TCP"
 msgstr "TCP"
 
@@ -1109,7 +1112,7 @@ msgstr ""
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Ücretsiz"
+msgstr "Özgür"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -8115,8 +8118,17 @@ msgid "New Anim"
 msgstr "Yeni Animasyon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Yeni Animasyon Oluştur"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Animasyon İsmini Değiştir:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Animasyonu Yeniden Adlandır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8135,11 +8147,6 @@ msgstr "Geçersiz animasyon ismi!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Animasyon ismi zaten var!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Animasyonu Yeniden Adlandır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8283,10 +8290,6 @@ msgstr "Gizmoları Dahil Et (3B)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Animasyon Oynatıcıyı Sabitle"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Yeni Animasyon Oluştur"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -13290,6 +13293,7 @@ msgid "Select SSH private key path"
 msgstr "SSH özel anahtar yolu seç"
 
 #: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "SSH Passphrase"
 msgstr "SSH Parolası"
 
@@ -21654,6 +21658,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Bağlantıyı Düzenle:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Uzaklık Seç:"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22940,6 +22956,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Dönüşüm Durduruldu."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27323,6 +27346,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "AABB Üretimi"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Kaydırma:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
