@@ -72,6 +72,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(MenuButton *p_debug_menu) {
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
+	p->set_item_tooltip(-1,
+			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	p->set_item_tooltip(-1,
 			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
@@ -153,6 +156,12 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
 
 		} break;
+		case RUN_DEBUG_PATHS: {
+			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_PATHS));
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_PATHS), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+
+		} break;
 		case RUN_DEBUG_NAVIGATION: {
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
@@ -182,6 +191,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
@@ -195,6 +205,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_debug_collisions) {
 		_menu_option(RUN_DEBUG_COLLISONS);
+	}
+	if (check_debug_paths) {
+		_menu_option(RUN_DEBUG_PATHS);
 	}
 	if (check_debug_navigation) {
 		_menu_option(RUN_DEBUG_NAVIGATION);

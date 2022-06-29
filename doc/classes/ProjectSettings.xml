@@ -494,6 +494,12 @@
 		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
+			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
+			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>

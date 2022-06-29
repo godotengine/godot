@@ -659,6 +659,14 @@ bool SceneTree::is_debugging_collisions_hint() const {
 	return debug_collisions_hint;
 }
 
+void SceneTree::set_debug_paths_hint(bool p_enabled) {
+	debug_paths_hint = p_enabled;
+}
+
+bool SceneTree::is_debugging_paths_hint() const {
+	return debug_paths_hint;
+}
+
 void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 	debug_navigation_hint = p_enabled;
 }
@@ -684,6 +692,22 @@ Color SceneTree::get_debug_collision_contact_color() const {
 	return debug_collision_contact_color;
 }
 
+void SceneTree::set_debug_paths_color(const Color &p_color) {
+	debug_paths_color = p_color;
+}
+
+Color SceneTree::get_debug_paths_color() const {
+	return debug_paths_color;
+}
+
+void SceneTree::set_debug_paths_width(float p_width) {
+	debug_paths_width = p_width;
+}
+
+float SceneTree::get_debug_paths_width() const {
+	return debug_paths_width;
+}
+
 void SceneTree::set_debug_navigation_color(const Color &p_color) {
 	debug_navigation_color = p_color;
 }
@@ -698,6 +722,23 @@ void SceneTree::set_debug_navigation_disabled_color(const Color &p_color) {
 
 Color SceneTree::get_debug_navigation_disabled_color() const {
 	return debug_navigation_disabled_color;
+}
+
+Ref<Material> SceneTree::get_debug_paths_material() {
+	if (debug_paths_material.is_valid()) {
+		return debug_paths_material;
+	}
+
+	Ref<StandardMaterial3D> _debug_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	_debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	_debug_material->set_albedo(get_debug_paths_color());
+
+	debug_paths_material = _debug_material;
+
+	return debug_paths_material;
 }
 
 Ref<Material> SceneTree::get_debug_navigation_material() {
@@ -1207,6 +1248,8 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint", "enable"), &SceneTree::set_debug_collisions_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"), &SceneTree::is_debugging_collisions_hint);
+	ClassDB::bind_method(D_METHOD("set_debug_paths_hint", "enable"), &SceneTree::set_debug_paths_hint);
+	ClassDB::bind_method(D_METHOD("is_debugging_paths_hint"), &SceneTree::is_debugging_paths_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
@@ -1268,6 +1311,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_paths_hint"), "set_debug_paths_hint", "is_debugging_paths_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_edited_scene_root", "get_edited_scene_root");
@@ -1344,6 +1388,8 @@ SceneTree::SceneTree() {
 	}
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
+	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
 	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
