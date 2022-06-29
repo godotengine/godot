@@ -79,13 +79,15 @@
 # losfroger <emilioranita@gmail.com>, 2022.
 # Ventura Pérez García <vetu@protonmail.com>, 2022.
 # David Martínez <goddrinksjava@gmail.com>, 2022.
+# Nagamine-j <jimmy.kochi@unmsm.edu.pe>, 2022.
+# Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-19 11:52+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:04+0000\n"
+"Last-Translator: Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -387,9 +389,8 @@ msgstr ""
 "inválido."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Entrada inválida %i (no aprobada) en la expresión"
+msgstr "Entrada inválida %d (no aprobada) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -433,14 +434,12 @@ msgid "Max Size (KB)"
 msgstr "Tamaño Máximo (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Modo de Movimiento"
+msgstr "Modo de Mouse"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Eliminar entrada"
+msgstr "Usar entrada acumulada"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -487,7 +486,7 @@ msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr "Echo"
+msgstr "Eco"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 msgid "Button Mask"
@@ -511,7 +510,7 @@ msgstr "Dobleclick"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr "Tilt"
+msgstr "Inclinar"
 
 #: core/os/input_event.cpp
 msgid "Pressure"
@@ -590,11 +589,11 @@ msgstr "Valor del Controlador"
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
 msgid "Application"
-msgstr "Aplicación"
+msgstr "Aplicação"
 
 #: core/project_settings.cpp main/main.cpp
 msgid "Config"
-msgstr "Configurar"
+msgstr "Configuração"
 
 #: core/project_settings.cpp
 msgid "Project Settings Override"
@@ -2749,7 +2748,7 @@ msgstr "Nombre del Nodo:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Global Variable"
-msgstr "Variable"
+msgstr "Variable global"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -2810,16 +2809,15 @@ msgstr "Elegir"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Exportar proyecto para la plataforma:"
 
 #: editor/editor_export.cpp
 msgid "Completed with errors."
 msgstr "Completado con errores."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Completado con éxito."
+msgstr "Completado exitosamente."
 
 #: editor/editor_export.cpp
 msgid "Failed."
@@ -2839,14 +2837,12 @@ msgid "Packing"
 msgstr "Empaquetando"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Guardar Como"
+msgstr "Guardar como PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "No se pudo crear la carpeta."
+msgstr "No se pudo crear el archivo \"%s\"."
 
 #: editor/editor_export.cpp
 msgid "Failed to export project files."
@@ -2857,9 +2853,8 @@ msgid "Can't open file to read from path \"%s\"."
 msgstr "No se puede abrir el archivo a leer de la ruta \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Guardar Como"
+msgstr "Guardar como ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -7968,8 +7963,17 @@ msgid "New Anim"
 msgstr "Nueva Animación"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Crear Animación Nueva"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Cambiar nombre de animación:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Renombrar Animación"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7988,11 +7992,6 @@ msgstr "¡Nombre de animación inválido!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "¡El nombre de animación ya existe!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Renombrar Animación"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8138,10 +8137,6 @@ msgstr "Incluir Gizmos (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Fijar AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Crear Animación Nueva"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -21517,6 +21512,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Margen de Conexión de Bordes"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Distancia de la Ruta U"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22786,6 +22793,13 @@ msgstr ""
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
 msgstr "Transformar Normales"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27072,6 +27086,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Generando AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Desplazamiento Base"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
