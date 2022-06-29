@@ -104,11 +104,11 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_seek_r
 	if (anim->get_loop_mode() == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
 			if ((int)Math::floor(abs(time - prev_time) / anim_size) % 2 == 0) {
-				if (prev_time > 0 && time <= 0) {
+				if (prev_time >= 0 && time < 0) {
 					backward = !backward;
 					pingponged = -1;
 				}
-				if (prev_time < anim_size && time >= anim_size) {
+				if (prev_time <= anim_size && time > anim_size) {
 					backward = !backward;
 					pingponged = 1;
 				}
