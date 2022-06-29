@@ -140,6 +140,8 @@ class EditorHelp : public VBoxContainer {
 	Ref<Font> doc_title_font;
 	Ref<Font> doc_code_font;
 
+	int doc_title_font_size;
+
 	int scroll_to = -1;
 
 	void _update_theme();
