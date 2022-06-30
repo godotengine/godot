@@ -33,10 +33,6 @@ jobs:
         run: |
           bash ./misc/scripts/file_format.sh
 
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
-
       - name: Header guards formatting checks (header_guards.sh)
         run: |
           bash ./misc/scripts/header_guards.sh
@@ -59,3 +55,7 @@ jobs:
       - name: Documentation checks
         run: |
           doc/tools/make_rst.py --dry-run --color doc/classes modules
+
+      - name: Style checks via clang-format (clang_format.sh)
+        run: |
+          bash ./misc/scripts/clang_format.sh
