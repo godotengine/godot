@@ -348,7 +348,7 @@
 				- [code]method_name[/code] is the name of the method to which the signal is connected.
 			</description>
 		</method>
-		<method name="get_indexed" qualifiers="const">
+		<method name="get_by_path" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="property" type="NodePath" />
 			<description>
@@ -513,7 +513,7 @@
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
-		<method name="set_indexed">
+		<method name="set_by_path">
 			<return type="void" />
 			<argument index="0" name="property" type="NodePath" />
 			<argument index="1" name="value" type="Variant" />

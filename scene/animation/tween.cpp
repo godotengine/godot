@@ -76,7 +76,7 @@ Ref<PropertyTweener> Tween::tween_property(Object *p_target, NodePath p_property
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 #ifdef DEBUG_ENABLED
-	Variant::Type property_type = p_target->get_indexed(p_property.get_as_property_path().get_subnames()).get_type();
+	Variant::Type property_type = p_target->get_by_path(p_property.get_as_property_path().get_subnames()).get_type();
 	ERR_FAIL_COND_V_MSG(property_type != p_to.get_type(), Ref<PropertyTweener>(), "Type mismatch between property and final value: " + Variant::get_type_name(property_type) + " and " + Variant::get_type_name(p_to.get_type()));
 #endif
 
@@ -730,7 +730,7 @@ void PropertyTweener::start() {
 	}
 
 	if (do_continue) {
-		initial_val = target_instance->get_indexed(property);
+		initial_val = target_instance->get_by_path(property);
 	}
 
 	if (relative) {
@@ -759,11 +759,11 @@ bool PropertyTweener::step(float &r_delta) {
 
 	float time = MIN(elapsed_time - delay, duration);
 	if (time < duration) {
-		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+		target_instance->set_by_path(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
 		r_delta = 0;
 		return true;
 	} else {
-		target_instance->set_indexed(property, final_val);
+		target_instance->set_by_path(property, final_val);
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
 		emit_signal(SNAME("finished"));
@@ -793,7 +793,7 @@ void PropertyTweener::_bind_methods() {
 PropertyTweener::PropertyTweener(Object *p_target, NodePath p_property, Variant p_to, float p_duration) {
 	target = p_target->get_instance_id();
 	property = p_property.get_as_property_path().get_subnames();
-	initial_val = p_target->get_indexed(property);
+	initial_val = p_target->get_by_path(property);
 	base_final_val = p_to;
 	final_val = base_final_val;
 	duration = p_duration;
