@@ -322,6 +322,8 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 	EditorAssetLibrary *addon_library = nullptr;
 
 public:
+	static bool is_available();
+
 	virtual String get_name() const override { return "AssetLib"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
