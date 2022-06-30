@@ -666,6 +666,10 @@ msgid "Main Run Args"
 msgstr "Jalan Utama Argumen"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Penamaan Skena"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Cari dalam Ekstensi File"
 
@@ -673,18 +677,15 @@ msgstr "Cari dalam Ekstensi File"
 msgid "Script Templates Search Path"
 msgstr "Jalur Pencarian Template Skrip"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Kontrol Versi"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Muat Otomatis Saat Memulai"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Nama Plugin"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Kontrol Versi"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2797,7 +2798,7 @@ msgstr "Salin Lokasi Node"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Paket Sukses Terpasang!"
 
 #: editor/editor_export.cpp
@@ -4330,14 +4331,6 @@ msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Scene"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Penamaan Skena"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 #, fuzzy
@@ -4466,6 +4459,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Kontrol Versi"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
 msgid "Username"
 msgstr "Ubah Nama"
@@ -4493,6 +4490,10 @@ msgstr "Toggle mode tanpa gangguan."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Tambah skena baru."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Scene"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -8035,8 +8036,17 @@ msgid "New Anim"
 msgstr "Animasi Baru"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Buat Animasi Baru"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Ubah Nama Animasi:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Ubah Nama Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8055,11 +8065,6 @@ msgstr "Nama animasi tidak valid!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Nama animasi sudah ada!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Ubah Nama Animasi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8203,10 +8208,6 @@ msgstr "Masukkan Gizmo (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Sematkan AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Buat Animasi Baru"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -21617,6 +21618,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Sunting Koneksi:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Target Jarak yang Diinginkan"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr "Target Jarak yang Diinginkan"
@@ -22847,6 +22860,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Transformasi Dibatalkan."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -27212,6 +27232,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Membuat AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Pengimbangan:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

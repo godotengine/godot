@@ -146,8 +146,8 @@ void EditorQuickOpen::_confirmed() {
 		return;
 	}
 	_cleanup();
-	emit_signal(SNAME("quick_open"));
 	hide();
+	emit_signal(SNAME("quick_open"));
 }
 
 void EditorQuickOpen::cancel_pressed() {

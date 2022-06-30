@@ -245,7 +245,7 @@ static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
-static const int DEFAULT_TARGET_SDK_VERSION = 30; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
+static const int DEFAULT_TARGET_SDK_VERSION = 31; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
 
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {

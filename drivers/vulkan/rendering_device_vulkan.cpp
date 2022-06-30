@@ -1400,7 +1400,7 @@ Error RenderingDeviceVulkan::_insert_staging_block() {
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment, bool p_on_draw_command_buffer) {
+Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment) {
 	//determine a block to use
 
 	r_alloc_size = p_amount;
@@ -1542,7 +1542,7 @@ Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, c
 		uint32_t block_write_offset;
 		uint32_t block_write_amount;
 
-		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount, p_use_draw_command_buffer);
+		Error err = _staging_buffer_allocate(MIN(to_submit, staging_buffer_block_size), p_required_align, block_write_offset, block_write_amount);
 		if (err) {
 			return err;
 		}
@@ -2314,6 +2314,12 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 	}
 
+	if (p_slice_type == TEXTURE_SLICE_2D) {
+		texture.type = TEXTURE_TYPE_2D;
+	} else if (p_slice_type == TEXTURE_SLICE_3D) {
+		texture.type = TEXTURE_TYPE_3D;
+	}
+
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
@@ -2368,6 +2374,22 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
 	return _texture_update(p_texture, p_layer, p_data, p_post_barrier, false);
+}
+
+static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_unit_size) {
+	uint32_t src_offset = (p_src_y * p_src_full_w + p_src_x) * p_unit_size;
+	uint32_t dst_offset = 0;
+	for (uint32_t y = p_src_h; y > 0; y--) {
+		uint8_t const *__restrict src = p_src + src_offset;
+		uint8_t *__restrict dst = p_dst + dst_offset;
+		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
+			*dst = *src;
+			src++;
+			dst++;
+		}
+		src_offset += p_src_full_w * p_unit_size;
+		dst_offset += p_src_w * p_unit_size;
+	}
 }
 
 Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, uint32_t p_post_barrier, bool p_use_setup_queue) {
@@ -2455,8 +2477,8 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 
 			const uint8_t *read_ptr = read_ptr_mipmap + image_size * z / depth;
 
-			for (uint32_t x = 0; x < width; x += region_size) {
-				for (uint32_t y = 0; y < height; y += region_size) {
+			for (uint32_t y = 0; y < height; y += region_size) {
+				for (uint32_t x = 0; x < width; x += region_size) {
 					uint32_t region_w = MIN(region_size, width - x);
 					uint32_t region_h = MIN(region_size, height - y);
 
@@ -2468,7 +2490,7 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 					to_allocate >>= get_compressed_image_format_pixel_rshift(texture->format);
 
 					uint32_t alloc_offset, alloc_size;
-					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false, !p_use_setup_queue);
+					Error err = _staging_buffer_allocate(to_allocate, required_align, alloc_offset, alloc_size, false);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 					uint8_t *write_ptr;
@@ -2499,31 +2521,11 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 						//uint32_t hb = height / block_h;
 						uint32_t region_wb = region_w / block_w;
 						uint32_t region_hb = region_h / block_h;
-						for (uint32_t xr = 0; xr < region_wb; xr++) {
-							for (uint32_t yr = 0; yr < region_hb; yr++) {
-								uint32_t src_offset = ((yr + yb) * wb + xr + xb) * block_size;
-								uint32_t dst_offset = (yr * region_wb + xr) * block_size;
-								//copy block
-								for (uint32_t i = 0; i < block_size; i++) {
-									write_ptr[dst_offset + i] = read_ptr[src_offset + i];
-								}
-							}
-						}
-
+						_copy_region(read_ptr, write_ptr, xb, yb, region_wb, region_hb, wb, block_size);
 					} else {
 						//regular image (pixels)
 						//must copy a pixel region
-
-						for (uint32_t xr = 0; xr < region_w; xr++) {
-							for (uint32_t yr = 0; yr < region_h; yr++) {
-								uint32_t src_offset = ((yr + y) * width + xr + x) * pixel_size;
-								uint32_t dst_offset = (yr * region_w + xr) * pixel_size;
-								//copy block
-								for (uint32_t i = 0; i < pixel_size; i++) {
-									write_ptr[dst_offset + i] = read_ptr[src_offset + i];
-								}
-							}
-						}
+						_copy_region(read_ptr, write_ptr, x, y, region_w, region_h, width, pixel_size);
 					}
 
 					{ //unmap
@@ -2566,11 +2568,11 @@ Error RenderingDeviceVulkan::_texture_update(RID p_texture, uint32_t p_layer, co
 		uint32_t access_flags = 0;
 		if (p_post_barrier & BARRIER_MASK_COMPUTE) {
 			barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
 		if (p_post_barrier & BARRIER_MASK_RASTER) {
 			barrier_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			access_flags |= VK_ACCESS_SHADER_READ_BIT;
+			access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
 		if (p_post_barrier & BARRIER_MASK_TRANSFER) {
 			barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -2984,7 +2986,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
 			image_memory_barrier.subresourceRange.layerCount = 1;
 
-			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 
 		{ //make dst readable
@@ -3009,6 +3011,13 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, barrier_flags, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 		}
 	}
+
+	if (dst_tex->used_in_frame != frames_drawn) {
+		dst_tex->used_in_raster = false;
+		dst_tex->used_in_compute = false;
+		dst_tex->used_in_frame = frames_drawn;
+	}
+	dst_tex->used_in_transfer = true;
 
 	return OK;
 }
@@ -4342,7 +4351,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 			if (!ret.is_empty()) {
 				ret += "\n";
 			}
-			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Length: " + itos(ui.length);
+			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length);
 		}
 	}
 	return ret;
@@ -4542,8 +4551,9 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 //version 1: initial
 //version 2: Added shader name
+//version 3: Added writable
 
-#define SHADER_BINARY_VERSION 2
+#define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
 	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
@@ -4554,6 +4564,7 @@ struct RenderingDeviceVulkanShaderBinaryDataBinding {
 	uint32_t binding;
 	uint32_t stages;
 	uint32_t length; //size of arrays (in total elements), or ubos (in bytes * total elements)
+	uint32_t writable;
 };
 
 struct RenderingDeviceVulkanShaderBinarySpecializationConstant {
@@ -4636,6 +4647,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting descriptor bindings.");
 
+				uint32_t interface_vars_count = 0;
+				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, nullptr);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating interface variables.");
+
+				Vector<SpvReflectInterfaceVariable *> interface_vars;
+				interface_vars.resize(interface_vars_count);
+				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, interface_vars.ptrw());
+
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting interface variables.");
+
 				for (uint32_t j = 0; j < binding_count; j++) {
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
@@ -4714,6 +4737,18 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						info.length = 0;
 					}
 
+					SpvReflectInterfaceVariable *interface_var = nullptr;
+					for (uint32_t k = 0; k < interface_vars_count; k++) {
+						if (interface_vars[k]->spirv_id == binding.spirv_id) {
+							interface_var = interface_vars[k];
+							break;
+						}
+					}
+					ERR_FAIL_COND_V_MSG(!interface_var, Vector<uint8_t>(),
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed finding interface variable.");
+
+					info.writable = !(bool)(interface_var->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+
 					info.binding = binding.binding;
 					uint32_t set = binding.set;
 
@@ -4739,6 +4774,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 								//just append stage mask and return
 								uniform_info.write[set].write[k].stages |= 1 << stage;
 								exists = true;
+								break;
 							}
 						}
 
@@ -5081,6 +5117,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		for (uint32_t j = 0; j < set_count; j++) {
 			UniformInfo info;
 			info.type = UniformType(set_ptr[j].type);
+			info.writable = set_ptr[j].writable;
 			info.length = set_ptr[j].length;
 			info.binding = set_ptr[j].binding;
 			info.stages = set_ptr[j].stages;
@@ -5404,7 +5441,6 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
-	buffer.usage = p_usage;
 	uint32_t flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	if (p_usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT) {
 		flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
@@ -7169,6 +7205,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V_MSG(draw_list != nullptr, ERR_BUSY, "Only one draw list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, ERR_BUSY, "Only one draw/compute list can be active at the same time.");
+
 	ERR_FAIL_COND_V(p_splits < 1, ERR_INVALID_DECLARATION);
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
@@ -7893,10 +7932,6 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 	//  * Some buffer is copied
 	//  * Another render pass happens (since we may be done)
 
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
-#else
-
 	VkMemoryBarrier mem_barrier;
 	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	mem_barrier.pNext = nullptr;
@@ -7907,6 +7942,8 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 		vkCmdPipelineBarrier(frames[frame].draw_command_buffer, src_stage, barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
 	}
 
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
 #endif
 }
 
@@ -8261,7 +8298,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
 	ERR_FAIL_COND(!buffer);
 
-	ERR_FAIL_COND_MSG(!(buffer->usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT), "Buffer provided was not created to do indirect dispatch.");
+	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to do indirect dispatch.");
 
 	ERR_FAIL_COND_MSG(p_offset + 12 > buffer->size, "Offset provided (+12) is past the end of buffer.");
 
@@ -8377,9 +8414,6 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 		}
 	}
 
-#ifdef FORCE_FULL_BARRIER
-	_full_barrier(true);
-#else
 	VkMemoryBarrier mem_barrier;
 	mem_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	mem_barrier.pNext = nullptr;
@@ -8390,6 +8424,8 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 		vkCmdPipelineBarrier(compute_list->command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, barrier_flags, 0, 1, &mem_barrier, 0, nullptr, image_barrier_count, image_barriers);
 	}
 
+#ifdef FORCE_FULL_BARRIER
+	_full_barrier(true);
 #endif
 
 	memdelete(compute_list);
@@ -8717,7 +8753,7 @@ void RenderingDeviceVulkan::_begin_frame() {
 	}
 
 	if (frames[frame].timestamp_count) {
-		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values.ptr(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 		vkCmdResetQueryPool(frames[frame].setup_command_buffer, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count);
 		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
 		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
@@ -9008,7 +9044,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		vmaCreateAllocator(&allocatorInfo, &allocator);
 	}
 
-	frames = memnew_arr(Frame, frame_count);
+	frames.resize(frame_count);
 	frame = 0;
 	//create setup and frame buffers
 	for (int i = 0; i < frame_count; i++) {
@@ -9054,12 +9090,12 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 
 			vkCreateQueryPool(device, &query_pool_create_info, nullptr, &frames[i].timestamp_pool);
 
-			frames[i].timestamp_names = memnew_arr(String, max_timestamp_query_elements);
-			frames[i].timestamp_cpu_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_names.resize(max_timestamp_query_elements);
+			frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements);
 			frames[i].timestamp_count = 0;
-			frames[i].timestamp_result_names = memnew_arr(String, max_timestamp_query_elements);
-			frames[i].timestamp_cpu_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
-			frames[i].timestamp_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_result_names.resize(max_timestamp_query_elements);
+			frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements);
+			frames[i].timestamp_result_values.resize(max_timestamp_query_elements);
 			frames[i].timestamp_result_count = 0;
 		}
 	}
@@ -9460,18 +9496,13 @@ void RenderingDeviceVulkan::finalize() {
 		_free_pending_resources(f);
 		vkDestroyCommandPool(device, frames[i].command_pool, nullptr);
 		vkDestroyQueryPool(device, frames[i].timestamp_pool, nullptr);
-		memdelete_arr(frames[i].timestamp_names);
-		memdelete_arr(frames[i].timestamp_cpu_values);
-		memdelete_arr(frames[i].timestamp_result_names);
-		memdelete_arr(frames[i].timestamp_result_values);
-		memdelete_arr(frames[i].timestamp_cpu_result_values);
 	}
 
 	for (int i = 0; i < split_draw_list_allocators.size(); i++) {
 		vkDestroyCommandPool(device, split_draw_list_allocators[i].command_pool, nullptr);
 	}
 
-	memdelete_arr(frames);
+	frames.clear();
 
 	for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 		vmaDestroyBuffer(allocator, staging_buffer_blocks[i].buffer, staging_buffer_blocks[i].allocation);

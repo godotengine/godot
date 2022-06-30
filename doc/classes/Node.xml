@@ -778,12 +778,14 @@
 			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted when a child node enters the scene tree, either because it entered on its own or because this node entered with it.
+				This signal is emitted [i]after[/i] the child node's own [constant NOTIFICATION_ENTER_TREE] and [signal tree_entered].
 			</description>
 		</signal>
-		<signal name="child_exited_tree">
+		<signal name="child_exiting_tree">
 			<argument index="0" name="node" type="Node" />
 			<description>
-				Emitted when a child node exits the scene tree, either because it exited on its own or because this node exited.
+				Emitted when a child node is about to exit the scene tree, either because it is being removed or freed directly, or because this node is exiting the tree.
+				When this signal is received, the child [code]node[/code] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
 			</description>
 		</signal>
 		<signal name="ready">
@@ -799,6 +801,7 @@
 		<signal name="tree_entered">
 			<description>
 				Emitted when the node enters the tree.
+				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_ENTER_TREE] notification.
 			</description>
 		</signal>
 		<signal name="tree_exited">
@@ -809,15 +812,18 @@
 		<signal name="tree_exiting">
 			<description>
 				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization (or a "destructor", if you will).
+				This signal is emitted [i]before[/i] the related [constant NOTIFICATION_EXIT_TREE] notification.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_ENTER_TREE" value="10">
 			Notification received when the node enters a [SceneTree].
+			This notification is emitted [i]before[/i] the related [signal tree_entered].
 		</constant>
 		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 			Notification received when the node is about to exit a [SceneTree].
+			This notification is emitted [i]after[/i] the related [signal tree_exiting].
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 			Notification received when the node is moved in the parent.

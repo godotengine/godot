@@ -37,6 +37,7 @@ RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
 RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
 RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
 RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
+RendererGI *RenderingServerGlobals::gi = nullptr;
 RendererStorage *RenderingServerGlobals::storage = nullptr;
 RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
 RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;

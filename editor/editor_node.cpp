@@ -460,7 +460,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			_editor_select(EDITOR_SCRIPT);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal(SNAME("request_help_search"), "");
-		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && StreamPeerSSL::is_available()) {
+		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && AssetLibraryEditorPlugin::is_available()) {
 			_editor_select(EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			_editor_select_next();
@@ -582,9 +582,10 @@ void EditorNode::_notification(int p_what) {
 				opening_prev = false;
 			}
 
+			bool unsaved_cache_changed = false;
 			if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
 				unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
-				_update_title();
+				unsaved_cache_changed = true;
 			}
 
 			if (last_checked_version != editor_data.get_undo_redo().get_version()) {
@@ -614,6 +615,10 @@ void EditorNode::_notification(int p_what) {
 			editor_selection->update();
 
 			ResourceImporterTexture::get_singleton()->update_imports();
+
+			if (settings_changed || unsaved_cache_changed) {
+				_update_title();
+			}
 
 			if (settings_changed) {
 				_update_from_settings();
@@ -876,7 +881,7 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 
 	int rc = p_resources.size();
 	for (int i = 0; i < rc; i++) {
-		Ref<Resource> res(ResourceCache::get(p_resources.get(i)));
+		Ref<Resource> res = ResourceCache::get_ref(p_resources.get(i));
 		if (res.is_null()) {
 			continue;
 		}
@@ -1006,8 +1011,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 			continue;
 		}
 		// Reload normally.
-		Resource *resource = ResourceCache::get(p_resources[i]);
-		if (resource) {
+		Ref<Resource> resource = ResourceCache::get_ref(p_resources[i]);
+		if (resource.is_valid()) {
 			resource->reload_from_file();
 		}
 	}
@@ -1615,34 +1620,6 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, HashSet<Ref<Resource>> &edited_resources) {
-	if (p_resource->is_edited()) {
-		edited_resources.insert(p_resource);
-		return true;
-	}
-
-	List<PropertyInfo> plist;
-
-	p_resource->get_property_list(&plist);
-
-	for (const PropertyInfo &E : plist) {
-		if (E.type == Variant::OBJECT && E.usage & PROPERTY_USAGE_STORAGE && !(E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
-			Ref<Resource> res = p_resource->get(E.name);
-			if (res.is_null()) {
-				continue;
-			}
-			if (res->get_path().is_resource_file()) { // Not a subresource, continue.
-				continue;
-			}
-			if (_find_edited_resources(res, edited_resources)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 int EditorNode::_save_external_resources() {
 	// Save external resources and its subresources if any was modified.
 
@@ -1652,27 +1629,41 @@ int EditorNode::_save_external_resources() {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	HashSet<Ref<Resource>> edited_subresources;
+	HashSet<String> edited_resources;
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	for (const Ref<Resource> &res : cached) {
-		if (!res->get_path().is_resource_file()) {
+
+	for (Ref<Resource> res : cached) {
+		if (!res->is_edited()) {
 			continue;
 		}
-		// not only check if this resource is edited, check contained subresources too
-		if (_find_edited_resources(res, edited_subresources)) {
-			ResourceSaver::save(res->get_path(), res, flg);
-			saved++;
+
+		String path = res->get_path();
+		if (path.begins_with("res://")) {
+			int subres_pos = path.find("::");
+			if (subres_pos == -1) {
+				// Actual resource.
+				edited_resources.insert(path);
+			} else {
+				edited_resources.insert(path.substr(0, subres_pos));
+			}
 		}
+
+		res->set_edited(false);
 	}
 
-	// Clear later, because user may have put the same subresource in two different resources,
-	// which will be shared until the next reload.
-
-	for (const Ref<Resource> &E : edited_subresources) {
-		Ref<Resource> res = E;
-		res->set_edited(false);
+	for (const String &E : edited_resources) {
+		Ref<Resource> res = ResourceCache::get_ref(E);
+		if (!res.is_valid()) {
+			continue; // Maybe it was erased in a thread, who knows.
+		}
+		Ref<PackedScene> ps = res;
+		if (ps.is_valid()) {
+			continue; // Do not save PackedScenes, this will mess up the editor.
+		}
+		ResourceSaver::save(res->get_path(), res, flg);
+		saved++;
 	}
 
 	return saved;
@@ -1720,7 +1711,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		// We must update it, but also let the previous scene state go, as
 		// old version still work for referencing changes in instantiated or inherited scenes.
 
-		sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(p_file)));
+		sdata = ResourceCache::get_ref(p_file);
 		if (sdata.is_valid()) {
 			sdata->recreate_state();
 		} else {
@@ -2342,6 +2333,20 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		return;
 	}
 
+	String write_movie_file;
+	if (write_movie_button->is_pressed()) {
+		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
+			// If the scene file has a movie_file metadata set, use this as file. Quick workaround if you want to have multiple scenes that write to multiple movies.
+			write_movie_file = get_tree()->get_edited_scene_root()->get_meta("movie_file");
+		} else {
+			write_movie_file = GLOBAL_GET("editor/movie_writer/movie_file");
+		}
+		if (write_movie_file == String()) {
+			show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the 'Editor/Movie Writer' category.\nAlternatively, for running single scenes, a 'movie_path' metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
+			return;
+		}
+	}
+
 	play_button->set_pressed(false);
 	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 	play_scene_button->set_pressed(false);
@@ -2405,7 +2410,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	}
 
 	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename);
+	Error error = editor_run.run(run_filename, write_movie_file);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
 		show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
@@ -2787,6 +2792,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
+		} break;
+		case RUN_WRITE_MOVIE: {
+			_update_write_movie_icon();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -3695,7 +3703,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (ResourceCache::has(lpath)) {
 		// Used from somewhere else? No problem! Update state and replace sdata.
-		Ref<PackedScene> ps = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(lpath)));
+		Ref<PackedScene> ps = ResourceCache::get_ref(lpath);
 		if (ps.is_valid()) {
 			ps->replace_state(sdata->get_state());
 			ps->set_last_modified_time(sdata->get_last_modified_time());
@@ -4949,6 +4957,14 @@ String EditorNode::get_run_playing_scene() const {
 	return run_filename;
 }
 
+void EditorNode::_update_write_movie_icon() {
+	if (write_movie_button->is_pressed()) {
+		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWriteEnabled"), SNAME("EditorIcons")));
+	} else {
+		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+	}
+}
+
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
@@ -5736,12 +5752,12 @@ void EditorNode::_feature_profile_changed() {
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
-		if (StreamPeerSSL::is_available()) {
+		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
 		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
 				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
-				(StreamPeerSSL::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
+				(AssetLibraryEditorPlugin::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
@@ -5753,7 +5769,7 @@ void EditorNode::_feature_profile_changed() {
 		FileSystemDock::get_singleton()->set_visible(true);
 		main_editor_buttons[EDITOR_3D]->set_visible(true);
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
-		if (StreamPeerSSL::is_available()) {
+		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
 		}
 	}
@@ -5813,9 +5829,15 @@ static Node *_resource_get_edited_scene() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
+void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	EditorNode *en = static_cast<EditorNode *>(p_this);
-	en->log->add_message(p_string, p_error ? EditorLog::MSG_TYPE_ERROR : EditorLog::MSG_TYPE_STD);
+	if (p_error) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
+	} else if (p_rich) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD_RICH);
+	} else {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
+	}
 }
 
 static void _execute_thread(void *p_ud) {
@@ -6704,6 +6726,23 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::R);
 	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_custom_scene"));
 
+	write_movie_button = memnew(Button);
+	write_movie_button->set_flat(true);
+	write_movie_button->set_toggle_mode(true);
+	play_hb->add_child(write_movie_button);
+	write_movie_button->set_pressed(false);
+	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
+	write_movie_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_WRITE_MOVIE));
+	write_movie_button->set_tooltip(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
+	// Restore these values to something more useful so it ignores the theme
+	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.4));
+	write_movie_button->add_theme_color_override("icon_pressed_color", Color(1, 1, 1, 1));
+	write_movie_button->add_theme_color_override("icon_hover_color", Color(1.2, 1.2, 1.2, 0.4));
+	write_movie_button->add_theme_color_override("icon_hover_pressed_color", Color(1.2, 1.2, 1.2, 1));
+	write_movie_button->add_theme_color_override("icon_focus_color", Color(1, 1, 1, 1));
+	write_movie_button->add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.4));
+
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
 
@@ -7034,13 +7073,11 @@ EditorNode::EditorNode() {
 
 	// Asset Library can't work on Web editor for now as most assets are sourced
 	// directly from GitHub which does not set CORS.
-#ifndef JAVASCRIPT_ENABLED
-	if (StreamPeerSSL::is_available()) {
+	if (AssetLibraryEditorPlugin::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
-#endif
 
 	// Add interface before adding plugins.
 
@@ -7054,7 +7091,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin));
 	add_editor_plugin(memnew(ShaderFileEditorPlugin));
-	add_editor_plugin(memnew(VisualShaderEditorPlugin));
 
 	add_editor_plugin(memnew(Camera3DEditorPlugin));
 	add_editor_plugin(memnew(ThemeEditorPlugin));

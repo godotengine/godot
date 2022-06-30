@@ -650,6 +650,10 @@ msgid "Main Run Args"
 msgstr "Аргументи основного запуску"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "Іменування сцен"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "Розширення пошуку у файлах"
 
@@ -657,18 +661,15 @@ msgstr "Розширення пошуку у файлах"
 msgid "Script Templates Search Path"
 msgstr "Шлях пошуку для шаблонів скриптів"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Керування версіями"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Автоматично завантажувати під час запуску"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Назва додатка"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Керування версіями"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2754,7 +2755,7 @@ msgstr "Повні шляхи до файлів"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Пакунок успішно встановлено!"
 
 #: editor/editor_export.cpp
@@ -4274,14 +4275,6 @@ msgstr ""
 "Не вдалося записати до файла «%s», файл використовує інша програма, його "
 "заблоковано або у вас немає відповідних прав доступу до нього."
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Сцена"
-
-#: editor/editor_node.cpp
-msgid "Scene Naming"
-msgstr "Іменування сцен"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4396,6 +4389,10 @@ msgid "Default Color Picker Mode"
 msgstr "Типовий режим піпетки кольорів"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Керування версіями"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Користувач"
 
@@ -4422,6 +4419,10 @@ msgstr "Перемкнути режим без відволікання."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Додати нову сцену."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Сцена"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -7840,8 +7841,17 @@ msgid "New Anim"
 msgstr "Нова анімація"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Створити нову анімацію"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Змінити ім'я анімації:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Перейменувати анімацію"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7860,11 +7870,6 @@ msgstr "Некоректна назва анімації!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Анімація із такою назвою вже існує!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Перейменувати анімацію"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8008,10 +8013,6 @@ msgstr "Включити Ґізмос (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Пришпилити AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Створити нову анімацію"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -21026,6 +21027,18 @@ msgstr "Розмір комірки"
 msgid "Edge Connection Margin"
 msgstr "Поле з'єднання ребер"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "U-відстань контуру"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22185,6 +22198,13 @@ msgstr ""
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
 msgstr "Перетворити нормалі"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -26091,6 +26111,16 @@ msgstr "Розміри планки"
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Створення AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Базове зміщення"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_GLOBALS_H
 #define RENDERING_SERVER_GLOBALS_H
 
+#include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
@@ -53,6 +54,7 @@ public:
 	static RendererMeshStorage *mesh_storage;
 	static RendererParticlesStorage *particles_storage;
 	static RendererTextureStorage *texture_storage;
+	static RendererGI *gi;
 	static RendererStorage *storage;
 	static RendererCanvasRender *canvas_render;
 	static RendererCompositor *rasterizer;

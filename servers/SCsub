@@ -14,6 +14,7 @@ SConscript("audio/SCsub")
 SConscript("text/SCsub")
 SConscript("debugger/SCsub")
 SConscript("extensions/SCsub")
+SConscript("movie_writer/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 

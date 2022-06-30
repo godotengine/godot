@@ -87,8 +87,8 @@ private:
 		RID instance;
 
 		static uint32_t hash(const InstanceID &p_ins) {
-			uint32_t h = hash_djb2_one_64(p_ins.scenario.get_id());
-			return hash_djb2_one_64(p_ins.instance.get_id(), h);
+			uint32_t h = hash_murmur3_one_64(p_ins.scenario.get_id());
+			return hash_fmix32(hash_murmur3_one_64(p_ins.instance.get_id(), h));
 		}
 		bool operator==(const InstanceID &rhs) const {
 			return instance == rhs.instance && rhs.scenario == scenario;

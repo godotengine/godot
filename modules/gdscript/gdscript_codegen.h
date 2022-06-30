@@ -140,6 +140,8 @@ public:
 	virtual void write_if(const Address &p_condition) = 0;
 	virtual void write_else() = 0;
 	virtual void write_endif() = 0;
+	virtual void write_jump_if_shared(const Address &p_value) = 0;
+	virtual void write_end_jump_if_shared() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
 	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) = 0;
 	virtual void write_for() = 0;

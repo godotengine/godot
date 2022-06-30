@@ -1115,7 +1115,7 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 	}
 
 	if (ResourceCache::has(p_save_to_path)) {
-		Ref<Animation> old_anim = Ref<Resource>(ResourceCache::get(p_save_to_path));
+		Ref<Animation> old_anim = ResourceCache::get_ref(p_save_to_path);
 		if (old_anim.is_valid()) {
 			old_anim->copy_from(anim);
 			anim = old_anim;
@@ -1711,7 +1711,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				}
 
 				if (!save_to_file.is_empty()) {
-					Ref<Mesh> existing = Ref<Resource>(ResourceCache::get(save_to_file));
+					Ref<Mesh> existing = ResourceCache::get_ref(save_to_file);
 					if (existing.is_valid()) {
 						//if somehow an existing one is useful, create
 						existing->reset_state();

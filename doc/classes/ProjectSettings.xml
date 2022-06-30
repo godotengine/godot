@@ -494,6 +494,12 @@
 		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/paths/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
+			Color of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
+		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
+			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
+		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
@@ -552,6 +558,32 @@
 			Sets the VSync mode for the main game window.
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
+		</member>
+		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
+			[b]Note:[/b] [member editor/movie_writer/disable_vsync] has no effect if the operating system or graphics driver forces V-Sync with no way for applications to disable it.
+		</member>
+		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
+			The number of frames per second to record in the video when writing a movie. Simulation speed will adjust to always match the specified framerate, which means the engine will appear to run slower at higher [member editor/movie_writer/fps] values. Certain FPS values will require you to adjust [member editor/movie_writer/mix_rate] to prevent audio from desynchronizing over time.
+			This can be specified manually on the command line using the [code]--fixed-fps &lt;fps&gt;[/code] command line argument.
+		</member>
+		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
+			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
+		</member>
+		<member name="editor/movie_writer/mjpeg_quality" type="float" setter="" getter="" default="0.75">
+			The JPEG quality to use when writing a video to an AVI file, between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], JPEG compression remains lossy.
+			[b]Note:[/b] This does not affect the audio quality or writing PNG image sequences.
+		</member>
+		<member name="editor/movie_writer/movie_file" type="String" setter="" getter="" default="&quot;&quot;">
+			The output path for the movie. The file extension determines the [MovieWriter] that will be used.
+			Godot has 2 built-in [MovieWriter]s:
+			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/mjpeg_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
+			- PNG image sequence for video and WAV for audio ([code].png[/code] file extension). Lossless compression, large file sizes, slow encoding. Designed to be encoded to a video file with another tool such as [url=https://ffmpeg.org/]FFmpeg[/url] after recording. Transparency is currently not supported, even if the root viewport is set to be transparent.
+			If you need to encode to a different format or pipe a stream through third-party software, you can extend this [MovieWriter] class to create your own movie writers.
+			When using PNG output, the frame number will be appended at the end of the file name. It starts from 0 and is padded with 8 digits to ensure correct sorting and easier processing. For example, if the output path is [code]/tmp/hello.png[/code], the first two frames will be [code]/tmp/hello00000000.png[/code] and [code]/tmp/hello00000001.png[/code]. The audio will be saved at [code]/tmp/hello.wav[/code].
+		</member>
+		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
+			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
 		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
@@ -1932,11 +1964,6 @@
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
-		</member>
-		<member name="rendering/textures/vram_compression/minimum_size" type="int" setter="" getter="" default="512">
-			When a texture is detected as used in 3D in the editor, only enable VRAM compression if its size is greater than or equal to [code]minimum_size * minimum_size[/code] pixels. This is done to prevent reducing texture quality when it doesn't save much video memory, especially for pixel art.
-			For non-square textures, the pixel count is used. For example, with [member rendering/textures/vram_compression/minimum_size] set to [code]512[/code], a 512×512 texture will use VRAM compression, while 256×256 textures, 256×512 and 1024×64 textures will keep their existing compression mode (Lossless by default).
-			[b]Note:[/b] This project setting only affects textures that are detected to be used in 3D at a given time. Textures that were already imported will not be affected by changes to this setting. To force 3D detection to occur again, select a texture in the FileSystem dock, change its Detect 3D import option in the Import dock to [b]VRAM Compressed[/b] or [b]Basis Universal[/b] then click [b]Reimport[/b].
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>

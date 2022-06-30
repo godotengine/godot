@@ -542,6 +542,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
+	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")

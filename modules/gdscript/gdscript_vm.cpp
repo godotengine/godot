@@ -177,6 +177,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		err_text = "Invalid call. Nonexistent " + p_where + ".";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Attempt to call " + p_where + " on a null instance.";
+	} else if (p_err.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Attempt to call " + p_where + " on a const instance.";
 	} else {
 		err_text = "Bug, call error: #" + itos(p_err.error);
 	}
@@ -311,6 +313,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
 		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
+		&&OPCODE_JUMP_IF_SHARED,                     \
 		&&OPCODE_RETURN,                             \
 		&&OPCODE_RETURN_TYPED_BUILTIN,               \
 		&&OPCODE_RETURN_TYPED_ARRAY,                 \
@@ -1894,7 +1897,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(ret, Variant::OBJECT);
 				Object **ret_opaque = VariantInternal::get_object(ret);
 				method->ptrcall(base_obj, argptrs, ret_opaque);
-				VariantInternal::object_assign(ret, *ret_opaque); // Set so ID is correct too.
+				VariantInternal::update_object_id(ret);
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -2358,6 +2361,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_JUMP_TO_DEF_ARGUMENT) {
 				CHECK_SPACE(2);
 				ip = _default_arg_ptr[defarg];
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_JUMP_IF_SHARED) {
+				CHECK_SPACE(3);
+
+				GET_INSTRUCTION_ARG(val, 0);
+
+				if (val->is_shared()) {
+					int to = _code_ptr[ip + 2];
+					GD_ERR_BREAK(to < 0 || to > _code_size);
+					ip = to;
+				} else {
+					ip += 3;
+				}
 			}
 			DISPATCH_OPCODE;
 
@@ -3432,9 +3450,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
-#endif
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
+#endif
 
 		OPCODE_OUT;
 	}

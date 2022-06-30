@@ -239,7 +239,10 @@ public:
 	bool is_baking_navigation();
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t get_navigation_layers();
+	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

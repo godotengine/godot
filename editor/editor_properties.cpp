@@ -43,6 +43,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/packed_scene.h"
 
 ///////////////////// Nil /////////////////////////
 
@@ -164,6 +165,9 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
+			text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
+			text->add_theme_font_size_override("font_size", get_theme_font_size("expression_size", "EditorFonts"));
+
 		} break;
 	}
 }
@@ -171,7 +175,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 void EditorPropertyMultilineText::_bind_methods() {
 }
 
-EditorPropertyMultilineText::EditorPropertyMultilineText() {
+EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_theme_constant_override("separation", 0);
 	add_child(hb);
@@ -188,6 +192,12 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	hb->add_child(open_big_text);
 	big_text_dialog = nullptr;
 	big_text = nullptr;
+	if (p_expression) {
+		expression = true;
+		Ref<EditorStandardSyntaxHighlighter> highlighter;
+		highlighter.instantiate();
+		text->set_syntax_highlighter(highlighter);
+	}
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -3017,6 +3027,27 @@ void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	clear->set_disabled(p_read_only);
 };
 
+String EditorPropertyNodePath::_get_meta_pointer_property() const {
+	ERR_FAIL_COND_V(!pointer_mode, String());
+	return SceneState::get_meta_pointer_property(get_edited_property());
+}
+
+Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
+	if (p_prop == get_edited_property()) {
+		r_valid = true;
+		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(pointer_mode ? StringName(_get_meta_pointer_property()) : get_edited_property(), &r_valid);
+	}
+	return Variant();
+}
+
+StringName EditorPropertyNodePath::_get_revert_property() const {
+	if (pointer_mode) {
+		return _get_meta_pointer_property();
+	} else {
+		return get_edited_property();
+	}
+}
+
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	NodePath path = p_path;
 	Node *base_node = nullptr;
@@ -3048,7 +3079,11 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
 	}
-	emit_changed(get_edited_property(), path);
+	if (pointer_mode && base_node) {
+		emit_changed(_get_meta_pointer_property(), path);
+	} else {
+		emit_changed(get_edited_property(), path);
+	}
 	update_property();
 }
 
@@ -3064,7 +3099,11 @@ void EditorPropertyNodePath::_node_assign() {
 }
 
 void EditorPropertyNodePath::_node_clear() {
-	emit_changed(get_edited_property(), NodePath());
+	if (pointer_mode) {
+		emit_changed(_get_meta_pointer_property(), NodePath());
+	} else {
+		emit_changed(get_edited_property(), NodePath());
+	}
 	update_property();
 }
 
@@ -3092,7 +3131,12 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 }
 
 void EditorPropertyNodePath::update_property() {
-	NodePath p = get_edited_object()->get(get_edited_property());
+	NodePath p;
+	if (pointer_mode) {
+		p = get_edited_object()->get(_get_meta_pointer_property());
+	} else {
+		p = get_edited_object()->get(get_edited_property());
+	}
 
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
@@ -3131,7 +3175,8 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_pointer_mode) {
+	pointer_mode = p_pointer_mode;
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
 	use_path_from_scene_root = p_use_path_from_scene_root;
@@ -3601,7 +3646,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.greater = true;
 			} else if (slice == "or_lesser") {
 				hint.lesser = true;
-			} else if (slice == "noslider") {
+			} else if (slice == "no_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
@@ -3739,6 +3784,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
 				return editor;
+			} else if (p_hint == PROPERTY_HINT_EXPRESSION) {
+				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(true));
+				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
 				editor->setup("Object", p_hint_text);
@@ -3747,11 +3795,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
 				editor->setup(p_hint_text);
 				return editor;
-			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
+			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 				Vector<String> extensions = p_hint_text.split(",");
-				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE;
+				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
-				bool save = p_hint == PROPERTY_HINT_SAVE_FILE;
+				bool save = p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE;
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
 				editor->setup(extensions, folder, global);
 				if (save) {
@@ -3927,23 +3975,31 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			return editor;
 		} break;
 		case Variant::OBJECT: {
-			EditorPropertyResource *editor = memnew(EditorPropertyResource);
-			editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
+			if (p_hint == PROPERTY_HINT_NODE_TYPE) {
+				EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
+				Vector<String> types = p_hint_text.split(",", false);
+				Vector<StringName> sn = Variant(types); //convert via variant
+				editor->setup(NodePath(), sn, false, true);
+				return editor;
+			} else {
+				EditorPropertyResource *editor = memnew(EditorPropertyResource);
+				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
 
-			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
-				String open_in_new = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
-				for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
-					String type = open_in_new.get_slicec(',', i).strip_edges();
-					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
-						String inherits = p_hint_text.get_slicec(',', j);
-						if (ClassDB::is_parent_class(inherits, type)) {
-							editor->set_use_sub_inspector(false);
+				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					String open_in_new = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
+					for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
+						String type = open_in_new.get_slicec(',', i).strip_edges();
+						for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
+							String inherits = p_hint_text.get_slicec(',', j);
+							if (ClassDB::is_parent_class(inherits, type)) {
+								editor->set_use_sub_inspector(false);
+							}
 						}
 					}
 				}
-			}
 
-			return editor;
+				return editor;
+			}
 
 		} break;
 		case Variant::DICTIONARY: {

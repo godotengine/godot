@@ -659,6 +659,11 @@ msgid "Main Run Args"
 msgstr "Tham số Cảnh chính:"
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Đường dẫn Cảnh:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -666,18 +671,15 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr "Đường dẫn tìm kiếm bản mẫu kịch bản"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
-msgstr "Theo dõi phiên bản"
-
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
+#, fuzzy
+msgid "Version Control Autoload On Startup"
 msgstr "Tự nạp khi khởi động"
 
 #: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "Tên trình cắm"
+#, fuzzy
+msgid "Version Control Plugin Name"
+msgstr "Theo dõi phiên bản"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2790,7 +2792,7 @@ msgstr "Sao chép đường dẫn nút"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Cài đặt gói thành công!"
 
 #: editor/editor_export.cpp
@@ -4275,15 +4277,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Cảnh"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Đường dẫn Cảnh:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4406,6 +4399,10 @@ msgid "Default Color Picker Mode"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "Theo dõi phiên bản"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Username"
 msgstr "Tên người dùng"
 
@@ -4432,6 +4429,10 @@ msgstr "Bật tắt chế độ tập trung."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Thêm cảnh mới."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Cảnh"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -7952,8 +7953,17 @@ msgid "New Anim"
 msgstr "Hoạt ảnh mới"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "Tạo Hoạt ảnh mới"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "Đổi tên Hoạt ảnh:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "Đổi tên hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7972,11 +7982,6 @@ msgstr "Tên Hoạt ảnh không hợp lệ!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "Tên Hoạt ảnh đã tồn tại!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "Đổi tên hoạt hình"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8121,10 +8126,6 @@ msgstr "Kèm Gizmos (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "Ghim AnimationPlayer"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "Tạo Hoạt ảnh mới"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -21558,6 +21559,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Chỉnh sửa kết nối:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Chọn ô"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22817,6 +22830,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Hủy Biến đổi."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27104,6 +27124,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "Đang sinh AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Độ dời:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

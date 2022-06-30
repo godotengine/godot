@@ -56,20 +56,6 @@ struct _NO_DISCARD_ Basis {
 
 	_FORCE_INLINE_ real_t determinant() const;
 
-	void from_z(const Vector3 &p_z);
-
-	void rotate(const Vector3 &p_axis, real_t p_angle);
-	Basis rotated(const Vector3 &p_axis, real_t p_angle) const;
-
-	void rotate_local(const Vector3 &p_axis, real_t p_angle);
-	Basis rotated_local(const Vector3 &p_axis, real_t p_angle) const;
-
-	void rotate(const Vector3 &p_euler);
-	Basis rotated(const Vector3 &p_euler) const;
-
-	void rotate(const Quaternion &p_quaternion);
-	Basis rotated(const Quaternion &p_quaternion) const;
-
 	enum EulerOrder {
 		EULER_ORDER_XYZ,
 		EULER_ORDER_XZY,
@@ -78,6 +64,20 @@ struct _NO_DISCARD_ Basis {
 		EULER_ORDER_ZXY,
 		EULER_ORDER_ZYX
 	};
+
+	void from_z(const Vector3 &p_z);
+
+	void rotate(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated(const Vector3 &p_axis, real_t p_angle) const;
+
+	void rotate_local(const Vector3 &p_axis, real_t p_angle);
+	Basis rotated_local(const Vector3 &p_axis, real_t p_angle) const;
+
+	void rotate(const Vector3 &p_euler, EulerOrder p_order = EULER_ORDER_YXZ);
+	Basis rotated(const Vector3 &p_euler, EulerOrder p_order = EULER_ORDER_YXZ) const;
+
+	void rotate(const Quaternion &p_quaternion);
+	Basis rotated(const Quaternion &p_quaternion) const;
 
 	Vector3 get_euler_normalized(EulerOrder p_order = EULER_ORDER_YXZ) const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
@@ -119,7 +119,7 @@ struct _NO_DISCARD_ Basis {
 	Vector3 get_scale_local() const;
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale);
-	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale);
+	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale, EulerOrder p_order = EULER_ORDER_YXZ);
 	void set_quaternion_scale(const Quaternion &p_quaternion, const Vector3 &p_scale);
 
 	// transposed dot products

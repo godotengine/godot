@@ -388,6 +388,24 @@ uint32_t NavigationRegion2D::get_navigation_layers() const {
 	return NavigationServer2D::get_singleton()->region_get_navigation_layers(region);
 }
 
+void NavigationRegion2D::set_navigation_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+	uint32_t _navigation_layers = get_navigation_layers();
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+	set_navigation_layers(_navigation_layers);
+}
+
+bool NavigationRegion2D::get_navigation_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	return get_navigation_layers() & (1 << (p_layer_number - 1));
+}
+
 void NavigationRegion2D::set_enter_cost(real_t p_enter_cost) {
 	ERR_FAIL_COND_MSG(p_enter_cost < 0.0, "The enter_cost must be positive.");
 	enter_cost = MAX(p_enter_cost, 0.0);
@@ -561,6 +579,9 @@ void NavigationRegion2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationRegion2D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationRegion2D::get_navigation_layers);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationRegion2D::set_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationRegion2D::get_navigation_layer_value);
 
 	ClassDB::bind_method(D_METHOD("get_region_rid"), &NavigationRegion2D::get_region_rid);
 

@@ -1090,7 +1090,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		q.occluders.clear();
 
 		// Those allow to group cell per material or z-index.
-		Ref<ShaderMaterial> prev_material;
+		Ref<Material> prev_material;
 		int prev_z_index = 0;
 		RID prev_canvas_item;
 
@@ -1129,7 +1129,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 					}
 
-					Ref<ShaderMaterial> mat = tile_data->get_material();
+					Ref<Material> mat = tile_data->get_material();
 					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.

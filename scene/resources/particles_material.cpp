@@ -488,6 +488,12 @@ void ParticlesMaterial::_update_shader() {
 	code += "	float degree_to_rad = pi / 180.0;\n";
 	code += "\n";
 
+	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
+		code += "	int point = min(emission_texture_point_count - 1, int(rand_from_seed(alt_seed) * float(emission_texture_point_count)));\n";
+		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
+		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
+	}
+
 	code += "	CUSTOM.y += DELTA / LIFETIME;\n";
 	code += "	float tv = CUSTOM.y / CUSTOM.w;\n";
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {

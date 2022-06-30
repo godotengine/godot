@@ -333,13 +333,10 @@ void RenderingServerDefault::_thread_exit() {
 }
 
 void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
-	if (!draw_pending.decrement()) {
-		_draw(p_swap_buffers, frame_step);
-	}
+	_draw(p_swap_buffers, frame_step);
 }
 
 void RenderingServerDefault::_thread_flush() {
-	draw_pending.decrement();
 }
 
 void RenderingServerDefault::_thread_callback(void *_instance) {
@@ -370,7 +367,6 @@ void RenderingServerDefault::_thread_loop() {
 
 void RenderingServerDefault::sync() {
 	if (create_thread) {
-		draw_pending.increment();
 		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
@@ -379,7 +375,6 @@ void RenderingServerDefault::sync() {
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	if (create_thread) {
-		draw_pending.increment();
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
 		_draw(p_swap_buffers, frame_step);
@@ -409,6 +404,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+	RSG::gi = RSG::rasterizer->get_gi();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());

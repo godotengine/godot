@@ -1024,6 +1024,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_scroll_past_end_of_file_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/scroll_past_end_of_file"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/v_scroll_speed"));
+	text_editor->set_drag_and_drop_selection_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/drag_and_drop_selection"));
 
 	// Behavior: indent
 	text_editor->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/behavior/indent/type"));

@@ -363,7 +363,7 @@ void GDScriptTest::disable_stdout() {
 	OS::get_singleton()->set_stderr_enabled(false);
 }
 
-void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error) {
+void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error, bool p_rich) {
 	TestResult *result = (TestResult *)p_this;
 	result->output += p_message + "\n";
 }

@@ -669,6 +669,11 @@ msgid "Main Run Args"
 msgstr ""
 
 #: core/project_settings.cpp
+#, fuzzy
+msgid "Scene Naming"
+msgstr "Rruga Skenës:"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr ""
 
@@ -676,20 +681,15 @@ msgstr ""
 msgid "Script Templates Search Path"
 msgstr ""
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
+#: core/project_settings.cpp
 #, fuzzy
-msgid "Version Control"
+msgid "Version Control Autoload On Startup"
 msgstr "Versioni:"
 
 #: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr ""
-
-#: core/project_settings.cpp
 #, fuzzy
-msgid "Plugin Name"
-msgstr "Emri i Shtojcës:"
+msgid "Version Control Plugin Name"
+msgstr "Versioni:"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2819,7 +2819,7 @@ msgstr ""
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
+msgid "Completed successfully."
 msgstr "Paketa u instalua me sukses!"
 
 #: editor/editor_export.cpp
@@ -4386,15 +4386,6 @@ msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
 
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "Skenë"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "Rruga Skenës:"
-
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
 msgid "Interface"
@@ -4521,6 +4512,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
+msgid "Version Control"
+msgstr "Versioni:"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
 msgid "Username"
 msgstr "Riemërto"
 
@@ -4547,6 +4543,10 @@ msgstr "Ndrysho metodën pa shpërqëndrime."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "Shto një skenë të re."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "Skenë"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -8093,7 +8093,16 @@ msgid "New Anim"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -8112,11 +8121,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -8259,10 +8263,6 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr ""
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -21350,6 +21350,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "Modifiko Lidhjen: "
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "Zgjidh një Skenë Kryesore"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22512,6 +22524,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "Binari i Transformimeve 3D"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -26635,6 +26654,15 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Baking AABB"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "Ndrysho Tipin e %s"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

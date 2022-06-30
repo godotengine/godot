@@ -220,7 +220,7 @@ struct StackFrame {
 	int column;
 
 	static uint32_t hash(const StackFrame &p_frame) {
-		return hash_djb2_one_32(p_frame.id);
+		return hash_murmur3_one_32(p_frame.id);
 	}
 	bool operator==(const StackFrame &p_other) const {
 		return id == p_other.id;

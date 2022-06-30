@@ -164,7 +164,7 @@ private:
 		String name;
 		Ref<Texture2D> texture;
 		Vector2 tex_offset;
-		Ref<ShaderMaterial> material;
+		Ref<Material> material;
 		Rect2 region;
 		int tile_mode = 0;
 		Color modulate = Color(1, 1, 1);
@@ -783,7 +783,7 @@ private:
 	bool flip_v = false;
 	bool transpose = false;
 	Vector2i tex_offset = Vector2i();
-	Ref<ShaderMaterial> material = Ref<ShaderMaterial>();
+	Ref<Material> material = Ref<Material>();
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
 	int y_sort_origin = 0;
@@ -864,8 +864,8 @@ public:
 
 	void set_texture_offset(Vector2i p_texture_offset);
 	Vector2i get_texture_offset() const;
-	void set_material(Ref<ShaderMaterial> p_material);
-	Ref<ShaderMaterial> get_material() const;
+	void set_material(Ref<Material> p_material);
+	Ref<Material> get_material() const;
 	void set_modulate(Color p_modulate);
 	Color get_modulate() const;
 	void set_z_index(int p_z_index);

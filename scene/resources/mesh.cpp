@@ -188,7 +188,10 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 	Vector<Vector3> faces;
 	faces.resize(faces_size);
+	Vector<int32_t> surface_indices;
+	surface_indices.resize(faces_size / 3);
 	Vector3 *facesw = faces.ptrw();
+	int32_t *surface_indicesw = surface_indices.ptrw();
 
 	int widx = 0;
 
@@ -209,6 +212,8 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		int vc = surface_get_array_len(i);
 		Vector<Vector3> vertices = a[ARRAY_VERTEX];
 		const Vector3 *vr = vertices.ptr();
+
+		int32_t from_index = widx / 3;
 
 		if (surface_get_format(i) & ARRAY_FORMAT_INDEX) {
 			int ic = surface_get_array_index_len(i);
@@ -240,6 +245,12 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 					facesw[widx++] = vr[j];
 				}
 			}
+		}
+
+		int32_t to_index = widx / 3;
+
+		for (int j = from_index; j < to_index; j++) {
+			surface_indicesw[j] = i;
 		}
 	}
 

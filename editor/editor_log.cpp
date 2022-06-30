@@ -181,7 +181,7 @@ void EditorLog::clear() {
 }
 
 void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
-	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg) {
+	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg && messages[messages.size() - 1].type == p_type) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
 		LogMessage &previous = messages.write[messages.size() - 1];
@@ -258,6 +258,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	switch (p_message.type) {
 		case MSG_TYPE_STD: {
 		} break;
+		case MSG_TYPE_STD_RICH: {
+		} break;
 		case MSG_TYPE_ERROR: {
 			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
@@ -285,11 +287,15 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	log->add_text(p_message.text);
+	if (p_message.type == MSG_TYPE_STD_RICH) {
+		log->append_text(p_message.text);
+	} else {
+		log->add_text(p_message.text);
+	}
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
-	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
-	if (p_message.type != MSG_TYPE_STD) {
+	// We only "push" in the above switch when message type != STD and RICH, so only pop when that is the case.
+	if (p_message.type != MSG_TYPE_STD && p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop();
 	}
 
@@ -342,6 +348,7 @@ EditorLog::EditorLog() {
 
 	// Log - Rich Text Label.
 	log = memnew(RichTextLabel);
+	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
@@ -418,6 +425,7 @@ EditorLog::EditorLog() {
 	std_filter->initialize_button(TTR("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(std_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_STD, std_filter);
+	type_filter_map.insert(MSG_TYPE_STD_RICH, std_filter);
 
 	LogFilter *error_filter = memnew(LogFilter(MSG_TYPE_ERROR));
 	error_filter->initialize_button(TTR("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
@@ -451,6 +459,10 @@ void EditorLog::deinit() {
 
 EditorLog::~EditorLog() {
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		memdelete(E.value);
+		// MSG_TYPE_STD_RICH is connected to the std_filter button, so we do this
+		// to avoid it from being deleted twice, causing a crash on closing.
+		if (E.key != MSG_TYPE_STD_RICH) {
+			memdelete(E.value);
+		}
 	}
 }

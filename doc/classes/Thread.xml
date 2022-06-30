@@ -35,10 +35,11 @@
 		<method name="start">
 			<return type="int" enum="Error" />
 			<argument index="0" name="callable" type="Callable" />
-			<argument index="1" name="userdata" type="Variant" default="null" />
-			<argument index="2" name="priority" type="int" enum="Thread.Priority" default="1" />
+			<argument index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
 			<description>
-				Starts a new [Thread] that calls [code]callable[/code] with [code]userdata[/code] passed as an argument. Even if no userdata is passed, [code]callable[/code] must accept one argument and it will be null. The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
+				Starts a new [Thread] that calls [code]callable[/code].
+				If the method takes some arguments, you can pass them using [method Callable.bind].
+				The [code]priority[/code] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
 				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
 			</description>
 		</method>

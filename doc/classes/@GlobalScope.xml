@@ -106,6 +106,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="bezier_interpolate">
+			<return type="float" />
+			<argument index="0" name="start" type="float" />
+			<argument index="1" name="control_1" type="float" />
+			<argument index="2" name="control_2" type="float" />
+			<argument index="3" name="end" type="float" />
+			<argument index="4" name="t" type="float" />
+			<description>
+				Returns the point at the given [code]t[/code] on a one-dimnesional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [code]control_1[/code], [code]control_2[/code], and [code]end[/code] points.
+			</description>
+		</method>
 		<method name="bytes2var">
 			<return type="Variant" />
 			<argument index="0" name="bytes" type="PackedByteArray" />
@@ -646,6 +657,16 @@
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
+		<method name="print_rich" qualifiers="vararg">
+			<description>
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+				[codeblock]
+				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
+				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
 		<method name="print_verbose" qualifiers="vararg">
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
@@ -1038,6 +1059,27 @@
 			<description>
 				Returns a weak reference to an object, or [code]null[/code] is the argument is invalid.
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
+			</description>
+		</method>
+		<method name="wrap">
+			<return type="Variant" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="min" type="Variant" />
+			<argument index="2" name="max" type="Variant" />
+			<description>
+				Wraps the [Variant] [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				Variant types [int] and [float] (real) are supported. If any of the argument is [float] the result will be [float], otherwise it is [int].
+				[codeblock]
+				var a = wrap(4, 5, 10)
+				# a is 9 (int)
+
+				var a = wrap(7, 5, 10)
+				# a is 7 (int)
+
+				var a = wrap(10.5, 5, 10)
+				# a is 5.5 (float)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="wrapf">
@@ -2460,7 +2502,7 @@
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
-			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "noslider" to hide the slider.
+			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "no_slider" to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
@@ -2521,21 +2563,24 @@
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="20" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_EXPRESSION" value="21" enum="PropertyHint">
+			Hints that a string property is an [Expression].
+		</constant>
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="22" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="23" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="23" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="24" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="24" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="25" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_ID" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_TYPE_STRING" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="27" enum="PropertyHint">
 			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
 			[codeblock]
 			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
@@ -2545,43 +2590,47 @@
 			[/codeblock]
 			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="32" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="32" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="33" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="33" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="34" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="35" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="35" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="36" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="36" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="40" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="41" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="43" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="42" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="44" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="45" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="46" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

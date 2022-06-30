@@ -84,8 +84,8 @@ private:
 			return (a == p_val.a) && (b == p_val.b);
 		}
 		static uint32_t hash(const PathMD5 &p_val) {
-			uint32_t h = hash_djb2_one_32(p_val.a);
-			return hash_djb2_one_32(p_val.b, h);
+			uint32_t h = hash_murmur3_one_32(p_val.a);
+			return hash_fmix32(hash_murmur3_one_32(p_val.b, h));
 		}
 
 		PathMD5() {}

@@ -199,7 +199,8 @@
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="get_flip_v" default="false">
 		</member>
-		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The [Material] to use for this [TileData]. This can be a [CanvasItemMaterial] to use the default shader, or a [ShaderMaterial] to use a custom shader.
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 		</member>

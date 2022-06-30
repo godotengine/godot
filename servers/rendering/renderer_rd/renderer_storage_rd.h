@@ -36,7 +36,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
-#include "servers/rendering/renderer_rd/shaders/voxel_gi_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_sdf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -147,42 +147,6 @@ private:
 
 	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
 
-	/* VOXEL GI */
-
-	struct VoxelGI {
-		RID octree_buffer;
-		RID data_buffer;
-		RID sdf_texture;
-
-		uint32_t octree_buffer_size = 0;
-		uint32_t data_buffer_size = 0;
-
-		Vector<int> level_counts;
-
-		int cell_count = 0;
-
-		Transform3D to_cell_xform;
-		AABB bounds;
-		Vector3i octree_size;
-
-		float dynamic_range = 2.0;
-		float energy = 1.0;
-		float bias = 1.4;
-		float normal_bias = 0.0;
-		float propagation = 0.7;
-		bool interior = false;
-		bool use_two_bounces = false;
-
-		float anisotropy_strength = 0.5;
-
-		uint32_t version = 1;
-		uint32_t data_version = 1;
-
-		Dependency dependency;
-	};
-
-	mutable RID_Owner<VoxelGI, true> voxel_gi_owner;
-
 	/* EFFECTS */
 
 	EffectsRD *effects = nullptr;
@@ -191,54 +155,6 @@ public:
 	//internal usage
 
 	void base_update_dependency(RID p_base, DependencyTracker *p_instance);
-
-	/* VOXEL GI API */
-
-	RID voxel_gi_allocate();
-	void voxel_gi_initialize(RID p_voxel_gi);
-
-	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
-
-	AABB voxel_gi_get_bounds(RID p_voxel_gi) const;
-	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const;
-	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const;
-	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const;
-	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const;
-
-	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const;
-	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const;
-
-	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range);
-	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const;
-
-	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range);
-	float voxel_gi_get_propagation(RID p_voxel_gi) const;
-
-	void voxel_gi_set_energy(RID p_voxel_gi, float p_energy);
-	float voxel_gi_get_energy(RID p_voxel_gi) const;
-
-	void voxel_gi_set_bias(RID p_voxel_gi, float p_bias);
-	float voxel_gi_get_bias(RID p_voxel_gi) const;
-
-	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range);
-	float voxel_gi_get_normal_bias(RID p_voxel_gi) const;
-
-	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable);
-	bool voxel_gi_is_interior(RID p_voxel_gi) const;
-
-	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable);
-	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const;
-
-	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength);
-	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const;
-
-	uint32_t voxel_gi_get_version(RID p_probe);
-	uint32_t voxel_gi_get_data_version(RID p_probe);
-
-	RID voxel_gi_get_octree_buffer(RID p_voxel_gi) const;
-	RID voxel_gi_get_data_buffer(RID p_voxel_gi) const;
-
-	RID voxel_gi_get_sdf_texture(RID p_voxel_gi);
 
 	/* FOG VOLUMES */
 

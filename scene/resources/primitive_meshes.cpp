@@ -439,12 +439,15 @@ void CapsuleMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_rings", "get_rings");
+
+	ADD_LINKED_PROPERTY("radius", "height");
+	ADD_LINKED_PROPERTY("height", "radius");
 }
 
 void CapsuleMesh::set_radius(const float p_radius) {
 	radius = p_radius;
 	if (radius > height * 0.5) {
-		radius = height * 0.5;
+		height = radius * 2.0;
 	}
 	_request_update();
 }
@@ -456,7 +459,7 @@ float CapsuleMesh::get_radius() const {
 void CapsuleMesh::set_height(const float p_height) {
 	height = p_height;
 	if (radius > height * 0.5) {
-		height = radius * 2;
+		radius = height * 0.5;
 	}
 	_request_update();
 }
@@ -2435,7 +2438,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 		if (glyphs[i].font_rid != RID()) {
 			uint32_t hash = hash_one_uint64(glyphs[i].font_rid.get_id());
-			hash = hash_djb2_one_32(glyphs[i].index, hash);
+			hash = hash_murmur3_one_32(glyphs[i].index, hash);
 
 			_generate_glyph_mesh_data(hash, glyphs[i]);
 			GlyphMeshData &gl_data = cache[hash];
@@ -2494,7 +2497,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 		if (glyphs[i].font_rid != RID()) {
 			uint32_t hash = hash_one_uint64(glyphs[i].font_rid.get_id());
-			hash = hash_djb2_one_32(glyphs[i].index, hash);
+			hash = hash_murmur3_one_32(glyphs[i].index, hash);
 
 			const GlyphMeshData &gl_data = cache[hash];
 

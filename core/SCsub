@@ -129,6 +129,10 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
+    if env["platform"] in ["android", "linuxbsd", "osx"]:
+        # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
+        # iOS x86_64 should be supported in theory, but it fails arm64 build, seems to use host S_compiler.
+        thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])

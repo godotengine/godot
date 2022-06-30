@@ -143,7 +143,8 @@ uint32_t Callable::hash() const {
 		return custom->hash();
 	} else {
 		uint32_t hash = method.hash();
-		return hash_djb2_one_64(object, hash);
+		hash = hash_murmur3_one_64(object, hash);
+		return hash_fmix32(hash);
 	}
 }
 

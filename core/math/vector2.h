@@ -113,7 +113,9 @@ struct _NO_DISCARD_ Vector2 {
 
 	_FORCE_INLINE_ Vector2 lerp(const Vector2 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_to, const real_t p_weight) const;
-	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector2 bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const;
+
 	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
@@ -259,6 +261,26 @@ Vector2 Vector2::slerp(const Vector2 &p_to, const real_t p_weight) const {
 	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
 	real_t angle = angle_to(p_to);
 	return rotated(angle * p_weight) * (result_length / start_length);
+}
+
+Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const {
+	Vector2 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	return res;
+}
+
+Vector2 Vector2::bezier_interpolate(const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) const {
+	Vector2 res = *this;
+
+	/* Formula from Wikipedia article on Bezier curves. */
+	real_t omt = (1.0 - p_t);
+	real_t omt2 = omt * omt;
+	real_t omt3 = omt2 * omt;
+	real_t t2 = p_t * p_t;
+	real_t t3 = t2 * p_t;
+
+	return res * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
 }
 
 Vector2 Vector2::direction_to(const Vector2 &p_to) const {

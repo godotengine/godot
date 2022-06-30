@@ -104,8 +104,10 @@ void TriangleMesh::get_indices(Vector<int> *r_triangles_indices) const {
 	}
 }
 
-void TriangleMesh::create(const Vector<Vector3> &p_faces) {
+void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices) {
 	valid = false;
+
+	ERR_FAIL_COND(p_surface_indices.size() && p_surface_indices.size() != p_faces.size());
 
 	int fc = p_faces.size();
 	ERR_FAIL_COND(!fc || ((fc % 3) != 0));
@@ -121,6 +123,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 		//goes in-place.
 
 		const Vector3 *r = p_faces.ptr();
+		const int32_t *si = p_surface_indices.ptr();
 		Triangle *w = triangles.ptrw();
 		HashMap<Vector3, int> db;
 
@@ -148,6 +151,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 			}
 
 			f.normal = Face3(r[i * 3 + 0], r[i * 3 + 1], r[i * 3 + 2]).get_plane().get_normal();
+			f.surface_index = si ? si[i] : 0;
 
 			bw[i].left = -1;
 			bw[i].right = -1;
@@ -264,7 +268,7 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 	return n;
 }
 
-bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const {
+bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -317,6 +321,9 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 								d = nd;
 								r_point = res;
 								r_normal = f3.get_plane().get_normal();
+								if (r_surf_index) {
+									*r_surf_index = s.surface_index;
+								}
 								inters = true;
 							}
 						}
@@ -366,7 +373,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	return inters;
 }
 
-bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal) const {
+bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -417,6 +424,9 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 								d = nd;
 								r_point = res;
 								r_normal = f3.get_plane().get_normal();
+								if (r_surf_index) {
+									*r_surf_index = s.surface_index;
+								}
 								inters = true;
 							}
 						}

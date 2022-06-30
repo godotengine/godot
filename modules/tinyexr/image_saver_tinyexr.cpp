@@ -141,13 +141,14 @@ static int get_channel_count(Image::Format p_format) {
 	}
 }
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
+Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 	Image::Format format = p_img->get_format();
 
 	if (!is_supported_format(format)) {
 		// Format not supported
 		print_error("Image format not supported for saving as EXR. Consider saving as PNG.");
-		return ERR_UNAVAILABLE;
+
+		return Vector<uint8_t>();
 	}
 
 	EXRHeader header;
@@ -175,15 +176,15 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	};
 
 	int channel_count = get_channel_count(format);
-	ERR_FAIL_COND_V(channel_count < 0, ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(p_grayscale && channel_count != 1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(channel_count < 0, Vector<uint8_t>());
+	ERR_FAIL_COND_V(p_grayscale && channel_count != 1, Vector<uint8_t>());
 
 	int target_pixel_type = get_target_pixel_type(format);
-	ERR_FAIL_COND_V(target_pixel_type < 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(target_pixel_type < 0, Vector<uint8_t>());
 	int target_pixel_type_size = get_pixel_type_size(target_pixel_type);
-	ERR_FAIL_COND_V(target_pixel_type_size < 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(target_pixel_type_size < 0, Vector<uint8_t>());
 	SrcPixelType src_pixel_type = get_source_pixel_type(format);
-	ERR_FAIL_COND_V(src_pixel_type == SRC_UNSUPPORTED, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(src_pixel_type == SRC_UNSUPPORTED, Vector<uint8_t>());
 	const int pixel_count = p_img->get_width() * p_img->get_height();
 
 	const int *channel_mapping = channel_mappings[channel_count - 1];
@@ -270,15 +271,25 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	const char *err = nullptr;
 
 	size_t bytes = SaveEXRImageToMemory(&image, &header, &mem, &err);
+	if (err && *err != OK) {
+		return Vector<uint8_t>();
+	}
+	Vector<uint8_t> buffer;
+	buffer.resize(bytes);
+	memcpy(buffer.ptrw(), mem, bytes);
+	free(mem);
+	return buffer;
+}
 
-	if (bytes == 0) {
-		print_error(String("Saving EXR failed. Error: {0}").format(varray(err)));
+Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
+	const Vector<uint8_t> buffer = save_exr_buffer(p_img, p_grayscale);
+	if (buffer.size() == 0) {
+		print_error(String("Saving EXR failed."));
 		return ERR_FILE_CANT_WRITE;
 	} else {
 		Ref<FileAccess> ref = FileAccess::open(p_path, FileAccess::WRITE);
 		ERR_FAIL_COND_V(ref.is_null(), ERR_FILE_CANT_WRITE);
-		ref->store_buffer(mem, bytes);
-		free(mem);
+		ref->store_buffer(buffer.ptr(), buffer.size());
 	}
 
 	return OK;

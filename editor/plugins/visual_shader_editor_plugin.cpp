@@ -5645,48 +5645,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	property_editor->connect("variant_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
 }
 
-/////////////////
-
-void VisualShaderEditorPlugin::edit(Object *p_object) {
-	visual_shader_editor->edit(Object::cast_to<VisualShader>(p_object));
-}
-
-bool VisualShaderEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("VisualShader");
-}
-
-void VisualShaderEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		//editor->hide_animation_player_editors();
-		//editor->animation_panel_make_visible(true);
-		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(visual_shader_editor);
-		visual_shader_editor->update_nodes();
-		visual_shader_editor->set_process_input(true);
-		//visual_shader_editor->set_process(true);
-	} else {
-		if (visual_shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
-		visual_shader_editor->set_process_input(false);
-		//visual_shader_editor->set_process(false);
-	}
-}
-
-VisualShaderEditorPlugin::VisualShaderEditorPlugin() {
-	visual_shader_editor = memnew(VisualShaderEditor);
-	visual_shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("VisualShader"), visual_shader_editor);
-	button->hide();
-}
-
-VisualShaderEditorPlugin::~VisualShaderEditorPlugin() {
-}
-
-////////////////
-
 class VisualShaderNodePluginInputEditor : public OptionButton {
 	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton);
 

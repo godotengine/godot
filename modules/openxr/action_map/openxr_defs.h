@@ -51,8 +51,28 @@
 class OpenXRDefs {
 public:
 	enum TOP_LEVEL_PATH {
+		// Core OpenXR toplevel paths
 		OPENXR_LEFT_HAND,
 		OPENXR_RIGHT_HAND,
+		OPENXR_HEAD,
+		OPENXR_GAMEPAD,
+		OPENXR_TREADMILL,
+
+		// HTC tracker extension toplevel paths
+		// OPENXR_HTC_HANDHELD_TRACKER,
+		OPENXR_HTC_LEFT_FOOT_TRACKER,
+		OPENXR_HTC_RIGHT_FOOT_TRACKER,
+		OPENXR_HTC_LEFT_SHOULDER_TRACKER,
+		OPENXR_HTC_RIGHT_SHOULDER_TRACKER,
+		OPENXR_HTC_LEFT_ELBOW_TRACKER,
+		OPENXR_HTC_RIGHT_ELBOW_TRACKER,
+		OPENXR_HTC_LEFT_KNEE_TRACKER,
+		OPENXR_HTC_RIGHT_KNEE_TRACKER,
+		OPENXR_HTC_WAIST_TRACKER,
+		OPENXR_HTC_CHEST_TRACKER,
+		OPENXR_HTC_CAMERA_TRACKER,
+		OPENXR_HTC_KEYBOARD_TRACKER,
+
 		OPENXR_TOP_LEVEL_PATH_MAX
 	};
 
@@ -89,6 +109,7 @@ private:
 	static IOPath vive_cosmos_paths[];
 	static IOPath vive_focus3_paths[];
 	static IOPath huawei_controller_paths[];
+	static IOPath vive_tracker_controller_paths[];
 	static InteractionProfile available_interaction_profiles[];
 	static int available_interaction_profile_count;
 

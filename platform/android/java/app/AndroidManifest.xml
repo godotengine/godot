@@ -59,6 +59,7 @@
             android:theme="@style/GodotAppSplashTheme"
             android:launchMode="singleTask"
             android:excludeFromRecents="false"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:resizeableActivity="false"

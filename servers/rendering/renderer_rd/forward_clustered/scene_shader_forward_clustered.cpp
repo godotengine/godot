@@ -282,6 +282,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 					SHADER_VERSION_DEPTH_PASS_WITH_SDF,
 					SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
 					SHADER_VERSION_COLOR_PASS,
 				};
 
@@ -349,9 +351,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 					if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW) {
 						//none, leave empty
-					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW) {
 						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI || k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW) {
 						blend_state = blend_state_depth_normal_roughness_giprobe;
 					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
@@ -527,10 +529,12 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_DEPTH_PASS_DP
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n"); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW
 
 		Vector<String> color_pass_flags = {
 			"\n#define MODE_SEPARATE_SPECULAR\n", // SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR
@@ -553,6 +557,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW, false);
 			// TODO Add a way to enable/disable color pass flags
 		}
 	}
@@ -621,7 +627,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		//builtins
 
-		actions.renames["TIME"] = "scene_data_block.data.time";
+		actions.renames["TIME"] = "global_time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);

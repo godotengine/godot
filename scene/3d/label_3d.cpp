@@ -376,7 +376,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		} else {
 			mat_hash = hash_one_uint64(0);
 		}
-		mat_hash = hash_djb2_one_64(p_priority | (p_outline_size << 31), mat_hash);
+		mat_hash = hash_fmix32(hash_murmur3_one_64(p_priority | (p_outline_size << 31), mat_hash));
 
 		if (!surfaces.has(mat_hash)) {
 			SurfaceData surf;

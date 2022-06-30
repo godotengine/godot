@@ -30,6 +30,11 @@
 
 #include "light_2d.h"
 
+void Light2D::owner_changed_notify() {
+	// For cases where owner changes _after_ entering tree (as example, editor editing).
+	_update_light_visibility();
+}
+
 void Light2D::_update_light_visibility() {
 	if (!is_inside_tree()) {
 		return;

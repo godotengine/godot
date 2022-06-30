@@ -298,15 +298,15 @@ uint32_t Dictionary::recursive_hash(int recursion_count) const {
 		return 0;
 	}
 
-	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
+	uint32_t h = hash_murmur3_one_32(Variant::DICTIONARY);
 
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		h = hash_djb2_one_32(E.key.recursive_hash(recursion_count), h);
-		h = hash_djb2_one_32(E.value.recursive_hash(recursion_count), h);
+		h = hash_murmur3_one_32(E.key.recursive_hash(recursion_count), h);
+		h = hash_murmur3_one_32(E.value.recursive_hash(recursion_count), h);
 	}
 
-	return h;
+	return hash_fmix32(h);
 }
 
 Array Dictionary::keys() const {

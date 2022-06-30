@@ -202,6 +202,9 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
 
     // ---- XR_MSFT_spatial_graph_bridge extension commands
     (get_inst_proc_addr(instance, "xrCreateSpatialGraphNodeSpaceMSFT", (PFN_xrVoidFunction*)&table->CreateSpatialGraphNodeSpaceMSFT));
+    (get_inst_proc_addr(instance, "xrTryCreateSpatialGraphStaticNodeBindingMSFT", (PFN_xrVoidFunction*)&table->TryCreateSpatialGraphStaticNodeBindingMSFT));
+    (get_inst_proc_addr(instance, "xrDestroySpatialGraphNodeBindingMSFT", (PFN_xrVoidFunction*)&table->DestroySpatialGraphNodeBindingMSFT));
+    (get_inst_proc_addr(instance, "xrGetSpatialGraphNodeBindingPropertiesMSFT", (PFN_xrVoidFunction*)&table->GetSpatialGraphNodeBindingPropertiesMSFT));
 
     // ---- XR_EXT_hand_tracking extension commands
     (get_inst_proc_addr(instance, "xrCreateHandTrackerEXT", (PFN_xrVoidFunction*)&table->CreateHandTrackerEXT));
@@ -269,6 +272,13 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     // ---- XR_FB_hand_tracking_mesh extension commands
     (get_inst_proc_addr(instance, "xrGetHandMeshFB", (PFN_xrVoidFunction*)&table->GetHandMeshFB));
 
+    // ---- XR_FB_spatial_entity extension commands
+    (get_inst_proc_addr(instance, "xrCreateSpatialAnchorFB", (PFN_xrVoidFunction*)&table->CreateSpatialAnchorFB));
+    (get_inst_proc_addr(instance, "xrGetSpaceUuidFB", (PFN_xrVoidFunction*)&table->GetSpaceUuidFB));
+    (get_inst_proc_addr(instance, "xrEnumerateSpaceSupportedComponentsFB", (PFN_xrVoidFunction*)&table->EnumerateSpaceSupportedComponentsFB));
+    (get_inst_proc_addr(instance, "xrSetSpaceComponentStatusFB", (PFN_xrVoidFunction*)&table->SetSpaceComponentStatusFB));
+    (get_inst_proc_addr(instance, "xrGetSpaceComponentStatusFB", (PFN_xrVoidFunction*)&table->GetSpaceComponentStatusFB));
+
     // ---- XR_FB_foveation extension commands
     (get_inst_proc_addr(instance, "xrCreateFoveationProfileFB", (PFN_xrVoidFunction*)&table->CreateFoveationProfileFB));
     (get_inst_proc_addr(instance, "xrDestroyFoveationProfileFB", (PFN_xrVoidFunction*)&table->DestroyFoveationProfileFB));
@@ -316,6 +326,9 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrGetMarkerSizeVARJO", (PFN_xrVoidFunction*)&table->GetMarkerSizeVARJO));
     (get_inst_proc_addr(instance, "xrCreateMarkerSpaceVARJO", (PFN_xrVoidFunction*)&table->CreateMarkerSpaceVARJO));
 
+    // ---- XR_VARJO_view_offset extension commands
+    (get_inst_proc_addr(instance, "xrSetViewOffsetVARJO", (PFN_xrVoidFunction*)&table->SetViewOffsetVARJO));
+
     // ---- XR_MSFT_spatial_anchor_persistence extension commands
     (get_inst_proc_addr(instance, "xrCreateSpatialAnchorStoreConnectionMSFT", (PFN_xrVoidFunction*)&table->CreateSpatialAnchorStoreConnectionMSFT));
     (get_inst_proc_addr(instance, "xrDestroySpatialAnchorStoreConnectionMSFT", (PFN_xrVoidFunction*)&table->DestroySpatialAnchorStoreConnectionMSFT));
@@ -324,6 +337,14 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     (get_inst_proc_addr(instance, "xrCreateSpatialAnchorFromPersistedNameMSFT", (PFN_xrVoidFunction*)&table->CreateSpatialAnchorFromPersistedNameMSFT));
     (get_inst_proc_addr(instance, "xrUnpersistSpatialAnchorMSFT", (PFN_xrVoidFunction*)&table->UnpersistSpatialAnchorMSFT));
     (get_inst_proc_addr(instance, "xrClearSpatialAnchorStoreMSFT", (PFN_xrVoidFunction*)&table->ClearSpatialAnchorStoreMSFT));
+
+    // ---- XR_FB_spatial_entity_query extension commands
+    (get_inst_proc_addr(instance, "xrQuerySpacesFB", (PFN_xrVoidFunction*)&table->QuerySpacesFB));
+    (get_inst_proc_addr(instance, "xrRetrieveSpaceQueryResultsFB", (PFN_xrVoidFunction*)&table->RetrieveSpaceQueryResultsFB));
+
+    // ---- XR_FB_spatial_entity_storage extension commands
+    (get_inst_proc_addr(instance, "xrSaveSpaceFB", (PFN_xrVoidFunction*)&table->SaveSpaceFB));
+    (get_inst_proc_addr(instance, "xrEraseSpaceFB", (PFN_xrVoidFunction*)&table->EraseSpaceFB));
 
     // ---- XR_OCULUS_audio_device_guid extension commands
 #if defined(XR_USE_PLATFORM_WIN32)
@@ -336,8 +357,17 @@ void GeneratedXrPopulateDispatchTable(struct XrGeneratedDispatchTable *table,
     // ---- XR_ALMALENCE_digital_lens_control extension commands
     (get_inst_proc_addr(instance, "xrSetDigitalLensControlALMALENCE", (PFN_xrVoidFunction*)&table->SetDigitalLensControlALMALENCE));
 
+    // ---- XR_FB_spatial_entity_container extension commands
+    (get_inst_proc_addr(instance, "xrGetSpaceContainerFB", (PFN_xrVoidFunction*)&table->GetSpaceContainerFB));
+
     // ---- XR_FB_passthrough_keyboard_hands extension commands
     (get_inst_proc_addr(instance, "xrPassthroughLayerSetKeyboardHandsIntensityFB", (PFN_xrVoidFunction*)&table->PassthroughLayerSetKeyboardHandsIntensityFB));
+
+    // ---- XR_META_performance_metrics extension commands
+    (get_inst_proc_addr(instance, "xrEnumeratePerformanceMetricsCounterPathsMETA", (PFN_xrVoidFunction*)&table->EnumeratePerformanceMetricsCounterPathsMETA));
+    (get_inst_proc_addr(instance, "xrSetPerformanceMetricsStateMETA", (PFN_xrVoidFunction*)&table->SetPerformanceMetricsStateMETA));
+    (get_inst_proc_addr(instance, "xrGetPerformanceMetricsStateMETA", (PFN_xrVoidFunction*)&table->GetPerformanceMetricsStateMETA));
+    (get_inst_proc_addr(instance, "xrQueryPerformanceMetricsCounterMETA", (PFN_xrVoidFunction*)&table->QueryPerformanceMetricsCounterMETA));
 }
 
 
