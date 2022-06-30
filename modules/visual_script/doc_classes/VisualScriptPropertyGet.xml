@@ -19,7 +19,7 @@
 			The type to be used when [member set_mode] is set to [constant CALL_MODE_BASIC_TYPE].
 		</member>
 		<member name="index" type="StringName" setter="set_index" getter="get_index">
-			The indexed name of the property to retrieve. See [method Object.get_indexed] for details.
+			The indexed name of the property to retrieve. See [method Object.get_by_path] for details.
 		</member>
 		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 			The node path to use when [member set_mode] is set to [constant CALL_MODE_NODE_PATH].
