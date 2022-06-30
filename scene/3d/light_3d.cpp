@@ -176,6 +176,11 @@ Ref<Texture2D> Light3D::get_projector() const {
 	return projector;
 }
 
+void Light3D::owner_changed_notify() {
+	// For cases where owner changes _after_ entering tree (as example, editor editing).
+	_update_visibility();
+}
+
 void Light3D::_update_visibility() {
 	if (!is_inside_tree()) {
 		return;

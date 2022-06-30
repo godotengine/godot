@@ -135,9 +135,10 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale * playback_speed_scale) / double(target_rate)) * double(FP_LEN));
 
-	int mixed_frames_total = p_frames;
+	int mixed_frames_total = -1;
 
-	for (int i = 0; i < p_frames; i++) {
+	int i;
+	for (i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
 		//standard cubic interpolation (great quality/performance ratio)
 		//this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
@@ -147,7 +148,7 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
 
-		if (idx <= internal_buffer_end && idx >= internal_buffer_end && mixed_frames_total == p_frames) {
+		if (idx >= internal_buffer_end && mixed_frames_total == -1) {
 			// The internal buffer ends somewhere in this range, and we haven't yet recorded the number of good frames we have.
 			mixed_frames_total = i;
 		}
@@ -167,23 +168,19 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			internal_buffer[1] = internal_buffer[INTERNAL_BUFFER_LEN + 1];
 			internal_buffer[2] = internal_buffer[INTERNAL_BUFFER_LEN + 2];
 			internal_buffer[3] = internal_buffer[INTERNAL_BUFFER_LEN + 3];
-			if (is_playing()) {
-				int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
-				if (mixed_frames != INTERNAL_BUFFER_LEN) {
-					// internal_buffer[mixed_frames] is the first frame of silence.
-					internal_buffer_end = mixed_frames;
-				} else {
-					// The internal buffer does not contain the first frame of silence.
-					internal_buffer_end = -1;
-				}
+			int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
+			if (mixed_frames != INTERNAL_BUFFER_LEN) {
+				// internal_buffer[mixed_frames] is the first frame of silence.
+				internal_buffer_end = mixed_frames;
 			} else {
-				//fill with silence, not playing
-				for (int j = 0; j < INTERNAL_BUFFER_LEN; ++j) {
-					internal_buffer[j + 4] = AudioFrame(0, 0);
-				}
+				// The internal buffer does not contain the first frame of silence.
+				internal_buffer_end = -1;
 			}
 			mix_offset -= (INTERNAL_BUFFER_LEN << FP_BITS);
 		}
+	}
+	if (mixed_frames_total == -1 && i == p_frames) {
+		mixed_frames_total = p_frames;
 	}
 	return mixed_frames_total;
 }

@@ -2412,6 +2412,18 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	viewport->set_mesh_lod_threshold(mesh_lod_threshold);
+
+	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
+	viewport->set_scaling_3d_mode(scaling_3d_mode);
+
+	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+	viewport->set_scaling_3d_scale(scaling_3d_scale);
+
+	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
+	viewport->set_fsr_sharpness(fsr_sharpness);
+
+	const float fsr_mipmap_bias = GLOBAL_GET("rendering/scaling_3d/fsr_mipmap_bias");
+	viewport->set_fsr_mipmap_bias(fsr_mipmap_bias);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {

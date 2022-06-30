@@ -31,6 +31,7 @@
 #ifndef ANIMATION_NODE_STATE_MACHINE_H
 #define ANIMATION_NODE_STATE_MACHINE_H
 
+#include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
@@ -51,6 +52,11 @@ private:
 	float xfade = 0.0;
 	bool disabled = false;
 	int priority = 1;
+	String advance_expression;
+	NodePath advance_expression_base_node;
+
+	friend class AnimationNodeStateMachinePlayback;
+	Ref<Expression> expression;
 
 protected:
 	static void _bind_methods();
@@ -66,6 +72,12 @@ public:
 	StringName get_advance_condition() const;
 
 	StringName get_advance_condition_name() const;
+
+	void set_advance_expression(const String &p_expression);
+	String get_advance_expression() const;
+
+	void set_advance_expression_base_node(const NodePath &p_expression_base_node);
+	NodePath get_advance_expression_base_node() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
@@ -166,7 +178,7 @@ private:
 
 	StringName playback = "playback";
 	StringName state_machine_name;
-	Ref<AnimationNodeStateMachine> prev_state_machine;
+	AnimationNodeStateMachine *prev_state_machine = nullptr;
 	bool updating_transitions = false;
 
 	Vector2 graph_offset;
@@ -174,7 +186,7 @@ private:
 	void _tree_changed();
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transition(const StringName &p_name, const StringName &p_new_name);
-	bool _can_connect(const StringName &p_name, const Vector<Ref<AnimationNodeStateMachine>> p_parents = Vector<Ref<AnimationNodeStateMachine>>()) const;
+	bool _can_connect(const StringName &p_name, Vector<AnimationNodeStateMachine *> p_parents = Vector<AnimationNodeStateMachine *>());
 	StringName _get_shortest_path(const StringName &p_path) const;
 
 protected:
@@ -221,7 +233,7 @@ public:
 
 	bool can_edit_node(const StringName &p_name) const;
 
-	Ref<AnimationNodeStateMachine> get_prev_state_machine() const;
+	AnimationNodeStateMachine *get_prev_state_machine() const;
 
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;

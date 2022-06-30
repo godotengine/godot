@@ -17,3 +17,4 @@ if "RD_GLSL" in env["BUILDERS"]:
         env.RD_GLSL(glsl_file)
 
 SConscript("effects/SCsub")
+SConscript("environment/SCsub")

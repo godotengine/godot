@@ -57,7 +57,24 @@ PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 	PackedStringArray arr = {
 		"left_hand", // /user/hand/left is mapped to our defaults
 		"right_hand", // /user/hand/right is mapped to our defaults
-		"/user/treadmill"
+		"/user/treadmill",
+
+		// Even though these are only available if you have the tracker extension,
+		// we add these as we may be deploying on a different platform than our
+		// editor is running on.
+		"/user/vive_tracker_htcx/role/handheld_object",
+		"/user/vive_tracker_htcx/role/left_foot",
+		"/user/vive_tracker_htcx/role/right_foot",
+		"/user/vive_tracker_htcx/role/left_shoulder",
+		"/user/vive_tracker_htcx/role/right_shoulder",
+		"/user/vive_tracker_htcx/role/left_elbow",
+		"/user/vive_tracker_htcx/role/right_elbow",
+		"/user/vive_tracker_htcx/role/left_knee",
+		"/user/vive_tracker_htcx/role/right_knee",
+		"/user/vive_tracker_htcx/role/waist",
+		"/user/vive_tracker_htcx/role/chest",
+		"/user/vive_tracker_htcx/role/camera",
+		"/user/vive_tracker_htcx/role/keyboard"
 	};
 
 	return arr;

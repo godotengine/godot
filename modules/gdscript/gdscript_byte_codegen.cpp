@@ -1336,6 +1336,18 @@ void GDScriptByteCodeGenerator::write_endif() {
 	if_jmp_addrs.pop_back();
 }
 
+void GDScriptByteCodeGenerator::write_jump_if_shared(const Address &p_value) {
+	append(GDScriptFunction::OPCODE_JUMP_IF_SHARED, 1);
+	append(p_value);
+	if_jmp_addrs.push_back(opcodes.size());
+	append(0); // Jump destination, will be patched.
+}
+
+void GDScriptByteCodeGenerator::write_end_jump_if_shared() {
+	patch_jump(if_jmp_addrs.back()->get());
+	if_jmp_addrs.pop_back();
+}
+
 void GDScriptByteCodeGenerator::start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) {
 	Address counter(Address::LOCAL_VARIABLE, add_local("@counter_pos", p_iterator_type), p_iterator_type);
 	Address container(Address::LOCAL_VARIABLE, add_local("@container_pos", p_list_type), p_list_type);

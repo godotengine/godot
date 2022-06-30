@@ -47,7 +47,7 @@
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,noslider][,radians][,degrees][,exp][,suffix:<keyword>] range.
+	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_lesser][,no_slider][,radians][,degrees][,exp][,suffix:<keyword>] range.
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "full" to also include in/out. (ie: "attenuation,inout")
@@ -67,6 +67,7 @@ enum PropertyHint {
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
+	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
@@ -85,11 +86,13 @@ enum PropertyHint {
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
+	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_INT_IS_POINTER,
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
+	PROPERTY_HINT_NODE_TYPE, ///< a node object type
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -187,6 +190,14 @@ struct PropertyInfo {
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
+	explicit PropertyInfo(const GDNativePropertyInfo &pinfo) :
+			type((Variant::Type)pinfo.type),
+			name(pinfo.name),
+			class_name(pinfo.class_name), // can be null
+			hint((PropertyHint)pinfo.hint),
+			hint_string(pinfo.hint_string), // can be null
+			usage(pinfo.usage) {}
+
 	bool operator==(const PropertyInfo &p_info) const {
 		return ((type == p_info.type) &&
 				(name == p_info.name) &&
@@ -203,10 +214,24 @@ struct PropertyInfo {
 
 Array convert_property_list(const List<PropertyInfo> *p_list);
 
+enum MethodFlags {
+	METHOD_FLAG_NORMAL = 1,
+	METHOD_FLAG_EDITOR = 2,
+	METHOD_FLAG_NOSCRIPT = 4,
+	METHOD_FLAG_CONST = 8,
+	METHOD_FLAG_REVERSE = 16, // used for events
+	METHOD_FLAG_VIRTUAL = 32,
+	METHOD_FLAG_FROM_SCRIPT = 64,
+	METHOD_FLAG_VARARG = 128,
+	METHOD_FLAG_STATIC = 256,
+	METHOD_FLAG_OBJECT_CORE = 512,
+	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
+};
+
 struct MethodInfo {
 	String name;
 	PropertyInfo return_val;
-	uint32_t flags; // NOLINT - prevent clang-tidy to assign method_bind.h constant here, it should stay in .cpp.
+	uint32_t flags = METHOD_FLAGS_DEFAULT;
 	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
@@ -218,26 +243,50 @@ struct MethodInfo {
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
-	MethodInfo();
-	MethodInfo(const String &p_name);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(Variant::Type ret);
-	MethodInfo(Variant::Type ret, const String &p_name);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4);
-	MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5);
+	MethodInfo() {}
+
+	void _push_params(const PropertyInfo &p_param) {
+		arguments.push_back(p_param);
+	}
+
+	template <typename... VarArgs>
+	void _push_params(const PropertyInfo &p_param, VarArgs... p_params) {
+		arguments.push_back(p_param);
+		_push_params(p_params...);
+	}
+
+	MethodInfo(const String &p_name) { name = p_name; }
+
+	template <typename... VarArgs>
+	MethodInfo(const String &p_name, VarArgs... p_params) {
+		name = p_name;
+		_push_params(p_params...);
+	}
+
+	MethodInfo(Variant::Type ret) { return_val.type = ret; }
+	MethodInfo(Variant::Type ret, const String &p_name) {
+		return_val.type = ret;
+		name = p_name;
+	}
+
+	template <typename... VarArgs>
+	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
+		name = p_name;
+		return_val.type = ret;
+		_push_params(p_params...);
+	}
+
+	MethodInfo(const PropertyInfo &p_ret, const String &p_name) {
+		return_val = p_ret;
+		name = p_name;
+	}
+
+	template <typename... VarArgs>
+	MethodInfo(const PropertyInfo &p_ret, const String &p_name, VarArgs... p_params) {
+		return_val = p_ret;
+		name = p_name;
+		_push_params(p_params...);
+	}
 };
 
 // API used to extend in GDNative and other C compatible compiled languages.
@@ -719,6 +768,7 @@ public:
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	template <typename... VarArgs>
 	Variant call(const StringName &p_method, VarArgs... p_args) {

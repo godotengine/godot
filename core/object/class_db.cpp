@@ -164,7 +164,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 
-	uint64_t hash = hash_djb2_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
+	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
@@ -177,8 +177,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
-		hash = hash_djb2_one_64(t->name.hash(), hash);
-		hash = hash_djb2_one_64(t->inherits.hash(), hash);
+		hash = hash_murmur3_one_64(t->name.hash(), hash);
+		hash = hash_murmur3_one_64(t->inherits.hash(), hash);
 
 		{ //methods
 
@@ -200,27 +200,27 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				MethodBind *mb = t->method_map[F];
-				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
+				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
 
 				for (int i = 0; i < mb->get_argument_count(); i++) {
 					const PropertyInfo info = mb->get_argument_info(i);
-					hash = hash_djb2_one_64(info.type, hash);
-					hash = hash_djb2_one_64(info.name.hash(), hash);
-					hash = hash_djb2_one_64(info.hint, hash);
-					hash = hash_djb2_one_64(info.hint_string.hash(), hash);
+					hash = hash_murmur3_one_64(info.type, hash);
+					hash = hash_murmur3_one_64(info.name.hash(), hash);
+					hash = hash_murmur3_one_64(info.hint, hash);
+					hash = hash_murmur3_one_64(info.hint_string.hash(), hash);
 				}
 
-				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_default_argument_count(), hash);
 
 				for (int i = 0; i < mb->get_default_argument_count(); i++) {
 					//hash should not change, i hope for tis
 					Variant da = mb->get_default_argument(i);
-					hash = hash_djb2_one_64(da.hash(), hash);
+					hash = hash_murmur3_one_64(da.hash(), hash);
 				}
 
-				hash = hash_djb2_one_64(mb->get_hint_flags(), hash);
+				hash = hash_murmur3_one_64(mb->get_hint_flags(), hash);
 			}
 		}
 
@@ -235,8 +235,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(t->constant_map[F], hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->constant_map[F], hash);
 			}
 		}
 
@@ -252,9 +252,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				MethodInfo &mi = t->signal_map[F];
-				hash = hash_djb2_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (int i = 0; i < mi.arguments.size(); i++) {
-					hash = hash_djb2_one_64(mi.arguments[i].type, hash);
+					hash = hash_murmur3_one_64(mi.arguments[i].type, hash);
 				}
 			}
 		}
@@ -273,23 +273,23 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				PropertySetGet *psg = t->property_setget.getptr(F);
 				ERR_FAIL_COND_V(!psg, 0);
 
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(psg->setter.hash(), hash);
-				hash = hash_djb2_one_64(psg->getter.hash(), hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
+				hash = hash_murmur3_one_64(psg->getter.hash(), hash);
 			}
 		}
 
 		//property list
 		for (const PropertyInfo &F : t->property_list) {
-			hash = hash_djb2_one_64(F.name.hash(), hash);
-			hash = hash_djb2_one_64(F.type, hash);
-			hash = hash_djb2_one_64(F.hint, hash);
-			hash = hash_djb2_one_64(F.hint_string.hash(), hash);
-			hash = hash_djb2_one_64(F.usage, hash);
+			hash = hash_murmur3_one_64(F.name.hash(), hash);
+			hash = hash_murmur3_one_64(F.type, hash);
+			hash = hash_murmur3_one_64(F.hint, hash);
+			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
+			hash = hash_murmur3_one_64(F.usage, hash);
 		}
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 #else
 	return 0;
 #endif

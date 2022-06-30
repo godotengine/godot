@@ -91,9 +91,9 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash, uint32_t p_capacity) const {
-		uint32_t original_pos = p_hash % p_capacity;
-		return (p_pos - original_pos + p_capacity) % p_capacity;
+	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
+		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
+		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
@@ -101,9 +101,10 @@ private:
 			return false; // Failed lookups, no elements
 		}
 
-		uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
 		uint32_t hash = _hash(p_key);
-		uint32_t pos = hash % capacity;
+		uint32_t pos = fastmod(hash, capacity_inv, capacity);
 		uint32_t distance = 0;
 
 		while (true) {
@@ -111,7 +112,7 @@ private:
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity)) {
+			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
 				return false;
 			}
 
@@ -120,17 +121,18 @@ private:
 				return true;
 			}
 
-			pos = (pos + 1) % capacity;
+			pos = fastmod((pos + 1), capacity_inv, capacity);
 			distance++;
 		}
 	}
 
 	void _insert_with_hash(uint32_t p_hash, HashMapElement<TKey, TValue> *p_value) {
-		uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
 		uint32_t hash = p_hash;
 		HashMapElement<TKey, TValue> *value = p_value;
 		uint32_t distance = 0;
-		uint32_t pos = hash % capacity;
+		uint32_t pos = fastmod(hash, capacity_inv, capacity);
 
 		while (true) {
 			if (hashes[pos] == EMPTY_HASH) {
@@ -143,14 +145,14 @@ private:
 			}
 
 			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos], capacity);
+			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos], capacity, capacity_inv);
 			if (existing_probe_len < distance) {
 				SWAP(hash, hashes[pos]);
 				SWAP(value, elements[pos]);
 				distance = existing_probe_len;
 			}
 
-			pos = (pos + 1) % capacity;
+			pos = fastmod((pos + 1), capacity_inv, capacity);
 			distance++;
 		}
 	}
@@ -316,13 +318,14 @@ public:
 			return false;
 		}
 
-		uint32_t capacity = hash_table_size_primes[capacity_index];
-		uint32_t next_pos = (pos + 1) % capacity;
-		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity) != 0) {
+		const uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
+		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
+		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
 			SWAP(hashes[next_pos], hashes[pos]);
 			SWAP(elements[next_pos], elements[pos]);
 			pos = next_pos;
-			next_pos = (pos + 1) % capacity;
+			next_pos = fastmod((pos + 1), capacity_inv, capacity);
 		}
 
 		hashes[pos] = EMPTY_HASH;

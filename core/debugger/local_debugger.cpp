@@ -31,7 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
-#include "scene/main/scene_tree.h"
+#include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
@@ -273,7 +273,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(-1);
 			script_debugger->set_lines_left(-1);
 
-			SceneTree::get_singleton()->quit();
+			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+			if (main_loop->get_class() == "SceneTree") {
+				main_loop->call("quit");
+			}
 			break;
 		} else if (line.begins_with("delete")) {
 			if (line.get_slice_count(" ") <= 1) {

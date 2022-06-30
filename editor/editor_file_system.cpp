@@ -1792,9 +1792,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 		//to reload properly
-		if (ResourceCache::has(file)) {
-			Resource *r = ResourceCache::get(file);
+		Ref<Resource> r = ResourceCache::get_ref(file);
 
+		if (r.is_valid()) {
 			if (!r->get_import_path().is_empty()) {
 				String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(file);
 				r->set_import_path(dst_path);
@@ -2034,9 +2034,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 
 	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 	//to reload properly
-	if (ResourceCache::has(p_file)) {
-		Resource *r = ResourceCache::get(p_file);
-
+	Ref<Resource> r = ResourceCache::get_ref(p_file);
+	if (r.is_valid()) {
 		if (!r->get_import_path().is_empty()) {
 			String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_file);
 			r->set_import_path(dst_path);

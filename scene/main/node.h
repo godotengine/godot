@@ -174,6 +174,7 @@ private:
 	void _propagate_after_exit_tree();
 	void _print_orphan_nodes();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
+	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
@@ -208,6 +209,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
+	virtual void owner_changed_notify();
 
 	void _propagate_replace_owner(Node *p_owner, Node *p_by_owner);
 

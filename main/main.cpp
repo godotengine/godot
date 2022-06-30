@@ -65,6 +65,8 @@
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
+#include "servers/movie_writer/movie_writer.h"
+#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -173,11 +175,15 @@ static Vector2 init_custom_pos;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_paths = false;
 static bool debug_navigation = false;
 #endif
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
+static String write_movie_path;
+static MovieWriter *movie_writer = nullptr;
+static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
 static bool dump_extension_api = false;
@@ -325,6 +331,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 	OS::get_singleton()->print("  --tablet-driver <driver>                     Pen tablet input driver.\n");
 	OS::get_singleton()->print("  --headless                                   Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
+	OS::get_singleton()->print("  --write-movie <file>                         Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS. Disabling vsync can speed up movie writing but makes interaction more difficult.\n");
+	OS::get_singleton()->print("  --disable-vsync                              Force disabling of vsync. Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS.\n");
 
 	OS::get_singleton()->print("\n");
 
@@ -350,6 +358,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --remote-debug <uri>                         Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions                           Show collision shapes when running the scene.\n");
+	OS::get_singleton()->print("  --debug-paths                                Show path lines when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation                           Show navigation polygons when running the scene.\n");
 	OS::get_singleton()->print("  --debug-stringnames                          Print all StringName allocations to stdout when the engine quits.\n");
 #endif
@@ -664,6 +673,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	packed_data->add_pack_source(zip_packed_data);
 #endif
 
+	// Default exit code, can be modified for certain errors.
+	Error exit_code = ERR_INVALID_PARAMETER;
+
 	I = args.front();
 	while (I) {
 #ifdef OSX_ENABLED
@@ -679,10 +691,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
+			exit_code = OK;
 			goto error;
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
+			exit_code = OK;
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
@@ -1100,6 +1114,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (I->get() == "--debug-paths") {
+			debug_paths = true;
 		} else if (I->get() == "--debug-navigation") {
 			debug_navigation = true;
 		} else if (I->get() == "--debug-stringnames") {
@@ -1136,6 +1152,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--write-movie") {
+			if (I->next()) {
+				write_movie_path = I->next()->get();
+				N = I->next()->next();
+				if (fixed_fps == -1) {
+					fixed_fps = 60;
+				}
+				OS::get_singleton()->_writing_movie = true;
+			} else {
+				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--disable-vsync") {
+			disable_vsync = true;
 		} else if (I->get() == "--print-fps") {
 			print_fps = true;
 		} else if (I->get() == "--profile-gpu") {
@@ -1462,7 +1492,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver_idx < 0) {
-		audio_driver_idx = 0;
+		audio_driver_idx = 0; // 0 Is always available as the dummy driver (no sound)
+	}
+
+	if (write_movie_path != String()) {
+		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
+		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
+		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
 	}
 
 	{
@@ -1470,6 +1506,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 	{
 		window_vsync_mode = DisplayServer::VSyncMode(int(GLOBAL_DEF("display/window/vsync/vsync_mode", DisplayServer::VSyncMode::VSYNC_ENABLED)));
+		if (disable_vsync) {
+			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
+		}
 	}
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC("physics/common/physics_ticks_per_second", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
@@ -1553,6 +1592,7 @@ error:
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
+	write_movie_path = "";
 	project_path = "";
 
 	args.clear();
@@ -1601,7 +1641,7 @@ error:
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
-	return ERR_INVALID_PARAMETER;
+	return exit_code;
 }
 
 Error Main::setup2(Thread::ID p_main_tid_override) {
@@ -1723,6 +1763,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {
 		rendering_server->set_print_gpu_profile(true);
+	}
+
+	if (write_movie_path != String()) {
+		movie_writer = MovieWriter::find_writer_for_file(write_movie_path);
+		if (movie_writer == nullptr) {
+			ERR_PRINT("Can't find movie writer for file type, aborting: " + write_movie_path);
+			write_movie_path = String();
+		}
 	}
 
 #ifdef UNIX_ENABLED
@@ -2336,6 +2384,9 @@ bool Main::start() {
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
 		}
+		if (debug_paths) {
+			sml->set_debug_paths_hint(true);
+		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 		}
@@ -2650,6 +2701,9 @@ bool Main::start() {
 
 	OS::get_singleton()->set_main_loop(main_loop);
 
+	if (movie_writer) {
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, write_movie_path);
+	}
 	return true;
 }
 
@@ -2836,6 +2890,13 @@ bool Main::iteration() {
 		Input::get_singleton()->flush_buffered_events();
 	}
 
+	if (movie_writer) {
+		RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
+		RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
+		Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
+		movie_writer->add_frame(vp_tex);
+	}
+
 	if (fixed_fps != -1) {
 		return exit;
 	}
@@ -2873,6 +2934,10 @@ void Main::force_redraw() {
 void Main::cleanup(bool p_force) {
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
+	}
+
+	if (movie_writer) {
+		movie_writer->end();
 	}
 
 	ResourceLoader::remove_custom_loaders();

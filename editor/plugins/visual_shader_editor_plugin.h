@@ -493,23 +493,6 @@ public:
 	VisualShaderEditor();
 };
 
-class VisualShaderEditorPlugin : public EditorPlugin {
-	GDCLASS(VisualShaderEditorPlugin, EditorPlugin);
-
-	VisualShaderEditor *visual_shader_editor = nullptr;
-	Button *button = nullptr;
-
-public:
-	virtual String get_name() const override { return "VisualShader"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	VisualShaderEditorPlugin();
-	~VisualShaderEditorPlugin();
-};
-
 class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
 	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 

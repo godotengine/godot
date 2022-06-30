@@ -55,14 +55,7 @@ protected:
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		GDNativePropertyInfo pinfo;
 		get_argument_info_func(method_userdata, p_arg, &pinfo);
-		PropertyInfo ret;
-		ret.type = Variant::Type(pinfo.type);
-		ret.name = pinfo.name;
-		ret.class_name = pinfo.class_name;
-		ret.hint = PropertyHint(pinfo.hint);
-		ret.usage = pinfo.usage;
-		ret.class_name = pinfo.class_name;
-		return ret;
+		return PropertyInfo(pinfo);
 	}
 
 public:
@@ -204,16 +197,11 @@ void NativeExtension::_register_extension_class_property(const GDNativeExtension
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property '" + String(p_info->name) + "' for unexisting class '" + class_name + "'.");
+	String property_name = p_info->name;
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property '" + property_name + "' for unexisting class '" + class_name + "'.");
 
 	//Extension *extension = &self->extension_classes[class_name];
-	PropertyInfo pinfo;
-	pinfo.type = Variant::Type(p_info->type);
-	pinfo.name = p_info->name;
-	pinfo.class_name = p_info->class_name;
-	pinfo.hint = PropertyHint(p_info->hint);
-	pinfo.hint_string = p_info->hint_string;
-	pinfo.usage = p_info->usage;
+	PropertyInfo pinfo(*p_info);
 
 	ClassDB::add_property(class_name, pinfo, p_setter, p_getter);
 }
@@ -245,13 +233,7 @@ void NativeExtension::_register_extension_class_signal(const GDNativeExtensionCl
 	MethodInfo s;
 	s.name = p_signal_name;
 	for (int i = 0; i < p_argument_count; i++) {
-		PropertyInfo arg;
-		arg.type = Variant::Type(p_argument_info[i].type);
-		arg.name = p_argument_info[i].name;
-		arg.class_name = p_argument_info[i].class_name;
-		arg.hint = PropertyHint(p_argument_info[i].hint);
-		arg.hint_string = p_argument_info[i].hint_string;
-		arg.usage = p_argument_info[i].usage;
+		PropertyInfo arg(p_argument_info[i]);
 		s.arguments.push_back(arg);
 	}
 	ClassDB::add_signal(class_name, s);
@@ -281,6 +263,7 @@ void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p
 Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
 	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
+		ERR_PRINT("GDExtension dynamic library not found: " + p_path);
 		return err;
 	}
 
@@ -289,6 +272,7 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
+		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + p_path);
 		OS::get_singleton()->close_dynamic_library(library);
 		return err;
 	}
@@ -299,6 +283,7 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 		level_initialized = -1;
 		return OK;
 	} else {
+		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
 		return FAILED;
 	}
 }
@@ -387,6 +372,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (err != OK) {
+		ERR_PRINT("Error loading GDExtension config file: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -394,6 +380,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
+		ERR_PRINT("GDExtension config file must contain 'configuration.entry_symbol' key: " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -426,6 +413,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
+		ERR_PRINT("No GDExtension library found for current architecture; in config file " + p_path);
 		return Ref<Resource>();
 	}
 
@@ -443,6 +431,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (err != OK) {
+		// Errors already logged in open_library()
 		return Ref<Resource>();
 	}
 

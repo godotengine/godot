@@ -304,6 +304,13 @@ public:
 		v->_get_obj().id = ObjectID();
 	}
 
+	static void update_object_id(Variant *v) {
+		const Object *o = v->_get_obj().obj;
+		if (o) {
+			v->_get_obj().id = o->get_instance_id();
+		}
+	}
+
 	_FORCE_INLINE_ static void *get_opaque_pointer(Variant *v) {
 		switch (v->type) {
 			case Variant::NIL:

@@ -723,8 +723,20 @@ void Control::_notification(int p_notification) {
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
+			if (data.theme.is_null()) {
+				if (data.parent && (data.parent->data.theme_owner || data.parent->data.theme_owner_window)) {
+					data.theme_owner = data.parent->data.theme_owner;
+					data.theme_owner_window = data.parent->data.theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				} else if (data.parent_window && (data.parent_window->theme_owner || data.parent_window->theme_owner_window)) {
+					data.theme_owner = data.parent_window->theme_owner;
+					data.theme_owner_window = data.parent_window->theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				}
+			}
+
 			CanvasItem *node = this;
-			Control *parent_control = nullptr;
+			bool has_parent_control = false;
 
 			while (!node->is_set_as_top_level()) {
 				CanvasItem *parent = Object::cast_to<CanvasItem>(node->get_parent());
@@ -732,22 +744,19 @@ void Control::_notification(int p_notification) {
 					break;
 				}
 
-				parent_control = Object::cast_to<Control>(parent);
+				Control *parent_control = Object::cast_to<Control>(parent);
 				if (parent_control) {
+					has_parent_control = true;
 					break;
 				}
 
 				node = parent;
 			}
 
-			if (parent_control) {
+			if (has_parent_control) {
 				// Do nothing, has a parent control.
-				if (data.theme.is_null() && parent_control->data.theme_owner) {
-					data.theme_owner = parent_control->data.theme_owner;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
 			} else {
-				//is a regular root control or top_level
+				// Is a regular root control or top_level.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				data.RI = viewport->_gui_add_root_control(this);
@@ -758,7 +767,7 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
-				//connect viewport
+				// Connect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
@@ -2335,7 +2344,7 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 
 static Control *_next_control(Control *p_from) {
 	if (p_from->is_set_as_top_level()) {
-		return nullptr; // can't go above
+		return nullptr; // Can't go above.
 	}
 
 	Control *parent = Object::cast_to<Control>(p_from->get_parent());
@@ -2355,7 +2364,7 @@ static Control *_next_control(Control *p_from) {
 		return c;
 	}
 
-	//no next in parent, try the same in parent
+	// No next in parent, try the same in parent.
 	return _next_control(parent);
 }
 
@@ -2379,7 +2388,7 @@ Control *Control::find_next_valid_focus() const {
 			}
 		}
 
-		// find next child
+		// Find next child.
 
 		Control *next_child = nullptr;
 
@@ -2395,7 +2404,7 @@ Control *Control::find_next_valid_focus() const {
 
 		if (!next_child) {
 			next_child = _next_control(from);
-			if (!next_child) { //nothing else.. go up and find either window or subwindow
+			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
 				while (next_child && !next_child->is_set_as_top_level()) {
 					next_child = cast_to<Control>(next_child->get_parent());
@@ -2413,7 +2422,7 @@ Control *Control::find_next_valid_focus() const {
 			}
 		}
 
-		if (next_child == this) { // no next control->
+		if (next_child == from) { // No next control.
 			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
 		}
 		if (next_child) {
@@ -2445,7 +2454,7 @@ static Control *_prev_control(Control *p_from) {
 		return p_from;
 	}
 
-	//no prev in parent, try the same in parent
+	// No prev in parent, try the same in parent.
 	return _prev_control(child);
 }
 
@@ -2469,12 +2478,12 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		// find prev child
+		// Find prev child.
 
 		Control *prev_child = nullptr;
 
 		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
-			//find last of the children
+			// Find last of the children.
 
 			prev_child = _prev_control(from);
 
@@ -2497,7 +2506,7 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		if (prev_child == this) { // no prev control->
+		if (prev_child == from) { // No prev control.
 			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
 		}
 
@@ -3286,7 +3295,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Layout", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimum_size"), "set_custom_minimum_size", "get_custom_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
@@ -3321,7 +3330,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");

@@ -1056,13 +1056,25 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Set back the values into their bases.
 				for (const ChainInfo &info : set_chain) {
-					if (!info.is_named) {
-						gen->write_set(info.base, info.key, assigned);
-						if (info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							gen->pop_temporary();
+					bool known_type = assigned.type.has_type;
+					bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
+
+					if (!known_type || !is_shared) {
+						if (!known_type) {
+							// Jump shared values since they are already updated in-place.
+							gen->write_jump_if_shared(assigned);
 						}
-					} else {
-						gen->write_set_named(info.base, info.name, assigned);
+						if (!info.is_named) {
+							gen->write_set(info.base, info.key, assigned);
+						} else {
+							gen->write_set_named(info.base, info.name, assigned);
+						}
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
+					}
+					if (!info.is_named && info.key.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
 					}
 					if (assigned.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
@@ -1070,19 +1082,35 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					assigned = info.base;
 				}
 
-				// If this is a class member property, also assign to it.
-				// This allow things like: position.x += 2.0
-				if (assign_class_member_property != StringName()) {
-					gen->write_set_member(assigned, assign_class_member_property);
-				}
-				// Same as above but for members
-				if (is_member_property) {
-					if (member_property_has_setter && !member_property_is_in_setter) {
-						Vector<GDScriptCodeGenerator::Address> args;
-						args.push_back(assigned);
-						gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), member_property_setter_function, args);
-					} else {
-						gen->write_assign(target_member_property, assigned);
+				bool known_type = assigned.type.has_type;
+				bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
+
+				if (!known_type || !is_shared) {
+					// If this is a class member property, also assign to it.
+					// This allow things like: position.x += 2.0
+					if (assign_class_member_property != StringName()) {
+						if (!known_type) {
+							gen->write_jump_if_shared(assigned);
+						}
+						gen->write_set_member(assigned, assign_class_member_property);
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
+					} else if (is_member_property) {
+						// Same as above but for script members.
+						if (!known_type) {
+							gen->write_jump_if_shared(assigned);
+						}
+						if (member_property_has_setter && !member_property_is_in_setter) {
+							Vector<GDScriptCodeGenerator::Address> args;
+							args.push_back(assigned);
+							gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), member_property_setter_function, args);
+						} else {
+							gen->write_assign(target_member_property, assigned);
+						}
+						if (!known_type) {
+							gen->write_end_jump_if_shared();
+						}
 					}
 				}
 
@@ -1990,18 +2018,18 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	// Parse initializer if applies.
 	bool is_implicit_initializer = !p_for_ready && !p_func && !p_for_lambda;
-	bool is_initializer = p_func && !p_for_lambda && String(p_func->identifier->name) == GDScriptLanguage::get_singleton()->strings._init;
-	bool is_for_ready = p_for_ready || (p_func && !p_for_lambda && String(p_func->identifier->name) == "_ready");
+	bool is_initializer = p_func && !p_for_lambda && p_func->identifier->name == GDScriptLanguage::get_singleton()->strings._init;
+	bool is_implicit_ready = !p_func && p_for_ready;
 
-	if (!p_for_lambda && (is_implicit_initializer || is_for_ready)) {
+	if (!p_for_lambda && (is_implicit_initializer || is_implicit_ready)) {
 		// Initialize class fields.
 		for (int i = 0; i < p_class->members.size(); i++) {
 			if (p_class->members[i].type != GDScriptParser::ClassNode::Member::VARIABLE) {
 				continue;
 			}
 			const GDScriptParser::VariableNode *field = p_class->members[i].variable;
-			if (field->onready != is_for_ready) {
-				// Only initialize in _ready.
+			if (field->onready != is_implicit_ready) {
+				// Only initialize in @implicit_ready.
 				continue;
 			}
 
@@ -2123,6 +2151,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		p_script->initializer = gd_function;
 	} else if (is_implicit_initializer) {
 		p_script->implicit_initializer = gd_function;
+	} else if (is_implicit_ready) {
+		p_script->implicit_ready = gd_function;
 	}
 
 	if (p_func) {
@@ -2140,7 +2170,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 #endif
 	}
 
-	if (!p_for_lambda) {
+	if (!is_implicit_initializer && !is_implicit_ready && !p_for_lambda) {
 		p_script->member_functions[func_name] = gd_function;
 	}
 
@@ -2208,11 +2238,19 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
 		memdelete(E.value);
 	}
+	if (p_script->implicit_initializer) {
+		memdelete(p_script->implicit_initializer);
+	}
+	if (p_script->implicit_ready) {
+		memdelete(p_script->implicit_ready);
+	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
 	p_script->member_info.clear();
 	p_script->_signals.clear();
 	p_script->initializer = nullptr;
+	p_script->implicit_initializer = nullptr;
+	p_script->implicit_ready = nullptr;
 
 	p_script->tool = parser->is_tool();
 	p_script->name = p_class->identifier ? p_class->identifier->name : "";
@@ -2456,15 +2494,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	//parse methods
 
-	bool has_ready = false;
-
 	for (int i = 0; i < p_class->members.size(); i++) {
 		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
 		if (member.type == member.FUNCTION) {
 			const GDScriptParser::FunctionNode *function = member.function;
-			if (!has_ready && function->identifier->name == "_ready") {
-				has_ready = true;
-			}
 			Error err = OK;
 			_parse_function(err, p_script, p_class, function);
 			if (err) {
@@ -2498,8 +2531,8 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 		}
 	}
 
-	if (!has_ready && p_class->onready_used) {
-		//create a _ready constructor
+	if (p_class->onready_used) {
+		// Create an implicit_ready constructor.
 		Error err = OK;
 		_parse_function(err, p_script, p_class, nullptr, true);
 		if (err) {

@@ -97,6 +97,7 @@ private:
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint = false;
+	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
@@ -146,9 +147,12 @@ private:
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
+	Color debug_paths_color;
+	float debug_paths_width = 1.0f;
 	Color debug_navigation_color;
 	Color debug_navigation_disabled_color;
 	Ref<ArrayMesh> debug_contact_mesh;
+	Ref<Material> debug_paths_material;
 	Ref<Material> navigation_material;
 	Ref<Material> navigation_disabled_material;
 	Ref<Material> collision_material;
@@ -297,11 +301,17 @@ public:
 	void set_debug_collisions_hint(bool p_enabled);
 	bool is_debugging_collisions_hint() const;
 
+	void set_debug_paths_hint(bool p_enabled);
+	bool is_debugging_paths_hint() const;
+
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
+
+	void set_debug_paths_hint(bool p_enabled) {}
+	bool is_debugging_paths_hint() const { return false; }
 
 	void set_debug_navigation_hint(bool p_enabled) {}
 	bool is_debugging_navigation_hint() const { return false; }
@@ -313,12 +323,19 @@ public:
 	void set_debug_collision_contact_color(const Color &p_color);
 	Color get_debug_collision_contact_color() const;
 
+	void set_debug_paths_color(const Color &p_color);
+	Color get_debug_paths_color() const;
+
+	void set_debug_paths_width(float p_width);
+	float get_debug_paths_width() const;
+
 	void set_debug_navigation_color(const Color &p_color);
 	Color get_debug_navigation_color() const;
 
 	void set_debug_navigation_disabled_color(const Color &p_color);
 	Color get_debug_navigation_disabled_color() const;
 
+	Ref<Material> get_debug_paths_material();
 	Ref<Material> get_debug_navigation_material();
 	Ref<Material> get_debug_navigation_disabled_material();
 	Ref<Material> get_debug_collision_material();

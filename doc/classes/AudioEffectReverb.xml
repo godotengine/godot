@@ -2,12 +2,12 @@
 <class name="AudioEffectReverb" inherits="AudioEffect" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds a reverberation audio effect to an Audio bus.
-		Simulates the sound of acoustic environments such as rooms, concert halls, caverns, or an open spaces.
 	</brief_description>
 	<description>
-		Simulates rooms of different sizes. Its parameters can be adjusted to simulate the sound of a specific room.
+		Simulates the sound of acoustic environments such as rooms, concert halls, caverns, or an open spaces.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<members>

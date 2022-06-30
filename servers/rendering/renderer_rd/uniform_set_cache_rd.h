@@ -57,13 +57,13 @@ class UniformSetCacheRD : public Object {
 	Cache *hash_table[HASH_TABLE_SIZE] = {};
 
 	static _FORCE_INLINE_ uint32_t _hash_uniform(const RD::Uniform &u, uint32_t h) {
-		h = hash_djb2_one_32(u.uniform_type, h);
-		h = hash_djb2_one_32(u.binding, h);
+		h = hash_murmur3_one_32(u.uniform_type, h);
+		h = hash_murmur3_one_32(u.binding, h);
 		uint32_t rsize = u.get_id_count();
 		for (uint32_t j = 0; j < rsize; j++) {
-			h = hash_djb2_one_64(u.get_id(j).get_id(), h);
+			h = hash_murmur3_one_64(u.get_id(j).get_id(), h);
 		}
-		return h;
+		return hash_fmix32(h);
 	}
 
 	static _FORCE_INLINE_ bool _compare_uniform(const RD::Uniform &a, const RD::Uniform &b) {
@@ -154,8 +154,8 @@ class UniformSetCacheRD : public Object {
 public:
 	template <typename... Args>
 	RID get_cache(RID p_shader, uint32_t p_set, Args... args) {
-		uint32_t h = hash_djb2_one_64(p_shader.get_id());
-		h = hash_djb2_one_32(p_set, h);
+		uint32_t h = hash_murmur3_one_64(p_shader.get_id());
+		h = hash_murmur3_one_32(p_set, h);
 		h = _hash_args(h, args...);
 
 		uint32_t table_idx = h % HASH_TABLE_SIZE;
@@ -180,11 +180,13 @@ public:
 
 	template <typename... Args>
 	RID get_cache_vec(RID p_shader, uint32_t p_set, const Vector<RD::Uniform> &p_uniforms) {
-		uint32_t h = hash_djb2_one_64(p_shader.get_id());
-		h = hash_djb2_one_32(p_set, h);
+		uint32_t h = hash_murmur3_one_64(p_shader.get_id());
+		h = hash_murmur3_one_32(p_set, h);
 		for (int i = 0; i < p_uniforms.size(); i++) {
 			h = _hash_uniform(p_uniforms[i], h);
 		}
+
+		h = hash_fmix32(h);
 
 		uint32_t table_idx = h % HASH_TABLE_SIZE;
 		{

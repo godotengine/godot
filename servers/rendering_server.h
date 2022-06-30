@@ -944,6 +944,8 @@ public:
 	virtual double viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
 	virtual double viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
 
+	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const = 0;
+
 	/* SKY API */
 
 	enum SkyMode {

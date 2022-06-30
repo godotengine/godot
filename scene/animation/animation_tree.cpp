@@ -136,6 +136,11 @@ double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode 
 	return t;
 }
 
+AnimationTree *AnimationNode::get_animation_tree() const {
+	ERR_FAIL_COND_V(!state, nullptr);
+	return state->tree;
+}
+
 void AnimationNode::make_invalid(const String &p_reason) {
 	ERR_FAIL_COND(!state);
 	state->valid = false;
@@ -276,7 +281,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	String new_path;
 	AnimationNode *new_parent;
 
-	//this is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations
+	// This is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations.
 	if (p_new_parent) {
 		new_parent = p_new_parent;
 		new_path = String(base_path) + String(p_subpath) + "/";
@@ -286,6 +291,9 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
 
+	// If tracks for blending don't exist for one of the animations, Rest or RESET animation is blended as init animation instead.
+	// Then, blend weight is 0 means that the init animation blend weight is 1.
+	// Therefore, the blending process must be executed even if the blend weight is 0.
 	if (!p_seek && p_optimize && !any_valid) {
 		return p_node->_pre_process(new_path, new_parent, state, 0, p_seek, p_seek_root, p_connections);
 	}
@@ -965,6 +973,10 @@ void AnimationTree::_process_graph(double p_delta) {
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
+				if (!a->track_is_enabled(i)) {
+					continue;
+				}
+
 				NodePath path = a->track_get_path(i);
 
 				ERR_CONTINUE(!track_cache.has(path));
@@ -1323,12 +1335,21 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (blend < CMP_EPSILON) {
 								continue; //nothing to blend
 							}
-							List<int> indices;
-							a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
 
-							for (int &F : indices) {
-								Variant value = a->track_get_key_value(i, F);
+							if (seeked) {
+								int idx = a->track_find_key(i, time);
+								if (idx < 0) {
+									continue;
+								}
+								Variant value = a->track_get_key_value(i, idx);
 								t->object->set_indexed(t->subpath, value);
+							} else {
+								List<int> indices;
+								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+								for (int &F : indices) {
+									Variant value = a->track_get_key_value(i, F);
+									t->object->set_indexed(t->subpath, value);
+								}
 							}
 						}
 
@@ -1337,20 +1358,27 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (blend < CMP_EPSILON) {
 							continue; //nothing to blend
 						}
-						if (!seeked && Math::is_zero_approx(delta)) {
-							continue;
-						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
-						List<int> indices;
-
-						a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
-
-						for (int &F : indices) {
-							StringName method = a->method_track_get_name(i, F);
-							Vector<Variant> params = a->method_track_get_params(i, F);
+						if (seeked) {
+							int idx = a->track_find_key(i, time);
+							if (idx < 0) {
+								continue;
+							}
+							StringName method = a->method_track_get_name(i, idx);
+							Vector<Variant> params = a->method_track_get_params(i, idx);
 							if (can_call) {
-								_call_object(t->object, method, params, true);
+								_call_object(t->object, method, params, false);
+							}
+						} else {
+							List<int> indices;
+							a->method_track_get_key_indices(i, time, delta, &indices, pingponged);
+							for (int &F : indices) {
+								StringName method = a->method_track_get_name(i, F);
+								Vector<Variant> params = a->method_track_get_params(i, F);
+								if (can_call) {
+									_call_object(t->object, method, params, true);
+								}
 							}
 						}
 					} break;
@@ -1681,6 +1709,14 @@ NodePath AnimationTree::get_animation_player() const {
 	return animation_player;
 }
 
+void AnimationTree::set_advance_expression_base_node(const NodePath &p_advance_expression_base_node) {
+	advance_expression_base_node = p_advance_expression_base_node;
+}
+
+NodePath AnimationTree::get_advance_expression_base_node() const {
+	return advance_expression_base_node;
+}
+
 bool AnimationTree::is_state_invalid() const {
 	return !state.valid;
 }
@@ -1876,6 +1912,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "root"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
+	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "node"), &AnimationTree::set_advance_expression_base_node);
+	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationTree::get_advance_expression_base_node);
+
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
@@ -1889,6 +1928,8 @@ void AnimationTree::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_GROUP("Root Motion", "root_motion_");

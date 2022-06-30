@@ -284,6 +284,11 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 		p_anim->node_cache.write[i] = nullptr;
+
+		if (!a->track_is_enabled(i)) {
+			continue;
+		}
+
 		Ref<Resource> resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
@@ -1909,7 +1914,7 @@ NodePath AnimationPlayer::get_root() const {
 
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	String pf = p_function;
-	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "remove_animation" || p_function == "has_animation" || p_function == "queue")) {
+	if (p_idx == 0 && (p_function == "play" || p_function == "play_backwards" || p_function == "has_animation" || p_function == "queue")) {
 		List<StringName> al;
 		get_animation_list(&al);
 		for (const StringName &name : al) {
@@ -1991,8 +1996,8 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	Ref<AnimationLibrary> al;
 	al.instantiate();
 	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
-	aux_player->add_animation_library("default", al);
-	aux_player->set_assigned_animation("default/" + SceneStringNames::get_singleton()->RESET);
+	aux_player->add_animation_library("", al);
+	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
 	Node *root = get_node(get_root());
 	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);

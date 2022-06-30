@@ -47,6 +47,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
+class SceneCreateDialog;
 class ShaderCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
@@ -148,9 +149,8 @@ private:
 	LineEdit *duplicate_dialog_text = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *make_dir_dialog_text = nullptr;
-	ConfirmationDialog *make_scene_dialog = nullptr;
-	LineEdit *make_scene_dialog_text = nullptr;
 	ConfirmationDialog *overwrite_dialog = nullptr;
+	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;

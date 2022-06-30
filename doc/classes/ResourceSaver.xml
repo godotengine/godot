@@ -10,11 +10,27 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_resource_format_saver">
+			<return type="void" />
+			<argument index="0" name="format_saver" type="ResourceFormatSaver" />
+			<argument index="1" name="at_front" type="bool" default="false" />
+			<description>
+				Registers a new [ResourceFormatSaver]. The ResourceSaver will use the ResourceFormatSaver as described in [method save].
+				This method is performed implictly for ResourceFormatSavers written in GDScript (see [ResourceFormatSaver] for more information).
+			</description>
+		</method>
 		<method name="get_recognized_extensions">
 			<return type="PackedStringArray" />
 			<argument index="0" name="type" type="Resource" />
 			<description>
 				Returns the list of extensions available for saving a resource of a given type.
+			</description>
+		</method>
+		<method name="remove_resource_format_saver">
+			<return type="void" />
+			<argument index="0" name="format_saver" type="ResourceFormatSaver" />
+			<description>
+				Unregisters the given [ResourceFormatSaver].
 			</description>
 		</method>
 		<method name="save">

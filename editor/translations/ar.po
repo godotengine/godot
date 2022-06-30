@@ -63,12 +63,13 @@
 # Mr.k <mineshtine28546271@gmail.com>, 2022.
 # ywmaa <ywmaa.personal@gmail.com>, 2022.
 # Awab Najim <dev.djvan@gmail.com>, 2022.
+# Abderrahim <abdoudido117@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-16 18:57+0000\n"
+"PO-Revision-Date: 2022-06-29 10:04+0000\n"
 "Last-Translator: Awab Najim <dev.djvan@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -266,9 +267,8 @@ msgstr "بيانات"
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "ملف تعريف الشبكة Network Profiler"
+msgstr "الشبكة"
 
 #: core/io/file_access_network.cpp
 msgid "Remote FS"
@@ -287,47 +287,40 @@ msgid "Blocking Mode Enabled"
 msgstr "تمكين وضع الحظر"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "وصل"
+msgstr "إتصال"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
 msgstr "حجم قطعة القراءة"
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "كائنات مرسومة:"
+msgstr "معرف الكائن"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "تفعيل تقشير البصل"
+msgstr "السماح بفك ترميز الكائن"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
 msgstr "رفض اتصالات الشبكة الجديدة"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Network Peer"
-msgstr "ملف تعريف الشبكة Network Profiler"
+msgstr "نظير الشبكة"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "اسم العُقدة الرئيسة (الجذر)"
+msgstr "العُقدة الرئيسة (الجذر)"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "وصل"
+msgstr "رفض الإتصالات الجديدة"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "نوع التحوّل"
+msgstr "وضع التحويل"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
@@ -358,9 +351,8 @@ msgid "Blocking Handshake"
 msgstr "حظر المصافحة"
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "تعديل الإتصال:"
+msgstr "الحد الأقصى للاتصالات المعلقة"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -423,14 +415,12 @@ msgid "Max Size (KB)"
 msgstr "الحجم الأقصى (كيلو بايت)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "وضع التحريك"
+msgstr "وضع الفأرة"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "مسح المدخله"
+msgstr "استخدم المدخلات المتراكمة"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -695,6 +685,10 @@ msgid "Main Run Args"
 msgstr "معاملات المشهد الرئيس"
 
 #: core/project_settings.cpp
+msgid "Scene Naming"
+msgstr "تسمية المشهد"
+
+#: core/project_settings.cpp
 msgid "Search In File Extensions"
 msgstr "البحث في امتدادات الملف"
 
@@ -702,18 +696,14 @@ msgstr "البحث في امتدادات الملف"
 msgid "Script Templates Search Path"
 msgstr "مسار البحث في قوالب النص البرمجي"
 
-#: core/project_settings.cpp editor/editor_node.cpp
-#: editor/plugins/version_control_editor_plugin.cpp
-msgid "Version Control"
+#: core/project_settings.cpp
+msgid "Version Control Autoload On Startup"
+msgstr "التحميل التلقائي للتحكم في الإصدار عند بدء التشغيل"
+
+#: core/project_settings.cpp
+#, fuzzy
+msgid "Version Control Plugin Name"
 msgstr "إدارة الإصدارات (Version Control)"
-
-#: core/project_settings.cpp
-msgid "Autoload On Startup"
-msgstr "التحميل التلقائي عند بدء التشغيل"
-
-#: core/project_settings.cpp
-msgid "Plugin Name"
-msgstr "اسم الإضافة"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -807,9 +797,8 @@ msgstr "إنشاء متصادم تراميش قريب"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "مُحرك الإخراج البصري:"
+msgstr "استدعاء"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -819,18 +808,17 @@ msgstr "مُحرك الإخراج البصري:"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "جودة"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "مرشحات:"
+msgstr "مرشحات"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "شحذ الكثافة"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -846,9 +834,8 @@ msgstr "تصحيح الأخطاء"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "الإعدادات:"
+msgstr "الإعدادات"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -856,14 +843,12 @@ msgid "Profiler"
 msgstr "مُنشئ الملفات التعريفية Profiler"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "عمل دالة"
+msgstr "أقصى عمل"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "تحديد التعبير"
+msgstr "ضغط"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -871,62 +856,63 @@ msgid "Formats"
 msgstr "البنية (اللاحقة)"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Zstd"
-msgstr ""
+msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "مطابقة المسافات الطويلة"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "ضغط المستوى"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "حجم نافذة سجل"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "أندرويد"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "وحدات"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "بروتوكول التحكم بالإرسال (TCP)"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "الاتصالات لدالة:"
+msgstr "نفذ وقت الإتصال"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
-msgstr ""
+msgstr "حزمة تيار الأقران"
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "الحد الأقصى للمخزن المؤقت (قوة 2)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "القمم:"
+msgstr "الشهادات"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -935,9 +921,8 @@ msgid "Resource"
 msgstr "مورد"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "اغلاق المشهد"
+msgstr "مشهد محلي"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -947,22 +932,20 @@ msgid "Path"
 msgstr "المسار"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "مصدر"
+msgstr "مصدر الرمز"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr "محلي"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "أختبار"
+msgstr "إختبار"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
-msgstr ""
+msgstr "تقهقر"
 
 #: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
@@ -998,17 +981,17 @@ msgstr "إكسي بايت (EiB)"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "المخازن المؤقته"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "حجم المخزن المؤقت للوحة المضلعات (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "حجم فهرس المخزن المؤقت للوحة المضلعات (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1020,7 +1003,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1037,7 +1020,7 @@ msgstr "إستخدام كبس البكسل"
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "حجم المخزن المؤقت الفوري (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1048,15 +1031,15 @@ msgstr "طبخ (إعداد) خرائط الضوء"
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "استخدم طريقة Bicubic Sampling"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "الحد الأقصى للعناصر القابلة للعرض"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "الحجم الأقصى للأضواء القابلة للعرض"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #, fuzzy
@@ -1065,11 +1048,11 @@ msgstr "نصف المُحدد"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "الحد الأقصى للأضواء لكل كائن"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "التشتت تحت السطح"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1091,19 +1074,19 @@ msgstr "تزويد السطح"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
-msgstr ""
+msgstr "عينات الوزن"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Voxel Cone Tracing"
-msgstr ""
+msgstr "تتبع مخروط فوكسل (Voxel)"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "جودة عالية"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
-msgstr ""
+msgstr "الحد الأقصى لحجم المخزن المؤقت لشكل المزج (كيلو بايت)"
 
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
@@ -1214,7 +1197,7 @@ msgstr "الكمية:"
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "المعاملات (Args)"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1238,7 +1221,7 @@ msgstr "حدد المعامل"
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
 msgid "Stream"
-msgstr ""
+msgstr "المجرى (Stream)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1674,7 +1657,7 @@ msgstr "دوال"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier"
-msgstr ""
+msgstr "منحنى بيزر (Bezier)"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -2260,7 +2243,7 @@ msgstr "إفتح"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "مالكو: %s (المجموع: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2820,7 +2803,7 @@ msgstr "إختر"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "تصدير المشروع لمنصة:"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2829,8 +2812,8 @@ msgstr "نسخ مسار العُقدة"
 
 #: editor/editor_export.cpp
 #, fuzzy
-msgid "Completed sucessfully."
-msgstr "تم تتبيث الحزمة بنجاح!"
+msgid "Completed successfully."
+msgstr "اكتمل بنجاح."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2950,11 +2933,11 @@ msgstr "تنسيق ثنائي"
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 بت"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
-msgstr ""
+msgstr "تضمين PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -2963,19 +2946,19 @@ msgstr "منطقة النقش TextureRegion"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
-msgstr ""
+msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "S3TC"
-msgstr ""
+msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC"
-msgstr ""
+msgstr "ETC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC2"
-msgstr ""
+msgstr "ETC2"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3026,7 +3009,7 @@ msgstr "لا يمكن لمُصدرات 32-bit التي تتضمن PCK أن تك�
 
 #: editor/editor_export.cpp
 msgid "Convert Text Resources To Binary On Export"
-msgstr ""
+msgstr "تحويل الموارد النصية إلى صيغة ثنائية عند التصدير"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3348,7 +3331,7 @@ msgstr "أظهر الملفات المخفية"
 
 #: editor/editor_file_dialog.cpp
 msgid "Disable Overwrite Warning"
-msgstr ""
+msgstr "تعطيل تحذير الإستبدال"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -3449,7 +3432,7 @@ msgstr "إعادة إستيراد الأصول"
 
 #: editor/editor_file_system.cpp
 msgid "Reimport Missing Imported Files"
-msgstr ""
+msgstr "إعادة استيراد الملفات المستوردة المفقودة"
 
 #: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
@@ -3561,7 +3544,7 @@ msgstr "مساعدة"
 
 #: editor/editor_help.cpp
 msgid "Sort Functions Alphabetically"
-msgstr ""
+msgstr "ترتيب الدوال أبجديا"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -4340,15 +4323,8 @@ msgstr "%d مزيد من الملفات"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
-
-#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Scene"
-msgstr "مشهد"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Scene Naming"
-msgstr "المسار للمشهد:"
+"غير قادر على الكتابة إلى الملف '% s' ، الملف قيد الاستخدام ، مؤمن أو ينقصه "
+"الأذونات."
 
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
@@ -4368,11 +4344,11 @@ msgstr "إظهار الشبكة دوماً"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Resize If Many Tabs"
-msgstr ""
+msgstr "تغيير الحجم في حالة وجود العديد من علامات التبويب"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Minimum Width"
-msgstr ""
+msgstr "الحد الأدنى للعرض"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Output"
@@ -4385,15 +4361,15 @@ msgstr "مسح المُخرجات"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Open Output On Play"
-msgstr ""
+msgstr "دائما افتح نافذة الإخراج أثناء التشغيل"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Close Output On Stop"
-msgstr ""
+msgstr "دائما أغلق نافذة الإخراج عند إيقاف التشغيل"
 
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
-msgstr ""
+msgstr "حفظ عند فقدان التركيز"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 #, fuzzy
@@ -4431,7 +4407,7 @@ msgstr "عقدة التنقل الزمني"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Show Thumbnail On Hover"
-msgstr ""
+msgstr "إظهار الصورة المصغرة عند التمرير"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Inspector"
@@ -4444,7 +4420,7 @@ msgstr "مسار المشروع:"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
-msgstr ""
+msgstr "خطوة الfloat الافتراضية"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
 #, fuzzy
@@ -4453,15 +4429,15 @@ msgstr "زر معطّل"
 
 #: editor/editor_node.cpp
 msgid "Auto Unfold Foreign Scenes"
-msgstr ""
+msgstr "إكشف المشاهد الأجنبية تلقائيا"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector2 Editing"
-msgstr ""
+msgstr "تحرير Vector2 الأفقي"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector Types Editing"
-msgstr ""
+msgstr "تحرير أنواع المتجهات الأفقية"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4475,7 +4451,11 @@ msgstr "افتح في المُتصفح"
 
 #: editor/editor_node.cpp
 msgid "Default Color Picker Mode"
-msgstr ""
+msgstr "وضع منتقي الألوان الافتراضي"
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control"
+msgstr "إدارة الإصدارات (Version Control)"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 #, fuzzy
@@ -4505,6 +4485,10 @@ msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
 #: editor/editor_node.cpp
 msgid "Add a new scene."
 msgstr "إضافة مشهد جديد."
+
+#: editor/editor_node.cpp editor/plugins/theme_editor_plugin.cpp
+msgid "Scene"
+msgstr "مشهد"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
@@ -5097,6 +5081,12 @@ msgid ""
 "functions called by that function.\n"
 "Use this to find individual functions to optimize."
 msgstr ""
+"شامل: يشمل الوقت من الدوال الأخرى التي تستدعيها هذه الدالة.\n"
+"استخدم هذا لتحديد الاختناقات (bottlenecks).\n"
+"\n"
+"ذاتي: احسب فقط الوقت المستغرق في الدالة نفسها ، وليس في الدوال الأخرى التي "
+"تستدعيها تلك الدالة.\n"
+"استخدم هذا للعثور على دوال محددة لتحسينها."
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -5113,7 +5103,7 @@ msgstr "مُنقح الأخطاء"
 
 #: editor/editor_profiler.cpp
 msgid "Profiler Frame History Size"
-msgstr ""
+msgstr "حجم تاريخ إطار المحلل"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
@@ -5327,23 +5317,23 @@ msgstr "إظهار الكل"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
-msgstr ""
+msgstr "مقياس العرض المخصص"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Size"
-msgstr ""
+msgstr "حجم الخط الرئيسي"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
-msgstr ""
+msgstr "حجم خط الشِفرة"
 
 #: editor/editor_settings.cpp
 msgid "Font Antialiased"
-msgstr ""
+msgstr "الخط Antialiased"
 
 #: editor/editor_settings.cpp
 msgid "Font Hinting"
-msgstr ""
+msgstr "تلميح الخط (Hinting)"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5352,7 +5342,7 @@ msgstr "المشهد الرئيس"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
-msgstr ""
+msgstr "الخط الرئيسي غامق"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5361,15 +5351,15 @@ msgstr "إضافة نقطة العقدة"
 
 #: editor/editor_settings.cpp
 msgid "Dim Editor On Dialog Popup"
-msgstr ""
+msgstr "اخفت المحرر عند انبثاق نافذة الحوار"
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "وضع السكون المنخفض للمعالج (µsec)"
 
 #: editor/editor_settings.cpp
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "وضع السكون المنخفض للمعالج غير المركّز (µsec)"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5378,11 +5368,11 @@ msgstr "وضع خالي من الإلهاء"
 
 #: editor/editor_settings.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "فتح لقطات الشاشة تلقائيًا"
 
 #: editor/editor_settings.cpp
 msgid "Max Array Dictionary Items Per Page"
-msgstr ""
+msgstr "الحد الأقصى لعناصر قاموس المصفوفة في كل صفحة"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
@@ -5396,7 +5386,7 @@ msgstr "إعداد مُسبق"
 
 #: editor/editor_settings.cpp
 msgid "Icon And Font Color"
-msgstr ""
+msgstr "لون الأيقونة والخط"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5410,11 +5400,11 @@ msgstr "اختر لوناً"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
-msgstr ""
+msgstr "التباين"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
-msgstr ""
+msgstr "عتامة خط العلاقة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5428,7 +5418,7 @@ msgstr "البكسلات المحيطية (الحدودية)"
 
 #: editor/editor_settings.cpp
 msgid "Use Graph Node Headers"
-msgstr ""
+msgstr "استخدم رؤوس وحدات الرسم البياني"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5472,7 +5462,7 @@ msgstr "نسخ الموارد"
 
 #: editor/editor_settings.cpp
 msgid "Safe Save On Backup Then Rename"
-msgstr ""
+msgstr "حفظ آمن على النسخ الاحتياطي ثم إعادة التسمية"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5486,7 +5476,7 @@ msgstr "الصورة المصغرة..."
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr ""
+msgstr "النوافذ المثبتة (Docked)"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5495,7 +5485,7 @@ msgstr "تعديل شجرة المشهد"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
-msgstr ""
+msgstr "بدء نافذة حوار الإنشاء موسعة بالكامل"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5509,7 +5499,7 @@ msgstr "محرر المجموعات"
 
 #: editor/editor_settings.cpp
 msgid "Auto Refresh Interval"
-msgstr ""
+msgstr "الفاصل الزمني للتحديث التلقائي"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5524,7 +5514,7 @@ msgstr "مظهر المحرر/برنامج-جودوه"
 #: editor/editor_settings.cpp scene/3d/label_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Line Spacing"
-msgstr ""
+msgstr "تباعد الأسطر"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
@@ -5539,15 +5529,15 @@ msgstr "مُعلّم التركيب Syntax"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight All Occurrences"
-msgstr ""
+msgstr "قم بتمييز جميع التكرارات"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight Current Line"
-msgstr ""
+msgstr "تمييز السطر الحالي"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Highlight Type Safe Lines"
-msgstr ""
+msgstr "تمييز سطور الأنواع الآمنة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5582,11 +5572,11 @@ msgstr "تنقل"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Smooth Scrolling"
-msgstr ""
+msgstr "التمرير السلس"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "V Scroll Speed"
-msgstr ""
+msgstr "سرعة التمرير العمودي"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5595,15 +5585,15 @@ msgstr "إظهار المركز"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Width"
-msgstr ""
+msgstr "عرض الخريطة المصغرة"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
-msgstr ""
+msgstr "تنقل في سجل أزرار الماوس الإضافية"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
-msgstr ""
+msgstr "المظهر"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 #, fuzzy
@@ -5617,7 +5607,7 @@ msgstr "رقم الخط:"
 
 #: editor/editor_settings.cpp
 msgid "Show Bookmark Gutter"
-msgstr ""
+msgstr "إظهار مزراب الإشارة المرجعية"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5626,27 +5616,27 @@ msgstr "تخطي نقاط التكسّر"
 
 #: editor/editor_settings.cpp
 msgid "Show Info Gutter"
-msgstr ""
+msgstr "إظهار معلومات المزراب"
 
 #: editor/editor_settings.cpp
 msgid "Code Folding"
-msgstr ""
+msgstr "طي الكود"
 
 #: editor/editor_settings.cpp
 msgid "Word Wrap"
-msgstr ""
+msgstr "التفاف الكلمات"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
-msgstr ""
+msgstr "إظهار إرشادات طول السطر"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Soft Column"
-msgstr ""
+msgstr "عمود ناعم لتوجيه طول السطر"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Hard Column"
-msgstr ""
+msgstr "عمود غامق لتوجيه طول السطر"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -5655,7 +5645,7 @@ msgstr "محرر النص البرمجي"
 
 #: editor/editor_settings.cpp
 msgid "Show Members Overview"
-msgstr ""
+msgstr "عرض نظرة عامة على الأعضاء"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -5669,19 +5659,19 @@ msgstr "تشذيب الفراغات البيضاء الزائدة"
 
 #: editor/editor_settings.cpp
 msgid "Autosave Interval Secs"
-msgstr ""
+msgstr "الفاصل الزمني للحفظ التلقائي بالثواني"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Restore Scripts On Load"
-msgstr ""
+msgstr "استعادة البرامج النصية عند التحميل"
 
 #: editor/editor_settings.cpp
 msgid "Auto Reload And Parse Scripts On Save"
-msgstr ""
+msgstr "إعادة تحميل البرامج النصية تلقائيا وتحليلها عند الحفظ"
 
 #: editor/editor_settings.cpp
 msgid "Auto Reload Scripts On External Change"
-msgstr ""
+msgstr "إعادة تحميل البرامج النصية تلقائيا عند تغييرها من الخارج"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5690,27 +5680,27 @@ msgstr "اجبار ارتداد(احتياط) التظليل"
 
 #: editor/editor_settings.cpp
 msgid "Sort Members Outline Alphabetically"
-msgstr ""
+msgstr "فرز الخطوط العريضة للأعضاء أبجدياً"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
-msgstr ""
+msgstr "المؤشر"
 
 #: editor/editor_settings.cpp
 msgid "Scroll Past End Of File"
-msgstr ""
+msgstr "التمرير إلى ما بعد نهاية الملف"
 
 #: editor/editor_settings.cpp
 msgid "Block Caret"
-msgstr ""
+msgstr "علامة الإقحام"
 
 #: editor/editor_settings.cpp
 msgid "Caret Blink"
-msgstr ""
+msgstr "وميض علامة الإقحام"
 
 #: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
-msgstr ""
+msgstr "سرعة وميض علامة الإقحام"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5726,23 +5716,23 @@ msgstr "نسخ المُحدد"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
-msgstr ""
+msgstr "تأخير التحليل الخامل"
 
 #: editor/editor_settings.cpp
 msgid "Auto Brace Complete"
-msgstr ""
+msgstr "اكمال القوس التلقائي"
 
 #: editor/editor_settings.cpp
 msgid "Code Complete Delay"
-msgstr ""
+msgstr "تأخير الإكمال التلقائي للكود"
 
 #: editor/editor_settings.cpp
 msgid "Put Callhint Tooltip Below Current Line"
-msgstr ""
+msgstr "ضع تلميح أداة Callhint أسفل السطر الحالي"
 
 #: editor/editor_settings.cpp
 msgid "Callhint Tooltip Offset"
-msgstr ""
+msgstr "إزاحة تلميح أداة Callhint"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5766,15 +5756,15 @@ msgstr "أظهر المساعدات"
 
 #: editor/editor_settings.cpp
 msgid "Help Font Size"
-msgstr ""
+msgstr "حجم خط المساعدة"
 
 #: editor/editor_settings.cpp
 msgid "Help Source Font Size"
-msgstr ""
+msgstr "حجم خط مصدر المساعدة"
 
 #: editor/editor_settings.cpp
 msgid "Help Title Font Size"
-msgstr ""
+msgstr "حجم خط عنوان المساعدة"
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -5792,11 +5782,11 @@ msgstr "عرض"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
-msgstr ""
+msgstr "لون الشبكة الأساسي"
 
 #: editor/editor_settings.cpp
 msgid "Secondary Grid Color"
-msgstr ""
+msgstr "لون الشبكة الثانوي"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5833,7 +5823,7 @@ msgstr "نقطة"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "شكل"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5847,15 +5837,15 @@ msgstr "خطوة الشبكة:"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Max"
-msgstr ""
+msgstr "الحد الأقصى لمستوى تقسيم الشبكة"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Min"
-msgstr ""
+msgstr "الحد الأدنى لمستوى تقسيم الشبكة"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Bias"
-msgstr ""
+msgstr "التحيز على مستوى تقسيم الشبكة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5889,7 +5879,7 @@ msgstr "افتراضي"
 
 #: editor/editor_settings.cpp
 msgid "Lightmap Baking Number Of CPU Threads"
-msgstr ""
+msgstr "عدد خطوط المعالجة لحفظ خرائط الإضاءة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5913,11 +5903,11 @@ msgstr "تصغير"
 
 #: editor/editor_settings.cpp
 msgid "Emulate Numpad"
-msgstr ""
+msgstr "محاكاة لوحة مفاتيح الأرقام"
 
 #: editor/editor_settings.cpp
 msgid "Emulate 3 Button Mouse"
-msgstr ""
+msgstr "محاكاة الماوس ذو الثلاثة أزرار"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5936,7 +5926,7 @@ msgstr "مُعدّل"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Warped Mouse Panning"
-msgstr ""
+msgstr "التفاف الحركة بالماوس"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5945,11 +5935,11 @@ msgstr "وضع التنقل"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Sensitivity"
-msgstr ""
+msgstr "حساسية التدوير"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Inertia"
-msgstr ""
+msgstr "القصور الذاتي المداري"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6013,7 +6003,7 @@ msgstr "المحاذاة الذكية"
 
 #: editor/editor_settings.cpp
 msgid "Bone Width"
-msgstr ""
+msgstr "عرض العظام"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6032,11 +6022,11 @@ msgstr "عدل على الحساب الحالي:"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
-msgstr ""
+msgstr "لون IK العظام"
 
 #: editor/editor_settings.cpp
 msgid "Bone Outline Color"
-msgstr ""
+msgstr "لون حدود العظام"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6045,19 +6035,19 @@ msgstr "حجم الخطوط:"
 
 #: editor/editor_settings.cpp
 msgid "Viewport Border Color"
-msgstr ""
+msgstr "لون حدود إطار العرض"
 
 #: editor/editor_settings.cpp
 msgid "Constrain Editor View"
-msgstr ""
+msgstr "تقييد عرض المحرر"
 
 #: editor/editor_settings.cpp
 msgid "Simple Panning"
-msgstr ""
+msgstr "التحريك البسيط"
 
 #: editor/editor_settings.cpp
 msgid "Scroll To Pan"
-msgstr ""
+msgstr "التمرير للتحريك"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6071,7 +6061,7 @@ msgstr "مُحرر UV الخاص بالمُضلعات ثنائية البُعد"
 
 #: editor/editor_settings.cpp
 msgid "Point Grab Radius"
-msgstr ""
+msgstr "قطر نقطة الإنتزاع"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -6085,7 +6075,7 @@ msgstr "إعادة تسمية الرسم المتحرك"
 
 #: editor/editor_settings.cpp
 msgid "Default Create Bezier Tracks"
-msgstr ""
+msgstr "إنشاء مسارات Bezier الإفتراضية"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6094,11 +6084,11 @@ msgstr "إنشاء مسار(ات) إعادة التعيين (RESET)"
 
 #: editor/editor_settings.cpp
 msgid "Onion Layers Past Color"
-msgstr ""
+msgstr "لون Onion Layers في الماضي"
 
 #: editor/editor_settings.cpp
 msgid "Onion Layers Future Color"
-msgstr ""
+msgstr "لون Onion Layers في المستقبل"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6107,11 +6097,11 @@ msgstr "محرر المجموعات"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Opacity"
-msgstr ""
+msgstr "عتامة الخريطة المصغرة"
 
 #: editor/editor_settings.cpp
 msgid "Window Placement"
-msgstr ""
+msgstr "موضع النافذة"
 
 #: editor/editor_settings.cpp scene/2d/back_buffer_copy.cpp scene/2d/sprite.cpp
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/sprite_3d.cpp
@@ -6127,7 +6117,7 @@ msgstr "حدد موقع خروج الإنحناء"
 
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
-msgstr ""
+msgstr "شاشة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6162,17 +6152,17 @@ msgstr "إعدادات المُعدل"
 
 #: editor/editor_settings.cpp
 msgid "HTTP Proxy"
-msgstr ""
+msgstr "وكيل (Proxy) HTTP"
 
 #: editor/editor_settings.cpp
 msgid "Host"
-msgstr ""
+msgstr "المضيف"
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Port"
-msgstr ""
+msgstr "منفذ"
 
 #. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
@@ -6187,15 +6177,15 @@ msgstr "إعادة تسمية مجلد:"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
-msgstr ""
+msgstr "لون الرمز"
 
 #: editor/editor_settings.cpp
 msgid "Keyword Color"
-msgstr ""
+msgstr "لون الكلمة المفتاحية"
 
 #: editor/editor_settings.cpp
 msgid "Control Flow Keyword Color"
-msgstr ""
+msgstr "لون الكلمة المفتاحية لتدفق التحكم"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6204,15 +6194,15 @@ msgstr "النوع الأساسي"
 
 #: editor/editor_settings.cpp
 msgid "Engine Type Color"
-msgstr ""
+msgstr "لون نوع المحرك"
 
 #: editor/editor_settings.cpp
 msgid "User Type Color"
-msgstr ""
+msgstr "لون نوع المستخدم"
 
 #: editor/editor_settings.cpp
 msgid "Comment Color"
-msgstr ""
+msgstr "لون التعليق"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6238,15 +6228,15 @@ msgstr "إستيراد المحدد"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Existing Color"
-msgstr ""
+msgstr "لون الإكمال الموجود"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Scroll Color"
-msgstr ""
+msgstr "لون تمرير الإكمال"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Font Color"
-msgstr ""
+msgstr "لون خط الإكمال"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6265,7 +6255,7 @@ msgstr "رقم الخط:"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
-msgstr ""
+msgstr "لون علامة الإقحام"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6284,7 +6274,7 @@ msgstr "المحدد فقط"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
-msgstr ""
+msgstr "لون عدم تطابق الأقواس"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6293,7 +6283,7 @@ msgstr "المشهد الحالي"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Color"
-msgstr ""
+msgstr "لون إرشاد طول السطر"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6302,7 +6292,7 @@ msgstr "مُعلّم التركيب Syntax"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Number Color"
-msgstr ""
+msgstr "لون الرقم"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6331,11 +6321,11 @@ msgstr "نقاط التكسّر"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Executing Line Color"
-msgstr ""
+msgstr "لون سطر التنفيذ"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Code Folding Color"
-msgstr ""
+msgstr "لون الكود القابل للطي"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6650,7 +6640,7 @@ msgstr ""
 
 #: editor/fileserver/editor_file_server.cpp
 msgid "File Server"
-msgstr ""
+msgstr "خادم الملفات"
 
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -7016,11 +7006,11 @@ msgstr "إدارة المجموعات"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Collada"
-msgstr ""
+msgstr "كولادا (Collada)"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Use Ambient"
-msgstr ""
+msgstr "استخدم Ambient"
 
 #: editor/import/resource_importer_bitmask.cpp
 #, fuzzy
@@ -7030,7 +7020,7 @@ msgstr "أنشئ مجلد"
 #: editor/import/resource_importer_bitmask.cpp
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Threshold"
-msgstr ""
+msgstr "عتبة"
 
 #: editor/import/resource_importer_csv_translation.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -7043,7 +7033,7 @@ msgstr "مكونات"
 
 #: editor/import/resource_importer_csv_translation.cpp
 msgid "Delimiter"
-msgstr ""
+msgstr "محدد"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -7052,7 +7042,7 @@ msgstr "الوظيفة البرمجية للون."
 
 #: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
-msgstr ""
+msgstr "لا BPTC إذا RGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
@@ -7066,7 +7056,7 @@ msgstr "أعلام"
 #: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
 #: scene/resources/texture.cpp
 msgid "Repeat"
-msgstr ""
+msgstr "كرر"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
@@ -7084,12 +7074,12 @@ msgstr "الإشارات"
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "Anisotropic"
-msgstr ""
+msgstr "تباين الخواص"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB (قياسي)"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -7210,7 +7200,7 @@ msgstr "تخزين الملف:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Use Legacy Names"
-msgstr ""
+msgstr "استخدم الأسماء القديمة"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 #, fuzzy
@@ -7243,8 +7233,9 @@ msgid "Lightmap Texel Size"
 msgstr "طبخ/تجهيز-خريطة-الاضاءة"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
 msgid "Skins"
-msgstr ""
+msgstr "سكينس (Skins)"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7258,7 +7249,7 @@ msgstr "إفتح ملف"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Store In Subdir"
-msgstr ""
+msgstr "خزن في مجلد فرعي"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7369,16 +7360,20 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: تم الكشف عن نقش مستخدم كخريطة نورمال (NormalMap) في 3D. تمكين ضغط نقش "
+"الأحمر والأخضر لتقليل استخدام الذاكرة (يتم تجاهل القناة الزرقاء)."
 
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: تم الكشف عن نقش مستخدم في 3D. تمكين المرشح والتكرار وتوليد خريطة-الرسمة-"
+"بدقات-متعددة (mipmap) وضغط نقش VRAM."
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
-msgstr ""
+msgstr "2D، والكشف عن 3D"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7387,7 +7382,7 @@ msgstr "البكسيلات الأساسية (Solid Pixels)"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
-msgstr ""
+msgstr "جودة ضائعة (Lossy)"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7396,14 +7391,14 @@ msgstr "تحديد الوضع"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "BPTC LDR"
-msgstr ""
+msgstr "BPTC LDR"
 
 #: editor/import/resource_importer_texture.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
 msgid "Normal Map"
-msgstr ""
+msgstr "خريطة عادية"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7412,7 +7407,7 @@ msgstr "المعالجة-اللاحقة Post-Process"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Fix Alpha Border"
-msgstr ""
+msgstr "إصلاح حدود ألفا"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7421,7 +7416,7 @@ msgstr "تعديل مُتعدد السطوح"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Hdr As Srgb"
-msgstr ""
+msgstr "Hdr As Srgb"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7439,7 +7434,7 @@ msgstr "الحد الأقصى للحجم"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Detect 3D"
-msgstr ""
+msgstr "كشف 3D"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7451,6 +7446,8 @@ msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
 "texture will not display correctly on PC."
 msgstr ""
+"تحذير، لم يتم تمكين ضغط VRAM مناسب للكمبيوتر الشخصي في إعدادات المشروع. لن "
+"يتم عرض هذا النقش بشكل صحيح على جهاز الكمبيوتر."
 
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
@@ -7469,7 +7466,7 @@ msgstr "تحديد منطقة البلاط"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 msgid "Trim Alpha Border From Region"
-msgstr ""
+msgstr "تقليم حدود ألفا من المنطقة"
 
 #: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
 #, fuzzy
@@ -7478,12 +7475,12 @@ msgstr "أنشر بإجبار"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "8 Bit"
-msgstr ""
+msgstr "8 بت"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
 #: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
-msgstr ""
+msgstr "احاديه"
 
 #: editor/import/resource_importer_wav.cpp
 #, fuzzy
@@ -7497,7 +7494,7 @@ msgstr "عقدة الخلط"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Trim"
-msgstr ""
+msgstr "تقليم"
 
 #: editor/import/resource_importer_wav.cpp
 #, fuzzy
@@ -7614,7 +7611,7 @@ msgstr "محلي"
 
 #: editor/inspector_dock.cpp
 msgid "Localization not available for current language."
-msgstr ""
+msgstr "الترجمة غير متوفرة للغة الحالية."
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -8063,8 +8060,17 @@ msgid "New Anim"
 msgstr "رسم متحرك جديدة"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "إنشاء رسوم متحركة جديدة"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "تغيير إسم الرسم المتحرك:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "إعادة تسمية الرسم المتحرك"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8083,11 +8089,6 @@ msgstr "اسم حركة خاطئ!"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
 msgstr "إسم الرسم المتحرك موجود بالفعل!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "إعادة تسمية الرسم المتحرك"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8231,10 +8232,6 @@ msgstr "تضمين جيزموس (3D)"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
 msgstr "تثبيت مُشغّل الرسوميات المتحركة"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "إنشاء رسوم متحركة جديدة"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -8491,7 +8488,7 @@ msgstr "الفلترة..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp scene/main/http_request.cpp
 msgid "Use Threads"
-msgstr ""
+msgstr "استخدم خطوط المعالجة"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -8724,7 +8721,7 @@ msgstr "أختبار"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "فشل الحصول على إعدادات الأرشيف."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -11265,7 +11262,7 @@ msgstr "القمم:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr "FPS: %d (%s جزء من الثانية)"
+msgstr "عدد الإطارات في الثانية: %d (%s ميلي ثانية)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -19216,15 +19213,13 @@ msgid "Code Signing"
 msgstr "الإشاراة"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"تعذر العثور على 'apksigner'.\n"
-"تأكد من فضلك إن كان الأمر موجوداً في دليل ملفات أدوات-بناء الأندرويد Android "
-"SDK build-tools.\n"
-"لم يتم توقيع الناتج %s."
+"تعذر العثور على 'apksigner'. تأكد من فضلك إن كان الأمر موجوداً في دليل ملفات "
+"أدوات-بناء حزمة تطوير الأندرويد Android SDK build-tools. لم يتم توقيع الناتج "
+"%s."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19239,9 +19234,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "لا يمكن العثور على مفتاح المتجر، لا يمكن التصدير."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء تشغيل apksigner ."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19274,9 +19268,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "أسم الملف غير صالح! يتطلب ملف اندرويد APK أمتداد *.apk لتعمل."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "صيغة تصدير غير مدعومة!\n"
+msgstr "تنسيق تصدير غير مدعوم!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19287,15 +19280,12 @@ msgstr ""
 "أعد التحميل من قائمة \"المشروع\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"نسخ بناء Android  غير متوافقة:\n"
-"\tقوالب مُنصبة: %s\n"
-"\tإصدار غودوت: %s\n"
-"من فضلك أعد تنصيب قالب بناء الأندرويد Android  من قائمة \"المشروع\"."
+"نسخ بناء Android غير متوافقة: قوالب مُنصبة: %s إصدار غودوت: %s. من فضلك أعد "
+"تنصيب قالب بناء الأندرويد من قائمة 'المشروع'."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19305,9 +19295,8 @@ msgstr ""
 "تعذرت كتابة overwrite ملفات res://android/build/res/*.xml مع اسم المشروع"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle\n"
+msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19318,13 +19307,12 @@ msgid "Building Android Project (gradle)"
 msgstr "بناء مشروع الأندرويد (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"أخفق بناء مشروع الأندرويد، تفقد المُخرجات للإطلاع على الخطأ.\n"
-"بصورة بديلة يمكنك زيارة docs.godotengine.org لأجل مستندات البناء للأندرويد."
+"أخفق بناء مشروع الأندرويد، تفقد المُخرجات للإطلاع على الخطأ. بصورة بديلة "
+"يمكنك زيارة docs.godotengine.org لأجل مستندات البناء للأندرويد."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -19347,22 +19335,18 @@ msgid "Creating APK..."
 msgstr "إنشاء المحيط..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"لم يتم إيجاد قالب APK للتصدير:\n"
-"%s"
+msgstr "لم يتم إيجاد قالب APK للتصدير: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"هنالك مكاتب قوالب تصدير ناقصة بالنسبة للمعمارية المختارة: %s.\n"
-"ابن قالب التصدير متضمناً جميع المكتبات الضرورية، أو أزال اختيار المعماريات "
-"الناقصة من خيارات التصدير المعدّة مسبقاً."
+"هنالك مكاتب قوالب تصدير ناقصة بالنسبة للمعمارية المختارة: %s.ابن قالب "
+"التصدير متضمناً جميع المكتبات الضرورية، أو أزال اختيار المعماريات الناقصة من "
+"خيارات التصدير المعدّة مسبقاً."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -20067,9 +20051,8 @@ msgid "Could not open icon file \"%s\"."
 msgstr "لم نتمكن من تصدير ملفات المشروع"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء تشغيل xcrun."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20141,9 +20124,8 @@ msgid "DMG Creation"
 msgstr "الاتجاهات"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "لا يمكن بدء عملية جانبية!"
+msgstr "تعذر بدء الملف التنفيذي hdiutil."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -20222,9 +20204,8 @@ msgid "ZIP Creation"
 msgstr "مشروع"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "لم يتمكن من تصدير ملفات المشروع إلى مشروع gradle\n"
+msgstr "تعذر فتح الملف للقراءة من المسار \"%s\"."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -21665,6 +21646,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "تعديل الإتصال:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "اختر المسافة:"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22962,6 +22955,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "أجهض التحول."
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -27297,6 +27297,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "توليد AABB"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "المُعادل:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

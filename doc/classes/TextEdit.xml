@@ -956,6 +956,9 @@
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
+		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
+			If [code]true[/code], allow drag and drop of selected text.
+		</member>
 		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
 			If [code]true[/code], control characters are displayed.
 		</member>

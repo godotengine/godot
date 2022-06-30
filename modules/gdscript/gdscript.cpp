@@ -1254,6 +1254,14 @@ GDScript::~GDScript() {
 		memdelete(E.value);
 	}
 
+	if (implicit_initializer) {
+		memdelete(implicit_initializer);
+	}
+
+	if (implicit_ready) {
+		memdelete(implicit_ready);
+	}
+
 	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
 		GDScriptCache::remove_script(get_path());
 	}
@@ -1541,6 +1549,18 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 
 Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *sptr = script.ptr();
+	if (unlikely(p_method == SNAME("_ready"))) {
+		// Call implicit ready first, including for the super classes.
+		while (sptr) {
+			if (sptr->implicit_ready) {
+				sptr->implicit_ready->call(this, nullptr, 0, r_error);
+			}
+			sptr = sptr->_base;
+		}
+
+		// Reset this back for the regular call.
+		sptr = script.ptr();
+	}
 	while (sptr) {
 		HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
 		if (E) {

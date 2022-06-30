@@ -123,6 +123,18 @@ void GodotNavigationServer::add_command(SetCommand *command) const {
 	}
 }
 
+Array GodotNavigationServer::get_maps() const {
+	Array all_map_rids;
+	List<RID> maps_owned;
+	map_owner.get_owned_list(&maps_owned);
+	if (maps_owned.size()) {
+		for (const RID &E : maps_owned) {
+			all_map_rids.push_back(E);
+		}
+	}
+	return all_map_rids;
+}
+
 RID GodotNavigationServer::map_create() const {
 	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
@@ -337,6 +349,16 @@ real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
 	ERR_FAIL_COND_V(region == nullptr, 0);
 
 	return region->get_travel_cost();
+}
+
+bool GodotNavigationServer::region_owns_point(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, false);
+	if (region->get_map()) {
+		RID closest_point_owner = map_get_closest_point_owner(region->get_map()->get_self(), p_point);
+		return closest_point_owner == region->get_self();
+	}
+	return false;
 }
 
 COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers) {
@@ -578,6 +600,15 @@ void GodotNavigationServer::flush_queries() {
 		memdelete(commands[i]);
 	}
 	commands.clear();
+}
+
+void GodotNavigationServer::map_force_update(RID p_map) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND(map == nullptr);
+
+	flush_queries();
+
+	map->sync();
 }
 
 void GodotNavigationServer::process(real_t p_delta_time) {

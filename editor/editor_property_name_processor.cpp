@@ -176,6 +176,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["lowpass"] = "Low-pass";
 	capitalize_string_remaps["macos"] = "macOS";
 	capitalize_string_remaps["mb"] = "(MB)"; // Unit.
+	capitalize_string_remaps["mjpeg"] = "MJPEG";
 	capitalize_string_remaps["mms"] = "MMS";
 	capitalize_string_remaps["ms"] = "(ms)"; // Unit
 	capitalize_string_remaps["msaa"] = "MSAA";

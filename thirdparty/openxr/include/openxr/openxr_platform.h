@@ -275,7 +275,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirementsKHR(
 #ifdef XR_USE_GRAPHICS_API_D3D11
 
 #define XR_KHR_D3D11_enable 1
-#define XR_KHR_D3D11_enable_SPEC_VERSION  8
+#define XR_KHR_D3D11_enable_SPEC_VERSION  9
 #define XR_KHR_D3D11_ENABLE_EXTENSION_NAME "XR_KHR_D3D11_enable"
 // XrGraphicsBindingD3D11KHR extends XrSessionCreateInfo
 typedef struct XrGraphicsBindingD3D11KHR {
@@ -312,7 +312,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D11GraphicsRequirementsKHR(
 #ifdef XR_USE_GRAPHICS_API_D3D12
 
 #define XR_KHR_D3D12_enable 1
-#define XR_KHR_D3D12_enable_SPEC_VERSION  8
+#define XR_KHR_D3D12_enable_SPEC_VERSION  9
 #define XR_KHR_D3D12_ENABLE_EXTENSION_NAME "XR_KHR_D3D12_enable"
 // XrGraphicsBindingD3D12KHR extends XrSessionCreateInfo
 typedef struct XrGraphicsBindingD3D12KHR {
@@ -665,6 +665,21 @@ typedef struct XrSwapchainStateSamplerVulkanFB {
     XrColor4f               borderColor;
 } XrSwapchainStateSamplerVulkanFB;
 #endif // XR_USE_GRAPHICS_API_VULKAN
+
+#endif /* XR_USE_GRAPHICS_API_VULKAN */
+
+#ifdef XR_USE_GRAPHICS_API_VULKAN
+
+#define XR_META_vulkan_swapchain_create_info 1
+#define XR_META_vulkan_swapchain_create_info_SPEC_VERSION 1
+#define XR_META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME "XR_META_vulkan_swapchain_create_info"
+// XrVulkanSwapchainCreateInfoMETA extends XrSwapchainCreateInfo
+typedef struct XrVulkanSwapchainCreateInfoMETA {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    VkImageCreateFlags          additionalCreateFlags;
+    VkImageUsageFlags           additionalUsageFlags;
+} XrVulkanSwapchainCreateInfoMETA;
 
 #endif /* XR_USE_GRAPHICS_API_VULKAN */
 

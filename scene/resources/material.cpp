@@ -2209,7 +2209,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transpar
 	if (p_fixed_size) {
 		hash |= 1 << 9;
 	}
-	hash = hash_djb2_one_64(p_filter, hash);
+	hash = hash_murmur3_one_64(p_filter, hash);
 
 	if (materials_for_2d.has(hash)) {
 		if (r_shader_rid) {

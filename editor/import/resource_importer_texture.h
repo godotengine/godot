@@ -54,9 +54,8 @@ public:
 protected:
 	enum {
 		MAKE_3D_FLAG = 1,
-		MAKE_VRAM_COMPRESS_FLAG = 2,
-		MAKE_ROUGHNESS_FLAG = 4,
-		MAKE_NORMAL_FLAG = 8,
+		MAKE_ROUGHNESS_FLAG = 2,
+		MAKE_NORMAL_FLAG = 4
 	};
 
 	Mutex mutex;

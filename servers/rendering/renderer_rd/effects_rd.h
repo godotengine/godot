@@ -33,17 +33,9 @@
 
 #include "core/math/camera_matrix.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/cube_to_dp.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_downsampler.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_downsampler_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_filter.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_filter_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_roughness.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cubemap_roughness_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/resolve.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/screen_space_reflection_filter.glsl.gen.h"
@@ -105,24 +97,6 @@ private:
 		RID pipeline;
 	} TAA_resolve;
 
-	struct CubemapRoughnessPushConstant {
-		uint32_t face_id;
-		uint32_t sample_count;
-		float roughness;
-		uint32_t use_direct_write;
-		float face_size;
-		float pad[3];
-	};
-
-	struct CubemapRoughness {
-		CubemapRoughnessPushConstant push_constant;
-		CubemapRoughnessShaderRD compute_shader;
-		CubemapRoughnessRasterShaderRD raster_shader;
-		RID shader_version;
-		RID compute_pipeline;
-		PipelineCacheRD raster_pipeline;
-	} roughness;
-
 	enum LuminanceReduceMode {
 		LUMINANCE_REDUCE_READ,
 		LUMINANCE_REDUCE,
@@ -167,19 +141,6 @@ private:
 		RID shader_version;
 		PipelineCacheRD pipelines[LUMINANCE_REDUCE_FRAGMENT_MAX];
 	} luminance_reduce_raster;
-
-	struct CopyToDPPushConstant {
-		float z_far;
-		float z_near;
-		float texel_size[2];
-		float screen_rect[4];
-	};
-
-	struct CoptToDP {
-		CubeToDpShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipeline;
-	} cube_to_dp;
 
 	struct SSEffectsDownsamplePushConstant {
 		float pixel_size[2];
@@ -420,49 +381,6 @@ private:
 
 	} roughness_limiter;
 
-	struct CubemapDownsamplerPushConstant {
-		uint32_t face_size;
-		uint32_t face_id;
-		float pad[2];
-	};
-
-	struct CubemapDownsampler {
-		CubemapDownsamplerPushConstant push_constant;
-		CubemapDownsamplerShaderRD compute_shader;
-		CubemapDownsamplerRasterShaderRD raster_shader;
-		RID shader_version;
-		RID compute_pipeline;
-		PipelineCacheRD raster_pipeline;
-	} cubemap_downsampler;
-
-	enum CubemapFilterMode {
-		FILTER_MODE_HIGH_QUALITY,
-		FILTER_MODE_LOW_QUALITY,
-		FILTER_MODE_HIGH_QUALITY_ARRAY,
-		FILTER_MODE_LOW_QUALITY_ARRAY,
-		FILTER_MODE_MAX,
-	};
-
-	struct CubemapFilterRasterPushConstant {
-		uint32_t mip_level;
-		uint32_t face_id;
-		float pad[2];
-	};
-
-	struct CubemapFilter {
-		CubemapFilterShaderRD compute_shader;
-		CubemapFilterRasterShaderRD raster_shader;
-		RID shader_version;
-		RID compute_pipelines[FILTER_MODE_MAX];
-		PipelineCacheRD raster_pipelines[FILTER_MODE_MAX];
-
-		RID uniform_set;
-		RID image_uniform_set;
-		RID coefficient_buffer;
-		bool use_high_quality;
-
-	} filter;
-
 	enum SpecularMergeMode {
 		SPECULAR_MERGE_ADD,
 		SPECULAR_MERGE_SSR,
@@ -579,26 +497,6 @@ private:
 		RID pipelines[3]; //3 quality levels
 	} sss;
 
-	struct ResolvePushConstant {
-		int32_t screen_size[2];
-		int32_t samples;
-		uint32_t pad;
-	};
-
-	enum ResolveMode {
-		RESOLVE_MODE_GI,
-		RESOLVE_MODE_GI_VOXEL_GI,
-		RESOLVE_MODE_DEPTH,
-		RESOLVE_MODE_MAX
-	};
-
-	struct Resolve {
-		ResolvePushConstant push_constant;
-		ResolveShaderRD shader;
-		RID shader_version;
-		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
-	} resolve;
-
 	enum SortMode {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
@@ -671,9 +569,6 @@ public:
 	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
 	void taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
 
-	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
-	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
-	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
@@ -724,17 +619,10 @@ public:
 	void screen_space_indirect_lighting(RID p_diffuse, RID p_destination, RID p_normal_buffer, RID p_depth_mipmaps_texture, RID p_ao, const Vector<RID> p_ao_slices, RID p_ao_pong, const Vector<RID> p_ao_pong_slices, RID p_importance_map, RID p_importance_map_pong, RID p_edges, const Vector<RID> p_edges_slices, const CameraMatrix &p_projection, const CameraMatrix &p_last_projection, const SSILSettings &p_settings, bool p_invalidate_uniform_sets, RID &r_gather_uniform_set, RID &r_importance_map_uniform_set, RID &r_projection_uniform_set);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
-	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
-	void cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, const Size2i &p_size);
-	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);
-	void cubemap_filter_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_mip_level);
 
 	void screen_space_reflection(RID p_diffuse, RID p_normal_roughness, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera);
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection);
 	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
-
-	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
-	void resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

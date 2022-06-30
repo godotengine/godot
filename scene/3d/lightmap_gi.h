@@ -212,16 +212,8 @@ private:
 		}
 	};
 
-	struct Vector3iHash {
-		_FORCE_INLINE_ static uint32_t hash(const Vector3i &p_vtx) {
-			uint32_t h = hash_djb2_one_32(p_vtx.x);
-			h = hash_djb2_one_32(p_vtx.y, h);
-			return hash_djb2_one_32(p_vtx.z, h);
-		}
-	};
-
 	void _plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle);
-	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds);
+	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds);
 
 protected:
 	void _validate_property(PropertyInfo &property) const override;
