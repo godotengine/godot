@@ -247,6 +247,7 @@ protected:
 	void _window_changed(XEvent *event);
 
 	bool window_maximize_check(const char *p_atom_name) const;
+	bool window_fullscreen_check() const;
 	bool is_window_maximize_allowed() const;
 
 public:

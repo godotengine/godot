@@ -1814,6 +1814,49 @@ bool OS_X11::window_maximize_check(const char *p_atom_name) const {
 	return retval;
 }
 
+bool OS_X11::window_fullscreen_check() const {
+	// Using EWMH -- Extended Window Manager Hints
+	Atom property = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+	bool retval = false;
+
+	if (property == None) {
+		return retval;
+	}
+
+	int result = XGetWindowProperty(
+			x11_display,
+			x11_window,
+			property,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+
+	if (result == Success) {
+		Atom *atoms = (Atom *)data;
+		Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+		for (uint64_t i = 0; i < len; i++) {
+			if (atoms[i] == wm_fullscreen) {
+				retval = true;
+				break;
+			}
+		}
+		XFree(data);
+	}
+
+	return retval;
+}
+
 bool OS_X11::is_window_maximize_allowed() const {
 	return window_maximize_check("_NET_WM_ALLOWED_ACTIONS");
 }
@@ -2663,6 +2706,7 @@ void OS_X11::process_xevents() {
 		switch (event.type) {
 			case Expose: {
 				DEBUG_LOG_X11("[%u] Expose window=%lu, count='%u' \n", frame, event.xexpose.window, event.xexpose.count);
+				current_videomode.fullscreen = window_fullscreen_check();
 
 				Main::force_redraw();
 			} break;
