@@ -428,6 +428,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				case RemoteDebugger::MESSAGE_TYPE_LOG: {
 					msg_type = EditorLog::MSG_TYPE_STD;
 				} break;
+				case RemoteDebugger::MESSAGE_TYPE_LOG_RICH: {
+					msg_type = EditorLog::MSG_TYPE_STD_RICH;
+				} break;
 				case RemoteDebugger::MESSAGE_TYPE_ERROR: {
 					msg_type = EditorLog::MSG_TYPE_ERROR;
 				} break;
