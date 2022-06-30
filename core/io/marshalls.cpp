@@ -532,7 +532,13 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 		case Variant::RID: {
-			r_variant = RID();
+			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+			uint64_t id = decode_uint64(buf);
+			if (r_len) {
+				(*r_len) += 8;
+			}
+
+			r_variant = RID::from_uint64(id);
 		} break;
 		case Variant::OBJECT: {
 			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
@@ -614,9 +620,20 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = Callable();
 		} break;
 		case Variant::SIGNAL: {
-			r_variant = Signal();
-		} break;
+			String name;
+			Error err = _decode_string(buf, len, r_len, name);
+			if (err) {
+				return err;
+			}
 
+			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+			ObjectID id = ObjectID(decode_uint64(buf));
+			if (r_len) {
+				(*r_len) += 8;
+			}
+
+			r_variant = Signal(id, StringName(name));
+		} break;
 		case Variant::DICTIONARY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
@@ -1352,10 +1369,12 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		case Variant::RID: {
-		} break;
-		case Variant::CALLABLE: {
-		} break;
-		case Variant::SIGNAL: {
+			RID rid = p_variant;
+
+			if (buf) {
+				encode_uint64(rid.get_id(), buf);
+			}
+			r_len += 8;
 		} break;
 		case Variant::OBJECT: {
 			if (p_full_objects) {
@@ -1418,6 +1437,18 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				r_len += 8;
 			}
 
+		} break;
+		case Variant::CALLABLE: {
+		} break;
+		case Variant::SIGNAL: {
+			Signal signal = p_variant;
+
+			_encode_string(signal.get_name(), buf, r_len);
+
+			if (buf) {
+				encode_uint64(signal.get_object_id(), buf);
+			}
+			r_len += 8;
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
