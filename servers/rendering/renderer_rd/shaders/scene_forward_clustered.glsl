@@ -988,8 +988,10 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
 		vec3 ref_vec = reflect(-view, normal);
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 #endif
 
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
@@ -1046,6 +1048,7 @@ void fragment_shader(in SceneData scene_data) {
 		ambient_light *= attenuation;
 		specular_light *= attenuation;
 
+		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 		float roughness_lod = mix(0.001, 0.1, clearcoat_roughness) * MAX_ROUGHNESS_LOD;
@@ -1203,6 +1206,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		vec3 ref_vec = normalize(reflect(-view, normal));
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 		vec3 tangent = normalize(cross(v0, normal));
@@ -1302,6 +1306,18 @@ void fragment_shader(in SceneData scene_data) {
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
 #endif
 
+#ifdef LIGHT_ANISOTROPY_USED
+		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+		vec3 bent_normal = normal;
+#endif
+		vec3 ref_vec = normalize(reflect(-view, bent_normal));
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_reflection_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
@@ -1324,16 +1340,8 @@ void fragment_shader(in SceneData scene_data) {
 				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
-#ifdef LIGHT_ANISOTROPY_USED
-				// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
-				vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
-				vec3 anisotropic_tangent = cross(anisotropic_direction, view);
-				vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-				vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
-#else
-				vec3 bent_normal = normal;
-#endif
-				reflection_process(reflection_index, view, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 			}
 		}
 
