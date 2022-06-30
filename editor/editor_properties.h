@@ -389,6 +389,33 @@ public:
 	EditorPropertyObjectID();
 };
 
+class EditorPropertySignal : public EditorProperty {
+	GDCLASS(EditorPropertySignal, EditorProperty);
+	Button *edit = nullptr;
+	String base_type;
+	void _edit_pressed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	EditorPropertySignal();
+};
+
+class EditorPropertyCallable : public EditorProperty {
+	GDCLASS(EditorPropertyCallable, EditorProperty);
+	Button *edit = nullptr;
+	String base_type;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	EditorPropertyCallable();
+};
+
 class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
 	EditorSpinSlider *spin = nullptr;
