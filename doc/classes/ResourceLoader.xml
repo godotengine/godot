@@ -11,6 +11,15 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="add_resource_format_loader">
+			<return type="void" />
+			<argument index="0" name="format_loader" type="ResourceFormatLoader" />
+			<argument index="1" name="at_front" type="bool" default="false" />
+			<description>
+				Registers a new [ResourceFormatLoader]. The ResourceLoader will use the ResourceFormatLoader as described in [method load].
+				This method is performed implictly for ResourceFormatLoaders written in GDScript (see [ResourceFormatLoader] for more information).
+			</description>
+		</method>
 		<method name="exists">
 			<return type="bool" />
 			<argument index="0" name="path" type="String" />
@@ -87,6 +96,13 @@
 			<argument index="2" name="use_sub_threads" type="bool" default="false" />
 			<description>
 				Loads the resource using threads. If [code]use_sub_threads[/code] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
+			</description>
+		</method>
+		<method name="remove_resource_format_loader">
+			<return type="void" />
+			<argument index="0" name="format_loader" type="ResourceFormatLoader" />
+			<description>
+				Unregisters the given [ResourceFormatLoader].
 			</description>
 		</method>
 		<method name="set_abort_on_missing_resources">
