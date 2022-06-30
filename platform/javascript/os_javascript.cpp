@@ -134,7 +134,6 @@ Size2 OS_JavaScript::get_window_size() const {
 }
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
-	WARN_PRINT_ONCE("Maximizing windows is not supported for the HTML5 platform.");
 }
 
 bool OS_JavaScript::is_window_maximized() const {
