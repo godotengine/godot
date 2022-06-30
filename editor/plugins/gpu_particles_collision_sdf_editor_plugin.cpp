@@ -140,7 +140,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_sdf_save_path_and_bake(const Strin
 	if (col_sdf) {
 		Ref<Image> bake_img = col_sdf->bake();
 		if (bake_img.is_null()) {
-			EditorNode::get_singleton()->show_warning(TTR("Bake Error."));
+			EditorNode::get_singleton()->show_warning(TTR("No faces detected during GPUParticlesCollisionSDF3D bake.\nCheck whether there are visible meshes matching the bake mask within its extents."));
 			return;
 		}
 
