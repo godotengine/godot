@@ -112,7 +112,10 @@ int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
-	if (err != OK) {
+
+	if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		return 0;
+	} else if (err != OK) {
 		return 255;
 	}
 
