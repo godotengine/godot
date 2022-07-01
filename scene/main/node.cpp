@@ -439,9 +439,9 @@ void Node::set_physics_process(bool p_process) {
 	data.physics_process = p_process;
 
 	if (data.physics_process) {
-		add_to_group("physics_process", false);
+		add_to_group(SNAME("_physics_process"), false);
 	} else {
-		remove_from_group("physics_process");
+		remove_from_group(SNAME("_physics_process"));
 	}
 }
 
@@ -457,9 +457,9 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	data.physics_process_internal = p_process_internal;
 
 	if (data.physics_process_internal) {
-		add_to_group("physics_process_internal", false);
+		add_to_group(SNAME("_physics_process_internal"), false);
 	} else {
-		remove_from_group("physics_process_internal");
+		remove_from_group(SNAME("_physics_process_internal"));
 	}
 }
 
@@ -770,9 +770,9 @@ void Node::set_process(bool p_process) {
 	data.process = p_process;
 
 	if (data.process) {
-		add_to_group("process", false);
+		add_to_group(SNAME("_process"), false);
 	} else {
-		remove_from_group("process");
+		remove_from_group(SNAME("_process"));
 	}
 }
 
@@ -788,9 +788,9 @@ void Node::set_process_internal(bool p_process_internal) {
 	data.process_internal = p_process_internal;
 
 	if (data.process_internal) {
-		add_to_group("process_internal", false);
+		add_to_group(SNAME("_process_internal"), false);
 	} else {
-		remove_from_group("process_internal");
+		remove_from_group(SNAME("_process_internal"));
 	}
 }
 
@@ -807,19 +807,19 @@ void Node::set_process_priority(int p_priority) {
 	}
 
 	if (is_processing()) {
-		data.tree->make_group_changed("process");
+		data.tree->make_group_changed(SNAME("_process"));
 	}
 
 	if (is_processing_internal()) {
-		data.tree->make_group_changed("process_internal");
+		data.tree->make_group_changed(SNAME("_process_internal"));
 	}
 
 	if (is_physics_processing()) {
-		data.tree->make_group_changed("physics_process");
+		data.tree->make_group_changed(SNAME("_physics_process"));
 	}
 
 	if (is_physics_processing_internal()) {
-		data.tree->make_group_changed("physics_process_internal");
+		data.tree->make_group_changed(SNAME("_physics_process_internal"));
 	}
 }
 
