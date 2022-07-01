@@ -291,12 +291,15 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	hbox->add_child(previews_vbox);
 	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 	previews_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+	previews_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	preview = memnew(TextureRect);
 	previews_vbox->add_child(preview);
 	preview->set_expand(true);
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
+	preview->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	previews_bg = memnew(PanelContainer);
 	previews_vbox->add_child(previews_bg);
