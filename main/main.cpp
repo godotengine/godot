@@ -497,12 +497,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
-			exit_code = OK;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
-			exit_code = OK;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
