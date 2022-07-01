@@ -7126,6 +7126,8 @@ EditorNode::EditorNode() {
 	execute_output_dialog = memnew(AcceptDialog);
 	execute_output_dialog->add_child(execute_outputs);
 	execute_output_dialog->set_title("");
+	// Prevent closing too fast and missing important information.
+	execute_output_dialog->set_exclusive(true);
 	gui_base->add_child(execute_output_dialog);
 
 	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
