@@ -306,15 +306,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubleTap(JNIEnv *env
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
-	if (step.get() <= 0) {
-		return;
-	}
-
-	input_handler->process_scroll(Point2(p_x, p_y));
-}
-
-// Called on the UI thread
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env, jclass clazz, jint p_device, jint p_button, jboolean p_pressed) {
 	if (step.get() <= 0) {
 		return;

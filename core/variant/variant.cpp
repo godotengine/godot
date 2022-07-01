@@ -3327,19 +3327,30 @@ Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Varia
 void Variant::static_assign(const Variant &p_variant) {
 }
 
-bool Variant::is_shared() const {
-	switch (type) {
+bool Variant::is_type_shared(Variant::Type p_type) {
+	switch (p_type) {
 		case OBJECT:
-			return true;
 		case ARRAY:
-			return true;
 		case DICTIONARY:
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
 			return true;
 		default: {
 		}
 	}
 
 	return false;
+}
+
+bool Variant::is_shared() const {
+	return is_type_shared(type);
 }
 
 void Variant::_variant_call_error(const String &p_method, Callable::CallError &error) {
@@ -3395,6 +3406,8 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 		err_text = "Method not found.";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Instance is null";
+	} else if (ce.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Method not const in const instance";
 	} else if (ce.error == Callable::CallError::CALL_OK) {
 		return "Call OK";
 	}

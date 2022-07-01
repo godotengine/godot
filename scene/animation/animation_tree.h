@@ -107,6 +107,7 @@ protected:
 	double blend_input(int p_input, double p_time, bool p_seek, bool p_seek_root, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
 
 	void make_invalid(const String &p_reason);
+	AnimationTree *get_animation_tree() const;
 
 	static void _bind_methods();
 
@@ -270,6 +271,7 @@ private:
 	HashSet<TrackCache *> playing_caches;
 
 	Ref<AnimationNode> root;
+	NodePath advance_expression_base_node = NodePath(String("."));
 
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	bool active = false;
@@ -331,6 +333,9 @@ public:
 
 	void set_animation_player(const NodePath &p_player);
 	NodePath get_animation_player() const;
+
+	void set_advance_expression_base_node(const NodePath &p_advance_expression_base_node);
+	NodePath get_advance_expression_base_node() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

@@ -505,7 +505,7 @@ private:
 	static void _load_error_notify(void *p_ud, const String &p_text);
 	static void _file_access_close_error_notify(const String &p_str);
 
-	static void _print_handler(void *p_this, const String &p_string, bool p_error);
+	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 

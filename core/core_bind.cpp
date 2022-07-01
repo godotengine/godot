@@ -83,6 +83,14 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
+void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
+}
+
+void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+	::ResourceLoader::remove_resource_format_loader(p_format_loader);
+}
+
 void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 	::ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
@@ -119,6 +127,8 @@ void ResourceLoader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("add_resource_format_loader", "format_loader", "at_front"), &ResourceLoader::add_resource_format_loader, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_loader", "format_loader"), &ResourceLoader::remove_resource_format_loader);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &ResourceLoader::get_dependencies);
 	ClassDB::bind_method(D_METHOD("has_cached", "path"), &ResourceLoader::has_cached);
@@ -153,11 +163,21 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
+void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
+}
+
+void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+	::ResourceSaver::remove_resource_format_saver(p_format_saver);
+}
+
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
 
 	BIND_ENUM_CONSTANT(FLAG_NONE);
 	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
@@ -1820,13 +1840,14 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
-	::Thread::set_name(t->target_callable.get_method());
+	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	::Thread::set_name(func_name);
 
 	Callable::CallError ce;
 	t->target_callable.call(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
 	}
 
 	t->running.clear();

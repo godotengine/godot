@@ -96,6 +96,8 @@ public:
 	virtual Array map_get_regions(RID p_map) const = 0;
 	virtual Array map_get_agents(RID p_map) const = 0;
 
+	virtual void map_force_update(RID p_map) = 0;
+
 	/// Creates a new region.
 	virtual RID region_create() const = 0;
 
@@ -106,6 +108,8 @@ public:
 	/// Set the travel_cost of a region
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
+
+	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const = 0;
 
 	/// Set the map of this region.
 	virtual void region_set_map(RID p_region, RID p_map) const = 0;

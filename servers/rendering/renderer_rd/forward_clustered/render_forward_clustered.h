@@ -536,7 +536,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			AABB aabb;
 
 			bool use_dynamic_gi = false;
-			bool use_baked_light = false;
+			bool use_baked_light = true;
 			bool cast_double_sided_shadows = false;
 			bool mirror = false;
 			bool dirty_dependencies = false;

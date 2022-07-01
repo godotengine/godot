@@ -139,6 +139,16 @@
 				Create a new map.
 			</description>
 		</method>
+		<method name="map_force_update">
+			<return type="void" />
+			<argument index="0" name="map" type="RID" />
+			<description>
+				This function immediately forces synchronization of the specified navigation [code]map[/code] [RID]. By default navigation maps are only synchronized at the end of each physics frame. This function can be used to immediately (re)calculate all the navigation meshes and region connections of the navigation map. This makes it possible to query a navigation path for a changed map immediately and in the same frame (multiple times if needed).
+				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
+				Avoidance processing and dispatch of the [code]safe_velocity[/code] signals is untouched by this function and continues to happen for all maps and agents at the end of the physics frame.
+				[b]Note:[/b] With great power comes great responsibility. This function should only be used by users that really know what they are doing and have a good reason for it. Forcing an immediate update of a navigation map requires locking the NavigationServer and flushing the entire NavigationServer command queue. Not only can this severely impact the performance of a game but it can also introduce bugs if used inappropriately without much foresight.
+			</description>
+		</method>
 		<method name="map_get_agents" qualifiers="const">
 			<return type="Array" />
 			<argument index="0" name="map" type="RID" />
@@ -280,6 +290,16 @@
 			<argument index="0" name="region" type="RID" />
 			<description>
 				Returns the [code]travel_cost[/code] of this [code]region[/code].
+			</description>
+		</method>
+		<method name="region_owns_point" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="region" type="RID" />
+			<argument index="1" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the provided [code]point[/code] in world space is currently owned by the provided navigation [code]region[/code]. Owned in this context means that one of the region's navigation mesh polygon faces has a possible position at the closest distance to this point compared to all other navigation meshes from other navigation regions that are also registered on the navigation map of the provided region.
+				If multiple navigation meshes have positions at equal distance the navigation region whose polygons are processed first wins the ownership. Polygons are processed in the same order that navigation regions were registered on the NavigationServer.
+				[b]Note:[/b] If navigation meshes from different navigation regions overlap (which should be avoided in general) the result might not be what is expected.
 			</description>
 		</method>
 		<method name="region_set_enter_cost" qualifiers="const">

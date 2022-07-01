@@ -487,7 +487,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 void DependencyRemoveDialog::ok_pressed() {
 	for (int i = 0; i < files_to_delete.size(); ++i) {
 		if (ResourceCache::has(files_to_delete[i])) {
-			Resource *res = ResourceCache::get(files_to_delete[i]);
+			Ref<Resource> res = ResourceCache::get_ref(files_to_delete[i]);
 			res->set_path("");
 		}
 

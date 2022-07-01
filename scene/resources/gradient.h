@@ -92,10 +92,6 @@ public:
 	void set_interpolation_mode(InterpolationMode p_interp_mode);
 	InterpolationMode get_interpolation_mode();
 
-	_FORCE_INLINE_ float cubic_interpolate(float p0, float p1, float p2, float p3, float x) {
-		return p1 + 0.5 * x * (p2 - p0 + x * (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3 + x * (3.0 * (p1 - p2) + p3 - p0)));
-	}
-
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
 		if (points.is_empty()) {
 			return Color(0, 0, 0, 1);
@@ -161,10 +157,10 @@ public:
 				const Point &pointP3 = points[p3];
 
 				float x = (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset);
-				float r = cubic_interpolate(pointP0.color.r, pointFirst.color.r, pointSecond.color.r, pointP3.color.r, x);
-				float g = cubic_interpolate(pointP0.color.g, pointFirst.color.g, pointSecond.color.g, pointP3.color.g, x);
-				float b = cubic_interpolate(pointP0.color.b, pointFirst.color.b, pointSecond.color.b, pointP3.color.b, x);
-				float a = cubic_interpolate(pointP0.color.a, pointFirst.color.a, pointSecond.color.a, pointP3.color.a, x);
+				float r = Math::cubic_interpolate(pointP0.color.r, pointFirst.color.r, pointSecond.color.r, pointP3.color.r, x);
+				float g = Math::cubic_interpolate(pointP0.color.g, pointFirst.color.g, pointSecond.color.g, pointP3.color.g, x);
+				float b = Math::cubic_interpolate(pointP0.color.b, pointFirst.color.b, pointSecond.color.b, pointP3.color.b, x);
+				float a = Math::cubic_interpolate(pointP0.color.a, pointFirst.color.a, pointSecond.color.a, pointP3.color.a, x);
 
 				return Color(r, g, b, a);
 			} break;

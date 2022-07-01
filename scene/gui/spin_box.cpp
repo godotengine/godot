@@ -62,7 +62,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 		return;
 	}
 
-	Variant value = expr->execute(Array(), nullptr, false);
+	Variant value = expr->execute(Array(), nullptr, false, true);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 	}

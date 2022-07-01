@@ -17,10 +17,19 @@ extern "C" {
 
 #include <stddef.h>
 
-/* weak symbol support */
-#if !defined(ZSTD_HAVE_WEAK_SYMBOLS) && defined(__GNUC__) && \
+/* weak symbol support
+ * For now, enable conservatively:
+ * - Only GNUC
+ * - Only ELF
+ * - Only x86-64 and i386
+ * Also, explicitly disable on platforms known not to work so they aren't
+ * forgotten in the future.
+ */
+#if !defined(ZSTD_HAVE_WEAK_SYMBOLS) && \
+    defined(__GNUC__) && defined(__ELF__) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)) && \
     !defined(__APPLE__) && !defined(_WIN32) && !defined(__MINGW32__) && \
-    !defined(__CYGWIN__)
+    !defined(__CYGWIN__) && !defined(_AIX)
 #  define ZSTD_HAVE_WEAK_SYMBOLS 1
 #else
 #  define ZSTD_HAVE_WEAK_SYMBOLS 0

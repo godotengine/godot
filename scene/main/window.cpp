@@ -822,6 +822,22 @@ void Window::_notification(int p_what) {
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
+
+			if (theme.is_null()) {
+				Control *parent_c = cast_to<Control>(get_parent());
+				if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+					theme_owner = parent_c->data.theme_owner;
+					theme_owner_window = parent_c->data.theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				} else {
+					Window *parent_w = cast_to<Window>(get_parent());
+					if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+						theme_owner = parent_w->theme_owner;
+						theme_owner_window = parent_w->theme_owner_window;
+						notification(NOTIFICATION_THEME_CHANGED);
+					}
+				}
+			}
 		} break;
 
 		case NOTIFICATION_READY: {

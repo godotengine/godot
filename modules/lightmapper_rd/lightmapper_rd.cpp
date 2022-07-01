@@ -51,7 +51,7 @@ void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	mesh_instances.push_back(mi);
 }
 
-void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance) {
+void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_DIRECTIONAL;
 	l.direction[0] = p_direction.x;
@@ -62,11 +62,12 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	l.color[2] = p_color.b;
 	l.energy = p_energy;
 	l.static_bake = p_static;
-	l.size = p_angular_distance;
+	l.size = Math::tan(Math::deg2rad(p_angular_distance));
+	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
 }
 
-void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
+void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
 	l.position[0] = p_position.x;
@@ -80,10 +81,11 @@ void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, con
 	l.energy = p_energy;
 	l.static_bake = p_static;
 	l.size = p_size;
+	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
 }
 
-void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
+void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -102,6 +104,7 @@ void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, con
 	l.energy = p_energy;
 	l.static_bake = p_static;
 	l.size = p_size;
+	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
 }
 
@@ -1140,6 +1143,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
 
+		switch (p_quality) {
+			case BAKE_QUALITY_LOW: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_MEDIUM: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_HIGH: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_ULTRA: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
+			} break;
+		}
+
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
+
 		RD::ComputeListID compute_list = rd->compute_list_begin();
 		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
 		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
@@ -1229,23 +1249,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		uniforms.write[0].set_id(0, light_source_tex);
 		uniforms.write[1].set_id(0, light_dest_tex);
 		secondary_uniform_set[1] = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
-
-		switch (p_quality) {
-			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
-			} break;
-			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
-			} break;
-			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
-			} break;
-			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
-			} break;
-		}
-
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
 
 		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
 		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");

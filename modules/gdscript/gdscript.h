@@ -120,6 +120,7 @@ class GDScript : public Script {
 
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
+	GDScriptFunction *implicit_ready = nullptr;
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;

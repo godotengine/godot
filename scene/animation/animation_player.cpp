@@ -283,10 +283,12 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 	setup_pass++;
 
 	for (int i = 0; i < a->get_track_count(); i++) {
+		p_anim->node_cache.write[i] = nullptr;
+
 		if (!a->track_is_enabled(i)) {
 			continue;
 		}
-		p_anim->node_cache.write[i] = nullptr;
+
 		Ref<Resource> resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);

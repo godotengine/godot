@@ -297,6 +297,7 @@ public:
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
+	static bool is_type_shared(Variant::Type p_type);
 
 	bool is_ref_counted() const;
 	_FORCE_INLINE_ bool is_num() const {
@@ -555,6 +556,7 @@ public:
 		return ret;
 	}
 
+	void call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
@@ -715,6 +717,10 @@ public:
 	static int get_constants_count_for_type(Variant::Type p_type);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
+
+	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
+	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);

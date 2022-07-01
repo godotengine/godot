@@ -44,6 +44,7 @@ void initialize_tinyexr_module(ModuleInitializationLevel p_level) {
 	ImageLoader::add_image_format_loader(image_loader_tinyexr);
 
 	Image::save_exr_func = save_exr;
+	Image::save_exr_buffer_func = save_exr_buffer;
 }
 
 void uninitialize_tinyexr_module(ModuleInitializationLevel p_level) {

@@ -212,6 +212,15 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				type = SceneState::TYPE_INSTANCED; //no type? assume this was instantiated
 			}
 
+			HashSet<StringName> path_properties;
+
+			if (next_tag.fields.has("node_paths")) {
+				Vector<String> paths = next_tag.fields["node_paths"];
+				for (int i = 0; i < paths.size(); i++) {
+					path_properties.insert(paths[i]);
+				}
+			}
+
 			if (next_tag.fields.has("instance")) {
 				instance = packed_scene->get_state()->add_value(next_tag.fields["instance"]);
 
@@ -276,9 +285,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				}
 
 				if (!assign.is_empty()) {
-					int nameidx = packed_scene->get_state()->add_name(assign);
+					StringName assign_name = assign;
+					int nameidx = packed_scene->get_state()->add_name(assign_name);
 					int valueidx = packed_scene->get_state()->add_value(value);
-					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
+					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx, path_properties.has(assign_name));
 					//it's assignment
 				} else if (!next_tag.name.is_empty()) {
 					break;
@@ -526,9 +536,9 @@ Error ResourceLoaderText::load() {
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//reuse existing
-			Resource *r = ResourceCache::get(path);
-			if (r && r->get_class() == type) {
-				res = Ref<Resource>(r);
+			Ref<Resource> cache = ResourceCache::get_ref(path);
+			if (cache.is_valid() && cache->get_class() == type) {
+				res = cache;
 				res->reset_state();
 				do_assign = true;
 			}
@@ -537,10 +547,10 @@ Error ResourceLoaderText::load() {
 		MissingResource *missing_resource = nullptr;
 
 		if (res.is_null()) { //not reuse
-			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && ResourceCache::has(path)) { //only if it doesn't exist
+			Ref<Resource> cache = ResourceCache::get_ref(path);
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && cache.is_valid()) { //only if it doesn't exist
 				//cached, do not assign
-				Resource *r = ResourceCache::get(path);
-				res = Ref<Resource>(r);
+				res = cache;
 			} else {
 				//create
 
@@ -650,12 +660,10 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(local_path)) {
-			Resource *r = ResourceCache::get(local_path);
-			if (r->get_class() == res_type) {
-				r->reset_state();
-				resource = Ref<Resource>(r);
-			}
+		Ref<Resource> cache = ResourceCache::get_ref(local_path);
+		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+			cache->reset_state();
+			resource = cache;
 		}
 
 		MissingResource *missing_resource = nullptr;
@@ -1941,6 +1949,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			Ref<PackedScene> instance = state->get_node_instance(i);
 			String instance_placeholder = state->get_node_instance_placeholder(i);
 			Vector<StringName> groups = state->get_node_groups(i);
+			Vector<String> deferred_node_paths = state->get_node_deferred_nodepath_properties(i);
 
 			String header = "[node";
 			header += " name=\"" + String(name).c_escape() + "\"";
@@ -1955,6 +1964,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 			if (index >= 0) {
 				header += " index=\"" + itos(index) + "\"";
+			}
+
+			if (deferred_node_paths.size()) {
+				header += " node_paths=" + Variant(deferred_node_paths).get_construct_string();
 			}
 
 			if (groups.size()) {

@@ -1655,6 +1655,8 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 				error_str += "Expected " + itos(r_error.argument) + " arguments.";
 			} else if (r_error.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 				error_str += "Invalid Call.";
+			} else if (r_error.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+				error_str += "Method not const in a const instance.";
 			} else if (r_error.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 				error_str += "Base Instance is null";
 			}

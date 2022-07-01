@@ -12,13 +12,14 @@
 # Sagen Soren <sagensoren03@gmail.com>, 2020.
 # Hasibul Hasan <d1hasib@yahoo.com>, 2020.
 # saitama <atik.wowspace@gmail.com>, 2022.
+# Joysankar Majumdar <joymajumdar15828@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-12 13:19+0000\n"
-"Last-Translator: saitama <atik.wowspace@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:04+0000\n"
+"Last-Translator: Joysankar Majumdar <joymajumdar15828@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -234,9 +235,8 @@ msgid "Remote FS"
 msgstr "অপসারণ করুন"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "পাতা: "
+msgstr "পাতা"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -8404,8 +8404,17 @@ msgid "New Anim"
 msgstr "নতুন অ্যানিমেশন"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr "নতুন অ্যানিমেশন তৈরি করুন"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr "অ্যানিমেশনের নাম পরিবর্তন করুন:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "অ্যানিমেশন পুনঃনামকরণ করুন"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8426,11 +8435,6 @@ msgstr "ভুল: অগ্রহনযোগ্য অ্যানিমেশ
 #, fuzzy
 msgid "Animation name already exists!"
 msgstr "ভুল: অ্যানিমেশনের নাম ইতিমধ্যেই বিদ্যমান!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "অ্যানিমেশন পুনঃনামকরণ করুন"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8582,10 +8586,6 @@ msgstr ""
 #, fuzzy
 msgid "Pin AnimationPlayer"
 msgstr "অ্যানিমেশন প্রতিলেপন করুন"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr "নতুন অ্যানিমেশন তৈরি করুন"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -22526,6 +22526,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "সংযোগসমূহ সম্পাদন করুন"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "ইন্সট্যান্স:"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -23778,6 +23790,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "রুপান্তর নিষ্ফলা করা হয়েছে।"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 #, fuzzy
@@ -28086,6 +28105,16 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB"
+msgstr "AABB উৎপন্ন করুন"
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "অফসেট/ভারসাম্য:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

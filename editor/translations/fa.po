@@ -25,13 +25,14 @@
 # Alireza Khodabande <alirezakhodabande74@gmail.com>, 2021.
 # Seyed Fazel Alavi <fazel8195@gmail.com>, 2022.
 # Giga hertz <gigahertzyt@gmail.com>, 2022.
+# Aryan Azadeh <aryan@azadeh.email>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-03 13:13+0000\n"
-"Last-Translator: Giga hertz <gigahertzyt@gmail.com>\n"
+"PO-Revision-Date: 2022-06-20 06:44+0000\n"
+"Last-Translator: Aryan Azadeh <aryan@azadeh.email>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -694,7 +695,7 @@ msgstr "طرح پیش فرض اتوبوس را بارگیری کنید."
 #: editor/editor_settings.cpp editor/script_create_dialog.cpp
 #: scene/2d/camera_2d.cpp scene/3d/light.cpp scene/main/node.cpp
 msgid "Editor"
-msgstr "ویرایشگر"
+msgstr "ویرایِشگَر"
 
 #: core/project_settings.cpp
 msgid "Main Run Args"
@@ -4733,7 +4734,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "جامعه"
+msgstr "اَنجُمَن"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -8034,8 +8035,17 @@ msgid "New Anim"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Create New Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
 msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Rename Animation"
+msgstr "تغییر نام انیمیشن"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8056,11 +8066,6 @@ msgstr "نام نامعتبر."
 #, fuzzy
 msgid "Animation name already exists!"
 msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Rename Animation"
-msgstr "تغییر نام انیمیشن"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
@@ -8209,10 +8214,6 @@ msgstr ""
 #, fuzzy
 msgid "Pin AnimationPlayer"
 msgstr "تغییر نام انیمیشن"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create New Animation"
-msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
@@ -10732,7 +10733,7 @@ msgstr "زبانه قبلی"
 #: editor/plugins/script_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "File"
-msgstr ""
+msgstr "پَروَندِه"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -11360,7 +11361,7 @@ msgstr "خصوصیات"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS: %d (%s ms)"
-msgstr ""
+msgstr "FPS: %d (%s ms)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
@@ -15207,7 +15208,7 @@ msgstr "تنظیمات پروژه (پروژه.گودات)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "عمومی"
+msgstr "هَمِگان"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
@@ -21704,6 +21705,18 @@ msgstr ""
 msgid "Edge Connection Margin"
 msgstr "ویرایش اتصال:"
 
+#: scene/2d/navigation_2d.cpp
+msgid ""
+"'Navigation2D' node and 'Navigation2D.get_simple_path()' are deprecated and "
+"will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
+"instead."
+msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Desired Distance"
+msgstr "نصب کردن"
+
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
@@ -22917,6 +22930,13 @@ msgstr ""
 #, fuzzy
 msgid "Transform Normals"
 msgstr "انتخاب شده را تغییر مقیاس بده"
+
+#: scene/3d/navigation.cpp
+msgid ""
+"'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will "
+"be removed in a future version. Use 'NavigationServer.map_get_path()' "
+"instead."
+msgstr ""
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -27127,6 +27147,15 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 msgid "Walkable Low Height Spans"
 msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+msgid "Baking AABB"
+msgstr ""
+
+#: scene/resources/navigation_mesh.cpp
+#, fuzzy
+msgid "Baking AABB Offset"
+msgstr "حذف قالب"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

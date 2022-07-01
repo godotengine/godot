@@ -175,11 +175,14 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer2D::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
 
+	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer2D::map_force_update);
+
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer2D::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer2D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer2D::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer2D::region_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer2D::region_get_travel_cost);
+	ClassDB::bind_method(D_METHOD("region_owns_point", "region", "point"), &NavigationServer2D::region_owns_point);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &NavigationServer2D::region_set_map);
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer2D::region_get_map);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_layers", "region", "navigation_layers"), &NavigationServer2D::region_set_navigation_layers);
@@ -235,6 +238,10 @@ void FORWARD_2_C(map_set_active, RID, p_map, bool, p_active, rid_to_rid, bool_to
 
 bool FORWARD_1_C(map_is_active, RID, p_map, rid_to_rid);
 
+void NavigationServer2D::map_force_update(RID p_map) {
+	NavigationServer3D::get_singleton_mut()->map_force_update(p_map);
+}
+
 void FORWARD_2_C(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
@@ -252,6 +259,7 @@ void FORWARD_2_C(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid
 real_t FORWARD_1_C(region_get_enter_cost, RID, p_region, rid_to_rid);
 void FORWARD_2_C(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(region_get_travel_cost, RID, p_region, rid_to_rid);
+bool FORWARD_2_C(region_owns_point, RID, p_region, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
 void FORWARD_2_C(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
 void FORWARD_2_C(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);

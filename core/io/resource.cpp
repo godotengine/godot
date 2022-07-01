@@ -52,41 +52,36 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
+	if (p_path.is_empty()) {
+		p_take_over = false; // Can't take over an empty path
+	}
+
+	ResourceCache::lock.lock();
+
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.write_unlock();
 	}
 
 	path_cache = "";
 
-	ResourceCache::lock.read_lock();
-	bool has_path = ResourceCache::resources.has(p_path);
-	ResourceCache::lock.read_unlock();
+	Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (has_path) {
+	if (existing.is_valid()) {
 		if (p_take_over) {
-			ResourceCache::lock.write_lock();
-			Resource **res = ResourceCache::resources.getptr(p_path);
-			if (res) {
-				(*res)->set_name("");
-			}
-			ResourceCache::lock.write_unlock();
+			existing->path_cache = String();
+			ResourceCache::resources.erase(p_path);
 		} else {
-			ResourceCache::lock.read_lock();
-			bool exists = ResourceCache::resources.has(p_path);
-			ResourceCache::lock.read_unlock();
-
-			ERR_FAIL_COND_MSG(exists, "Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			ResourceCache::lock.unlock();
+			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
 		}
 	}
+
 	path_cache = p_path;
 
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
 		ResourceCache::resources[path_cache] = this;
-		ResourceCache::lock.write_unlock();
 	}
+	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -380,7 +375,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.write_lock();
+	ResourceCache::lock.lock();
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
@@ -388,7 +383,7 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
 
-	ResourceCache::lock.write_unlock();
+	ResourceCache::lock.unlock();
 }
 
 bool Resource::is_translation_remapped() const {
@@ -455,9 +450,9 @@ Resource::Resource() :
 
 Resource::~Resource() {
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.write_lock();
+		ResourceCache::lock.lock();
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.write_unlock();
+		ResourceCache::lock.unlock();
 	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned.");
@@ -469,7 +464,7 @@ HashMap<String, Resource *> ResourceCache::resources;
 HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
 
-RWLock ResourceCache::lock;
+Mutex ResourceCache::lock;
 #ifdef TOOLS_ENABLED
 RWLock ResourceCache::path_cache_lock;
 #endif
@@ -491,46 +486,67 @@ void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.read_lock();
-	bool b = resources.has(p_path);
-	lock.read_unlock();
-
-	return b;
-}
-
-Resource *ResourceCache::get(const String &p_path) {
-	lock.read_lock();
+	lock.lock();
 
 	Resource **res = resources.getptr(p_path);
 
-	lock.read_unlock();
-
-	if (!res) {
-		return nullptr;
+	if (res && (*res)->reference_get_count() == 0) {
+		// This resource is in the process of being deleted, ignore its existence.
+		(*res)->path_cache = String();
+		resources.erase(p_path);
+		res = nullptr;
 	}
 
-	return *res;
+	lock.unlock();
+
+	if (!res) {
+		return false;
+	}
+
+	return true;
+}
+
+Ref<Resource> ResourceCache::get_ref(const String &p_path) {
+	Ref<Resource> ref;
+	lock.lock();
+
+	Resource **res = resources.getptr(p_path);
+
+	if (res) {
+		ref = Ref<Resource>(*res);
+	}
+
+	if (res && !ref.is_valid()) {
+		// This resource is in the process of being deleted, ignore its existence
+		(*res)->path_cache = String();
+		resources.erase(p_path);
+		res = nullptr;
+	}
+
+	lock.unlock();
+
+	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.read_lock();
+	lock.lock();
 	for (KeyValue<String, Resource *> &E : resources) {
 		p_resources->push_back(Ref<Resource>(E.value));
 	}
-	lock.read_unlock();
+	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.read_lock();
+	lock.lock();
 	int rc = resources.size();
-	lock.read_unlock();
+	lock.unlock();
 
 	return rc;
 }
 
 void ResourceCache::dump(const char *p_file, bool p_short) {
 #ifdef DEBUG_ENABLED
-	lock.read_lock();
+	lock.lock();
 
 	HashMap<String, int> type_count;
 
@@ -562,7 +578,7 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 		}
 	}
 
-	lock.read_unlock();
+	lock.unlock();
 #else
 	WARN_PRINT("ResourceCache::dump only with in debug builds.");
 #endif

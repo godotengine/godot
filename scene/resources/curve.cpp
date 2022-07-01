@@ -32,18 +32,6 @@
 
 #include "core/core_string_names.h"
 
-template <class T>
-static _FORCE_INLINE_ T _bezier_interp(real_t p_t, T p_start, T p_control_1, T p_control_2, T p_end) {
-	/* Formula from Wikipedia article on Bezier curves. */
-	real_t omt = (1.0 - p_t);
-	real_t omt2 = omt * omt;
-	real_t omt3 = omt2 * omt;
-	real_t t2 = p_t * p_t;
-	real_t t3 = t2 * p_t;
-
-	return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
-}
-
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 
 Curve::Curve() {
@@ -54,12 +42,12 @@ void Curve::set_point_count(int p_count) {
 	if (_points.size() >= p_count) {
 		_points.resize(p_count);
 		mark_dirty();
-		notify_property_list_changed();
 	} else {
 		for (int i = p_count - _points.size(); i > 0; i--) {
-			add_point(Vector2());
+			_add_point(Vector2());
 		}
 	}
+	notify_property_list_changed();
 }
 
 int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
@@ -376,7 +364,7 @@ real_t Curve::interpolate_local_nocheck(int p_index, real_t p_local_offset) cons
 	real_t yac = a.position.y + d * a.right_tangent;
 	real_t ybc = b.position.y - d * b.left_tangent;
 
-	real_t y = _bezier_interp(p_local_offset, a.position.y, yac, ybc, b.position.y);
+	real_t y = Math::bezier_interpolate(a.position.y, yac, ybc, b.position.y, p_local_offset);
 
 	return y;
 }
@@ -650,16 +638,15 @@ void Curve2D::set_point_count(int p_count) {
 	if (points.size() >= p_count) {
 		points.resize(p_count);
 		mark_dirty();
-		baked_cache_dirty = true;
-		emit_signal(CoreStringNames::get_singleton()->changed);
 	} else {
 		for (int i = p_count - points.size(); i > 0; i--) {
-			add_point(Vector2());
+			_add_point(Vector2());
 		}
 	}
+	notify_property_list_changed();
 }
 
-void Curve2D::add_point(const Vector2 &p_position, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
+void Curve2D::_add_point(const Vector2 &p_position, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
 	Point n;
 	n.position = p_position;
 	n.in = p_in;
@@ -671,6 +658,11 @@ void Curve2D::add_point(const Vector2 &p_position, const Vector2 &p_in, const Ve
 	}
 
 	mark_dirty();
+}
+
+void Curve2D::add_point(const Vector2 &p_position, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
+	_add_point(p_position, p_in, p_out, p_atpos);
+	notify_property_list_changed();
 }
 
 void Curve2D::set_point_position(int p_index, const Vector2 &p_position) {
@@ -709,16 +701,22 @@ Vector2 Curve2D::get_point_out(int p_index) const {
 	return points[p_index].out;
 }
 
-void Curve2D::remove_point(int p_index) {
+void Curve2D::_remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove_at(p_index);
 	mark_dirty();
+}
+
+void Curve2D::remove_point(int p_index) {
+	_remove_point(p_index);
+	notify_property_list_changed();
 }
 
 void Curve2D::clear_points() {
 	if (!points.is_empty()) {
 		points.clear();
 		mark_dirty();
+		notify_property_list_changed();
 	}
 }
 
@@ -737,7 +735,7 @@ Vector2 Curve2D::interpolate(int p_index, const real_t p_offset) const {
 	Vector2 p3 = points[p_index + 1].position;
 	Vector2 p2 = p3 + points[p_index + 1].in;
 
-	return _bezier_interp(p_offset, p0, p1, p2, p3);
+	return p0.bezier_interpolate(p1, p2, p3, p_offset);
 }
 
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
@@ -753,14 +751,13 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 void Curve2D::mark_dirty() {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
-	notify_property_list_changed();
 }
 
 void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
 	real_t mp = p_begin + (p_end - p_begin) * 0.5;
-	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector2 end = _bezier_interp(p_end, p_a, p_a + p_out, p_b + p_in, p_b);
+	Vector2 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
+	Vector2 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
+	Vector2 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
 
 	Vector2 na = (mid - beg).normalized();
 	Vector2 nb = (end - mid).normalized();
@@ -819,7 +816,7 @@ void Curve2D::_bake() const {
 				np = 1.0;
 			}
 
-			Vector2 npp = _bezier_interp(np, points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position);
+			Vector2 npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, np);
 			real_t d = position.distance_to(npp);
 
 			if (d > bake_interval) {
@@ -832,7 +829,7 @@ void Curve2D::_bake() const {
 				real_t mid = low + (hi - low) * 0.5;
 
 				for (int j = 0; j < iterations; j++) {
-					npp = _bezier_interp(mid, points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position);
+					npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, mid);
 					d = position.distance_to(npp);
 
 					if (bake_interval < d) {
@@ -1068,7 +1065,8 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 		points.write[i].position = r[i * 3 + 2];
 	}
 
-	baked_cache_dirty = true;
+	mark_dirty();
+	notify_property_list_changed();
 }
 
 PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) const {
@@ -1219,12 +1217,13 @@ void Curve3D::set_point_count(int p_count) {
 		mark_dirty();
 	} else {
 		for (int i = p_count - points.size(); i > 0; i--) {
-			add_point(Vector3());
+			_add_point(Vector3());
 		}
 	}
+	notify_property_list_changed();
 }
 
-void Curve3D::add_point(const Vector3 &p_position, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
+void Curve3D::_add_point(const Vector3 &p_position, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
 	Point n;
 	n.position = p_position;
 	n.in = p_in;
@@ -1236,6 +1235,11 @@ void Curve3D::add_point(const Vector3 &p_position, const Vector3 &p_in, const Ve
 	}
 
 	mark_dirty();
+}
+
+void Curve3D::add_point(const Vector3 &p_position, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
+	_add_point(p_position, p_in, p_out, p_atpos);
+	notify_property_list_changed();
 }
 
 void Curve3D::set_point_position(int p_index, const Vector3 &p_position) {
@@ -1286,16 +1290,22 @@ Vector3 Curve3D::get_point_out(int p_index) const {
 	return points[p_index].out;
 }
 
-void Curve3D::remove_point(int p_index) {
+void Curve3D::_remove_point(int p_index) {
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove_at(p_index);
 	mark_dirty();
+}
+
+void Curve3D::remove_point(int p_index) {
+	_remove_point(p_index);
+	notify_property_list_changed();
 }
 
 void Curve3D::clear_points() {
 	if (!points.is_empty()) {
 		points.clear();
 		mark_dirty();
+		notify_property_list_changed();
 	}
 }
 
@@ -1314,7 +1324,7 @@ Vector3 Curve3D::interpolate(int p_index, real_t p_offset) const {
 	Vector3 p3 = points[p_index + 1].position;
 	Vector3 p2 = p3 + points[p_index + 1].in;
 
-	return _bezier_interp(p_offset, p0, p1, p2, p3);
+	return p0.bezier_interpolate(p1, p2, p3, p_offset);
 }
 
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
@@ -1330,14 +1340,13 @@ Vector3 Curve3D::interpolatef(real_t p_findex) const {
 void Curve3D::mark_dirty() {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
-	notify_property_list_changed();
 }
 
 void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
 	real_t mp = p_begin + (p_end - p_begin) * 0.5;
-	Vector3 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector3 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
-	Vector3 end = _bezier_interp(p_end, p_a, p_a + p_out, p_b + p_in, p_b);
+	Vector3 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
+	Vector3 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
+	Vector3 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
 
 	Vector3 na = (mid - beg).normalized();
 	Vector3 nb = (end - mid).normalized();
@@ -1405,7 +1414,7 @@ void Curve3D::_bake() const {
 				np = 1.0;
 			}
 
-			Vector3 npp = _bezier_interp(np, points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position);
+			Vector3 npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, np);
 			real_t d = position.distance_to(npp);
 
 			if (d > bake_interval) {
@@ -1418,7 +1427,7 @@ void Curve3D::_bake() const {
 				real_t mid = low + (hi - low) * 0.5;
 
 				for (int j = 0; j < iterations; j++) {
-					npp = _bezier_interp(mid, points[i].position, points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position);
+					npp = points[i].position.bezier_interpolate(points[i].position + points[i].out, points[i + 1].position + points[i + 1].in, points[i + 1].position, mid);
 					d = position.distance_to(npp);
 
 					if (bake_interval < d) {
@@ -1853,7 +1862,8 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 		points.write[i].tilt = rt[i];
 	}
 
-	baked_cache_dirty = true;
+	mark_dirty();
+	notify_property_list_changed();
 }
 
 PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) const {
