@@ -173,6 +173,8 @@ private:
 		}
 	}
 
+	bool _is_any_collapsed(bool p_only_visible);
+
 protected:
 	static void _bind_methods();
 
@@ -271,6 +273,9 @@ public:
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed();
+
+	void set_collapsed_recursive(bool p_collapsed);
+	bool is_any_collapsed(bool p_only_visible = false);
 
 	void set_visible(bool p_visible);
 	bool is_visible();
@@ -613,6 +618,8 @@ private:
 
 	bool hide_folding = false;
 
+	bool enable_recursive_folding = true;
+
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
 	bool _is_sibling_branch_selected(TreeItem *p_from) const;
@@ -711,6 +718,9 @@ public:
 
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
+
+	void set_enable_recursive_folding(bool p_enable);
+	bool is_recursive_folding_enabled() const;
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;

@@ -441,8 +441,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			bool collapsed = _is_collapsed_recursive(selected_item);
-			_set_collapsed_recursive(selected_item, !collapsed);
+			bool collapsed = selected_item->is_any_collapsed();
+			selected_item->set_collapsed_recursive(!collapsed);
 
 			tree->ensure_cursor_is_visible();
 
@@ -1223,17 +1223,6 @@ void SceneTreeDock::add_root_node(Node *p_node) {
 	editor_data->get_undo_redo()->commit_action();
 }
 
-void SceneTreeDock::_node_collapsed(Object *p_obj) {
-	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
-	if (!ti) {
-		return;
-	}
-
-	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		_set_collapsed_recursive(ti, ti->is_collapsed());
-	}
-}
-
 void SceneTreeDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -1943,48 +1932,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	perform_node_renames(nullptr, &path_renames);
 
 	editor_data->get_undo_redo()->commit_action();
-}
-
-bool SceneTreeDock::_is_collapsed_recursive(TreeItem *p_item) const {
-	bool is_branch_collapsed = false;
-
-	List<TreeItem *> needs_check;
-	needs_check.push_back(p_item);
-
-	while (!needs_check.is_empty()) {
-		TreeItem *item = needs_check.back()->get();
-		needs_check.pop_back();
-
-		TreeItem *child = item->get_first_child();
-		is_branch_collapsed = item->is_collapsed() && child;
-
-		if (is_branch_collapsed) {
-			break;
-		}
-		while (child) {
-			needs_check.push_back(child);
-			child = child->get_next();
-		}
-	}
-	return is_branch_collapsed;
-}
-
-void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed) {
-	List<TreeItem *> to_collapse;
-	to_collapse.push_back(p_item);
-
-	while (!to_collapse.is_empty()) {
-		TreeItem *item = to_collapse.back()->get();
-		to_collapse.pop_back();
-
-		item->set_collapsed(p_collapsed);
-
-		TreeItem *child = item->get_first_child();
-		while (child) {
-			to_collapse.push_back(child);
-			child = child->get_next();
-		}
-	}
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
@@ -3532,7 +3479,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
 
 	scene_tree->get_scene_tree()->connect("item_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
-	scene_tree->get_scene_tree()->connect("item_collapsed", callable_mp(this, &SceneTreeDock::_node_collapsed));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
 
