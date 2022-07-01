@@ -437,6 +437,10 @@ ColorPicker *GradientEdit::get_picker() {
 	return picker;
 }
 
+PopupPanel *GradientEdit::get_popup() {
+	return popup;
+}
+
 void GradientEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }
