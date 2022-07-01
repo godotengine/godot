@@ -75,6 +75,9 @@
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
 			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e.g. setting mode to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
+		<member name="root_subfolder" type="String" setter="set_root_subfolder" getter="get_root_subfolder" default="&quot;&quot;">
+			If non-empty, the given sub-folder will be "root" of this [FileDialog], i.e. user won't be able to go to its parent directory.
+		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
 			If [code]true[/code], the dialog will show hidden files.
 		</member>

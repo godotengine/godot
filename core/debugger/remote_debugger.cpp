@@ -297,6 +297,14 @@ void RemoteDebugger::flush_output() {
 				}
 				strings.push_back(output_string.message);
 				types.push_back(MESSAGE_TYPE_ERROR);
+			} else if (output_string.type == MESSAGE_TYPE_LOG_RICH) {
+				if (!joined_log_strings.is_empty()) {
+					strings.push_back(String("\n").join(joined_log_strings));
+					types.push_back(MESSAGE_TYPE_LOG_RICH);
+					joined_log_strings.clear();
+				}
+				strings.push_back(output_string.message);
+				types.push_back(MESSAGE_TYPE_LOG_RICH);
 			} else {
 				joined_log_strings.push_back(output_string.message);
 			}

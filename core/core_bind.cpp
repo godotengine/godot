@@ -1840,13 +1840,14 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
-	::Thread::set_name(t->target_callable.get_method());
+	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	::Thread::set_name(func_name);
 
 	Callable::CallError ce;
 	t->target_callable.call(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
 	}
 
 	t->running.clear();

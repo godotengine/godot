@@ -4647,18 +4647,6 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting descriptor bindings.");
 
-				uint32_t interface_vars_count = 0;
-				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, nullptr);
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating interface variables.");
-
-				Vector<SpvReflectInterfaceVariable *> interface_vars;
-				interface_vars.resize(interface_vars_count);
-				result = spvReflectEnumerateInterfaceVariables(&module, &interface_vars_count, interface_vars.ptrw());
-
-				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
-						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting interface variables.");
-
 				for (uint32_t j = 0; j < binding_count; j++) {
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
@@ -4666,6 +4654,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 
 					bool need_array_dimensions = false;
 					bool need_block_size = false;
+					bool may_be_writable = false;
 
 					switch (binding.descriptor_type) {
 						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: {
@@ -4683,6 +4672,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
 							info.type = UNIFORM_TYPE_IMAGE;
 							need_array_dimensions = true;
+							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: {
 							info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
@@ -4691,6 +4681,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: {
 							info.type = UNIFORM_TYPE_IMAGE_BUFFER;
 							need_array_dimensions = true;
+							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
 							info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
@@ -4699,6 +4690,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
 							info.type = UNIFORM_TYPE_STORAGE_BUFFER;
 							need_block_size = true;
+							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 							ERR_PRINT("Dynamic uniform buffer not supported.");
@@ -4737,17 +4729,11 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 						info.length = 0;
 					}
 
-					SpvReflectInterfaceVariable *interface_var = nullptr;
-					for (uint32_t k = 0; k < interface_vars_count; k++) {
-						if (interface_vars[k]->spirv_id == binding.spirv_id) {
-							interface_var = interface_vars[k];
-							break;
-						}
+					if (may_be_writable) {
+						info.writable = !(bool)(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+					} else {
+						info.writable = false;
 					}
-					ERR_FAIL_COND_V_MSG(!interface_var, Vector<uint8_t>(),
-							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed finding interface variable.");
-
-					info.writable = !(bool)(interface_var->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
 
 					info.binding = binding.binding;
 					uint32_t set = binding.set;

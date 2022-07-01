@@ -72,7 +72,7 @@ real_t Decal::get_albedo_mix() const {
 }
 
 void Decal::set_upper_fade(real_t p_fade) {
-	upper_fade = p_fade;
+	upper_fade = MAX(p_fade, 0.0);
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 
@@ -81,7 +81,7 @@ real_t Decal::get_upper_fade() const {
 }
 
 void Decal::set_lower_fade(real_t p_fade) {
-	lower_fade = p_fade;
+	lower_fade = MAX(p_fade, 0.0);
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 

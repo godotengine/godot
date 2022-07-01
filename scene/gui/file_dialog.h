@@ -101,6 +101,8 @@ private:
 	void _push_history();
 
 	bool mode_overrides_title = true;
+	String root_subfolder;
+	String root_prefix;
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
@@ -131,6 +133,7 @@ private:
 	void _go_back();
 	void _go_forward();
 
+	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
@@ -161,6 +164,9 @@ public:
 	void set_current_dir(const String &p_dir);
 	void set_current_file(const String &p_file);
 	void set_current_path(const String &p_path);
+
+	void set_root_subfolder(const String &p_root);
+	String get_root_subfolder() const;
 
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
