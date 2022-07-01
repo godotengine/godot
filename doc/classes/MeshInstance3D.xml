@@ -23,6 +23,12 @@
 				If [code]simplify[/code] is [code]true[/code], the geometry can be further simplified to reduce the amount of vertices. Disabled by default.
 			</description>
 		</method>
+		<method name="create_convex_collisions_array">
+			<return type="Array" />
+			<description>
+				Returns an [Array] of [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition.
+			</description>
+		</method>
 		<method name="create_debug_tangents">
 			<return type="void" />
 			<description>

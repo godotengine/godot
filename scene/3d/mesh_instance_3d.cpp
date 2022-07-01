@@ -299,6 +299,24 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	return static_body;
 }
 
+Array MeshInstance3D::create_convex_collisions_array() {
+	if (mesh.is_null()) {
+		return Array();
+	}
+
+	Mesh::ConvexDecompositionSettings settings;
+	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
+	if (!shapes.size()) {
+		return Array();
+	}
+
+	Array arr;
+	for (int i = 0; i < shapes.size(); i++) {
+		arr.push_back(*shapes[i]);
+	}
+	return arr;
+}
+
 void MeshInstance3D::create_multiple_convex_collisions() {
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node());
 	ERR_FAIL_COND(!static_body);
@@ -481,6 +499,8 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(D_METHOD("create_convex_collisions_array"), &MeshInstance3D::create_convex_collisions_array);
+	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collisions_array", METHOD_FLAGS_DEFAULT);
 
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &MeshInstance3D::get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("find_blend_shape_by_name", "name"), &MeshInstance3D::find_blend_shape_by_name);

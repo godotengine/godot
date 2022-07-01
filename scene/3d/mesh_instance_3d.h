@@ -90,6 +90,8 @@ public:
 	Node *create_multiple_convex_collisions_node();
 	void create_multiple_convex_collisions();
 
+	Array create_convex_collisions_array();
+
 	void create_debug_tangents();
 
 	virtual AABB get_aabb() const override;
