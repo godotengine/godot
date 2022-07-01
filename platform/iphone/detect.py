@@ -98,10 +98,12 @@ def configure(env):
 
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iphonesimulator", env)
+        env.Append(ASFLAGS=["-mios-simulator-version-min=13.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=13.0"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("iphone", env)
+        env.Append(ASFLAGS=["-miphoneos-version-min=11.0"])
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
 
     if env["arch"] == "x86_64":
@@ -113,6 +115,7 @@ def configure(env):
                 " -fasm-blocks -isysroot $IPHONESDK"
             ).split()
         )
+        env.Append(ASFLAGS=["-arch", "x86_64"])
     elif env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
@@ -122,6 +125,7 @@ def configure(env):
                 " -isysroot $IPHONESDK".split()
             )
         )
+        env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     # Disable exceptions on non-tools (template) builds
