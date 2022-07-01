@@ -236,7 +236,7 @@ void DisplayServerJavaScript::mouse_move_callback(double p_x, double p_y, double
 const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 	switch (p_shape) {
 		case DisplayServer::CURSOR_ARROW:
-			return "auto";
+			return "default";
 		case DisplayServer::CURSOR_IBEAM:
 			return "text";
 		case DisplayServer::CURSOR_POINTING_HAND:
@@ -270,7 +270,7 @@ const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape
 		case DisplayServer::CURSOR_HELP:
 			return "help";
 		default:
-			return "auto";
+			return "default";
 	}
 }
 
