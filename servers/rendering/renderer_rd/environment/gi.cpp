@@ -3633,8 +3633,6 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 			RD::get_singleton()->free(rb->rbgi.reflection_buffer);
 		}
 
-		print_line("Allocating GI buffers"); // TESTING REMOVE BEFORE MERGING
-
 		// Remember the view count we're using
 		rb->rbgi.view_count = p_view_count;
 
