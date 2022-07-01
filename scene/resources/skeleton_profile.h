@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bone_attachment_3d.h                                                 */
+/*  skeleton_profile.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,75 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_ATTACHMENT_H
-#define BONE_ATTACHMENT_H
+#ifndef SKELETON_PROFILE_H
+#define SKELETON_PROFILE_H
 
-#include "scene/3d/skeleton_3d.h"
-#ifdef TOOLS_ENABLED
-#include "scene/resources/bone_map.h"
-#endif // TOOLS_ENABLED
+#include "texture.h"
 
-class BoneAttachment3D : public Node3D {
-	GDCLASS(BoneAttachment3D, Node3D);
-
-	bool bound = false;
-	String bone_name;
-	int bone_idx = -1;
-
-	bool override_pose = false;
-	int override_mode = 0;
-	bool _override_dirty = false;
-
-	enum OVERRIDE_MODES {
-		MODE_GLOBAL_POSE,
-		MODE_LOCAL_POSE,
-	};
-
-	bool use_external_skeleton = false;
-	NodePath external_skeleton_node;
-	ObjectID external_skeleton_node_cache;
-
-	void _check_bind();
-	void _check_unbind();
-
-	void _transform_changed();
-	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
+class SkeletonProfile : public Resource {
+	GDCLASS(SkeletonProfile, Resource);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	// Note: SkeletonProfileHumanoid which extends SkeletonProfile exists to unify standard bone names.
+	// That is what is_read_only is for, so don't make it public.
+	bool is_read_only = false;
+
+	struct SkeletonProfileGroup {
+		StringName group_name;
+		Ref<Texture2D> texture;
+	};
+
+	struct SkeletonProfileBone {
+		StringName bone_name;
+		Vector2 handle_offset;
+		StringName group;
+	};
+
+	Vector<SkeletonProfileGroup> groups;
+	Vector<SkeletonProfileBone> bones;
+
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-
 	static void _bind_methods();
-#ifdef TOOLS_ENABLED
-	virtual void _notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Ref<BoneMap> p_bone_map);
-#endif // TOOLS_ENABLED
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	int get_group_size();
+	void set_group_size(int p_size);
 
-	void set_bone_name(const String &p_name);
-	String get_bone_name() const;
+	StringName get_group_name(int p_group_idx) const;
+	void set_group_name(int p_group_idx, const StringName p_group_name);
 
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
+	Ref<Texture2D> get_texture(int p_group_idx) const;
+	void set_texture(int p_group_idx, const Ref<Texture2D> &p_texture);
 
-	void set_override_pose(bool p_override);
-	bool get_override_pose() const;
-	void set_override_mode(int p_mode);
-	int get_override_mode() const;
+	int get_bone_size();
+	void set_bone_size(int p_size);
 
-	void set_use_external_skeleton(bool p_external_skeleton);
-	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
-	NodePath get_external_skeleton() const;
+	StringName get_bone_name(int p_bone_idx) const;
+	void set_bone_name(int p_bone_idx, const StringName p_bone_name);
 
-	virtual void on_bone_pose_update(int p_bone_index);
+	Vector2 get_handle_offset(int p_bone_idx) const;
+	void set_handle_offset(int p_bone_idx, const Vector2 p_handle_offset);
 
-	BoneAttachment3D();
+	StringName get_group(int p_bone_idx) const;
+	void set_group(int p_bone_idx, const StringName p_group);
+
+	bool has_bone(StringName p_bone_name);
+
+	SkeletonProfile();
+	~SkeletonProfile();
 };
 
-#endif // BONE_ATTACHMENT_H
+class SkeletonProfileHumanoid : public SkeletonProfile {
+	GDCLASS(SkeletonProfileHumanoid, SkeletonProfile);
+
+public:
+	SkeletonProfileHumanoid();
+	~SkeletonProfileHumanoid();
+};
+
+#endif // SKELETON_PROFILE_H
