@@ -325,7 +325,7 @@ static const char *godot2dom_cursor(OS::CursorShape p_shape) {
 	switch (p_shape) {
 		case OS::CURSOR_ARROW:
 		default:
-			return "auto";
+			return "default";
 		case OS::CURSOR_IBEAM:
 			return "text";
 		case OS::CURSOR_POINTING_HAND:
