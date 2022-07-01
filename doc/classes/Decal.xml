@@ -79,7 +79,7 @@
 			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-extents[/code] to [code]extents[/code].
 		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
-			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
+			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Changes the [Color] of the Decal by multiplying it with this value.
@@ -100,7 +100,7 @@
 			[Texture2D] storing ambient occlusion, roughness, and metallic for the decal. Use this to add extra detail to decals.
 		</member>
 		<member name="upper_fade" type="float" setter="set_upper_fade" getter="get_upper_fade" default="0.3">
-			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
+			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
 		</member>
 	</members>
 	<constants>
