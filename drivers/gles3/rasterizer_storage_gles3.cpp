@@ -8241,6 +8241,14 @@ void RasterizerStorageGLES3::initialize() {
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		glGenTextures(1, &resources.depth_tex);
+		unsigned char depthtexdata[8 * 8 * 2] = {};
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, resources.depth_tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 8, 8, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, depthtexdata);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
 		glGenTextures(1, &resources.white_tex_3d);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -8331,7 +8339,7 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES3::LOW_QUALITY, !ggx_hq);
 	shaders.particles.init();
 	if (config.async_compilation_enabled) {
-		shaders.particles.init_async_compilation();
+		shaders.particles.init_async_compilation(resources.depth_tex);
 	}
 
 #ifdef GLES_OVER_GL
@@ -8389,6 +8397,7 @@ void RasterizerStorageGLES3::finalize() {
 	glDeleteTextures(1, &resources.white_tex);
 	glDeleteTextures(1, &resources.black_tex);
 	glDeleteTextures(1, &resources.normal_tex);
+	glDeleteTextures(1, &resources.depth_tex);
 }
 
 void RasterizerStorageGLES3::update_dirty_resources() {
