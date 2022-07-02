@@ -17,7 +17,24 @@
           "major": 1,
           "minor": 2
         },
-        "next": null,
+        "next": {
+          "type": "CORE",
+          "version": {
+            "major": 1,
+            "minor": 3
+          },
+          "next": null,
+          "api": [
+            {
+              "name": "godot_pool_string_array_join",
+              "return_type": "godot_string",
+              "arguments": [
+                ["godot_pool_string_array *", "p_self"],
+                ["const godot_string *", "p_delimiter"]
+              ]
+            }
+          ]
+        },
         "api": [
           {
             "name": "godot_dictionary_duplicate",

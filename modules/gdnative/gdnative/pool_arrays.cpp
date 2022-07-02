@@ -381,6 +381,17 @@ void GDAPI godot_pool_string_array_invert(godot_pool_string_array *p_self) {
 	self->invert();
 }
 
+godot_string GDAPI godot_pool_string_array_join(godot_pool_string_array *p_self, const godot_string *p_delimiter) {
+	PoolVector<String> *self = (PoolVector<String> *)p_self;
+	String &delimiter = *(String *)p_delimiter;
+
+	godot_string str;
+	String *s = (String *)&str;
+	memnew_placement(s, String);
+	*s = self->join(delimiter);
+	return str;
+}
+
 void GDAPI godot_pool_string_array_push_back(godot_pool_string_array *p_self, const godot_string *p_data) {
 	PoolVector<String> *self = (PoolVector<String> *)p_self;
 	String &s = *(String *)p_data;
