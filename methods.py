@@ -460,7 +460,7 @@ def use_windows_spawn_fix(self, platform=None):
         rv = proc.wait()
         if rv:
             print("=====")
-            print(err)
+            print(err.decode("ascii"))
             print("=====")
         return rv
 
@@ -515,6 +515,7 @@ def save_active_platforms(apnames, ap):
 
 def no_verbose(sys, env):
 
+    os.system("")
     colors = {}
 
     # Colors are disabled in non-TTY environments such as pipes. This means
