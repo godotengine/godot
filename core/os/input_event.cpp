@@ -268,7 +268,14 @@ uint32_t InputEventKey::get_physical_scancode_with_modifiers() const {
 }
 
 String InputEventKey::as_text() const {
-	String kc = keycode_get_string(scancode);
+	String kc;
+
+	if (scancode == 0) {
+		kc = keycode_get_string(physical_scancode) + " (" + RTR("Physical") + ")";
+	} else {
+		kc = keycode_get_string(scancode);
+	}
+
 	if (kc == String()) {
 		return kc;
 	}
