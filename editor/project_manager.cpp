@@ -1895,7 +1895,6 @@ void ProjectManager::_notification(int p_what) {
 			}
 			if (asset_library) {
 				real_t size = get_size().x / EDSCALE;
-				asset_library->set_columns(size < 1000 ? 1 : 2);
 				// Adjust names of tabs to fit the new size.
 				if (size < 650) {
 					local_projects_hb->set_name(TTR("Local"));
