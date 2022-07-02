@@ -12,3 +12,4 @@ if "GLES2_GLSL" in env["BUILDERS"]:
     env.GLES2_GLSL("effect_blur.glsl")
     env.GLES2_GLSL("tonemap.glsl")
     env.GLES2_GLSL("lens_distorted.glsl")
+    env.Depends(Glob("*.glsl.gen.h"), "#gles_builders.py")
