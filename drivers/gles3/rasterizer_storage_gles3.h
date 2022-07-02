@@ -142,6 +142,7 @@ public:
 		GLuint black_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
+		GLuint depth_tex;
 
 		GLuint white_tex_3d;
 		GLuint white_tex_array;

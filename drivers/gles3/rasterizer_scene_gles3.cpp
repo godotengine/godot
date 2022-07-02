@@ -5297,7 +5297,7 @@ void RasterizerSceneGLES3::initialize() {
 	glFrontFace(GL_CW);
 
 	if (storage->config.async_compilation_enabled) {
-		state.scene_shader.init_async_compilation();
+		state.scene_shader.init_async_compilation(storage->resources.depth_tex);
 	}
 }
 
