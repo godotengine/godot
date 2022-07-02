@@ -3076,6 +3076,11 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
+
+	if (p_source == COMPRESS_SOURCE_NORMAL) {
+		return USED_CHANNELS_RGB;
+	}
+
 	bool r = false, g = false, b = false, a = false, c = false;
 
 	const uint8_t *data_ptr = data.ptr();
@@ -3122,11 +3127,6 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 	if (p_source == COMPRESS_SOURCE_SRGB && (used_channels == USED_CHANNELS_R || used_channels == USED_CHANNELS_RG)) {
 		//R and RG do not support SRGB
 		used_channels = USED_CHANNELS_RGB;
-	}
-
-	if (p_source == COMPRESS_SOURCE_NORMAL) {
-		//use RG channels only for normal
-		used_channels = USED_CHANNELS_RG;
 	}
 
 	return used_channels;
