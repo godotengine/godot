@@ -134,8 +134,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	};
 	HashMap<String, NodeData> node_map;
 
-	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
-	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
+	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent, const bool p_has_import_id = true);
+	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent, const bool p_has_import_id = true);
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 

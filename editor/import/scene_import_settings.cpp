@@ -131,23 +131,12 @@ class SceneImportSettingsData : public Object {
 	}
 };
 
-void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
-	String import_id;
-	bool has_import_id = false;
-
-	if (p_material->has_meta("import_id")) {
-		import_id = p_material->get_meta("import_id");
-		has_import_id = true;
-	} else if (!p_material->get_name().is_empty()) {
-		import_id = p_material->get_name();
-		has_import_id = true;
-	} else {
-		import_id = "@MATERIAL:" + itos(material_set.size());
-	}
+void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent, const bool p_has_import_id) {
+	String import_id = p_material->get_meta("import_id");
 
 	if (!material_map.has(import_id)) {
 		MaterialData md;
-		md.has_import_id = has_import_id;
+		md.has_import_id = p_has_import_id;
 		md.material = p_material;
 
 		_load_default_subresource_settings(md.settings, "materials", import_id, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL);
@@ -187,23 +176,12 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	}
 }
 
-void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent) {
-	String import_id;
-
-	bool has_import_id = false;
-	if (p_mesh->has_meta("import_id")) {
-		import_id = p_mesh->get_meta("import_id");
-		has_import_id = true;
-	} else if (!p_mesh->get_name().is_empty()) {
-		import_id = p_mesh->get_name();
-		has_import_id = true;
-	} else {
-		import_id = "@MESH:" + itos(mesh_set.size());
-	}
+void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent, const bool p_has_import_id) {
+	String import_id = p_mesh->get_meta("import_id");
 
 	if (!mesh_map.has(import_id)) {
 		MeshData md;
-		md.has_import_id = has_import_id;
+		md.has_import_id = p_has_import_id;
 		md.mesh = p_mesh;
 
 		_load_default_subresource_settings(md.settings, "meshes", import_id, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH);
@@ -242,7 +220,15 @@ void SceneImportSettings::_fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, Tree
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		Ref<Material> mat = p_mesh->surface_get_material(i);
 		if (mat.is_valid()) {
-			_fill_material(p_tree, mat, item);
+			bool has_import_id = true;
+			if (!mat->get_name().is_empty()) {
+				mat->set_meta("import_id", mat->get_name());
+			} else if (!mat->has_meta("import_id")) {
+				mat->set_meta("import_id", "@MATERIAL:" + itos(material_set.size()));
+				has_import_id = false;
+			}
+
+			_fill_material(p_tree, mat, item, has_import_id);
 		}
 	}
 
@@ -370,7 +356,15 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		if (!editing_animation) {
-			_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
+			bool has_import_id = true;
+			Ref<Mesh> mesh = mesh_node->get_mesh();
+			if (!mesh->get_name().is_empty()) {
+				mesh->set_meta("import_id", mesh->get_name());
+			} else if (!mesh->has_meta("import_id")) {
+				mesh->set_meta("import_id", "@MESH:" + itos(mesh_set.size()));
+				has_import_id = false;
+			}
+			_fill_mesh(scene_tree, mesh, item, has_import_id);
 		}
 
 		// Add the collider view.
