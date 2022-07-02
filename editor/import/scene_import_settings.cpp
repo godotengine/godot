@@ -1005,6 +1005,10 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 			for (const KeyValue<String, MaterialData> &E : material_map) {
 				MaterialData &md = material_map[E.key];
 
+				if (!md.has_import_id) {
+					continue; // Not an imported material.
+				}
+
 				TreeItem *item = external_path_tree->create_item(root);
 
 				String name = md.material_node->get_text(0);
@@ -1160,6 +1164,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 }
 
 void SceneImportSettings::_save_dir_confirm() {
+	bool need_re_import = false;
 	for (int i = 0; i < save_path_items.size(); i++) {
 		TreeItem *item = save_path_items[i];
 		if (!item->is_checked(0)) {
@@ -1176,6 +1181,11 @@ void SceneImportSettings::_save_dir_confirm() {
 			case ACTION_EXTRACT_MATERIALS: {
 				ERR_CONTINUE(!material_map.has(id));
 				MaterialData &md = material_map[id];
+
+				if (!md.has_import_id) {
+					continue; // Not an imported material.
+				}
+				need_re_import = true;
 
 				Error err = ResourceSaver::save(path, md.material);
 				if (err != OK) {
@@ -1206,9 +1216,13 @@ void SceneImportSettings::_save_dir_confirm() {
 	}
 
 	if (current_action == ACTION_EXTRACT_MATERIALS) {
-		//as this happens right now, the scene needs to be saved and reimported.
-		_re_import();
-		open_settings(base_path);
+		// Extracting the materials happens now, so the scene needs to be saved and reimported.
+		if (need_re_import) {
+			set_exclusive(false);
+			_re_import();
+			open_settings(base_path);
+			set_exclusive(true);
+		}
 	} else {
 		scene_import_settings_data->notify_property_list_changed();
 	}
