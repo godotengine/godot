@@ -165,7 +165,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			if (compression_code != 1 && compression_code != 3) {
 				file->close();
 				memdelete(file);
-				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM or IEEE float instead.");
 			}
 
 			format_channels = file->get_16();
@@ -185,6 +185,12 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				file->close();
 				memdelete(file);
 				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+			}
+
+			if (compression_code == 3 && format_bits % 32) {
+				file->close();
+				memdelete(file);
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid amount of bits in the IEEE float sample (should be 32 or 64).");
 			}
 
 			/* Don't need anything else, continue */
@@ -217,36 +223,46 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			data.resize(frames * format_channels);
 
-			if (format_bits == 8) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					// 8 bit samples are UNSIGNED
+			if (compression_code == 1) {
+				if (format_bits == 8) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						// 8 bit samples are UNSIGNED
 
-					data.write[i] = int8_t(file->get_8() - 128) / 128.f;
-				}
-			} else if (format_bits == 32 && compression_code == 3) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//32 bit IEEE Float
-
-					data.write[i] = file->get_float();
-				}
-			} else if (format_bits == 16) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//16 bit SIGNED
-
-					data.write[i] = int16_t(file->get_16()) / 32768.f;
-				}
-			} else {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//16+ bits samples are SIGNED
-					// if sample is > 16 bits, just read extra bytes
-
-					uint32_t s = 0;
-					for (int b = 0; b < (format_bits >> 3); b++) {
-						s |= ((uint32_t)file->get_8()) << (b * 8);
+						data.write[i] = int8_t(file->get_8() - 128) / 128.f;
 					}
-					s <<= (32 - format_bits);
+				} else if (format_bits == 16) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16 bit SIGNED
 
-					data.write[i] = (int32_t(s) >> 16) / 32768.f;
+						data.write[i] = int16_t(file->get_16()) / 32768.f;
+					}
+				} else {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16+ bits samples are SIGNED
+						// if sample is > 16 bits, just read extra bytes
+
+						uint32_t s = 0;
+						for (int b = 0; b < (format_bits >> 3); b++) {
+							s |= ((uint32_t)file->get_8()) << (b * 8);
+						}
+						s <<= (32 - format_bits);
+
+						data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					}
+				}
+			} else if (compression_code == 3) {
+				if (format_bits == 32) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//32 bit IEEE Float
+
+						data.write[i] = file->get_float();
+					}
+				} else if (format_bits == 64) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//64 bit IEEE Float
+
+						data.write[i] = file->get_double();
+					}
 				}
 			}
 
