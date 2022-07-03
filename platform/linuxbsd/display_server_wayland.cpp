@@ -260,13 +260,13 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 }
 
 // Get the global position of a point in the window's local coordinate space.
-Point2i DisplayServerWayland::_wayland_state_point_window_to_global(WaylandState &wls, WindowID p_window, Point2i p_position) {
+Point2i DisplayServerWayland::_wayland_state_point_window_to_global(const WaylandState &wls, WindowID p_window, Point2i p_position) {
 	while (p_window != INVALID_WINDOW_ID) {
 		if (!wls.windows.has(p_window)) {
 			break;
 		}
 
-		WindowData &wd = wls.windows[p_window];
+		const WindowData &wd = wls.windows[p_window];
 
 		p_position += wd.rect.position;
 		p_window = wd.parent;
@@ -1357,21 +1357,11 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	Point2i position;
-
 	if (wls.current_seat) {
-		position = wls.current_seat->pointer_data.position;
-
-		WindowID window_id = wls.current_seat->pointer_data.pointed_window_id;
-
-		while (window_id != INVALID_WINDOW_ID) {
-			ERR_FAIL_COND_V(!wls.windows.has(window_id), Point2i());
-			position += wls.windows[window_id].rect.position;
-			window_id = wls.windows[window_id].parent;
-		}
+		return _wayland_state_point_window_to_global(wls, wls.current_seat->pointer_data.pointed_window_id, wls.current_seat->pointer_data.position);
 	}
 
-	return position;
+	return Point2i();
 }
 
 MouseButton DisplayServerWayland::mouse_get_button_state() const {

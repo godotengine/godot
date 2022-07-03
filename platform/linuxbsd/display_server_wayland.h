@@ -311,7 +311,7 @@ class DisplayServerWayland : public DisplayServer {
 	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
-	static Point2i _wayland_state_point_window_to_global(WaylandState &wls, WindowID p_window, Point2i p_position);
+	static Point2i _wayland_state_point_window_to_global(const WaylandState &wls, WindowID p_window, Point2i p_position);
 
 	static void _get_key_modifier_state(SeatState &p_seat, Ref<InputEventWithModifiers> p_event);
 
