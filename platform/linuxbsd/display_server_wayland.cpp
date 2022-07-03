@@ -1596,7 +1596,8 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 				wls.popup_menu_stack.clear();
 			}
 
-			if (wls.current_seat) {
+			// TODO: Properly determine when to grab as this is kinda a hack.
+			if (wls.current_seat && wls.current_seat->pointer_data.button_time >= wls.current_seat->pointer_data.motion_time) {
 				// TODO: Investigate serial handling. Right now it only uses the last
 				// button serial, but on sway it doesn't really matter.
 
