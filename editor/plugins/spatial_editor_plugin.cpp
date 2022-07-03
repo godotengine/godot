@@ -4076,6 +4076,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->set_flat(false);
 	vbox->add_child(view_menu);
 	view_menu->set_h_size_flags(0);
+	view_menu->get_popup()->set_hide_on_checkable_item_selection(false);
 
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
