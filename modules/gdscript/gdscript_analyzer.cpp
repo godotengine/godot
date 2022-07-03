@@ -1993,6 +1993,26 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		}
 	}
 
+	if (assignee_type.is_hard_type() && assignee_type.kind == GDScriptParser::DataType::BUILTIN && assigned_value_type.kind == GDScriptParser::DataType::BUILTIN && assignee_type.builtin_type != assigned_value_type.builtin_type) {
+		if (compatible) {
+			compatible = is_type_compatible(assignee_type, assigned_value_type, true, p_assignment->assigned_value);
+			if (!compatible) {
+				// Try reverse test since it can be a masked subtype.
+				if (!is_type_compatible(assigned_value_type, assignee_type, true, p_assignment->assigned_value)) {
+					push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
+				} else {
+					// TODO: Add warning.
+					mark_node_unsafe(p_assignment);
+					p_assignment->use_conversion_assign = true;
+				}
+			} else {
+				// TODO: Warning in this case.
+				mark_node_unsafe(p_assignment);
+				p_assignment->use_conversion_assign = true;
+			}
+		}
+	}
+
 	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
 		// Change source type so it's not wrongly detected later.
 		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
