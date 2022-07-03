@@ -1593,7 +1593,11 @@ void ScriptEditor::_prepare_file_menu() {
 }
 
 void ScriptEditor::_tab_changed(int p_which) {
-	ensure_select_current();
+	// defer the call since this function might be called after a tab is removed,
+	// and in that case `tab_container->get_tab_controls()` still contains the
+	// removed tab because the ScriptEditor is notified of the removal before
+	// the node is removed from the tree. See #62657 for more info.
+	call_deferred(SNAME("ensure_select_current"));
 }
 
 void ScriptEditor::_notification(int p_what) {
@@ -3636,6 +3640,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 	ClassDB::bind_method(D_METHOD("open_script_create_dialog", "base_name", "base_path"), &ScriptEditor::open_script_create_dialog);
+	
+	ClassDB::bind_method(D_METHOD("ensure_select_current"), &ScriptEditor::ensure_select_current);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
