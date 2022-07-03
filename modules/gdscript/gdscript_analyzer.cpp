@@ -2262,30 +2262,26 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 	p_assignment->set_datatype(op_type);
 
-	if (!assignee_type.is_variant() && assigned_value_type.is_hard_type()) {
+	if (assignee_type.is_hard_type() && !assignee_type.is_variant() && op_type.is_hard_type()) {
 		if (compatible) {
 			compatible = is_type_compatible(assignee_type, op_type, true, p_assignment->assigned_value);
 			if (!compatible) {
-				if (assignee_type.is_hard_type()) {
-					// Try reverse test since it can be a masked subtype.
-					if (!is_type_compatible(op_type, assignee_type, true, p_assignment->assigned_value)) {
-						push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
-					} else {
-						// TODO: Add warning.
-						mark_node_unsafe(p_assignment);
-						p_assignment->use_conversion_assign = true;
-					}
+				// Try reverse test since it can be a masked subtype.
+				if (!is_type_compatible(op_type, assignee_type, true)) {
+					push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
 				} else {
-					// TODO: Warning in this case.
+					// TODO: Add warning.
 					mark_node_unsafe(p_assignment);
+					p_assignment->use_conversion_assign = true;
 				}
 			}
 		} else {
 			push_error(vformat(R"(Invalid operands "%s" and "%s" for assignment operator.)", assignee_type.to_string(), assigned_value_type.to_string()), p_assignment);
 		}
-	}
-
-	if (assignee_type.has_no_type() || assigned_value_type.is_variant()) {
+	} else if (assignee_type.is_hard_type() && !assignee_type.is_variant()) {
+		mark_node_unsafe(p_assignment);
+		p_assignment->use_conversion_assign = true;
+	} else {
 		mark_node_unsafe(p_assignment);
 		if (assignee_type.is_hard_type() && !assignee_type.is_variant()) {
 			p_assignment->use_conversion_assign = true;
