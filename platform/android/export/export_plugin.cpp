@@ -226,7 +226,7 @@ static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/instal
 
 static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int DEFAULT_TARGET_SDK_VERSION = 31; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
-const String SDK_VERSION_RANGE = vformat("%s,%s,1", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
+const String SDK_VERSION_RANGE = vformat("%s,%s,1,or_greater", DEFAULT_MIN_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION + 1);
 
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
@@ -2249,20 +2249,34 @@ bool EditorExportPlatformAndroid::can_export(const Ref<EditorExportPreset> &p_pr
 		err += "\n";
 	}
 
-	// Check the min sdk version
+	// Check the min and target sdk version.
+
+	// They're only used for custom_build_enabled, but since we save their default values
+	// in the export preset, users would get an unexpected error when updating to a Godot
+	// version that has different values (GH-62465).
+	// So we don't make a blocking error, instead we just show a warning.
+
 	int min_sdk_version = p_preset->get("version/min_sdk");
 	if (min_sdk_version != DEFAULT_MIN_SDK_VERSION && !custom_build_enabled) {
-		valid = false;
-		err += TTR("Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled.");
+		err += vformat(TTR("\"Min Sdk\" was changed from the default \"%d\" to \"%d\". This option requires \"Use Custom Build\" to be enabled.\n>> Change it to \"%d\" to silence this warning, or enable \"Use Custom Build\" to use this min SDK."), DEFAULT_MIN_SDK_VERSION, min_sdk_version, DEFAULT_MIN_SDK_VERSION);
 		err += "\n";
 	}
 
-	// Check the target sdk version
+	// Here we also handle compatibility with Godot 3.4 to 3.4.4 where target SDK was 30.
+	// Version 3.4.5 updated it to 31 to match platform requirements, so make sure that
+	// users notice it.
 	int target_sdk_version = p_preset->get("version/target_sdk");
-	if (target_sdk_version != DEFAULT_TARGET_SDK_VERSION && !custom_build_enabled) {
-		valid = false;
-		err += TTR("Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is enabled.");
-		err += "\n";
+	if (target_sdk_version != DEFAULT_TARGET_SDK_VERSION) {
+		if (!custom_build_enabled) {
+			err += vformat(TTR("\"Target Sdk\" was changed from the default \"%d\" to \"%d\". This option requires \"Use Custom Build\" to be enabled.\n>> Change it to \"%d\" to silence this warning, or enable \"Use Custom Build\" to use this target SDK."), DEFAULT_TARGET_SDK_VERSION, target_sdk_version, DEFAULT_TARGET_SDK_VERSION);
+			err += "\n";
+		} else if (target_sdk_version == 30) { // Compatibility with < 3.4.5.
+			err += vformat(TTR("\"Target Sdk\" is set to 30, while the current default is \"%d\". This might be due to upgrading from a previous Godot release.\n>> Consider changing it to \"%d\" to stay up-to-date with platform requirements."), DEFAULT_TARGET_SDK_VERSION, DEFAULT_TARGET_SDK_VERSION);
+			err += "\n";
+		} else if (target_sdk_version > DEFAULT_TARGET_SDK_VERSION) {
+			err += vformat(TTR("\"Target Sdk\" %d is higher than the default version %d. This may work, but wasn't tested and may be unstable."), target_sdk_version, DEFAULT_TARGET_SDK_VERSION);
+			err += "\n";
+		}
 	}
 
 	if (target_sdk_version < min_sdk_version) {
