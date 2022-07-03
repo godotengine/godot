@@ -13,16 +13,16 @@
 	</methods>
 	<members>
 		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param" default="0.25">
-			Amount of extra bias for shadow splits that are far away. If self-shadowing occurs only on the splits far away, increasing this value can fix them.
+			Amount of extra bias for shadow splits that are far away. If self-shadowing occurs only on the splits far away, increasing this value can fix them. This is ignored when [member directional_shadow_mode] is [constant SHADOW_ORTHOGONAL].
 		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
-			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits.
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Enabling shadow blend splitting also has a moderate performance cost. This is ignored when [member directional_shadow_mode] is [constant SHADOW_ORTHOGONAL].
 		</member>
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange" default="0">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
 		</member>
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
-			The maximum distance for shadow splits.
+			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</member>
 		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="DirectionalLight.ShadowMode" default="2">
 			The light's shadow rendering algorithm. See [enum ShadowMode].
@@ -31,13 +31,13 @@
 			Can be used to fix special cases of self shadowing when objects are perpendicular to the light.
 		</member>
 		<member name="directional_shadow_split_1" type="float" setter="set_param" getter="get_param" default="0.1">
-			The distance from camera to shadow split 1. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
+			The distance from camera to shadow split 1. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
 		<member name="directional_shadow_split_2" type="float" setter="set_param" getter="get_param" default="0.2">
-			The distance from shadow split 1 to split 2. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
+			The distance from shadow split 1 to split 2. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
-			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code].
+			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light" default="0.1" />
 	</members>
