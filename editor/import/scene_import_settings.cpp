@@ -135,6 +135,12 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	String import_id;
 	bool has_import_id = false;
 
+	bool created = false;
+	if (!material_set.has(p_material)) {
+		material_set.insert(p_material);
+		created = true;
+	}
+
 	if (p_material->has_meta("import_id")) {
 		import_id = p_material->get_meta("import_id");
 		has_import_id = true;
@@ -142,7 +148,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 		import_id = p_material->get_name();
 		has_import_id = true;
 	} else {
-		import_id = "@MATERIAL:" + itos(material_set.size());
+		import_id = "@MATERIAL:" + itos(material_set.size() - 1);
 	}
 
 	if (!material_map.has(import_id)) {
@@ -160,14 +166,12 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	Ref<Texture2D> icon = get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
-	item->set_text(0, p_material->get_name());
-	item->set_icon(0, icon);
-
-	bool created = false;
-	if (!material_set.has(p_material)) {
-		material_set.insert(p_material);
-		created = true;
+	if (p_material->get_name().is_empty()) {
+		item->set_text(0, TTR("<Unnamed Material>"));
+	} else {
+		item->set_text(0, p_material->get_name());
 	}
+	item->set_icon(0, icon);
 
 	item->set_meta("type", "Material");
 	item->set_meta("import_id", import_id);
@@ -605,6 +609,9 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	popup_centered_ratio();
 	_update_view_gizmos();
 	_update_camera();
+
+	// Start with the root item (Scene) selected.
+	scene_tree->get_root()->select(0);
 
 	if (p_for_animation) {
 		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
