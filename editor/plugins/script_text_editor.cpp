@@ -1418,6 +1418,7 @@ Control *ScriptTextEditor::get_edit_menu() {
 
 void ScriptTextEditor::clear_edit_menu() {
 	memdelete(edit_hb);
+	edit_hb = nullptr;
 }
 
 void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
