@@ -60,6 +60,8 @@ class NavigationAgent2D : public Node {
 
 	real_t path_max_distance = 3.0;
 
+	Vector2 agent_pos_curr;
+	Vector2 agent_pos_prev;
 	Vector2 target_location;
 	Vector<Vector2> navigation_path;
 	int nav_path_index = 0;
@@ -169,6 +171,7 @@ private:
 	void update_navigation();
 	void _request_repath();
 	void _check_distance_to_target();
+	bool _has_reached_waypoint(const Vector2 &p_agent_pos, const Vector2 &p_waypoint_pos, real_t p_threshold_dist);
 };
 
 #endif

@@ -172,10 +172,14 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
+				// keep track of the previous position so we can detect waypoint overshoot
+				agent_pos_prev = agent_pos_curr;
+				agent_pos_curr = agent_parent->get_global_position();
+
 				if (avoidance_enabled) {
 					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
 					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
-					Navigation2DServer::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+					Navigation2DServer::get_singleton()->agent_set_position(agent, agent_pos_curr);
 				}
 				_check_distance_to_target();
 			}
@@ -449,6 +453,9 @@ void NavigationAgent2D::update_navigation() {
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal("path_changed");
+
+		// when starting a path, teleport the agent to prevent accidental waypoint hits
+		agent_pos_prev = o;
 	}
 
 	if (navigation_path.size() == 0) {
@@ -458,7 +465,7 @@ void NavigationAgent2D::update_navigation() {
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
-		while (o.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
+		while (_has_reached_waypoint(o, navigation_path[nav_path_index], path_desired_distance)) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
 				_check_distance_to_target();
@@ -478,9 +485,20 @@ void NavigationAgent2D::_request_repath() {
 	update_frame_id = 0;
 }
 
+bool NavigationAgent2D::_has_reached_waypoint(const Vector2 &p_agent_pos, const Vector2 &p_waypoint_pos, real_t p_threshold_dist) {
+	Vector2 segment[2];
+	segment[0] = agent_pos_prev;
+	segment[1] = p_agent_pos;
+
+	Vector2 closest_pt = Geometry::get_closest_point_to_segment_2d(p_waypoint_pos, segment);
+	real_t dist = closest_pt.distance_to(p_waypoint_pos);
+	return dist < p_threshold_dist;
+}
+
 void NavigationAgent2D::_check_distance_to_target() {
 	if (!target_reached) {
-		if (distance_to_target() < target_desired_distance) {
+		ERR_FAIL_NULL(agent_parent);
+		if (_has_reached_waypoint(agent_parent->get_global_position(), target_location, target_desired_distance)) {
 			emit_signal("target_reached");
 			target_reached = true;
 		}
