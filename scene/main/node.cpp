@@ -300,7 +300,7 @@ void Node::_propagate_exit_tree() {
 	if (data.parent) {
 		Variant c = this;
 		const Variant *cptr = &c;
-		data.parent->emit_signalp(SNAME("child_exited_tree"), &cptr, 1);
+		data.parent->emit_signalp(SNAME("child_exiting_tree"), &cptr, 1);
 	}
 
 	// exit groups
@@ -384,11 +384,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	for (int i = motion_from; i <= motion_to; i++) {
 		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
-	for (const KeyValue<StringName, GroupData> &E : p_child->data.grouped) {
-		if (E.value.group) {
-			E.value.group->changed = true;
-		}
-	}
+	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
 }
@@ -408,6 +404,18 @@ void Node::raise() {
 	}
 }
 
+void Node::_propagate_groups_dirty() {
+	for (const KeyValue<StringName, GroupData> &E : data.grouped) {
+		if (E.value.group) {
+			E.value.group->changed = true;
+		}
+	}
+
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_groups_dirty();
+	}
+}
+
 void Node::add_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
@@ -420,6 +428,9 @@ void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted
 }
 
+void Node::owner_changed_notify() {
+}
+
 void Node::set_physics_process(bool p_process) {
 	if (data.physics_process == p_process) {
 		return;
@@ -428,9 +439,9 @@ void Node::set_physics_process(bool p_process) {
 	data.physics_process = p_process;
 
 	if (data.physics_process) {
-		add_to_group("physics_process", false);
+		add_to_group(SNAME("_physics_process"), false);
 	} else {
-		remove_from_group("physics_process");
+		remove_from_group(SNAME("_physics_process"));
 	}
 }
 
@@ -446,9 +457,9 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	data.physics_process_internal = p_process_internal;
 
 	if (data.physics_process_internal) {
-		add_to_group("physics_process_internal", false);
+		add_to_group(SNAME("_physics_process_internal"), false);
 	} else {
-		remove_from_group("physics_process_internal");
+		remove_from_group(SNAME("_physics_process_internal"));
 	}
 }
 
@@ -759,9 +770,9 @@ void Node::set_process(bool p_process) {
 	data.process = p_process;
 
 	if (data.process) {
-		add_to_group("process", false);
+		add_to_group(SNAME("_process"), false);
 	} else {
-		remove_from_group("process");
+		remove_from_group(SNAME("_process"));
 	}
 }
 
@@ -777,9 +788,9 @@ void Node::set_process_internal(bool p_process_internal) {
 	data.process_internal = p_process_internal;
 
 	if (data.process_internal) {
-		add_to_group("process_internal", false);
+		add_to_group(SNAME("_process_internal"), false);
 	} else {
-		remove_from_group("process_internal");
+		remove_from_group(SNAME("_process_internal"));
 	}
 }
 
@@ -796,19 +807,19 @@ void Node::set_process_priority(int p_priority) {
 	}
 
 	if (is_processing()) {
-		data.tree->make_group_changed("process");
+		data.tree->make_group_changed(SNAME("_process"));
 	}
 
 	if (is_processing_internal()) {
-		data.tree->make_group_changed("process_internal");
+		data.tree->make_group_changed(SNAME("_process_internal"));
 	}
 
 	if (is_physics_processing()) {
-		data.tree->make_group_changed("physics_process");
+		data.tree->make_group_changed(SNAME("_physics_process"));
 	}
 
 	if (is_physics_processing_internal()) {
-		data.tree->make_group_changed("physics_process_internal");
+		data.tree->make_group_changed(SNAME("_physics_process_internal"));
 	}
 }
 
@@ -1544,6 +1555,8 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
 	data.OW = data.owner->data.owned.back();
+
+	owner_changed_notify();
 }
 
 void Node::_release_unique_name_in_owner() {
@@ -1637,7 +1650,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 		return const_cast<Node *>(p_node);
 	}
 
-	Set<const Node *> visited;
+	HashSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -1669,7 +1682,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 		return NodePath(".");
 	}
 
-	Set<const Node *> visited;
+	HashSet<const Node *> visited;
 
 	const Node *n = this;
 
@@ -1763,15 +1776,15 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 void Node::remove_from_group(const StringName &p_identifier) {
 	ERR_FAIL_COND(!data.grouped.has(p_identifier));
 
-	Map<StringName, GroupData>::Element *E = data.grouped.find(p_identifier);
+	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
 	ERR_FAIL_COND(!E);
 
 	if (data.tree) {
-		data.tree->remove_from_group(E->key(), this);
+		data.tree->remove_from_group(E->key, this);
 	}
 
-	data.grouped.erase(E);
+	data.grouped.remove(E);
 }
 
 Array Node::_get_groups() const {
@@ -2042,7 +2055,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 }
 #endif
 
-void Node::get_storable_properties(Set<StringName> &r_storable_properties) const {
+void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	List<PropertyInfo> pi;
 	get_property_list(&pi);
 	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
@@ -2088,7 +2101,7 @@ bool Node::get_scene_instance_load_placeholder() const {
 	return data.use_placeholder;
 }
 
-Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
+Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) const {
 	Node *node = nullptr;
 
 	bool instantiated = false;
@@ -2280,11 +2293,11 @@ Node *Node::duplicate(int p_flags) const {
 }
 
 #ifdef TOOLS_ENABLED
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, Map<Ref<Resource>, Ref<Resource>>());
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const {
+	return duplicate_from_editor(r_duplimap, HashMap<Ref<Resource>, Ref<Resource>>());
 }
 
-Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
@@ -2300,7 +2313,7 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap, const M
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2326,7 +2339,7 @@ void Node::remap_node_resources(Node *p_node, const Map<Ref<Resource>, Ref<Resou
 	}
 }
 
-void Node::remap_nested_resources(Ref<Resource> p_resource, const Map<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 
@@ -2528,9 +2541,10 @@ Node *Node::get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, 
 		int j = 0;
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
 		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
-			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
+			bool is_valid = false;
+			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j), &is_valid) : r_res->get(p_path.get_subname(j), &is_valid);
 
-			if (new_res_v.get_type() == Variant::NIL) { // Found nothing on that path
+			if (!is_valid) { // Found nothing on that path
 				return nullptr;
 			}
 
@@ -2972,7 +2986,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("child_exited_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");

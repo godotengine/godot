@@ -519,7 +519,7 @@ it is. This is called only in UTF-32 mode - we don't put a test within the
 macro because almost all calls are already within a block of UTF-32 only
 code.
 
-These are all no-ops since all UTF-32 characters fit into one pcre_uchar. */
+These are all no-ops since all UTF-32 characters fit into one PCRE2_UCHAR. */
 
 #define BACKCHAR(eptr) do { } while (0)
 
@@ -747,8 +747,8 @@ typedef struct compile_block {
   uint32_t class_range_start;      /* Overall class range start */
   uint32_t class_range_end;        /* Overall class range end */
   PCRE2_UCHAR nl[4];               /* Newline string when fixed length */
+  uint32_t req_varyopt;            /* "After variable item" flag for reqbyte */
   int  max_lookbehind;             /* Maximum lookbehind (characters) */
-  int  req_varyopt;                /* "After variable item" flag for reqbyte */
   BOOL had_accept;                 /* (*ACCEPT) encountered */
   BOOL had_pruneorskip;            /* (*PRUNE) or (*SKIP) encountered */
   BOOL had_recurse;                /* Had a recursion or subroutine call */
@@ -764,7 +764,7 @@ typedef struct pcre2_real_jit_stack {
 } pcre2_real_jit_stack;
 
 /* Structure for items in a linked list that represents an explicit recursive
-call within the pattern when running pcre_dfa_match(). */
+call within the pattern when running pcre2_dfa_match(). */
 
 typedef struct dfa_recursion_info {
   struct dfa_recursion_info *prevrec;
@@ -837,6 +837,17 @@ multiple of PCRE2_SIZE. See various comments above. */
 
 typedef char check_heapframe_size[
   ((sizeof(heapframe) % sizeof(PCRE2_SIZE)) == 0)? (+1):(-1)];
+
+/* Structure for computing the alignment of heapframe. */
+
+typedef struct heapframe_align {
+  char unalign;    /* Completely unalign the current offset */
+  heapframe frame; /* Offset is its alignment */
+} heapframe_align;
+
+/* This define is the minimum alignment required for a heapframe, in bytes. */
+
+#define HEAPFRAME_ALIGNMENT offsetof(heapframe_align, frame)
 
 /* Structure for passing "static" information around between the functions
 doing traditional NFA matching (pcre2_match() and friends). */

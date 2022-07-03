@@ -283,7 +283,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc->add_child(lbl_preview_title);
 
 	lbl_preview = memnew(Label);
-	lbl_preview->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	lbl_preview->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	vbc->add_child(lbl_preview);
 
 	// ---- Dialog related
@@ -356,6 +356,8 @@ void RenameDialog::_update_substitute() {
 }
 
 void RenameDialog::_post_popup() {
+	ConfirmationDialog::_post_popup();
+
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	preview_node = nullptr;
 

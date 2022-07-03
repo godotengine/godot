@@ -35,18 +35,18 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-jobject TTS_Android::tts = 0;
-jclass TTS_Android::cls = 0;
+jobject TTS_Android::tts = nullptr;
+jclass TTS_Android::cls = nullptr;
 
-jmethodID TTS_Android::_is_speaking = 0;
-jmethodID TTS_Android::_is_paused = 0;
-jmethodID TTS_Android::_get_voices = 0;
-jmethodID TTS_Android::_speak = 0;
-jmethodID TTS_Android::_pause_speaking = 0;
-jmethodID TTS_Android::_resume_speaking = 0;
-jmethodID TTS_Android::_stop_speaking = 0;
+jmethodID TTS_Android::_is_speaking = nullptr;
+jmethodID TTS_Android::_is_paused = nullptr;
+jmethodID TTS_Android::_get_voices = nullptr;
+jmethodID TTS_Android::_speak = nullptr;
+jmethodID TTS_Android::_pause_speaking = nullptr;
+jmethodID TTS_Android::_resume_speaking = nullptr;
+jmethodID TTS_Android::_stop_speaking = nullptr;
 
-Map<int, Char16String> TTS_Android::ids;
+HashMap<int, Char16String> TTS_Android::ids;
 
 void TTS_Android::setup(jobject p_tts) {
 	JNIEnv *env = get_jni_env();
@@ -175,8 +175,8 @@ void TTS_Android::resume() {
 }
 
 void TTS_Android::stop() {
-	for (Map<int, Char16String>::Element *E = ids.front(); E; E = E->next()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E->key());
+	for (const KeyValue<int, Char16String> &E : ids) {
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	ids.clear();
 

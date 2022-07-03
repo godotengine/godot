@@ -143,6 +143,7 @@
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/bone_map.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/camera_effects.h"
 #include "scene/resources/capsule_shape_2d.h"
@@ -189,6 +190,7 @@
 #include "scene/resources/skeleton_modification_3d_twoboneik.h"
 #include "scene/resources/skeleton_modification_stack_2d.h"
 #include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -769,6 +771,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PrismMesh);
 	GDREGISTER_CLASS(QuadMesh);
 	GDREGISTER_CLASS(SphereMesh);
+	GDREGISTER_CLASS(TextMesh);
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
@@ -869,6 +872,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PolygonPathFinder);
 	GDREGISTER_CLASS(BitMap);
 	GDREGISTER_CLASS(Gradient);
+
+	GDREGISTER_CLASS(SkeletonProfile);
+	GDREGISTER_CLASS(SkeletonProfileHumanoid);
+	GDREGISTER_CLASS(BoneMap);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1076,15 +1083,15 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); // may take time to init
 
 	for (int i = 0; i < 20; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_render/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_render/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_render"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_render"), i + 1), "");
 	}
 
 	for (int i = 0; i < 32; i++) {
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_physics/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/2d_navigation/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_physics/layer_%d", i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("layer_names/3d_navigation/layer_%d", i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_physics"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), i + 1), "");
 	}
 
 	if (RenderingServer::get_singleton()) {

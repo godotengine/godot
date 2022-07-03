@@ -34,7 +34,7 @@
 #ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 
 #include "thirdparty/minizip/unzip.h"
 
@@ -55,7 +55,7 @@ private:
 	};
 	Vector<Package> packages;
 
-	Map<String, File> files;
+	HashMap<String, File> files;
 
 	static ZipArchive *instance;
 

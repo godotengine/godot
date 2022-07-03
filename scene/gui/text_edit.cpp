@@ -1557,6 +1557,47 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
+	Ref<InputEventKey> k = p_gui_input;
+	if (k.is_valid()) {
+		if (!k->is_pressed()) {
+			if (alt_start && k->get_keycode() == Key::ALT) {
+				alt_start = false;
+				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+					handle_unicode_input(alt_code);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		if (k->is_alt_pressed()) {
+			if (!alt_start) {
+				if (k->get_keycode() == Key::KP_ADD) {
+					alt_start = true;
+					alt_code = 0;
+					return true;
+				}
+			} else {
+				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+				}
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -1682,7 +1723,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						update();
 					}
-				} else if (is_mouse_over_selection()) {
+				} else if (drag_and_drop_selection_enabled && is_mouse_over_selection()) {
 					selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 					selection.drag_attempt = true;
 				} else {
@@ -1865,6 +1906,10 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventKey> k = p_gui_input;
 
 	if (k.is_valid()) {
+		if (alt_input(p_gui_input)) {
+			accept_event();
+			return;
+		}
 		if (!k->is_pressed()) {
 			return;
 		}
@@ -2388,7 +2433,7 @@ void TextEdit::_move_caret_page_down(bool p_select) {
 }
 
 void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
-	if (!editable || (caret.column == 0 && caret.line == 0)) {
+	if (!editable || (caret.column == 0 && caret.line == 0 && !has_selection())) {
 		return;
 	}
 
@@ -2407,17 +2452,17 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	if (p_word) {
 		int column = caret.column;
 		// Check for the case "<word><space><caret>" and ignore the space.
-		// No need to check for column being 0 since it is cheked above.
+		// No need to check for column being 0 since it is checked above.
 		if (is_whitespace(text[caret.line][caret.column - 1])) {
 			column -= 1;
 		}
 		// Get a list with the indices of the word bounds of the given text line.
 		const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(caret.line)->get_rid());
 		if (words.is_empty() || column <= words[0]) {
-			// If "words" is empty, meaning no words are left, we can remove everything until the begining of the line.
+			// If "words" is empty, meaning no words are left, we can remove everything until the beginning of the line.
 			column = 0;
 		} else {
-			// Otherwise search for the first word break that is smaller than the index from we're currentlu deleteing
+			// Otherwise search for the first word break that is smaller than the index from which we're currently deleting.
 			for (int i = words.size() - 2; i >= 0; i = i - 2) {
 				if (words[i] < column) {
 					column = words[i];
@@ -3035,7 +3080,7 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 	_remove_text(p_line, 0, p_line, text[p_line].length());
 	_insert_text(p_line, 0, p_new_text);
 	if (caret.line == p_line && caret.column > p_new_text.length()) {
-		set_caret_column(MIN(caret.column, p_new_text.length()), false);
+		set_caret_column(p_new_text.length(), false);
 	}
 	if (has_selection() && p_line == selection.to_line && selection.to_column > text[p_line].length()) {
 		selection.to_column = text[p_line].length();
@@ -4118,6 +4163,14 @@ bool TextEdit::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
+void TextEdit::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+	drag_and_drop_selection_enabled = p_enabled;
+}
+
+bool TextEdit::is_drag_and_drop_selection_enabled() const {
+	return drag_and_drop_selection_enabled;
+}
+
 void TextEdit::set_override_selected_font_color(bool p_override_selected_font_color) {
 	override_selected_font_color = p_override_selected_font_color;
 }
@@ -4711,9 +4764,7 @@ void TextEdit::add_gutter(int p_at) {
 		gutters.insert(p_at, GutterInfo());
 	}
 
-	for (int i = 0; i < text.size() + 1; i++) {
-		text.add_gutter(p_at);
-	}
+	text.add_gutter(p_at);
 	emit_signal(SNAME("gutter_added"));
 	update();
 }
@@ -4723,9 +4774,7 @@ void TextEdit::remove_gutter(int p_gutter) {
 
 	gutters.remove_at(p_gutter);
 
-	for (int i = 0; i < text.size() + 1; i++) {
-		text.remove_gutter(p_gutter);
-	}
+	text.remove_gutter(p_gutter);
 	emit_signal(SNAME("gutter_removed"));
 	update();
 }
@@ -5202,6 +5251,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &TextEdit::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &TextEdit::is_deselect_on_focus_loss_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &TextEdit::set_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &TextEdit::is_drag_and_drop_selection_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &TextEdit::set_override_selected_font_color);
 	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &TextEdit::is_overriding_selected_font_color);
 
@@ -5364,6 +5416,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_mode", PROPERTY_HINT_ENUM, "None,Boundary"), "set_line_wrapping_mode", "get_line_wrapping_mode");
@@ -5379,19 +5432,19 @@ void TextEdit::_bind_methods() {
 
 	ADD_GROUP("Scroll", "scroll_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_file"), "set_scroll_past_end_of_file_enabled", "is_scroll_past_end_of_file_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical"), "set_v_scroll", "get_v_scroll");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal"), "set_h_scroll", "get_h_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width"), "set_minimap_width", "get_minimap_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_width", "get_minimap_width");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_type", PROPERTY_HINT_ENUM, "Line,Block"), "set_caret_type", "get_caret_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01,suffix:s"), "set_caret_blink_speed", "get_caret_blink_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_move_on_right_click"), "set_move_caret_on_right_click_enabled", "is_move_caret_on_right_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 

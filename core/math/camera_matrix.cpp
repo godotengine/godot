@@ -710,6 +710,11 @@ void CameraMatrix::scale_translate_to_fit(const AABB &p_aabb) {
 	matrix[3][3] = 1;
 }
 
+void CameraMatrix::add_jitter_offset(const Vector2 &p_offset) {
+	matrix[3][0] += p_offset.x;
+	matrix[3][1] += p_offset.y;
+}
+
 CameraMatrix::operator Transform3D() const {
 	Transform3D tr;
 	const real_t *m = &matrix[0][0];

@@ -33,38 +33,38 @@
 #include "scene/scene_string_names.h"
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size()) {
-		E->get().frames.insert(p_at_pos, p_frame);
+	if (p_at_pos >= 0 && p_at_pos < E->value.frames.size()) {
+		E->value.frames.insert(p_at_pos, p_frame);
 	} else {
-		E->get().frames.push_back(p_frame);
+		E->value.frames.push_back(p_frame);
 	}
 
 	emit_changed();
 }
 
 int SpriteFrames::get_frame_count(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	return E->get().frames.size();
+	return E->value.frames.size();
 }
 
 void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.remove_at(p_idx);
+	E->value.frames.remove_at(p_idx);
 	emit_changed();
 }
 
 void SpriteFrames::clear(const StringName &p_anim) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.clear();
+	E->value.frames.clear();
 	emit_changed();
 }
 
@@ -124,37 +124,37 @@ Vector<String> SpriteFrames::get_animation_names() const {
 
 void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().speed = p_fps;
+	E->value.speed = p_fps;
 }
 
 double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().speed;
+	return E->value.speed;
 }
 
 void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().loop = p_loop;
+	E->value.loop = p_loop;
 }
 
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().loop;
+	return E->value.loop;
 }
 
 void SpriteFrames::_set_frames(const Array &p_frames) {
 	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
+	HashMap<StringName, Anim>::Iterator E = animations.find(SceneStringNames::get_singleton()->_default);
 	ERR_FAIL_COND(!E);
 
-	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++) {
-		E->get().frames.write[i] = p_frames[i];
+	E->value.frames.resize(p_frames.size());
+	for (int i = 0; i < E->value.frames.size(); i++) {
+		E->value.frames.write[i] = p_frames[i];
 	}
 }
 

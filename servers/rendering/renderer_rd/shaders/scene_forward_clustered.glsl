@@ -83,6 +83,11 @@ layout(location = 5) out vec3 tangent_interp;
 layout(location = 6) out vec3 binormal_interp;
 #endif
 
+#ifdef MOTION_VECTORS
+layout(location = 7) out vec4 screen_position;
+layout(location = 8) out vec4 prev_screen_position;
+#endif
+
 #ifdef MATERIAL_UNIFORMS_USED
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
 
@@ -91,13 +96,15 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 } material;
 #endif
 
+float global_time;
+
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) out float dp_clip;
+layout(location = 9) out float dp_clip;
 
 #endif
 
-layout(location = 9) out flat uint instance_index_interp;
+layout(location = 10) out flat uint instance_index_interp;
 
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
@@ -115,22 +122,11 @@ invariant gl_Position;
 
 #GLOBALS
 
-void main() {
+void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
-
-	uint instance_index = draw_call.instance_index;
-
-	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
-	if (!is_multimesh) {
-		instance_index += gl_InstanceIndex;
-	}
-
-	instance_index_interp = instance_index;
-
-	mat4 model_matrix = instances.data[instance_index].transform;
 
 	mat3 model_normal_matrix;
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
@@ -321,6 +317,11 @@ void main() {
 #endif
 
 	vertex_interp = vertex;
+
+#ifdef MOTION_VECTORS
+	screen_pos = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
 #ifdef NORMAL_USED
 	normal_interp = normal;
 #endif
@@ -372,6 +373,29 @@ void main() {
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
 	}
+#endif
+}
+
+void main() {
+	uint instance_index = draw_call.instance_index;
+
+	bool is_multimesh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH);
+	if (!is_multimesh) {
+		instance_index += gl_InstanceIndex;
+	}
+
+	instance_index_interp = instance_index;
+
+	mat4 model_matrix = instances.data[instance_index].transform;
+#if defined(MOTION_VECTORS)
+	global_time = scene_data_block.prev_data.time;
+	vertex_shader(instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	global_time = scene_data_block.data.time;
+	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+#else
+	global_time = scene_data_block.data.time;
+	vec4 screen_position;
+	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
 #endif
 }
 
@@ -431,13 +455,18 @@ layout(location = 5) in vec3 tangent_interp;
 layout(location = 6) in vec3 binormal_interp;
 #endif
 
+#ifdef MOTION_VECTORS
+layout(location = 7) in vec4 screen_position;
+layout(location = 8) in vec4 prev_screen_position;
+#endif
+
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) in float dp_clip;
+layout(location = 9) in float dp_clip;
 
 #endif
 
-layout(location = 9) in flat uint instance_index_interp;
+layout(location = 10) in flat uint instance_index_interp;
 
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
@@ -461,6 +490,8 @@ layout(location = 9) in flat uint instance_index_interp;
 #define projection_matrix scene_data.projection_matrix
 #define inv_projection_matrix scene_data.inv_projection_matrix
 #endif
+
+#define global_time scene_data_block.data.time
 
 #if defined(ENABLE_SSS) && defined(ENABLE_TRANSMITTANCE)
 //both required for transmittance to be enabled
@@ -510,6 +541,10 @@ layout(location = 0) out vec4 frag_color;
 
 #endif // RENDER DEPTH
 
+#ifdef MOTION_VECTORS
+layout(location = 2) out vec2 motion_vector;
+#endif
+
 #include "scene_forward_aa_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
@@ -528,24 +563,24 @@ layout(location = 0) out vec4 frag_color;
 #ifndef MODE_RENDER_DEPTH
 
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
-	vec3 fog_pos = vec3(screen_uv, z * scene_data.volumetric_fog_inv_length);
+	vec3 fog_pos = vec3(screen_uv, z * scene_data_block.data.volumetric_fog_inv_length);
 	if (fog_pos.z < 0.0) {
 		return vec4(0.0);
 	} else if (fog_pos.z < 1.0) {
-		fog_pos.z = pow(fog_pos.z, scene_data.volumetric_fog_detail_spread);
+		fog_pos.z = pow(fog_pos.z, scene_data_block.data.volumetric_fog_detail_spread);
 	}
 
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
 
 vec4 fog_process(vec3 vertex) {
-	vec3 fog_color = scene_data.fog_light_color;
+	vec3 fog_color = scene_data_block.data.fog_light_color;
 
-	if (scene_data.fog_aerial_perspective > 0.0) {
+	if (scene_data_block.data.fog_aerial_perspective > 0.0) {
 		vec3 sky_fog_color = vec3(0.0);
-		vec3 cube_view = scene_data.radiance_inverse_xform * vertex;
+		vec3 cube_view = scene_data_block.data.radiance_inverse_xform * vertex;
 		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
-		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near));
+		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data_block.data.z_near) / (scene_data_block.data.z_far - scene_data_block.data.z_near));
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 		float lod, blend;
 		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
@@ -554,29 +589,29 @@ vec4 fog_process(vec3 vertex) {
 #else
 		sky_fog_color = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_view, mip_level * MAX_ROUGHNESS_LOD).rgb;
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
-		fog_color = mix(fog_color, sky_fog_color, scene_data.fog_aerial_perspective);
+		fog_color = mix(fog_color, sky_fog_color, scene_data_block.data.fog_aerial_perspective);
 	}
 
-	if (scene_data.fog_sun_scatter > 0.001) {
+	if (scene_data_block.data.fog_sun_scatter > 0.001) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		vec3 view = normalize(vertex);
 
-		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+		for (uint i = 0; i < scene_data_block.data.directional_light_count; i++) {
 			vec3 light_color = directional_lights.data[i].color * directional_lights.data[i].energy;
 			float light_amount = pow(max(dot(view, directional_lights.data[i].direction), 0.0), 8.0);
-			fog_color += light_color * light_amount * scene_data.fog_sun_scatter;
+			fog_color += light_color * light_amount * scene_data_block.data.fog_sun_scatter;
 		}
 	}
 
-	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data_block.data.fog_density));
 
-	if (abs(scene_data.fog_height_density) >= 0.0001) {
-		float y = (scene_data.inv_view_matrix * vec4(vertex, 1.0)).y;
+	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
+		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
 
-		float y_dist = y - scene_data.fog_height;
+		float y_dist = y - scene_data_block.data.fog_height;
 
-		float vfog_amount = 1.0 - exp(min(0.0, y_dist * scene_data.fog_height_density));
+		float vfog_amount = 1.0 - exp(min(0.0, y_dist * scene_data_block.data.fog_height_density));
 
 		fog_amount = max(vfog_amount, fog_amount);
 	}
@@ -601,18 +636,16 @@ uint cluster_get_range_clip_mask(uint i, uint z_min, uint z_max) {
 
 #endif //!MODE_RENDER DEPTH
 
-void main() {
-#ifdef MODE_DUAL_PARABOLOID
-
-	if (dp_clip > 0.0)
-		discard;
-#endif
-
+void fragment_shader(in SceneData scene_data) {
 	uint instance_index = instance_index_interp;
 
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
+#ifdef USE_MULTIVIEW
+	vec3 view = -normalize(vertex_interp - scene_data.eye_offset[ViewIndex].xyz);
+#else
 	vec3 view = -normalize(vertex_interp);
+#endif
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -679,7 +712,7 @@ void main() {
 
 	float normal_map_depth = 1.0;
 
-	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size + scene_data.screen_pixel_size * 0.5; //account for center
+	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
 
 	float sss_strength = 0.0;
 
@@ -1169,7 +1202,7 @@ void main() {
 	if (sc_use_forward_gi && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_VOXEL_GI)) { // process voxel_gi_instances
 
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
-		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
+		vec3 ref_vec = normalize(reflect(-view, normal));
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 		vec3 tangent = normalize(cross(v0, normal));
@@ -1205,12 +1238,20 @@ void main() {
 		if (scene_data.gi_upscale_for_msaa) {
 			vec2 base_coord = screen_uv;
 			vec2 closest_coord = base_coord;
+#ifdef USE_MULTIVIEW
+			float closest_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
 			float closest_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), base_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
 
 			for (int i = 0; i < 4; i++) {
 				const vec2 neighbours[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
 				vec2 neighbour_coord = base_coord + neighbours[i] * scene_data.screen_pixel_size;
+#ifdef USE_MULTIVIEW
+				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
+#else // USE_MULTIVIEW
 				float neighbour_ang = dot(normal, textureLod(sampler2D(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), neighbour_coord, 0.0).xyz * 2.0 - 1.0);
+#endif // USE_MULTIVIEW
 				if (neighbour_ang > closest_ang) {
 					closest_ang = neighbour_ang;
 					closest_coord = neighbour_coord;
@@ -1223,8 +1264,13 @@ void main() {
 			coord = screen_uv;
 		}
 
+#ifdef USE_MULTIVIEW
+		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(coord, ViewIndex), 0.0);
+		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(coord, ViewIndex), 0.0);
+#else // USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
 		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), coord, 0.0);
+#endif // USE_MULTIVIEW
 
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
 		specular_light = mix(specular_light, buffer_reflection.rgb, buffer_reflection.a);
@@ -1287,7 +1333,7 @@ void main() {
 #else
 				vec3 bent_normal = normal;
 #endif
-				reflection_process(reflection_index, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+				reflection_process(reflection_index, view, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 			}
 		}
 
@@ -2015,4 +2061,23 @@ void main() {
 #endif //MODE_SEPARATE_SPECULAR
 
 #endif //MODE_RENDER_DEPTH
+#ifdef MOTION_VECTORS
+	vec2 position_clip = (screen_position.xy / screen_position.w) - scene_data.taa_jitter;
+	vec2 prev_position_clip = (prev_screen_position.xy / prev_screen_position.w) - scene_data_block.prev_data.taa_jitter;
+
+	vec2 position_uv = position_clip * vec2(0.5, 0.5);
+	vec2 prev_position_uv = prev_position_clip * vec2(0.5, 0.5);
+
+	motion_vector = position_uv - prev_position_uv;
+#endif
+}
+
+void main() {
+#ifdef MODE_DUAL_PARABOLOID
+
+	if (dp_clip > 0.0)
+		discard;
+#endif
+
+	fragment_shader(scene_data_block.data);
 }

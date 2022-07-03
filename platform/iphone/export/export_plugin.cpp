@@ -58,18 +58,18 @@ struct LoadingScreenInfo {
 };
 
 static const LoadingScreenInfo loading_screen_infos[] = {
-	{ "landscape_launch_screens/iphone_2436x1125", "Default-Landscape-X.png", 2436, 1125, false },
-	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png", 2208, 1242, false },
-	{ "landscape_launch_screens/ipad_1024x768", "Default-Landscape.png", 1024, 768, false },
-	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png", 2048, 1536, false },
+	{ PNAME("landscape_launch_screens/iphone_2436x1125"), "Default-Landscape-X.png", 2436, 1125, false },
+	{ PNAME("landscape_launch_screens/iphone_2208x1242"), "Default-Landscape-736h@3x.png", 2208, 1242, false },
+	{ PNAME("landscape_launch_screens/ipad_1024x768"), "Default-Landscape.png", 1024, 768, false },
+	{ PNAME("landscape_launch_screens/ipad_2048x1536"), "Default-Landscape@2x.png", 2048, 1536, false },
 
-	{ "portrait_launch_screens/iphone_640x960", "Default-480h@2x.png", 640, 960, true },
-	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png", 640, 1136, true },
-	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png", 750, 1334, true },
-	{ "portrait_launch_screens/iphone_1125x2436", "Default-Portrait-X.png", 1125, 2436, true },
-	{ "portrait_launch_screens/ipad_768x1024", "Default-Portrait.png", 768, 1024, true },
-	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png", 1536, 2048, true },
-	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png", 1242, 2208, true }
+	{ PNAME("portrait_launch_screens/iphone_640x960"), "Default-480h@2x.png", 640, 960, true },
+	{ PNAME("portrait_launch_screens/iphone_640x1136"), "Default-568h@2x.png", 640, 1136, true },
+	{ PNAME("portrait_launch_screens/iphone_750x1334"), "Default-667h@2x.png", 750, 1334, true },
+	{ PNAME("portrait_launch_screens/iphone_1125x2436"), "Default-Portrait-X.png", 1125, 2436, true },
+	{ PNAME("portrait_launch_screens/ipad_768x1024"), "Default-Portrait.png", 768, 1024, true },
+	{ PNAME("portrait_launch_screens/ipad_1536x2048"), "Default-Portrait@2x.png", 1536, 2048, true },
+	{ PNAME("portrait_launch_screens/iphone_1242x2208"), "Default-Portrait-736h@3x.png", 1242, 2208, true }
 };
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
@@ -78,7 +78,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	Vector<ExportArchitecture> architectures = _get_supported_architectures();
 	for (int i = 0; i < architectures.size(); ++i) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + architectures[i].name), architectures[i].is_default));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), architectures[i].name)), architectures[i].is_default));
 	}
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
@@ -99,24 +99,21 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + found_plugins[i].name), false));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
 	}
 
-	Set<String> plist_keys;
+	HashSet<String> plist_keys;
 
 	for (int i = 0; i < found_plugins.size(); i++) {
 		// Editable plugin plist values
 		PluginConfigIOS plugin = found_plugins[i];
-		const String *K = nullptr;
 
-		while ((K = plugin.plist.next(K))) {
-			String key = *K;
-			PluginConfigIOS::PlistItem item = plugin.plist[key];
-			switch (item.type) {
+		for (const KeyValue<String, PluginConfigIOS::PlistItem> &E : plugin.plist) {
+			switch (E.value.type) {
 				case PluginConfigIOS::PlistItemType::STRING_INPUT: {
-					String preset_name = "plugins_plist/" + key;
+					String preset_name = "plugins_plist/" + E.key;
 					if (!plist_keys.has(preset_name)) {
-						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), item.value));
+						r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, preset_name), E.value.value));
 						plist_keys.insert(preset_name);
 					}
 				} break;
@@ -820,7 +817,11 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(sign_id);
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("codesign", codesign_args);
+		String str;
+		Error err = OS::get_singleton()->execute("codesign", codesign_args, &str, nullptr, true);
+		print_verbose("codesign (" + p_file + "):\n" + str);
+
+		return err;
 	}
 	return OK;
 }
@@ -1181,7 +1182,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	Vector<String> added_embedded_dependenciy_names;
 	HashMap<String, String> plist_values;
 
-	Set<String> plugin_linker_flags;
+	HashSet<String> plugin_linker_flags;
 
 	Error err;
 
@@ -1258,11 +1259,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 		// Plist
 		// Using hash map container to remove duplicates
-		const String *K = nullptr;
 
-		while ((K = plugin.plist.next(K))) {
-			String key = *K;
-			PluginConfigIOS::PlistItem item = plugin.plist[key];
+		for (const KeyValue<String, PluginConfigIOS::PlistItem> &E : plugin.plist) {
+			String key = E.key;
+			const PluginConfigIOS::PlistItem &item = E.value;
 
 			String value;
 
@@ -1301,10 +1301,9 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 
 	// Updating `Info.plist`
 	{
-		const String *K = nullptr;
-		while ((K = plist_values.next(K))) {
-			String key = *K;
-			String value = plist_values[key];
+		for (const KeyValue<String, String> &E : plist_values) {
+			String key = E.key;
+			String value = E.value;
 
 			if (key.is_empty() || value.is_empty()) {
 				continue;
@@ -1355,8 +1354,8 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	// Update Linker Flag Values
 	{
 		String result_linker_flags = " ";
-		for (Set<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
-			const String &flag = E->get();
+		for (const String &E : plugin_linker_flags) {
+			const String &flag = E;
 
 			if (flag.length() == 0) {
 				continue;
@@ -1397,7 +1396,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		String err;
 		src_pkg_name = find_export_template("iphone.zip", &err);
 		if (src_pkg_name.is_empty()) {
-			EditorNode::add_io_error(err);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -1458,7 +1457,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	bool found_library = false;
 
 	const String project_file = "godot_ios.xcodeproj/project.pbxproj";
-	Set<String> files_to_parse;
+	HashSet<String> files_to_parse;
 	files_to_parse.insert("godot_ios/godot_ios-Info.plist");
 	files_to_parse.insert(project_file);
 	files_to_parse.insert("godot_ios/export_options.plist");
@@ -1488,10 +1487,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(tmp_app_path.is_null(), ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Could not open export template (not a zip file?): \"%s\".", src_pkg_name));
 		return ERR_CANT_OPEN;
 	}
 

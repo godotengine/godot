@@ -334,14 +334,14 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	{
 		// Global enums and constants.
 		Array constants;
-		Map<String, List<Pair<String, int>>> enum_list;
+		HashMap<String, List<Pair<String, int64_t>>> enum_list;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-			int value = CoreConstants::get_global_constant_value(i);
+			int64_t value = CoreConstants::get_global_constant_value(i);
 			String enum_name = CoreConstants::get_global_constant_enum(i);
 			String name = CoreConstants::get_global_constant_name(i);
 			if (!enum_name.is_empty()) {
-				enum_list[enum_name].push_back(Pair<String, int>(name, value));
+				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
 			} else {
 				Dictionary d;
 				d["name"] = name;
@@ -353,11 +353,11 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		api_dump["global_constants"] = constants;
 
 		Array enums;
-		for (const KeyValue<String, List<Pair<String, int>>> &E : enum_list) {
+		for (const KeyValue<String, List<Pair<String, int64_t>>> &E : enum_list) {
 			Dictionary d1;
 			d1["name"] = E.key;
 			Array values;
-			for (const Pair<String, int> &F : E.value) {
+			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
@@ -471,6 +471,38 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				}
 				if (constants.size()) {
 					d["constants"] = constants;
+				}
+			}
+			{
+				//enums
+				Array enums;
+
+				List<StringName> enum_names;
+				Variant::get_enums_for_type(type, &enum_names);
+				for (const StringName &enum_name : enum_names) {
+					Dictionary enum_dict;
+					enum_dict["name"] = String(enum_name);
+
+					List<StringName> enumeration_names;
+					Variant::get_enumerations_for_enum(type, enum_name, &enumeration_names);
+
+					Array values;
+
+					for (const StringName &enumeration : enumeration_names) {
+						Dictionary values_dict;
+						values_dict["name"] = String(enumeration);
+						values_dict["value"] = Variant::get_enum_value(type, enum_name, enumeration);
+						values.push_back(values_dict);
+					}
+
+					if (values.size()) {
+						enum_dict["values"] = values;
+					}
+					enums.push_back(enum_dict);
+				}
+
+				if (enums.size()) {
+					d["enums"] = enums;
 				}
 			}
 			{

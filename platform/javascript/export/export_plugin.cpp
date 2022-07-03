@@ -33,16 +33,17 @@
 #include "core/config/project_settings.h"
 
 Error EditorExportPlatformJavaScript::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
-	zlib_filefunc_def io = zipio_create_io();
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
 
 	if (!pkg) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:") + "\n" + p_template);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not open template for export: \"%s\"."), p_template));
 		return ERR_FILE_NOT_FOUND;
 	}
 
 	if (unzGoToFirstFile(pkg) != UNZ_OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid export template:") + "\n" + p_template);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Invalid export template: \"%s\"."), p_template));
 		unzClose(pkg);
 		return ERR_FILE_CORRUPT;
 	}
@@ -54,6 +55,11 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = String::utf8(fname);
+
+		// Skip folders.
+		if (file.ends_with("/")) {
+			continue;
+		}
 
 		// Skip service worker and offline page if not exporting pwa.
 		if (!pwa && (file == "godot.service.worker.js" || file == "godot.offline.html")) {
@@ -71,7 +77,7 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 		String dst = p_dir.plus_file(file.replace("godot", p_name));
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + dst);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
@@ -85,14 +91,14 @@ Error EditorExportPlatformJavaScript::_extract_template(const String &p_template
 Error EditorExportPlatformJavaScript::_write_or_error(const uint8_t *p_content, int p_size, String p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	if (f.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + p_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
 		return ERR_FILE_CANT_WRITE;
 	}
 	f->store_buffer(p_content, p_size);
 	return OK;
 }
 
-void EditorExportPlatformJavaScript::_replace_strings(Map<String, String> p_replaces, Vector<uint8_t> &r_template) {
+void EditorExportPlatformJavaScript::_replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(r_template.ptr()), r_template.size());
 	String out;
 	Vector<String> lines = str_template.split("\n");
@@ -144,7 +150,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	// Replaces HTML string
 	const String str_config = Variant(config).to_json_string();
 	const String custom_head_include = p_preset->get("html/head_include");
-	Map<String, String> replaces;
+	HashMap<String, String> replaces;
 	replaces["$GODOT_URL"] = p_name + ".js";
 	replaces["$GODOT_PROJECT_NAME"] = ProjectSettings::get_singleton()->get_setting("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
@@ -162,7 +168,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 		icon.instantiate();
 		const Error err = ImageLoader::load_image(p_icon, icon);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + p_icon);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), p_icon));
 			return err;
 		}
 		if (icon->get_width() != p_size || icon->get_height() != p_size) {
@@ -174,7 +180,7 @@ Error EditorExportPlatformJavaScript::_add_manifest_icon(const String &p_path, c
 	}
 	const Error err = icon->save_png(icon_dest);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + icon_dest);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not write file: \"%s\"."), icon_dest));
 		return err;
 	}
 	Dictionary icon_dict;
@@ -195,7 +201,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	const ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	Map<String, String> replaces;
+	HashMap<String, String> replaces;
 	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
 	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
 	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
@@ -209,7 +215,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
-	if (mode == EXPORT_MODE_THREADS) {
+	if (mode & EXPORT_MODE_THREADS) {
 		cache_files.push_back(name + ".worker.js");
 		cache_files.push_back(name + ".audio.worklet.js");
 	}
@@ -219,7 +225,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	Array opt_cache_files;
 	opt_cache_files.push_back(name + ".wasm");
 	opt_cache_files.push_back(name + ".pck");
-	if (mode == EXPORT_MODE_GDNATIVE) {
+	if (mode & EXPORT_MODE_GDNATIVE) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
 			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
@@ -232,7 +238,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 	{
 		Ref<FileAccess> f = FileAccess::open(sw_path, FileAccess::READ);
 		if (f.is_null()) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + sw_path);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PWA"), vformat(TTR("Could not read file: \"%s\"."), sw_path));
 			return ERR_FILE_CANT_READ;
 		}
 		sw.resize(f->get_length());
@@ -251,7 +257,7 @@ Error EditorExportPlatformJavaScript::_build_pwa(const Ref<EditorExportPreset> &
 		const String offline_dest = dir.plus_file(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not read file:") + "\n" + offline_dest);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PWA"), vformat(TTR("Could not read file: \"%s\"."), offline_dest));
 			return err;
 		}
 	}
@@ -311,9 +317,10 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 		}
 	}
 	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	if (mode == EXPORT_MODE_THREADS) {
+	if (mode & EXPORT_MODE_THREADS) {
 		r_features->push_back("threads");
-	} else if (mode == EXPORT_MODE_GDNATIVE) {
+	}
+	if (mode & EXPORT_MODE_GDNATIVE) {
 		r_features->push_back("wasm32");
 	}
 }
@@ -437,7 +444,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Template file not found:") + "\n" + template_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -446,7 +453,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	String pck_path = base_path + ".pck";
 	Error error = save_pack(p_preset, p_debug, pck_path, &shared_objects);
 	if (error != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + pck_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), pck_path));
 		return error;
 	}
 
@@ -456,7 +463,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			String dst = base_dir.plus_file(shared_objects[i].path.get_file());
 			error = da->copy(shared_objects[i].path, dst);
 			if (error != OK) {
-				EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + shared_objects[i].path.get_file());
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), shared_objects[i].path.get_file()));
 				return error;
 			}
 		}
@@ -484,7 +491,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	Vector<uint8_t> html;
 	f = FileAccess::open(html_path, FileAccess::READ);
 	if (f.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not read HTML shell:") + "\n" + html_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not read HTML shell: \"%s\"."), html_path));
 		return ERR_FILE_CANT_READ;
 	}
 	html.resize(f->get_length());
@@ -502,7 +509,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	Ref<Image> splash = _get_project_splash();
 	const String splash_png_path = base_path + ".png";
 	if (splash->save_png(splash_png_path) != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + splash_png_path);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), splash_png_path));
 		return ERR_FILE_CANT_WRITE;
 	}
 
@@ -512,13 +519,13 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		Ref<Image> favicon = _get_project_icon();
 		const String favicon_png_path = base_path + ".icon.png";
 		if (favicon->save_png(favicon_png_path) != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + favicon_png_path);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), favicon_png_path));
 			return ERR_FILE_CANT_WRITE;
 		}
 		favicon->resize(180, 180);
 		const String apple_icon_png_path = base_path + ".apple-touch-icon.png";
 		if (favicon->save_png(apple_icon_png_path) != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not write file:") + "\n" + apple_icon_png_path);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), apple_icon_png_path));
 			return ERR_FILE_CANT_WRITE;
 		}
 	}
@@ -578,10 +585,11 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
 		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(TTR("Could not create HTTP server directory:") + "\n" + dest);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Could not create HTTP server directory: %s."), dest));
 			return err;
 		}
 	}
+
 	const String basepath = dest.plus_file("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
@@ -624,7 +632,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		err = server->listen(bind_port, bind_ip, use_ssl, ssl_key, ssl_cert);
 	}
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error starting HTTP server:") + "\n" + itos(err));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
 	}
 

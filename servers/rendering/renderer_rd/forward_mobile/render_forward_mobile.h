@@ -136,7 +136,7 @@ protected:
 		uint32_t view_count;
 
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count);
 
 		~RenderBufferDataForwardMobile();
 	};
@@ -224,6 +224,7 @@ protected:
 	virtual void _base_uniforms_changed() override;
 	void _update_render_base_uniform_set();
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) override;
 
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);
@@ -259,6 +260,7 @@ protected:
 
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
+			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
 
 			float viewport_size[2];
 			float screen_pixel_size[2];
@@ -589,7 +591,7 @@ protected:
 			RID material_overlay;
 			AABB aabb;
 
-			bool use_baked_light = false;
+			bool use_baked_light = true;
 			bool cast_double_sided_shadows = false;
 			// bool mirror = false; // !BAS! Does not seem used, we already have this in the main struct
 

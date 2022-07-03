@@ -199,7 +199,7 @@ class ServersDebugger::ScriptsProfiler : public EngineProfiler {
 	};
 	Vector<ScriptLanguage::ProfilingInfo> info;
 	Vector<ScriptLanguage::ProfilingInfo *> ptrs;
-	Map<StringName, int> sig_map;
+	HashMap<StringName, int> sig_map;
 	int max_frame_functions = 16;
 
 public:
@@ -277,7 +277,7 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 	typedef ServersDebugger::ServerInfo ServerInfo;
 	typedef ServersDebugger::ServerFunctionInfo ServerFunctionInfo;
 
-	Map<StringName, ServerInfo> server_data;
+	HashMap<StringName, ServerInfo> server_data;
 	ScriptsProfiler scripts_profiler;
 
 	double frame_time = 0;
@@ -292,13 +292,13 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 		frame.process_time = process_time;
 		frame.physics_time = physics_time;
 		frame.physics_frame_time = physics_frame_time;
-		Map<StringName, ServerInfo>::Element *E = server_data.front();
+		HashMap<StringName, ServerInfo>::Iterator E = server_data.begin();
 		while (E) {
 			if (!p_final) {
-				frame.servers.push_back(E->get());
+				frame.servers.push_back(E->value);
 			}
-			E->get().functions.clear();
-			E = E->next();
+			E->value.functions.clear();
+			++E;
 		}
 		uint64_t time = 0;
 		scripts_profiler.write_frame_data(frame.script_functions, time, p_final);
@@ -357,7 +357,7 @@ class ServersDebugger::VisualProfiler : public EngineProfiler {
 	typedef ServersDebugger::ServerInfo ServerInfo;
 	typedef ServersDebugger::ServerFunctionInfo ServerFunctionInfo;
 
-	Map<StringName, ServerInfo> server_data;
+	HashMap<StringName, ServerInfo> server_data;
 
 public:
 	void toggle(bool p_enable, const Array &p_opts) {

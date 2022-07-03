@@ -35,6 +35,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
@@ -249,7 +250,7 @@ String ProjectSettingsEditor::_get_setting_name() const {
 }
 
 void ProjectSettingsEditor::_add_feature_overrides() {
-	Set<String> presets;
+	HashSet<String> presets;
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
@@ -261,6 +262,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
+	presets.insert("movie");
 
 	EditorExport *ee = EditorExport::get_singleton();
 
@@ -292,8 +294,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
 	int id = 1;
-	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
-		feature_box->add_item(E->get(), id++);
+	for (const String &E : presets) {
+		feature_box->add_item(E, id++);
 	}
 }
 
@@ -420,7 +422,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	Variant target_value = ps->get(target_name);
 
 	List<PropertyInfo> props;
-	OrderedHashMap<String, Variant> action_values;
+	HashMap<String, Variant> action_values;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	undo_redo->create_action(TTR("Update Input Action Order"));
@@ -437,9 +439,9 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);
 	}
 
-	for (OrderedHashMap<String, Variant>::Element E = action_values.front(); E; E = E.next()) {
-		String name = E.key();
-		Variant value = E.get();
+	for (const KeyValue<String, Variant> &E : action_values) {
+		String name = E.key;
+		const Variant &value = E.value;
 
 		if (name == target_name) {
 			if (p_before) {
@@ -560,6 +562,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
+	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
 	VBoxContainer *general_editor = memnew(VBoxContainer);
@@ -586,7 +589,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_editor->add_child(header);
 
 	property_box = memnew(LineEdit);
-	property_box->set_placeholder(TTR("Select a setting or type its name"));
+	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	header->add_child(property_box);
@@ -697,4 +700,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
 	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+
+	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }

@@ -41,6 +41,7 @@
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "storage/config.h"
+#include "storage/light_storage.h"
 #include "storage/material_storage.h"
 #include "storage/mesh_storage.h"
 #include "storage/texture_storage.h"
@@ -54,6 +55,51 @@ public:
 	// RasterizerSceneGLES3 *scene;
 
 	GLES3::Config *config = nullptr;
+
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.rows[0][0];
+		p_array[1] = p_mtx.basis.rows[1][0];
+		p_array[2] = p_mtx.basis.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.basis.rows[0][1];
+		p_array[5] = p_mtx.basis.rows[1][1];
+		p_array[6] = p_mtx.basis.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.basis.rows[0][2];
+		p_array[9] = p_mtx.basis.rows[1][2];
+		p_array[10] = p_mtx.basis.rows[2][2];
+		p_array[11] = 0;
+		p_array[12] = p_mtx.origin.x;
+		p_array[13] = p_mtx.origin.y;
+		p_array[14] = p_mtx.origin.z;
+		p_array[15] = 1;
+	}
+
+	static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.rows[0][0];
+		p_array[1] = p_mtx.rows[1][0];
+		p_array[2] = p_mtx.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.rows[0][1];
+		p_array[5] = p_mtx.rows[1][1];
+		p_array[6] = p_mtx.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.rows[0][2];
+		p_array[9] = p_mtx.rows[1][2];
+		p_array[10] = p_mtx.rows[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+			}
+		}
+	}
+
+	// Buffer size is specified in bytes
+	static Vector<uint8_t> buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size);
 
 	struct Resources {
 		GLuint mipmap_blur_fbo;
@@ -107,47 +153,6 @@ public:
 
 public:
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
-
-	/* VOXEL GI API */
-
-	RID voxel_gi_allocate() override;
-	void voxel_gi_initialize(RID p_rid) override;
-	void voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) override;
-
-	AABB voxel_gi_get_bounds(RID p_voxel_gi) const override;
-	Vector3i voxel_gi_get_octree_size(RID p_voxel_gi) const override;
-	Vector<uint8_t> voxel_gi_get_octree_cells(RID p_voxel_gi) const override;
-	Vector<uint8_t> voxel_gi_get_data_cells(RID p_voxel_gi) const override;
-	Vector<uint8_t> voxel_gi_get_distance_field(RID p_voxel_gi) const override;
-
-	Vector<int> voxel_gi_get_level_counts(RID p_voxel_gi) const override;
-	Transform3D voxel_gi_get_to_cell_xform(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) override;
-	float voxel_gi_get_dynamic_range(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) override;
-	float voxel_gi_get_propagation(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_energy(RID p_voxel_gi, float p_range) override;
-	float voxel_gi_get_energy(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_bias(RID p_voxel_gi, float p_range) override;
-	float voxel_gi_get_bias(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) override;
-	float voxel_gi_get_normal_bias(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) override;
-	bool voxel_gi_is_interior(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) override;
-	bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override;
-
-	void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) override;
-	float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const override;
-
-	uint32_t voxel_gi_get_version(RID p_voxel_gi) override;
 
 	/* OCCLUDER */
 
@@ -215,8 +220,6 @@ public:
 	void initialize();
 	void finalize();
 
-	void _copy_screen();
-
 	void update_memory_info() override;
 	uint64_t get_rendering_info(RS::RenderingInfo p_info) override;
 
@@ -254,67 +257,9 @@ public:
 		return String();
 	}
 
-	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
-	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;
-
-	//bool validate_framebuffer(); // Validate currently bound framebuffer, does not touch global state
-	String get_framebuffer_error(GLenum p_status);
-
 	RasterizerStorageGLES3();
 	~RasterizerStorageGLES3();
 };
-
-inline bool RasterizerStorageGLES3::safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const {
-	r_offset_after = p_offset + p_data_size;
-#ifdef DEBUG_ENABLED
-	// we are trying to write across the edge of the buffer
-	if (r_offset_after > p_total_buffer_size) {
-		return false;
-	}
-#endif
-	glBufferSubData(p_target, p_offset, p_data_size, p_data);
-	return true;
-}
-
-// standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
-// bugs causing pipeline stalls
-inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) const {
-	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
-	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
-	if (!p_optional_orphan || (config->should_orphan)) {
-		glBufferData(p_target, p_buffer_size, nullptr, p_usage);
-#ifdef RASTERIZER_EXTRA_CHECKS
-		// fill with garbage off the end of the array
-		if (p_buffer_size) {
-			unsigned int start = p_offset + p_data_size;
-			unsigned int end = start + 1024;
-			if (end < p_buffer_size) {
-				uint8_t *garbage = (uint8_t *)alloca(1024);
-				for (int n = 0; n < 1024; n++) {
-					garbage[n] = Math::random(0, 255);
-				}
-				glBufferSubData(p_target, start, 1024, garbage);
-			}
-		}
-#endif
-	}
-	glBufferSubData(p_target, p_offset, p_data_size, p_data);
-}
-
-inline String RasterizerStorageGLES3::get_framebuffer_error(GLenum p_status) {
-#ifdef DEBUG_ENABLED
-	if (p_status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
-	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
-		return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
-	}
-#endif
-	return itos(p_status);
-}
 
 #endif // GLES3_ENABLED
 

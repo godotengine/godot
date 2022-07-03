@@ -36,7 +36,7 @@
 #include "core/math/vector3.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 typedef uint32_t OctreeElementID;
@@ -151,8 +151,8 @@ private:
 		typename List<PairData *, AL>::Element *eA, *eB;
 	};
 
-	typedef Map<OctreeElementID, Element, Comparator<OctreeElementID>, AL> ElementMap;
-	typedef Map<PairKey, PairData, Comparator<PairKey>, AL> PairMap;
+	typedef HashMap<OctreeElementID, Element, Comparator<OctreeElementID>, AL> ElementMap;
+	typedef HashMap<PairKey, PairData, Comparator<PairKey>, AL> PairMap;
 	ElementMap element_map;
 	PairMap pair_map;
 

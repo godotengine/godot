@@ -1288,7 +1288,16 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fargs.memory_size = p_font_data->data_size;
 		fargs.flags = FT_OPEN_MEMORY;
 		fargs.stream = &fd->stream;
-		error = FT_Open_Face(ft_library, &fargs, 0, &fd->face);
+
+		int max_index = 0;
+		FT_Face tmp_face;
+		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
+		if (error == 0) {
+			max_index = tmp_face->num_faces - 1;
+		}
+		FT_Done_Face(tmp_face);
+
+		error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
@@ -1329,7 +1338,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontDataAdvanced 
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
-		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform.columns[0][1]);
+		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.
@@ -1691,6 +1700,8 @@ hb_font_t *TextServerAdvanced::_font_get_hb_handle(const RID &p_font_rid, int64_
 }
 
 RID TextServerAdvanced::create_font() {
+	_THREAD_SAFE_METHOD_
+
 	FontDataAdvanced *fd = memnew(FontDataAdvanced);
 
 	return font_owner.make_rid(fd);
@@ -1716,6 +1727,69 @@ void TextServerAdvanced::font_set_data_ptr(const RID &p_font_rid, const uint8_t 
 	fd->data.resize(0);
 	fd->data_ptr = p_data_ptr;
 	fd->data_size = p_data_size;
+}
+
+void TextServerAdvanced::font_set_face_index(const RID &p_font_rid, int64_t p_face_index) {
+	ERR_FAIL_COND(p_face_index < 0);
+	ERR_FAIL_COND(p_face_index >= 0x7FFF);
+
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND(!fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->face_index != p_face_index) {
+		fd->face_index = p_face_index;
+		_font_clear_cache(fd);
+	}
+}
+
+int64_t TextServerAdvanced::font_get_face_index(const RID &p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	return fd->face_index;
+}
+
+int64_t TextServerAdvanced::font_get_face_count(const RID &p_font_rid) const {
+	FontDataAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	int face_count = 0;
+
+	if (fd->data_ptr && (fd->data_size > 0)) {
+		// Init dynamic font.
+#ifdef MODULE_FREETYPE_ENABLED
+		int error = 0;
+		if (!ft_library) {
+			error = FT_Init_FreeType(&ft_library);
+			ERR_FAIL_COND_V_MSG(error != 0, false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+		}
+
+		FT_StreamRec stream;
+		memset(&stream, 0, sizeof(FT_StreamRec));
+		stream.base = (unsigned char *)fd->data_ptr;
+		stream.size = fd->data_size;
+		stream.pos = 0;
+
+		FT_Open_Args fargs;
+		memset(&fargs, 0, sizeof(FT_Open_Args));
+		fargs.memory_base = (unsigned char *)fd->data_ptr;
+		fargs.memory_size = fd->data_size;
+		fargs.flags = FT_OPEN_MEMORY;
+		fargs.stream = &stream;
+
+		FT_Face tmp_face;
+		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
+		if (error == 0) {
+			face_count = tmp_face->num_faces;
+		}
+		FT_Done_Face(tmp_face);
+#endif
+	}
+
+	return face_count;
 }
 
 void TextServerAdvanced::font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) {
@@ -2172,6 +2246,11 @@ void TextServerAdvanced::font_set_scale(const RID &p_font_rid, int64_t p_size, d
 	Vector2i size = _get_size(fd, p_size);
 
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->face) {
+		return; // Do not override scale for dynamic fonts, it's calculated automatically.
+	}
+#endif
 	fd->cache[size]->scale = p_scale;
 }
 
@@ -2366,9 +2445,8 @@ Array TextServerAdvanced::font_get_glyph_list(const RID &p_font_rid, const Vecto
 
 	Array ret;
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	const int32_t *E = nullptr;
-	while ((E = gl.next(E))) {
-		ret.push_back(*E);
+	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
+		ret.push_back(E.key);
 	}
 	return ret;
 }
@@ -2684,13 +2762,22 @@ Dictionary TextServerAdvanced::font_get_glyph_contours(const RID &p_font_rid, in
 	int error = FT_Load_Glyph(fd->cache[size]->face, index, FT_LOAD_NO_BITMAP | (fd->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0));
 	ERR_FAIL_COND_V(error, Dictionary());
 
-	double h = fd->cache[size]->ascent;
+	if (fd->embolden != 0.f) {
+		FT_Pos strength = fd->embolden * p_size * 4; // 26.6 fractional units (1 / 64).
+		FT_Outline_Embolden(&fd->cache[size]->face->glyph->outline, strength);
+	}
+
+	if (fd->transform != Transform2D()) {
+		FT_Matrix mat = { FT_Fixed(fd->transform[0][0] * 65536), FT_Fixed(fd->transform[0][1] * 65536), FT_Fixed(fd->transform[1][0] * 65536), FT_Fixed(fd->transform[1][1] * 65536) }; // 16.16 fractional units (1 / 65536).
+		FT_Outline_Transform(&fd->cache[size]->face->glyph->outline, &mat);
+	}
+
 	double scale = (1.0 / 64.0) / fd->cache[size]->oversampling * fd->cache[size]->scale;
 	if (fd->msdf) {
 		scale = scale * (double)p_size / (double)fd->msdf_source_size;
 	}
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_points; i++) {
-		points.push_back(Vector3(fd->cache[size]->face->glyph->outline.points[i].x * scale, h - fd->cache[size]->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fd->cache[size]->face->glyph->outline.tags[i])));
+		points.push_back(Vector3(fd->cache[size]->face->glyph->outline.points[i].x * scale, -fd->cache[size]->face->glyph->outline.points[i].y * scale, FT_CURVE_TAG(fd->cache[size]->face->glyph->outline.tags[i])));
 	}
 	for (short i = 0; i < fd->cache[size]->face->glyph->outline.n_contours; i++) {
 		contours.push_back(fd->cache[size]->face->glyph->outline.contours[i]);
@@ -2765,7 +2852,7 @@ Vector2 TextServerAdvanced::font_get_kerning(const RID &p_font_rid, int64_t p_si
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
 
-	const Map<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
+	const HashMap<Vector2i, Vector2> &kern = fd->cache[size]->kerning_map;
 
 	if (kern.has(p_glyph_pair)) {
 		if (fd->msdf) {
@@ -2823,7 +2910,7 @@ bool TextServerAdvanced::font_has_char(const RID &p_font_rid, int64_t p_char) co
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), false);
 	}
-	FontDataForSizeAdvanced *at_size = fd->cache.front()->get();
+	FontDataForSizeAdvanced *at_size = fd->cache.begin()->value;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (at_size && at_size->face) {
@@ -2841,7 +2928,7 @@ String TextServerAdvanced::font_get_supported_chars(const RID &p_font_rid) const
 	if (fd->cache.is_empty()) {
 		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0)), String());
 	}
-	FontDataForSizeAdvanced *at_size = fd->cache.front()->get();
+	FontDataForSizeAdvanced *at_size = fd->cache.begin()->value;
 
 	String chars;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -2859,9 +2946,8 @@ String TextServerAdvanced::font_get_supported_chars(const RID &p_font_rid) const
 #endif
 	if (at_size) {
 		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
-		const int32_t *E = nullptr;
-		while ((E = gl.next(E))) {
-			chars = chars + String::chr(*E);
+		for (const KeyValue<int32_t, FontGlyph> &E : gl) {
+			chars = chars + String::chr(E.key);
 		}
 	}
 	return chars;
@@ -3258,7 +3344,7 @@ void TextServerAdvanced::font_set_global_oversampling(double p_oversampling) {
 int64_t TextServerAdvanced::_convert_pos(const String &p_utf32, const Char16String &p_utf16, int64_t p_pos) const {
 	int64_t limit = p_pos;
 	if (p_utf32.length() != p_utf16.length()) {
-		const UChar *data = p_utf16.ptr();
+		const UChar *data = p_utf16.get_data();
 		for (int i = 0; i < p_pos; i++) {
 			if (U16_IS_LEAD(data[i])) {
 				limit--;
@@ -3347,6 +3433,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 
 RID TextServerAdvanced::create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+
 	ShapedTextDataAdvanced *sd = memnew(ShapedTextDataAdvanced);
 	sd->hb_buffer = hb_buffer_create();
 	sd->direction = p_direction;
@@ -3736,6 +3823,8 @@ void TextServerAdvanced::_realign(ShapedTextDataAdvanced *p_sd) const {
 }
 
 RID TextServerAdvanced::shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const {
+	_THREAD_SAFE_METHOD_
+
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, RID());
 
@@ -4115,7 +4204,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIMMING || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;
@@ -4572,7 +4661,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 	int sd_size = sd->glyphs.size();
-	if (sd->jstops.size() > 0) {
+	if (!sd->jstops.is_empty()) {
 		for (int i = 0; i < sd_size; i++) {
 			if (sd_glyphs[i].count > 0) {
 				char32_t c = sd->text[sd_glyphs[i].start - sd->start];
@@ -4763,6 +4852,9 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	RID f = p_fonts[p_fb_index];
 	FontDataAdvanced *fd = font_owner.get_or_null(f);
+	ERR_FAIL_COND(!fd);
+	MutexLock lock(fd->mutex);
+
 	Vector2i fss = _get_size(fd, fs);
 	hb_font_t *hb_font = _font_get_hb_handle(f, fs);
 	double scale = font_get_scale(f, fs);
@@ -5572,9 +5664,9 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 	// Convert to UTF-16.
 	Char16String utf16 = p_string.utf16();
 
-	Set<int> breaks;
+	HashSet<int> breaks;
 	UErrorCode err = U_ZERO_ERROR;
-	UBreakIterator *bi = ubrk_open(UBRK_LINE, p_language.ascii().get_data(), (const UChar *)utf16.ptr(), utf16.length(), &err);
+	UBreakIterator *bi = ubrk_open(UBRK_LINE, p_language.ascii().get_data(), (const UChar *)utf16.get_data(), utf16.length(), &err);
 	if (U_FAILURE(err)) {
 		// No data loaded - use fallback.
 		for (int i = 0; i < p_string.length(); i++) {
@@ -5623,8 +5715,10 @@ TextServerAdvanced::TextServerAdvanced() {
 
 TextServerAdvanced::~TextServerAdvanced() {
 	_bmp_free_font_funcs();
+#ifdef MODULE_FREETYPE_ENABLED
 	if (ft_library != nullptr) {
 		FT_Done_FreeType(ft_library);
 	}
+#endif
 	u_cleanup();
 }

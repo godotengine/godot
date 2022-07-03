@@ -100,10 +100,8 @@ void GDScriptParser::cleanup() {
 }
 
 void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const {
-	List<StringName> keys;
-	valid_annotations.get_key_list(&keys);
-	for (const StringName &E : keys) {
-		r_annotations->push_back(valid_annotations[E].info);
+	for (const KeyValue<StringName, AnnotationInfo> &E : valid_annotations) {
+		r_annotations->push_back(E.value.info);
 	}
 }
 
@@ -111,31 +109,31 @@ GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
-	register_annotation(MethodInfo("@icon", { Variant::STRING, "icon_path" }), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
+	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
 	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
-	register_annotation(MethodInfo("@export_enum", { Variant::STRING, "names" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::INT>, 0, true);
-	register_annotation(MethodInfo("@export_file", { Variant::STRING, "filter" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, 1, true);
+	register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::INT>, 0, true);
+	register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, 1, true);
 	register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
-	register_annotation(MethodInfo("@export_global_file", { Variant::STRING, "filter" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, Variant::STRING>, 1, true);
+	register_annotation(MethodInfo("@export_global_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, Variant::STRING>, 1, true);
 	register_annotation(MethodInfo("@export_global_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_DIR, Variant::STRING>);
 	register_annotation(MethodInfo("@export_multiline"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_MULTILINE_TEXT, Variant::STRING>);
 	register_annotation(MethodInfo("@export_placeholder"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_PLACEHOLDER_TEXT, Variant::STRING>);
-	register_annotation(MethodInfo("@export_range", { Variant::FLOAT, "min" }, { Variant::FLOAT, "max" }, { Variant::FLOAT, "step" }, { Variant::STRING, "slider1" }, { Variant::STRING, "slider2" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, Variant::FLOAT>, 3);
-	register_annotation(MethodInfo("@export_exp_easing", { Variant::STRING, "hint1" }, { Variant::STRING, "hint2" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, Variant::FLOAT>, 2);
+	register_annotation(MethodInfo("@export_range", PropertyInfo(Variant::FLOAT, "min"), PropertyInfo(Variant::FLOAT, "max"), PropertyInfo(Variant::FLOAT, "step"), PropertyInfo(Variant::STRING, "slider1"), PropertyInfo(Variant::STRING, "slider2"), PropertyInfo(Variant::STRING, "slider3")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_RANGE, Variant::FLOAT>, 4);
+	register_annotation(MethodInfo("@export_exp_easing", PropertyInfo(Variant::STRING, "hint1"), PropertyInfo(Variant::STRING, "hint2")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_EXP_EASING, Variant::FLOAT>, 2);
 	register_annotation(MethodInfo("@export_color_no_alpha"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_COLOR_NO_ALPHA, Variant::COLOR>);
-	register_annotation(MethodInfo("@export_node_path", { Variant::STRING, "type" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, 1, true);
-	register_annotation(MethodInfo("@export_flags", { Variant::STRING, "names" }), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, Variant::INT>, 0, true);
+	register_annotation(MethodInfo("@export_node_path", PropertyInfo(Variant::STRING, "type")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NODE_PATH_VALID_TYPES, Variant::NODE_PATH>, 1, true);
+	register_annotation(MethodInfo("@export_flags", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FLAGS, Variant::INT>, 0, true);
 	register_annotation(MethodInfo("@export_flags_2d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_RENDER, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_2d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_2d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_2D_NAVIGATION, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_RENDER, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
-	register_annotation(MethodInfo("@warning_ignore", { Variant::STRING, "warning" }), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, 0, true);
+	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, 0, true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", { Variant::STRING, "mode" }, { Variant::STRING, "sync" }, { Variant::STRING, "transfer_mode" }, { Variant::INT, "transfer_channel" }), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<Multiplayer::RPC_MODE_AUTHORITY>, 4, true);
+	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<Multiplayer::RPC_MODE_AUTHORITY>, 4, true);
 }
 
 GDScriptParser::~GDScriptParser() {
@@ -205,7 +203,8 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	if (ignored_warnings.has(warn_name)) {
 		return;
 	}
-	if (!GLOBAL_GET("debug/gdscript/warnings/" + warn_name)) {
+	int warn_level = (int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
+	if (!warn_level) {
 		return;
 	}
 
@@ -216,6 +215,11 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.end_line = p_source->end_line;
 	warning.leftmost_column = p_source->leftmost_column;
 	warning.rightmost_column = p_source->rightmost_column;
+
+	if (warn_level == GDScriptWarning::WarnLevel::ERROR) {
+		push_error(warning.get_message(), p_source);
+		return;
+	}
 
 	List<GDScriptWarning>::Element *before = nullptr;
 	for (List<GDScriptWarning>::Element *E = warnings.front(); E; E = E->next()) {
@@ -1626,6 +1630,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::AWAIT:
 						// Fine.
 						break;
+					case Node::LAMBDA:
+						// Standalone lambdas can't be used, so make this an error.
+						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
+						break;
 					default:
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 				}
@@ -1810,7 +1818,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 #ifdef DEBUG_ENABLED
 	bool all_have_return = true;
 	bool have_wildcard = false;
-	bool wildcard_has_return = false;
 	bool have_wildcard_without_continue = false;
 #endif
 
@@ -1828,9 +1835,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 		if (branch->has_wildcard) {
 			have_wildcard = true;
-			if (branch->block->has_return) {
-				wildcard_has_return = true;
-			}
 			if (!branch->block->has_continue) {
 				have_wildcard_without_continue = true;
 			}
@@ -1845,7 +1849,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
 #ifdef DEBUG_ENABLED
-	if (wildcard_has_return || (all_have_return && have_wildcard)) {
+	if (all_have_return && have_wildcard) {
 		current_suite->has_return = true;
 	}
 #endif
@@ -1863,7 +1867,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		if (pattern == nullptr) {
 			continue;
 		}
-		if (pattern->pattern_type == PatternNode::PT_BIND) {
+		if (pattern->binds.size() > 0) {
 			has_bind = true;
 		}
 		if (branch->patterns.size() > 0 && has_bind) {
@@ -1894,11 +1898,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (branch->patterns.size() > 0) {
-		List<StringName> binds;
-		branch->patterns[0]->binds.get_key_list(&binds);
-
-		for (const StringName &E : binds) {
-			SuiteNode::Local local(branch->patterns[0]->binds[E], current_function);
+		for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
+			SuiteNode::Local local(E.value, current_function);
+			local.type = SuiteNode::Local::PATTERN_BIND;
 			suite->add_local(local);
 		}
 	}
@@ -2107,7 +2109,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL)) {
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || (previous_operand->type == Node::LAMBDA && lambda_ended)) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -2319,6 +2321,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_MODULO;
 			operation->variant_op = Variant::OP_MODULE;
 			break;
+		case GDScriptTokenizer::Token::STAR_STAR:
+			operation->operation = BinaryOpNode::OP_POWER;
+			operation->variant_op = Variant::OP_POWER;
+			break;
 		case GDScriptTokenizer::Token::LESS_LESS:
 			operation->operation = BinaryOpNode::OP_BIT_LEFT_SHIFT;
 			operation->variant_op = Variant::OP_SHIFT_LEFT;
@@ -2481,6 +2487,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		case GDScriptTokenizer::Token::STAR_EQUAL:
 			assignment->operation = AssignmentNode::OP_MULTIPLICATION;
 			assignment->variant_op = Variant::OP_MULTIPLY;
+			break;
+		case GDScriptTokenizer::Token::STAR_STAR_EQUAL:
+			assignment->operation = AssignmentNode::OP_POWER;
+			assignment->variant_op = Variant::OP_POWER;
 			break;
 		case GDScriptTokenizer::Token::SLASH_EQUAL:
 			assignment->operation = AssignmentNode::OP_DIVISION;
@@ -2820,51 +2830,97 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	if (match(GDScriptTokenizer::Token::LITERAL)) {
-		if (previous.literal.get_type() != Variant::STRING) {
-			push_error(R"(Expect node path as string or identifier after "$".)");
-			return nullptr;
-		}
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		make_completion_context(COMPLETION_GET_NODE, get_node);
-		get_node->string = parse_literal();
-		return get_node;
-	} else if (current.is_node_name()) {
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		int chain_position = 0;
-		do {
-			make_completion_context(COMPLETION_GET_NODE, get_node, chain_position++);
-			if (!current.is_node_name()) {
-				push_error(R"(Expect node path after "/".)");
-				return nullptr;
-			}
-			advance();
-			IdentifierNode *identifier = alloc_node<IdentifierNode>();
-			identifier->name = previous.get_identifier();
-			get_node->chain.push_back(identifier);
-		} while (match(GDScriptTokenizer::Token::SLASH));
-		return get_node;
-	} else if (match(GDScriptTokenizer::Token::SLASH)) {
-		GetNodeNode *get_node = alloc_node<GetNodeNode>();
-		IdentifierNode *identifier_root = alloc_node<IdentifierNode>();
-		get_node->chain.push_back(identifier_root);
-		int chain_position = 0;
-		do {
-			make_completion_context(COMPLETION_GET_NODE, get_node, chain_position++);
-			if (!current.is_node_name()) {
-				push_error(R"(Expect node path after "/".)");
-				return nullptr;
-			}
-			advance();
-			IdentifierNode *identifier = alloc_node<IdentifierNode>();
-			identifier->name = previous.get_identifier();
-			get_node->chain.push_back(identifier);
-		} while (match(GDScriptTokenizer::Token::SLASH));
-		return get_node;
-	} else {
-		push_error(R"(Expect node path as string or identifier after "$".)");
+	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
+		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
 		return nullptr;
 	}
+
+	if (check(GDScriptTokenizer::Token::LITERAL)) {
+		if (current.literal.get_type() != Variant::STRING) {
+			push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
+			return nullptr;
+		}
+	}
+
+	GetNodeNode *get_node = alloc_node<GetNodeNode>();
+
+	// Store the last item in the path so the parser knows what to expect.
+	// Allow allows more specific error messages.
+	enum PathState {
+		PATH_STATE_START,
+		PATH_STATE_SLASH,
+		PATH_STATE_PERCENT,
+		PATH_STATE_NODE_NAME,
+	} path_state = PATH_STATE_START;
+
+	if (previous.type == GDScriptTokenizer::Token::DOLLAR) {
+		// Detect initial slash, which will be handled in the loop if it matches.
+		match(GDScriptTokenizer::Token::SLASH);
+#ifdef DEBUG_ENABLED
+	} else {
+		get_node->use_dollar = false;
+#endif
+	}
+
+	int context_argument = 0;
+
+	do {
+		if (previous.type == GDScriptTokenizer::Token::PERCENT) {
+			if (path_state != PATH_STATE_START && path_state != PATH_STATE_SLASH) {
+				push_error(R"("%" is only valid in the beginning of a node name (either after "$" or after "/"))");
+				return nullptr;
+			}
+			get_node->full_path += "%";
+
+			path_state = PATH_STATE_PERCENT;
+		} else if (previous.type == GDScriptTokenizer::Token::SLASH) {
+			if (path_state != PATH_STATE_START && path_state != PATH_STATE_NODE_NAME) {
+				push_error(R"("/" is only valid at the beginning of the path or after a node name.)");
+				return nullptr;
+			}
+
+			get_node->full_path += "/";
+
+			path_state = PATH_STATE_SLASH;
+		}
+
+		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
+
+		if (match(GDScriptTokenizer::Token::LITERAL)) {
+			if (previous.literal.get_type() != Variant::STRING) {
+				String previous_token;
+				switch (path_state) {
+					case PATH_STATE_START:
+						previous_token = "$";
+						break;
+					case PATH_STATE_PERCENT:
+						previous_token = "%";
+						break;
+					case PATH_STATE_SLASH:
+						previous_token = "/";
+						break;
+					default:
+						break;
+				}
+				push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous_token));
+				return nullptr;
+			}
+
+			get_node->full_path += previous.literal.operator String();
+
+			path_state = PATH_STATE_NODE_NAME;
+		} else if (current.is_node_name()) {
+			advance();
+			get_node->full_path += previous.get_identifier();
+
+			path_state = PATH_STATE_NODE_NAME;
+		} else if (!check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
+			push_error(vformat(R"(Unexpected "%s" in node path.)", current.get_name()));
+			return nullptr;
+		}
+	} while (match(GDScriptTokenizer::Token::SLASH) || match(GDScriptTokenizer::Token::PERCENT));
+
+	return get_node;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
@@ -2922,6 +2978,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	current_function = function;
 
 	SuiteNode *body = alloc_node<SuiteNode>();
+	body->parent_function = current_function;
+	body->parent_block = current_suite;
+
 	SuiteNode *previous_suite = current_suite;
 	current_suite = body;
 
@@ -3049,7 +3108,7 @@ bool GDScriptParser::has_comment(int p_line) {
 }
 
 String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	ERR_FAIL_COND_V(!comments.has(p_line), String());
 
 	if (p_single_line) {
@@ -3101,7 +3160,7 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 }
 
 void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class) {
-	const Map<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
+	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
 	if (!comments.has(p_line)) {
 		return;
 	}
@@ -3134,24 +3193,23 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 
 		String title, link; // For tutorials.
 		String doc_line = comments[line++].comment.trim_prefix("##");
-		String striped_line = doc_line.strip_edges();
+		String stripped_line = doc_line.strip_edges();
 
 		// Set the read mode.
-		if (striped_line.begins_with("@desc:") && p_desc.is_empty()) {
+		if (stripped_line.is_empty() && mode == BRIEF && !p_brief.is_empty()) {
 			mode = DESC;
-			striped_line = striped_line.trim_prefix("@desc:");
-			in_codeblock = _in_codeblock(doc_line, in_codeblock);
+			continue;
 
-		} else if (striped_line.begins_with("@tutorial")) {
+		} else if (stripped_line.begins_with("@tutorial")) {
 			int begin_scan = String("@tutorial").length();
-			if (begin_scan >= striped_line.length()) {
+			if (begin_scan >= stripped_line.length()) {
 				continue; // invalid syntax.
 			}
 
-			if (striped_line[begin_scan] == ':') { // No title.
+			if (stripped_line[begin_scan] == ':') { // No title.
 				// Syntax: ## @tutorial: https://godotengine.org/ // The title argument is optional.
 				title = "";
-				link = striped_line.trim_prefix("@tutorial:").strip_edges();
+				link = stripped_line.trim_prefix("@tutorial:").strip_edges();
 
 			} else {
 				/* Syntax:
@@ -3159,35 +3217,35 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				 *             ^ open           ^ close   ^ colon   ^ url
 				 */
 				int open_bracket_pos = begin_scan, close_bracket_pos = 0;
-				while (open_bracket_pos < striped_line.length() && (striped_line[open_bracket_pos] == ' ' || striped_line[open_bracket_pos] == '\t')) {
+				while (open_bracket_pos < stripped_line.length() && (stripped_line[open_bracket_pos] == ' ' || stripped_line[open_bracket_pos] == '\t')) {
 					open_bracket_pos++;
 				}
-				if (open_bracket_pos == striped_line.length() || striped_line[open_bracket_pos++] != '(') {
+				if (open_bracket_pos == stripped_line.length() || stripped_line[open_bracket_pos++] != '(') {
 					continue; // invalid syntax.
 				}
 				close_bracket_pos = open_bracket_pos;
-				while (close_bracket_pos < striped_line.length() && striped_line[close_bracket_pos] != ')') {
+				while (close_bracket_pos < stripped_line.length() && stripped_line[close_bracket_pos] != ')') {
 					close_bracket_pos++;
 				}
-				if (close_bracket_pos == striped_line.length()) {
+				if (close_bracket_pos == stripped_line.length()) {
 					continue; // invalid syntax.
 				}
 
 				int colon_pos = close_bracket_pos + 1;
-				while (colon_pos < striped_line.length() && (striped_line[colon_pos] == ' ' || striped_line[colon_pos] == '\t')) {
+				while (colon_pos < stripped_line.length() && (stripped_line[colon_pos] == ' ' || stripped_line[colon_pos] == '\t')) {
 					colon_pos++;
 				}
-				if (colon_pos == striped_line.length() || striped_line[colon_pos++] != ':') {
+				if (colon_pos == stripped_line.length() || stripped_line[colon_pos++] != ':') {
 					continue; // invalid syntax.
 				}
 
-				title = striped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
-				link = striped_line.substr(colon_pos).strip_edges();
+				title = stripped_line.substr(open_bracket_pos, close_bracket_pos - open_bracket_pos).strip_edges();
+				link = stripped_line.substr(colon_pos).strip_edges();
 			}
 
 			mode = TUTORIALS;
 			in_codeblock = false;
-		} else if (striped_line.is_empty()) {
+		} else if (stripped_line.is_empty()) {
 			continue;
 		} else {
 			// Tutorial docs are single line, we need a @tag after it.
@@ -3207,7 +3265,7 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 			}
 			doc_line = doc_line.substr(i);
 		} else {
-			doc_line = striped_line;
+			doc_line = stripped_line;
 		}
 		String line_join = (in_codeblock) ? "\n" : " ";
 
@@ -3264,13 +3322,15 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // PLUS,
 		{ &GDScriptParser::parse_unary_operator,         	&GDScriptParser::parse_binary_operator,      	PREC_ADDITION_SUBTRACTION }, // MINUS,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER }, // STAR_STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
+		{ &GDScriptParser::parse_get_node,                  &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
 		// Assignment
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PLUS_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // MINUS_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // STAR_STAR_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // SLASH_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // PERCENT_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // LESS_LESS_EQUAL,
@@ -3545,8 +3605,12 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = export_type.native_type;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = export_type.native_type;
 				} else {
-					push_error(R"(Export type can only be built-in, a resource, or an enum.)", variable);
+					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", variable);
 					return false;
 				}
 				break;
@@ -3555,14 +3619,16 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				variable->export_info.hint = PROPERTY_HINT_ENUM;
 
 				String enum_hint_string;
-				for (OrderedHashMap<StringName, int>::Element E = export_type.enum_values.front(); E; E = E.next()) {
-					enum_hint_string += E.key().operator String().capitalize().xml_escape();
-					enum_hint_string += ":";
-					enum_hint_string += String::num_int64(E.value()).xml_escape();
-
-					if (E.next()) {
+				bool first = true;
+				for (const KeyValue<StringName, int> &E : export_type.enum_values) {
+					if (!first) {
 						enum_hint_string += ",";
+					} else {
+						first = false;
 					}
+					enum_hint_string += E.key.operator String().capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E.value).xml_escape();
 				}
 
 				variable->export_info.hint_string = enum_hint_string;
@@ -3895,6 +3961,9 @@ void GDScriptParser::TreePrinter::print_assignment(AssignmentNode *p_assignment)
 		case AssignmentNode::OP_MODULO:
 			push_text("%");
 			break;
+		case AssignmentNode::OP_POWER:
+			push_text("**");
+			break;
 		case AssignmentNode::OP_BIT_SHIFT_LEFT:
 			push_text("<<");
 			break;
@@ -3942,6 +4011,9 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 			break;
 		case BinaryOpNode::OP_MODULO:
 			push_text(" % ");
+			break;
+		case BinaryOpNode::OP_POWER:
+			push_text(" ** ");
 			break;
 		case BinaryOpNode::OP_BIT_LEFT_SHIFT:
 			push_text(" << ");
@@ -4236,17 +4308,10 @@ void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const
 }
 
 void GDScriptParser::TreePrinter::print_get_node(GetNodeNode *p_get_node) {
-	push_text("$");
-	if (p_get_node->string != nullptr) {
-		print_literal(p_get_node->string);
-	} else {
-		for (int i = 0; i < p_get_node->chain.size(); i++) {
-			if (i > 0) {
-				push_text("/");
-			}
-			print_identifier(p_get_node->chain[i]);
-		}
+	if (p_get_node->use_dollar) {
+		push_text("$");
 	}
+	push_text(p_get_node->full_path);
 }
 
 void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier) {

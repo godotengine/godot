@@ -391,7 +391,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Input type not iterable: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Input type not iterable:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -414,7 +414,7 @@ public:
 
 			if (!valid) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				r_error_str = RTR("Iterator became invalid: ") + Variant::get_type_name(p_inputs[0]->get_type());
+				r_error_str = RTR("Iterator became invalid:") + " " + Variant::get_type_name(p_inputs[0]->get_type());
 				return 0;
 			}
 
@@ -803,7 +803,7 @@ public:
 				//if the script is not in use by anyone, we can safely assume whatever we got is not casting to it.
 				return 1;
 			}
-			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));
+			Ref<Script> cast_script = ResourceCache::get_ref(script);
 			if (!cast_script.is_valid()) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				r_error_str = "Script path is not a script: " + script;

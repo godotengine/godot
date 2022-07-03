@@ -197,7 +197,7 @@ class ConnectionsDock : public VBoxContainer {
 	UndoRedo *undo_redo = nullptr;
 	LineEdit *search_box = nullptr;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
+	HashMap<StringName, HashMap<StringName, String>> descr_cache;
 
 	void _filter_changed(const String &p_text);
 
@@ -216,7 +216,7 @@ class ConnectionsDock : public VBoxContainer {
 
 	void _handle_signal_menu_option(int p_option);
 	void _handle_slot_menu_option(int p_option);
-	void _rmb_pressed(Vector2 p_position);
+	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
 	void _close();
 
 protected:

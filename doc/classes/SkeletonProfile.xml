@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonProfile" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Profile of a virtual skeleton used as a target for retargeting.
+	</brief_description>
+	<description>
+		This resource is used in [EditorScenePostImport]. Some parameters are referring to bones in [Skeleton3D], [Skin], [Animation], and some other nodes are rewritten based on the parameters of [SkeletonProfile].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the name of the bone at [code]bone_idx[/code] that will be the key name in the [BoneMap].
+				In the retargeting process, the returned bone name is the bone name of the target skeleton.
+			</description>
+		</method>
+		<method name="get_group" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the group of the bone at [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_group_name" qualifiers="const">
+			<return type="StringName" />
+			<argument index="0" name="group_idx" type="int" />
+			<description>
+				Returns the name of the group at [code]group_idx[/code] that will be the drawing group in the [BoneMap] editor.
+			</description>
+		</method>
+		<method name="get_handle_offset" qualifiers="const">
+			<return type="Vector2" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the offset of the bone at [code]bone_idx[/code] that will be the button position in the [BoneMap] editor.
+				This is the offset with origin at the top left corner of the square.
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<argument index="0" name="group_idx" type="int" />
+			<description>
+				Returns the texture of the group at [code]group_idx[/code] that will be the drawing group background image in the [BoneMap] editor.
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="bone_name" type="StringName" />
+			<description>
+				Sets the name of the bone at [code]bone_idx[/code] that will be the key name in the [BoneMap].
+				In the retargeting process, the setting bone name is the bone name of the target skeleton.
+			</description>
+		</method>
+		<method name="set_group">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="group" type="StringName" />
+			<description>
+				Sets the group of the bone at [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="set_group_name">
+			<return type="void" />
+			<argument index="0" name="group_idx" type="int" />
+			<argument index="1" name="group_name" type="StringName" />
+			<description>
+				Sets the name of the group at [code]group_idx[/code] that will be the drawing group in the [BoneMap] editor.
+			</description>
+		</method>
+		<method name="set_handle_offset">
+			<return type="void" />
+			<argument index="0" name="bone_idx" type="int" />
+			<argument index="1" name="handle_offset" type="Vector2" />
+			<description>
+				Sets the offset of the bone at [code]bone_idx[/code] that will be the button position in the [BoneMap] editor.
+				This is the offset with origin at the top left corner of the square.
+			</description>
+		</method>
+		<method name="set_texture">
+			<return type="void" />
+			<argument index="0" name="group_idx" type="int" />
+			<argument index="1" name="texture" type="Texture2D" />
+			<description>
+				Sets the texture of the group at [code]group_idx[/code] that will be the drawing group background image in the [BoneMap] editor.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" default="0">
+		</member>
+		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" default="0">
+		</member>
+	</members>
+	<signals>
+		<signal name="profile_updated">
+			<description>
+				This signal is emitted when change the value in profile. This is used to update key name in the [BoneMap] and to redraw the [BoneMap] editor.
+				[b]Note[/b]: This signal is not connected directly to editor to simplify the reference, instead it is passed on to editor through the [BoneMap].
+			</description>
+		</signal>
+	</signals>
+</class>

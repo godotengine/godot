@@ -120,8 +120,8 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_font_changed"), &Label3D::_font_changed);
 	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
@@ -140,25 +140,20 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_modulate"), "set_outline_modulate", "get_outline_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,127,1"), "set_font_size", "get_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,127,1,suffix:px"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing"), "set_line_spacing", "get_line_spacing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 
 	ADD_GROUP("Locale", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
-
-	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
-	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
-	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
 
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
@@ -381,7 +376,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		} else {
 			mat_hash = hash_one_uint64(0);
 		}
-		mat_hash = hash_djb2_one_64(p_priority | (p_outline_size << 31), mat_hash);
+		mat_hash = hash_fmix32(hash_murmur3_one_64(p_priority | (p_outline_size << 31), mat_hash));
 
 		if (!surfaces.has(mat_hash)) {
 			SurfaceData surf;
@@ -469,8 +464,8 @@ void Label3D::_shape() {
 	aabb = AABB();
 
 	// Clear materials.
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 
@@ -514,16 +509,16 @@ void Label3D::_shape() {
 
 		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
-			case AUTOWRAP_WORD_SMART:
+			case TextServer::AUTOWRAP_WORD_SMART:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_WORD:
+			case TextServer::AUTOWRAP_WORD:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_ARBITRARY:
+			case TextServer::AUTOWRAP_ARBITRARY:
 				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
 				break;
-			case AUTOWRAP_OFF:
+			case TextServer::AUTOWRAP_OFF:
 				break;
 		}
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
@@ -599,20 +594,20 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM)) * pixel_size;
 	}
 
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
+	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);
-		mesh_array[RS::ARRAY_VERTEX] = E->get().mesh_vertices;
-		mesh_array[RS::ARRAY_NORMAL] = E->get().mesh_normals;
-		mesh_array[RS::ARRAY_TANGENT] = E->get().mesh_tangents;
-		mesh_array[RS::ARRAY_COLOR] = E->get().mesh_colors;
-		mesh_array[RS::ARRAY_TEX_UV] = E->get().mesh_uvs;
-		mesh_array[RS::ARRAY_INDEX] = E->get().indices;
+		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
+		mesh_array[RS::ARRAY_NORMAL] = E.value.mesh_normals;
+		mesh_array[RS::ARRAY_TANGENT] = E.value.mesh_tangents;
+		mesh_array[RS::ARRAY_COLOR] = E.value.mesh_colors;
+		mesh_array[RS::ARRAY_TEX_UV] = E.value.mesh_uvs;
+		mesh_array[RS::ARRAY_INDEX] = E.value.indices;
 
 		RS::SurfaceData sd;
 		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, mesh_array);
 
-		sd.material = E->get().material;
+		sd.material = E.value.material;
 
 		RS::get_singleton()->mesh_add_surface(mesh, sd);
 	}
@@ -788,6 +783,11 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	if (theme_font.is_valid()) {
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font.unref();
+	}
+
 	if (font_override.is_valid() && font_override->get_data_count() > 0) {
 		return font_override;
 	}
@@ -799,7 +799,12 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (const StringName &E : theme_types) {
 			if (Theme::get_project_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+				}
+				return f;
 			}
 		}
 	}
@@ -811,13 +816,23 @@ Ref<Font> Label3D::_get_font_or_default() const {
 
 		for (const StringName &E : theme_types) {
 			if (Theme::get_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+				}
+				return f;
 			}
 		}
 	}
 
 	// If they don't exist, use any type to return the default/empty value.
-	return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	if (f.is_valid()) {
+		theme_font = f;
+		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+	}
+	return f;
 }
 
 void Label3D::set_font_size(int p_size) {
@@ -865,7 +880,7 @@ Color Label3D::get_outline_modulate() const {
 	return outline_modulate;
 }
 
-void Label3D::set_autowrap_mode(Label3D::AutowrapMode p_mode) {
+void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
 		dirty_lines = true;
@@ -873,7 +888,7 @@ void Label3D::set_autowrap_mode(Label3D::AutowrapMode p_mode) {
 	}
 }
 
-Label3D::AutowrapMode Label3D::get_autowrap_mode() const {
+TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
@@ -1003,8 +1018,8 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	RenderingServer::get_singleton()->free(mesh);
-	for (Map<uint64_t, SurfaceData>::Element *E = surfaces.front(); E; E = E->next()) {
-		RenderingServer::get_singleton()->free(E->get().material);
+	for (KeyValue<uint64_t, SurfaceData> E : surfaces) {
+		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
 }

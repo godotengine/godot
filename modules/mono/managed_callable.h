@@ -48,7 +48,7 @@ class ManagedCallable : public CallableCustom {
 #ifdef GD_MONO_HOT_RELOAD
 	SelfList<ManagedCallable> self_instance = this;
 	static SelfList<ManagedCallable>::List instances;
-	static Map<ManagedCallable *, Array> instances_pending_reload;
+	static RBMap<ManagedCallable *, Array> instances_pending_reload;
 	static Mutex instances_mutex;
 #endif
 

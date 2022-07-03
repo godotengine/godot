@@ -154,11 +154,11 @@ bool AcceptDialog::get_close_on_escape() const {
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-	label->set_autowrap_mode(p_autowrap ? Label::AUTOWRAP_WORD : Label::AUTOWRAP_OFF);
+	label->set_autowrap_mode(p_autowrap ? TextServer::AUTOWRAP_WORD : TextServer::AUTOWRAP_OFF);
 }
 
 bool AcceptDialog::has_autowrap() {
-	return label->get_autowrap_mode() != Label::AUTOWRAP_OFF;
+	return label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
 }
 
 void AcceptDialog::register_text_enter(Control *p_line_edit) {
@@ -262,7 +262,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel.is_empty()) {
-		c = TTRC("Cancel");
+		c = RTR("Cancel");
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
@@ -349,7 +349,7 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew(Button);
-	ok->set_text(TTRC("OK"));
+	ok->set_text(RTR("OK"));
 	hbc->add_child(ok);
 	hbc->add_spacer();
 

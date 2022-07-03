@@ -67,9 +67,8 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/map.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/templates/rid_owner.hpp>
-#include <godot_cpp/templates/set.hpp>
 #include <godot_cpp/templates/thread_work_pool.hpp>
 #include <godot_cpp/templates/vector.hpp>
 
@@ -80,6 +79,7 @@ using namespace godot;
 
 #include "servers/text/text_server_extension.h"
 
+#include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/resources/texture.h"
@@ -106,8 +106,8 @@ class TextServerFallback : public TextServerExtension {
 	GDCLASS(TextServerFallback, TextServerExtension);
 	_THREAD_SAFE_CLASS_
 
-	Map<StringName, int32_t> feature_sets;
-	Map<int32_t, StringName> feature_sets_inv;
+	HashMap<StringName, int32_t> feature_sets;
+	HashMap<int32_t, StringName> feature_sets_inv;
 
 	void _insert_feature_sets();
 	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag);
@@ -159,7 +159,7 @@ class TextServerFallback : public TextServerExtension {
 
 		Vector<FontTexture> textures;
 		HashMap<int32_t, FontGlyph> glyph_map;
-		Map<Vector2i, Vector2> kerning_map;
+		HashMap<Vector2i, Vector2> kerning_map;
 
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Face face = nullptr;
@@ -196,19 +196,20 @@ class TextServerFallback : public TextServerExtension {
 		String font_name;
 		String style_name;
 
-		Map<Vector2i, FontDataForSizeFallback *> cache;
+		HashMap<Vector2i, FontDataForSizeFallback *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
 		Dictionary feature_overrides;
 
 		// Language/script support override.
-		Map<String, bool> language_support_overrides;
-		Map<String, bool> script_support_overrides;
+		HashMap<String, bool> language_support_overrides;
+		HashMap<String, bool> script_support_overrides;
 
 		PackedByteArray data;
 		const uint8_t *data_ptr;
 		size_t data_size;
+		int face_index = 0;
 
 		mutable ThreadWorkPool work_pool;
 
@@ -294,7 +295,7 @@ class TextServerFallback : public TextServerExtension {
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
 		};
-		Map<Variant, EmbeddedObject> objects;
+		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
 
 		/* Shaped data */
 		TextServer::Direction para_direction = DIRECTION_LTR; // Detected text direction.
@@ -363,6 +364,11 @@ public:
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
+
+	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
+	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
+
+	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 
 	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
 	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;

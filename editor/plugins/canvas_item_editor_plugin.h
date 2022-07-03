@@ -283,7 +283,7 @@ private:
 		}
 	};
 
-	Map<BoneKey, BoneList> bone_list;
+	HashMap<BoneKey, BoneList> bone_list;
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -491,8 +491,6 @@ private:
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
 	VSplitContainer *bottom_split = nullptr;
-
-	void _update_context_menu_stylebox();
 
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);
 

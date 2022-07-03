@@ -5,7 +5,7 @@
  *   Basic Type 1/Type 2 tables definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -453,22 +453,22 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @function:
-   *    FT_Has_PS_Glyph_Names
+   *   FT_Has_PS_Glyph_Names
    *
    * @description:
-   *    Return true if a given face provides reliable PostScript glyph names.
-   *    This is similar to using the @FT_HAS_GLYPH_NAMES macro, except that
-   *    certain fonts (mostly TrueType) contain incorrect glyph name tables.
+   *   Return true if a given face provides reliable PostScript glyph names.
+   *   This is similar to using the @FT_HAS_GLYPH_NAMES macro, except that
+   *   certain fonts (mostly TrueType) contain incorrect glyph name tables.
    *
-   *    When this function returns true, the caller is sure that the glyph
-   *    names returned by @FT_Get_Glyph_Name are reliable.
+   *   When this function returns true, the caller is sure that the glyph
+   *   names returned by @FT_Get_Glyph_Name are reliable.
    *
    * @input:
-   *    face ::
-   *      face handle
+   *   face ::
+   *     face handle
    *
    * @return:
-   *    Boolean.  True if glyph names are reliable.
+   *   Boolean.  True if glyph names are reliable.
    *
    */
   FT_EXPORT( FT_Int )
@@ -478,30 +478,40 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @function:
-   *    FT_Get_PS_Font_Info
+   *   FT_Get_PS_Font_Info
    *
    * @description:
-   *    Retrieve the @PS_FontInfoRec structure corresponding to a given
-   *    PostScript font.
+   *   Retrieve the @PS_FontInfoRec structure corresponding to a given
+   *   PostScript font.
    *
    * @input:
-   *    face ::
-   *      PostScript face handle.
+   *   face ::
+   *     PostScript face handle.
    *
    * @output:
-   *    afont_info ::
-   *      Output font info structure pointer.
+   *   afont_info ::
+   *     A pointer to a @PS_FontInfoRec object.
    *
    * @return:
-   *    FreeType error code.  0~means success.
+   *   FreeType error code.  0~means success.
    *
    * @note:
-   *    String pointers within the @PS_FontInfoRec structure are owned by the
-   *    face and don't need to be freed by the caller.  Missing entries in
-   *    the font's FontInfo dictionary are represented by `NULL` pointers.
+   *   String pointers within the @PS_FontInfoRec structure are owned by the
+   *   face and don't need to be freed by the caller.  Missing entries in the
+   *   font's FontInfo dictionary are represented by `NULL` pointers.
    *
-   *    If the font's format is not PostScript-based, this function will
-   *    return the `FT_Err_Invalid_Argument` error code.
+   *   The following font formats support this feature: 'Type~1', 'Type~42',
+   *   'CFF', 'CID~Type~1'.  For other font formats this function returns the
+   *   `FT_Err_Invalid_Argument` error code.
+   *
+   * @example:
+   *   ```
+   *     PS_FontInfoRec  font_info;
+   *
+   *
+   *     error = FT_Get_PS_Font_Info( face, &font_info );
+   *     ...
+   *   ```
    *
    */
   FT_EXPORT( FT_Error )
@@ -512,29 +522,39 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @function:
-   *    FT_Get_PS_Font_Private
+   *   FT_Get_PS_Font_Private
    *
    * @description:
-   *    Retrieve the @PS_PrivateRec structure corresponding to a given
-   *    PostScript font.
+   *   Retrieve the @PS_PrivateRec structure corresponding to a given
+   *   PostScript font.
    *
    * @input:
-   *    face ::
-   *      PostScript face handle.
+   *   face ::
+   *     PostScript face handle.
    *
    * @output:
-   *    afont_private ::
-   *      Output private dictionary structure pointer.
+   *   afont_private ::
+   *     A pointer to a @PS_PrivateRec object.
    *
    * @return:
-   *    FreeType error code.  0~means success.
+   *   FreeType error code.  0~means success.
    *
    * @note:
-   *    The string pointers within the @PS_PrivateRec structure are owned by
-   *    the face and don't need to be freed by the caller.
+   *   The string pointers within the @PS_PrivateRec structure are owned by
+   *   the face and don't need to be freed by the caller.
    *
-   *    If the font's format is not PostScript-based, this function returns
-   *    the `FT_Err_Invalid_Argument` error code.
+   *   Only the 'Type~1' font format supports this feature.  For other font
+   *   formats this function returns the `FT_Err_Invalid_Argument` error
+   *   code.
+   *
+   * @example:
+   *   ```
+   *     PS_PrivateRec  font_private;
+   *
+   *
+   *     error = FT_Get_PS_Font_Private( face, &font_private );
+   *     ...
+   *   ```
    *
    */
   FT_EXPORT( FT_Error )
@@ -693,67 +713,67 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @function:
-   *    FT_Get_PS_Font_Value
+   *   FT_Get_PS_Font_Value
    *
    * @description:
-   *    Retrieve the value for the supplied key from a PostScript font.
+   *   Retrieve the value for the supplied key from a PostScript font.
    *
    * @input:
-   *    face ::
-   *      PostScript face handle.
+   *   face ::
+   *     PostScript face handle.
    *
-   *    key ::
-   *      An enumeration value representing the dictionary key to retrieve.
+   *   key ::
+   *     An enumeration value representing the dictionary key to retrieve.
    *
-   *    idx ::
-   *      For array values, this specifies the index to be returned.
+   *   idx ::
+   *     For array values, this specifies the index to be returned.
    *
-   *    value ::
-   *      A pointer to memory into which to write the value.
+   *   value ::
+   *     A pointer to memory into which to write the value.
    *
-   *    valen_len ::
-   *      The size, in bytes, of the memory supplied for the value.
+   *   valen_len ::
+   *     The size, in bytes, of the memory supplied for the value.
    *
    * @output:
-   *    value ::
-   *      The value matching the above key, if it exists.
+   *   value ::
+   *     The value matching the above key, if it exists.
    *
    * @return:
-   *    The amount of memory (in bytes) required to hold the requested value
-   *    (if it exists, -1 otherwise).
+   *   The amount of memory (in bytes) required to hold the requested value
+   *   (if it exists, -1 otherwise).
    *
    * @note:
-   *    The values returned are not pointers into the internal structures of
-   *    the face, but are 'fresh' copies, so that the memory containing them
-   *    belongs to the calling application.  This also enforces the
-   *    'read-only' nature of these values, i.e., this function cannot be
-   *    used to manipulate the face.
+   *   The values returned are not pointers into the internal structures of
+   *   the face, but are 'fresh' copies, so that the memory containing them
+   *   belongs to the calling application.  This also enforces the
+   *   'read-only' nature of these values, i.e., this function cannot be
+   *   used to manipulate the face.
    *
-   *    `value` is a void pointer because the values returned can be of
-   *    various types.
+   *   `value` is a void pointer because the values returned can be of
+   *   various types.
    *
-   *    If either `value` is `NULL` or `value_len` is too small, just the
-   *    required memory size for the requested entry is returned.
+   *   If either `value` is `NULL` or `value_len` is too small, just the
+   *   required memory size for the requested entry is returned.
    *
-   *    The `idx` parameter is used, not only to retrieve elements of, for
-   *    example, the FontMatrix or FontBBox, but also to retrieve name keys
-   *    from the CharStrings dictionary, and the charstrings themselves.  It
-   *    is ignored for atomic values.
+   *   The `idx` parameter is used, not only to retrieve elements of, for
+   *   example, the FontMatrix or FontBBox, but also to retrieve name keys
+   *   from the CharStrings dictionary, and the charstrings themselves.  It
+   *   is ignored for atomic values.
    *
-   *    `PS_DICT_BLUE_SCALE` returns a value that is scaled up by 1000.  To
-   *    get the value as in the font stream, you need to divide by 65536000.0
-   *    (to remove the FT_Fixed scale, and the x1000 scale).
+   *   `PS_DICT_BLUE_SCALE` returns a value that is scaled up by 1000.  To
+   *   get the value as in the font stream, you need to divide by 65536000.0
+   *   (to remove the FT_Fixed scale, and the x1000 scale).
    *
-   *    IMPORTANT: Only key/value pairs read by the FreeType interpreter can
-   *    be retrieved.  So, for example, PostScript procedures such as NP, ND,
-   *    and RD are not available.  Arbitrary keys are, obviously, not be
-   *    available either.
+   *   IMPORTANT: Only key/value pairs read by the FreeType interpreter can
+   *   be retrieved.  So, for example, PostScript procedures such as NP, ND,
+   *   and RD are not available.  Arbitrary keys are, obviously, not be
+   *   available either.
    *
-   *    If the font's format is not PostScript-based, this function returns
-   *    the `FT_Err_Invalid_Argument` error code.
+   *   If the font's format is not PostScript-based, this function returns
+   *   the `FT_Err_Invalid_Argument` error code.
    *
    * @since:
-   *    2.4.8
+   *   2.4.8
    *
    */
   FT_EXPORT( FT_Long )

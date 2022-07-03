@@ -289,3 +289,23 @@ hb_map_get_population (const hb_map_t *map)
 {
   return map->get_population ();
 }
+
+/**
+ * hb_map_is_equal:
+ * @map: A map
+ * @other: Another map
+ *
+ * Tests whether @map and @other are equal (contain the same
+ * elements).
+ *
+ * Return value: %true if the two maps are equal, %false otherwise.
+ *
+ * Since: 4.3.0
+ **/
+hb_bool_t
+hb_map_is_equal (const hb_map_t *map,
+		 const hb_map_t *other)
+{
+  return map->is_equal (*other);
+}
+

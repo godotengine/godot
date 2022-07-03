@@ -312,7 +312,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						selection.end = text.length();
 						selection.double_click = true;
 						last_dblclk = 0;
-						caret_column = selection.begin;
+						set_caret_column(selection.begin);
 						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 							DisplayServer::get_singleton()->clipboard_set_primary(text);
 						}
@@ -327,7 +327,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 								selection.begin = words[i];
 								selection.end = words[i + 1];
 								selection.double_click = true;
-								caret_column = selection.end;
+								set_caret_column(selection.end);
 								break;
 							}
 						}
@@ -406,7 +406,43 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid()) {
 		if (!k->is_pressed()) {
+			if (alt_start && k->get_keycode() == Key::ALT) {
+				alt_start = false;
+				if ((alt_code > 0x31 && alt_code < 0xd800) || (alt_code > 0xdfff && alt_code <= 0x10ffff)) {
+					char32_t ucodestr[2] = { (char32_t)alt_code, 0 };
+					insert_text_at_caret(ucodestr);
+				}
+				accept_event();
+				return;
+			}
 			return;
+		}
+
+		// Alt+ Unicode input:
+		if (k->is_alt_pressed()) {
+			if (!alt_start) {
+				if (k->get_keycode() == Key::KP_ADD) {
+					alt_start = true;
+					alt_code = 0;
+					accept_event();
+					return;
+				}
+			} else {
+				if (k->get_keycode() >= Key::KEY_0 && k->get_keycode() <= Key::KEY_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KEY_0);
+				}
+				if (k->get_keycode() >= Key::KP_0 && k->get_keycode() <= Key::KP_9) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::KP_0);
+				}
+				if (k->get_keycode() >= Key::A && k->get_keycode() <= Key::F) {
+					alt_code = alt_code << 4;
+					alt_code += (uint32_t)(k->get_keycode() - Key::A) + 10;
+				}
+				accept_event();
+				return;
+			}
 		}
 
 		if (context_menu_enabled) {
@@ -659,7 +695,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 		return false;
 	}
 	Ref<Texture2D> icon = Control::get_theme_icon(SNAME("clear"));
-	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_offset().x;
+	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_margin(SIDE_RIGHT);
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
@@ -1650,13 +1686,17 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM), font->get_height(font_size));
 
 	// Take icons into account.
-	bool using_placeholder = text.is_empty() && ime_text.is_empty();
-	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
-		min_size.width += r_icon->get_width();
-		min_size.height = MAX(min_size.height, r_icon->get_height());
+	int icon_max_width = 0;
+	if (right_icon.is_valid()) {
+		min_size.height = MAX(min_size.height, right_icon->get_height());
+		icon_max_width = right_icon->get_width();
 	}
+	if (clear_button_enabled) {
+		Ref<Texture2D> clear_icon = Control::get_theme_icon(SNAME("clear"));
+		min_size.height = MAX(min_size.height, clear_icon->get_height());
+		icon_max_width = MAX(icon_max_width, clear_icon->get_width());
+	}
+	min_size.width += icon_max_width;
 
 	return style->get_minimum_size() + min_size;
 }

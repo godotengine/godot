@@ -171,6 +171,18 @@
 				Multiplies two [int]s.
 			</description>
 		</operator>
+		<operator name="operator **">
+			<return type="float" />
+			<argument index="0" name="right" type="float" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator **">
+			<return type="int" />
+			<argument index="0" name="right" type="int" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator +">
 			<return type="String" />
 			<argument index="0" name="right" type="String" />

@@ -100,6 +100,7 @@ class ExtractType(enum.IntEnum):
     TEXT = 1
     PROPERTY_PATH = 2
     GROUP = 3
+    SUBGROUP = 4
 
 
 # Regex "(?P<name>([^"\\]|\\.)*)" creates a group named `name` that matches a string.
@@ -115,19 +116,23 @@ message_patterns = {
     ): ExtractType.TEXT,
     re.compile(r'_initial_set\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(r'GLOBAL_DEF(_RST)?(_NOVAL)?(_BASIC)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
-    re.compile(r'GLOBAL_DEF_BASIC\(vformat\("(?P<message>layer_names/\w+)/layer_%d"'): ExtractType.PROPERTY_PATH,
     re.compile(r'EDITOR_DEF(_RST)?\("(?P<message>[^"]+?)",'): ExtractType.PROPERTY_PATH,
     re.compile(
         r'EDITOR_SETTING(_USAGE)?\(Variant::[_A-Z0-9]+, [_A-Z0-9]+, "(?P<message>[^"]+?)",'
     ): ExtractType.PROPERTY_PATH,
     re.compile(
-        r'(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\(Variant::[_A-Z0-9]+, "(?P<message>[^"]+?)"[,)]'
+        r"(ADD_PROPERTYI?|ImportOption|ExportOption)\(PropertyInfo\("
+        + r"Variant::[_A-Z0-9]+"  # Name
+        + r', "(?P<message>[^"]+)"'  # Type
+        + r'(, [_A-Z0-9]+(, "([^"\\]|\\.)*"(, (?P<usage>[_A-Z0-9]+))?)?|\))'  # [, hint[, hint string[, usage]]].
     ): ExtractType.PROPERTY_PATH,
-    re.compile(
-        r"(?!#define )LIMPL_PROPERTY(_RANGE)?\(Variant::[_A-Z0-9]+, (?P<message>[^,]+?),"
-    ): ExtractType.PROPERTY_PATH,
-    re.compile(r'ADD_GROUP\("(?P<message>[^"]+?)", "(?P<prefix>[^"]*?)"\)'): ExtractType.GROUP,
-    re.compile(r'#define WRTC_\w+ "(?P<message>[^"]+?)"'): ExtractType.PROPERTY_PATH,
+    re.compile(r'ADD_ARRAY\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
+    re.compile(r'ADD_ARRAY_COUNT(_WITH_USAGE_FLAGS)?\("(?P<message>[^"]+)", '): ExtractType.TEXT,
+    re.compile(r'(ADD_GROUP|GNAME)\("(?P<message>[^"]+)", "(?P<prefix>[^"]*)"\)'): ExtractType.GROUP,
+    re.compile(r'ADD_GROUP_INDENT\("(?P<message>[^"]+)", "(?P<prefix>[^"]*)", '): ExtractType.GROUP,
+    re.compile(r'ADD_SUBGROUP\("(?P<message>[^"]+)", "(?P<prefix>[^"]*)"\)'): ExtractType.SUBGROUP,
+    re.compile(r'ADD_SUBGROUP_INDENT\("(?P<message>[^"]+)", "(?P<prefix>[^"]*)", '): ExtractType.GROUP,
+    re.compile(r'PNAME\("(?P<message>[^"]+)"\)'): ExtractType.PROPERTY_PATH,
 }
 theme_property_patterns = {
     re.compile(r'set_(constant|font|font_size|stylebox|color|icon)\("(?P<message>[^"]+)", '): ExtractType.PROPERTY_PATH,
@@ -203,6 +208,7 @@ def process_file(f, fname):
     is_block_translator_comment = False
     translator_comment = ""
     current_group = ""
+    current_subgroup = ""
 
     patterns = message_patterns
     if os.path.basename(fname) == "default_theme.cpp":
@@ -239,11 +245,25 @@ def process_file(f, fname):
                     if extract_type == ExtractType.TEXT:
                         _add_message(msg, msg_plural, msgctx, location, translator_comment)
                     elif extract_type == ExtractType.PROPERTY_PATH:
-                        if current_group:
+                        if captures.get("usage") == "PROPERTY_USAGE_NO_EDITOR":
+                            continue
+
+                        if current_subgroup:
+                            if msg.startswith(current_subgroup):
+                                msg = msg[len(current_subgroup) :]
+                            elif current_subgroup.startswith(msg):
+                                pass  # Keep this as-is. See EditorInspector::update_tree().
+                            else:
+                                current_subgroup = ""
+                        elif current_group:
                             if msg.startswith(current_group):
                                 msg = msg[len(current_group) :]
+                            elif current_group.startswith(msg):
+                                pass  # Keep this as-is. See EditorInspector::update_tree().
                             else:
                                 current_group = ""
+                                current_subgroup = ""
+
                         if "." in msg:  # Strip feature tag.
                             msg = msg.split(".", 1)[0]
                         for part in msg.split("/"):
@@ -251,6 +271,10 @@ def process_file(f, fname):
                     elif extract_type == ExtractType.GROUP:
                         _add_message(msg, msg_plural, msgctx, location, translator_comment)
                         current_group = captures["prefix"]
+                        current_subgroup = ""
+                    elif extract_type == ExtractType.SUBGROUP:
+                        _add_message(msg, msg_plural, msgctx, location, translator_comment)
+                        current_subgroup = captures["prefix"]
             translator_comment = ""
 
         l = f.readline()

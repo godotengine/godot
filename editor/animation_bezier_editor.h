@@ -32,6 +32,7 @@
 #define ANIMATION_BEZIER_EDITOR_H
 
 #include "animation_track_editor.h"
+#include "core/templates/rb_set.h"
 
 class ViewPanner;
 
@@ -61,7 +62,7 @@ class AnimationBezierTrackEdit : public Control {
 	Ref<Texture2D> bezier_handle_icon;
 	Ref<Texture2D> selected_icon;
 
-	Map<int, Rect2> subtracks;
+	RBMap<int, Rect2> subtracks;
 
 	enum {
 		REMOVE_ICON,
@@ -70,9 +71,9 @@ class AnimationBezierTrackEdit : public Control {
 		VISIBILITY_ICON
 	};
 
-	Map<int, Map<int, Rect2>> subtrack_icons;
-	Set<int> locked_tracks;
-	Set<int> hidden_tracks;
+	RBMap<int, RBMap<int, Rect2>> subtrack_icons;
+	HashSet<int> locked_tracks;
+	HashSet<int> hidden_tracks;
 	int solo_track = -1;
 	bool is_filtered = false;
 
@@ -152,7 +153,7 @@ class AnimationBezierTrackEdit : public Control {
 		}
 	};
 
-	typedef Set<IntPair, SelectionCompare> SelectionSet;
+	typedef RBSet<IntPair, SelectionCompare> SelectionSet;
 
 	SelectionSet selection;
 

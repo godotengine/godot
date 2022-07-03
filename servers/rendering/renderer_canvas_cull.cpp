@@ -1831,8 +1831,8 @@ void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 
 	RSG::canvas_render->occluder_polygon_set_shape(occluder_poly->occluder, p_shape, p_closed);
 
-	for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
-		E->get()->aabb_cache = occluder_poly->aabb;
+	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
+		E->aabb_cache = occluder_poly->aabb;
 	}
 }
 
@@ -1841,8 +1841,8 @@ void RendererCanvasCull::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 	ERR_FAIL_COND(!occluder_poly);
 	occluder_poly->cull_mode = p_mode;
 	RSG::canvas_render->occluder_polygon_set_cull_mode(occluder_poly->occluder, p_mode);
-	for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = occluder_poly->owners.front(); E; E = E->next()) {
-		E->get()->cull_cache = p_mode;
+	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
+		E->cull_cache = p_mode;
 	}
 }
 
@@ -1928,26 +1928,26 @@ bool RendererCanvasCull::free(RID p_rid) {
 		ERR_FAIL_COND_V(!canvas, false);
 
 		while (canvas->viewports.size()) {
-			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(canvas->viewports.front()->get());
+			RendererViewport::Viewport *vp = RSG::viewport->viewport_owner.get_or_null(*canvas->viewports.begin());
 			ERR_FAIL_COND_V(!vp, true);
 
-			Map<RID, RendererViewport::Viewport::CanvasData>::Element *E = vp->canvas_map.find(p_rid);
+			HashMap<RID, RendererViewport::Viewport::CanvasData>::Iterator E = vp->canvas_map.find(p_rid);
 			ERR_FAIL_COND_V(!E, true);
 			vp->canvas_map.erase(p_rid);
 
-			canvas->viewports.erase(canvas->viewports.front());
+			canvas->viewports.erase(*canvas->viewports.begin());
 		}
 
 		for (int i = 0; i < canvas->child_items.size(); i++) {
 			canvas->child_items[i].item->parent = RID();
 		}
 
-		for (Set<RendererCanvasRender::Light *>::Element *E = canvas->lights.front(); E; E = E->next()) {
-			E->get()->canvas = RID();
+		for (RendererCanvasRender::Light *E : canvas->lights) {
+			E->canvas = RID();
 		}
 
-		for (Set<RendererCanvasRender::LightOccluderInstance *>::Element *E = canvas->occluders.front(); E; E = E->next()) {
-			E->get()->canvas = RID();
+		for (RendererCanvasRender::LightOccluderInstance *E : canvas->occluders) {
+			E->canvas = RID();
 		}
 
 		canvas_owner.free(p_rid);
@@ -2030,8 +2030,8 @@ bool RendererCanvasCull::free(RID p_rid) {
 		RSG::canvas_render->free(occluder_poly->occluder);
 
 		while (occluder_poly->owners.size()) {
-			occluder_poly->owners.front()->get()->polygon = RID();
-			occluder_poly->owners.erase(occluder_poly->owners.front());
+			(*occluder_poly->owners.begin())->polygon = RID();
+			occluder_poly->owners.remove(occluder_poly->owners.begin());
 		}
 
 		canvas_light_occluder_polygon_owner.free(p_rid);

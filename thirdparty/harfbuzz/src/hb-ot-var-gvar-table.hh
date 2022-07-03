@@ -390,13 +390,10 @@ struct gvar
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) && (version.major == 1) &&
-		  (glyphCount == c->get_num_glyphs ()) &&
 		  sharedTuples.sanitize (c, this, axisCount * sharedTupleCount) &&
 		  (is_long_offset () ?
 		     c->check_array (get_long_offset_array (), glyphCount+1) :
-		     c->check_array (get_short_offset_array (), glyphCount+1)) &&
-		  c->check_array (((const HBUINT8*)&(this+dataZ)) + get_offset (0),
-				  get_offset (glyphCount) - get_offset (0)));
+		     c->check_array (get_short_offset_array (), glyphCount+1)));
   }
 
   /* GlyphVariationData not sanitized here; must be checked while accessing each glyph variation data */
@@ -482,7 +479,9 @@ struct gvar
   const hb_bytes_t get_glyph_var_data_bytes (hb_blob_t *blob, hb_codepoint_t glyph) const
   {
     unsigned start_offset = get_offset (glyph);
-    unsigned length = get_offset (glyph+1) - start_offset;
+    unsigned end_offset = get_offset (glyph+1);
+    if (unlikely (end_offset < start_offset)) return hb_bytes_t ();
+    unsigned length = end_offset - start_offset;
     hb_bytes_t var_data = blob->as_bytes ().sub_array (((unsigned) dataZ) + start_offset, length);
     return likely (var_data.length >= GlyphVariationData::min_size) ? var_data : hb_bytes_t ();
   }
@@ -490,7 +489,10 @@ struct gvar
   bool is_long_offset () const { return flags & 1; }
 
   unsigned get_offset (unsigned i) const
-  { return is_long_offset () ? get_long_offset_array ()[i] : get_short_offset_array ()[i] * 2; }
+  {
+    if (unlikely (i > glyphCount)) return 0;
+    return is_long_offset () ? get_long_offset_array ()[i] : get_short_offset_array ()[i] * 2;
+  }
 
   const HBUINT32 * get_long_offset_array () const { return (const HBUINT32 *) &offsetZ; }
   const HBUINT16 *get_short_offset_array () const { return (const HBUINT16 *) &offsetZ; }
@@ -696,7 +698,7 @@ no_more_gaps:
 		offsetZ;	/* Offsets from the start of the GlyphVariationData array
 				 * to each GlyphVariationData table. */
   public:
-  DEFINE_SIZE_MIN (20);
+  DEFINE_SIZE_ARRAY (20, offsetZ);
 };
 
 struct gvar_accelerator_t : gvar::accelerator_t {

@@ -89,7 +89,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _event_config_confirmed();
 
 	void _create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
-	Array _event_list_to_array_helper(List<Ref<InputEvent>> &p_events);
+	Array _event_list_to_array_helper(const List<Ref<InputEvent>> &p_events);
 	void _update_builtin_action(const String &p_name, const Array &p_events);
 	void _update_shortcut_events(const String &p_path, const Array &p_events);
 
@@ -103,7 +103,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
-	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
+	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
 
 	void _builtin_action_popup_index_pressed(int p_index);

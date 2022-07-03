@@ -44,8 +44,6 @@ class VisualShader : public Shader {
 
 	friend class VisualShaderNodeVersionChecker;
 
-	Dictionary engine_version;
-
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -127,7 +125,7 @@ private:
 	};
 
 	struct Graph {
-		Map<int, Node> nodes;
+		RBMap<int, Node> nodes;
 		List<Connection> connections;
 	} graph[TYPE_MAX];
 
@@ -139,9 +137,9 @@ private:
 	Vector2 graph_offset;
 
 	HashMap<String, int> modes;
-	Set<StringName> flags;
+	HashSet<StringName> flags;
 
-	Map<String, Varying> varyings;
+	HashMap<String, Varying> varyings;
 	List<Varying> varyings_list;
 
 	mutable SafeFlag dirty;
@@ -158,7 +156,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, Map<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuilder *global_code, StringBuilder *global_code_per_node, HashMap<Type, StringBuilder> *global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, HashSet<int> &processed, bool for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
@@ -176,14 +174,6 @@ protected:
 public: // internal methods
 	void set_shader_type(Type p_type);
 	Type get_shader_type() const;
-
-public:
-	void set_engine_version(const Dictionary &p_version);
-	Dictionary get_engine_version() const;
-
-#ifndef DISABLE_DEPRECATED
-	void update_engine_version(const Dictionary &p_new_version);
-#endif /* DISABLE_DEPRECATED */
 
 	enum {
 		NODE_ID_INVALID = -1,
@@ -255,10 +245,10 @@ class VisualShaderNode : public Resource {
 
 	int port_preview = -1;
 
-	Map<int, Variant> default_input_values;
-	Map<int, bool> connected_input_ports;
-	Map<int, int> connected_output_ports;
-	Map<int, bool> expanded_output_ports;
+	HashMap<int, Variant> default_input_values;
+	HashMap<int, bool> connected_input_ports;
+	HashMap<int, int> connected_output_ports;
+	HashMap<int, bool> expanded_output_ports;
 
 protected:
 	bool simple_decl = true;
@@ -328,7 +318,7 @@ public:
 	void set_disabled(bool p_disabled = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
-	virtual Map<StringName, String> get_editable_properties_names() const;
+	virtual HashMap<StringName, String> get_editable_properties_names() const;
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
@@ -680,9 +670,9 @@ protected:
 		String name;
 	};
 
-	Map<int, Port> input_ports;
-	Map<int, Port> output_ports;
-	Map<int, Control *> controls;
+	HashMap<int, Port> input_ports;
+	HashMap<int, Port> output_ports;
+	HashMap<int, Control *> controls;
 
 protected:
 	static void _bind_methods();

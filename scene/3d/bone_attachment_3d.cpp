@@ -376,6 +376,24 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 		}
 	}
 }
+#ifdef TOOLS_ENABLED
+void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Ref<BoneMap> p_bone_map) {
+	const Skeleton3D *parent = nullptr;
+	if (use_external_skeleton) {
+		if (external_skeleton_node_cache.is_valid()) {
+			parent = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(external_skeleton_node_cache));
+		}
+	} else {
+		parent = Object::cast_to<Skeleton3D>(get_parent());
+	}
+	if (parent && parent == p_skeleton) {
+		StringName bn = p_bone_map->find_profile_bone_name(bone_name);
+		if (bn) {
+			set_bone_name(bn);
+		}
+	}
+}
+#endif // TOOLS_ENABLED
 
 BoneAttachment3D::BoneAttachment3D() {
 }
@@ -398,6 +416,9 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("set_external_skeleton", "external_skeleton"), &BoneAttachment3D::set_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_external_skeleton"), &BoneAttachment3D::get_external_skeleton);
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_notify_skeleton_bones_renamed"), &BoneAttachment3D::_notify_skeleton_bones_renamed);
+#endif // TOOLS_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");

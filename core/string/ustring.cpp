@@ -2039,7 +2039,7 @@ int64_t String::hex_to_int() const {
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
-		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -2078,7 +2078,7 @@ int64_t String::bin_to_int() const {
 		}
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
 		bool overflow = ((binary > INT64_MAX / 2) && (sign == 1 || (sign == -1 && binary != (INT64_MAX >> 1) + 1))) || (sign == -1 && binary == (INT64_MAX >> 1) + 1 && c > '0');
-		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 		binary *= 2;
 		binary += n;
 		s++;
@@ -2101,7 +2101,7 @@ int64_t String::to_int() const {
 		char32_t c = operator[](i);
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2130,7 +2130,7 @@ int64_t String::to_int(const char *p_str, int p_len) {
 		char c = p_str[i];
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2161,7 +2161,7 @@ int64_t String::to_int(const wchar_t *p_str, int p_len) {
 		wchar_t c = p_str[i];
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
-			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2483,7 +2483,7 @@ int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 								return INT64_MIN;
 							}
 						} else {
-							ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+							ERR_FAIL_V_MSG(sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + number + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
 						}
 					}
 					integer *= 10;
@@ -3359,36 +3359,36 @@ String String::repeat(int p_count) const {
 	return new_string;
 }
 
-String String::left(int p_pos) const {
-	if (p_pos < 0) {
-		p_pos = length() + p_pos;
+String String::left(int p_len) const {
+	if (p_len < 0) {
+		p_len = length() + p_len;
 	}
 
-	if (p_pos <= 0) {
+	if (p_len <= 0) {
 		return "";
 	}
 
-	if (p_pos >= length()) {
+	if (p_len >= length()) {
 		return *this;
 	}
 
-	return substr(0, p_pos);
+	return substr(0, p_len);
 }
 
-String String::right(int p_pos) const {
-	if (p_pos < 0) {
-		p_pos = length() + p_pos;
+String String::right(int p_len) const {
+	if (p_len < 0) {
+		p_len = length() + p_len;
 	}
 
-	if (p_pos <= 0) {
+	if (p_len <= 0) {
 		return "";
 	}
 
-	if (p_pos >= length()) {
+	if (p_len >= length()) {
 		return *this;
 	}
 
-	return substr(length() - p_pos);
+	return substr(length() - p_len);
 }
 
 char32_t String::unicode_at(int p_idx) const {
@@ -3655,6 +3655,31 @@ bool String::is_absolute_path() const {
 	}
 }
 
+static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char) {
+	if (p_index == 0 && is_digit(p_char)) {
+		return false; // No start with number plz.
+	}
+	return is_ascii_identifier_char(p_char);
+}
+
+String String::validate_identifier() const {
+	if (is_empty()) {
+		return "_"; // Empty string is not a valid identifier;
+	}
+
+	String result = *this;
+	int len = result.length();
+	char32_t *buffer = result.ptrw();
+
+	for (int i = 0; i < len; i++) {
+		if (!_is_valid_identifier_bit(i, buffer[i])) {
+			buffer[i] = '_';
+		}
+	}
+
+	return result;
+}
+
 bool String::is_valid_identifier() const {
 	int len = length();
 
@@ -3665,15 +3690,7 @@ bool String::is_valid_identifier() const {
 	const char32_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (i == 0) {
-			if (is_digit(str[0])) {
-				return false; // no start with number plz
-			}
-		}
-
-		bool valid_char = is_ascii_identifier_char(str[i]);
-
-		if (!valid_char) {
+		if (!_is_valid_identifier_bit(i, str[i])) {
 			return false;
 		}
 	}
@@ -3695,18 +3712,15 @@ String String::uri_encode() const {
 	const CharString temp = utf8();
 	String res;
 	for (int i = 0; i < temp.length(); ++i) {
-		char ord = temp[i];
+		uint8_t ord = temp[i];
 		if (ord == '.' || ord == '-' || ord == '~' || is_ascii_identifier_char(ord)) {
 			res += ord;
 		} else {
-			char h_Val[3];
-#if defined(__GNUC__) || defined(_MSC_VER)
-			snprintf(h_Val, 3, "%02hhX", ord);
-#else
-			sprintf(h_Val, "%02hhX", ord);
-#endif
-			res += "%";
-			res += h_Val;
+			char p[4] = { '%', 0, 0, 0 };
+			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+			p[1] = hex[ord >> 4];
+			p[2] = hex[ord & 0xF];
+			res += p;
 		}
 	}
 	return res;
@@ -4779,6 +4793,17 @@ Vector<uint8_t> String::to_utf32_buffer() const {
 }
 
 #ifdef TOOLS_ENABLED
+/**
+ * "Tools TRanslate". Performs string replacement for internationalization
+ * within the editor. A translation context can optionally be specified to
+ * disambiguate between identical source strings in translations. When
+ * placeholders are desired, use `vformat(TTR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `TTRN()` instead of `TTR()`.
+ *
+ * NOTE: Only use `TTR()` in editor-only code (typically within the `editor/` folder).
+ * For translations that can be supplied by exported projects, use `RTR()` instead.
+ */
 String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
@@ -4787,6 +4812,18 @@ String TTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+/**
+ * "Tools TRanslate for N items". Performs string replacement for
+ * internationalization within the editor. A translation context can optionally
+ * be specified to disambiguate between identical source strings in
+ * translations. Use `TTR()` if the string doesn't need dynamic plural form.
+ * When placeholders are desired, use
+ * `vformat(TTRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: Only use `TTRN()` in editor-only code (typically within the `editor/` folder).
+ * For translations that can be supplied by exported projects, use `RTRN()` instead.
+ */
 String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
@@ -4799,9 +4836,10 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	return p_text_plural;
 }
 
-/* DTR and DTRN are used for the documentation, handling descriptions extracted
- * from the XML.
- * They also replace `$DOCS_URL` with the actual URL to the documentation's branch,
+/**
+ * "Docs TRanslate". Used for the editor class reference documentation,
+ * handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
  * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
  */
 String DTR(const String &p_text, const String &p_context) {
@@ -4815,6 +4853,12 @@ String DTR(const String &p_text, const String &p_context) {
 	return text.replace("$DOCS_URL", VERSION_DOCS_URL);
 }
 
+/**
+ * "Docs TRanslate for N items". Used for the editor class reference documentation
+ * (with support for plurals), handling descriptions extracted from the XML.
+ * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
+ * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
+ */
 String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	const String text = p_text.dedent().strip_edges();
 	const String text_plural = p_text_plural.dedent().strip_edges();
@@ -4831,6 +4875,19 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 }
 #endif
 
+/**
+ * "Run-time TRanslate". Performs string replacement for internationalization
+ * within a running project. The translation string must be supplied by the
+ * project, as Godot does not provide built-in translations for `RTR()` strings
+ * to keep binary size low. A translation context can optionally be specified to
+ * disambiguate between identical source strings in translations. When
+ * placeholders are desired, use `vformat(RTR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `RTRN()` instead of `RTR()`.
+ *
+ * NOTE: Do not use `RTR()` in editor-only code (typically within the `editor/`
+ * folder). For editor translations, use `TTR()` instead.
+ */
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
@@ -4844,6 +4901,20 @@ String RTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+/**
+ * "Run-time TRanslate for N items". Performs string replacement for
+ * internationalization within a running project. The translation string must be
+ * supplied by the project, as Godot does not provide built-in translations for
+ * `RTRN()` strings to keep binary size low. A translation context can
+ * optionally be specified to disambiguate between identical source strings in
+ * translations. Use `RTR()` if the string doesn't need dynamic plural form.
+ * When placeholders are desired, use
+ * `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
+ * folder). For editor translations, use `TTRN()` instead.
+ */
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);

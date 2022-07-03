@@ -94,17 +94,17 @@ void StaticRaycasterEmbree::commit() {
 	rtcCommitScene(embree_scene);
 }
 
-void StaticRaycasterEmbree::set_mesh_filter(const Set<int> &p_mesh_ids) {
-	for (Set<int>::Element *E = p_mesh_ids.front(); E; E = E->next()) {
-		rtcDisableGeometry(rtcGetGeometry(embree_scene, E->get()));
+void StaticRaycasterEmbree::set_mesh_filter(const HashSet<int> &p_mesh_ids) {
+	for (const int &E : p_mesh_ids) {
+		rtcDisableGeometry(rtcGetGeometry(embree_scene, E));
 	}
 	rtcCommitScene(embree_scene);
 	filter_meshes = p_mesh_ids;
 }
 
 void StaticRaycasterEmbree::clear_mesh_filter() {
-	for (Set<int>::Element *E = filter_meshes.front(); E; E = E->next()) {
-		rtcEnableGeometry(rtcGetGeometry(embree_scene, E->get()));
+	for (const int &E : filter_meshes) {
+		rtcEnableGeometry(rtcGetGeometry(embree_scene, E));
 	}
 	rtcCommitScene(embree_scene);
 	filter_meshes.clear();

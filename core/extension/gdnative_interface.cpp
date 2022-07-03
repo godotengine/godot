@@ -230,6 +230,16 @@ static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeV
 }
 
 /// Variant functions.
+static GDNativeInt gdnative_variant_hash(const GDNativeVariantPtr p_self) {
+	const Variant *self = (const Variant *)p_self;
+	return self->hash();
+}
+
+static GDNativeInt gdnative_variant_recursive_hash(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count) {
+	const Variant *self = (const Variant *)p_self;
+	return self->recursive_hash(p_recursion_count);
+}
+
 static GDNativeBool gdnative_variant_hash_compare(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *other = (const Variant *)p_other;
@@ -944,6 +954,8 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.variant_iter_init = gdnative_variant_iter_init;
 	gdni.variant_iter_next = gdnative_variant_iter_next;
 	gdni.variant_iter_get = gdnative_variant_iter_get;
+	gdni.variant_hash = gdnative_variant_hash;
+	gdni.variant_recursive_hash = gdnative_variant_recursive_hash;
 	gdni.variant_hash_compare = gdnative_variant_hash_compare;
 	gdni.variant_booleanize = gdnative_variant_booleanize;
 	gdni.variant_sub = gdnative_variant_sub;

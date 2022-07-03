@@ -54,7 +54,6 @@ struct Mesh {
 		struct Attrib {
 			bool enabled;
 			bool integer;
-			GLuint index;
 			GLint size;
 			GLenum type;
 			GLboolean normalized;
@@ -69,6 +68,7 @@ struct Mesh {
 		GLuint skin_buffer = 0;
 		uint32_t vertex_count = 0;
 		uint32_t vertex_buffer_size = 0;
+		uint32_t attribute_buffer_size = 0;
 		uint32_t skin_buffer_size = 0;
 
 		// Cache vertex arrays so they can be created
@@ -84,12 +84,13 @@ struct Mesh {
 		uint32_t version_count = 0;
 
 		GLuint index_buffer = 0;
-		GLuint index_array = 0;
 		uint32_t index_count = 0;
+		uint32_t index_buffer_size = 0;
 
 		struct LOD {
 			float edge_length = 0.0;
 			uint32_t index_count = 0;
+			uint32_t index_buffer_size = 0;
 			GLuint index_buffer;
 		};
 
@@ -123,7 +124,7 @@ struct Mesh {
 	List<MeshInstance *> instances;
 
 	RID shadow_mesh;
-	Set<Mesh *> shadow_owners;
+	HashSet<Mesh *> shadow_owners;
 
 	RendererStorage::Dependency dependency;
 };
@@ -357,6 +358,12 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ GLenum mesh_surface_get_index_type(void *p_surface) const {
+		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+
+		return s->vertex_count <= 65536 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
+	}
+
 	// Use this to cache Vertex Array Objects so they are only generated once
 	_FORCE_INLINE_ void mesh_surface_get_vertex_arrays_and_format(void *p_surface, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
@@ -387,6 +394,9 @@ public:
 	}
 
 	/* MESH INSTANCE API */
+
+	MeshInstance *get_mesh_instance(RID p_rid) { return mesh_instance_owner.get_or_null(p_rid); };
+	bool owns_mesh_instance(RID p_rid) { return mesh_instance_owner.owns(p_rid); };
 
 	virtual RID mesh_instance_create(RID p_base) override;
 	virtual void mesh_instance_free(RID p_rid) override;
@@ -430,6 +440,9 @@ public:
 	}
 
 	/* MULTIMESH API */
+
+	MultiMesh *get_multimesh(RID p_rid) { return multimesh_owner.get_or_null(p_rid); };
+	bool owns_multimesh(RID p_rid) { return multimesh_owner.owns(p_rid); };
 
 	virtual RID multimesh_allocate() override;
 	virtual void multimesh_initialize(RID p_rid) override;
@@ -481,7 +494,30 @@ public:
 		return multimesh->instances;
 	}
 
+	_FORCE_INLINE_ GLuint multimesh_get_gl_buffer(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->buffer;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_stride(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->stride_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_color_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->color_offset_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_custom_data_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->custom_data_offset_cache;
+	}
+
 	/* SKELETON API */
+
+	Skeleton *get_skeleton(RID p_rid) { return skeleton_owner.get_or_null(p_rid); };
+	bool owns_skeleton(RID p_rid) { return skeleton_owner.owns(p_rid); };
 
 	virtual RID skeleton_allocate() override;
 	virtual void skeleton_initialize(RID p_rid) override;

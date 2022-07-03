@@ -36,7 +36,7 @@
 
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
-Map<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
+RBMap<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
 Mutex ManagedCallable::instances_mutex;
 #endif
 
@@ -66,9 +66,8 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	// hmm
 	uint32_t hash = delegate_invoke->get_name().hash();
-	return hash_djb2_one_64(delegate_handle.handle, hash);
+	return hash_murmur3_one_64(delegate_handle.handle, hash);
 }
 
 String ManagedCallable::get_as_text() const {

@@ -87,7 +87,7 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count) {
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
 	clear();
 
 	msaa = p_msaa;
@@ -485,9 +485,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	Vector2 vp_he = p_render_data->cam_projection.get_viewport_half_extents();
-	scene_state.ubo.viewport_size[0] = vp_he.x;
-	scene_state.ubo.viewport_size[1] = vp_he.y;
 	scene_state.ubo.directional_light_count = 0;
 	scene_state.ubo.opaque_prepass_threshold = 0.0;
 
@@ -566,6 +563,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	} else {
 		ERR_FAIL(); //bug?
 	}
+
+	scene_state.ubo.viewport_size[0] = screen_size.x;
+	scene_state.ubo.viewport_size[1] = screen_size.y;
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
@@ -675,7 +675,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
 	}
 
-	_pre_opaque_render(p_render_data, false, false, false, RID(), RID());
+	RID null_rids[2];
+	_pre_opaque_render(p_render_data, false, false, false, null_rids, RID());
 
 	uint32_t spec_constant_base_flags = 0;
 
@@ -1324,6 +1325,10 @@ RID RenderForwardMobile::_render_buffers_get_normal_texture(RID p_render_buffers
 	return RID();
 }
 
+RID RenderForwardMobile::_render_buffers_get_velocity_texture(RID p_render_buffers) {
+	return RID();
+}
+
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
 	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
@@ -1538,6 +1543,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		projection = correction * p_render_data->view_projection[v];
 		RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix_view[v]);
 		RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix_view[v]);
+
+		scene_state.ubo.eye_offset[v][0] = p_render_data->view_eye_offset[v].x;
+		scene_state.ubo.eye_offset[v][1] = p_render_data->view_eye_offset[v].y;
+		scene_state.ubo.eye_offset[v][2] = p_render_data->view_eye_offset[v].z;
+		scene_state.ubo.eye_offset[v][3] = 0.0;
 	}
 
 	scene_state.ubo.z_far = p_render_data->z_far;

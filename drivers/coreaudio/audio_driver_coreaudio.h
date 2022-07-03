@@ -35,9 +35,9 @@
 
 #include "servers/audio_server.h"
 
-#include <AudioUnit/AudioUnit.h>
+#import <AudioUnit/AudioUnit.h>
 #ifdef OSX_ENABLED
-#include <CoreAudio/AudioHardware.h>
+#import <CoreAudio/AudioHardware.h>
 #endif
 
 class AudioDriverCoreAudio : public AudioDriver {

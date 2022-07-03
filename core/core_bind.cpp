@@ -83,6 +83,14 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
+void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
+}
+
+void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+	::ResourceLoader::remove_resource_format_loader(p_format_loader);
+}
+
 void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 	::ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
@@ -119,6 +127,8 @@ void ResourceLoader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path", "type_hint", "cache_mode"), &ResourceLoader::load, DEFVAL(""), DEFVAL(CACHE_MODE_REUSE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type", "type"), &ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("add_resource_format_loader", "format_loader", "at_front"), &ResourceLoader::add_resource_format_loader, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_loader", "format_loader"), &ResourceLoader::remove_resource_format_loader);
 	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources", "abort"), &ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(D_METHOD("get_dependencies", "path"), &ResourceLoader::get_dependencies);
 	ClassDB::bind_method(D_METHOD("has_cached", "path"), &ResourceLoader::has_cached);
@@ -153,11 +163,21 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
+void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
+}
+
+void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+	::ResourceSaver::remove_resource_format_saver(p_format_saver);
+}
+
 ResourceSaver *ResourceSaver::singleton = nullptr;
 
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &ResourceSaver::save, DEFVAL((uint32_t)FLAG_NONE));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
 
 	BIND_ENUM_CONSTANT(FLAG_NONE);
 	BIND_ENUM_CONSTANT(FLAG_RELATIVE_PATHS);
@@ -439,7 +459,7 @@ void OS::print_resources_by_type(const Vector<String> &p_types) {
 
 	print_line(vformat("Resources currently in use for the following types: %s", p_types));
 
-	Map<String, int> type_count;
+	RBMap<String, int> type_count;
 	List<Ref<Resource>> resources;
 	ResourceCache::get_cached_resources(&resources);
 
@@ -1820,60 +1840,26 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
+	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	::Thread::set_name(func_name);
+
 	Callable::CallError ce;
-	const Variant *arg[1] = { &t->userdata };
-	int argc = 0;
-	if (arg[0]->get_type() != Variant::NIL) {
-		// Just pass to the target function whatever came as user data
-		argc = 1;
-	} else {
-		// There are two cases of null user data:
-		// a) The target function has zero parameters and the caller is just honoring that.
-		// b) The target function has at least one parameter with no default and the caller is
-		//    leveraging the fact that user data defaults to null in Thread.start().
-		//    We care about the case of more than one parameter because, even if a thread
-		//    function can have one at most, out mindset here is to do our best with the
-		//    only/first one and let the call handle any other error conditions, like too
-		//    much arguments.
-		// We must check if we are in case b).
-		int target_param_count = 0;
-		int target_default_arg_count = 0;
-		Ref<Script> script = target_instance->get_script();
-		if (script.is_valid()) {
-			MethodInfo mi = script->get_method_info(t->target_callable.get_method());
-			target_param_count = mi.arguments.size();
-			target_default_arg_count = mi.default_arguments.size();
-		} else {
-			MethodBind *method = ClassDB::get_method(target_instance->get_class_name(), t->target_callable.get_method());
-			if (method) {
-				target_param_count = method->get_argument_count();
-				target_default_arg_count = method->get_default_argument_count();
-			}
-		}
-		if (target_param_count >= 1 && target_default_arg_count < target_param_count) {
-			argc = 1;
-		}
-	}
-
-	::Thread::set_name(t->target_callable.get_method());
-
-	t->target_callable.call(arg, argc, t->ret, ce);
+	t->target_callable.call(nullptr, 0, t->ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + t->target_callable.get_method().operator String() + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, arg, argc, ce) + ".");
+		ERR_FAIL_MSG("Could not call function '" + func_name + "' to start thread " + t->get_id() + ": " + Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce) + ".");
 	}
 
 	t->running.clear();
 }
 
-Error Thread::start(const Callable &p_callable, const Variant &p_userdata, Priority p_priority) {
+Error Thread::start(const Callable &p_callable, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_started(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_callable.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
 	target_callable = p_callable;
-	userdata = p_userdata;
 	running.set();
 
 	Ref<Thread> *ud = memnew(Ref<Thread>(this));
@@ -1902,13 +1888,12 @@ Variant Thread::wait_to_finish() {
 	thread.wait_to_finish();
 	Variant r = ret;
 	target_callable = Callable();
-	userdata = Variant();
 
 	return r;
 }
 
 void Thread::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("start", "callable", "userdata", "priority"), &Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
@@ -2076,9 +2061,9 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	return success;
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
+int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
 	bool found;
-	int c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
+	int64_t c = ::ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }

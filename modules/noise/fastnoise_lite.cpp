@@ -30,6 +30,24 @@
 
 #include "fastnoise_lite.h"
 
+_FastNoiseLite::FractalType FastNoiseLite::_convert_domain_warp_fractal_type_enum(DomainWarpFractalType p_domain_warp_fractal_type) {
+	_FastNoiseLite::FractalType type;
+	switch (p_domain_warp_fractal_type) {
+		case DOMAIN_WARP_FRACTAL_NONE:
+			type = _FastNoiseLite::FractalType_None;
+			break;
+		case DOMAIN_WARP_FRACTAL_PROGRESSIVE:
+			type = _FastNoiseLite::FractalType_DomainWarpProgressive;
+			break;
+		case DOMAIN_WARP_FRACTAL_INDEPENDENT:
+			type = _FastNoiseLite::FractalType_DomainWarpIndependent;
+			break;
+		default:
+			type = _FastNoiseLite::FractalType_None;
+	}
+	return type;
+}
+
 FastNoiseLite::FastNoiseLite() {
 	_noise.SetNoiseType((_FastNoiseLite::NoiseType)noise_type);
 	_noise.SetSeed(seed);
@@ -50,7 +68,7 @@ FastNoiseLite::FastNoiseLite() {
 	_domain_warp_noise.SetSeed(seed);
 	_domain_warp_noise.SetDomainWarpAmp(domain_warp_amplitude);
 	_domain_warp_noise.SetFrequency(domain_warp_frequency);
-	_domain_warp_noise.SetFractalType(_FastNoiseLite::FractalType_None);
+	_domain_warp_noise.SetFractalType(_convert_domain_warp_fractal_type_enum(domain_warp_fractal_type));
 	_domain_warp_noise.SetFractalOctaves(domain_warp_fractal_octaves);
 	_domain_warp_noise.SetFractalLacunarity(domain_warp_fractal_lacunarity);
 	_domain_warp_noise.SetFractalGain(domain_warp_fractal_gain);
@@ -241,23 +259,7 @@ real_t FastNoiseLite::get_domain_warp_frequency() const {
 void FastNoiseLite::set_domain_warp_fractal_type(DomainWarpFractalType p_domain_warp_fractal_type) {
 	domain_warp_fractal_type = p_domain_warp_fractal_type;
 
-	// This needs manual conversion because Godots Inspector property API does not support discontiguous enum indices.
-	_FastNoiseLite::FractalType type;
-	switch (p_domain_warp_fractal_type) {
-		case DOMAIN_WARP_FRACTAL_NONE:
-			type = _FastNoiseLite::FractalType_None;
-			break;
-		case DOMAIN_WARP_FRACTAL_PROGRESSIVE:
-			type = _FastNoiseLite::FractalType_DomainWarpProgressive;
-			break;
-		case DOMAIN_WARP_FRACTAL_INDEPENDENT:
-			type = _FastNoiseLite::FractalType_DomainWarpIndependent;
-			break;
-		default:
-			type = _FastNoiseLite::FractalType_None;
-	}
-
-	_domain_warp_noise.SetFractalType(type);
+	_domain_warp_noise.SetFractalType(_convert_domain_warp_fractal_type_enum(p_domain_warp_fractal_type));
 	emit_changed();
 }
 
@@ -298,6 +300,12 @@ real_t FastNoiseLite::get_domain_warp_fractal_gain() const {
 // Noise interface functions.
 
 real_t FastNoiseLite::get_noise_1d(real_t p_x) const {
+	p_x += offset.x;
+	if (domain_warp_enabled) {
+		// Needed since DomainWarp expects a reference.
+		real_t y_dummy = 0;
+		_domain_warp_noise.DomainWarp(p_x, y_dummy);
+	}
 	return get_noise_2d(p_x, 0.0);
 }
 
@@ -306,10 +314,12 @@ real_t FastNoiseLite::get_noise_2dv(Vector2 p_v) const {
 }
 
 real_t FastNoiseLite::get_noise_2d(real_t p_x, real_t p_y) const {
+	p_x += offset.x;
+	p_y += offset.y;
 	if (domain_warp_enabled) {
 		_domain_warp_noise.DomainWarp(p_x, p_y);
 	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y);
+	return _noise.GetNoise(p_x, p_y);
 }
 
 real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
@@ -317,10 +327,13 @@ real_t FastNoiseLite::get_noise_3dv(Vector3 p_v) const {
 }
 
 real_t FastNoiseLite::get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const {
+	p_x += offset.x;
+	p_y += offset.y;
+	p_z += offset.z;
 	if (domain_warp_enabled) {
 		_domain_warp_noise.DomainWarp(p_x, p_y, p_z);
 	}
-	return _noise.GetNoise(p_x + offset.x, p_y + offset.y, p_z + offset.z);
+	return _noise.GetNoise(p_x, p_y, p_z);
 }
 
 void FastNoiseLite::_changed() {

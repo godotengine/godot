@@ -55,7 +55,7 @@ private:
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
 #endif
 
-	Map<int, CharString> utterance_ids;
+	HashMap<int, CharString> utterance_ids;
 
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};

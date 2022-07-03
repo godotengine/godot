@@ -196,10 +196,8 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_constant_count = constant_map.size();
 		function->constants.resize(constant_map.size());
 		function->_constants_ptr = function->constants.ptrw();
-		const Variant *K = nullptr;
-		while ((K = constant_map.next(K))) {
-			int idx = constant_map[*K];
-			function->constants.write[idx] = *K;
+		for (const KeyValue<Variant, int> &K : constant_map) {
+			function->constants.write[K.value] = K.key;
 		}
 	} else {
 		function->_constants_ptr = nullptr;
@@ -1334,6 +1332,18 @@ void GDScriptByteCodeGenerator::write_else() {
 }
 
 void GDScriptByteCodeGenerator::write_endif() {
+	patch_jump(if_jmp_addrs.back()->get());
+	if_jmp_addrs.pop_back();
+}
+
+void GDScriptByteCodeGenerator::write_jump_if_shared(const Address &p_value) {
+	append(GDScriptFunction::OPCODE_JUMP_IF_SHARED, 1);
+	append(p_value);
+	if_jmp_addrs.push_back(opcodes.size());
+	append(0); // Jump destination, will be patched.
+}
+
+void GDScriptByteCodeGenerator::write_end_jump_if_shared() {
 	patch_jump(if_jmp_addrs.back()->get());
 	if_jmp_addrs.pop_back();
 }

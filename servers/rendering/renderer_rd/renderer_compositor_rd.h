@@ -90,7 +90,7 @@ protected:
 		RID sampler;
 	} blit;
 
-	Map<RID, RID> render_target_descriptors;
+	HashMap<RID, RID> render_target_descriptors;
 
 	double time = 0.0;
 	double delta = 0.0;
@@ -98,11 +98,15 @@ protected:
 	static uint64_t frame;
 
 public:
-	RendererLightStorage *get_light_storage() { return light_storage; };
-	RendererMaterialStorage *get_material_storage() { return material_storage; };
-	RendererMeshStorage *get_mesh_storage() { return mesh_storage; };
-	RendererParticlesStorage *get_particles_storage() { return particles_storage; };
-	RendererTextureStorage *get_texture_storage() { return texture_storage; };
+	RendererLightStorage *get_light_storage() { return light_storage; }
+	RendererMaterialStorage *get_material_storage() { return material_storage; }
+	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
+	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
+	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	RendererGI *get_gi() {
+		ERR_FAIL_NULL_V(scene, nullptr);
+		return scene->get_gi();
+	}
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
@@ -131,6 +135,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
+		low_end = false;
 	}
 
 	static RendererCompositorRD *singleton;

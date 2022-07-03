@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_COMPOSITOR_H
 #define RENDERING_SERVER_COMPOSITOR_H
 
+#include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_storage.h"
@@ -71,6 +72,7 @@ private:
 protected:
 	static RendererCompositor *(*_create_func)();
 	bool back_end = false;
+	static bool low_end;
 
 public:
 	static RendererCompositor *create();
@@ -80,6 +82,7 @@ public:
 	virtual RendererMeshStorage *get_mesh_storage() = 0;
 	virtual RendererParticlesStorage *get_particles_storage() = 0;
 	virtual RendererTextureStorage *get_texture_storage() = 0;
+	virtual RendererGI *get_gi() = 0;
 	virtual RendererStorage *get_storage() = 0;
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;
@@ -97,7 +100,7 @@ public:
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
 
-	_FORCE_INLINE_ virtual bool is_low_end() const { return back_end; };
+	static bool is_low_end() { return low_end; };
 	virtual bool is_xr_enabled() const;
 
 	RendererCompositor();

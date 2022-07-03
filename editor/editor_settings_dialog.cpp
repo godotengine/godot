@@ -248,11 +248,11 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	undo_redo->commit_action();
 }
 
-Array EditorSettingsDialog::_event_list_to_array_helper(List<Ref<InputEvent>> &p_events) {
+Array EditorSettingsDialog::_event_list_to_array_helper(const List<Ref<InputEvent>> &p_events) {
 	Array events;
 
 	// Convert the list to an array, and only keep key events as this is for the editor.
-	for (List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
+	for (const List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
 		Ref<InputEventKey> k = E->get();
 		if (k.is_valid()) {
 			events.append(E->get());
@@ -327,7 +327,7 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 
 void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
-	Map<String, bool> collapsed;
+	HashMap<String, bool> collapsed;
 
 	if (shortcuts->get_root() && shortcuts->get_root()->get_first_child()) {
 		TreeItem *ti = shortcuts->get_root()->get_first_child();
@@ -359,7 +359,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	shortcuts->clear();
 
 	TreeItem *root = shortcuts->create_item();
-	Map<String, TreeItem *> sections;
+	HashMap<String, TreeItem *> sections;
 
 	// Set up section for Common/Built-in actions
 	TreeItem *common_section = shortcuts->create_item(root);
@@ -374,10 +374,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 	common_section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 	// Get the action map for the editor, and add each item to the "Common" section.
-	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
-	for (OrderedHashMap<StringName, InputMap::Action>::Element E = action_map.front(); E; E = E.next()) {
-		String action_name = E.key();
-		InputMap::Action action = E.get();
+	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
+		const String &action_name = E.key;
+		const InputMap::Action &action = E.value;
 
 		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
 		Vector<String> event_strings;
@@ -387,10 +386,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 			continue;
 		}
 
-		List<Ref<InputEvent>> all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name).value();
+		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		List<Ref<InputEventKey>> key_default_events;
 		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
-		for (List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
+		for (const List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
 			Ref<InputEventKey> k = I->get();
 			if (k.is_valid()) {
 				key_default_events.push_back(k);
@@ -476,7 +475,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 	}
 }
 
-void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
+void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
 
@@ -681,6 +683,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
+	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 
@@ -695,7 +698,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Search"));
+	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
@@ -737,7 +740,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->set_name(TTR("Shortcuts"));
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Search"));
+	shortcut_search_box->set_placeholder(TTR("Filter Shortcuts"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
@@ -749,7 +752,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
-	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
+	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 

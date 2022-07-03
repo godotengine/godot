@@ -137,7 +137,7 @@ class DisplayServerX11 : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		Set<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
 
 		ObjectID instance_id;
 
@@ -159,7 +159,7 @@ class DisplayServerX11 : public DisplayServer {
 		unsigned int focus_order = 0;
 	};
 
-	Map<WindowID, WindowData> windows;
+	HashMap<WindowID, WindowData> windows;
 
 	unsigned int last_mouse_monitor_mask = 0;
 	Vector2i last_mouse_monitor_pos;
@@ -197,12 +197,12 @@ class DisplayServerX11 : public DisplayServer {
 	struct {
 		int opcode;
 		Vector<int> touch_devices;
-		Map<int, Vector2> absolute_devices;
-		Map<int, Vector2> pen_pressure_range;
-		Map<int, Vector2> pen_tilt_x_range;
-		Map<int, Vector2> pen_tilt_y_range;
+		HashMap<int, Vector2> absolute_devices;
+		HashMap<int, Vector2> pen_pressure_range;
+		HashMap<int, Vector2> pen_tilt_x_range;
+		HashMap<int, Vector2> pen_tilt_y_range;
 		XIEventMask all_event_mask;
-		Map<int, Vector2> state;
+		HashMap<int, Vector2> state;
 		double pressure;
 		bool pressure_supported;
 		Vector2 tilt;
@@ -241,7 +241,7 @@ class DisplayServerX11 : public DisplayServer {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor = CURSOR_ARROW;
-	Map<CursorShape, Vector<Variant>> cursors_cache;
+	HashMap<CursorShape, Vector<Variant>> cursors_cache;
 
 	bool layered_window = false;
 
@@ -265,6 +265,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _update_real_mouse_position(const WindowData &wd);
 	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
+	bool _window_fullscreen_check(WindowID p_window) const;
 	void _update_size_hints(WindowID p_window);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
@@ -295,7 +296,7 @@ protected:
 	void _window_changed(XEvent *event);
 
 public:
-	void mouse_process_popups();
+	bool mouse_process_popups();
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);
 

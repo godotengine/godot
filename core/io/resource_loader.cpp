@@ -154,7 +154,7 @@ void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *
 	}
 }
 
-Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Dictionary deps_dict;
 	for (KeyValue<String, String> E : p_map) {
 		deps_dict[E.key] = E.value;
@@ -335,23 +335,15 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 				thread_load_mutex->unlock();
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 			}
-			//lock first if possible
-			ResourceCache::lock.read_lock();
 
-			//get ptr
-			Resource **rptr = ResourceCache::resources.getptr(local_path);
+			Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
-			if (rptr) {
-				Ref<Resource> res(*rptr);
-				//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-				if (res.is_valid()) {
-					//referencing is fine
-					load_task.resource = res;
-					load_task.status = THREAD_LOAD_LOADED;
-					load_task.progress = 1.0;
-				}
+			if (existing.is_valid()) {
+				//referencing is fine
+				load_task.resource = existing;
+				load_task.status = THREAD_LOAD_LOADED;
+				load_task.progress = 1.0;
 			}
-			ResourceCache::lock.read_unlock();
 		}
 
 		if (!p_source_resource.is_empty()) {
@@ -391,8 +383,8 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 		int dep_count = load_task.sub_tasks.size();
 		if (dep_count > 0) {
 			float dep_progress = 0;
-			for (Set<String>::Element *E = load_task.sub_tasks.front(); E; E = E->next()) {
-				dep_progress += _dependency_get_progress(E->get());
+			for (const String &E : load_task.sub_tasks) {
+				dep_progress += _dependency_get_progress(E);
 			}
 			dep_progress /= float(dep_count);
 			dep_progress *= 0.5;
@@ -530,27 +522,18 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		}
 
 		//Is it cached?
-		ResourceCache::lock.read_lock();
 
-		Resource **rptr = ResourceCache::resources.getptr(local_path);
+		Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
-		if (rptr) {
-			Ref<Resource> res(*rptr);
+		if (existing.is_valid()) {
+			thread_load_mutex->unlock();
 
-			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
-			if (res.is_valid()) {
-				ResourceCache::lock.read_unlock();
-				thread_load_mutex->unlock();
-
-				if (r_error) {
-					*r_error = OK;
-				}
-
-				return res; //use cached
+			if (r_error) {
+				*r_error = OK;
 			}
-		}
 
-		ResourceCache::lock.read_unlock();
+			return existing; //use cached
+		}
 
 		//load using task (but this thread)
 		ThreadLoadTask load_task;
@@ -733,7 +716,7 @@ void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_depe
 	}
 }
 
-Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceLoader::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	String local_path = _path_remap(_validate_local_path(p_path));
 
 	for (int i = 0; i < loader_count; i++) {
@@ -867,7 +850,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	ResourceCache::lock.read_lock();
+	ResourceCache::lock.lock();
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -877,7 +860,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	ResourceCache::lock.read_unlock();
+	ResourceCache::lock.unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {

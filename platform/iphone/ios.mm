@@ -77,7 +77,7 @@ void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13))
 				NSDictionary *hapticDict = @{
 					CHHapticPatternKeyPattern : @[
 						@{CHHapticPatternKeyEvent : @{
-							CHHapticPatternKeyEventType : CHHapticEventTypeHapticTransient,
+							CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
 							CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
 							CHHapticPatternKeyEventDuration : @(p_duration_seconds)
 						},

@@ -97,12 +97,13 @@ private:
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint = false;
+	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
 	int root_lock = 0;
 
-	Map<StringName, Group> group_map;
+	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 	bool initialized = false;
 
@@ -121,16 +122,20 @@ private:
 		StringName group;
 		StringName call;
 
+		static uint32_t hash(const UGCall &p_val) {
+			return p_val.group.hash() ^ p_val.call.hash();
+		}
+		bool operator==(const UGCall &p_with) const { return group == p_with.group && call == p_with.call; }
 		bool operator<(const UGCall &p_with) const { return group == p_with.group ? call < p_with.call : group < p_with.group; }
 	};
 
 	// Safety for when a node is deleted while a group is being called.
 	int call_lock = 0;
-	Set<Node *> call_skip; // Skip erased nodes.
+	HashSet<Node *> call_skip; // Skip erased nodes.
 
 	List<ObjectID> delete_queue;
 
-	Map<UGCall, Vector<Variant>> unique_group_calls;
+	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
 
@@ -142,16 +147,18 @@ private:
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
+	Color debug_paths_color;
+	float debug_paths_width = 1.0f;
 	Color debug_navigation_color;
 	Color debug_navigation_disabled_color;
 	Ref<ArrayMesh> debug_contact_mesh;
+	Ref<Material> debug_paths_material;
 	Ref<Material> navigation_material;
 	Ref<Material> navigation_disabled_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
 	void _change_scene(Node *p_to);
-	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
@@ -225,7 +232,7 @@ public:
 	enum GroupCallFlags {
 		GROUP_CALL_DEFAULT = 0,
 		GROUP_CALL_REVERSE = 1,
-		GROUP_CALL_REALTIME = 2,
+		GROUP_CALL_DEFERRED = 2,
 		GROUP_CALL_UNIQUE = 4,
 	};
 
@@ -235,17 +242,20 @@ public:
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
 	void set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value);
 
+	// `notify_group()` is immediate by default since Godot 4.0.
 	void notify_group(const StringName &p_group, int p_notification);
+	// `set_group()` is immediate by default since Godot 4.0.
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
 
 	template <typename... VarArgs>
+	// `call_group()` is immediate by default since Godot 4.0.
 	void call_group(const StringName &p_group, const StringName &p_function, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 			argptrs[i] = &args[i];
 		}
-		call_group_flagsp(0, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+		call_group_flagsp(GROUP_CALL_DEFAULT, p_group, p_function, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
 	template <typename... VarArgs>
@@ -267,7 +277,10 @@ public:
 
 	virtual void finalize() override;
 
+	bool is_auto_accept_quit() const;
 	void set_auto_accept_quit(bool p_enable);
+
+	bool is_quit_on_go_back() const;
 	void set_quit_on_go_back(bool p_enable);
 
 	void quit(int p_exit_code = EXIT_SUCCESS);
@@ -288,11 +301,17 @@ public:
 	void set_debug_collisions_hint(bool p_enabled);
 	bool is_debugging_collisions_hint() const;
 
+	void set_debug_paths_hint(bool p_enabled);
+	bool is_debugging_paths_hint() const;
+
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
+
+	void set_debug_paths_hint(bool p_enabled) {}
+	bool is_debugging_paths_hint() const { return false; }
 
 	void set_debug_navigation_hint(bool p_enabled) {}
 	bool is_debugging_navigation_hint() const { return false; }
@@ -304,12 +323,19 @@ public:
 	void set_debug_collision_contact_color(const Color &p_color);
 	Color get_debug_collision_contact_color() const;
 
+	void set_debug_paths_color(const Color &p_color);
+	Color get_debug_paths_color() const;
+
+	void set_debug_paths_width(float p_width);
+	float get_debug_paths_width() const;
+
 	void set_debug_navigation_color(const Color &p_color);
 	Color get_debug_navigation_color() const;
 
 	void set_debug_navigation_disabled_color(const Color &p_color);
 	Color get_debug_navigation_disabled_color() const;
 
+	Ref<Material> get_debug_paths_material();
 	Ref<Material> get_debug_navigation_material();
 	Ref<Material> get_debug_navigation_disabled_material();
 	Ref<Material> get_debug_collision_material();

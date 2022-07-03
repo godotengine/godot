@@ -108,7 +108,7 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_add(int p_which);
 	void _effect_selected();
 	void _delete_effect_pressed(int p_option);
-	void _effect_rmb(const Vector2 &p_pos);
+	void _effect_rmb(const Vector2 &p_pos, MouseButton p_button);
 	void _update_visible_channels();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;

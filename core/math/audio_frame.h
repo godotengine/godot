@@ -52,7 +52,7 @@ static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear2db(AUDIO_PEAK_OFFSET)
 
 struct AudioFrame {
 	//left and right samples
-	float l, r;
+	float l = 0.f, r = 0.f;
 
 	_ALWAYS_INLINE_ const float &operator[](int idx) const { return idx == 0 ? l : r; }
 	_ALWAYS_INLINE_ float &operator[](int idx) { return idx == 0 ? l : r; }

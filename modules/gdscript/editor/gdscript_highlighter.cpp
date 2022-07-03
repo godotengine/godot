@@ -387,9 +387,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
-		if (!in_node_path && in_region == -1 && str[j] == '$') {
+		if (!in_node_path && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
 			in_node_path = true;
-		} else if (in_region != -1 || (is_a_symbol && str[j] != '/')) {
+		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
 			in_node_path = false;
 		}
 
@@ -510,9 +510,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Autoloads. */
-	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-		const ProjectSettings::AutoloadInfo &info = E.value();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
 			keywords[info.name] = usertype_color;
 		}

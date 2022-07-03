@@ -380,16 +380,59 @@
 				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
 			</description>
 		</method>
+		<method name="save_exr_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="grayscale" type="bool" default="false" />
+			<description>
+				Saves the image as an EXR file to a byte array. If [code]grayscale[/code] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_jpg" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to [code]path[/code] with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_jpg_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to a byte array with the specified [code]quality[/code] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+			</description>
+		</method>
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error" />
 			<argument index="0" name="path" type="String" />
 			<description>
-				Saves the image as a PNG file to [code]path[/code].
+				Saves the image as a PNG file to the file at [code]path[/code].
 			</description>
 		</method>
 		<method name="save_png_to_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Saves the image as a PNG file to a byte array.
+			</description>
+		</method>
+		<method name="save_webp" qualifiers="const">
+			<return type="int" enum="Error" />
+			<argument index="0" name="path" type="String" />
+			<argument index="1" name="lossy" type="bool" default="false" />
+			<argument index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to the file at [code]path[/code]. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
+			</description>
+		</method>
+		<method name="save_webp_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<argument index="0" name="lossy" type="bool" default="false" />
+			<argument index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [code]lossy[/code] is true, the image will be saved lossy, using the [code]quality[/code] setting between 0.0 and 1.0 (inclusive).
 			</description>
 		</method>
 		<method name="set_pixel">

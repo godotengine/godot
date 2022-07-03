@@ -46,7 +46,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols, St
 	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
 	r_resource_name = req[1];
-	Map<String, String> headers;
+	HashMap<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i]);

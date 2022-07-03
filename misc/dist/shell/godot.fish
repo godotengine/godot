@@ -74,8 +74,8 @@ complete -c godot -s d -l debug -d "Debug (local stdout debugger)"
 complete -c godot -s b -l breakpoints -d "Specify the breakpoint list as source::line comma-separated pairs, no spaces (use %20 instead)" -x
 complete -c godot -l profiling -d "Enable profiling in the script debugger"
 complete -c godot -l gpu-profile -d "Show a GPU profile of the tasks that took the most time during frame rendering"
-complete -c godot -l vk-layers -d "Enable Vulkan validation layers for debugging"
-complete -c godot -l gpu-abort -d "Abort on GPU errors (usually validation layer errors)"
+complete -c godot -l gpu-validation -d "Enable graphics API validation layers for debugging"
+complete -c godot -l gpu-abort -d "Abort on graphics API usage errors (usually validation layer errors)"
 complete -c godot -l remote-debug -d "Enable remote debugging"
 complete -c godot -l debug-collisions -d "Show collision shapes when running the scene"
 complete -c godot -l debug-navigation -d "Show navigation polygons when running the scene"
@@ -93,6 +93,8 @@ complete -c godot -l check-only -d "Only parse for errors and quit (use with --s
 complete -c godot -l export -d "Export the project using the given preset and matching release template" -x
 complete -c godot -l export-debug -d "Same as --export, but using the debug template" -x
 complete -c godot -l export-pack -d "Same as --export, but only export the game pack for the given preset" -x
+complete -c godot -l convert-3to4 -d "Converts project from Godot 3.x to Godot 4.x"
+complete -c godot -l validate-conversion-3to4 -d "Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x"
 complete -c godot -l doctool -d "Dump the engine API reference to the given path in XML format, merging if existing files are found" -r
 complete -c godot -l no-docbase -d "Disallow dumping the base types (used with --doctool)"
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"

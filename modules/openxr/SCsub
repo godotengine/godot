@@ -81,6 +81,8 @@ if env["platform"] == "android":
 if env["vulkan"]:
     env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
 
+env_openxr.add_source_files(module_obj, "extensions/openxr_htc_vive_tracker_extension.cpp")
+
 env.modules_sources += module_obj
 
 if env["tools"]:

@@ -432,7 +432,7 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
+double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_seek_root) {
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
@@ -502,7 +502,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, blend_weights[j], FILTER_IGNORE, false);
+					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE, false);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -514,7 +514,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 
 			if (!found) {
 				//ignore
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, 0, FILTER_IGNORE, false);
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, false);
 			}
 		}
 	} else {
@@ -539,16 +539,16 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek) {
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, 0.0, FILTER_IGNORE, false);
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, false);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, false);
 			length_internal = from + mind;
 
 			closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
 		}
 	}
 

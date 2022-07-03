@@ -65,7 +65,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_layers) const {
+Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	// Find the start poly and the end poly on this map.
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
@@ -78,7 +78,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		const gd::Polygon &p = polygons[i];
 
 		// Only consider the polygon if it in a region with compatible layers.
-		if ((p_layers & p.owner->get_layers()) == 0) {
+		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
 			continue;
 		}
 
@@ -140,6 +140,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	float reachable_d = 1e30;
 	bool is_reachable = true;
 
+	gd::NavigationPoly *prev_least_cost_poly = nullptr;
+
 	while (true) {
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
 		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
@@ -152,13 +154,21 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
-				if ((p_layers & connection.polygon->owner->get_layers()) == 0) {
+				if ((p_navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
 					continue;
 				}
 
+				float region_enter_cost = 0.0;
+				float region_travel_cost = least_cost_poly->poly->owner->get_travel_cost();
+
+				if (prev_least_cost_poly != nullptr && !(prev_least_cost_poly->poly->owner->get_self() == least_cost_poly->poly->owner->get_self())) {
+					region_enter_cost = least_cost_poly->poly->owner->get_enter_cost();
+				}
+				prev_least_cost_poly = least_cost_poly;
+
 				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly->entry, pathway);
-				const float new_distance = least_cost_poly->entry.distance_to(new_entry) + least_cost_poly->traveled_distance;
+				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly->traveled_distance;
 
 				const std::vector<gd::NavigationPoly>::iterator it = std::find(
 						navigation_polys.begin(),
@@ -238,7 +248,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		for (List<uint32_t>::Element *element = to_visit.front(); element != nullptr; element = element->next()) {
 			gd::NavigationPoly *np = &navigation_polys[element->get()];
 			float cost = np->traveled_distance;
-			cost += np->entry.distance_to(end_point);
+			cost += (np->entry.distance_to(end_point) * np->poly->owner->get_travel_cost());
 			if (cost < least_cost) {
 				least_cost_id = np->self_id;
 				least_cost = cost;
@@ -249,7 +259,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
-			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination);
+			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
 			if (reachable_d > d) {
 				reachable_d = d;
 				reachable_end = navigation_polys[least_cost_id].poly;
@@ -541,7 +551,7 @@ void NavMap::sync() {
 		}
 
 		// Group all edges per key.
-		Map<gd::EdgeKey, Vector<gd::Edge::Connection>> connections;
+		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
 		for (size_t poly_id(0); poly_id < polygons.size(); poly_id++) {
 			gd::Polygon &poly(polygons[poly_id]);
 
@@ -549,7 +559,7 @@ void NavMap::sync() {
 				int next_point = (p + 1) % poly.points.size();
 				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
 
-				Map<gd::EdgeKey, Vector<gd::Edge::Connection>>::Element *connection = connections.find(ek);
+				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
 				if (!connection) {
 					connections[ek] = Vector<gd::Edge::Connection>();
 				}
@@ -563,7 +573,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the current `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
+					ERR_PRINT_ONCE("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the current `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problems.");
 				}
 			}
 		}

@@ -7,6 +7,7 @@
 		An audio effect that can be used to adjust the intensity of stereo panning.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<members>
 		<member name="pan_pullout" type="float" setter="set_pan_pullout" getter="get_pan_pullout" default="1.0">

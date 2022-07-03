@@ -33,17 +33,22 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
-#include <AVFAudio/AVSpeechSynthesis.h>
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
+
+#if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
+#import <AVFAudio/AVSpeechSynthesis.h>
+#else
+#import <AVFoundation/AVFoundation.h>
+#endif
 
 @interface TTS_OSX : NSObject <AVSpeechSynthesizerDelegate> {
 	// AVSpeechSynthesizer
 	bool speaking;
-	Map<id, int> ids;
+	HashMap<id, int> ids;
 
 	// NSSpeechSynthesizer
 	bool paused;

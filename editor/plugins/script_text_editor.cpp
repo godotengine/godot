@@ -664,7 +664,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	return nullptr;
 }
 
-static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, Set<Ref<Script>> &r_scripts) {
+static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_scripts) {
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return;
 	}
@@ -686,15 +686,15 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 	ERR_FAIL_COND(!get_tree());
 
-	Set<Ref<Script>> scripts;
+	HashSet<Ref<Script>> scripts;
 
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		_find_changed_scripts_for_external_editor(base, base, scripts);
 	}
 
-	for (Set<Ref<Script>>::Element *E = scripts.front(); E; E = E->next()) {
-		Ref<Script> script = E->get();
+	for (const Ref<Script> &E : scripts) {
+		Ref<Script> script = E;
 
 		if (p_for_script.is_valid() && p_for_script != script) {
 			continue;
@@ -855,6 +855,21 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
 
 			} break;
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
+				StringName cname = result.class_name;
+
+				while (true) {
+					if (ClassDB::has_signal(cname, result.class_member)) {
+						result.class_name = cname;
+						cname = ClassDB::get_parent_class(cname);
+					} else {
+						break;
+					}
+				}
+
+				emit_signal(SNAME("go_to_help"), "class_signal:" + result.class_name + ":" + result.class_member);
+
+			} break;
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
 				StringName cname = result.class_name;
 				StringName success;
@@ -955,7 +970,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
-	Set<StringName> methods_found;
+	HashSet<StringName> methods_found;
 	for (int i = 0; i < nodes.size(); i++) {
 		List<Connection> connections;
 		nodes[i]->get_signals_connected_to_this(&connections);
@@ -1181,7 +1196,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
 
 				if (expression.parse(line) == OK) {
-					Variant result = expression.execute(Array(), Variant(), false);
+					Variant result = expression.execute(Array(), Variant(), false, true);
 					if (expression.get_error_text().is_empty()) {
 						results.push_back(whitespace + result.get_construct_string());
 					} else {
@@ -1356,11 +1371,11 @@ void ScriptTextEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_hig
 void ScriptTextEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
 
-	Map<String, Ref<EditorSyntaxHighlighter>>::Element *el = highlighters.front();
-	while (el != nullptr) {
-		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key());
-		highlighter_menu->set_item_checked(highlighter_index, el->value() == p_highlighter);
-		el = el->next();
+	HashMap<String, Ref<EditorSyntaxHighlighter>>::Iterator el = highlighters.begin();
+	while (el) {
+		int highlighter_index = highlighter_menu->get_item_idx_from_text(el->key);
+		highlighter_menu->set_item_checked(highlighter_index, el->value == p_highlighter);
+		++el;
 	}
 
 	CodeEdit *te = code_editor->get_text_editor();
@@ -1509,6 +1524,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(res->get_path());
+		te->grab_focus();
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
@@ -1531,6 +1547,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
@@ -1543,24 +1560,73 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 		String text_to_drop;
-		for (int i = 0; i < nodes.size(); i++) {
-			if (i > 0) {
-				text_to_drop += ",";
-			}
 
-			NodePath np = nodes[i];
-			Node *node = get_node(np);
-			if (!node) {
-				continue;
-			}
+		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			for (int i = 0; i < nodes.size(); i++) {
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
 
-			String path = sn->get_path_to(node);
-			text_to_drop += path.c_escape().quote(quote_style);
+				bool is_unique = false;
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = node->get_name();
+					is_unique = true;
+				} else {
+					path = sn->get_path_to(node);
+				}
+				for (const String &segment : path.split("/")) {
+					if (!segment.is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+
+				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				if (use_type) {
+					text_to_drop += vformat("@onready var %s: %s = %s%s\n", variable_name, node->get_class_name(), is_unique ? "%" : "$", path);
+				} else {
+					text_to_drop += vformat("@onready var %s = %s%s\n", variable_name, is_unique ? "%" : "$", path);
+				}
+			}
+		} else {
+			for (int i = 0; i < nodes.size(); i++) {
+				if (i > 0) {
+					text_to_drop += ", ";
+				}
+
+				NodePath np = nodes[i];
+				Node *node = get_node(np);
+				if (!node) {
+					continue;
+				}
+
+				bool is_unique = false;
+				String path;
+				if (node->is_unique_name_in_owner()) {
+					path = node->get_name();
+					is_unique = true;
+				} else {
+					path = sn->get_path_to(node);
+				}
+
+				for (const String &segment : path.split("/")) {
+					if (!segment.is_valid_identifier()) {
+						path = path.c_escape().quote(quote_style);
+						break;
+					}
+				}
+				text_to_drop += (is_unique ? "%" : "$") + path;
+			}
 		}
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
@@ -1569,6 +1635,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->set_caret_line(row);
 		te->set_caret_column(col);
 		te->insert_text_at_caret(text_to_drop);
+		te->grab_focus();
 	}
 }
 

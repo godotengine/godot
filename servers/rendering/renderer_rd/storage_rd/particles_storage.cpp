@@ -540,11 +540,8 @@ void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_tran
 		_particles_allocate_emission_buffer(particles);
 	}
 
-	if (particles->inactive) {
-		//in case it was inactive, make active again
-		particles->inactive = false;
-		particles->inactive_time = 0;
-	}
+	particles->inactive = false;
+	particles->inactive_time = 0;
 
 	int32_t idx = particles->emission_buffer->particle_count;
 	if (idx < particles->emission_buffer->particle_max) {
@@ -838,8 +835,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		}
 
 		uint32_t collision_3d_textures_used = 0;
-		for (const Set<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
-			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E->get());
+		for (const RID &E : p_particles->collisions) {
+			ParticlesCollisionInstance *pci = particles_collision_instance_owner.get_or_null(E);
 			if (!pci || !pci->active) {
 				continue;
 			}
@@ -1592,14 +1589,14 @@ void ParticlesStorage::ParticlesShaderData::set_default_texture_param(const Stri
 		}
 	} else {
 		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = Map<int, RID>();
+			default_texture_params[p_name] = HashMap<int, RID>();
 		}
 		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 
 void ParticlesStorage::ParticlesShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
-	Map<int, StringName> order;
+	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
 		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
@@ -1676,7 +1673,7 @@ ShaderData *ParticlesStorage::_create_particles_shader_func() {
 	return shader_data;
 }
 
-bool ParticlesStorage::ParticlesMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool ParticlesStorage::ParticlesMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, ParticlesStorage::get_singleton()->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
 }
 

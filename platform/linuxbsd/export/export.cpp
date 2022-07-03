@@ -44,7 +44,7 @@ void register_linuxbsd_exporter() {
 	platform->set_name("Linux/X11");
 	platform->set_extension("x86_32");
 	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_os_name("LinuxBSD");
+	platform->set_os_name("Linux");
 	platform->set_chmod_flags(0755);
 
 	EditorExport::get_singleton()->add_export_platform(platform);

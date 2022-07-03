@@ -55,7 +55,7 @@ String ResourceImporterImageFont::get_resource_type() const {
 	return "FontData";
 }
 
-bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -85,7 +85,7 @@ bool ResourceImporterImageFont::_decode_range(const String &p_token, int32_t &r_
 	}
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
@@ -107,7 +107,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Ref<Image> img;
 	img.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + p_source_file + "\".");
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
 	font->set_texture_image(0, Vector2i(base_size, 0), 0, img);
 
 	int count = columns * rows;

@@ -101,7 +101,7 @@ class Delaunay3D {
 		_FORCE_INLINE_ static uint32_t hash(const Triangle &p_triangle) {
 			uint32_t h = hash_djb2_one_32(p_triangle.triangle[0]);
 			h = hash_djb2_one_32(p_triangle.triangle[1], h);
-			return hash_djb2_one_32(p_triangle.triangle[2], h);
+			return hash_fmix32(hash_djb2_one_32(p_triangle.triangle[2], h));
 		}
 	};
 
@@ -323,7 +323,6 @@ public:
 				E = N;
 			}
 
-			uint32_t good_triangles = 0;
 			for (uint32_t j = 0; j < triangles.size(); j++) {
 				if (triangles[j].bad) {
 					continue;
@@ -360,11 +359,8 @@ public:
 						}
 					}
 				}
-
-				good_triangles++;
 			}
 
-			//print_line("at point " + itos(i) + "/" + itos(point_count) + " simplices added " + itos(good_triangles) + "/" + itos(simplex_list.size()) + " - triangles: " + itos(triangles.size()));
 			triangles.clear();
 			triangles_inserted.clear();
 		}

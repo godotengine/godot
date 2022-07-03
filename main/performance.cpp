@@ -247,8 +247,8 @@ Array Performance::get_custom_monitor_names() {
 	Array return_array;
 	return_array.resize(_monitor_map.size());
 	int index = 0;
-	for (OrderedHashMap<StringName, MonitorCall>::Element i = _monitor_map.front(); i; i = i.next()) {
-		return_array.set(index, i.key());
+	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {
+		return_array.set(index, i.key);
 		index++;
 	}
 	return return_array;

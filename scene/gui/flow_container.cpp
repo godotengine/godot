@@ -49,7 +49,7 @@ void FlowContainer::_resort() {
 
 	bool rtl = is_layout_rtl();
 
-	Map<Control *, Size2i> children_minsize_cache;
+	HashMap<Control *, Size2i> children_minsize_cache;
 
 	Vector<_LineData> lines_data;
 

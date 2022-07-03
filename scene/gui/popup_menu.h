@@ -117,7 +117,7 @@ class PopupMenu : public Popup {
 	bool hide_on_multistate_item_selection = false;
 	Vector2 moved;
 
-	Map<Ref<Shortcut>, int> shortcut_refcount;
+	HashMap<Ref<Shortcut>, int> shortcut_refcount;
 
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
@@ -147,6 +147,8 @@ public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,
 	// this value should be updated to reflect the new size.
 	static const int ITEM_PROPERTY_SIZE = 10;
+
+	virtual void _parent_focused() override;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
@@ -184,7 +186,7 @@ public:
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
-	void set_item_h_offset(int p_idx, int p_offset);
+	void set_item_horizontal_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
@@ -210,6 +212,7 @@ public:
 	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
+	int get_item_horizontal_offset(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
 	void set_current_index(int p_idx);

@@ -33,7 +33,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <jpgd.h>
+#include "thirdparty/jpeg-compressor/jpgd.h"
+#include "thirdparty/jpeg-compressor/jpge.h"
 #include <string.h>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
@@ -131,6 +132,59 @@ static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 	return img;
 }
 
+static Error _jpgd_save_func(const String &p_path, const Ref<Image> &p_img, float p_quality) {
+	return OK;
+}
+
+class ImageLoaderJPGOSFile : public jpge::output_stream {
+public:
+	Ref<FileAccess> f;
+
+	virtual bool put_buf(const void *Pbuf, int len) {
+		f->store_buffer((const uint8_t *)Pbuf, len);
+		return true;
+	}
+};
+
+class ImageLoaderJPGOSBuffer : public jpge::output_stream {
+public:
+	Vector<uint8_t> *buffer = nullptr;
+	virtual bool put_buf(const void *Pbuf, int len) {
+		uint32_t base = buffer->size();
+		buffer->resize(base + len);
+		memcpy(buffer->ptrw() + base, Pbuf, len);
+		return true;
+	}
+};
+
+static Vector<uint8_t> _jpgd_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
+	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), Vector<uint8_t>());
+	Ref<Image> image = p_img;
+	if (image->get_format() != Image::FORMAT_RGB8) {
+		image->convert(Image::FORMAT_ETC2_RGB8);
+	}
+
+	jpge::params p;
+	p.m_quality = CLAMP(p_quality * 100, 1, 100);
+	Vector<uint8_t> output;
+	ImageLoaderJPGOSBuffer ob;
+	ob.buffer = &output;
+
+	jpge::jpeg_encoder enc;
+	enc.init(&ob, image->get_width(), image->get_height(), 3, p);
+
+	const uint8_t *src_data = image->get_data().ptr();
+	for (int i = 0; i < image->get_height(); i++) {
+		enc.process_scanline(&src_data[i * image->get_width() * 3]);
+	}
+
+	enc.process_scanline(nullptr);
+
+	return output;
+}
+
 ImageLoaderJPG::ImageLoaderJPG() {
 	Image::_jpg_mem_loader_func = _jpegd_mem_loader_func;
+	Image::save_jpg_func = _jpgd_save_func;
+	Image::save_jpg_buffer_func = _jpgd_buffer_save_func;
 }

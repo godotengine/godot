@@ -1497,6 +1497,9 @@ AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	create_icon_material("stream_player_3d_icon", Node3DEditor::get_singleton()->get_theme_icon(SNAME("Gizmo3DSamplePlayer"), SNAME("EditorIcons")));
 	create_material("stream_player_3d_material_primary", gizmo_color);
 	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
+	// Enable vertex colors for the billboard material as the gizmo color depends on the
+	// AudioStreamPlayer3D attenuation type and source (Unit Size or Max Distance).
+	create_material("stream_player_3d_material_billboard", Color(1, 1, 1), true, false, true);
 	create_handle_material("handles");
 }
 
@@ -1579,6 +1582,88 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	const Ref<Material> icon = get_material("stream_player_3d_icon", p_gizmo);
+
+	if (player->get_attenuation_model() != AudioStreamPlayer3D::ATTENUATION_DISABLED || player->get_max_distance() > CMP_EPSILON) {
+		// Draw a circle to represent sound volume attenuation.
+		// Use only a billboard circle to represent radius.
+		// This helps distinguish AudioStreamPlayer3D gizmos from OmniLight3D gizmos.
+		const Ref<Material> lines_billboard_material = get_material("stream_player_3d_material_billboard", p_gizmo);
+
+		// Soft distance cap varies depending on attenuation model, as some will fade out more aggressively than others.
+		// Multipliers were empirically determined through testing.
+		float soft_multiplier;
+		switch (player->get_attenuation_model()) {
+			case AudioStreamPlayer3D::ATTENUATION_INVERSE_DISTANCE:
+				soft_multiplier = 12.0;
+				break;
+			case AudioStreamPlayer3D::ATTENUATION_INVERSE_SQUARE_DISTANCE:
+				soft_multiplier = 4.0;
+				break;
+			case AudioStreamPlayer3D::ATTENUATION_LOGARITHMIC:
+				soft_multiplier = 3.25;
+				break;
+			default:
+				// Ensures Max Distance's radius visualization is not capped by Unit Size
+				// (when the attenuation mode is Disabled).
+				soft_multiplier = 10000.0;
+				break;
+		}
+
+		// Draw the distance at which the sound can be reasonably heard.
+		// This can be either a hard distance cap with the Max Distance property (if set above 0.0),
+		// or a soft distance cap with the Unit Size property (sound never reaches true zero).
+		// When Max Distance is 0.0, `r` represents the distance above which the
+		// sound can't be heard in *most* (but not all) scenarios.
+		float r;
+		if (player->get_max_distance() > CMP_EPSILON) {
+			r = MIN(player->get_unit_size() * soft_multiplier, player->get_max_distance());
+		} else {
+			r = player->get_unit_size() * soft_multiplier;
+		}
+		Vector<Vector3> points_billboard;
+
+		for (int i = 0; i < 120; i++) {
+			// Create a circle.
+			const float ra = Math::deg2rad((float)(i * 3));
+			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+			// Draw a billboarded circle.
+			points_billboard.push_back(Vector3(a.x, a.y, 0));
+			points_billboard.push_back(Vector3(b.x, b.y, 0));
+		}
+
+		Color color;
+		switch (player->get_attenuation_model()) {
+			// Pick cold colors for all attenuation models (except Disabled),
+			// so that soft caps can be easily distinguished from hard caps
+			// (which use warm colors).
+			case AudioStreamPlayer3D::ATTENUATION_INVERSE_DISTANCE:
+				color = Color(0.4, 0.8, 1);
+				break;
+			case AudioStreamPlayer3D::ATTENUATION_INVERSE_SQUARE_DISTANCE:
+				color = Color(0.4, 0.5, 1);
+				break;
+			case AudioStreamPlayer3D::ATTENUATION_LOGARITHMIC:
+				color = Color(0.4, 0.2, 1);
+				break;
+			default:
+				// Disabled attenuation mode.
+				// This is never reached when Max Distance is 0, but the
+				// hue-inverted form of this color will be used if Max Distance is greater than 0.
+				color = Color(1, 1, 1);
+				break;
+		}
+
+		if (player->get_max_distance() > CMP_EPSILON) {
+			// Sound is hard-capped by max distance. The attenuation model still matters,
+			// so invert the hue of the color that was chosen above.
+			color.set_h(color.get_h() + 0.5);
+		}
+
+		p_gizmo->add_lines(points_billboard, lines_billboard_material, true, color);
+	}
 
 	if (player->is_emission_angle_enabled()) {
 		const float pc = player->get_emission_angle();
@@ -2993,10 +3078,15 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 ////
 
 GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
-	create_material("shape_material", gizmo_color);
-	gizmo_color.a = 0.15;
-	create_material("shape_material_internal", gizmo_color);
+	Color gizmo_color_attractor = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_attractor", Color(1, 0.7, 0.5));
+	create_material("shape_material_attractor", gizmo_color_attractor);
+	gizmo_color_attractor.a = 0.15;
+	create_material("shape_material_attractor_internal", gizmo_color_attractor);
+
+	Color gizmo_color_collision = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	create_material("shape_material_collision", gizmo_color_collision);
+	gizmo_color_collision.a = 0.15;
+	create_material("shape_material_collision_internal", gizmo_color_collision);
 
 	create_handle_material("handles");
 }
@@ -3122,12 +3212,17 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	const Ref<Material> material =
-			get_material("shape_material", p_gizmo);
-	const Ref<Material> material_internal =
-			get_material("shape_material_internal", p_gizmo);
+	Ref<Material> material;
+	Ref<Material> material_internal;
+	if (Object::cast_to<GPUParticlesAttractor3D>(cs)) {
+		material = get_material("shape_material_attractor", p_gizmo);
+		material_internal = get_material("shape_material_attractor_internal", p_gizmo);
+	} else {
+		material = get_material("shape_material_collision", p_gizmo);
+		material_internal = get_material("shape_material_collision_internal", p_gizmo);
+	}
 
-	Ref<Material> handles_material = get_material("handles");
+	const Ref<Material> handles_material = get_material("handles");
 
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(cs) || Object::cast_to<GPUParticlesAttractorSphere3D>(cs)) {
 		float r = cs->call("get_radius");
@@ -3789,7 +3884,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Set<Vector2i> lines_found;
+	HashSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
 	if (points.size() == 0) {
@@ -4755,7 +4850,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
-	Map<_EdgeKey, bool> edge_map;
+	HashMap<_EdgeKey, bool, _EdgeKey> edge_map;
 	Vector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size() * 3);
 
@@ -4773,10 +4868,10 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					SWAP(ek.from, ek.to);
 				}
 
-				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
+				HashMap<_EdgeKey, bool, _EdgeKey>::Iterator F = edge_map.find(ek);
 
 				if (F) {
-					F->get() = false;
+					F->value = false;
 
 				} else {
 					edge_map[ek] = true;

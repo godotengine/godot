@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 	void remove_cache_parser(const String &p_path);
 	bool initialized = false;
-	Map<StringName, lsp::DocumentSymbol> native_symbols;
+	HashMap<StringName, lsp::DocumentSymbol> native_symbols;
 
 	const lsp::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const lsp::DocumentSymbol *get_script_symbol(const String &p_path) const;
@@ -68,8 +68,8 @@ public:
 	String root;
 	String root_uri;
 
-	Map<String, ExtendGDScriptParser *> scripts;
-	Map<String, ExtendGDScriptParser *> parse_results;
+	HashMap<String, ExtendGDScriptParser *> scripts;
+	HashMap<String, ExtendGDScriptParser *> parse_results;
 	HashMap<StringName, ClassMembers> native_members;
 
 public:

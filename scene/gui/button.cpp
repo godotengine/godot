@@ -35,7 +35,7 @@
 
 Size2 Button::get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();
-	if (clip_text) {
+	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		minsize.width = 0;
 	}
 
@@ -60,11 +60,11 @@ Size2 Button::get_minimum_size() const {
 			}
 		}
 	}
-
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
-
-	minsize.height = MAX(font_height, minsize.height);
+	if (!xl_text.is_empty()) {
+		Ref<Font> font = get_theme_font(SNAME("font"));
+		float font_height = font->get_height(get_theme_font_size(SNAME("font_size")));
+		minsize.height = MAX(font_height, minsize.height);
+	}
 
 	return get_theme_stylebox(SNAME("normal"))->get_minimum_size() + minsize;
 }
@@ -258,7 +258,8 @@ void Button::_notification(int p_what) {
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_theme_constant(SNAME("h_separation")) + icon_ofs_region;
+					int icon_text_separation = text.is_empty() ? 0 : get_theme_constant(SNAME("h_separation"));
+					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align_rtl_checked != HORIZONTAL_ALIGNMENT_CENTER) {
 						_size.width -= text_buf->get_size().width;
 					}
@@ -291,9 +292,9 @@ void Button::_notification(int p_what) {
 				icon_ofs.x = 0.0;
 			}
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-			text_buf->set_width(clip_text ? text_clip : -1);
+			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
 
-			int text_width = MAX(1, clip_text ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
+			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + get_theme_constant(SNAME("h_separation"));
@@ -363,6 +364,21 @@ void Button::_shape() {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	text_buf->add_string(xl_text, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	text_buf->set_text_overrun_behavior(overrun_behavior);
+}
+
+void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		_shape();
+
+		update();
+		update_minimum_size();
+	}
+}
+
+TextServer::OverrunBehavior Button::get_text_overrun_behavior() const {
+	return overrun_behavior;
 }
 
 void Button::set_text(const String &p_text) {
@@ -549,6 +565,8 @@ void Button::_get_property_list(List<PropertyInfo> *p_list) const {
 void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Button::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &Button::set_opentype_feature);
@@ -576,6 +594,7 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
 }

@@ -101,8 +101,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	VkDevice device = VK_NULL_HANDLE;
 
-	Map<RID, Set<RID>> dependency_map; //IDs to IDs that depend on it
-	Map<RID, Set<RID>> reverse_dependency_map; //same as above, but in reverse
+	HashMap<RID, HashSet<RID>> dependency_map; //IDs to IDs that depend on it
+	HashMap<RID, HashSet<RID>> reverse_dependency_map; //same as above, but in reverse
 
 	void _add_dependency(RID p_id, RID p_depends_on);
 	void _free_dependencies(RID p_id);
@@ -206,7 +206,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true, bool p_on_draw_command_buffer = false);
+	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, bool p_can_segment = true);
 	Error _insert_staging_block();
 
 	struct Buffer {
@@ -349,15 +349,15 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
-	Map<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
+	RBMap<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
 	struct FramebufferFormat {
-		const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E;
+		const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E;
 		VkRenderPass render_pass = VK_NULL_HANDLE; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
 		Vector<TextureSamples> pass_samples;
 		uint32_t view_count = 1; // number of views
 	};
 
-	Map<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
+	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
 
 	struct Framebuffer {
 		FramebufferFormatID format_id = 0;
@@ -398,7 +398,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t subpass_count = 1;
 		};
 
-		Map<VersionKey, Version> framebuffers;
+		RBMap<VersionKey, Version> framebuffers;
 		Size2 size;
 		uint32_t view_count;
 	};
@@ -457,17 +457,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		uint32_t hash() const {
 			int vdc = vertex_formats.size();
-			uint32_t h = hash_djb2_one_32(vdc);
+			uint32_t h = hash_murmur3_one_32(vdc);
 			const VertexAttribute *ptr = vertex_formats.ptr();
 			for (int i = 0; i < vdc; i++) {
 				const VertexAttribute &vd = ptr[i];
-				h = hash_djb2_one_32(vd.location, h);
-				h = hash_djb2_one_32(vd.offset, h);
-				h = hash_djb2_one_32(vd.format, h);
-				h = hash_djb2_one_32(vd.stride, h);
-				h = hash_djb2_one_32(vd.frequency, h);
+				h = hash_murmur3_one_32(vd.location, h);
+				h = hash_murmur3_one_32(vd.offset, h);
+				h = hash_murmur3_one_32(vd.format, h);
+				h = hash_murmur3_one_32(vd.stride, h);
+				h = hash_murmur3_one_32(vd.frequency, h);
 			}
-			return h;
+			return hash_fmix32(h);
 		}
 	};
 
@@ -488,7 +488,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineVertexInputStateCreateInfo create_info;
 	};
 
-	Map<VertexFormatID, VertexDescriptionCache> vertex_formats;
+	HashMap<VertexFormatID, VertexDescriptionCache> vertex_formats;
 
 	struct VertexArray {
 		RID buffer;
@@ -544,12 +544,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct UniformInfo {
 		UniformType type = UniformType::UNIFORM_TYPE_MAX;
+		bool writable = false;
 		int binding = 0;
 		uint32_t stages = 0;
 		int length = 0; //size of arrays (in total elements), or ubos (in bytes * total elements)
 
 		bool operator!=(const UniformInfo &p_info) const {
-			return (binding != p_info.binding || type != p_info.type || stages != p_info.stages || length != p_info.length);
+			return (binding != p_info.binding || type != p_info.type || writable != p_info.writable || stages != p_info.stages || length != p_info.length);
 		}
 
 		bool operator<(const UniformInfo &p_info) const {
@@ -558,6 +559,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			}
 			if (type != p_info.type) {
 				return type < p_info.type;
+			}
+			if (writable != p_info.writable) {
+				return writable < p_info.writable;
 			}
 			if (stages != p_info.stages) {
 				return stages < p_info.stages;
@@ -592,7 +596,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// Always grows, never shrinks, ensuring unique IDs, but we assume
 	// the amount of formats will never be a problem, as the amount of shaders
 	// in a game is limited.
-	Map<UniformSetFormat, uint32_t> uniform_set_format_cache;
+	RBMap<UniformSetFormat, uint32_t> uniform_set_format_cache;
 
 	// Shaders in Vulkan are just pretty much
 	// precompiled blocks of SPIR-V bytecode. They
@@ -633,7 +637,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		};
 
 		bool is_compute = false;
-		int max_output = 0;
 		Vector<Set> sets;
 		Vector<uint32_t> set_formats;
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
@@ -702,7 +705,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t usage;
 	};
 
-	Map<DescriptorPoolKey, Set<DescriptorPool *>> descriptor_pools;
+	RBMap<DescriptorPoolKey, HashSet<DescriptorPool *>> descriptor_pools;
 	uint32_t max_descriptors_per_pool = 0;
 
 	DescriptorPool *_descriptor_pool_allocate(const DescriptorPoolKey &p_key);
@@ -866,11 +869,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t pipeline_dynamic_state = 0;
 			VertexFormatID pipeline_vertex_format = INVALID_ID;
 			RID pipeline_shader;
-			uint32_t invalid_set_from = 0;
 			bool pipeline_uses_restart_indices = false;
 			uint32_t pipeline_primitive_divisor = 0;
 			uint32_t pipeline_primitive_minimum = 0;
-			Vector<uint32_t> pipeline_set_formats;
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
@@ -923,7 +924,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		};
 
 		struct State {
-			Set<Texture *> textures_to_sampled_layout;
+			HashSet<Texture *> textures_to_sampled_layout;
 			SetState sets[MAX_UNIFORM_SETS];
 			uint32_t set_count = 0;
 			RID pipeline;
@@ -944,7 +945,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			bool pipeline_active = false;
 			RID pipeline_shader;
 			uint32_t invalid_set_from = 0;
-			Vector<uint32_t> pipeline_set_formats;
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
@@ -994,19 +994,19 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		VkQueryPool timestamp_pool;
 
-		String *timestamp_names = nullptr;
-		uint64_t *timestamp_cpu_values = nullptr;
+		TightLocalVector<String> timestamp_names;
+		TightLocalVector<uint64_t> timestamp_cpu_values;
 		uint32_t timestamp_count = 0;
-		String *timestamp_result_names = nullptr;
-		uint64_t *timestamp_cpu_result_values = nullptr;
-		uint64_t *timestamp_result_values = nullptr;
+		TightLocalVector<String> timestamp_result_names;
+		TightLocalVector<uint64_t> timestamp_cpu_result_values;
+		TightLocalVector<uint64_t> timestamp_result_values;
 		uint32_t timestamp_result_count = 0;
 		uint64_t index = 0;
 	};
 
 	uint32_t max_timestamp_query_elements = 0;
 
-	Frame *frames = nullptr; //frames available, for main device they are cycled (usually 3), for local devices only 1
+	TightLocalVector<Frame> frames; //frames available, for main device they are cycled (usually 3), for local devices only 1
 	int frame = 0; //current frame
 	int frame_count = 0; //total amount of frames
 	uint64_t frames_drawn = 0;
@@ -1016,7 +1016,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _free_pending_resources(int p_frame);
 
 	VmaAllocator allocator = nullptr;
-	Map<uint32_t, VmaPool> small_allocs_pools;
+	HashMap<uint32_t, VmaPool> small_allocs_pools;
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
 	VulkanContext *context = nullptr;

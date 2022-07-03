@@ -35,7 +35,10 @@
 
 Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
+		return ERR_CANT_CREATE;
+	}
 
 	f->store_line("#!/bin/sh");
 	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
@@ -67,6 +70,9 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 			String scr_path = p_path.get_basename() + ".sh";
 			err = _export_debug_script(p_preset, app_name, p_path.get_file(), scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), TTR("Could not create console script."));
+			}
 		}
 	}
 
@@ -98,11 +104,12 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 	return list;
 }
 
-Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
+Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -110,6 +117,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	{
 		uint32_t magic = f->get_32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -119,7 +127,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	int bits = f->get_8() * 32;
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
 	}
 
 	// Get info about the section header table
@@ -196,5 +204,9 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 	memfree(strings);
 
-	return found ? OK : ERR_FILE_CORRUPT;
+	if (!found) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		return ERR_FILE_CORRUPT;
+	}
+	return OK;
 }

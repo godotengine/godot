@@ -31,6 +31,7 @@
 #ifdef GLES3_ENABLED
 
 #include "mesh_storage.h"
+#include "../rasterizer_storage_gles3.h"
 #include "material_storage.h"
 
 using namespace GLES3;
@@ -68,8 +69,8 @@ void MeshStorage::mesh_free(RID p_rid) {
 		ERR_PRINT("deleting mesh with active instances");
 	}
 	if (mesh->shadow_owners.size()) {
-		for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-			Mesh *shadow_owner = E->get();
+		for (Mesh *E : mesh->shadow_owners) {
+			Mesh *shadow_owner = E;
 			shadow_owner->shadow_mesh = RID();
 			shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 		}
@@ -194,6 +195,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
 		glBufferData(GL_ARRAY_BUFFER, p_surface.attribute_data.size(), p_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		s->attribute_buffer_size = p_surface.attribute_data.size();
 	}
 	if (p_surface.skin_data.size()) {
 		glGenBuffers(1, &s->skin_buffer);
@@ -216,6 +218,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 		s->index_count = p_surface.index_count;
+		s->index_buffer_size = p_surface.index_data.size();
 
 		if (p_surface.lods.size()) {
 			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
@@ -228,6 +231,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 				s->lods[i].edge_length = p_surface.lods[i].edge_length;
 				s->lods[i].index_count = p_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
+				s->lods[i].index_buffer_size = p_surface.lods[i].index_data.size();
 			}
 		}
 	}
@@ -266,8 +270,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 
-	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 	}
@@ -323,7 +327,40 @@ RID MeshStorage::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 }
 
 RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
-	return RS::SurfaceData();
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_COND_V(!mesh, RS::SurfaceData());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RS::SurfaceData());
+
+	Mesh::Surface &s = *mesh->surfaces[p_surface];
+
+	RS::SurfaceData sd;
+	sd.format = s.format;
+	sd.vertex_data = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+
+	if (s.attribute_buffer != 0) {
+		sd.attribute_data = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
+	}
+
+	sd.vertex_count = s.vertex_count;
+	sd.index_count = s.index_count;
+	sd.primitive = s.primitive;
+
+	if (sd.index_count) {
+		sd.index_data = RasterizerStorageGLES3::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.index_buffer, s.index_buffer_size);
+	}
+
+	sd.aabb = s.aabb;
+	for (uint32_t i = 0; i < s.lod_count; i++) {
+		RS::SurfaceData::LOD lod;
+		lod.edge_length = s.lods[i].edge_length;
+		lod.index_data = RasterizerStorageGLES3::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.lods[i].index_buffer, s.lods[i].index_buffer_size);
+		sd.lods.push_back(lod);
+	}
+
+	sd.bone_aabbs = s.bone_aabbs;
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	return sd;
 }
 
 int MeshStorage::mesh_get_surface_count(RID p_mesh) const {
@@ -478,25 +515,29 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 
 		if (s.vertex_buffer != 0) {
 			glDeleteBuffers(1, &s.vertex_buffer);
+			s.vertex_buffer = 0;
 		}
 
 		if (s.version_count != 0) {
 			for (uint32_t j = 0; j < s.version_count; j++) {
 				glDeleteVertexArrays(1, &s.versions[j].vertex_array);
+				s.versions[j].vertex_array = 0;
 			}
 		}
 
 		if (s.attribute_buffer != 0) {
 			glDeleteBuffers(1, &s.attribute_buffer);
+			s.attribute_buffer = 0;
 		}
 
 		if (s.skin_buffer != 0) {
 			glDeleteBuffers(1, &s.skin_buffer);
+			s.skin_buffer = 0;
 		}
 
 		if (s.index_buffer != 0) {
 			glDeleteBuffers(1, &s.index_buffer);
-			glDeleteVertexArrays(1, &s.index_array);
+			s.index_buffer = 0;
 		}
 		memdelete(mesh->surfaces[i]);
 	}
@@ -514,8 +555,8 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 
-	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
 	}
@@ -553,14 +594,14 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			case RS::ARRAY_NORMAL: {
 				attribs[i].offset = vertex_stride;
 				// Will need to change to accommodate octahedral compression
-				attribs[i].size = 1;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
 				vertex_stride += sizeof(float);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_TANGENT: {
 				attribs[i].offset = vertex_stride;
-				attribs[i].size = 1;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
 				vertex_stride += sizeof(float);
 				attribs[i].normalized = GL_TRUE;
@@ -626,17 +667,21 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 
 	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
 		if (!attribs[i].enabled) {
+			glDisableVertexAttribArray(i);
 			continue;
 		}
 		if (i <= RS::ARRAY_TANGENT) {
+			attribs[i].stride = vertex_stride;
 			if (mis) {
 				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffer);
 			} else {
 				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
 			}
 		} else if (i <= RS::ARRAY_CUSTOM3) {
+			attribs[i].stride = attributes_stride;
 			glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
 		} else {
+			attribs[i].stride = skin_stride;
 			glBindBuffer(GL_ARRAY_BUFFER, s->skin_buffer);
 		}
 
@@ -645,7 +690,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		} else {
 			glVertexAttribPointer(i, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 		}
-		glEnableVertexAttribArray(attribs[i].index);
+		glEnableVertexAttribArray(i);
 	}
 
 	// Do not bind index here as we want to switch between index buffers for LOD
@@ -710,17 +755,20 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 		if (mi->surfaces[i].version_count != 0) {
 			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
 				glDeleteVertexArrays(1, &mi->surfaces[i].versions[j].vertex_array);
+				mi->surfaces[i].versions[j].vertex_array = 0;
 			}
 			memfree(mi->surfaces[i].versions);
 		}
 		if (mi->surfaces[i].vertex_buffer != 0) {
 			glDeleteBuffers(1, &mi->surfaces[i].vertex_buffer);
+			mi->surfaces[i].vertex_buffer = 0;
 		}
 	}
 	mi->surfaces.clear();
 
 	if (mi->blend_weights_buffer != 0) {
 		glDeleteBuffers(1, &mi->blend_weights_buffer);
+		mi->blend_weights_buffer = 0;
 	}
 	mi->blend_weights.clear();
 	mi->weights_dirty = false;
@@ -835,11 +883,10 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 	multimesh->uses_colors = p_use_colors;
 	multimesh->color_offset_cache = p_transform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
 	multimesh->uses_custom_data = p_use_custom_data;
-	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + (p_use_colors ? 4 : 0);
-	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
+	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + (p_use_colors ? 2 : 0);
+	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 2 : 0);
 	multimesh->buffer_set = false;
 
-	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = Vector<float>();
 	multimesh->aabb = AABB();
 	multimesh->aabb_dirty = false;
@@ -864,7 +911,7 @@ int MeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
 void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
-	if (multimesh->mesh == p_mesh) {
+	if (multimesh->mesh == p_mesh || p_mesh.is_null()) {
 		return;
 	}
 	multimesh->mesh = p_mesh;
@@ -877,13 +924,12 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		//we have a data cache, just mark it dirty
 		_multimesh_mark_all_dirty(multimesh, false, true);
 	} else if (multimesh->instances) {
-		//need to re-create AABB unfortunately, calling this has a penalty
+		// Need to re-create AABB. Unfortunately, calling this has a penalty.
 		if (multimesh->buffer_set) {
-			// TODO add a function to RasterizerStorage to get data from a buffer
-			//Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
-			//const uint8_t *r = buffer.ptr();
-			//const float *data = (const float *)r;
-			//_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
+			Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			const uint8_t *r = buffer.ptr();
+			const float *data = (const float *)r;
+			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		}
 	}
 
@@ -904,10 +950,11 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 		float *w = multimesh->data_cache.ptrw();
 
 		if (multimesh->buffer_set) {
-			//Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+
 			{
-				//	const uint8_t *r = buffer.ptr();
-				//	memcpy(w, r, buffer.size());
+				const uint8_t *r = buffer.ptr();
+				memcpy(w, r, buffer.size());
 			}
 		} else {
 			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
@@ -1073,14 +1120,12 @@ void MeshStorage::multimesh_instance_set_color(RID p_multimesh, int p_index, con
 	_multimesh_make_local(multimesh);
 
 	{
+		// Colors are packed into 2 floats.
 		float *w = multimesh->data_cache.ptrw();
 
 		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
-
-		dataptr[0] = p_color.r;
-		dataptr[1] = p_color.g;
-		dataptr[2] = p_color.b;
-		dataptr[3] = p_color.a;
+		uint16_t val[4] = { Math::make_half_float(p_color.r), Math::make_half_float(p_color.g), Math::make_half_float(p_color.b), Math::make_half_float(p_color.a) };
+		memcpy(dataptr, val, 2 * 4);
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, false);
@@ -1098,11 +1143,8 @@ void MeshStorage::multimesh_instance_set_custom_data(RID p_multimesh, int p_inde
 		float *w = multimesh->data_cache.ptrw();
 
 		float *dataptr = w + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
-
-		dataptr[0] = p_color.r;
-		dataptr[1] = p_color.g;
-		dataptr[2] = p_color.b;
-		dataptr[3] = p_color.a;
+		uint16_t val[4] = { Math::make_half_float(p_color.r), Math::make_half_float(p_color.g), Math::make_half_float(p_color.b), Math::make_half_float(p_color.a) };
+		memcpy(dataptr, val, 2 * 4);
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, false);
@@ -1193,11 +1235,12 @@ Color MeshStorage::multimesh_instance_get_color(RID p_multimesh, int p_index) co
 		const float *r = multimesh->data_cache.ptr();
 
 		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
-
-		c.r = dataptr[0];
-		c.g = dataptr[1];
-		c.b = dataptr[2];
-		c.a = dataptr[3];
+		uint16_t raw_data[4];
+		memcpy(raw_data, dataptr, 2 * 4);
+		c.r = Math::half_to_float(raw_data[0]);
+		c.g = Math::half_to_float(raw_data[1]);
+		c.b = Math::half_to_float(raw_data[2]);
+		c.a = Math::half_to_float(raw_data[3]);
 	}
 
 	return c;
@@ -1216,11 +1259,12 @@ Color MeshStorage::multimesh_instance_get_custom_data(RID p_multimesh, int p_ind
 		const float *r = multimesh->data_cache.ptr();
 
 		const float *dataptr = r + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
-
-		c.r = dataptr[0];
-		c.g = dataptr[1];
-		c.b = dataptr[2];
-		c.a = dataptr[3];
+		uint16_t raw_data[4];
+		memcpy(raw_data, dataptr, 2 * 4);
+		c.r = Math::half_to_float(raw_data[0]);
+		c.g = Math::half_to_float(raw_data[1]);
+		c.b = Math::half_to_float(raw_data[2]);
+		c.a = Math::half_to_float(raw_data[3]);
 	}
 
 	return c;
@@ -1229,19 +1273,66 @@ Color MeshStorage::multimesh_instance_get_custom_data(RID p_multimesh, int p_ind
 void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
-	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
 
-	{
+	if (multimesh->uses_colors || multimesh->uses_custom_data) {
+		// Color and custom need to be packed so copy buffer to data_cache and pack.
+
+		_multimesh_make_local(multimesh);
+		multimesh->data_cache = p_buffer;
+
+		float *w = multimesh->data_cache.ptrw();
+		uint32_t old_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		old_stride += multimesh->uses_colors ? 4 : 0;
+		old_stride += multimesh->uses_custom_data ? 4 : 0;
+		for (int i = 0; i < multimesh->instances; i++) {
+			{
+				float *dataptr = w + i * old_stride;
+				float *newptr = w + i * multimesh->stride_cache;
+				float vals[8] = { dataptr[0], dataptr[1], dataptr[2], dataptr[3], dataptr[4], dataptr[5], dataptr[6], dataptr[7] };
+				memcpy(newptr, vals, 8 * 4);
+			}
+
+			if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
+				float *dataptr = w + i * old_stride + 8;
+				float *newptr = w + i * multimesh->stride_cache + 8;
+				float vals[8] = { dataptr[0], dataptr[1], dataptr[2], dataptr[3] };
+				memcpy(newptr, vals, 4 * 4);
+			}
+
+			if (multimesh->uses_colors) {
+				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
+				float *newptr = w + i * multimesh->stride_cache + multimesh->color_offset_cache;
+				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
+				memcpy(newptr, val, 2 * 4);
+			}
+			if (multimesh->uses_custom_data) {
+				float *dataptr = w + i * old_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
+				float *newptr = w + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+				uint16_t val[4] = { Math::make_half_float(dataptr[0]), Math::make_half_float(dataptr[1]), Math::make_half_float(dataptr[2]), Math::make_half_float(dataptr[3]) };
+				memcpy(newptr, val, 2 * 4);
+			}
+		}
+
+		multimesh->data_cache.resize(multimesh->instances * (int)multimesh->stride_cache);
+		const float *r = multimesh->data_cache.ptr();
+		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
+		glBufferData(GL_ARRAY_BUFFER, multimesh->data_cache.size() * sizeof(float), r, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	} else {
+		// Only Transform is being used, so we can upload directly.
+		ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
 		const float *r = p_buffer.ptr();
 		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
 		glBufferData(GL_ARRAY_BUFFER, p_buffer.size() * sizeof(float), r, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		multimesh->buffer_set = true;
 	}
 
-	if (multimesh->data_cache.size()) {
+	multimesh->buffer_set = true;
+
+	if (multimesh->data_cache.size() || multimesh->uses_colors || multimesh->uses_custom_data) {
 		//if we have a data cache, just update it
-		multimesh->data_cache = p_buffer;
+		multimesh->data_cache = multimesh->data_cache;
 		{
 			//clear dirty since nothing will be dirty anymore
 			uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
@@ -1254,7 +1345,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
 	} else if (multimesh->mesh.is_valid()) {
 		//if we have a mesh set, we need to re-generate the AABB from the new data
-		const float *data = p_buffer.ptr();
+		const float *data = multimesh->data_cache.ptr();
 
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
@@ -1264,22 +1355,71 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Vector<float>());
+	Vector<float> ret;
 	if (multimesh->buffer == 0) {
 		return Vector<float>();
 	} else if (multimesh->data_cache.size()) {
-		return multimesh->data_cache;
+		ret = multimesh->data_cache;
 	} else {
-		//get from memory
+		// Buffer not cached, so fetch from GPU memory. This can be a stalling operation, avoid whenever possible.
 
-		//Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
-		Vector<float> ret;
+		Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
 		ret.resize(multimesh->instances * multimesh->stride_cache);
-		//{
-		//	float *w = ret.ptrw();
-		//	const uint8_t *r = buffer.ptr();
-		//	memcpy(w, r, buffer.size());
-		//}
+		{
+			float *w = ret.ptrw();
+			const uint8_t *r = buffer.ptr();
+			memcpy(w, r, buffer.size());
+		}
+	}
+	if (multimesh->uses_colors || multimesh->uses_custom_data) {
+		// Need to decompress buffer.
+		uint32_t new_stride = multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+		new_stride += multimesh->uses_colors ? 4 : 0;
+		new_stride += multimesh->uses_custom_data ? 4 : 0;
 
+		Vector<float> decompressed;
+		decompressed.resize(multimesh->instances * (int)new_stride);
+		float *w = decompressed.ptrw();
+		const float *r = ret.ptr();
+
+		for (int i = 0; i < multimesh->instances; i++) {
+			{
+				float *newptr = w + i * new_stride;
+				const float *oldptr = r + i * multimesh->stride_cache;
+				float vals[8] = { oldptr[0], oldptr[1], oldptr[2], oldptr[3], oldptr[4], oldptr[5], oldptr[6], oldptr[7] };
+				memcpy(newptr, vals, 8 * 4);
+			}
+
+			if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
+				float *newptr = w + i * new_stride + 8;
+				const float *oldptr = r + i * multimesh->stride_cache + 8;
+				float vals[8] = { oldptr[0], oldptr[1], oldptr[2], oldptr[3] };
+				memcpy(newptr, vals, 4 * 4);
+			}
+
+			if (multimesh->uses_colors) {
+				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12);
+				const float *oldptr = r + i * multimesh->stride_cache + multimesh->color_offset_cache;
+				uint16_t raw_data[4];
+				memcpy(raw_data, oldptr, 2 * 4);
+				newptr[0] = Math::half_to_float(raw_data[0]);
+				newptr[1] = Math::half_to_float(raw_data[1]);
+				newptr[2] = Math::half_to_float(raw_data[2]);
+				newptr[3] = Math::half_to_float(raw_data[3]);
+			}
+			if (multimesh->uses_custom_data) {
+				float *newptr = w + i * new_stride + (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_2D ? 8 : 12) + (multimesh->uses_colors ? 4 : 0);
+				const float *oldptr = r + i * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+				uint16_t raw_data[4];
+				memcpy(raw_data, oldptr, 2 * 4);
+				newptr[0] = Math::half_to_float(raw_data[0]);
+				newptr[1] = Math::half_to_float(raw_data[1]);
+				newptr[2] = Math::half_to_float(raw_data[2]);
+				newptr[3] = Math::half_to_float(raw_data[3]);
+			}
+		}
+		return decompressed;
+	} else {
 		return ret;
 	}
 }
@@ -1326,7 +1466,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
 					// If there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
 					glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-					glBufferData(GL_ARRAY_BUFFER, MIN(visible_region_count * region_size, multimesh->instances * (uint32_t)multimesh->stride_cache * (uint32_t)sizeof(float)), data, GL_STATIC_DRAW);
+					glBufferData(GL_ARRAY_BUFFER, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data, GL_STATIC_DRAW);
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 				} else {
 					// Not that many regions? update them all
@@ -1350,8 +1490,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 				multimesh->data_cache_used_dirty_regions = 0;
 			}
 
-			if (multimesh->aabb_dirty) {
-				//aabb is dirty..
+			if (multimesh->aabb_dirty && multimesh->mesh.is_valid()) {
 				_multimesh_re_create_aabb(multimesh, data, visible_instances);
 				multimesh->aabb_dirty = false;
 				multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);

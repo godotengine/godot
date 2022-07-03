@@ -247,6 +247,9 @@ private:
 
 	bool setting_text = false;
 
+	bool alt_start = false;
+	uint32_t alt_code = 0;
+
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
@@ -353,7 +356,7 @@ private:
 		Vector<int> last_visible_chars;
 	};
 
-	Map<int, LineDrawingCache> line_drawing_cache;
+	HashMap<int, LineDrawingCache> line_drawing_cache;
 
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
@@ -419,6 +422,7 @@ private:
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	Color font_selected_color = Color(1, 1, 1);
 	Color selection_color = Color(1, 1, 1);
@@ -508,7 +512,6 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	Map<int, Dictionary> syntax_highlighting_cache;
 
 	Dictionary _get_line_syntax_highlighting(int p_line);
 
@@ -625,6 +628,7 @@ public:
 	/* General overrides. */
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+	bool alt_input(const Ref<InputEvent> &p_gui_input);
 	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
@@ -791,6 +795,9 @@ public:
 
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
 
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;

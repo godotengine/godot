@@ -46,7 +46,7 @@ private:
 	int commited_actions_count = 0;
 	bool delete_original_atlases = true;
 	Ref<TileSetAtlasSource> merged;
-	LocalVector<Map<Vector2i, Vector2i>> merged_mapping;
+	LocalVector<HashMap<Vector2i, Vector2i>> merged_mapping;
 	Ref<TileSet> tile_set;
 
 	UndoRedo *undo_redo = nullptr;

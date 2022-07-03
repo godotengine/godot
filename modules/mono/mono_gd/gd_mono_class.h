@@ -32,7 +32,7 @@
 #define GD_MONO_CLASS_H
 
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"
@@ -85,15 +85,15 @@ class GDMonoClass {
 	Vector<GDMonoMethod *> method_list;
 
 	bool fields_fetched;
-	Map<StringName, GDMonoField *> fields;
+	HashMap<StringName, GDMonoField *> fields;
 	Vector<GDMonoField *> fields_list;
 
 	bool properties_fetched;
-	Map<StringName, GDMonoProperty *> properties;
+	HashMap<StringName, GDMonoProperty *> properties;
 	Vector<GDMonoProperty *> properties_list;
 
 	bool delegates_fetched;
-	Map<StringName, GDMonoClass *> delegates;
+	HashMap<StringName, GDMonoClass *> delegates;
 	Vector<GDMonoClass *> delegates_list;
 
 	friend class GDMonoAssembly;

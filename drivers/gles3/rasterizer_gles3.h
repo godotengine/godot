@@ -33,6 +33,8 @@
 
 #ifdef GLES3_ENABLED
 
+#include "effects/copy_effects.h"
+#include "environment/gi.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
 #include "rasterizer_storage_gles3.h"
@@ -58,6 +60,8 @@ protected:
 	GLES3::MeshStorage *mesh_storage = nullptr;
 	GLES3::ParticlesStorage *particles_storage = nullptr;
 	GLES3::LightStorage *light_storage = nullptr;
+	GLES3::GI *gi = nullptr;
+	GLES3::CopyEffects *copy_effects = nullptr;
 	RasterizerStorageGLES3 *storage = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
@@ -70,6 +74,7 @@ public:
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
 	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
 	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	RendererGI *get_gi() { return gi; }
 	RendererStorage *get_storage() { return storage; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
@@ -92,9 +97,9 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
+		low_end = true;
 	}
 
-	virtual bool is_low_end() const { return true; }
 	uint64_t get_frame_number() const { return frame; }
 	double get_frame_delta_time() const { return delta; }
 

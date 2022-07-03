@@ -37,6 +37,19 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
+static bool _is_in_handle(int p_id, int p_num_points) {
+	int t = (p_id + 1) % 2;
+	int idx = (p_id + 1) / 2;
+	// order of points is [out_0, out_1, in_1, out_2, in_2, ... out_n-1, in_n-1, in_n]
+	if (idx == 0) {
+		return false;
+	} else if (idx == (p_num_points - 1)) {
+		return true;
+	} else {
+		return (t == 1);
+	}
+}
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -47,12 +60,10 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 		return TTR("Curve Point #") + itos(p_id);
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 	String n = TTR("Curve Point #") + itos(idx);
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		n += " In";
 	} else {
 		n += " Out";
@@ -72,13 +83,11 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 		return original;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
 	Vector3 ofs;
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		ofs = c->get_point_in(idx);
 	} else {
 		ofs = c->get_point_out(idx);
@@ -119,10 +128,8 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		return;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
 	Vector3 base = c->get_point_position(idx);
 
@@ -144,7 +151,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 			local.snap(Vector3(snap, snap, snap));
 		}
 
-		if (t == 0) {
+		if (_is_in_handle(p_id, c->get_point_count())) {
 			c->set_point_in(idx, local);
 			if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
 				c->set_point_out(idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
@@ -179,12 +186,10 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		return;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
-	int idx = p_id / 2;
-	int t = p_id % 2;
-
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		if (p_cancel) {
 			c->set_point_in(p_id, p_restore);
 			return;
@@ -263,16 +268,16 @@ void Path3DGizmo::redraw() {
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
 			handles.push_back(p);
-			if (i > 0) {
-				v3p.push_back(p);
-				v3p.push_back(p + c->get_point_in(i));
-				sec_handles.push_back(p + c->get_point_in(i));
-			}
-
+			// push Out points first so they get selected if the In and Out points are on top of each other.
 			if (i < c->get_point_count() - 1) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_out(i));
 				sec_handles.push_back(p + c->get_point_out(i));
+			}
+			if (i > 0) {
+				v3p.push_back(p);
+				v3p.push_back(p + c->get_point_in(i));
+				sec_handles.push_back(p + c->get_point_in(i));
 			}
 		}
 

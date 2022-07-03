@@ -126,7 +126,7 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 	ERR_FAIL_COND_V_MSG(clients.size() >= LSP_MAX_CLIENTS, FAILED, "Max client limits reached");
 	Ref<LSPeer> peer = memnew(LSPeer);
 	peer->connection = tcp_peer;
-	clients.set(next_client_id, peer);
+	clients.insert(next_client_id, peer);
 	next_client_id++;
 	EditorNode::get_log()->add_message("[LSP] Connection Taken", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
@@ -229,28 +229,33 @@ void GDScriptLanguageProtocol::poll() {
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
-	const int *id = nullptr;
-	while ((id = clients.next(id))) {
-		Ref<LSPeer> peer = clients.get(*id);
+
+	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
+	while (E != clients.end()) {
+		Ref<LSPeer> peer = E->value;
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
-			on_client_disconnected(*id);
-			id = nullptr;
+			on_client_disconnected(E->key);
+			E = clients.begin();
+			continue;
 		} else {
 			if (peer->connection->get_available_bytes() > 0) {
-				latest_client_id = *id;
+				latest_client_id = E->key;
 				Error err = peer->handle_data();
 				if (err != OK && err != ERR_BUSY) {
-					on_client_disconnected(*id);
-					id = nullptr;
+					on_client_disconnected(E->key);
+					E = clients.begin();
+					continue;
 				}
 			}
 			Error err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
-				on_client_disconnected(*id);
-				id = nullptr;
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
 			}
 		}
+		++E;
 	}
 }
 
@@ -259,9 +264,8 @@ Error GDScriptLanguageProtocol::start(int p_port, const IPAddress &p_bind_ip) {
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *id = nullptr;
-	while ((id = clients.next(id))) {
-		Ref<LSPeer> peer = clients.get(*id);
+	for (const KeyValue<int, Ref<LSPeer>> &E : clients) {
+		Ref<LSPeer> peer = clients.get(E.key);
 		peer->connection->disconnect_from_host();
 	}
 

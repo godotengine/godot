@@ -369,7 +369,7 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	const Map<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
@@ -409,6 +409,12 @@ void Node3DEditorViewport::cancel_transform() {
 
 	finish_transform();
 	set_message(TTR("Transform Aborted."), 3);
+}
+
+void Node3DEditorViewport::_update_shrink() {
+	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+	subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+	subviewport_container->set_texture_filter(shrink ? TEXTURE_FILTER_NEAREST : TEXTURE_FILTER_PARENT_NODE);
 }
 
 float Node3DEditorViewport::get_znear() const {
@@ -518,7 +524,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) {
 	}
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
-	Set<Ref<EditorNode3DGizmo>> found_gizmos;
+	HashSet<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 	ObjectID closest;
@@ -581,7 +587,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector3 pos = _get_ray_pos(p_pos);
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
-	Set<Node3D *> found_nodes;
+	HashSet<Node3D *> found_nodes;
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
@@ -764,7 +770,7 @@ void Node3DEditorViewport::_select_region() {
 	}
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world_3d()->get_scenario());
-	Set<Node3D *> found_nodes;
+	HashSet<Node3D *> found_nodes;
 	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -2387,11 +2393,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 	viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-	bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
-
-	if (shrink != (subviewport_container->get_stretch_shrink() > 1)) {
-		subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
-	}
+	_update_shrink();
 
 	// Update MSAA, screen-space AA and debanding if changed
 
@@ -2399,6 +2401,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_msaa(Viewport::MSAA(msaa_mode));
 	const int ssaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/screen_space_aa");
 	viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");
+	viewport->set_use_taa(use_taa);
+
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 
@@ -2407,6 +2412,18 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	viewport->set_mesh_lod_threshold(mesh_lod_threshold);
+
+	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
+	viewport->set_scaling_3d_mode(scaling_3d_mode);
+
+	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+	viewport->set_scaling_3d_scale(scaling_3d_scale);
+
+	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
+	viewport->set_fsr_sharpness(fsr_sharpness);
+
+	const float fsr_mipmap_bias = GLOBAL_GET("rendering/scaling_3d/fsr_mipmap_bias");
+	viewport->set_fsr_mipmap_bias(fsr_mipmap_bias);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -2465,7 +2482,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			_update_camera(delta);
 
-			const Map<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
@@ -3085,8 +3102,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_HALF_RESOLUTION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
-			current = !current;
-			view_menu->get_popup()->set_item_checked(idx, current);
+			view_menu->get_popup()->set_item_checked(idx, !current);
+			_update_shrink();
 		} break;
 		case VIEW_INFORMATION: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
@@ -3124,7 +3141,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_DECALS:
 		case VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES:
-		case VIEW_DISPLAY_DEBUG_OCCLUDERS: {
+		case VIEW_DISPLAY_DEBUG_OCCLUDERS:
+		case VIEW_DISPLAY_MOTION_VECTORS: {
 			static const int display_options[] = {
 				VIEW_DISPLAY_NORMAL,
 				VIEW_DISPLAY_WIREFRAME,
@@ -3152,6 +3170,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 				VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 				VIEW_DISPLAY_DEBUG_OCCLUDERS,
+				VIEW_DISPLAY_MOTION_VECTORS,
 				VIEW_MAX
 			};
 			static const Viewport::DebugDraw debug_draw_modes[] = {
@@ -3181,6 +3200,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Viewport::DEBUG_DRAW_CLUSTER_DECALS,
 				Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 				Viewport::DEBUG_DRAW_OCCLUDERS,
+				Viewport::DEBUG_DRAW_MOTION_VECTORS,
 			};
 
 			int idx = 0;
@@ -4159,7 +4179,8 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			Vector3 motion_snapped = motion;
 			motion_snapped.snap(Vector3(snap, snap, snap));
 			// This might not be necessary anymore after issue #288 is solved (in 4.0?).
-			set_message(TTR("Scaling: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+			// TRANSLATORS: Refers to changing the scale of a node in the 3D editor.
+			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			motion = _edit.original.basis.inverse().xform(motion);
 
@@ -4259,7 +4280,8 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			}
 			Vector3 motion_snapped = motion;
 			motion_snapped.snap(Vector3(snap, snap, snap));
-			set_message(TTR("Translating: ") + "(" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
+			// TRANSLATORS: Refers to changing the position of a node in the 3D editor.
+			set_message(TTR("Translating:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			motion = spatial_editor->get_gizmo_transform().basis.inverse().xform(motion);
 
@@ -4545,6 +4567,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	display_submenu->add_radio_check_item(TTR("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS);
 	display_submenu->add_radio_check_item(TTR("ReflectionProbe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES);
 	display_submenu->add_radio_check_item(TTR("Occlusion Culling Buffer"), VIEW_DISPLAY_DEBUG_OCCLUDERS);
+	display_submenu->add_radio_check_item(TTR("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS);
 
 	display_submenu->set_name("display_advanced");
 	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced", VIEW_DISPLAY_ADVANCED);
@@ -6351,18 +6374,6 @@ void fragment() {
 	_generate_selection_boxes();
 }
 
-void Node3DEditor::_update_context_menu_stylebox() {
-	// This must be called when the theme changes to follow the new accent color.
-	Ref<StyleBoxFlat> context_menu_stylebox = memnew(StyleBoxFlat);
-	const Color accent_color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	context_menu_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
-	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
-	context_menu_stylebox->set_border_color(accent_color);
-	context_menu_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
-	context_menu_stylebox->set_default_margin(SIDE_BOTTOM, 0);
-	context_menu_container->add_theme_style_override("panel", context_menu_stylebox);
-}
-
 void Node3DEditor::_update_gizmos_menu() {
 	gizmos_menu->clear();
 
@@ -6685,8 +6696,8 @@ void Node3DEditor::_refresh_menu_icons() {
 }
 
 template <typename T>
-Set<T *> _get_child_nodes(Node *parent_node) {
-	Set<T *> nodes = Set<T *>();
+HashSet<T *> _get_child_nodes(Node *parent_node) {
+	HashSet<T *> nodes = HashSet<T *>();
 	T *node = Node::cast_to<T>(parent_node);
 	if (node) {
 		nodes.insert(node);
@@ -6694,24 +6705,24 @@ Set<T *> _get_child_nodes(Node *parent_node) {
 
 	for (int i = 0; i < parent_node->get_child_count(); i++) {
 		Node *child_node = parent_node->get_child(i);
-		Set<T *> child_nodes = _get_child_nodes<T>(child_node);
-		for (typename Set<T *>::Element *I = child_nodes.front(); I; I = I->next()) {
-			nodes.insert(I->get());
+		HashSet<T *> child_nodes = _get_child_nodes<T>(child_node);
+		for (T *I : child_nodes) {
+			nodes.insert(I);
 		}
 	}
 
 	return nodes;
 }
 
-Set<RID> _get_physics_bodies_rid(Node *node) {
-	Set<RID> rids = Set<RID>();
+HashSet<RID> _get_physics_bodies_rid(Node *node) {
+	HashSet<RID> rids = HashSet<RID>();
 	PhysicsBody3D *pb = Node::cast_to<PhysicsBody3D>(node);
 	if (pb) {
 		rids.insert(pb->get_rid());
 	}
-	Set<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
-	for (Set<PhysicsBody3D *>::Element *I = child_nodes.front(); I; I = I->next()) {
-		rids.insert(I->get()->get_rid());
+	HashSet<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
+	for (const PhysicsBody3D *I : child_nodes) {
+		rids.insert(I->get_rid());
 	}
 
 	return rids;
@@ -6728,20 +6739,21 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Vector3 position_offset = Vector3();
 
 			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
-			Set<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);
-			Set<CollisionShape3D *> cs = _get_child_nodes<CollisionShape3D>(sp);
+			HashSet<VisualInstance3D *> vi = _get_child_nodes<VisualInstance3D>(sp);
+			HashSet<CollisionShape3D *> cs = _get_child_nodes<CollisionShape3D>(sp);
 			bool found_valid_shape = false;
 
 			if (cs.size()) {
 				AABB aabb;
-				Set<CollisionShape3D *>::Element *I = cs.front();
-				if (I->get()->get_shape().is_valid()) {
-					CollisionShape3D *collision_shape = cs.front()->get();
+				HashSet<CollisionShape3D *>::Iterator I = cs.begin();
+				if ((*I)->get_shape().is_valid()) {
+					CollisionShape3D *collision_shape = *cs.begin();
 					aabb = collision_shape->get_global_transform().xform(collision_shape->get_shape()->get_debug_mesh()->get_aabb());
 					found_valid_shape = true;
 				}
-				for (I = I->next(); I; I = I->next()) {
-					CollisionShape3D *col_shape = I->get();
+
+				for (++I; I; ++I) {
+					CollisionShape3D *col_shape = *I;
 					if (col_shape->get_shape().is_valid()) {
 						aabb.merge_with(col_shape->get_global_transform().xform(col_shape->get_shape()->get_debug_mesh()->get_aabb()));
 						found_valid_shape = true;
@@ -6754,9 +6766,9 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				}
 			}
 			if (!found_valid_shape && vi.size()) {
-				AABB aabb = vi.front()->get()->get_transformed_aabb();
-				for (Set<VisualInstance3D *>::Element *I = vi.front(); I; I = I->next()) {
-					aabb.merge_with(I->get()->get_transformed_aabb());
+				AABB aabb = (*vi.begin())->get_transformed_aabb();
+				for (const VisualInstance3D *I : vi) {
+					aabb.merge_with(I->get_transformed_aabb());
 				}
 				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
 				from = aabb.position + size;
@@ -6798,7 +6810,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 			Dictionary d = snap_data[node];
 			Vector3 from = d["from"];
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
-			Set<RID> excluded = _get_physics_bodies_rid(sp);
+			HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
 			PhysicsDirectSpaceState3D::RayParameters ray_params;
 			ray_params.from = from;
@@ -6820,7 +6832,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 				Dictionary d = snap_data[node];
 				Vector3 from = d["from"];
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
-				Set<RID> excluded = _get_physics_bodies_rid(sp);
+				HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
 				PhysicsDirectSpaceState3D::RayParameters ray_params;
 				ray_params.from = from;
@@ -6949,6 +6961,12 @@ void Node3DEditor::_update_theme() {
 
 	sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
 	environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
+
+	sun_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+
+	context_menu_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), SNAME("EditorStyles")));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -6987,7 +7005,6 @@ void Node3DEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_update_gizmos_menu_theme();
-			_update_context_menu_stylebox();
 			sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
 			environ_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
 		} break;
@@ -7697,6 +7714,7 @@ Node3DEditor::Node3DEditor() {
 	p->connect("id_pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
 	view_menu = memnew(MenuButton);
+	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
@@ -7707,11 +7725,7 @@ Node3DEditor::Node3DEditor() {
 	context_menu_container = memnew(PanelContainer);
 	hbc_context_menu = memnew(HBoxContainer);
 	context_menu_container->add_child(hbc_context_menu);
-	// Use a custom stylebox to make contextual menu items stand out from the rest.
-	// This helps with editor usability as contextual menu items change when selecting nodes,
-	// even though it may not be immediately obvious at first.
 	hbc_menu->add_child(context_menu_container);
-	_update_context_menu_stylebox();
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();
@@ -8121,7 +8135,13 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	if (p_object->is_class("Node3D")) {
+		return true;
+	} else {
+		// This ensures that gizmos are cleared when selecting a non-Node3D node.
+		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
+		return false;
+	}
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {

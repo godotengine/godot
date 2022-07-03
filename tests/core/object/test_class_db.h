@@ -46,7 +46,7 @@ struct TypeReference {
 
 struct ConstantData {
 	String name;
-	int value = 0;
+	int64_t value = 0;
 };
 
 struct EnumData {
@@ -173,7 +173,7 @@ struct NamesCache {
 	}
 };
 
-typedef OrderedHashMap<StringName, ExposedClass> ExposedClasses;
+typedef HashMap<StringName, ExposedClass> ExposedClasses;
 
 struct Context {
 	Vector<StringName> enum_types;
@@ -183,13 +183,13 @@ struct Context {
 	NamesCache names_cache;
 
 	const ExposedClass *find_exposed_class(const StringName &p_name) const {
-		ExposedClasses::ConstElement elem = exposed_classes.find(p_name);
-		return elem ? &elem.value() : nullptr;
+		ExposedClasses::ConstIterator elem = exposed_classes.find(p_name);
+		return elem ? &elem->value : nullptr;
 	}
 
 	const ExposedClass *find_exposed_class(const TypeReference &p_type_ref) const {
-		ExposedClasses::ConstElement elem = exposed_classes.find(p_type_ref.name);
-		return elem ? &elem.value() : nullptr;
+		ExposedClasses::ConstIterator elem = exposed_classes.find(p_type_ref.name);
+		return elem ? &elem->value : nullptr;
 	}
 
 	bool has_type(const TypeReference &p_type_ref) const {
@@ -519,7 +519,7 @@ void add_exposed_classes(Context &r_context) {
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(class_name, &property_list, true);
 
-		Map<StringName, StringName> accessor_methods;
+		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
@@ -676,12 +676,11 @@ void add_exposed_classes(Context &r_context) {
 		// Add signals
 
 		const HashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
-		const StringName *k = nullptr;
 
-		while ((k = signal_map.next(k))) {
+		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
 			SignalData signal;
 
-			const MethodInfo &method_info = signal_map.get(*k);
+			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
 
@@ -734,19 +733,17 @@ void add_exposed_classes(Context &r_context) {
 		ClassDB::get_integer_constant_list(class_name, &constants, true);
 
 		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
-		k = nullptr;
 
-		while ((k = enum_map.next(k))) {
+		for (const KeyValue<StringName, List<StringName>> &K : enum_map) {
 			EnumData enum_;
-			enum_.name = *k;
+			enum_.name = K.key;
 
-			const List<StringName> &enum_constants = enum_map.get(*k);
-			for (const StringName &E : enum_constants) {
+			for (const StringName &E : K.value) {
 				const StringName &constant_name = E;
 				TEST_FAIL_COND(String(constant_name).find("::") != -1,
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				int *value = class_info->constant_map.getptr(constant_name);
+				int64_t *value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
@@ -760,7 +757,7 @@ void add_exposed_classes(Context &r_context) {
 
 			exposed_class.enums.push_back(enum_);
 
-			r_context.enum_types.push_back(String(class_name) + "." + String(*k));
+			r_context.enum_types.push_back(String(class_name) + "." + String(K.key));
 		}
 
 		for (const String &E : constants) {
@@ -768,7 +765,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.find("::") != -1,
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int *value = class_info->constant_map.getptr(StringName(E));
+			int64_t *value = class_info->constant_map.getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
@@ -850,8 +847,8 @@ TEST_SUITE("[ClassDB]") {
 			TEST_FAIL_COND(object_class->base != StringName(),
 					"Object class derives from another class: '", object_class->base, "'.");
 
-			for (ExposedClasses::Element E = context.exposed_classes.front(); E; E = E.next()) {
-				validate_class(context, E.value());
+			for (const KeyValue<StringName, ExposedClass> &E : context.exposed_classes) {
+				validate_class(context, E.value);
 			}
 		}
 	}

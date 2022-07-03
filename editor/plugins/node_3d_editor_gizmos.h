@@ -31,8 +31,8 @@
 #ifndef NODE_3D_EDITOR_GIZMOS_H
 #define NODE_3D_EDITOR_GIZMOS_H
 
+#include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/ordered_hash_map.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -601,7 +601,13 @@ class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 		Vector3 from;
 		Vector3 to;
 
-		bool operator<(const _EdgeKey &p_with) const { return from == p_with.from ? to < p_with.to : from < p_with.from; }
+		static uint32_t hash(const _EdgeKey &p_key) {
+			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
+		}
+
+		bool operator==(const _EdgeKey &p_with) const {
+			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
+		}
 	};
 
 public:

@@ -61,7 +61,7 @@ public:
 	}
 
 	uint64_t move(uint64_t p_idx, uint64_t p_bin) {
-		ERR_FAIL_COND_V(p_idx >= array.size(), -1);
+		ERR_FAIL_UNSIGNED_INDEX_V(p_idx, array.size(), -1);
 
 		uint64_t current_bin = bin_limits.size() - 1;
 		while (p_idx > bin_limits[current_bin]) {
@@ -113,7 +113,7 @@ public:
 	}
 
 	void remove_at(uint64_t p_idx) {
-		ERR_FAIL_COND(p_idx >= array.size());
+		ERR_FAIL_UNSIGNED_INDEX(p_idx, array.size());
 		uint64_t new_idx = move(p_idx, 0);
 		uint64_t swap_idx = array.size() - 1;
 

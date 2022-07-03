@@ -269,6 +269,15 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_overlay->connect("mouse_exited", callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
 }
 
+void DefaultThemeEditorPreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
+		} break;
+	}
+}
+
 DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	Panel *main_panel = memnew(Panel);
 	preview_content->add_child(main_panel);
@@ -343,7 +352,8 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_option_button->add_item(TTR("Many"));
 	test_option_button->add_item(TTR("Options"));
 	first_vb->add_child(test_option_button);
-	first_vb->add_child(memnew(ColorPickerButton));
+	test_color_picker_button = memnew(ColorPickerButton);
+	first_vb->add_child(test_color_picker_button);
 
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);

@@ -298,6 +298,10 @@ StreamPeerMbedTLS::Status StreamPeerMbedTLS::get_status() const {
 	return status;
 }
 
+Ref<StreamPeer> StreamPeerMbedTLS::get_stream() const {
+	return base;
+}
+
 StreamPeerSSL *StreamPeerMbedTLS::_create_func() {
 	return memnew(StreamPeerMbedTLS);
 }

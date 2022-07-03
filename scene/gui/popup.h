@@ -48,14 +48,16 @@ class Popup : public Window {
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
 
-	void _parent_focused();
-
 protected:
 	void _close_pressed();
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _parent_focused();
+
+	virtual void _post_popup() override;
 
 public:
 	Popup();

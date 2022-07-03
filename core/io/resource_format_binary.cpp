@@ -635,8 +635,6 @@ Error ResourceLoaderBinary::load() {
 		return error;
 	}
 
-	int stage = 0;
-
 	for (int i = 0; i < external_resources.size(); i++) {
 		String path = external_resources[i].path;
 
@@ -674,8 +672,6 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 		}
-
-		stage++;
 	}
 
 	for (int i = 0; i < internal_resources.size(); i++) {
@@ -697,10 +693,9 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && ResourceCache::has(path)) {
-				Ref<Resource> cached = ResourceCache::get(path);
+				Ref<Resource> cached = ResourceCache::get_ref(path);
 				if (cached.is_valid()) {
 					//already loaded, don't do anything
-					stage++;
 					error = OK;
 					internal_index_cache[path] = cached;
 					continue;
@@ -722,10 +717,10 @@ Error ResourceLoaderBinary::load() {
 
 		if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && ResourceCache::has(path)) {
 			//use the existing one
-			Resource *r = ResourceCache::get(path);
-			if (r->get_class() == t) {
-				r->reset_state();
-				res = Ref<Resource>(r);
+			Ref<Resource> cached = ResourceCache::get_ref(path);
+			if (cached->get_class() == t) {
+				cached->reset_state();
+				res = cached;
 			}
 		}
 
@@ -817,7 +812,6 @@ Error ResourceLoaderBinary::load() {
 #ifdef TOOLS_ENABLED
 		res->set_edited(false);
 #endif
-		stage++;
 
 		if (progress) {
 			*progress = (i + 1) / float(internal_resources.size());
@@ -1136,7 +1130,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
-Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
 
@@ -1390,7 +1384,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_byt
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, Map<Ref<Resource>, int> &resource_map, Map<Ref<Resource>, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
 			f->store_32(VARIANT_NIL);
@@ -1553,10 +1547,11 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::COLOR: {
 			f->store_32(VARIANT_COLOR);
 			Color val = p_property;
-			f->store_real(val.r);
-			f->store_real(val.g);
-			f->store_real(val.b);
-			f->store_real(val.a);
+			// Color are always floats
+			f->store_float(val.r);
+			f->store_float(val.g);
+			f->store_float(val.b);
+			f->store_float(val.a);
 
 		} break;
 		case Variant::STRING_NAME: {
@@ -1691,7 +1686,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(len);
 			const float *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i]);
+				f->store_float(r[i]);
 			}
 
 		} break;
@@ -1749,10 +1744,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(len);
 			const Color *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].r);
-				f->store_real(r[i].g);
-				f->store_real(r[i].b);
-				f->store_real(r[i].a);
+				f->store_float(r[i].r);
+				f->store_float(r[i].g);
+				f->store_float(r[i].b);
+				f->store_float(r[i].a);
 			}
 
 		} break;
@@ -1982,7 +1977,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 					}
 
 					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
-						// Was this missing resource overriden? If so do not save the old value.
+						// Was this missing resource overridden? If so do not save the old value.
 						Ref<Resource> res = p.value;
 						if (res.is_null()) {
 							p.value = missing_resource_properties[F.name];
@@ -2028,7 +2023,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
-	Set<String> used_unique_ids;
+	HashSet<String> used_unique_ids;
 
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {
@@ -2042,7 +2037,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	Map<Ref<Resource>, int> resource_map;
+	HashMap<Ref<Resource>, int> resource_map;
 	int res_index = 0;
 	for (Ref<Resource> &r : saved_resources) {
 		if (r->is_built_in()) {

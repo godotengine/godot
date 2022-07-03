@@ -172,14 +172,16 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 	if (Object::cast_to<MultiMeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MultiMeshInstance3D *multimesh_instance = Object::cast_to<MultiMeshInstance3D>(p_node);
 		Ref<MultiMesh> multimesh = multimesh_instance->get_multimesh();
-		Ref<Mesh> mesh = multimesh->get_mesh();
-		if (mesh.is_valid()) {
-			int n = multimesh->get_visible_instance_count();
-			if (n == -1) {
-				n = multimesh->get_instance_count();
-			}
-			for (int i = 0; i < n; i++) {
-				_add_mesh(mesh, p_navmesh_transform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+		if (multimesh.is_valid()) {
+			Ref<Mesh> mesh = multimesh->get_mesh();
+			if (mesh.is_valid()) {
+				int n = multimesh->get_visible_instance_count();
+				if (n == -1) {
+					n = multimesh->get_instance_count();
+				}
+				for (int i = 0; i < n; i++) {
+					_add_mesh(mesh, p_navmesh_transform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+				}
 			}
 		}
 	}
@@ -445,8 +447,33 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.minRegionArea = (int)(p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size());
 	cfg.mergeRegionArea = (int)(p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size());
 	cfg.maxVertsPerPoly = (int)p_nav_mesh->get_verts_per_poly();
-	cfg.detailSampleDist = p_nav_mesh->get_detail_sample_distance() < 0.9f ? 0 : p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance();
+	cfg.detailSampleDist = MAX(p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_nav_mesh->get_cell_height() * p_nav_mesh->get_detail_sample_max_error();
+
+	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_nav_mesh->get_agent_height())) {
+		WARN_PRINT("Property agent_height is ceiled to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableClimb * cfg.ch, p_nav_mesh->get_agent_max_climb())) {
+		WARN_PRINT("Property agent_max_climb is floored to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableRadius * cfg.cs, p_nav_mesh->get_agent_radius())) {
+		WARN_PRINT("Property agent_radius is ceiled to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxEdgeLen * cfg.cs, p_nav_mesh->get_edge_max_length())) {
+		WARN_PRINT("Property edge_max_length is rounded to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.minRegionArea, p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size())) {
+		WARN_PRINT("Property region_min_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size())) {
+		WARN_PRINT("Property region_merge_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_nav_mesh->get_verts_per_poly())) {
+		WARN_PRINT("Property verts_per_poly is converted to int and loses precision.");
+	}
+	if (p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance() < 0.1f) {
+		WARN_PRINT("Property detail_sample_distance is clamped to 0.1 world units as the resulting value from multiplying with cell_size is too low.");
+	}
 
 	cfg.bmin[0] = bmin[0];
 	cfg.bmin[1] = bmin[1];
@@ -455,12 +482,35 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[1] = bmax[1];
 	cfg.bmax[2] = bmax[2];
 
+	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
+
+	bool aabb_has_no_volume = baking_aabb.has_no_volume();
+
+	if (!aabb_has_no_volume) {
+		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
+
+		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
+		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
+		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;
+		cfg.bmax[0] = cfg.bmin[0] + baking_aabb.size[0];
+		cfg.bmax[1] = cfg.bmin[1] + baking_aabb.size[1];
+		cfg.bmax[2] = cfg.bmin[2] + baking_aabb.size[2];
+	}
+
 #ifdef TOOLS_ENABLED
 	if (ep) {
 		ep->step(TTR("Calculating grid size..."), 2);
 	}
 #endif
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
+
+	// ~30000000 seems to be around sweetspot where Editor baking breaks
+	if ((cfg.width * cfg.height) > 30000000) {
+		WARN_PRINT("NavigationMesh baking process will likely fail."
+				   "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
+				   "\nIf baking does not fail, the resulting NavigationMesh will create serious pathfinding performance issues."
+				   "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry.");
+	}
 
 #ifdef TOOLS_ENABLED
 	if (ep) {
@@ -596,6 +646,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
+	// FIXME
+#endif
+#if 0
+	// After discussion on devchat disabled EditorProgress for now as it is not thread-safe and uses hacks and Main::iteration() for steps.
+	// EditorProgress randomly crashes the Engine when the bake function is used with a thread e.g. inside Editor with a tool script and procedural navigation
+	// This was not a problem in older versions as previously Godot was unable to (re)bake NavigationMesh at runtime.
+	// If EditorProgress is fixed and made thread-safe this should be enabled again.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 	}

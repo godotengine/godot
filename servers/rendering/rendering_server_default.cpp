@@ -179,10 +179,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 			print_line("GPU PROFILE (total " + rtos(total_time) + "ms): ");
 
 			float print_threshold = 0.01;
-			for (OrderedHashMap<String, float>::Element E = print_gpu_profile_task_time.front(); E; E = E.next()) {
-				double time = E.value() / double(print_frame_profile_frame_count);
+			for (const KeyValue<String, float> &E : print_gpu_profile_task_time) {
+				double time = E.value / double(print_frame_profile_frame_count);
 				if (time > print_threshold) {
-					print_line("\t-" + E.key() + ": " + rtos(time) + "ms");
+					print_line("\t-" + E.key + ": " + rtos(time) + "ms");
 				}
 			}
 			print_gpu_profile_task_time.clear();
@@ -313,7 +313,11 @@ RID RenderingServerDefault::get_test_cube() {
 }
 
 bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
-	return RSG::storage->has_os_feature(p_feature);
+	if (RSG::storage) {
+		return RSG::storage->has_os_feature(p_feature);
+	} else {
+		return false;
+	}
 }
 
 void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
@@ -321,11 +325,7 @@ void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 }
 
 bool RenderingServerDefault::is_low_end() const {
-	// FIXME: Commented out when rebasing vulkan branch on master,
-	// causes a crash, it seems rasterizer is not initialized yet the
-	// first time it's called.
-	//return RSG::rasterizer->is_low_end();
-	return false;
+	return RendererCompositor::is_low_end();
 }
 
 void RenderingServerDefault::_thread_exit() {
@@ -333,13 +333,10 @@ void RenderingServerDefault::_thread_exit() {
 }
 
 void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
-	if (!draw_pending.decrement()) {
-		_draw(p_swap_buffers, frame_step);
-	}
+	_draw(p_swap_buffers, frame_step);
 }
 
 void RenderingServerDefault::_thread_flush() {
-	draw_pending.decrement();
 }
 
 void RenderingServerDefault::_thread_callback(void *_instance) {
@@ -370,7 +367,6 @@ void RenderingServerDefault::_thread_loop() {
 
 void RenderingServerDefault::sync() {
 	if (create_thread) {
-		draw_pending.increment();
 		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
@@ -379,7 +375,6 @@ void RenderingServerDefault::sync() {
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	if (create_thread) {
-		draw_pending.increment();
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
 		_draw(p_swap_buffers, frame_step);
@@ -388,6 +383,8 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		command_queue(p_create_thread) {
+	RenderingServer::init();
+
 	create_thread = p_create_thread;
 
 	if (!p_create_thread) {
@@ -407,6 +404,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+	RSG::gi = RSG::rasterizer->get_gi();
 	RSG::storage = RSG::rasterizer->get_storage();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());

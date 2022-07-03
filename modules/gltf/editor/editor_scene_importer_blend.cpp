@@ -58,7 +58,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
-		const Map<StringName, Variant> &p_options, int p_bake_fps,
+		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// Get global paths for source and sink.
 
@@ -239,7 +239,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
-		const Map<StringName, Variant> &p_options) {
+		const HashMap<StringName, Variant> &p_options) {
 	if (p_path.get_extension().to_lower() != "blend") {
 		return true;
 	}
@@ -310,7 +310,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	Error err = OS::get_singleton()->execute(path, args, &pipe);
 	if (err != OK) {
 		if (r_err) {
-			*r_err = TTR("Can't excecute Blender binary.");
+			*r_err = TTR("Can't execute Blender binary.");
 		}
 		return false;
 	}

@@ -128,7 +128,7 @@ void IPUnix::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hos
 
 #if defined(UWP_ENABLED)
 
-void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
+void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
 	using namespace Windows::Networking;
 	using namespace Windows::Networking::Connectivity;
 
@@ -143,7 +143,7 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 		}
 
 		String name = hostname->RawName->Data();
-		Map<String, Interface_Info>::Element *E = r_interfaces->find(name);
+		HashMap<String, Interface_Info>::Element *E = r_interfaces->find(name);
 		if (!E) {
 			Interface_Info info;
 			info.name = name;
@@ -162,7 +162,7 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 
 #else
 
-void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
+void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
 	ULONG buf_size = 1024;
 	IP_ADAPTER_ADDRESSES *addrs;
 
@@ -212,7 +212,7 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 
 #else // UNIX
 
-void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
+void IPUnix::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
 	struct ifaddrs *ifAddrStruct = nullptr;
 	struct ifaddrs *ifa = nullptr;
 	int family;
@@ -230,7 +230,7 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 			continue;
 		}
 
-		Map<String, Interface_Info>::Element *E = r_interfaces->find(ifa->ifa_name);
+		HashMap<String, Interface_Info>::Iterator E = r_interfaces->find(ifa->ifa_name);
 		if (!E) {
 			Interface_Info info;
 			info.name = ifa->ifa_name;
@@ -240,7 +240,7 @@ void IPUnix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) con
 			ERR_CONTINUE(!E);
 		}
 
-		Interface_Info &info = E->get();
+		Interface_Info &info = E->value;
 		info.ip_addresses.push_front(_sockaddr2ip(ifa->ifa_addr));
 	}
 

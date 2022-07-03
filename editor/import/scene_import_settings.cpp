@@ -43,9 +43,9 @@
 class SceneImportSettingsData : public Object {
 	GDCLASS(SceneImportSettingsData, Object)
 	friend class SceneImportSettings;
-	Map<StringName, Variant> *settings = nullptr;
-	Map<StringName, Variant> current;
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> *settings = nullptr;
+	HashMap<StringName, Variant> current;
+	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	bool hide_options = false;
 	String path;
@@ -339,6 +339,8 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
 			} else if (Object::cast_to<AnimationPlayer>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(p_node)) {
+				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
@@ -501,7 +503,7 @@ void SceneImportSettings::_update_camera() {
 	camera->set_transform(xf);
 }
 
-void SceneImportSettings::_load_default_subresource_settings(Map<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
+void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category) {
 	if (base_subresource_settings.has(p_type)) {
 		Dictionary d = base_subresource_settings[p_type];
 		if (d.has(p_import_id)) {
@@ -617,6 +619,13 @@ SceneImportSettings *SceneImportSettings::get_singleton() {
 	return singleton;
 }
 
+Node *SceneImportSettings::get_selected_node() {
+	if (selected_id == "") {
+		return nullptr;
+	}
+	return node_map[selected_id].node;
+}
+
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
@@ -657,6 +666,8 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 				scene_import_settings_data->hide_options = editing_animation;
 			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
+				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;
@@ -852,7 +863,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 }
 
 void SceneImportSettings::_re_import() {
-	Map<StringName, Variant> main_settings;
+	HashMap<StringName, Variant> main_settings;
 
 	main_settings = defaults;
 	main_settings.erase("_subresources");
@@ -969,7 +980,11 @@ void SceneImportSettings::_save_path_changed(const String &p_path) {
 	}
 }
 
-void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, int p_id) {
+void SceneImportSettings::_browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 
 	String path = item->get_text(1);
@@ -1225,6 +1240,7 @@ SceneImportSettings::SceneImportSettings() {
 	data_mode = memnew(TabContainer);
 	tree_split->add_child(data_mode);
 	data_mode->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	data_mode->set_theme_type_variation("TabContainerOdd");
 
 	property_split = memnew(HSplitContainer);
 	tree_split->add_child(property_split);
@@ -1331,7 +1347,7 @@ SceneImportSettings::SceneImportSettings() {
 	add_child(external_paths);
 	external_path_tree = memnew(Tree);
 	external_paths->add_child(external_path_tree);
-	external_path_tree->connect("button_pressed", callable_mp(this, &SceneImportSettings::_browse_save_callback));
+	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettings::_browse_save_callback));
 	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettings::_save_dir_confirm));
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);
@@ -1349,7 +1365,7 @@ SceneImportSettings::SceneImportSettings() {
 	HBoxContainer *extension_hb = memnew(HBoxContainer);
 	save_path->get_vbox()->add_child(extension_hb);
 	extension_hb->add_spacer();
-	extension_hb->add_child(memnew(Label(TTR("Save Extension: "))));
+	extension_hb->add_child(memnew(Label(TTR("Save Extension:"))));
 	external_extension_type = memnew(OptionButton);
 	extension_hb->add_child(external_extension_type);
 	external_extension_type->add_item(TTR("Text: *.tres"));

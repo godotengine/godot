@@ -864,7 +864,11 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 	}
 }
 
-void ConnectionsDock::_rmb_pressed(Vector2 p_position) {
+void ConnectionsDock::_rmb_pressed(Vector2 p_position, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = tree->get_selected();
 
 	if (!item) {
@@ -1029,27 +1033,27 @@ void ConnectionsDock::update_tree() {
 				String descr;
 				bool found = false;
 
-				Map<StringName, Map<StringName, String>>::Element *G = descr_cache.find(base);
+				HashMap<StringName, HashMap<StringName, String>>::Iterator G = descr_cache.find(base);
 				if (G) {
-					Map<StringName, String>::Element *F = G->get().find(signal_name);
+					HashMap<StringName, String>::Iterator F = G->value.find(signal_name);
 					if (F) {
 						found = true;
-						descr = F->get();
+						descr = F->value;
 					}
 				}
 
 				if (!found) {
 					DocTools *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
+					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
 					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->get().signals.size(); i++) {
-							if (F->get().signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->get().signals[i].description);
+						for (int i = 0; i < F->value.signals.size(); i++) {
+							if (F->value.signals[i].name == signal_name.operator String()) {
+								descr = DTR(F->value.signals[i].description);
 								break;
 							}
 						}
-						if (!F->get().inherits.is_empty()) {
-							F = dd->class_list.find(F->get().inherits);
+						if (!F->value.inherits.is_empty()) {
+							F = dd->class_list.find(F->value.inherits);
 						} else {
 							break;
 						}
@@ -1122,7 +1126,7 @@ ConnectionsDock::ConnectionsDock() {
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter signals"));
+	search_box->set_placeholder(TTR("Filter Signals"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);
@@ -1166,7 +1170,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
-	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
+	tree->connect("item_mouse_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 

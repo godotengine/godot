@@ -753,40 +753,56 @@ struct _VariantCall {
 	static PackedInt32Array func_PackedByteArray_decode_s32_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedInt32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int32_t), dest, "Size didn't match array of size int32_t, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
 		return dest;
 	}
 
 	static PackedInt64Array func_PackedByteArray_decode_s64_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedInt64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(int64_t), dest, "Size didn't match array of size int64_t, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
 		return dest;
 	}
 
 	static PackedFloat32Array func_PackedByteArray_decode_float_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedFloat32Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(float), dest, "Size didn't match array of size float, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
 		return dest;
 	}
 
 	static PackedFloat64Array func_PackedByteArray_decode_double_array(PackedByteArray *p_instance) {
 		uint64_t size = p_instance->size();
 		PackedFloat64Array dest;
-		ERR_FAIL_COND_V_MSG(size < sizeof(double), dest, "Size didn't match array of size double, maybe you are trying to convert to the wrong type?");
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
-		memcpy(dest.ptrw(), r, size);
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
 		return dest;
 	}
 
@@ -919,11 +935,11 @@ struct _VariantCall {
 	}
 
 	struct ConstantData {
-		Map<StringName, int> value;
+		HashMap<StringName, int64_t> value;
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
-		Map<StringName, Variant> variant_value;
+		HashMap<StringName, Variant> variant_value;
 #ifdef DEBUG_ENABLED
 		List<StringName> variant_value_ordered;
 #endif
@@ -931,7 +947,7 @@ struct _VariantCall {
 
 	static ConstantData *constant_data;
 
-	static void add_constant(int p_type, StringName p_constant_name, int p_constant_value) {
+	static void add_constant(int p_type, StringName p_constant_name, int64_t p_constant_value) {
 		constant_data[p_type].value[p_constant_name] = p_constant_value;
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
@@ -944,9 +960,20 @@ struct _VariantCall {
 		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
 #endif
 	}
+
+	struct EnumData {
+		HashMap<StringName, HashMap<StringName, int>> value;
+	};
+
+	static EnumData *enum_data;
+
+	static void add_enum_constant(int p_type, StringName p_enum_type_name, StringName p_enumeration_name, int p_enum_value) {
+		enum_data[p_type].value[p_enum_type_name][p_enumeration_name] = p_enum_value;
+	}
 };
 
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
+_VariantCall::EnumData *_VariantCall::enum_data = nullptr;
 
 struct VariantBuiltInMethodInfo {
 	void (*call)(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
@@ -1020,6 +1047,37 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 #endif
 		r_ret = _get_obj().obj->callp(p_method, p_args, p_argcount, r_error);
 
+	} else {
+		r_error.error = Callable::CallError::CALL_OK;
+
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+
+		if (!imf) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return;
+		}
+
+		imf->call(this, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
+	}
+}
+
+void Variant::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+	if (type == Variant::OBJECT) {
+		//call object
+		Object *obj = _get_obj().obj;
+		if (!obj) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			return;
+		}
+#ifdef DEBUG_ENABLED
+		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			return;
+		}
+
+#endif
+		r_ret = _get_obj().obj->call_const(p_method, p_args, p_argcount, r_error);
+
 		//else if (type==Variant::METHOD) {
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
@@ -1028,6 +1086,11 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return;
+		}
+
+		if (!imf->is_const) {
+			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
 			return;
 		}
 
@@ -1170,19 +1233,19 @@ uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
 	ERR_FAIL_COND_V(!method, 0);
-	uint32_t hash = hash_djb2_one_32(method->is_const);
-	hash = hash_djb2_one_32(method->is_static, hash);
-	hash = hash_djb2_one_32(method->is_vararg, hash);
-	hash = hash_djb2_one_32(method->has_return_type, hash);
+	uint32_t hash = hash_murmur3_one_32(method->is_const);
+	hash = hash_murmur3_one_32(method->is_static, hash);
+	hash = hash_murmur3_one_32(method->is_vararg, hash);
+	hash = hash_murmur3_one_32(method->has_return_type, hash);
 	if (method->has_return_type) {
-		hash = hash_djb2_one_32(method->return_type, hash);
+		hash = hash_murmur3_one_32(method->return_type, hash);
 	}
-	hash = hash_djb2_one_32(method->argument_count, hash);
+	hash = hash_murmur3_one_32(method->argument_count, hash);
 	for (int i = 0; i < method->argument_count; i++) {
-		hash = method->get_argument_type(i);
+		hash = hash_murmur3_one_32(method->get_argument_type(i), hash);
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 }
 
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
@@ -1245,7 +1308,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 	for (const List<StringName>::Element *E = cd.value_ordered.front(); E; E = E->next()) {
 		p_constants->push_back(E->get());
 #else
-	for (const KeyValue<StringName, int> &E : cd.value) {
+	for (const KeyValue<StringName, int64_t> &E : cd.value) {
 		p_constants->push_back(E.key);
 #endif
 	}
@@ -1281,14 +1344,14 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
 
-	Map<StringName, int>::Element *E = cd.value.find(p_value);
+	HashMap<StringName, int64_t>::Iterator E = cd.value.find(p_value);
 	if (!E) {
-		Map<StringName, Variant>::Element *F = cd.variant_value.find(p_value);
+		HashMap<StringName, Variant>::Iterator F = cd.variant_value.find(p_value);
 		if (F) {
 			if (r_valid) {
 				*r_valid = true;
 			}
-			return F->get();
+			return F->value;
 		} else {
 			return -1;
 		}
@@ -1297,7 +1360,55 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 		*r_valid = true;
 	}
 
-	return E->get();
+	return E->value;
+}
+
+void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
+		p_enums->push_back(E.key);
+	}
+}
+
+void Variant::get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations) {
+	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
+
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+
+	for (const KeyValue<StringName, HashMap<StringName, int>> &E : enum_data.value) {
+		for (const KeyValue<StringName, int> &V : E.value) {
+			p_enumerations->push_back(V.key);
+		}
+	}
+}
+
+int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid) {
+	if (r_valid) {
+		*r_valid = false;
+	}
+
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
+
+	_VariantCall::EnumData &enum_data = _VariantCall::enum_data[p_type];
+
+	HashMap<StringName, HashMap<StringName, int>>::Iterator E = enum_data.value.find(p_enum_name);
+	if (!E) {
+		return -1;
+	}
+
+	HashMap<StringName, int>::Iterator V = E->value.find(p_enumeration);
+	if (!V) {
+		return -1;
+	}
+
+	if (r_valid) {
+		*r_valid = true;
+	}
+
+	return V->value;
 }
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -1360,6 +1471,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 
 static void _register_variant_builtin_methods() {
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
+	_VariantCall::enum_data = memnew_arr(_VariantCall::EnumData, Variant::VARIANT_MAX);
 	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
 	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
 
@@ -1402,8 +1514,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, to_upper, sarray(), varray());
 	bind_method(String, to_lower, sarray(), varray());
 
-	bind_method(String, left, sarray("position"), varray());
-	bind_method(String, right, sarray("position"), varray());
+	bind_method(String, left, sarray("length"), varray());
+	bind_method(String, right, sarray("length"), varray());
 
 	bind_method(String, strip_edges, sarray("left", "right"), varray(true, true));
 	bind_method(String, strip_escapes, sarray(), varray());
@@ -1472,6 +1584,10 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(String, chr, sarray("char"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
 
+	/* StringName */
+
+	bind_method(StringName, hash, sarray(), varray());
+
 	/* Vector2 */
 
 	bind_method(Vector2, angle, sarray(), varray());
@@ -1492,6 +1608,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector2, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector2, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector2, max_axis_index, sarray(), varray());
 	bind_method(Vector2, min_axis_index, sarray(), varray());
 	bind_method(Vector2, move_toward, sarray("to", "delta"), varray());
@@ -1579,6 +1696,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector3, bezier_interpolate, sarray("control_1", "control_2", "end", "t"), varray());
 	bind_method(Vector3, move_toward, sarray("to", "delta"), varray());
 	bind_method(Vector3, dot, sarray("with"), varray());
 	bind_method(Vector3, cross, sarray("with"), varray());
@@ -1671,6 +1789,8 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Color, get_named_color, sarray("idx"), varray());
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
+	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
+
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
 
 	/* RID */
@@ -1684,7 +1804,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_name_count, sarray(), varray());
 	bind_method(NodePath, get_name, sarray("idx"), varray());
 	bind_method(NodePath, get_subname_count, sarray(), varray());
+	bind_method(NodePath, hash, sarray(), varray());
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
+	bind_method(NodePath, get_concatenated_names, sarray(), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
@@ -1808,6 +1930,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, size, sarray(), varray());
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
+	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
 	bind_method(Dictionary, erase, sarray("key"), varray());
@@ -1853,6 +1976,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, filter, sarray("method"), varray());
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
+	bind_method(Array, any, sarray("method"), varray());
+	bind_method(Array, all, sarray("method"), varray());
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
 
@@ -1873,6 +1998,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedByteArray, sort, sarray(), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
+	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedByteArray, count, sarray("value"), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
@@ -1935,6 +2063,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt32Array, sort, sarray(), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt32Array, duplicate, sarray(), varray());
+	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt32Array, count, sarray("value"), varray());
 
 	/* Int64 Array */
 
@@ -1955,6 +2086,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedInt64Array, sort, sarray(), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedInt64Array, duplicate, sarray(), varray());
+	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedInt64Array, count, sarray("value"), varray());
 
 	/* Float32 Array */
 
@@ -1975,6 +2109,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat32Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat32Array, count, sarray("value"), varray());
 
 	/* Float64 Array */
 
@@ -1995,6 +2132,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedFloat64Array, duplicate, sarray(), varray());
+	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedFloat64Array, count, sarray("value"), varray());
 
 	/* String Array */
 
@@ -2015,6 +2155,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());
+	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedStringArray, count, sarray("value"), varray());
 
 	/* Vector2 Array */
 
@@ -2035,6 +2178,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector2Array, sort, sarray(), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector2Array, duplicate, sarray(), varray());
+	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector2Array, count, sarray("value"), varray());
 
 	/* Vector3 Array */
 
@@ -2055,6 +2201,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedVector3Array, sort, sarray(), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedVector3Array, duplicate, sarray(), varray());
+	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector3Array, count, sarray("value"), varray());
 
 	/* Color Array */
 
@@ -2075,6 +2224,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, sort, sarray(), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedColorArray, duplicate, sarray(), varray());
+	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
+	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedColorArray, count, sarray("value"), varray());
 
 	/* Register constants */
 
@@ -2086,6 +2238,10 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
+
+	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_X", Vector3::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_Y", Vector3::AXIS_Y);
+	_VariantCall::add_enum_constant(Variant::VECTOR3, "Axis", "AXIS_Z", Vector3::AXIS_Z);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
@@ -2101,6 +2257,10 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Y", Vector3i::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3I, "AXIS_Z", Vector3i::AXIS_Z);
 
+	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
+	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Z", Vector3i::AXIS_Z);
+
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
@@ -2113,8 +2273,14 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
 
+	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_X", Vector2::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_Y", Vector2::AXIS_Y);
+
 	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_X", Vector2i::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2I, "AXIS_Y", Vector2i::AXIS_Y);
+
+	_VariantCall::add_enum_constant(Variant::VECTOR2I, "Axis", "AXIS_X", Vector2i::AXIS_X);
+	_VariantCall::add_enum_constant(Variant::VECTOR2I, "Axis", "AXIS_Y", Vector2i::AXIS_Y);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
@@ -2137,6 +2303,13 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_YZX", Basis::EULER_ORDER_YZX);
 	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZXY", Basis::EULER_ORDER_ZXY);
 	_VariantCall::add_constant(Variant::BASIS, "EULER_ORDER_ZYX", Basis::EULER_ORDER_ZYX);
+
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_XYZ", Basis::EULER_ORDER_XYZ);
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_XZY", Basis::EULER_ORDER_XZY);
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_YXZ", Basis::EULER_ORDER_YXZ);
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_YZX", Basis::EULER_ORDER_YZX);
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_ZXY", Basis::EULER_ORDER_ZXY);
+	_VariantCall::add_enum_constant(Variant::BASIS, "EulerOrder", "EULER_ORDER_ZYX", Basis::EULER_ORDER_ZYX);
 
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
@@ -2176,4 +2349,5 @@ void Variant::_unregister_variant_methods() {
 	memdelete_arr(builtin_method_names);
 	memdelete_arr(builtin_method_info);
 	memdelete_arr(_VariantCall::constant_data);
+	memdelete_arr(_VariantCall::enum_data);
 }

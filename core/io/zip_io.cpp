@@ -31,18 +31,19 @@
 #include "zip_io.h"
 
 void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
-	ZipIOData *zd = (ZipIOData *)opaque;
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, nullptr);
 
 	String fname;
 	fname.parse_utf8(p_fname);
 
 	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
-		zd->f = FileAccess::open(fname, FileAccess::WRITE);
+		(*fa) = FileAccess::open(fname, FileAccess::WRITE);
 	} else {
-		zd->f = FileAccess::open(fname, FileAccess::READ);
+		(*fa) = FileAccess::open(fname, FileAccess::READ);
 	}
 
-	if (zd->f.is_null()) {
+	if (fa->is_null()) {
 		return nullptr;
 	}
 
@@ -50,49 +51,66 @@ void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 }
 
 uLong zipio_read(voidpf opaque, voidpf stream, void *buf, uLong size) {
-	ZipIOData *zd = (ZipIOData *)opaque;
-	return zd->f->get_buffer((uint8_t *)buf, size);
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
+
+	return (*fa)->get_buffer((uint8_t *)buf, size);
 }
 
 uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
-	ZipIOData *zd = (ZipIOData *)opaque;
-	zd->f->store_buffer((uint8_t *)buf, size);
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
+
+	(*fa)->store_buffer((uint8_t *)buf, size);
 	return size;
 }
 
 long zipio_tell(voidpf opaque, voidpf stream) {
-	ZipIOData *zd = (ZipIOData *)opaque;
-	return zd->f->get_position();
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
+
+	return (*fa)->get_position();
 }
 
 long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-	ZipIOData *zd = (ZipIOData *)opaque;
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	uint64_t pos = offset;
 	switch (origin) {
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = zd->f->get_position() + offset;
+			pos = (*fa)->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = zd->f->get_length() + offset;
+			pos = (*fa)->get_length() + offset;
 			break;
 		default:
 			break;
 	}
 
-	zd->f->seek(pos);
+	(*fa)->seek(pos);
 	return 0;
 }
 
 int zipio_close(voidpf opaque, voidpf stream) {
-	ZipIOData *zd = (ZipIOData *)opaque;
-	memdelete(zd);
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 0);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
+
+	fa->unref();
 	return 0;
 }
 
 int zipio_testerror(voidpf opaque, voidpf stream) {
-	ZipIOData *zd = (ZipIOData *)opaque;
-	return (zd->f.is_valid() && zd->f->get_error() != OK) ? 1 : 0;
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+	ERR_FAIL_COND_V(fa == nullptr, 1);
+	ERR_FAIL_COND_V(fa->is_null(), 0);
+
+	return (fa->is_valid() && (*fa)->get_error() != OK) ? 1 : 0;
 }
 
 voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
@@ -105,9 +123,9 @@ void zipio_free(voidpf opaque, voidpf address) {
 	memfree(address);
 }
 
-zlib_filefunc_def zipio_create_io() {
+zlib_filefunc_def zipio_create_io(Ref<FileAccess> *p_data) {
 	zlib_filefunc_def io;
-	io.opaque = (void *)memnew(ZipIOData);
+	io.opaque = (void *)p_data;
 	io.zopen_file = zipio_open;
 	io.zread_file = zipio_read;
 	io.zwrite_file = zipio_write;

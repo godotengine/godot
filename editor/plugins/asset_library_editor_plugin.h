@@ -252,7 +252,7 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	int last_queue_id;
-	Map<int, ImageQueue> image_queue;
+	HashMap<int, ImageQueue> image_queue;
 
 	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
@@ -301,6 +301,8 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_external_asset(String p_zip_path, String p_title);
 
+	void _update_asset_items_columns();
+
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
 
@@ -321,6 +323,8 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 	EditorAssetLibrary *addon_library = nullptr;
 
 public:
+	static bool is_available();
+
 	virtual String get_name() const override { return "AssetLib"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}

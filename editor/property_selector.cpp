@@ -366,11 +366,11 @@ void PropertySelector::_item_selected() {
 	String text;
 	if (properties) {
 		while (!class_type.is_empty()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
+			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->get().properties.size(); i++) {
-					if (E->get().properties[i].name == name) {
-						text = DTR(E->get().properties[i].description);
+				for (int i = 0; i < E->value.properties.size(); i++) {
+					if (E->value.properties[i].name == name) {
+						text = DTR(E->value.properties[i].description);
 						break;
 					}
 				}
@@ -385,11 +385,11 @@ void PropertySelector::_item_selected() {
 		}
 	} else {
 		while (!class_type.is_empty()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
+			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->get().methods.size(); i++) {
-					if (E->get().methods[i].name == name) {
-						text = DTR(E->get().methods[i].description);
+				for (int i = 0; i < E->value.methods.size(); i++) {
+					if (E->value.methods[i].name == name) {
+						text = DTR(E->value.methods[i].description);
 						break;
 					}
 				}

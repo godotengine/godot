@@ -4,7 +4,9 @@
 
 import argparse
 import os
+import platform
 import re
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
@@ -55,9 +57,11 @@ BASE_STRINGS = [
 ]
 strings_l10n = {}
 
+STYLES = {}
+
 
 def print_error(error, state):  # type: (str, State) -> None
-    print("ERROR: {}".format(error))
+    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
     state.num_errors += 1
 
 
@@ -399,10 +403,26 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 
 
 def main():  # type: () -> None
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://bugs.python.org/issue29059>
+    if platform.system().lower() == "windows":
+        from ctypes import windll, c_int, byref
+
+        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+        mode = c_int(0)
+        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+        mode = c_int(mode.value | 4)
+        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
+    parser.add_argument(
+        "--color",
+        action="store_true",
+        help="If passed, force colored output even if stdout is not a TTY (useful for continuous integration).",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -411,6 +431,13 @@ def main():  # type: () -> None
         help="If passed, no output will be generated and XML files are only checked for errors.",
     )
     args = parser.parse_args()
+
+    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    STYLES["red"] = "\x1b[91m" if should_color else ""
+    STYLES["green"] = "\x1b[92m" if should_color else ""
+    STYLES["bold"] = "\x1b[1m" if should_color else ""
+    STYLES["regular"] = "\x1b[22m" if should_color else ""
+    STYLES["reset"] = "\x1b[0m" if should_color else ""
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -464,17 +491,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("{}.xml: Parse error while reading the file: {}".format(cur_file, e), state)
+            print_error("{}: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error('{}.xml: "version" attribute missing from "doc".'.format(cur_file), state)
+            print_error('{}: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error('{}.xml: Duplicate class "{}".'.format(cur_file, name), state)
+            print_error('{}: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
@@ -499,16 +526,22 @@ def main():  # type: () -> None
         make_rst_class(class_def, state, args.dry_run, args.output)
 
     if state.num_errors == 0:
-        print("No errors found in the class reference XML.")
+        print("{}No errors found in the class reference XML.{}".format(STYLES["green"], STYLES["reset"]))
         if not args.dry_run:
             print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         if state.num_errors >= 2:
             print(
-                "%d errors were found in the class reference XML. Please check the messages above." % state.num_errors
+                "{}{} errors were found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], state.num_errors, STYLES["reset"]
+                )
             )
         else:
-            print("1 error was found in the class reference XML. Please check the messages above.")
+            print(
+                "{}1 error was found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], STYLES["reset"]
+                )
+            )
         exit(1)
 
 
@@ -677,7 +710,8 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
-                    f.write(" --- " + rstize_text(value.text.strip(), state))
+                    # If value.text contains a bullet point list, each entry needs additional indentation
+                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), state)))
 
                 f.write("\n\n")
 
@@ -879,9 +913,9 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
 
         if to_skip > indent_level:
             print_error(
-                "{}.xml: Four spaces should be used for indentation within ["
-                + code_type
-                + "].".format(state.current_class),
+                "{}.xml: Four spaces should be used for indentation within [{}].".format(
+                    state.current_class, code_type
+                ),
                 state,
             )
 
@@ -904,7 +938,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         pre_text = text[:pos]
         indent_level = 0
-        while text[pos + 1] == "\t":
+        while pos + 1 < len(text) and text[pos + 1] == "\t":
             pos += 1
             indent_level += 1
         post_text = text[pos + 1 :]
@@ -1409,6 +1443,8 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
         clear_name = "div"
     elif clear_name == "%":
         clear_name = "mod"
+    elif clear_name == "**":
+        clear_name = "pow"
 
     elif clear_name == "unary+":
         clear_name = "unplus"
@@ -1436,6 +1472,25 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
         print_error('Unsupported operator type "{}", please add the missing rule.'.format(dirty_name), state)
 
     return clear_name
+
+
+def indent_bullets(text):  # type: (str) -> str
+    # Take the text and check each line for a bullet point represented by "-".
+    # Where found, indent the given line by a further "\t".
+    # Used to properly indent bullet points contained in the description for enum values.
+    # Ignore the first line - text will be prepended to it so bullet points wouldn't work anyway.
+    bullet_points = "-"
+
+    lines = text.splitlines(keepends=True)
+    for line_index, line in enumerate(lines[1:], start=1):
+        pos = 0
+        while pos < len(line) and line[pos] == "\t":
+            pos += 1
+
+        if pos < len(line) and line[pos] in bullet_points:
+            lines[line_index] = line[:pos] + "\t" + line[pos:]
+
+    return "".join(lines)
 
 
 if __name__ == "__main__":

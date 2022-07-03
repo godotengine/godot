@@ -84,7 +84,7 @@ void Material::inspect_native_shader_code() {
 	SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 	RID shader = get_shader_rid();
 	if (st && shader.is_valid()) {
-		st->call_group("_native_shader_source_visualizer", "_inspect_shader", shader);
+		st->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_native_shader_source_visualizer", "_inspect_shader", shader);
 	}
 }
 
@@ -187,9 +187,9 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 
 		if (pr) {
-			const Map<StringName, Variant>::Element *E = param_cache.find(pr);
+			HashMap<StringName, Variant>::ConstIterator E = param_cache.find(pr);
 			if (E) {
-				r_ret = E->get();
+				r_ret = E->value;
 			} else {
 				r_ret = Variant();
 			}
@@ -348,7 +348,7 @@ ShaderMaterial::~ShaderMaterial() {
 
 Mutex BaseMaterial3D::material_mutex;
 SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = nullptr;
-Map<BaseMaterial3D::MaterialKey, BaseMaterial3D::ShaderData> BaseMaterial3D::shader_map;
+HashMap<BaseMaterial3D::MaterialKey, BaseMaterial3D::ShaderData, BaseMaterial3D::MaterialKey> BaseMaterial3D::shader_map;
 BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = nullptr;
 
 void BaseMaterial3D::init_shaders() {
@@ -472,24 +472,33 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	String texfilter_str;
+	// Force linear filtering for the heightmap texture, as the heightmap effect
+	// looks broken with nearest-neighbor filtering (with and without Deep Parallax).
+	String texfilter_height_str;
 	switch (texture_filter) {
 		case TEXTURE_FILTER_NEAREST:
 			texfilter_str = "filter_nearest";
+			texfilter_height_str = "filter_linear";
 			break;
 		case TEXTURE_FILTER_LINEAR:
 			texfilter_str = "filter_linear";
+			texfilter_height_str = "filter_linear";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
 			texfilter_str = "filter_nearest_mipmap";
+			texfilter_height_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
 			texfilter_str = "filter_linear_mipmap";
+			texfilter_height_str = "filter_linear_mipmap";
 			break;
 		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
 			texfilter_str = "filter_nearest_mipmap_anisotropic";
+			texfilter_height_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
 			texfilter_str = "filter_linear_mipmap_anisotropic";
+			texfilter_height_str = "filter_linear_mipmap_anisotropic";
 			break;
 		case TEXTURE_FILTER_MAX:
 			break; // Internal value, skip.
@@ -497,8 +506,10 @@ void BaseMaterial3D::_update_shader() {
 
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {
 		texfilter_str += ",repeat_enable";
+		texfilter_height_str += ",repeat_enable";
 	} else {
 		texfilter_str += ",repeat_disable";
+		texfilter_height_str += ",repeat_disable";
 	}
 
 	//must create a shader!
@@ -631,8 +642,8 @@ void BaseMaterial3D::_update_shader() {
 
 	code += ";\n";
 
-	code += "uniform vec4 albedo : hint_color;\n";
-	code += "uniform sampler2D texture_albedo : hint_albedo," + texfilter_str + ";\n";
+	code += "uniform vec4 albedo : source_color;\n";
+	code += "uniform sampler2D texture_albedo : source_color," + texfilter_str + ";\n";
 	if (grow_enabled) {
 		code += "uniform float grow;\n";
 	}
@@ -669,7 +680,7 @@ void BaseMaterial3D::_update_shader() {
 	//TODO ALL HINTS
 	if (!orm) {
 		code += "uniform float roughness : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_metallic : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_metallic : hint_default_white," + texfilter_str + ";\n";
 		code += "uniform vec4 metallic_texture_channel;\n";
 		switch (roughness_texture_channel) {
 			case TEXTURE_CHANNEL_RED: {
@@ -704,8 +715,8 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (features[FEATURE_EMISSION]) {
-		code += "uniform sampler2D texture_emission : hint_black_albedo," + texfilter_str + ";\n";
-		code += "uniform vec4 emission : hint_color;\n";
+		code += "uniform sampler2D texture_emission : source_color, hint_default_black," + texfilter_str + ";\n";
+		code += "uniform vec4 emission : source_color;\n";
 		code += "uniform float emission_energy;\n";
 	}
 
@@ -722,48 +733,48 @@ void BaseMaterial3D::_update_shader() {
 	if (features[FEATURE_RIM]) {
 		code += "uniform float rim : hint_range(0,1);\n";
 		code += "uniform float rim_tint : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_rim : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_rim : hint_default_white," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_CLEARCOAT]) {
 		code += "uniform float clearcoat : hint_range(0,1);\n";
 		code += "uniform float clearcoat_roughness : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_clearcoat : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_clearcoat : hint_default_white," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_ANISOTROPY]) {
 		code += "uniform float anisotropy_ratio : hint_range(0,256);\n";
 		code += "uniform sampler2D texture_flowmap : hint_anisotropy," + texfilter_str + ";\n";
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
-		code += "uniform sampler2D texture_ambient_occlusion : hint_white, " + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_ambient_occlusion : hint_default_white, " + texfilter_str + ";\n";
 		code += "uniform vec4 ao_texture_channel;\n";
 		code += "uniform float ao_light_affect;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
-		code += "uniform sampler2D texture_detail_albedo : hint_albedo," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_detail_albedo : source_color," + texfilter_str + ";\n";
 		code += "uniform sampler2D texture_detail_normal : hint_normal," + texfilter_str + ";\n";
-		code += "uniform sampler2D texture_detail_mask : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_detail_mask : hint_default_white," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
 		code += "uniform float subsurface_scattering_strength : hint_range(0,1);\n";
-		code += "uniform sampler2D texture_subsurface_scattering : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_subsurface_scattering : hint_default_white," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_TRANSMITTANCE]) {
-		code += "uniform vec4 transmittance_color : hint_color;\n";
+		code += "uniform vec4 transmittance_color : source_color;\n";
 		code += "uniform float transmittance_depth;\n";
-		code += "uniform sampler2D texture_subsurface_transmittance : hint_white," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_subsurface_transmittance : hint_default_white," + texfilter_str + ";\n";
 		code += "uniform float transmittance_boost;\n";
 	}
 
 	if (features[FEATURE_BACKLIGHT]) {
-		code += "uniform vec4 backlight : hint_color;\n";
-		code += "uniform sampler2D texture_backlight : hint_black," + texfilter_str + ";\n";
+		code += "uniform vec4 backlight : source_color;\n";
+		code += "uniform sampler2D texture_backlight : hint_default_black," + texfilter_str + ";\n";
 	}
 
 	if (features[FEATURE_HEIGHT_MAPPING]) {
-		code += "uniform sampler2D texture_heightmap : hint_black," + texfilter_str + ";\n";
+		code += "uniform sampler2D texture_heightmap : hint_default_black," + texfilter_height_str + ";\n";
 		code += "uniform float heightmap_scale;\n";
 		code += "uniform int heightmap_min_layers;\n";
 		code += "uniform int heightmap_max_layers;\n";
@@ -1788,8 +1799,6 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 
 	_validate_high_end("refraction", property);
 	_validate_high_end("subsurf_scatter", property);
-	_validate_high_end("anisotropy", property);
-	_validate_high_end("clearcoat", property);
 	_validate_high_end("heightmap", property);
 
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
@@ -2200,7 +2209,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transpar
 	if (p_fixed_size) {
 		hash |= 1 << 9;
 	}
-	hash = hash_djb2_one_64(p_filter, hash);
+	hash = hash_murmur3_one_64(p_filter, hash);
 
 	if (materials_for_2d.has(hash)) {
 		if (r_shader_rid) {
@@ -2559,8 +2568,8 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Albedo", "albedo_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "albedo_color"), "set_albedo", "get_albedo");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "albedo_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ALBEDO);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_tex_force_srgb"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_tex_msdf"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_MSDF);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_texture_force_srgb"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "albedo_texture_msdf"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_MSDF);
 
 	ADD_GROUP("ORM", "orm_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orm_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
@@ -2657,14 +2666,14 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_DETAIL_NORMAL);
 
 	ADD_GROUP("UV1", "uv1_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale"), "set_uv1_scale", "get_uv1_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_scale", PROPERTY_HINT_LINK), "set_uv1_scale", "get_uv1_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv1_offset"), "set_uv1_offset", "get_uv1_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_TRIPLANAR);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv1_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv1_triplanar_blend_sharpness", "get_uv1_triplanar_blend_sharpness");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv1_world_triplanar"), "set_flag", "get_flag", FLAG_UV1_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("UV2", "uv2_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_scale"), "set_uv2_scale", "get_uv2_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_scale", PROPERTY_HINT_LINK), "set_uv2_scale", "get_uv2_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "uv2_offset"), "set_uv2_offset", "get_uv2_offset");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_TRIPLANAR);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
@@ -2689,22 +2698,22 @@ void BaseMaterial3D::_bind_methods() {
 
 	ADD_GROUP("Grow", "grow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "grow"), "set_grow_enabled", "is_grow_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001,suffix:m"), "set_grow", "get_grow");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_point_size"), "set_flag", "get_flag", FLAG_USE_POINT_SIZE);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1,suffix:px"), "set_point_size", "get_point_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "1,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
@@ -2967,7 +2976,7 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "flags_no_depth_test", "no_depth_test" },
 			{ "flags_use_point_size", "use_point_size" },
 			{ "flags_fixed_size", "fixed_Size" },
-			{ "flags_albedo_tex_force_srg", "albedo_tex_force_srgb" },
+			{ "flags_albedo_tex_force_srgb", "albedo_texture_force_srgb" },
 			{ "flags_do_not_receive_shadows", "disable_receive_shadows" },
 			{ "flags_disable_ambient_light", "disable_ambient_light" },
 			{ "params_diffuse_mode", "diffuse_mode" },

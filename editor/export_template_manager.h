@@ -109,7 +109,7 @@ class ExportTemplateManager : public AcceptDialog {
 
 	String _get_selected_mirror() const;
 	void _mirror_options_button_cbk(int p_id);
-	void _installed_table_button_cbk(Object *p_item, int p_column, int p_id);
+	void _installed_table_button_cbk(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void _open_template_folder(const String &p_version);
 

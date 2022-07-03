@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef ANDROID_EXPORT_PLUGIN_H
+#define ANDROID_EXPORT_PLUGIN_H
+
 #include "godot_plugin_config.h"
 
 #include "core/io/zip_io.h"
@@ -228,9 +231,11 @@ public:
 
 	virtual void get_platform_features(List<String> *r_features) override;
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
 	EditorExportPlatformAndroid();
 
 	~EditorExportPlatformAndroid();
 };
+
+#endif // ANDROID_EXPORT_PLUGIN_H

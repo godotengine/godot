@@ -57,6 +57,11 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#ifdef DEBUG_ENABLED
+// forward error messages to OutputDebugString
+#define WINDOWS_DEBUG_OUTPUT_ENABLED
+#endif
+
 class JoypadWindows;
 class OS_Windows : public OS {
 #ifdef STDOUT_FILE
@@ -81,6 +86,10 @@ class OS_Windows : public OS {
 
 	CrashHandler crash_handler;
 
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	ErrorHandlerList error_handlers;
+#endif
+
 	bool force_quit;
 	HWND main_window;
 
@@ -101,7 +110,7 @@ protected:
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};
-	Map<ProcessID, ProcessInfo> *process_map;
+	HashMap<ProcessID, ProcessInfo> *process_map;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;

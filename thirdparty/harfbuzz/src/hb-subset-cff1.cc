@@ -169,7 +169,7 @@ struct cff1_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<cff1_top_dic
 	  supp_op.op = op;
 	  if ( unlikely (!(opstr.str.length >= opstr.last_arg_offset + 3)))
 	    return_trace (false);
-	  supp_op.str = byte_str_t (&opstr.str + opstr.last_arg_offset, opstr.str.length - opstr.last_arg_offset);
+	  supp_op.str = hb_ubytes_t (&opstr.str + opstr.last_arg_offset, opstr.str.length - opstr.last_arg_offset);
 	  return_trace (UnsizedByteStr::serialize_int2 (c, mod.nameSIDs[name_dict_values_t::registry]) &&
 			UnsizedByteStr::serialize_int2 (c, mod.nameSIDs[name_dict_values_t::ordering]) &&
 			copy_opstr (c, supp_op));
@@ -270,13 +270,13 @@ struct range_list_t : hb_vector_t<code_pair_t>
   /* replace the first glyph ID in the "glyph" field each range with a nLeft value */
   bool complete (unsigned int last_glyph)
   {
-    bool  two_byte = false;
-    for (unsigned int i = (*this).length; i > 0; i--)
+    bool two_byte = false;
+    unsigned count = this->length;
+    for (unsigned int i = count; i; i--)
     {
-      code_pair_t &pair = (*this)[i - 1];
-      unsigned int  nLeft = last_glyph - pair.glyph - 1;
-      if (nLeft >= 0x100)
-	two_byte = true;
+      code_pair_t &pair = arrayZ[i - 1];
+      unsigned int nLeft = last_glyph - pair.glyph - 1;
+      two_byte |= nLeft >= 0x100;
       last_glyph = pair.glyph;
       pair.glyph = nLeft;
     }
@@ -442,6 +442,9 @@ struct cff_subset_plan {
       return;
     }
 
+    bool use_glyph_to_sid_map = plan->num_output_glyphs () > plan->source->get_num_glyphs () / 8.;
+    hb_map_t *glyph_to_sid_map = use_glyph_to_sid_map ? acc.create_glyph_to_sid_map () : nullptr;
+
     unsigned int glyph;
     for (glyph = 1; glyph < plan->num_output_glyphs (); glyph++)
     {
@@ -451,7 +454,7 @@ struct cff_subset_plan {
 	/* Retain the SID for the old missing glyph ID */
 	old_glyph = glyph;
       }
-      sid = acc.glyph_to_sid (old_glyph);
+      sid = glyph_to_sid_map ? glyph_to_sid_map->get (old_glyph) : acc.glyph_to_sid (old_glyph);
 
       if (!acc.is_CID ())
 	sid = sidmap.add (sid);
@@ -463,6 +466,9 @@ struct cff_subset_plan {
       }
       last_sid = sid;
     }
+
+    if (glyph_to_sid_map)
+      hb_map_destroy (glyph_to_sid_map);
 
     bool two_byte = subset_charset_ranges.complete (glyph);
 

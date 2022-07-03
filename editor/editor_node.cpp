@@ -134,6 +134,7 @@
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/bit_map_editor_plugin.h"
+#include "editor/plugins/bone_map_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
@@ -215,12 +216,12 @@ static const String META_TEXT_TO_COPY = "text_to_copy";
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
 	// Keep track of a list of "index sets," i.e. sets of indices
 	// within disambiguated_scene_names which contain the same name.
-	Vector<Set<int>> index_sets;
-	Map<String, int> scene_name_to_set_index;
+	Vector<RBSet<int>> index_sets;
+	HashMap<String, int> scene_name_to_set_index;
 	for (int i = 0; i < r_filenames.size(); i++) {
 		String scene_name = r_filenames[i];
 		if (!scene_name_to_set_index.has(scene_name)) {
-			index_sets.append(Set<int>());
+			index_sets.append(RBSet<int>());
 			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
 		}
 		index_sets.write[scene_name_to_set_index[scene_name]].insert(i);
@@ -228,11 +229,11 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 	// For each index set with a size > 1, we need to disambiguate.
 	for (int i = 0; i < index_sets.size(); i++) {
-		Set<int> iset = index_sets[i];
+		RBSet<int> iset = index_sets[i];
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
-			for (Set<int>::Element *E = iset.front(); E; E = E->next()) {
-				int set_idx = E->get();
+			for (const int &E : iset) {
+				int set_idx = E;
 				String scene_name = r_filenames[set_idx];
 				String full_path = p_full_paths[set_idx];
 
@@ -266,22 +267,22 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 			// Loop back through scene names and remove non-ambiguous names.
 			bool can_proceed = false;
-			Set<int>::Element *E = iset.front();
+			RBSet<int>::Element *E = iset.front();
 			while (E) {
 				String scene_name = r_filenames[E->get()];
 				bool duplicate_found = false;
-				for (Set<int>::Element *F = iset.front(); F; F = F->next()) {
-					if (E->get() == F->get()) {
+				for (const int &F : iset) {
+					if (E->get() == F) {
 						continue;
 					}
-					String other_scene_name = r_filenames[F->get()];
+					String other_scene_name = r_filenames[F];
 					if (other_scene_name == scene_name) {
 						duplicate_found = true;
 						break;
 					}
 				}
 
-				Set<int>::Element *to_erase = duplicate_found ? nullptr : E;
+				RBSet<int>::Element *to_erase = duplicate_found ? nullptr : E;
 
 				// We need to check that we could actually append anymore names
 				// if we wanted to for disambiguation. If we can't, then we have
@@ -460,7 +461,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			_editor_select(EDITOR_SCRIPT);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal(SNAME("request_help_search"), "");
-		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && StreamPeerSSL::is_available()) {
+		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && AssetLibraryEditorPlugin::is_available()) {
 			_editor_select(EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			_editor_select_next();
@@ -582,9 +583,10 @@ void EditorNode::_notification(int p_what) {
 				opening_prev = false;
 			}
 
+			bool unsaved_cache_changed = false;
 			if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
 				unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
-				_update_title();
+				unsaved_cache_changed = true;
 			}
 
 			if (last_checked_version != editor_data.get_undo_redo().get_version()) {
@@ -615,6 +617,10 @@ void EditorNode::_notification(int p_what) {
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 
+			if (settings_changed || unsaved_cache_changed) {
+				_update_title();
+			}
+
 			if (settings_changed) {
 				_update_from_settings();
 				settings_changed = false;
@@ -623,8 +629,6 @@ void EditorNode::_notification(int p_what) {
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 
-			// if using a main thread only renderer, we need to update the resource previews
-			EditorResourcePreview::get_singleton()->update();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -802,7 +806,7 @@ void EditorNode::_notification(int p_what) {
 				main_editor_buttons.write[i]->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 			}
 
-			Set<String> updated_textfile_extensions;
+			HashSet<String> updated_textfile_extensions;
 			bool extensions_match = true;
 			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 			for (const String &E : textfile_ext) {
@@ -878,7 +882,7 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 
 	int rc = p_resources.size();
 	for (int i = 0; i < rc; i++) {
-		Ref<Resource> res(ResourceCache::get(p_resources.get(i)));
+		Ref<Resource> res = ResourceCache::get_ref(p_resources.get(i));
 		if (res.is_null()) {
 			continue;
 		}
@@ -909,12 +913,12 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 }
 
 void EditorNode::_fs_changed() {
-	for (Set<FileDialog *>::Element *E = file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (FileDialog *E : file_dialogs) {
+		E->invalidate();
 	}
 
-	for (Set<EditorFileDialog *>::Element *E = editor_file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (EditorFileDialog *E : editor_file_dialogs) {
+		E->invalidate();
 	}
 
 	_mark_unsaved_scenes();
@@ -970,21 +974,14 @@ void EditorNode::_fs_changed() {
 						ERR_PRINT(vformat("Cannot export project with preset \"%s\" due to configuration errors:\n%s", preset_name, config_error));
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
+						platform->clear_messages();
 						err = platform->export_project(export_preset, export_defer.debug, export_path);
 					}
 				}
-				switch (err) {
-					case OK:
-						break;
-					case ERR_FILE_NOT_FOUND:
-						export_error = vformat("Project export failed for preset \"%s\". The export template appears to be missing.", preset_name);
-						break;
-					case ERR_FILE_BAD_PATH:
-						export_error = vformat("Project export failed for preset \"%s\". The target path \"%s\" appears to be invalid.", preset_name, export_path);
-						break;
-					default:
-						export_error = vformat("Project export failed with error code %d for preset \"%s\".", (int)err, preset_name);
-						break;
+				if (err != OK) {
+					export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
+				} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
+					export_error = vformat("Project export for preset \"%s\" completed with errors.", preset_name);
 				}
 			}
 		}
@@ -1015,8 +1012,8 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 			continue;
 		}
 		// Reload normally.
-		Resource *resource = ResourceCache::get(p_resources[i]);
-		if (resource) {
+		Ref<Resource> resource = ResourceCache::get_ref(p_resources[i]);
+		if (resource.is_valid()) {
 			resource->reload_from_file();
 		}
 	}
@@ -1187,8 +1184,8 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 		Vector<String> errors;
-		for (Set<String>::Element *E = dependency_errors[p_resource].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[p_resource]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_RESOURCE, p_resource, errors);
 		dependency_errors.erase(p_resource);
@@ -1419,7 +1416,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	ERR_FAIL_COND_MSG(err != OK, "Cannot save config file to '" + path + "'.");
 }
 
-bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, Map<Ref<Resource>, bool> &processed, int32_t flags) {
+bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
 	if (p_res.is_null()) {
 		return false;
 	}
@@ -1445,7 +1442,7 @@ bool EditorNode::_find_and_save_resource(Ref<Resource> p_res, Map<Ref<Resource>,
 	}
 }
 
-bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<Ref<Resource>, bool> &processed, int32_t flags) {
+bool EditorNode::_find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
 	bool ret_changed = false;
 	List<PropertyInfo> pi;
 	obj->get_property_list(&pi);
@@ -1495,7 +1492,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<Ref<Resourc
 	return ret_changed;
 }
 
-void EditorNode::_save_edited_subresources(Node *scene, Map<Ref<Resource>, bool> &processed, int32_t flags) {
+void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags) {
 	_find_and_save_edited_subresources(scene, processed, flags);
 
 	for (int i = 0; i < scene->get_child_count(); i++) {
@@ -1624,34 +1621,6 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
-static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource>> &edited_resources) {
-	if (p_resource->is_edited()) {
-		edited_resources.insert(p_resource);
-		return true;
-	}
-
-	List<PropertyInfo> plist;
-
-	p_resource->get_property_list(&plist);
-
-	for (const PropertyInfo &E : plist) {
-		if (E.type == Variant::OBJECT && E.usage & PROPERTY_USAGE_STORAGE && !(E.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
-			Ref<Resource> res = p_resource->get(E.name);
-			if (res.is_null()) {
-				continue;
-			}
-			if (res->get_path().is_resource_file()) { // Not a subresource, continue.
-				continue;
-			}
-			if (_find_edited_resources(res, edited_resources)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 int EditorNode::_save_external_resources() {
 	// Save external resources and its subresources if any was modified.
 
@@ -1661,27 +1630,41 @@ int EditorNode::_save_external_resources() {
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
-	Set<Ref<Resource>> edited_subresources;
+	HashSet<String> edited_resources;
 	int saved = 0;
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	for (const Ref<Resource> &res : cached) {
-		if (!res->get_path().is_resource_file()) {
+
+	for (Ref<Resource> res : cached) {
+		if (!res->is_edited()) {
 			continue;
 		}
-		// not only check if this resource is edited, check contained subresources too
-		if (_find_edited_resources(res, edited_subresources)) {
-			ResourceSaver::save(res->get_path(), res, flg);
-			saved++;
+
+		String path = res->get_path();
+		if (path.begins_with("res://")) {
+			int subres_pos = path.find("::");
+			if (subres_pos == -1) {
+				// Actual resource.
+				edited_resources.insert(path);
+			} else {
+				edited_resources.insert(path.substr(0, subres_pos));
+			}
 		}
+
+		res->set_edited(false);
 	}
 
-	// Clear later, because user may have put the same subresource in two different resources,
-	// which will be shared until the next reload.
-
-	for (Set<Ref<Resource>>::Element *E = edited_subresources.front(); E; E = E->next()) {
-		Ref<Resource> res = E->get();
-		res->set_edited(false);
+	for (const String &E : edited_resources) {
+		Ref<Resource> res = ResourceCache::get_ref(E);
+		if (!res.is_valid()) {
+			continue; // Maybe it was erased in a thread, who knows.
+		}
+		Ref<PackedScene> ps = res;
+		if (ps.is_valid()) {
+			continue; // Do not save PackedScenes, this will mess up the editor.
+		}
+		ResourceSaver::save(res->get_path(), res, flg);
+		saved++;
 	}
 
 	return saved;
@@ -1729,7 +1712,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		// We must update it, but also let the previous scene state go, as
 		// old version still work for referencing changes in instantiated or inherited scenes.
 
-		sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(p_file)));
+		sdata = ResourceCache::get_ref(p_file);
 		if (sdata.is_valid()) {
 			sdata->recreate_state();
 		} else {
@@ -1800,6 +1783,10 @@ void EditorNode::save_scene_list(Vector<String> p_scene_filenames) {
 
 void EditorNode::restart_editor() {
 	exiting = true;
+
+	if (editor_run.get_status() != EditorRun::STATUS_STOP) {
+		editor_run.stop();
+	}
 
 	String to_reopen;
 	if (get_tree()->get_edited_scene_root()) {
@@ -2127,7 +2114,7 @@ void EditorNode::_save_default_environment() {
 	Ref<Environment> fallback = get_tree()->get_root()->get_world_3d()->get_fallback_environment();
 
 	if (fallback.is_valid() && fallback->get_path().is_resource_file()) {
-		Map<Ref<Resource>, bool> processed;
+		HashMap<Ref<Resource>, bool> processed;
 		_find_and_save_edited_subresources(fallback.ptr(), processed, 0);
 		save_resource_in_path(fallback, fallback->get_path());
 	}
@@ -2305,7 +2292,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (main_plugin) {
 			// Special case if use of external editor is true.
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
-			if (main_plugin->get_name() == "Script" && current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && !current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
@@ -2345,6 +2332,20 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		play_button->set_pressed(!_playing_edited);
 		play_scene_button->set_pressed(_playing_edited);
 		return;
+	}
+
+	String write_movie_file;
+	if (write_movie_button->is_pressed()) {
+		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
+			// If the scene file has a movie_file metadata set, use this as file. Quick workaround if you want to have multiple scenes that write to multiple movies.
+			write_movie_file = get_tree()->get_edited_scene_root()->get_meta("movie_file");
+		} else {
+			write_movie_file = GLOBAL_GET("editor/movie_writer/movie_file");
+		}
+		if (write_movie_file == String()) {
+			show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the 'Editor/Movie Writer' category.\nAlternatively, for running single scenes, a 'movie_path' metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
+			return;
+		}
 	}
 
 	play_button->set_pressed(false);
@@ -2410,7 +2411,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	}
 
 	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename);
+	Error error = editor_run.run(run_filename, write_movie_file);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
 		show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
@@ -2792,6 +2793,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
+		} break;
+		case RUN_WRITE_MOVIE: {
+			_update_write_movie_icon();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -3308,33 +3312,39 @@ void EditorNode::_update_addon_config() {
 }
 
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
-	ERR_FAIL_COND(p_enabled && addon_name_to_plugin.has(p_addon));
-	ERR_FAIL_COND(!p_enabled && !addon_name_to_plugin.has(p_addon));
+	String addon_path = p_addon;
+
+	if (!addon_path.begins_with("res://")) {
+		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
+	}
+
+	ERR_FAIL_COND(p_enabled && addon_name_to_plugin.has(addon_path));
+	ERR_FAIL_COND(!p_enabled && !addon_name_to_plugin.has(addon_path));
 
 	if (!p_enabled) {
-		EditorPlugin *addon = addon_name_to_plugin[p_addon];
+		EditorPlugin *addon = addon_name_to_plugin[addon_path];
 		remove_editor_plugin(addon, p_config_changed);
 		memdelete(addon);
-		addon_name_to_plugin.erase(p_addon);
+		addon_name_to_plugin.erase(addon_path);
 		_update_addon_config();
 		return;
 	}
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	if (!DirAccess::exists(p_addon.get_base_dir())) {
-		_remove_plugin_from_enabled(p_addon);
-		WARN_PRINT("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
+	if (!DirAccess::exists(addon_path.get_base_dir())) {
+		_remove_plugin_from_enabled(addon_path);
+		WARN_PRINT("Addon '" + addon_path + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
-	Error err = cf->load(p_addon);
+	Error err = cf->load(addon_path);
 	if (err != OK) {
-		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), p_addon));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), p_addon));
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), addon_path));
 		return;
 	}
 
@@ -3343,7 +3353,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
 	if (script_path.length() > 0) {
-		script_path = p_addon.get_base_dir().plus_file(script_path);
+		script_path = addon_path.get_base_dir().plus_file(script_path);
 		script = ResourceLoader::load(script_path);
 
 		if (script.is_null()) {
@@ -3353,8 +3363,8 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 		// Errors in the script cause the base_type to be an empty StringName.
 		if (script->get_instance_base_type() == StringName()) {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, p_addon));
-			_remove_plugin_from_enabled(p_addon);
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, addon_path));
+			_remove_plugin_from_enabled(addon_path);
 			return;
 		}
 
@@ -3372,14 +3382,18 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	EditorPlugin *ep = memnew(EditorPlugin);
 	ep->set_script(script);
-	addon_name_to_plugin[p_addon] = ep;
+	addon_name_to_plugin[addon_path] = ep;
 	add_editor_plugin(ep, p_config_changed);
 
 	_update_addon_config();
 }
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
-	return addon_name_to_plugin.has(p_addon);
+	if (p_addon.begins_with("res://")) {
+		return addon_name_to_plugin.has(p_addon);
+	}
+
+	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
@@ -3665,8 +3679,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_menu_option = -1;
 		Vector<String> errors;
-		for (Set<String>::Element *E = dependency_errors[lpath].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[lpath]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_SCENE, lpath, errors);
 		opening_prev = false;
@@ -3680,17 +3694,17 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.erase(lpath); // At least not self path.
 
-	for (KeyValue<String, Set<String>> &E : dependency_errors) {
+	for (KeyValue<String, HashSet<String>> &E : dependency_errors) {
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E.key) + "\n";
-		for (Set<String>::Element *F = E.value.front(); F; F = F->next()) {
-			txt += "\t" + F->get() + "\n";
+		for (const String &F : E.value) {
+			txt += "\t" + F + "\n";
 		}
 		add_io_error(txt);
 	}
 
 	if (ResourceCache::has(lpath)) {
 		// Used from somewhere else? No problem! Update state and replace sdata.
-		Ref<PackedScene> ps = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(lpath)));
+		Ref<PackedScene> ps = ResourceCache::get_ref(lpath);
 		if (ps.is_valid()) {
 			ps->replace_state(sdata->get_state());
 			ps->set_last_modified_time(sdata->get_last_modified_time());
@@ -4145,7 +4159,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 	}
 
-	const Map<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
+	const HashMap<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
 	for (const KeyValue<String, Vector<EditorData::CustomType>> &E : p_map) {
 		const Vector<EditorData::CustomType> &ct = E.value;
 		for (int i = 0; i < ct.size(); ++i) {
@@ -4872,7 +4886,7 @@ bool EditorNode::has_scenes_in_session() {
 
 bool EditorNode::ensure_main_scene(bool p_from_native) {
 	pick_main_scene->set_meta("from_native", p_from_native); // Whether from play button or native run.
-	String main_scene = GLOBAL_DEF("application/run/main_scene", "");
+	String main_scene = GLOBAL_DEF_BASIC("application/run/main_scene", "");
 
 	if (main_scene.is_empty()) {
 		current_menu_option = -1;
@@ -4938,10 +4952,18 @@ bool EditorNode::is_run_playing() const {
 String EditorNode::get_run_playing_scene() const {
 	String run_filename = editor_run.get_running_scene();
 	if (run_filename.is_empty() && is_run_playing()) {
-		run_filename = GLOBAL_DEF("application/run/main_scene", ""); // Must be the main scene then.
+		run_filename = GLOBAL_DEF_BASIC("application/run/main_scene", ""); // Must be the main scene then.
 	}
 
 	return run_filename;
+}
+
+void EditorNode::_update_write_movie_icon() {
+	if (write_movie_button->is_pressed()) {
+		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWriteEnabled"), SNAME("EditorIcons")));
+	} else {
+		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+	}
 }
 
 void EditorNode::_immediate_dialog_confirmed() {
@@ -5731,12 +5753,12 @@ void EditorNode::_feature_profile_changed() {
 
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
-		if (StreamPeerSSL::is_available()) {
+		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
 		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
 				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
-				(StreamPeerSSL::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
+				(AssetLibraryEditorPlugin::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
 			_editor_select(EDITOR_2D);
 		}
 	} else {
@@ -5748,7 +5770,7 @@ void EditorNode::_feature_profile_changed() {
 		FileSystemDock::get_singleton()->set_visible(true);
 		main_editor_buttons[EDITOR_3D]->set_visible(true);
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(true);
-		if (StreamPeerSSL::is_available()) {
+		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
 		}
 	}
@@ -5808,9 +5830,15 @@ static Node *_resource_get_edited_scene() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
+void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	EditorNode *en = static_cast<EditorNode *>(p_this);
-	en->log->add_message(p_string, p_error ? EditorLog::MSG_TYPE_ERROR : EditorLog::MSG_TYPE_STD);
+	if (p_error) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
+	} else if (p_rich) {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD_RICH);
+	} else {
+		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
+	}
 }
 
 static void _execute_thread(void *p_ud) {
@@ -6111,8 +6139,8 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "Script,MeshLibrary");
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
-	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle", PROPERTY_USAGE_DEFAULT));
+	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle", PROPERTY_USAGE_DEFAULT));
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), Key::SPACE);
 
@@ -6699,6 +6727,23 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::R);
 	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_custom_scene"));
 
+	write_movie_button = memnew(Button);
+	write_movie_button->set_flat(true);
+	write_movie_button->set_toggle_mode(true);
+	play_hb->add_child(write_movie_button);
+	write_movie_button->set_pressed(false);
+	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
+	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
+	write_movie_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_WRITE_MOVIE));
+	write_movie_button->set_tooltip(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
+	// Restore these values to something more useful so it ignores the theme
+	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.4));
+	write_movie_button->add_theme_color_override("icon_pressed_color", Color(1, 1, 1, 1));
+	write_movie_button->add_theme_color_override("icon_hover_color", Color(1.2, 1.2, 1.2, 0.4));
+	write_movie_button->add_theme_color_override("icon_hover_pressed_color", Color(1.2, 1.2, 1.2, 1));
+	write_movie_button->add_theme_color_override("icon_focus_color", Color(1, 1, 1, 1));
+	write_movie_button->add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.4));
+
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
 
@@ -7027,7 +7072,9 @@ EditorNode::EditorNode() {
 	ScriptTextEditor::register_editor(); // Register one for text scripts.
 	TextEditor::register_editor();
 
-	if (StreamPeerSSL::is_available()) {
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+	if (AssetLibraryEditorPlugin::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
@@ -7045,7 +7092,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin));
 	add_editor_plugin(memnew(ShaderFileEditorPlugin));
-	add_editor_plugin(memnew(VisualShaderEditorPlugin));
 
 	add_editor_plugin(memnew(Camera3DEditorPlugin));
 	add_editor_plugin(memnew(ThemeEditorPlugin));
@@ -7099,6 +7145,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));
 	add_editor_plugin(memnew(RayCast2DEditorPlugin));
+	add_editor_plugin(memnew(BoneMapEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));

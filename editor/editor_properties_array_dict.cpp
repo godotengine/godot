@@ -217,11 +217,11 @@ void EditorPropertyArray::update_property() {
 	if (array.get_type() == Variant::NIL) {
 		edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -241,15 +241,19 @@ void EditorPropertyArray::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size: ")));
+			Label *label = memnew(Label(TTR("Size:")));
 			label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbox->add_child(label);
 
@@ -264,8 +268,7 @@ void EditorPropertyArray::update_property() {
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Element"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyArray::_add_element));
 			vbox->add_child(button_add_item);
@@ -344,6 +347,7 @@ void EditorPropertyArray::update_property() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
+			prop->set_use_folding(is_using_folding());
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyArray::_property_changed));
 			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyArray::_object_id_selected));
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -373,11 +377,11 @@ void EditorPropertyArray::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -607,11 +611,16 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 		Variant array = object->get_array();
 		int size = array.call("size");
 
-		if ((reorder_to_index == 0 && mm->get_relative().y < 0.0f) || (reorder_to_index == size - 1 && mm->get_relative().y > 0.0f)) {
+		// Cumulate the mouse delta, many small changes (dragging slowly) should result in reordering at some point.
+		reorder_mouse_y_delta += mm->get_relative().y;
+
+		// Reordering is done by moving the dragged element by +1/-1 index at a time based on the cumulated mouse delta so if
+		// already at the array bounds make sure to ignore the remaining out of bounds drag (by resetting the cumulated delta).
+		if ((reorder_to_index == 0 && reorder_mouse_y_delta < 0.0f) || (reorder_to_index == size - 1 && reorder_mouse_y_delta > 0.0f)) {
+			reorder_mouse_y_delta = 0.0f;
 			return;
 		}
 
-		reorder_mouse_y_delta += mm->get_relative().y;
 		float required_y_distance = 20.0f * EDSCALE;
 		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
 			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
@@ -683,7 +692,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	property_vbox = nullptr;
 	size_slider = nullptr;
 	button_add_item = nullptr;
@@ -787,11 +796,11 @@ void EditorPropertyDictionary::update_property() {
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -808,10 +817,14 @@ void EditorPropertyDictionary::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -994,6 +1007,7 @@ void EditorPropertyDictionary::update_property() {
 					} else {
 						EditorPropertyResource *editor = memnew(EditorPropertyResource);
 						editor->setup(object.ptr(), prop_name, "Resource");
+						editor->set_use_folding(is_using_folding());
 						prop = editor;
 					}
 
@@ -1102,8 +1116,7 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				button_add_item = memnew(Button);
-				button_add_item->set_text(TTR("Add Key/Value Pair"));
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 				button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 				add_vbox->add_child(button_add_item);
@@ -1113,11 +1126,11 @@ void EditorPropertyDictionary::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -1185,7 +1198,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
 	change_type = memnew(PopupMenu);
@@ -1247,11 +1260,11 @@ void EditorPropertyLocalizableString::update_property() {
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 		return;
 	}
@@ -1268,10 +1281,14 @@ void EditorPropertyLocalizableString::update_property() {
 	if (unfolded) {
 		updating = true;
 
-		if (!vbox) {
-			vbox = memnew(VBoxContainer);
-			add_child(vbox);
-			set_bottom_editor(vbox);
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1339,8 +1356,7 @@ void EditorPropertyLocalizableString::update_property() {
 		}
 
 		if (page_index == max_page) {
-			button_add_item = memnew(Button);
-			button_add_item->set_text(TTR("Add Translation"));
+			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);
@@ -1349,11 +1365,11 @@ void EditorPropertyLocalizableString::update_property() {
 		updating = false;
 
 	} else {
-		if (vbox) {
+		if (container) {
 			set_bottom_editor(nullptr);
-			memdelete(vbox);
+			memdelete(container);
 			button_add_item = nullptr;
-			vbox = nullptr;
+			container = nullptr;
 		}
 	}
 }
@@ -1408,7 +1424,7 @@ EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
 	add_child(edit);
 	add_focusable(edit);
 
-	vbox = nullptr;
+	container = nullptr;
 	button_add_item = nullptr;
 	paginator = nullptr;
 	updating = false;

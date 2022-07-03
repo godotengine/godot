@@ -38,6 +38,7 @@
 // Makes callable_mp readily available in all classes connecting signals.
 // Needs to come after method_bind and object have been included.
 #include "core/object/callable_method_pointer.h"
+#include "core/templates/hash_set.h"
 
 #define DEFVAL(m_defval) (m_defval)
 
@@ -102,7 +103,7 @@ public:
 		ObjectNativeExtension *native_extension = nullptr;
 
 		HashMap<StringName, MethodBind *> method_map;
-		HashMap<StringName, int> constant_map;
+		HashMap<StringName, int64_t> constant_map;
 		HashMap<StringName, List<StringName>> enum_map;
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
@@ -110,10 +111,10 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
-		Set<StringName> methods_in_properties;
+		HashSet<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
-		Map<StringName, MethodInfo> virtual_methods_map;
-		Map<StringName, Vector<Error>> method_error_values;
+		HashMap<StringName, MethodInfo> virtual_methods_map;
+		HashMap<StringName, Vector<Error>> method_error_values;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
 
@@ -149,14 +150,14 @@ public:
 	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
-	static Set<StringName> default_values_cached;
+	static HashSet<StringName> default_values_cached;
 
 	// Native structs, used by binder
 	struct NativeStruct {
 		String ccode; // C code to create the native struct, fields separated by ; Arrays accepted (even containing other structs), also function pointers. All types must be Godot types.
 		uint64_t struct_size; // local size of struct, for comparison
 	};
-	static Map<StringName, NativeStruct> native_structs;
+	static HashMap<StringName, NativeStruct> native_structs;
 
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
@@ -324,9 +325,9 @@ public:
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 
-	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant);
+	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
-	static int get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
+	static int64_t get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);

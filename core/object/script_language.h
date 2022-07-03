@@ -34,8 +34,8 @@
 #include "core/doc_data.h"
 #include "core/io/resource.h"
 #include "core/multiplayer/multiplayer.h"
-#include "core/templates/map.h"
 #include "core/templates/pair.h"
+#include "core/templates/rb_map.h"
 
 class ScriptLanguage;
 
@@ -154,8 +154,8 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
-	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
-	virtual void get_members(Set<StringName> *p_constants) {}
+	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
+	virtual void get_members(HashSet<StringName> *p_constants) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -190,6 +190,7 @@ public:
 		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
 	}
 
+	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
 	virtual void notification(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
@@ -283,7 +284,7 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const = 0;
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
@@ -346,6 +347,7 @@ public:
 		LOOKUP_RESULT_CLASS_CONSTANT,
 		LOOKUP_RESULT_CLASS_PROPERTY,
 		LOOKUP_RESULT_CLASS_METHOD,
+		LOOKUP_RESULT_CLASS_SIGNAL,
 		LOOKUP_RESULT_CLASS_ENUM,
 		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE,
 		LOOKUP_RESULT_MAX
@@ -432,8 +434,8 @@ extern uint8_t script_encryption_key[32];
 class PlaceHolderScriptInstance : public ScriptInstance {
 	Object *owner = nullptr;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> constants;
+	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> constants;
 	ScriptLanguage *language = nullptr;
 	Ref<Script> script;
 
@@ -458,7 +460,7 @@ public:
 
 	Object *get_owner() override { return owner; }
 
-	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
+	void update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values); //likely changed in editor
 
 	virtual bool is_placeholder() const override { return true; }
 

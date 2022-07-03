@@ -529,7 +529,7 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 }
 
-void EditorFileDialog::_items_clear_selection(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index != MouseButton::LEFT) {
 		return;
 	}
@@ -756,7 +756,7 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 		item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		item_list->set_max_text_lines(2);
-		item_list->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
+		item_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {

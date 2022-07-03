@@ -19,6 +19,7 @@
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
 			See [enum ShadowMode].
 		</member>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.2" />
 	</members>
 	<constants>
 		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">

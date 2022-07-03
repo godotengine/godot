@@ -42,7 +42,7 @@ class SpriteFrames : public Resource {
 		Vector<Ref<Texture2D>> frames;
 	};
 
-	Map<StringName, Anim> animations;
+	HashMap<StringName, Anim> animations;
 
 	Array _get_frames() const;
 	void _set_frames(const Array &p_frames);
@@ -73,24 +73,24 @@ public:
 	void add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos = -1);
 	int get_frame_count(const StringName &p_anim) const;
 	_FORCE_INLINE_ Ref<Texture2D> get_frame(const StringName &p_anim, int p_idx) const {
-		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+		HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 		ERR_FAIL_COND_V_MSG(!E, Ref<Texture2D>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture2D>());
-		if (p_idx >= E->get().frames.size()) {
+		if (p_idx >= E->value.frames.size()) {
 			return Ref<Texture2D>();
 		}
 
-		return E->get().frames[p_idx];
+		return E->value.frames[p_idx];
 	}
 
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_frame) {
-		Map<StringName, Anim>::Element *E = animations.find(p_anim);
+		HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND(p_idx < 0);
-		if (p_idx >= E->get().frames.size()) {
+		if (p_idx >= E->value.frames.size()) {
 			return;
 		}
-		E->get().frames.write[p_idx] = p_frame;
+		E->value.frames.write[p_idx] = p_frame;
 	}
 	void remove_frame(const StringName &p_anim, int p_idx);
 	void clear(const StringName &p_anim);

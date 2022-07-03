@@ -2140,8 +2140,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fog_volume_set_material", "fog_volume", "material"), &RenderingServer::fog_volume_set_material);
 
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_ELLIPSOID);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CONE);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CYLINDER);
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_WORLD);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_MAX);
 
 	/* VISIBILITY NOTIFIER */
 
@@ -2208,6 +2211,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
 	ClassDB::bind_method(D_METHOD("viewport_set_screen_space_aa", "viewport", "mode"), &RenderingServer::viewport_set_screen_space_aa);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_taa", "viewport", "enable"), &RenderingServer::viewport_set_use_taa);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_occlusion_culling", "viewport", "enable"), &RenderingServer::viewport_set_use_occlusion_culling);
 	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_rays_per_thread", "rays_per_thread"), &RenderingServer::viewport_set_occlusion_rays_per_thread);
@@ -2294,6 +2298,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
 
 	/* SKY API */
 
@@ -2818,7 +2823,9 @@ RenderingServer::RenderingServer() {
 
 	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
+}
 
+void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_bptc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
@@ -2885,6 +2892,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shading/overrides/force_lambert_over_burley.mobile", true);
 
 	GLOBAL_DEF("rendering/driver/depth_prepass/enable", true);
+	GLOBAL_DEF("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF_RST("rendering/textures/default_filters/anisotropic_filtering_level", 2);
@@ -2926,14 +2934,14 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/amount", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/limit", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
-	GLOBAL_DEF_RST("rendering/scaling_3d/mode", 0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/scale", 1.0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
+	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
-					PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR (Fast)"));
+					PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast)"));
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/scale",
 			PropertyInfo(Variant::FLOAT,
@@ -3002,44 +3010,15 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/limits/cluster_builder/max_clustered_elements", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/cluster_builder/max_clustered_elements", PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"));
 
+	// OpenGL limits
+	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_elements", 65536);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"));
+	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_lights", 32);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"));
+	GLOBAL_DEF_RST("rendering/limits/opengl/max_lights_per_object", 8);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_lights_per_object", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"));
+
 	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
-
-	GLOBAL_DEF_RST("rendering/2d/options/use_software_skinning", true);
-	GLOBAL_DEF_RST("rendering/2d/options/ninepatch_mode", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/options/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/2d/options/ninepatch_mode", PROPERTY_HINT_ENUM, "Fixed,Scaling"));
-
-	GLOBAL_DEF_RST("rendering/2d/opengl/batching_send_null", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/batching_send_null", PropertyInfo(Variant::INT, "rendering/2d/opengl/batching_send_null", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
-	GLOBAL_DEF_RST("rendering/2d/opengl/batching_stream", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/batching_stream", PropertyInfo(Variant::INT, "rendering/2d/opengl/batching_stream", PROPERTY_HINT_ENUM, "Default (Off),Off,On"));
-	GLOBAL_DEF_RST("rendering/2d/opengl/legacy_orphan_buffers", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/legacy_orphan_buffers", PropertyInfo(Variant::INT, "rendering/2d/opengl/legacy_orphan_buffers", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
-	GLOBAL_DEF_RST("rendering/2d/opengl/legacy_stream", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/opengl/legacy_stream", PropertyInfo(Variant::INT, "rendering/2d/opengl/legacy_stream", PROPERTY_HINT_ENUM, "Default (On),Off,On"));
-
-	GLOBAL_DEF("rendering/batching/options/use_batching", false);
-	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", false);
-	GLOBAL_DEF("rendering/batching/options/single_rect_fallback", false);
-	GLOBAL_DEF("rendering/batching/parameters/max_join_item_commands", 16);
-	GLOBAL_DEF("rendering/batching/parameters/colored_vertex_format_threshold", 0.25f);
-	GLOBAL_DEF("rendering/batching/lights/scissor_area_threshold", 1.0f);
-	GLOBAL_DEF("rendering/batching/lights/max_join_items", 32);
-	GLOBAL_DEF("rendering/batching/parameters/batch_buffer_size", 16384);
-	GLOBAL_DEF("rendering/batching/parameters/item_reordering_lookahead", 4);
-	GLOBAL_DEF("rendering/batching/debug/flash_batching", false);
-	GLOBAL_DEF("rendering/batching/debug/diagnose_frame", false);
-	GLOBAL_DEF("rendering/gles2/compatibility/disable_half_float", false);
-	GLOBAL_DEF("rendering/gles2/compatibility/enable_high_float.Android", false);
-	GLOBAL_DEF("rendering/batching/precision/uv_contract", false);
-	GLOBAL_DEF("rendering/batching/precision/uv_contract_amount", 100);
-
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/batching/parameters/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/colored_vertex_format_threshold", PropertyInfo(Variant::FLOAT, "rendering/batching/parameters/colored_vertex_format_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/batch_buffer_size", PropertyInfo(Variant::INT, "rendering/batching/parameters/batch_buffer_size", PROPERTY_HINT_RANGE, "1024,65535,1024"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/lights/scissor_area_threshold", PropertyInfo(Variant::FLOAT, "rendering/batching/lights/scissor_area_threshold", PROPERTY_HINT_RANGE, "0.0,1.0"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/lights/max_join_items", PropertyInfo(Variant::INT, "rendering/batching/lights/max_join_items", PROPERTY_HINT_RANGE, "0,512"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/parameters/item_reordering_lookahead", PropertyInfo(Variant::INT, "rendering/batching/parameters/item_reordering_lookahead", PROPERTY_HINT_RANGE, "0,256"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/batching/precision/uv_contract_amount", PropertyInfo(Variant::INT, "rendering/batching/precision/uv_contract_amount", PROPERTY_HINT_RANGE, "0,10000"));
 }
 
 RenderingServer::~RenderingServer() {

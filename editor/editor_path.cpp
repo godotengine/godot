@@ -72,7 +72,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 		int index = sub_objects_menu->get_item_count();
 		sub_objects_menu->add_icon_item(icon, proper_name, objects.size());
-		sub_objects_menu->set_item_h_offset(index, p_depth * 10 * EDSCALE);
+		sub_objects_menu->set_item_horizontal_offset(index, p_depth * 10 * EDSCALE);
 		objects.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);

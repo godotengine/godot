@@ -918,11 +918,11 @@ void DebugAdapterProtocol::on_debug_stack_frame_vars(const int &p_size) {
 	DAP::StackFrame frame;
 	frame.id = _current_frame;
 	ERR_FAIL_COND(!stackframe_list.has(frame));
-	List<int> scope_ids = stackframe_list.find(frame)->value();
+	List<int> scope_ids = stackframe_list.find(frame)->value;
 	for (List<int>::Element *E = scope_ids.front(); E; E = E->next()) {
 		int variable_id = E->get();
 		if (variable_list.has(variable_id)) {
-			variable_list.find(variable_id)->value().clear();
+			variable_list.find(variable_id)->value.clear();
 		} else {
 			variable_list.insert(variable_id, Array());
 		}
@@ -937,7 +937,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	DAP::StackFrame frame;
 	frame.id = _current_frame;
 
-	List<int> scope_ids = stackframe_list.find(frame)->value();
+	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
 	ERR_FAIL_INDEX(stack_var.type, 3);
 	int variable_id = scope_ids[stack_var.type];
@@ -949,7 +949,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	variable.type = Variant::get_type_name(stack_var.value.get_type());
 	variable.variablesReference = parse_variant(stack_var.value);
 
-	variable_list.find(variable_id)->value().push_back(variable.to_json());
+	variable_list.find(variable_id)->value.push_back(variable.to_json());
 	_remaining_vars--;
 }
 

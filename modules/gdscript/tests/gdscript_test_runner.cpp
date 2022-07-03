@@ -48,11 +48,11 @@
 namespace GDScriptTests {
 
 void init_autoloads() {
-	OrderedHashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 	// First pass, add the constants so they exist before any script is loaded.
-	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-		const ProjectSettings::AutoloadInfo &info = E.get();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
 
 		if (info.is_singleton) {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -62,8 +62,8 @@ void init_autoloads() {
 	}
 
 	// Second pass, load into global constants.
-	for (OrderedHashMap<StringName, ProjectSettings::AutoloadInfo>::Element E = autoloads.front(); E; E = E.next()) {
-		const ProjectSettings::AutoloadInfo &info = E.get();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
 
 		if (!info.is_singleton) {
 			// Skip non-singletons since we don't have a scene tree here anyway.
@@ -363,7 +363,7 @@ void GDScriptTest::disable_stdout() {
 	OS::get_singleton()->set_stderr_enabled(false);
 }
 
-void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error) {
+void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error, bool p_rich) {
 	TestResult *result = (TestResult *)p_this;
 	result->output += p_message + "\n";
 }
@@ -543,8 +543,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 	// Test running.
-	const Map<StringName, GDScriptFunction *>::Element *test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
-	if (test_function_element == nullptr) {
+	const HashMap<StringName, GDScriptFunction *>::ConstIterator test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
+	if (!test_function_element) {
 		enable_stdout();
 		result.status = GDTEST_LOAD_ERROR;
 		result.output = "";

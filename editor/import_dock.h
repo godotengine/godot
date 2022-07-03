@@ -51,7 +51,7 @@ class ImportDock : public VBoxContainer {
 	EditorInspector *import_opts = nullptr;
 
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> property_values;
+	HashMap<StringName, Variant> property_values;
 
 	ConfirmationDialog *reimport_confirm = nullptr;
 	Label *label_warning = nullptr;

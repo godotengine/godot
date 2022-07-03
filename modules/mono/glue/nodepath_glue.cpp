@@ -68,6 +68,10 @@ MonoString *godot_icall_NodePath_get_subname(NodePath *p_ptr, uint32_t p_idx) {
 	return GDMonoMarshal::mono_string_from_godot(p_ptr->get_subname(p_idx));
 }
 
+MonoString *godot_icall_NodePath_get_concatenated_names(NodePath *p_ptr) {
+	return GDMonoMarshal::mono_string_from_godot(p_ptr->get_concatenated_names());
+}
+
 MonoString *godot_icall_NodePath_get_concatenated_subnames(NodePath *p_ptr) {
 	return GDMonoMarshal::mono_string_from_godot(p_ptr->get_concatenated_subnames());
 }
@@ -85,6 +89,7 @@ void godot_register_nodepath_icalls() {
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_Dtor", godot_icall_NodePath_Dtor);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_operator_String", godot_icall_NodePath_operator_String);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_as_property_path", godot_icall_NodePath_get_as_property_path);
+	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_concatenated_names", godot_icall_NodePath_get_concatenated_names);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_concatenated_subnames", godot_icall_NodePath_get_concatenated_subnames);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_name", godot_icall_NodePath_get_name);
 	GDMonoUtils::add_internal_call("Godot.NodePath::godot_icall_NodePath_get_name_count", godot_icall_NodePath_get_name_count);

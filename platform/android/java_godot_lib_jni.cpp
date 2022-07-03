@@ -62,7 +62,6 @@ static AndroidInputHandler *input_handler = nullptr;
 static GodotJavaWrapper *godot_java = nullptr;
 static GodotIOJavaWrapper *godot_io_java = nullptr;
 
-static bool initialized = false;
 static SafeNumeric<int> step; // Shared between UI and render threads
 
 static Size2 new_size;
@@ -80,8 +79,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject activity, jobject godot_instance, jobject p_asset_manager, jboolean p_use_apk_expansion) {
-	initialized = true;
-
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -100,9 +97,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	TTS_Android::setup(godot_java->get_member_object("tts", "Lorg/godotengine/godot/tts/GodotTTS;", env));
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
-
-	char wd[500];
-	getcwd(wd, 500);
 
 	godot_java->on_video_init(env);
 }
@@ -144,7 +138,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 
 			for (int i = 0; i < cmdlen; i++) {
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
-				const char *rawString = env->GetStringUTFChars(string, 0);
+				const char *rawString = env->GetStringUTFChars(string, nullptr);
 
 				cmdline[i] = rawString;
 				j_cmdline[i] = string;
@@ -163,6 +157,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 		memfree(cmdline);
 	}
 
+	// Note: --help and --version return ERR_HELP, but this should be translated to 0 if exit codes are propagated.
 	if (err != OK) {
 		return; // should exit instead and print the error
 	}
@@ -312,15 +307,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubleTap(JNIEnv *env
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
-	if (step.get() <= 0) {
-		return;
-	}
-
-	input_handler->process_scroll(Point2(p_x, p_y));
-}
-
-// Called on the UI thread
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env, jclass clazz, jint p_device, jint p_button, jboolean p_pressed) {
 	if (step.get() <= 0) {
 		return;
@@ -436,7 +422,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 
 	int res = env->PushLocalFrame(16);
 	ERR_FAIL_COND(res != 0);
@@ -447,27 +433,26 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 	Variant *vlist = (Variant *)alloca(sizeof(Variant) * count);
 	Variant **vptr = (Variant **)alloca(sizeof(Variant *) * count);
 	for (int i = 0; i < count; i++) {
-		jobject obj = env->GetObjectArrayElement(params, i);
+		jobject jobj = env->GetObjectArrayElement(params, i);
 		Variant v;
-		if (obj) {
-			v = _jobject_to_variant(env, obj);
+		if (jobj) {
+			v = _jobject_to_variant(env, jobj);
 		}
 		memnew_placement(&vlist[i], Variant);
 		vlist[i] = v;
 		vptr[i] = &vlist[i];
-		env->DeleteLocalRef(obj);
+		env->DeleteLocalRef(jobj);
 	}
 
 	Callable::CallError err;
 	obj->callp(str_method, (const Variant **)vptr, count, err);
-	// something
 
 	env->PopLocalFrame(nullptr);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
 	Object *obj = ObjectDB::get_instance(ObjectID(ID));
-	ERR_FAIL_COND(!obj);
+	ERR_FAIL_NULL(obj);
 
 	int res = env->PushLocalFrame(16);
 	ERR_FAIL_COND(res != 0);
@@ -480,16 +465,16 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * count);
 
 	for (int i = 0; i < count; i++) {
-		jobject obj = env->GetObjectArrayElement(params, i);
-		if (obj) {
-			args[i] = _jobject_to_variant(env, obj);
+		jobject jobj = env->GetObjectArrayElement(params, i);
+		if (jobj) {
+			args[i] = _jobject_to_variant(env, jobj);
 		}
-		env->DeleteLocalRef(obj);
+		env->DeleteLocalRef(jobj);
 		argptrs[i] = &args[i];
 	}
 
 	MessageQueue::get_singleton()->push_callp(obj, str_method, (const Variant **)argptrs, count);
-	// something
+
 	env->PopLocalFrame(nullptr);
 }
 

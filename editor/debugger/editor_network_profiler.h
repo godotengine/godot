@@ -50,7 +50,7 @@ private:
 
 	Timer *frame_delay = nullptr;
 
-	Map<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
+	HashMap<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
 
 	void _update_frame();
 

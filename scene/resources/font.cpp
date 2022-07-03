@@ -33,6 +33,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/string/translation.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
@@ -53,6 +54,7 @@ _FORCE_INLINE_ void FontData::_ensure_rid(int p_cache_index) const {
 	if (unlikely(!cache[p_cache_index].is_valid())) {
 		cache.write[p_cache_index] = TS->create_font();
 		TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
+		TS->font_set_face_index(cache[p_cache_index], face_index);
 		TS->font_set_antialiased(cache[p_cache_index], antialiased);
 		TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
 		TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
@@ -74,6 +76,11 @@ void FontData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &FontData::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &FontData::get_data);
+
+	ClassDB::bind_method(D_METHOD("set_face_index", "face_index"), &FontData::set_face_index);
+	ClassDB::bind_method(D_METHOD("get_face_index"), &FontData::get_face_index);
+
+	ClassDB::bind_method(D_METHOD("get_face_count"), &FontData::get_face_count);
 
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &FontData::set_antialiased);
 	ClassDB::bind_method(D_METHOD("is_antialiased"), &FontData::is_antialiased);
@@ -216,6 +223,7 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_variation_list"), &FontData::get_supported_variation_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_face_index", "get_face_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_antialiased", "is_antialiased");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
@@ -444,6 +452,7 @@ void FontData::reset_state() {
 	data.clear();
 	data_ptr = nullptr;
 	data_size = 0;
+	face_index = 0;
 	cache.clear();
 
 	antialiased = true;
@@ -963,7 +972,7 @@ Error FontData::load_bitmap_font(const String &p_path) {
 			int delimiter = line.find(" ");
 			String type = line.substr(0, delimiter);
 			int pos = delimiter + 1;
-			Map<String, String> keys;
+			HashMap<String, String> keys;
 
 			while (pos < line.size() && line[pos] == ' ') {
 				pos++;
@@ -1241,6 +1250,31 @@ void FontData::set_data(const PackedByteArray &p_data) {
 			}
 		}
 	}
+}
+
+void FontData::set_face_index(int64_t p_index) {
+	ERR_FAIL_COND(p_index < 0);
+	ERR_FAIL_COND(p_index >= 0x7FFF);
+
+	if (face_index != p_index) {
+		face_index = p_index;
+		if (data_ptr != nullptr) {
+			for (int i = 0; i < cache.size(); i++) {
+				if (cache[i].is_valid()) {
+					TS->font_set_face_index(cache[i], face_index);
+				}
+			}
+		}
+	}
+}
+
+int64_t FontData::get_face_index() const {
+	return face_index;
+}
+
+int64_t FontData::get_face_count() const {
+	_ensure_rid(0);
+	return TS->font_get_face_count(cache[0]);
 }
 
 PackedByteArray FontData::get_data() const {
@@ -1922,8 +1956,8 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_spacing", "spacing"), &Font::get_spacing);
 
 	ADD_GROUP("Extra Spacing", "spacing");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_bottom"), "set_spacing", "get_spacing", TextServer::SPACING_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_BOTTOM);
 
 	ClassDB::bind_method(D_METHOD("get_height", "size"), &Font::get_height, DEFVAL(DEFAULT_FONT_SIZE));
 	ClassDB::bind_method(D_METHOD("get_ascent", "size"), &Font::get_ascent, DEFVAL(DEFAULT_FONT_SIZE));
@@ -2239,7 +2273,7 @@ Size2 Font::get_string_size(const String &p_text, int p_size, HorizontalAlignmen
 
 	uint64_t hash = p_text.hash64();
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
+		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
 	hash = hash_djb2_one_64(p_size, hash);
@@ -2263,7 +2297,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, float p_width, int p
 	}
 
 	uint64_t hash = p_text.hash64();
-	uint64_t wrp_hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
+	uint64_t wrp_hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
 	wrp_hash = hash_djb2_one_64(p_flags, wrp_hash);
 	wrp_hash = hash_djb2_one_64(p_size, wrp_hash);
 
@@ -2301,7 +2335,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 
 	uint64_t hash = p_text.hash64();
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
+		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
 		hash = hash_djb2_one_64(p_flags, hash);
 	}
 	hash = hash_djb2_one_64(p_size, hash);
@@ -2340,7 +2374,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 	}
 
 	uint64_t hash = p_text.hash64();
-	uint64_t wrp_hash = hash_djb2_one_64(hash_djb2_one_float(p_width), hash);
+	uint64_t wrp_hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
 	wrp_hash = hash_djb2_one_64(p_flags, wrp_hash);
 	wrp_hash = hash_djb2_one_64(p_size, wrp_hash);
 

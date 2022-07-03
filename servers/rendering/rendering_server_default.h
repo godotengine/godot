@@ -33,7 +33,7 @@
 
 #include "core/math/octree.h"
 #include "core/templates/command_queue_mt.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
@@ -69,7 +69,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	//for printing
 	bool print_gpu_profile = false;
-	OrderedHashMap<String, float> print_gpu_profile_task_time;
+	HashMap<String, float> print_gpu_profile_task_time;
 	uint64_t print_frame_profile_ticks_from = 0;
 	uint32_t print_frame_profile_frame_count = 0;
 
@@ -84,7 +84,6 @@ class RenderingServerDefault : public RenderingServer {
 	SafeFlag draw_thread_up;
 	bool create_thread;
 
-	SafeNumeric<uint64_t> draw_pending;
 	void _thread_draw(bool p_swap_buffers, double frame_step);
 	void _thread_flush();
 
@@ -113,7 +112,9 @@ public:
 	_changes_changed();
 
 #else
-	_FORCE_INLINE_ static void redraw_request() { changes++; }
+	_FORCE_INLINE_ static void redraw_request() {
+		changes++;
+	}
 #endif
 
 #define WRITE_ACTION redraw_request();
@@ -434,8 +435,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererGI
+#define server_name RSG::gi
 
 	FUNCRIDSPLIT(voxel_gi)
 
@@ -614,6 +615,7 @@ public:
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
+	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
@@ -626,6 +628,7 @@ public:
 	FUNC2(viewport_set_measure_render_time, RID, bool)
 	FUNC1RC(double, viewport_get_measured_render_time_cpu, RID)
 	FUNC1RC(double, viewport_get_measured_render_time_gpu, RID)
+	FUNC1RC(RID, viewport_find_from_screen_attachment, DisplayServer::WindowID)
 
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 

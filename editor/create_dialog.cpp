@@ -125,7 +125,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 		return true; // Do not show editor nodes.
 	}
 
-	if (p_type == base_type) {
+	if (p_type == base_type && !EditorNode::get_editor_data().get_custom_types().has(p_type)) {
 		return true; // Root is already added.
 	}
 
@@ -138,8 +138,8 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
-		for (Set<StringName>::Element *E = type_blacklist.front(); E; E = E->next()) {
-			if (ClassDB::is_parent_class(p_type, E->get())) {
+		for (const StringName &E : type_blacklist) {
+			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
 			}
 		}
@@ -472,6 +472,13 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.has(p_type));
 	get_ok_button()->set_disabled(false);
+}
+
+void CreateDialog::select_base() {
+	if (search_options_types.is_empty()) {
+		_update_search();
+	}
+	select_type(base_type, false);
 }
 
 String CreateDialog::get_selected_type() {
