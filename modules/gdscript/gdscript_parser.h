@@ -583,6 +583,7 @@ public:
 						type.type_source = DataType::ANNOTATED_EXPLICIT;
 						type.kind = DataType::BUILTIN;
 						type.builtin_type = Variant::SIGNAL;
+						type.is_constant = true;
 						// TODO: Add parameter info.
 						return type;
 					}
