@@ -264,9 +264,19 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	printf("\n");
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	bool add_instance_arg = instances > 1;
+	if (add_instance_arg) {
+		args.push_back("debug_instance_index");
+	}
 	for (int i = 0; i < instances; i++) {
+		if (add_instance_arg) {
+			args.push_back(itos(i));
+		}
 		OS::ProcessID pid = 0;
 		Error err = OS::get_singleton()->create_instance(args, &pid);
+		if (add_instance_arg) {
+			args.pop_back();
+		}
 		ERR_FAIL_COND_V(err, err);
 		pids.push_back(pid);
 	}
