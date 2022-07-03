@@ -107,7 +107,9 @@ public:
 
 				Object *obj = p_variant.get_validated_object();
 				if (!obj) {
-					return false;
+					// Any Object-derived instance can be null, so a null object can be
+					// cast into any Object-derived type.
+					return true;
 				}
 
 				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
