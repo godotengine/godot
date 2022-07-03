@@ -1754,7 +1754,7 @@
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			Size for shadow atlas (used for OmniLights and SpotLights). The value will be rounded up to the nearest power of 2. See shadow mapping documentation.
 		</member>
 		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/quality/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
