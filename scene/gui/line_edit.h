@@ -160,7 +160,9 @@ private:
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
-	Timer *caret_blink_timer = nullptr;
+	float caret_blink_speed = 0.65;
+	double caret_blink_timer = 0.0;
+	bool caret_blinking = false;
 
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
