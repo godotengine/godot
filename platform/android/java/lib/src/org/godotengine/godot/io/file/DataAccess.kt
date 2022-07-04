@@ -103,6 +103,8 @@ internal abstract class DataAccess(private val filePath: String) {
 	}
 
 	protected abstract val fileChannel: FileChannel
+	internal var endOfFile = false
+		private set
 
 	fun close() {
 		try {
@@ -123,6 +125,9 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun seek(position: Long) {
 		try {
 			fileChannel.position(position)
+			if (position <= size()) {
+				endOfFile = false
+			}
 		} catch (e: Exception) {
 			Log.w(TAG, "Exception when seeking file $filePath.", e)
 		}
@@ -153,11 +158,15 @@ internal abstract class DataAccess(private val filePath: String) {
 		0L
 	}
 
-	fun isEndOfFile() = position() >= size()
-
 	fun read(buffer: ByteBuffer): Int {
 		return try {
-			fileChannel.read(buffer)
+			val readBytes = fileChannel.read(buffer)
+			if (readBytes == -1) {
+				endOfFile = true
+				0
+			} else {
+				readBytes
+			}
 		} catch (e: IOException) {
 			Log.w(TAG, "Exception while reading from file $filePath.", e)
 			0
@@ -166,7 +175,10 @@ internal abstract class DataAccess(private val filePath: String) {
 
 	fun write(buffer: ByteBuffer) {
 		try {
-			fileChannel.write(buffer)
+			val writtenBytes = fileChannel.write(buffer)
+			if (writtenBytes > 0) {
+				endOfFile = false
+			}
 		} catch (e: IOException) {
 			Log.w(TAG, "Exception while writing to file $filePath.", e)
 		}

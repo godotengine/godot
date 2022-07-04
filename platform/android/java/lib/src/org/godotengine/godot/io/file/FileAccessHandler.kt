@@ -186,7 +186,7 @@ class FileAccessHandler(val context: Context) {
 			return false
 		}
 
-		return files[fileId].isEndOfFile()
+		return files[fileId].endOfFile
 	}
 
 	fun fileClose(fileId: Int) {
