@@ -892,7 +892,7 @@ void ProjectExportDialog::_export_project() {
 	List<String> extension_list = platform->get_binary_extensions(current);
 	for (int i = 0; i < extension_list.size(); i++) {
 		// TRANSLATORS: This is the name of a project export file format. %s will be replaced by the platform name.
-		export_project->add_filter(vformat("*.%s; %s", extension_list[i], vformat(TTR("%s Export"), platform->get_name())));
+		export_project->add_filter("*." + extension_list[i], vformat(TTR("%s Export"), platform->get_name()));
 	}
 
 	if (!current->get_export_path().is_empty()) {
@@ -1222,8 +1222,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
-	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
-	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Project Pack"));
+	export_pck_zip->add_filter("*.zip", TTR("ZIP File"));
+	export_pck_zip->add_filter("*.pck", TTR("Godot Project Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
