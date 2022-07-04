@@ -662,9 +662,32 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 						continue; //handled
 					}
+				} else if (update_mode == Animation::UPDATE_DISCRETE) {
+					if (p_started || pa->capture == Variant()) {
+						pa->capture = pa->object->get_indexed(pa->subpath);
+					}
+
+					int key_count = a->track_get_key_count(i);
+					if (key_count == 0) {
+						continue;
+					}
+
+					double first_key_time = a->track_get_key_time(i, 0);
+					if (p_time < first_key_time) {
+						Variant first_value = a->track_get_key_value(i, 0);
+						first_value = _post_process_key_value(a, i, first_value, nc->node);
+						if (pa->accum_pass != accum_pass) {
+							ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
+							cache_update_prop[cache_update_prop_size++] = pa;
+							pa->accum_pass = accum_pass;
+						}
+						pa->value_accum = first_value;
+
+						continue; //handled
+					}
 				}
 
-				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
+				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
 					Variant value = a->value_track_interpolate(i, p_time);
 
 					if (value == Variant()) {
