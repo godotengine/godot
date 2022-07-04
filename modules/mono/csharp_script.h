@@ -502,6 +502,7 @@ public:
 
 	/* TODO? */ void get_public_functions(List<MethodInfo> *p_functions) const override {}
 	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {}
+	/* TODO? */ void get_public_annotations(List<MethodInfo> *p_annotations) const override {}
 
 	void reload_all_scripts() override;
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;

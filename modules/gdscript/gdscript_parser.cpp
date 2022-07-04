@@ -105,6 +105,10 @@ void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const 
 	}
 }
 
+bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
+	return valid_annotations.has(p_annotation_name);
+}
+
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
