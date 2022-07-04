@@ -370,15 +370,8 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 
 		bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
 
-		uint64_t mat_hash;
-		if (tex != RID()) {
-			mat_hash = hash_one_uint64(tex.get_id());
-		} else {
-			mat_hash = hash_one_uint64(0);
-		}
-		mat_hash = hash_fmix32(hash_murmur3_one_64(p_priority | (p_outline_size << 31), mat_hash));
-
-		if (!surfaces.has(mat_hash)) {
+		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
+		if (!surfaces.has(key)) {
 			SurfaceData surf;
 			surf.material = RenderingServer::get_singleton()->material_create();
 			// Set defaults for material, names need to match up those in StandardMaterial3D
@@ -407,9 +400,9 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 				surf.z_shift = p_priority * pixel_size;
 			}
 
-			surfaces[mat_hash] = surf;
+			surfaces[key] = surf;
 		}
-		SurfaceData &s = surfaces[mat_hash];
+		SurfaceData &s = surfaces[key];
 
 		s.mesh_vertices.resize((s.offset + 1) * 4);
 		s.mesh_normals.resize((s.offset + 1) * 4);
@@ -464,7 +457,7 @@ void Label3D::_shape() {
 	aabb = AABB();
 
 	// Clear materials.
-	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
+	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();
@@ -594,7 +587,7 @@ void Label3D::_shape() {
 		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing + font->get_spacing(TextServer::SPACING_BOTTOM)) * pixel_size;
 	}
 
-	for (const KeyValue<uint64_t, SurfaceData> &E : surfaces) {
+	for (const KeyValue<SurfaceKey, SurfaceData> &E : surfaces) {
 		Array mesh_array;
 		mesh_array.resize(RS::ARRAY_MAX);
 		mesh_array[RS::ARRAY_VERTEX] = E.value.mesh_vertices;
@@ -1018,7 +1011,7 @@ Label3D::~Label3D() {
 	TS->free_rid(text_rid);
 
 	RenderingServer::get_singleton()->free(mesh);
-	for (KeyValue<uint64_t, SurfaceData> E : surfaces) {
+	for (KeyValue<SurfaceKey, SurfaceData> E : surfaces) {
 		RenderingServer::get_singleton()->free(E.value.material);
 	}
 	surfaces.clear();

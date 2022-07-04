@@ -475,6 +475,7 @@ private:
 			sharp = p_sharp;
 		};
 	};
+
 	struct ContourInfo {
 		real_t length = 0.0;
 		bool ccw = true;
@@ -484,6 +485,27 @@ private:
 			ccw = p_ccw;
 		}
 	};
+
+	struct GlyphMeshKey {
+		uint64_t font_id;
+		uint32_t gl_id;
+
+		bool operator==(const GlyphMeshKey &p_b) const {
+			return (font_id == p_b.font_id) && (gl_id == p_b.gl_id);
+		}
+
+		GlyphMeshKey(uint64_t p_font_id, uint32_t p_gl_id) {
+			font_id = p_font_id;
+			gl_id = p_gl_id;
+		}
+	};
+
+	struct GlyphMeshKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const GlyphMeshKey &p_a) {
+			return hash_murmur3_buffer(&p_a, sizeof(GlyphMeshKey));
+		}
+	};
+
 	struct GlyphMeshData {
 		Vector<Vector2> triangles;
 		Vector<Vector<ContourPoint>> contours;
@@ -491,7 +513,7 @@ private:
 		Vector2 min_p = Vector2(INFINITY, INFINITY);
 		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
 	};
-	mutable HashMap<uint32_t, GlyphMeshData> cache;
+	mutable HashMap<GlyphMeshKey, GlyphMeshData, GlyphMeshKeyHasher> cache;
 
 	RID text_rid;
 	String text;
@@ -517,7 +539,7 @@ private:
 	mutable bool dirty_font = true;
 	mutable bool dirty_cache = true;
 
-	void _generate_glyph_mesh_data(uint32_t p_hash, const Glyph &p_glyph) const;
+	void _generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph &p_glyph) const;
 	void _font_changed();
 
 protected:
