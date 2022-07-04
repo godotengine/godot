@@ -751,12 +751,13 @@ void CurveEditor::_draw() {
 
 	// Help text
 
+	float width = view_size.x - 60 * EDSCALE;
 	if (_selected_point > 0 && _selected_point + 1 < curve.get_point_count()) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_multiline_string(font, Vector2(50 * EDSCALE, font_height), TTR("Hold Shift to edit tangents individually"), HORIZONTAL_ALIGNMENT_LEFT, width, -1, font_size, text_color);
 	} else if (curve.get_point_count() == 0) {
 		text_color.a *= 0.4;
-		draw_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
+		draw_multiline_string(font, Vector2(50 * EDSCALE, font_height), TTR("Right click to add point"), HORIZONTAL_ALIGNMENT_LEFT, width, -1, font_size, text_color);
 	}
 }
 
