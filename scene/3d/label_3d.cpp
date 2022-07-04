@@ -535,15 +535,8 @@ float Label3D::_generate_glyph_surfaces(const Ref<Font> &p_font, CharType p_char
 	gl_uv = p_font->get_char_tx_uv_rect(p_char, p_next, p_outline);
 	texs = p_font->get_char_texture_size(p_char, p_next, p_outline);
 
-	uint64_t mat_hash;
-	if (tex != RID()) {
-		mat_hash = hash_one_uint64(tex.get_id());
-	} else {
-		mat_hash = hash_one_uint64(0);
-	}
-	mat_hash = hash_djb2_one_64(p_priority, mat_hash);
-
-	if (!surfaces.has(mat_hash)) {
+	SurfaceKey key = SurfaceKey(tex.get_id(), p_priority);
+	if (!surfaces.has(key)) {
 		SurfaceData surf;
 		surf.material = RID_PRIME(VisualServer::get_singleton()->material_create());
 		// Set defaults for material, names need to match up those in SpatialMaterial
@@ -567,9 +560,9 @@ float Label3D::_generate_glyph_surfaces(const Ref<Font> &p_font, CharType p_char
 			surf.z_shift = p_priority;
 		}
 
-		surfaces[mat_hash] = surf;
+		surfaces[key] = surf;
 	}
-	SurfaceData &s = surfaces[mat_hash];
+	SurfaceData &s = surfaces[key];
 
 	s.mesh_vertices.resize((s.offset + 1) * 4);
 	s.mesh_normals.resize((s.offset + 1) * 4);
@@ -624,7 +617,7 @@ void Label3D::_shape() {
 
 	// Clear materials.
 	{
-		const uint64_t *k = nullptr;
+		const SurfaceKey *k = nullptr;
 		while ((k = surfaces.next(k))) {
 			VS::get_singleton()->free(surfaces[*k].material);
 		}
@@ -754,7 +747,7 @@ void Label3D::_shape() {
 		line++;
 	}
 
-	const uint64_t *k = nullptr;
+	const SurfaceKey *k = nullptr;
 	int idx = 0;
 	while ((k = surfaces.next(k))) {
 		const SurfaceData &surf = surfaces[*k];
@@ -1063,7 +1056,7 @@ Label3D::~Label3D() {
 	}
 
 	VS::get_singleton()->free(mesh);
-	const uint64_t *k = nullptr;
+	const SurfaceKey *k = nullptr;
 	while ((k = surfaces.next(k))) {
 		VS::get_singleton()->free(surfaces[*k].material);
 	}

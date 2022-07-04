@@ -78,6 +78,7 @@ private:
 
 	mutable Ref<TriangleMesh> triangle_mesh;
 	RID mesh;
+
 	struct SurfaceData {
 		PoolVector3Array mesh_vertices;
 		PoolVector3Array mesh_normals;
@@ -89,7 +90,29 @@ private:
 		float z_shift = 0.0;
 		RID material;
 	};
-	HashMap<uint64_t, SurfaceData> surfaces;
+
+	struct SurfaceKey {
+		uint64_t texture_id;
+		int32_t priority;
+
+		bool operator==(const SurfaceKey &p_b) const {
+			return (texture_id == p_b.texture_id) && (priority == p_b.priority);
+		}
+
+		SurfaceKey(uint64_t p_texture_id, int p_priority) {
+			texture_id = p_texture_id;
+			priority = p_priority;
+		}
+	};
+
+	struct SurfaceKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const SurfaceKey &p_a) {
+			uint32_t hash = hash_djb2_one_32(p_a.texture_id);
+			return hash_djb2_one_32(p_a.priority, hash);
+		}
+	};
+
+	HashMap<SurfaceKey, SurfaceData, SurfaceKeyHasher> surfaces;
 
 	struct WordCache {
 		enum {
