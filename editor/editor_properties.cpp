@@ -3175,7 +3175,20 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
-	return nodes.size() == 1;
+	if (nodes.size() != 1) {
+		return false;
+	}
+
+	Node *dropped_node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+	ERR_FAIL_NULL_V(dropped_node, false);
+
+	for (const StringName &E : valid_types) {
+		if (dropped_node->is_class(E)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void EditorPropertyNodePath::update_property() {
