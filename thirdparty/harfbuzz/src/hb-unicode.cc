@@ -169,7 +169,7 @@ hb_unicode_funcs_get_default ()
 #endif
 
 /**
- * hb_unicode_funcs_create: (Xconstructor)
+ * hb_unicode_funcs_create:
  * @parent: (nullable): Parent Unicode-functions structure
  *
  * Creates a new #hb_unicode_funcs_t structure of Unicode functions.

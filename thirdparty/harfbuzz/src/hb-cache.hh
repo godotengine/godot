@@ -32,7 +32,7 @@
 
 /* Implements a lockfree cache for int->int functions. */
 
-template <unsigned int key_bits, unsigned int value_bits, unsigned int cache_bits>
+template <unsigned int key_bits=16, unsigned int value_bits=8 + 32 - key_bits, unsigned int cache_bits=8>
 struct hb_cache_t
 {
   static_assert ((key_bits >= cache_bits), "");

@@ -52,16 +52,16 @@ HB_INTERNAL bool postV2Tail::serialize (hb_serialize_context_t *c,
   {
     unsigned glyph_id = _.first;
     unsigned new_index = _.second;
-    
+
     if (new_index < 258) continue;
     if (copied_indices.has (new_index)) continue;
     copied_indices.add (new_index);
-    
+
     hb_bytes_t s = reinterpret_cast<const post::accelerator_t*> (_post)->find_glyph_name (glyph_id);
     HBUINT8 *o = c->allocate_size<HBUINT8> (HBUINT8::static_size * (s.length + 1));
     if (unlikely (!o)) return_trace (false);
     if (!c->check_assign (o[0], s.length, HB_SERIALIZE_ERROR_INT_OVERFLOW)) return_trace (false);
-    memcpy (o+1, s.arrayZ, HBUINT8::static_size * s.length);
+    hb_memcpy (o+1, s.arrayZ, HBUINT8::static_size * s.length);
   }
 
   return_trace (true);
@@ -78,17 +78,19 @@ HB_INTERNAL bool postV2Tail::subset (hb_subset_context_t *c) const
 
   post::accelerator_t _post (c->plan->source);
 
-  hb_hashmap_t<hb_bytes_t, unsigned, std::nullptr_t, unsigned, nullptr, (unsigned)-1> glyph_name_to_new_index;
+  hb_hashmap_t<hb_bytes_t, unsigned, true> glyph_name_to_new_index;
   for (hb_codepoint_t new_gid = 0; new_gid < num_glyphs; new_gid++)
   {
     hb_codepoint_t old_gid = reverse_glyph_map.get (new_gid);
     unsigned old_index = glyphNameIndex[old_gid];
 
     unsigned new_index;
+    const unsigned *new_index2;
     if (old_index <= 257) new_index = old_index;
-    else if (old_new_index_map.has (old_index)) new_index = old_new_index_map.get (old_index);
-    else
+    else if (old_new_index_map.has (old_index, &new_index2))
     {
+      new_index = *new_index2;
+    } else {
       hb_bytes_t s = _post.find_glyph_name (old_gid);
       new_index = glyph_name_to_new_index.get (s);
       if (new_index == (unsigned)-1)
