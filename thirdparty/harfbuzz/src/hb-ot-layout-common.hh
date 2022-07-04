@@ -102,7 +102,7 @@ static void ClassDef_remap_and_serialize (
 struct hb_prune_langsys_context_t
 {
   hb_prune_langsys_context_t (const void         *table_,
-                              hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
+                              hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map_,
                               const hb_map_t     *duplicate_feature_map_,
                               hb_set_t           *new_collected_feature_indexes_)
       :table (table_),
@@ -122,7 +122,7 @@ struct hb_prune_langsys_context_t
 
   public:
   const void *table;
-  hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
+  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map;
   const hb_map_t     *duplicate_feature_map;
   hb_set_t           *new_feature_indexes;
 
@@ -162,14 +162,14 @@ struct hb_subset_layout_context_t :
   hb_subset_context_t *subset_context;
   const hb_tag_t table_tag;
   const hb_map_t *lookup_index_map;
-  const hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map;
+  const hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map;
   const hb_map_t *feature_index_map;
   unsigned cur_script_index;
 
   hb_subset_layout_context_t (hb_subset_context_t *c_,
 			      hb_tag_t tag_,
 			      hb_map_t *lookup_map_,
-			      hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map_,
+			      hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map_,
 			      hb_map_t *feature_index_map_) :
 				subset_context (c_),
 				table_tag (tag_),
@@ -659,7 +659,8 @@ struct LangSys
     auto *out = c->serializer->start_embed (*this);
     if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
 
-    out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex) ? l->feature_index_map->get (reqFeatureIndex) : 0xFFFFu;
+    const unsigned *v;
+    out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
 
     if (!l->visitFeatureIndex (featureIndex.len))
       return_trace (false);
@@ -722,12 +723,8 @@ struct Script
 
     if (!c->script_langsys_map->has (script_index))
     {
-      hb_set_t* empty_set = hb_set_create ();
-      if (unlikely (!c->script_langsys_map->set (script_index, empty_set)))
-      {
-	hb_set_destroy (empty_set);
+      if (unlikely (!c->script_langsys_map->set (script_index, hb::unique_ptr<hb_set_t> {hb_set_create ()})))
 	return;
-      }
     }
 
     unsigned langsys_count = get_lang_sys_count ();
@@ -2004,6 +2001,8 @@ struct ClassDefFormat1
     return_trace (c->check_struct (this) && classValue.sanitize (c));
   }
 
+  unsigned cost () const { return 1; }
+
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
   {
@@ -2239,6 +2238,8 @@ struct ClassDefFormat2
     TRACE_SANITIZE (this);
     return_trace (rangeRecord.sanitize (c));
   }
+
+  unsigned cost () const { return hb_bit_storage ((unsigned) rangeRecord.len); /* bsearch cost */ }
 
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
@@ -2480,6 +2481,15 @@ struct ClassDef
     }
   }
 
+  unsigned cost () const
+  {
+    switch (u.format) {
+    case 1: return u.format1.cost ();
+    case 2: return u.format2.cost ();
+    default:return 0u;
+    }
+  }
+
   /* Might return false if array looks unsorted.
    * Used for faster rejection of corrupt data. */
   template <typename set_t>
@@ -2601,13 +2611,26 @@ struct VarRegionAxis
   DEFINE_SIZE_STATIC (6);
 };
 
+#define REGION_CACHE_ITEM_CACHE_INVALID 2.f
+
 struct VarRegionList
 {
+  using cache_t = float;
+
   float evaluate (unsigned int region_index,
-		  const int *coords, unsigned int coord_len) const
+		  const int *coords, unsigned int coord_len,
+		  cache_t *cache = nullptr) const
   {
     if (unlikely (region_index >= regionCount))
       return 0.;
+
+    float *cached_value = nullptr;
+    if (cache)
+    {
+      cached_value = &(cache[region_index]);
+      if (likely (*cached_value != REGION_CACHE_ITEM_CACHE_INVALID))
+	return *cached_value;
+    }
 
     const VarRegionAxis *axes = axesZ.arrayZ + (region_index * axisCount);
 
@@ -2618,9 +2641,16 @@ struct VarRegionList
       int coord = i < coord_len ? coords[i] : 0;
       float factor = axes[i].evaluate (coord);
       if (factor == 0.f)
+      {
+        if (cache)
+	  *cached_value = 0.;
 	return 0.;
+      }
       v *= factor;
     }
+
+    if (cache)
+      *cached_value = v;
     return v;
   }
 
@@ -2668,7 +2698,7 @@ struct VarData
   { return regionIndices.len; }
 
   unsigned int get_row_size () const
-  { return shortCount + regionIndices.len; }
+  { return (wordCount () + regionIndices.len) * (longWords () ? 2 : 1); }
 
   unsigned int get_size () const
   { return min_size
@@ -2678,13 +2708,17 @@ struct VarData
 
   float get_delta (unsigned int inner,
 		   const int *coords, unsigned int coord_count,
-		   const VarRegionList &regions) const
+		   const VarRegionList &regions,
+		   VarRegionList::cache_t *cache = nullptr) const
   {
     if (unlikely (inner >= itemCount))
       return 0.;
 
    unsigned int count = regionIndices.len;
-   unsigned int scount = shortCount;
+   bool is_long = longWords ();
+   unsigned word_count = wordCount ();
+   unsigned int scount = is_long ? count - word_count : word_count;
+   unsigned int lcount = is_long ? word_count : 0;
 
    const HBUINT8 *bytes = get_delta_bytes ();
    const HBUINT8 *row = bytes + inner * (scount + count);
@@ -2692,16 +2726,22 @@ struct VarData
    float delta = 0.;
    unsigned int i = 0;
 
-   const HBINT16 *scursor = reinterpret_cast<const HBINT16 *> (row);
+   const HBINT16 *lcursor = reinterpret_cast<const HBINT16 *> (row);
+   for (; i < lcount; i++)
+   {
+     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
+     delta += scalar * *lcursor++;
+   }
+   const HBINT16 *scursor = reinterpret_cast<const HBINT16 *> (lcursor);
    for (; i < scount; i++)
    {
-     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count);
+     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
      delta += scalar * *scursor++;
    }
    const HBINT8 *bcursor = reinterpret_cast<const HBINT8 *> (scursor);
    for (; i < count; i++)
    {
-     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count);
+     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
      delta += scalar * *bcursor++;
    }
 
@@ -2725,7 +2765,7 @@ struct VarData
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  regionIndices.sanitize (c) &&
-		  shortCount <= regionIndices.len &&
+		  wordCount () <= regionIndices.len &&
 		  c->check_range (get_delta_bytes (),
 				  itemCount,
 				  get_row_size ()));
@@ -2740,43 +2780,66 @@ struct VarData
     if (unlikely (!c->extend_min (this))) return_trace (false);
     itemCount = inner_map.get_next_value ();
 
-    /* Optimize short count */
-    unsigned short ri_count = src->regionIndices.len;
-    enum delta_size_t { kZero=0, kByte, kShort };
+    /* Optimize word count */
+    unsigned ri_count = src->regionIndices.len;
+    enum delta_size_t { kZero=0, kNonWord, kWord };
     hb_vector_t<delta_size_t> delta_sz;
     hb_vector_t<unsigned int> ri_map;	/* maps old index to new index */
     delta_sz.resize (ri_count);
     ri_map.resize (ri_count);
-    unsigned int new_short_count = 0;
+    unsigned int new_word_count = 0;
     unsigned int r;
+
+    bool has_long = false;
+    if (src->longWords ())
+    {
+      for (r = 0; r < ri_count; r++)
+      {
+	for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
+	{
+	  unsigned int old = inner_map.backward (i);
+	  int32_t delta = src->get_item_delta (old, r);
+	  if (delta < -65536 || 65535 < delta)
+	  {
+	    has_long = true;
+	    break;
+	  }
+        }
+      }
+    }
+
+    signed min_threshold = has_long ? -65536 : -128;
+    signed max_threshold = has_long ? +65535 : +127;
     for (r = 0; r < ri_count; r++)
     {
       delta_sz[r] = kZero;
       for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
       {
 	unsigned int old = inner_map.backward (i);
-	int16_t delta = src->get_item_delta (old, r);
-	if (delta < -128 || 127 < delta)
+	int32_t delta = src->get_item_delta (old, r);
+	if (delta < min_threshold || max_threshold < delta)
 	{
-	  delta_sz[r] = kShort;
-	  new_short_count++;
+	  delta_sz[r] = kWord;
+	  new_word_count++;
 	  break;
 	}
 	else if (delta != 0)
-	  delta_sz[r] = kByte;
+	  delta_sz[r] = kNonWord;
       }
     }
-    unsigned int short_index = 0;
-    unsigned int byte_index = new_short_count;
+
+    unsigned int word_index = 0;
+    unsigned int non_word_index = new_word_count;
     unsigned int new_ri_count = 0;
     for (r = 0; r < ri_count; r++)
       if (delta_sz[r])
       {
-	ri_map[r] = (delta_sz[r] == kShort)? short_index++ : byte_index++;
+	ri_map[r] = (delta_sz[r] == kWord)? word_index++ : non_word_index++;
 	new_ri_count++;
       }
 
-    shortCount = new_short_count;
+    wordSizeCount = new_word_count | (has_long ? 0x8000u /* LONG_WORDS */ : 0);
+
     regionIndices.len = new_ri_count;
 
     if (unlikely (!c->extend (this))) return_trace (false);
@@ -2816,28 +2879,55 @@ struct VarData
   HBUINT8 *get_delta_bytes ()
   { return &StructAfter<HBUINT8> (regionIndices); }
 
-  int16_t get_item_delta (unsigned int item, unsigned int region) const
+  int32_t get_item_delta (unsigned int item, unsigned int region) const
   {
     if ( item >= itemCount || unlikely (region >= regionIndices.len)) return 0;
-    const HBINT8 *p = (const HBINT8 *)get_delta_bytes () + item * get_row_size ();
-    if (region < shortCount)
-      return ((const HBINT16 *)p)[region];
+    const HBINT8 *p = (const HBINT8 *) get_delta_bytes () + item * get_row_size ();
+    unsigned word_count = wordCount ();
+    bool is_long = longWords ();
+    if (is_long)
+    {
+      if (region < word_count)
+	return ((const HBINT32 *) p)[region];
+      else
+	return ((const HBINT16 *)(p + HBINT32::static_size * word_count))[region - word_count];
+    }
     else
-      return (p + HBINT16::static_size * shortCount)[region - shortCount];
+    {
+      if (region < word_count)
+	return ((const HBINT16 *) p)[region];
+      else
+	return (p + HBINT16::static_size * word_count)[region - word_count];
+    }
   }
 
-  void set_item_delta (unsigned int item, unsigned int region, int16_t delta)
+  void set_item_delta (unsigned int item, unsigned int region, int32_t delta)
   {
     HBINT8 *p = (HBINT8 *)get_delta_bytes () + item * get_row_size ();
-    if (region < shortCount)
-      ((HBINT16 *)p)[region] = delta;
+    unsigned word_count = wordCount ();
+    bool is_long = longWords ();
+    if (is_long)
+    {
+      if (region < word_count)
+	((HBINT32 *) p)[region] = delta;
+      else
+	((HBINT16 *)(p + HBINT32::static_size * word_count))[region - word_count] = delta;
+    }
     else
-      (p + HBINT16::static_size * shortCount)[region - shortCount] = delta;
+    {
+      if (region < word_count)
+	((HBINT16 *) p)[region] = delta;
+      else
+	(p + HBINT16::static_size * word_count)[region - word_count] = delta;
+    }
   }
+
+  bool longWords () const { return wordSizeCount & 0x8000u /* LONG_WORDS */; }
+  unsigned wordCount () const { return wordSizeCount & 0x7FFFu /* WORD_DELTA_COUNT_MASK */; }
 
   protected:
   HBUINT16		itemCount;
-  HBUINT16		shortCount;
+  HBUINT16		wordSizeCount;
   Array16Of<HBUINT16>	regionIndices;
 /*UnsizedArrayOf<HBUINT8>bytesX;*/
   public:
@@ -2846,9 +2936,28 @@ struct VarData
 
 struct VariationStore
 {
+  using cache_t = VarRegionList::cache_t;
+
+  cache_t *create_cache () const
+  {
+    auto &r = this+regions;
+    unsigned count = r.regionCount;
+
+    float *cache = (float *) hb_malloc (sizeof (float) * count);
+    if (unlikely (!cache)) return nullptr;
+
+    for (unsigned i = 0; i < count; i++)
+      cache[i] = REGION_CACHE_ITEM_CACHE_INVALID;
+
+    return cache;
+  }
+
+  static void destroy_cache (cache_t *cache) { hb_free (cache); }
+
   private:
   float get_delta (unsigned int outer, unsigned int inner,
-		   const int *coords, unsigned int coord_count) const
+		   const int *coords, unsigned int coord_count,
+		   VarRegionList::cache_t *cache = nullptr) const
   {
 #ifdef HB_NO_VAR
     return 0.f;
@@ -2859,16 +2968,18 @@ struct VariationStore
 
     return (this+dataSets[outer]).get_delta (inner,
 					     coords, coord_count,
-					     this+regions);
+					     this+regions,
+					     cache);
   }
 
   public:
   float get_delta (unsigned int index,
-		   const int *coords, unsigned int coord_count) const
+		   const int *coords, unsigned int coord_count,
+		   VarRegionList::cache_t *cache = nullptr) const
   {
     unsigned int outer = index >> 16;
     unsigned int inner = index & 0xFFFF;
-    return get_delta (outer, inner, coords, coord_count);
+    return get_delta (outer, inner, coords, coord_count, cache);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -2994,6 +3105,8 @@ struct VariationStore
   public:
   DEFINE_SIZE_ARRAY_SIZED (8, dataSets);
 };
+
+#undef REGION_CACHE_ITEM_CACHE_INVALID
 
 /*
  * Feature Variations
@@ -3462,11 +3575,15 @@ struct VariationDevice
 
   private:
 
-  hb_position_t get_x_delta (hb_font_t *font, const VariationStore &store) const
-  { return font->em_scalef_x (get_delta (font, store)); }
+  hb_position_t get_x_delta (hb_font_t *font,
+			     const VariationStore &store,
+			     VariationStore::cache_t *store_cache = nullptr) const
+  { return font->em_scalef_x (get_delta (font, store, store_cache)); }
 
-  hb_position_t get_y_delta (hb_font_t *font, const VariationStore &store) const
-  { return font->em_scalef_y (get_delta (font, store)); }
+  hb_position_t get_y_delta (hb_font_t *font,
+			     const VariationStore &store,
+			     VariationStore::cache_t *store_cache = nullptr) const
+  { return font->em_scalef_y (get_delta (font, store, store_cache)); }
 
   VariationDevice* copy (hb_serialize_context_t *c, const hb_map_t *layout_variation_idx_map) const
   {
@@ -3500,9 +3617,11 @@ struct VariationDevice
 
   private:
 
-  float get_delta (hb_font_t *font, const VariationStore &store) const
+  float get_delta (hb_font_t *font,
+		   const VariationStore &store,
+		   VariationStore::cache_t *store_cache = nullptr) const
   {
-    return store.get_delta (varIdx, font->coords, font->num_coords);
+    return store.get_delta (varIdx, font->coords, font->num_coords, (VariationStore::cache_t *) store_cache);
   }
 
   protected:
@@ -3525,7 +3644,9 @@ struct DeviceHeader
 
 struct Device
 {
-  hb_position_t get_x_delta (hb_font_t *font, const VariationStore &store=Null (VariationStore)) const
+  hb_position_t get_x_delta (hb_font_t *font,
+			     const VariationStore &store=Null (VariationStore),
+			     VariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -3535,13 +3656,15 @@ struct Device
 #endif
 #ifndef HB_NO_VAR
     case 0x8000:
-      return u.variation.get_x_delta (font, store);
+      return u.variation.get_x_delta (font, store, store_cache);
 #endif
     default:
       return 0;
     }
   }
-  hb_position_t get_y_delta (hb_font_t *font, const VariationStore &store=Null (VariationStore)) const
+  hb_position_t get_y_delta (hb_font_t *font,
+			     const VariationStore &store=Null (VariationStore),
+			     VariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -3551,7 +3674,7 @@ struct Device
 #endif
 #ifndef HB_NO_VAR
     case 0x8000:
-      return u.variation.get_y_delta (font, store);
+      return u.variation.get_y_delta (font, store, store_cache);
 #endif
     default:
       return 0;

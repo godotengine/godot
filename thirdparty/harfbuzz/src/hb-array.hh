@@ -56,7 +56,6 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   hb_array_t& operator= (const hb_array_t&) = default;
   hb_array_t& operator= (hb_array_t&&) = default;
 
-  constexpr hb_array_t (std::nullptr_t) : hb_array_t () {}
   constexpr hb_array_t (Type *array_, unsigned int length_) : arrayZ (array_), length (length_) {}
   template <unsigned int length_>
   constexpr hb_array_t (Type (&array_)[length_]) : hb_array_t (array_, length_) {}
@@ -314,7 +313,6 @@ struct hb_sorted_array_t :
   hb_sorted_array_t& operator= (const hb_sorted_array_t&) = default;
   hb_sorted_array_t& operator= (hb_sorted_array_t&&) = default;
 
-  constexpr hb_sorted_array_t (std::nullptr_t) : hb_sorted_array_t () {}
   constexpr hb_sorted_array_t (Type *array_, unsigned int length_) : hb_array_t<Type> (array_, length_) {}
   template <unsigned int length_>
   constexpr hb_sorted_array_t (Type (&array_)[length_]) : hb_array_t<Type> (array_) {}

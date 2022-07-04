@@ -695,7 +695,7 @@ struct hb_serialize_context_t
     check_assign (off, offset, HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
   }
 
-  public: /* TODO Make private. */
+  public:
   char *start, *head, *tail, *end;
   unsigned int debug_depth;
   hb_serialize_error_t errors;
@@ -719,9 +719,7 @@ struct hb_serialize_context_t
   hb_vector_t<object_t *> packed;
 
   /* Map view of packed objects. */
-  hb_hashmap_t<const object_t *, objidx_t,
-	       const object_t *, objidx_t,
-	       nullptr, 0> packed_map;
+  hb_hashmap_t<const object_t *, objidx_t> packed_map;
 };
 
 #endif /* HB_SERIALIZE_HH */

@@ -369,7 +369,7 @@ hb_blob_get_length (hb_blob_t *blob)
  *
  * Fetches the data from a blob.
  *
- * Returns: (transfer none) (array length=length): the byte data of @blob.
+ * Returns: (nullable) (transfer none) (array length=length): the byte data of @blob.
  *
  * Since: 0.9.2
  **/
@@ -572,7 +572,7 @@ _open_resource_fork (const char *file_name, hb_mapped_file_t *file)
 
   strncpy (rsrc_name, file_name, name_len);
   strncpy (rsrc_name + name_len, _PATH_RSRCFORKSPEC,
-	   sizeof (_PATH_RSRCFORKSPEC) - 1);
+	   sizeof (_PATH_RSRCFORKSPEC));
 
   int fd = open (rsrc_name, O_RDONLY | O_BINARY, 0);
   hb_free (rsrc_name);

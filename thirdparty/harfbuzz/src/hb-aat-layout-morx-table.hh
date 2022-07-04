@@ -123,7 +123,7 @@ struct RearrangementSubtable
 	bool reverse_l = 3 == (m >> 4);
 	bool reverse_r = 3 == (m & 0x0F);
 
-	if (end - start >= l + r)
+	if (end - start >= l + r && end-start <= HB_MAX_CONTEXT_LENGTH)
 	{
 	  buffer->merge_clusters (start, hb_min (buffer->idx + 1, buffer->len));
 	  buffer->merge_clusters (start, end);
