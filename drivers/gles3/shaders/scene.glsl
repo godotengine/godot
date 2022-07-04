@@ -1780,7 +1780,12 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, inout vec3 out_sp
 	vec3 ref_vec = normalize(reflect(normalize(pos), normal));
 
 	//find arbitrary tangent and bitangent, then build a matrix
-	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+	vec3 v0;
+	if (abs(normal.z) < 0.999) {
+		v0 = vec3(0.0, 0.0, 1.0);
+	} else {
+		v0 = vec3(0.0, 1.0, 0.0);
+	}
 	vec3 tangent = normalize(cross(v0, normal));
 	vec3 bitangent = normalize(cross(tangent, normal));
 	mat3 normal_mat = mat3(tangent, bitangent, normal);
@@ -2338,7 +2343,12 @@ FRAGMENT_SHADER_CODE
 		//apply fog
 
 		if (fog_depth_enabled) {
-			float fog_far = fog_depth_end > 0.0 ? fog_depth_end : z_far;
+			float fog_far;
+			if (fog_depth_end > 0.0) {
+				fog_far = fog_depth_end;
+			} else {
+				fog_far = z_far;
+			}
 
 			float fog_z = smoothstep(fog_depth_begin, fog_far, length(vertex));
 
@@ -2379,7 +2389,12 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_FORWARD_LIGHTING
 	total_ambient += max_emission;
 #endif
-	float ambient_scale = (total_ambient > 0.0) ? (max_ambient + ambient_occlusion_affect_light * max_diffuse) / total_ambient : 0.0;
+	float ambient_scale;
+	if (total_ambient > 0.0) {
+		ambient_scale = (max_ambient + ambient_occlusion_affect_light * max_diffuse) / total_ambient;
+	} else {
+		ambient_scale = 0.0;
+	}
 
 #if defined(ENABLE_AO)
 	ambient_scale = mix(0.0, ambient_scale, ambient_occlusion_affect_ao_channel);
