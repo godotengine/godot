@@ -158,6 +158,7 @@ public:
 		return _ptr[p_index];
 	}
 
+	template <bool p_ensure_zero = false>
 	Error resize(int p_size);
 
 	_FORCE_INLINE_ void remove_at(int p_index) {
@@ -257,6 +258,7 @@ uint32_t CowData<T>::_copy_on_write() {
 }
 
 template <class T>
+template <bool p_ensure_zero>
 Error CowData<T>::resize(int p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
@@ -306,6 +308,8 @@ Error CowData<T>::resize(int p_size) {
 			for (int i = *_get_size(); i < p_size; i++) {
 				memnew_placement(&_ptr[i], T);
 			}
+		} else if (p_ensure_zero) {
+			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
 		}
 
 		*_get_size() = p_size;
