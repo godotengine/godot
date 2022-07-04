@@ -1748,6 +1748,10 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
+		const SuiteNode::Local &local = current_suite->get_local(n_for->variable->name);
+		if (local.type != SuiteNode::Local::UNDEFINED) {
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->variable->name), n_for->variable);
+		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
 	suite->parent_for = n_for;
