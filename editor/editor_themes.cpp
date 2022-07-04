@@ -1683,6 +1683,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color completion_existing_color = alpha2;
 	// Same opacity as the scroll grabber editor icon.
 	const Color completion_scroll_color = Color(mono_value, mono_value, mono_value, 0.29);
+	const Color completion_scroll_hovered_color = Color(mono_value, mono_value, mono_value, 0.4);
 	const Color completion_font_color = font_color;
 	const Color text_color = font_color;
 	const Color line_number_color = dim_color;
@@ -1721,6 +1722,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/completion_selected_color", completion_selected_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_existing_color", completion_existing_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_color", completion_scroll_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_hovered_color", completion_scroll_hovered_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_font_color", completion_font_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/text_color", text_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/line_number_color", line_number_color, true);
@@ -1766,6 +1768,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));
 	theme->set_color("completion_scroll_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_color"));
+	theme->set_color("completion_scroll_hovered_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_hovered_color"));
 	theme->set_color("completion_font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_font_color"));
 	theme->set_color("font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/text_color"));
 	theme->set_color("line_number_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/line_number_color"));

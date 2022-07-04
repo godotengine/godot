@@ -68,6 +68,7 @@ void CodeEdit::_notification(int p_what) {
 			code_completion_max_lines = get_theme_constant(SNAME("completion_lines"));
 			code_completion_scroll_width = get_theme_constant(SNAME("completion_scroll_width"));
 			code_completion_scroll_color = get_theme_color(SNAME("completion_scroll_color"));
+			code_completion_scroll_hovered_color = get_theme_color(SNAME("completion_scroll_hovered_color"));
 			code_completion_background_color = get_theme_color(SNAME("completion_background_color"));
 			code_completion_selected_color = get_theme_color(SNAME("completion_selected_color"));
 			code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
@@ -134,6 +135,9 @@ void CodeEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), code_completion_background_color);
 				}
 
+				code_completion_scroll_rect.position = code_completion_rect.position + Vector2(code_completion_rect.size.width, 0);
+				code_completion_scroll_rect.size = Vector2(scroll_width, code_completion_rect.size.height);
+
 				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
 
@@ -185,9 +189,11 @@ void CodeEdit::_notification(int p_what) {
 
 				/* Draw a small scroll rectangle to show a position in the options. */
 				if (scroll_width) {
+					Color scroll_color = is_code_completion_scroll_hovered || is_code_completion_scroll_pressed ? code_completion_scroll_hovered_color : code_completion_scroll_color;
+
 					float r = (float)code_completion_max_lines / code_completion_options_count;
 					float o = (float)code_completion_line_ofs / code_completion_options_count;
-					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), code_completion_scroll_color);
+					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), scroll_color);
 				}
 			}
 
@@ -260,6 +266,12 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
+		if (is_code_completion_scroll_pressed && mb->get_button_index() == MouseButton::LEFT) {
+			is_code_completion_scroll_pressed = false;
+			update();
+			return;
+		}
+
 		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
 			if (!mb->is_pressed()) {
 				return;
@@ -289,7 +301,21 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 			}
 			return;
+		} else if (code_completion_active && code_completion_scroll_rect.has_point(mb->get_position())) {
+			if (mb->get_button_index() != MouseButton::LEFT) {
+				return;
+			}
+
+			if (mb->is_pressed()) {
+				is_code_completion_scroll_pressed = true;
+
+				_update_scroll_selected_line(mb->get_position().y);
+				update();
+			}
+
+			return;
 		}
+
 		cancel_code_completion();
 		set_code_hint("");
 
@@ -353,6 +379,18 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			} else {
 				set_symbol_lookup_word_as_valid(false);
 			}
+		}
+
+		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
+		if (is_code_completion_scroll_hovered != scroll_hovered) {
+			is_code_completion_scroll_hovered = scroll_hovered;
+			update();
+		}
+
+		if (is_code_completion_scroll_pressed) {
+			_update_scroll_selected_line(mpos.y);
+			update();
+			return;
 		}
 	}
 
@@ -543,6 +581,10 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	}
 
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (!is_editable() && (!is_selecting_enabled() || get_line_count() == 0))) {
+		return CURSOR_ARROW;
+	}
+
+	if (code_completion_active && code_completion_scroll_rect.has_point(p_pos)) {
 		return CURSOR_ARROW;
 	}
 
@@ -2697,6 +2739,13 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 }
 
 /* Code Completion */
+void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
+	float percent = (float)(p_mouse_y - code_completion_scroll_rect.position.y) / code_completion_scroll_rect.size.height;
+	percent = CLAMP(percent, 0.0f, 1.0f);
+
+	code_completion_current_selected = (int)(percent * (code_completion_options.size() - 1));
+}
+
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
