@@ -2490,6 +2490,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						windows[window_id].last_tilt = Vector2();
 					}
 
+					windows[window_id].last_pen_inverted = packet.pkStatus & TPS_INVERT;
+
 					POINT coords;
 					GetCursorPos(&coords);
 					ScreenToClient(windows[window_id].hWnd, &coords);
@@ -2508,6 +2510,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					mm->set_pressure(windows[window_id].last_pressure);
 					mm->set_tilt(windows[window_id].last_tilt);
+					mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
 					mm->set_button_mask(last_button_state);
 
@@ -2640,6 +2643,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if ((pen_info.penMask & PEN_MASK_TILT_X) && (pen_info.penMask & PEN_MASK_TILT_Y)) {
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
 			}
+			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
 
 			mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
 			mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
@@ -2742,14 +2746,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				} else {
 					windows[window_id].last_tilt = Vector2();
 					windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+					windows[window_id].last_pen_inverted = false;
 				}
 			} else {
 				windows[window_id].last_tilt = Vector2();
 				windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				windows[window_id].last_pen_inverted = false;
 			}
 
 			mm->set_pressure(windows[window_id].last_pressure);
 			mm->set_tilt(windows[window_id].last_tilt);
+			mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
 			mm->set_button_mask(last_button_state);
 
@@ -3360,8 +3367,8 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 		if ((p_new_driver == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+			wd.wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 			wd.wtlc.lcPktMode = 0;
 			wd.wtlc.lcOutOrgX = 0;
 			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
@@ -3484,8 +3491,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+			wd.wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 			wd.wtlc.lcPktMode = 0;
 			wd.wtlc.lcOutOrgX = 0;
 			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
