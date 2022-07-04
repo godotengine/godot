@@ -265,29 +265,7 @@ class DisplayServerWayland : public DisplayServer {
 		CursorShape cursor_shape = CURSOR_ARROW;
 		MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
 
-		// NOTE: This variable is a `LocalVector` of `ScreenData` pointers because
-		// this list will:
-		//
-		// - Be Updated very rarely (only by screen hotplugs), so we can allow
-		//   ourselves for it to be more expensive to rebuild.
-		//
-		// - Be potentially read a lot and almost always in an indexed fashion (for
-		//   example any of the `screen_*` methods each frame from GDScript), so
-		//   having a quick read is relatively important.
-		//
-		// - Have to keep its pointers valid as the Wayland listeners require a
-		//   constant pointer for their data. That's why we need to manually manage
-		//   the data's memory and make this whole variable a `LocalVector` of
-		//   pointers.
-		//
-		// While this whole approach is probably the result of a bit too much
-		// premature optimization for an issue that I thought could be trivially
-		// solved, it's already there and it works, so I'm keeping it. Also, in the
-		// worst case, if this were to give problems or result in an uselessly
-		// convoluted approach, it should be relatively easy to switch back to a
-		// simpler (albeit, I think techcnically more wasteful but only in extreme
-		// circumstances) plain `List`.
-		LocalVector<ScreenData *> screens;
+		List<ScreenData> screens;
 		List<SeatState> seats;
 
 		List<WindowID> popup_menu_stack;

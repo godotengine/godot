@@ -488,11 +488,13 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	}
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
-		ScreenData *sd = memnew(ScreenData);
+		// The screen listener requires a pointer for its state data. For this
+		// reason, to get one that points to a variable that can live outside of this
+		// scope, we push a default `ScreenData` in `wls->screens` and get the
+		// address of this new element.
+		ScreenData *sd = &wls->screens.push_back({})->get();
 		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 3);
 		sd->wl_output_name = name;
-
-		wls->screens.push_back(sd);
 
 		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
 		return;
@@ -577,31 +579,38 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		globals.wlr_data_control_manager = nullptr;
 	}
 
-	// FIXME: This is a very bruteforce approach.
-	for (int i = 0; i < (int)wls->screens.size(); i++) {
-		// Iterate through all of the screens to find if any got removed.
-		ScreenData *sd = wls->screens[i];
+	{
+		// FIXME: This is a very bruteforce approach.
+		List<ScreenData>::Element *it = wls->screens.front();
+		while (it) {
+			// Iterate through all of the screens to find if any got removed.
+			ScreenData &sd = it->get();
 
-		if (sd->wl_output_name == name) {
-			wl_output_destroy(sd->wl_output);
-			memfree(wls->screens[i]);
-			wls->screens.remove_at(i);
-			return;
+			if (sd.wl_output_name == name) {
+				wl_output_destroy(sd.wl_output);
+				wls->screens.erase(it);
+				return;
+			}
+
+			it = it->next();
 		}
 	}
 
-	List<SeatState>::Element *it = wls->seats.front();
-	while (it) {
-		// Iterate through all of the seats to find if any got removed.
-		SeatState &ss = it->get();
+	{
+		// FIXME: This is a very bruteforce approach.
+		List<SeatState>::Element *it = wls->seats.front();
+		while (it) {
+			// Iterate through all of the seats to find if any got removed.
+			SeatState &ss = it->get();
 
-		if (ss.wl_seat_name == name) {
-			wl_seat_destroy(ss.wl_seat);
-			wls->seats.erase(it);
-			return;
+			if (ss.wl_seat_name == name) {
+				wl_seat_destroy(ss.wl_seat);
+				wls->seats.erase(it);
+				return;
+			}
+
+			it = it->next();
 		}
-
-		it = it->next();
 	}
 }
 
@@ -1450,7 +1459,7 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Point2i());
 
-	return wls.screens[p_screen]->position;
+	return wls.screens[p_screen].position;
 }
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
@@ -1458,7 +1467,7 @@ Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Size2i());
 
-	return wls.screens[p_screen]->size;
+	return wls.screens[p_screen].size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
@@ -1477,7 +1486,7 @@ int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 	// Invalid screen?
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
 
-	ScreenData &sd = *wls.screens[p_screen];
+	const ScreenData &sd = wls.screens[p_screen];
 
 	int width_mm = sd.physical_size.width;
 	int height_mm = sd.physical_size.height;
@@ -1502,7 +1511,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 
 	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), -1);
 
-	return wls.screens[p_screen]->refresh_rate;
+	return wls.screens[p_screen].refresh_rate;
 }
 
 bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
@@ -2369,12 +2378,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	for (SeatState &seat : wls.seats) {
 		munmap((void *)seat.keymap_buffer, seat.keymap_buffer_size);
-	}
-
-	// Free all screens.
-	for (int i = 0; i < (int)wls.screens.size(); i++) {
-		memfree(wls.screens[i]);
-		wls.screens[i] = nullptr;
 	}
 
 	wl_display_disconnect(wls.display);
