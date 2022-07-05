@@ -744,6 +744,17 @@ void LineEdit::_notification(int p_what) {
 			update();
 		} break;
 
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (caret_blinking) {
+				caret_blink_timer += get_process_delta_time();
+
+				if (caret_blink_timer >= caret_blink_speed) {
+					caret_blink_timer = 0.0;
+					_toggle_draw_caret();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
 				draw_caret = false;
@@ -991,8 +1002,9 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_ENTER: {
 			if (!caret_force_displayed) {
 				if (caret_blink_enabled) {
-					if (caret_blink_timer->is_stopped()) {
-						caret_blink_timer->start();
+					if (!caret_blinking) {
+						caret_blinking = true;
+						caret_blink_timer = 0.0;
 					}
 				} else {
 					draw_caret = true;
@@ -1010,7 +1022,7 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled && !caret_force_displayed) {
-				caret_blink_timer->stop();
+				caret_blinking = false;
 			}
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
@@ -1318,14 +1330,16 @@ bool LineEdit::is_caret_blink_enabled() const {
 
 void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
+	set_process_internal(p_enabled);
 
 	if (has_focus() || caret_force_displayed) {
 		if (p_enabled) {
-			if (caret_blink_timer->is_stopped()) {
-				caret_blink_timer->start();
+			if (!caret_blinking) {
+				caret_blinking = true;
+				caret_blink_timer = 0.0;
 			}
 		} else {
-			caret_blink_timer->stop();
+			caret_blinking = false;
 		}
 	}
 
@@ -1345,20 +1359,19 @@ void LineEdit::set_caret_force_displayed(const bool p_enabled) {
 }
 
 float LineEdit::get_caret_blink_speed() const {
-	return caret_blink_timer->get_wait_time();
+	return caret_blink_speed;
 }
 
 void LineEdit::set_caret_blink_speed(const float p_speed) {
 	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_timer->set_wait_time(p_speed);
+	caret_blink_speed = p_speed;
 }
 
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
 		if (has_focus()) {
-			caret_blink_timer->stop();
-			caret_blink_timer->start();
+			caret_blink_timer = 0.0;
 			update();
 		}
 	}
@@ -2508,10 +2521,6 @@ LineEdit::LineEdit(const String &p_placeholder) {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_process_unhandled_key_input(true);
 
-	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer, false, INTERNAL_MODE_FRONT);
-	caret_blink_timer->set_wait_time(0.65);
-	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	set_caret_blink_enabled(false);
 
 	set_placeholder(p_placeholder);
