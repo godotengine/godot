@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bone_map.h                                                           */
+/*  post_import_plugin_skeleton_rest_fixer.h                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BONE_MAP_H
-#define BONE_MAP_H
+#ifndef POST_IMPORT_PLUGIN_SKELETON_REST_FIXER_H
+#define POST_IMPORT_PLUGIN_SKELETON_REST_FIXER_H
 
-#include "skeleton_profile.h"
+#include "resource_importer_scene.h"
 
-class BoneMap : public Resource {
-	GDCLASS(BoneMap, Resource);
-
-	Ref<SkeletonProfile> profile;
-	HashMap<StringName, StringName> bone_map;
-
-	void _update_profile();
-	void _validate_bone_map();
-
-protected:
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	virtual void _validate_property(PropertyInfo &property) const override;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	static void _bind_methods();
+class PostImportPluginSkeletonRestFixer : public EditorScenePostImportPlugin {
+	GDCLASS(PostImportPluginSkeletonRestFixer, EditorScenePostImportPlugin);
 
 public:
-	int get_profile_type() const;
-	void set_profile_type(const int p_profile_type);
+	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) override;
+	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) override;
 
-	Ref<SkeletonProfile> get_profile() const;
-	void set_profile(const Ref<SkeletonProfile> &p_profile);
-
-	int get_skeleton_bone_name_count(const StringName p_skeleton_bone_name) const;
-
-	StringName get_skeleton_bone_name(StringName p_profile_bone_name) const;
-	void set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name);
-
-	StringName find_profile_bone_name(StringName p_skeleton_bone_name) const;
-
-	BoneMap();
-	~BoneMap();
+	PostImportPluginSkeletonRestFixer();
 };
 
-#endif // BONE_MAP_H
+#endif // POST_IMPORT_PLUGIN_SKELETON_REST_FIXER_H
