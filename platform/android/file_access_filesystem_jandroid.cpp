@@ -72,7 +72,14 @@ Error FileAccessFilesystemJAndroid::_open(const String &p_path, int p_mode_flags
 		env->DeleteLocalRef(js);
 
 		if (res <= 0) {
-			return ERR_FILE_CANT_OPEN;
+			switch (res) {
+				case 0:
+				default:
+					return ERR_FILE_CANT_OPEN;
+
+				case -1:
+					return ERR_FILE_NOT_FOUND;
+			}
 		}
 
 		id = res;
