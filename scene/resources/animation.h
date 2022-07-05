@@ -84,21 +84,22 @@ private:
 		double duration = 0.0; // duration in secs (0.0 duration is a trigger)
 	};
 
-	struct BaseTrack {
-		TrackType type = TrackType::TYPE_ANIMATION;
-		InterpolationType interpolation = INTERPOLATION_LINEAR;
-		bool loop_wrap = true;
-		NodePath path; // path to something
-		bool imported = false;
-		bool enabled = true;
-		int32_t compressed_track = -1;
-		BaseTrack() {}
-		virtual ~BaseTrack() {}
-
-		virtual Key * write_key(int index) = 0;
-		virtual int get_values_size() { ERR_FAIL_V(-1); }
-		virtual void remove_key_at(int index) {ERR_FAIL(); }
-		virtual Key get_key(int index) { ERR_FAIL_V(Key()); }
+	class BaseTrack {
+		public:
+			TrackType type = TrackType::TYPE_ANIMATION;
+			InterpolationType interpolation = INTERPOLATION_LINEAR;
+			bool loop_wrap = true;
+			NodePath path; // path to something
+			bool imported = false;
+			bool enabled = true;
+			int32_t compressed_track = -1;
+			virtual Key * write_key(int index) = 0;
+			virtual int get_values_size() = 0;
+			virtual void remove_key_at(int index) = 0;
+			virtual Key get_key(int index) = 0;
+			virtual int find_value(double p_time) const = 0;
+			virtual void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) = 0;
+			virtual void clear() = 0;
 	};
 
 	template <class T>
@@ -108,20 +109,87 @@ private:
 
 	// Templated Track
 	template <class T>
-	struct Track : public BaseTrack {
-		Vector<TKey<T>> values;
-		Key * write_key(int index) override {
-			return static_cast<Key *>(&values.write[index]);
-		}
-		Key get_key(int index) override {
-			return static_cast<Key>(values.write[index]);
-		}
-		int get_values_size() override {
-			return values.size();
-		}
-		void remove_key_at(int index) override {
-			values.remove_at(index);
-		}
+	class Track : public BaseTrack {
+		public:
+			Vector<TKey<T>> values;
+			Key * write_key(int index) override {
+				return static_cast<Key *>(&values.write[index]);
+			}
+			Key get_key(int index) override {
+				return static_cast<Key>(values.write[index]);
+			}
+			int get_values_size() override {
+				return values.size();
+			}
+			void remove_key_at(int index) override {
+				values.remove_at(index);
+			}
+			int find_value(double p_time) const override { 
+				int len = values.size();
+				if (len == 0) {
+					return -2;
+				}
+
+				int low = 0;
+				int high = len - 1;
+				int middle = 0;
+
+			#ifdef DEBUG_ENABLED
+				if (low > high) {
+					ERR_PRINT("low > high, this may be a bug");
+				}
+			#endif
+
+				const TKey<T> *keys = &values[0];
+
+				while (low <= high) {
+					middle = (low + high) / 2;
+
+					if (Math::is_equal_approx(p_time, (double)keys[middle].time)) { //match
+						return middle;
+					} else if (p_time < keys[middle].time) {
+						high = middle - 1; //search low end of array
+					} else {
+						low = middle + 1; //search high end of array
+					}
+				}
+				if (keys[middle].time < p_time) {
+					middle++;
+				}
+
+				return middle;
+			};
+			void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) override {
+				int to = find_value(to_time);
+
+				// can't really send the events == time, will be sent in the next frame.
+				// if event>=len then it will probably never be requested by the anim player.
+
+				if (to >= 0 && get_key(to).time >= to_time) {
+					to--;
+				}
+
+				if (to < 0) {
+					return; // not bother
+				}
+
+				int from = find_value(from_time);
+
+				// position in the right first event.+
+				if (from < 0 || get_key(to).time < from_time) {
+					from++;
+				}
+
+				int max = get_values_size();
+
+				for (int i = from; i <= to; i++) {
+					ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
+					p_indices_out->push_back(i);
+				}
+			}
+			void clear() override { 
+				values.clear();
+			};
 	};
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
@@ -130,34 +198,39 @@ private:
 
 	/* POSITION TRACK */
 
-	struct PositionTrack : public Track<Vector3> {
-		PositionTrack() { type = TYPE_POSITION_3D; }
+	class PositionTrack : public Track<Vector3> {
+		public:
+			PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
 	/* ROTATION TRACK */
 
-	struct RotationTrack : public Track<Quaternion> {
-		RotationTrack() { type = TYPE_ROTATION_3D; }
+	class RotationTrack : public Track<Quaternion> {
+		public:
+			RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
 	/* SCALE TRACK */
 
-	struct ScaleTrack : public Track<Vector3> {
-		ScaleTrack() { type = TYPE_SCALE_3D; }
+	class ScaleTrack : public Track<Vector3> {
+		public:
+			ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
 	/* BLEND SHAPE TRACK */
 
-	struct BlendShapeTrack : public Track<float> {
-		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
+	class BlendShapeTrack : public Track<float> {
+		public:
+			BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
 	/* PROPERTY VALUE TRACK */
 
-	struct ValueTrack : public Track<Variant> {
-		UpdateMode update_mode = UPDATE_CONTINUOUS;
-		bool update_on_seek = false;
-		ValueTrack() { type = TYPE_VALUE; }
+	class ValueTrack : public Track<Variant> {
+		public:
+			UpdateMode update_mode = UPDATE_CONTINUOUS;
+			bool update_on_seek = false;
+			ValueTrack() { type = TYPE_VALUE; }
 	};
 
 	/* METHOD TRACK */
@@ -167,8 +240,9 @@ private:
 		Vector<Variant> params;
 	};
 
-	struct MethodTrack : public Track<MethodHandle> {
-		MethodTrack() { type = TYPE_METHOD; }
+	class MethodTrack : public Track<MethodHandle> {
+		public:
+			MethodTrack() { type = TYPE_METHOD; }
 	};
 
 	/* BEZIER TRACK */
@@ -179,8 +253,9 @@ private:
 		real_t value = 0.0;
 	};
 
-	struct BezierTrack : public Track<BezierHandle> {
-		BezierTrack() { type = TYPE_BEZIER; }
+	class BezierTrack : public Track<BezierHandle> {
+		public:
+			BezierTrack() { type = TYPE_BEZIER; }
 	};
 
 	/* AUDIO TRACK */
@@ -192,14 +267,16 @@ private:
 		AudioHandle() {}
 	};
 
-	struct AudioTrack : public Track<AudioHandle> {
-		AudioTrack() { type = TYPE_AUDIO; }
+	class AudioTrack : public Track<AudioHandle> {
+		public:
+			AudioTrack() { type = TYPE_AUDIO; }
 	};
 
 	/* AUDIO TRACK */
 
-	struct AnimationTrack : public Track<StringName> {
-		AnimationTrack() { type = TYPE_ANIMATION; }
+	class AnimationTrack : public Track<StringName> {
+		public:
+			AnimationTrack() { type = TYPE_ANIMATION; }
 	};
 
 	Vector<BaseTrack *> tracks;
