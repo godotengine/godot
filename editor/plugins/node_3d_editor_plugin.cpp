@@ -4702,7 +4702,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	frame_time_gradient->add_point(0.5, Color());
 
 	top_right_vbox = memnew(VBoxContainer);
-	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
+	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	// Make sure frame time labels don't touch the viewport's edge.
 	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
