@@ -4356,31 +4356,10 @@ void VisualShaderEditor::_tools_menu_option(int p_idx) {
 
 	switch (p_idx) {
 		case EXPAND_ALL:
-
-			while (category) {
-				category->set_collapsed(false);
-				TreeItem *sub_category = category->get_first_child();
-				while (sub_category) {
-					sub_category->set_collapsed(false);
-					sub_category = sub_category->get_next();
-				}
-				category = category->get_next();
-			}
-
+			category->set_collapsed_recursive(false, false, false);
 			break;
-
 		case COLLAPSE_ALL:
-
-			while (category) {
-				category->set_collapsed(true);
-				TreeItem *sub_category = category->get_first_child();
-				while (sub_category) {
-					sub_category->set_collapsed(true);
-					sub_category = sub_category->get_next();
-				}
-				category = category->get_next();
-			}
-
+			category->set_collapsed_recursive(true, false, false);
 			break;
 		default:
 			break;

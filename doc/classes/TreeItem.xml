@@ -336,6 +336,12 @@
 				Returns the [Tree] that owns this TreeItem.
 			</description>
 		</method>
+		<method name="has_expanded_child">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [TreeItem] has at least one child which is not collapsed and has at least one child of it's own.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="column" type="int" />
@@ -362,6 +368,12 @@
 			<argument index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if column [code]column[/code] is editable.
+			</description>
+		</method>
+		<method name="is_in_active_branch">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [TreeItem] or at least one of it's descendent have at least one column selected.
 			</description>
 		</method>
 		<method name="is_indeterminate" qualifiers="const">
@@ -455,6 +467,17 @@
 			<argument index="1" name="checked" type="bool" />
 			<description>
 				If [code]true[/code], the column [code]column[/code] is checked. Clears column's indeterminate status.
+			</description>
+		</method>
+		<method name="set_collapsed_recursive">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<argument index="1" name="ignore_active_branches" type="bool" />
+			<argument index="2" name="ignore_self" type="bool" />
+			<description>
+				Recursively collapse this [TreeItem] and all its descendants when [code]enable[/code] is [code]true[/code], otherwise expanding them.
+				If [code]ignore_active_branches[/code] is [code]true[/code], branches which contains a selected [TreeItem] will be ignored.
+				If [code]ignore_self[/code] is [code]true[/code], only descendants are affected.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -671,9 +694,18 @@
 				Sets the given column's tooltip text.
 			</description>
 		</method>
+		<method name="toggle_collapsed_recursive">
+			<return type="void" />
+			<description>
+				If the [TreeItem] is already collapsed, expands it and all of its children recursively.
+				If the [TreeItem] is expanded and has at least one expanded child, collapses all children recursively without collapsing the current [TreeItem].
+				If the [TreeItem] is expanded and all children are collapsed, collapses the [TreeItem].
+			</description>
+		</method>
 		<method name="uncollapse_tree">
 			<return type="void" />
 			<description>
+				Uncollapses the [TreeItem] and all of it's ancestor.
 			</description>
 		</method>
 	</methods>

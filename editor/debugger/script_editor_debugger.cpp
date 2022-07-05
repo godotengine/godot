@@ -1439,29 +1439,11 @@ void ScriptEditorDebugger::_error_selected() {
 }
 
 void ScriptEditorDebugger::_expand_errors_list() {
-	TreeItem *root = error_tree->get_root();
-	if (!root) {
-		return;
-	}
-
-	TreeItem *item = root->get_first_child();
-	while (item) {
-		item->set_collapsed(false);
-		item = item->get_next();
-	}
+	error_tree->set_collapsed_all(false, false);
 }
 
 void ScriptEditorDebugger::_collapse_errors_list() {
-	TreeItem *root = error_tree->get_root();
-	if (!root) {
-		return;
-	}
-
-	TreeItem *item = root->get_first_child();
-	while (item) {
-		item->set_collapsed(true);
-		item = item->get_next();
-	}
+	error_tree->set_collapsed_all(true, false);
 }
 
 void ScriptEditorDebugger::_clear_errors_list() {

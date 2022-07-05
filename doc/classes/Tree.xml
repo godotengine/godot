@@ -254,6 +254,14 @@
 				Causes the [Tree] to jump to the specified [TreeItem].
 			</description>
 		</method>
+		<method name="set_collapsed_all">
+			<return type="void" />
+			<argument index="0" name="collapsed" type="bool" />
+			<argument index="1" name="ignore_active_branches" type="bool" />
+			<description>
+				Collapses or uncollapses every [TreeItem] in the [Tree], recursively, starting from the root. If ignore_active_branches is [code]true[/code], the branch containing the currently selected TreeItem will be left in its current state.
+			</description>
+		</method>
 		<method name="set_column_clip_content">
 			<return type="void" />
 			<argument index="0" name="column" type="int" />
