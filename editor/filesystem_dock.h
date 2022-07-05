@@ -55,6 +55,7 @@
 #include "script_create_dialog.h"
 
 class EditorNode;
+class SceneCreateDialog;
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -154,9 +155,8 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
-	ConfirmationDialog *make_scene_dialog;
-	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
+	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog;
 	CreateDialog *new_resource_dialog;
 

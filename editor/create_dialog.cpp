@@ -492,6 +492,13 @@ String CreateDialog::get_base_type() const {
 	return base_type;
 }
 
+void CreateDialog::select_base() {
+	if (search_options_types.empty()) {
+		_update_search();
+	}
+	select_type(base_type);
+}
+
 void CreateDialog::set_preferred_search_result_type(const String &p_preferred_type) {
 	preferred_search_result_type = p_preferred_type;
 }
