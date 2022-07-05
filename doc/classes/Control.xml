@@ -856,7 +856,7 @@
 				    cpb.color = color
 				    cpb.size = Vector2(50, 50)
 				    set_drag_preview(cpb)
-				    return color
+				    return cpb
 				[/gdscript]
 				[csharp]
 				[Export]
@@ -869,7 +869,7 @@
 				    cpb.Color = Color;
 				    cpb.RectSize = new Vector2(50, 50);
 				    SetDragPreview(cpb);
-				    return Color;
+				    return cpb;
 				}
 				[/csharp]
 				[/codeblocks]
