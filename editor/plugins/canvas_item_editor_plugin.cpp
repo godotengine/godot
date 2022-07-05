@@ -813,9 +813,17 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 }
 
 void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
+	original_transform = Transform2D();
+	bool transform_stored = false;
+
 	for (CanvasItem *canvas_item : p_canvas_items) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		if (se) {
+			if (!transform_stored) {
+				original_transform = canvas_item->get_global_transform();
+				transform_stored = true;
+			}
+
 			se->undo_state = canvas_item->_edit_get_state();
 			se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
 			if (canvas_item->_edit_use_rect()) {
@@ -3624,6 +3632,67 @@ void CanvasItemEditor::_draw_hover() {
 	}
 }
 
+void CanvasItemEditor::_draw_transform_message() {
+	if (drag_selection.is_empty() || !drag_selection.front()->get()) {
+		return;
+	}
+	String transform_message;
+	Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
+
+	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	int snap_step_decimals = Math::range_step_decimals(snap);
+#define FORMAT(value) (TS->format_number(String::num(value, snap_step_decimals)))
+
+	switch (drag_type) {
+		case DRAG_MOVE:
+		case DRAG_MOVE_X:
+		case DRAG_MOVE_Y: {
+			Vector2 delta = current_transform.get_origin() - original_transform.get_origin();
+			if (drag_type == DRAG_MOVE) {
+				transform_message = TTR("Moving:") + " (" + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ") px";
+			} else if (drag_type == DRAG_MOVE_X) {
+				transform_message = TTR("Moving:") + " " + FORMAT(delta.x) + " px";
+			} else if (drag_type == DRAG_MOVE_Y) {
+				transform_message = TTR("Moving:") + " " + FORMAT(delta.y) + " px";
+			}
+		} break;
+
+		case DRAG_ROTATE: {
+			real_t delta = Math::rad2deg(current_transform.get_rotation() - original_transform.get_rotation());
+			transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
+		} break;
+
+		case DRAG_SCALE_X:
+		case DRAG_SCALE_Y:
+		case DRAG_SCALE_BOTH: {
+			Vector2 original_scale = (Math::is_zero_approx(original_transform.get_scale().x) || Math::is_zero_approx(original_transform.get_scale().y)) ? Vector2(CMP_EPSILON, CMP_EPSILON) : original_transform.get_scale();
+			Vector2 delta = current_transform.get_scale() / original_scale;
+			if (drag_type == DRAG_SCALE_BOTH) {
+				transform_message = TTR("Scaling:") + String::utf8(" ×(") + FORMAT(delta.x) + ", " + FORMAT(delta.y) + ")";
+			} else if (drag_type == DRAG_SCALE_X) {
+				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.x);
+			} else if (drag_type == DRAG_SCALE_Y) {
+				transform_message = TTR("Scaling:") + String::utf8(" ×") + FORMAT(delta.y);
+			}
+		} break;
+
+		default:
+			break;
+	}
+#undef FORMAT
+
+	if (transform_message.is_empty()) {
+		return;
+	}
+
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Point2 msgpos = Point2(RULER_WIDTH + 5 * EDSCALE, viewport->get_size().y - 20 * EDSCALE);
+	viewport->draw_string(font, msgpos + Point2(1, 1), transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	viewport->draw_string(font, msgpos + Point2(-1, -1), transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	viewport->draw_string(font, msgpos, transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+}
+
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	ERR_FAIL_COND(!p_node);
 
@@ -3735,6 +3804,7 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_smart_snapping();
 	_draw_focus();
 	_draw_hover();
+	_draw_transform_message();
 }
 
 void CanvasItemEditor::update_viewport() {
