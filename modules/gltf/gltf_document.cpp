@@ -5177,19 +5177,16 @@ Spatial *GLTFDocument::_generate_light(Ref<GLTFState> state, Node *scene_parent,
 	}
 
 	const float range = CLAMP(l->range, 0, 4096);
-	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
-	// We want to have double intensity give double brightness, so we need half the attenuation.
-	const float attenuation = range / intensity;
 	if (l->type == "point") {
 		OmniLight *light = memnew(OmniLight);
-		light->set_param(OmniLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight::PARAM_ENERGY, intensity);
 		light->set_param(OmniLight::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
 	if (l->type == "spot") {
 		SpotLight *light = memnew(SpotLight);
-		light->set_param(SpotLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight::PARAM_ENERGY, intensity);
 		light->set_param(SpotLight::PARAM_RANGE, range);
 		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
 		light->set_color(l->color);
@@ -5258,14 +5255,12 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light *p_light
 		l->type = "point";
 		OmniLight *light = cast_to<OmniLight>(p_light);
 		l->range = light->get_param(OmniLight::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight::PARAM_ATTENUATION);
-		l->intensity = l->range / attenuation;
+		l->intensity = light->get_param(OmniLight::PARAM_ENERGY);
 	} else if (cast_to<SpotLight>(p_light)) {
 		l->type = "spot";
 		SpotLight *light = cast_to<SpotLight>(p_light);
 		l->range = light->get_param(SpotLight::PARAM_RANGE);
-		float attenuation = light->get_param(SpotLight::PARAM_ATTENUATION);
-		l->intensity = l->range / attenuation;
+		l->intensity = light->get_param(SpotLight::PARAM_ENERGY);
 		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).
