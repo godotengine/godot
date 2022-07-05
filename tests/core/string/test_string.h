@@ -89,12 +89,12 @@ TEST_CASE("[String] UTF8") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const uint8_t u8str[] = { 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
 	String s = u32str;
-	bool err = s.parse_utf8(s.utf8().get_data());
-	CHECK(!err);
+	Error err = s.parse_utf8(s.utf8().get_data());
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	err = s.parse_utf8((const char *)u8str);
-	CHECK(!err);
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	CharString cs = (const char *)u8str;
@@ -106,12 +106,12 @@ TEST_CASE("[String] UTF16") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char16_t u16str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
 	String s = u32str;
-	bool err = s.parse_utf16(s.utf16().get_data());
-	CHECK(!err);
+	Error err = s.parse_utf16(s.utf16().get_data());
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	err = s.parse_utf16(u16str);
-	CHECK(!err);
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	Char16String cs = u16str;
@@ -123,8 +123,8 @@ TEST_CASE("[String] UTF8 with BOM") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const uint8_t u8str[] = { 0xEF, 0xBB, 0xBF, 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
 	String s;
-	bool err = s.parse_utf8((const char *)u8str);
-	CHECK(!err);
+	Error err = s.parse_utf8((const char *)u8str);
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	CharString cs = (const char *)u8str;
@@ -137,12 +137,12 @@ TEST_CASE("[String] UTF16 with BOM") {
 	static const char16_t u16str[] = { 0xFEFF, 0x0020, 0x0045, 0x304A, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
 	static const char16_t u16str_swap[] = { 0xFFFE, 0x2000, 0x4500, 0x4A30, 0x0F36, 0x8830, 0x4630, 0x3CD8, 0xA4DF, 0 };
 	String s;
-	bool err = s.parse_utf16(u16str);
-	CHECK(!err);
+	Error err = s.parse_utf16(u16str);
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	err = s.parse_utf16(u16str_swap);
-	CHECK(!err);
+	CHECK(err == OK);
 	CHECK(s == u32str);
 
 	Char16String cs = u16str;
@@ -152,29 +152,48 @@ TEST_CASE("[String] UTF16 with BOM") {
 	CHECK(String::utf16(cs) == s);
 }
 
-TEST_CASE("[String] Invalid UTF8") {
+TEST_CASE("[String] Invalid UTF8 (non-standard)") {
 	ERR_PRINT_OFF
-	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
+	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0xF0, 0x82, 0x82, 0xAC, 0xED, 0xA0, 0x81, 0 };
+	//                               +     +2                +2                +2                +3                      overlong +3             unpaired +2
+	static const char32_t u32str[] = { 0x45, 0x304A, 0x3088, 0x3046, 0x1F3A4, 0x20AC, 0xD801, 0 };
 	String s;
-	bool err = s.parse_utf8((const char *)u8str);
-	CHECK(err);
-	CHECK(s.is_empty());
+	Error err = s.parse_utf8((const char *)u8str);
+	CHECK(err == ERR_PARSE_ERROR);
+	CHECK(s == u32str);
 
 	CharString cs = (const char *)u8str;
-	CHECK(String::utf8(cs).is_empty());
+	CHECK(String::utf8(cs) == s);
 	ERR_PRINT_ON
 }
 
-TEST_CASE("[String] Invalid UTF16") {
+TEST_CASE("[String] Invalid UTF8 (unrecoverable)") {
+	ERR_PRINT_OFF
+	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xC0, 0x80, 0xF0, 0x9F, 0x8E, 0xA4, 0xF0, 0x82, 0x82, 0xAC, 0xED, 0xA0, 0x81, 0 };
+	//                               +     +2                inv   +2    inv   inv   inv   +2                +2                ovl NUL +1  +3                      overlong +3             unpaired +2
+	static const char32_t u32str[] = { 0x45, 0x304A, 0x20, 0x20, 0x20, 0x20, 0x3088, 0x3046, 0x20, 0x1F3A4, 0x20AC, 0xD801, 0 };
+	String s;
+	Error err = s.parse_utf8((const char *)u8str);
+	CHECK(err == ERR_INVALID_DATA);
+	CHECK(s == u32str);
+
+	CharString cs = (const char *)u8str;
+	CHECK(String::utf8(cs) == s);
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] Invalid UTF16 (non-standard)") {
 	ERR_PRINT_OFF
 	static const char16_t u16str[] = { 0x0045, 0x304A, 0x3088, 0x3046, 0xDFA4, 0 };
+	//                                 +       +       +       +       unpaired
+	static const char32_t u32str[] = { 0x0045, 0x304A, 0x3088, 0x3046, 0xDFA4, 0 };
 	String s;
-	bool err = s.parse_utf16(u16str);
-	CHECK(err);
-	CHECK(s.is_empty());
+	Error err = s.parse_utf16(u16str);
+	CHECK(err == ERR_PARSE_ERROR);
+	CHECK(s == u32str);
 
 	Char16String cs = u16str;
-	CHECK(String::utf16(cs).is_empty());
+	CHECK(String::utf16(cs) == s);
 	ERR_PRINT_ON
 }
 
@@ -262,8 +281,8 @@ TEST_CASE("[String] Test chr") {
 	CHECK(String::chr('H') == "H");
 	CHECK(String::chr(0x3012)[0] == 0x3012);
 	ERR_PRINT_OFF
-	CHECK(String::chr(0xd812)[0] == 0xfffd); // Unpaired UTF-16 surrogate
-	CHECK(String::chr(0x20d812)[0] == 0xfffd); // Outside UTF-32 range
+	CHECK(String::chr(0xd812)[0] == 0xd812); // Unpaired UTF-16 surrogate
+	CHECK(String::chr(0x20d812)[0] == 0x20d812); // Outside UTF-32 range
 	ERR_PRINT_ON
 }
 
@@ -1125,9 +1144,9 @@ TEST_CASE("[String] lstrip and rstrip") {
 #undef STRIP_TEST
 }
 
-TEST_CASE("[String] ensuring empty string into parse_utf8 passes empty string") {
+TEST_CASE("[String] Ensuring empty string into parse_utf8 passes empty string") {
 	String empty;
-	CHECK(empty.parse_utf8(nullptr, -1));
+	CHECK(empty.parse_utf8(nullptr, -1) == ERR_INVALID_DATA);
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {
@@ -1440,8 +1459,8 @@ TEST_CASE("[String] validate_node_name") {
 	String name_with_spaces = "Name with spaces";
 	CHECK(name_with_spaces.validate_node_name() == "Name with spaces");
 
-	String name_with_kana = "Name with kana ゴドツ";
-	CHECK(name_with_kana.validate_node_name() == "Name with kana ゴドツ");
+	String name_with_kana = U"Name with kana ゴドツ";
+	CHECK(name_with_kana.validate_node_name() == U"Name with kana ゴドツ");
 
 	String name_with_invalid_chars = "Name with invalid characters :.@removed!";
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters removed!");
