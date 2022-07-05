@@ -1267,6 +1267,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	GLOBAL_DEF("navigation/common/pathfinding/paths_per_tick", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("navigation/common/pathfinding/paths_per_tick",
+			PropertyInfo(Variant::INT,
+					"navigation/common/pathfinding/paths_per_tick",
+					PROPERTY_HINT_RANGE, "-128,128,1"));
+
 	message_queue = memnew(MessageQueue);
 
 	if (p_second_phase) {

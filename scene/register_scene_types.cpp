@@ -510,6 +510,7 @@ void register_scene_types() {
 	ClassDB::register_class<Navigation>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationAgent>();
+	NavigationAgent::_initialize();
 	ClassDB::register_class<NavigationObstacle>();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -768,6 +769,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationPolygon>();
 	ClassDB::register_class<NavigationPolygonInstance>();
 	ClassDB::register_class<NavigationAgent2D>();
+	NavigationAgent2D::_initialize();
 	ClassDB::register_class<NavigationObstacle2D>();
 
 	OS::get_singleton()->yield(); //may take time to init

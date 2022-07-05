@@ -40,6 +40,19 @@ class Navigation2D;
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
 
+	// Simple way of preventing too many pathfinds on each tick,
+	// which could cause a performance blip.
+	class PathFindScheduler {
+		static uint32_t _next_available_tick;
+		static uint32_t _paths_this_tick;
+		static uint32_t _paths_per_tick;
+		static uint32_t _tick_gap;
+
+	public:
+		static uint32_t request_path_tick();
+		static void initialize();
+	};
+
 	Node2D *agent_parent = nullptr;
 	Navigation2D *navigation = nullptr;
 
@@ -71,6 +84,8 @@ class NavigationAgent2D : public Node {
 	bool navigation_finished = true;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
+	uint32_t scheduled_pathfind_tick = 0;
+	bool scheduled_pathfind = false;
 
 protected:
 	static void _bind_methods();
@@ -164,6 +179,8 @@ public:
 	void _avoidance_done(Vector3 p_new_velocity);
 
 	virtual String get_configuration_warning() const;
+
+	static void _initialize();
 
 private:
 	void update_navigation();

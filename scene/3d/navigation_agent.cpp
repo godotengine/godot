@@ -34,6 +34,47 @@
 #include "scene/3d/navigation.h"
 #include "servers/navigation_server.h"
 
+uint32_t NavigationAgent::PathFindScheduler::_next_available_tick = 0;
+uint32_t NavigationAgent::PathFindScheduler::_paths_this_tick = 0;
+uint32_t NavigationAgent::PathFindScheduler::_paths_per_tick = 1;
+uint32_t NavigationAgent::PathFindScheduler::_tick_gap = 1;
+
+void NavigationAgent::PathFindScheduler::initialize() {
+	int ppt = GLOBAL_GET("navigation/common/pathfinding/paths_per_tick");
+	if (ppt >= 0) {
+		if (ppt == 0) {
+			// unlimited paths per tick, set to some high value
+			_paths_per_tick = 1 << 24;
+		} else {
+			_paths_per_tick = ppt;
+		}
+	} else {
+		_paths_per_tick = 1;
+		_tick_gap = -ppt;
+	}
+}
+
+uint32_t NavigationAgent::PathFindScheduler::request_path_tick() {
+	uint32_t tick = Engine::get_singleton()->get_physics_frames();
+
+	// see if we have caught up with the timer
+	if (tick > _next_available_tick) {
+		_next_available_tick = tick;
+		_paths_this_tick = 0;
+	}
+
+	_paths_this_tick++;
+
+	uint32_t scheduled_tick = _next_available_tick;
+
+	if (_paths_this_tick >= _paths_per_tick) {
+		_next_available_tick += _tick_gap;
+		_paths_this_tick = 0;
+	}
+
+	return scheduled_tick;
+}
+
 void NavigationAgent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent::get_rid);
 
@@ -450,16 +491,29 @@ void NavigationAgent::update_navigation() {
 	}
 
 	if (reload_path) {
-		if (map_override.is_valid()) {
-			navigation_path = NavigationServer::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
-		} else if (navigation != nullptr) {
-			navigation_path = NavigationServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
-		} else {
-			navigation_path = NavigationServer::get_singleton()->map_get_path(agent_parent->get_world()->get_navigation_map(), o, target_location, true, navigation_layers);
+		if (!scheduled_pathfind) {
+			scheduled_pathfind = true;
+			scheduled_pathfind_tick = PathFindScheduler::request_path_tick();
 		}
-		navigation_finished = false;
-		nav_path_index = 0;
-		emit_signal("path_changed");
+
+		if (Engine::get_singleton()->get_physics_frames() >= scheduled_pathfind_tick) {
+			scheduled_pathfind = false;
+
+			if (map_override.is_valid()) {
+				navigation_path = NavigationServer::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
+			} else if (navigation != nullptr) {
+				navigation_path = NavigationServer::get_singleton()->map_get_path(navigation->get_rid(), o, target_location, true, navigation_layers);
+			} else {
+				navigation_path = NavigationServer::get_singleton()->map_get_path(agent_parent->get_world()->get_navigation_map(), o, target_location, true, navigation_layers);
+			}
+			navigation_finished = false;
+			nav_path_index = 0;
+			emit_signal("path_changed");
+
+		} else {
+			// can't pathfind yet
+			return;
+		}
 	}
 
 	if (navigation_path.size() == 0) {
@@ -496,4 +550,8 @@ void NavigationAgent::_check_distance_to_target() {
 			emit_signal("target_reached");
 		}
 	}
+}
+
+void NavigationAgent::_initialize() {
+	NavigationAgent::PathFindScheduler::initialize();
 }

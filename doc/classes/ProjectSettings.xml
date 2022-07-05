@@ -1213,6 +1213,11 @@
 		<member name="navigation/3d/default_map_up" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
 			Default map up vector for 3D navigation maps. See [method NavigationServer.map_set_up].
 		</member>
+		<member name="navigation/common/pathfinding/paths_per_tick" type="int" setter="" getter="" default="1">
+			Maximum amount of pathfinds allowed in each physics tick. A value of [code]0[/code] allows unlimited pathfinds. A negative value allows a pathfind every nth tick, e.g. [code]-2[/code] is every second tick.
+			This limit is useful because each pathfind is CPU intensive, and unconstrained pathfinds can result in dropped frames and other performance problems.
+			[b]Note:[/b] Limiting pathfinds can introduce some delay to agents, which can affect gameplay in some circumstances.
+		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
