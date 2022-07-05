@@ -85,21 +85,24 @@ private:
 	};
 
 	class BaseTrack {
-		public:
-			TrackType type = TrackType::TYPE_ANIMATION;
-			InterpolationType interpolation = INTERPOLATION_LINEAR;
-			bool loop_wrap = true;
-			NodePath path; // path to something
-			bool imported = false;
-			bool enabled = true;
-			int32_t compressed_track = -1;
-			virtual Key * write_key(int index) = 0;
-			virtual int get_values_size() = 0;
-			virtual void remove_key_at(int index) = 0;
-			virtual Key get_key(int index) = 0;
-			virtual int find_value(double p_time) const = 0;
-			virtual void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) = 0;
-			virtual void clear() = 0;
+	public:
+		virtual ~BaseTrack() = default;
+		TrackType type = TrackType::TYPE_ANIMATION;
+		InterpolationType interpolation = INTERPOLATION_LINEAR;
+		bool loop_wrap = true;
+		NodePath path; // path to something
+		bool imported = false;
+		bool enabled = true;
+		int32_t compressed_track = -1;
+		virtual Key *write_key(int index) = 0;
+		virtual int get_values_size() = 0;
+		virtual void remove_key_at(int index) = 0;
+		virtual Key get_key(int index) = 0;
+		virtual int find_value(double p_time) const = 0;
+		virtual void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) = 0;
+		virtual void clear() = 0;
+		virtual int insert_key(double p_time, Key *p_value) = 0;
+		virtual void set_key_time(int p_key_idx, double p_time) = 0;
 	};
 
 	template <class T>
@@ -110,86 +113,116 @@ private:
 	// Templated Track
 	template <class T>
 	class Track : public BaseTrack {
-		public:
-			Vector<TKey<T>> values;
-			Key * write_key(int index) override {
-				return static_cast<Key *>(&values.write[index]);
+	public:
+		Vector<TKey<T>> values;
+		Key *write_key(int index) override {
+			return static_cast<Key *>(&values.write[index]);
+		}
+		Key get_key(int index) override {
+			return static_cast<Key>(values.write[index]);
+		}
+		int get_values_size() override {
+			return values.size();
+		}
+		void remove_key_at(int index) override {
+			values.remove_at(index);
+		}
+		int insert_key(double p_time, Key *p_value) override {
+			int idx = values.size();
+			TKey<T> value = *static_cast<TKey<T> *>(p_value);
+			while (true) {
+				// Condition for replacement.
+				if (idx > 0 && Math::is_equal_approx((double)values[idx - 1].time, p_time)) {
+					float transition = values[idx - 1].transition;
+					values.write[idx - 1] = value;
+					values.write[idx - 1].transition = transition;
+					return idx - 1;
+
+					// Condition for insert.
+				} else if (idx == 0 || values[idx - 1].time < p_time) {
+					values.insert(idx, value);
+					return idx;
+				}
+
+				idx--;
 			}
-			Key get_key(int index) override {
-				return static_cast<Key>(values.write[index]);
+
+			return -1;
+		};
+		void set_key_time(int p_key_idx, double p_time) override {
+			ERR_FAIL_COND(compressed_track >= 0);
+			ERR_FAIL_INDEX(p_key_idx, values.size());
+			TKey<T> key = values[p_key_idx];
+			key.time = p_time;
+			values.remove_at(p_key_idx);
+			insert_key(p_time, &key);
+		}
+		int find_value(double p_time) const override {
+			int len = values.size();
+			if (len == 0) {
+				return -2;
 			}
-			int get_values_size() override {
-				return values.size();
+
+			int low = 0;
+			int high = len - 1;
+			int middle = 0;
+
+#ifdef DEBUG_ENABLED
+			if (low > high) {
+				ERR_PRINT("low > high, this may be a bug");
 			}
-			void remove_key_at(int index) override {
-				values.remove_at(index);
-			}
-			int find_value(double p_time) const override { 
-				int len = values.size();
-				if (len == 0) {
-					return -2;
-				}
+#endif
 
-				int low = 0;
-				int high = len - 1;
-				int middle = 0;
+			const TKey<T> *keys = &values[0];
 
-			#ifdef DEBUG_ENABLED
-				if (low > high) {
-					ERR_PRINT("low > high, this may be a bug");
-				}
-			#endif
+			while (low <= high) {
+				middle = (low + high) / 2;
 
-				const TKey<T> *keys = &values[0];
-
-				while (low <= high) {
-					middle = (low + high) / 2;
-
-					if (Math::is_equal_approx(p_time, (double)keys[middle].time)) { //match
-						return middle;
-					} else if (p_time < keys[middle].time) {
-						high = middle - 1; //search low end of array
-					} else {
-						low = middle + 1; //search high end of array
-					}
-				}
-				if (keys[middle].time < p_time) {
-					middle++;
-				}
-
-				return middle;
-			};
-			void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) override {
-				int to = find_value(to_time);
-
-				// can't really send the events == time, will be sent in the next frame.
-				// if event>=len then it will probably never be requested by the anim player.
-
-				if (to >= 0 && get_key(to).time >= to_time) {
-					to--;
-				}
-
-				if (to < 0) {
-					return; // not bother
-				}
-
-				int from = find_value(from_time);
-
-				// position in the right first event.+
-				if (from < 0 || get_key(to).time < from_time) {
-					from++;
-				}
-
-				int max = get_values_size();
-
-				for (int i = from; i <= to; i++) {
-					ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-					p_indices_out->push_back(i);
+				if (Math::is_equal_approx(p_time, (double)keys[middle].time)) { //match
+					return middle;
+				} else if (p_time < keys[middle].time) {
+					high = middle - 1; //search low end of array
+				} else {
+					low = middle + 1; //search high end of array
 				}
 			}
-			void clear() override { 
-				values.clear();
-			};
+			if (keys[middle].time > p_time) {
+				middle--;
+			}
+
+			return middle;
+		};
+		void find_value_in_interval(double from_time, double to_time, List<int> *p_indices_out) override {
+			int to = find_value(to_time);
+
+			// can't really send the events == time, will be sent in the next frame.
+			// if event>=len then it will probably never be requested by the anim player.
+
+			if (to >= 0 && get_key(to).time >= to_time) {
+				to--;
+			}
+
+			if (to < 0) {
+				return; // not bother
+			}
+
+			int from = find_value(from_time);
+
+			// position in the right first event.+
+			if (from < 0 || get_key(to).time < from_time) {
+				from++;
+			}
+
+			int max = get_values_size();
+
+			for (int i = from; i <= to; i++) {
+				ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
+				p_indices_out->push_back(i);
+			}
+		};
+		void clear() override {
+			values.clear();
+		};
 	};
 	const int32_t POSITION_TRACK_SIZE = 5;
 	const int32_t ROTATION_TRACK_SIZE = 6;
@@ -199,38 +232,38 @@ private:
 	/* POSITION TRACK */
 
 	class PositionTrack : public Track<Vector3> {
-		public:
-			PositionTrack() { type = TYPE_POSITION_3D; }
+	public:
+		PositionTrack() { type = TYPE_POSITION_3D; }
 	};
 
 	/* ROTATION TRACK */
 
 	class RotationTrack : public Track<Quaternion> {
-		public:
-			RotationTrack() { type = TYPE_ROTATION_3D; }
+	public:
+		RotationTrack() { type = TYPE_ROTATION_3D; }
 	};
 
 	/* SCALE TRACK */
 
 	class ScaleTrack : public Track<Vector3> {
-		public:
-			ScaleTrack() { type = TYPE_SCALE_3D; }
+	public:
+		ScaleTrack() { type = TYPE_SCALE_3D; }
 	};
 
 	/* BLEND SHAPE TRACK */
 
 	class BlendShapeTrack : public Track<float> {
-		public:
-			BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
+	public:
+		BlendShapeTrack() { type = TYPE_BLEND_SHAPE; }
 	};
 
 	/* PROPERTY VALUE TRACK */
 
 	class ValueTrack : public Track<Variant> {
-		public:
-			UpdateMode update_mode = UPDATE_CONTINUOUS;
-			bool update_on_seek = false;
-			ValueTrack() { type = TYPE_VALUE; }
+	public:
+		UpdateMode update_mode = UPDATE_CONTINUOUS;
+		bool update_on_seek = false;
+		ValueTrack() { type = TYPE_VALUE; }
 	};
 
 	/* METHOD TRACK */
@@ -241,8 +274,8 @@ private:
 	};
 
 	class MethodTrack : public Track<MethodHandle> {
-		public:
-			MethodTrack() { type = TYPE_METHOD; }
+	public:
+		MethodTrack() { type = TYPE_METHOD; }
 	};
 
 	/* BEZIER TRACK */
@@ -254,8 +287,8 @@ private:
 	};
 
 	class BezierTrack : public Track<BezierHandle> {
-		public:
-			BezierTrack() { type = TYPE_BEZIER; }
+	public:
+		BezierTrack() { type = TYPE_BEZIER; }
 	};
 
 	/* AUDIO TRACK */
@@ -268,15 +301,15 @@ private:
 	};
 
 	class AudioTrack : public Track<AudioHandle> {
-		public:
-			AudioTrack() { type = TYPE_AUDIO; }
+	public:
+		AudioTrack() { type = TYPE_AUDIO; }
 	};
 
 	/* AUDIO TRACK */
 
 	class AnimationTrack : public Track<StringName> {
-		public:
-			AnimationTrack() { type = TYPE_ANIMATION; }
+	public:
+		AnimationTrack() { type = TYPE_ANIMATION; }
 	};
 
 	Vector<BaseTrack *> tracks;
@@ -287,9 +320,6 @@ private:
 
 	template <class T>
 	void _clear(T &p_keys);
-
-	template <class T, class V>
-	int _insert(double p_time, T &p_keys, const V &p_value);
 
 	template <class K>
 
