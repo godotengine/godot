@@ -5176,19 +5176,16 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex 
 	}
 
 	const float range = CLAMP(l->range, 0, 4096);
-	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
-	// We want to have double intensity give double brightness, so we need half the attenuation.
-	const float attenuation = range / (intensity * 2048);
 	if (l->light_type == "point") {
 		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
 		light->set_param(OmniLight3D::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
 	if (l->light_type == "spot") {
 		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
 		light->set_param(SpotLight3D::PARAM_RANGE, range);
 		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
 		light->set_color(l->color);
@@ -5253,14 +5250,12 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 		l->light_type = "point";
 		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
 		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight3D::PARAM_ATTENUATION);
-		l->intensity = l->range / (attenuation * 2048);
+		l->intensity = light->get_param(OmniLight3D::PARAM_ENERGY);
 	} else if (cast_to<SpotLight3D>(p_light)) {
 		l->light_type = "spot";
 		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
 		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
-		float attenuation = light->get_param(SpotLight3D::PARAM_ATTENUATION);
-		l->intensity = l->range / (attenuation * 2048);
+		l->intensity = light->get_param(SpotLight3D::PARAM_ENERGY);
 		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).
