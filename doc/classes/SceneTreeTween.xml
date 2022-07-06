@@ -105,7 +105,7 @@
 		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the [SceneTreeTween] is valid. A valid [SceneTreeTween] is a [SceneTreeTween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A [SceneTreeTween] might become invalid when it has finished tweening, is killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid [SceneTreeTween]s can't have [Tweener]s appended.
+				Returns whether the [SceneTreeTween] is valid. A valid [SceneTreeTween] is a [SceneTreeTween] contained by the scene tree (i.e. the array from [method SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A [SceneTreeTween] might become invalid when it has finished tweening, is killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid [SceneTreeTween]s can't have [Tweener]s appended. You can however still use [method interpolate_value].
 			</description>
 		</method>
 		<method name="kill">
@@ -152,8 +152,8 @@
 			<argument index="0" name="loops" type="int" default="0" />
 			<description>
 				Sets the number of times the tweening sequence will be repeated, i.e. [code]set_loops(2)[/code] will run the animation twice.
-				Calling this method without arguments will make the [Tween] run infinitely, until either it is killed with [method kill], the [Tween]'s bound node is freed, or all the animated objects have been freed (which makes further animation impossible).
-				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. To prevent the game freezing, 0-duration looped animations (e.g. a single [CallbackTweener] with no delay) are stopped after a small number of loops, which may produce unexpected results. If a [Tween]'s lifetime depends on some node, always use [method bind_node].
+				Calling this method without arguments will make the [SceneTreeTween] run infinitely, until either it is killed with [method kill], the [SceneTreeTween]'s bound node is freed, or all the animated objects have been freed (which makes further animation impossible).
+				[b]Warning:[/b] Make sure to always add some duration/delay when using infinite loops. To prevent the game freezing, 0-duration looped animations (e.g. a single [CallbackTweener] with no delay) are stopped after a small number of loops, which may produce unexpected results. If a [SceneTreeTween]'s lifetime depends on some node, always use [method bind_node].
 			</description>
 		</method>
 		<method name="set_parallel">
