@@ -165,6 +165,7 @@ public:
 		Vector<ConstantDoc> constants;
 		HashMap<String, String> enums;
 		Vector<PropertyDoc> properties;
+		Vector<MethodDoc> annotations;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;
 		String script_path;

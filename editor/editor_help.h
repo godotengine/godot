@@ -110,6 +110,7 @@ class EditorHelp : public VBoxContainer {
 	HashMap<String, int> property_line;
 	HashMap<String, int> theme_property_line;
 	HashMap<String, int> constant_line;
+	HashMap<String, int> annotation_line;
 	HashMap<String, int> enum_line;
 	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;

@@ -445,6 +445,16 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_const
 	p_constants->push_back(nan);
 }
 
+void GDScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) const {
+	GDScriptParser parser;
+	List<MethodInfo> annotations;
+	parser.get_annotation_list(&annotations);
+
+	for (const MethodInfo &E : annotations) {
+		p_annotations->push_back(E);
+	}
+}
+
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 #ifdef TOOLS_ENABLED
 	bool th = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
@@ -3377,6 +3387,15 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			GDScriptParser::DataType base_type = context.current_class->get_datatype();
 
 			if (_lookup_symbol_from_base(base_type, p_symbol, false, r_result) == OK) {
+				return OK;
+			}
+		} break;
+		case GDScriptParser::COMPLETION_ANNOTATION: {
+			const String annotation_symbol = "@" + p_symbol;
+			if (parser.annotation_exists(annotation_symbol)) {
+				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION;
+				r_result.class_name = "@GDScript";
+				r_result.class_member = annotation_symbol;
 				return OK;
 			}
 		} break;

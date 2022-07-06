@@ -1434,6 +1434,7 @@ public:
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
+	bool annotation_exists(const String &p_annotation_name) const;
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<String> get_dependencies() const {

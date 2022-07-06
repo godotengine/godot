@@ -886,6 +886,9 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
 
 			} break;
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+				emit_signal(SNAME("go_to_help"), "class_annotation:" + result.class_name + ":" + result.class_member);
+			} break;
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: {
 				emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
