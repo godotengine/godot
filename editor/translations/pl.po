@@ -61,13 +61,14 @@
 # Konrad <kobe-interactive@protonmail.com>, 2022.
 # Pixel Zone - Godot Engine Tutorials <karoltomaszewskimusic@gmail.com>, 2022.
 # DK0492 <doriankaczmarek28@gmail.com>, 2022.
+# Dawid Skubij <davidsd@tlen.pl>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-30 16:17+0000\n"
-"Last-Translator: DK0492 <doriankaczmarek28@gmail.com>\n"
+"PO-Revision-Date: 2022-07-05 23:51+0000\n"
+"Last-Translator: Dawid Skubij <davidsd@tlen.pl>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -76,7 +77,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -448,6 +449,11 @@ msgstr "Meta"
 msgid "Command"
 msgstr "Command"
 
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Physical"
+msgstr " (fizyczny)"
+
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -714,9 +720,8 @@ msgstr "Kontrola wersji"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Input"
+msgstr "Wejście"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
@@ -5614,6 +5619,11 @@ msgstr "Szerokość minimapy"
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
 msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Drag And Drop Selection"
+msgstr "Wybór GridMap"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -18857,6 +18867,11 @@ msgstr "Paczka musi mieć co najmniej jedną kropkę jako separator."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
+msgid "Custom Build"
+msgstr "Użyj niestandardowego katalogu użytkownika"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "Use Custom Build"
 msgstr "Użyj niestandardowego katalogu użytkownika"
 
@@ -18864,6 +18879,16 @@ msgstr "Użyj niestandardowego katalogu użytkownika"
 #, fuzzy
 msgid "Export Format"
 msgstr "Ścieżka eksportu"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Min SDK"
+msgstr "Rozmiar zarysu:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Target SDK"
+msgstr "Docelowa liczba klatek na sekundę (FPS)"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #, fuzzy
@@ -18907,16 +18932,6 @@ msgstr "Sprawdź poprzednią instancję"
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr ""
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Min SDK"
-msgstr "Rozmiar zarysu:"
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Target SDK"
-msgstr "Docelowa liczba klatek na sekundę (FPS)"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -19166,15 +19181,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" musi być włączone, by używać wtyczek."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" jest poprawne tylko, gdy \"Xr Mode\" jest \"Oculus Mobile "
 "VrApi\" lub \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "\"Passthrough\" jest poprawne tylko, gdy \"Xr Mode\" jest \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
@@ -19183,22 +19200,45 @@ msgstr ""
 "\"Eksportuj AAB\" jest ważne tylko gdy \"Use Custom Build\" jest włączone."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Zmiana \"Min Sdk\" jest poprawna tylko, gdy \"Use Custom Build\" jest "
 "włączone."
 
 #: platform/android/export/export_plugin.cpp
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
 msgid ""
-"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
-"enabled."
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Zmiana \"Target Sdk\" jest poprawna tylko, gdy \"Use Custom Build\" jest "
 "włączone."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr "Wersja \"Target Sdk\" musi być większa lub równa wersji \"Min Sdk\"."
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
@@ -20938,7 +20978,7 @@ msgstr "Przybliż"
 msgid "Custom Viewport"
 msgstr "1 widok"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
 #: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 #, fuzzy
@@ -21717,12 +21757,32 @@ msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
+msgid "Pathfinding"
+msgstr "Wiązanie"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
 msgid "Path Desired Distance"
 msgstr "Wybierz odległość:"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Max Distance"
+msgstr "Wybierz odległość:"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance"
+msgstr "Zaawansowane"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance Enabled"
+msgstr "Włącz"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Neighbor Dist"
@@ -21741,16 +21801,6 @@ msgstr "Odbij poziomo"
 #, fuzzy
 msgid "Max Speed"
 msgstr "Szybkość:"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Path Max Distance"
-msgstr "Wybierz odległość:"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Avoidance Enabled"
-msgstr "Włącz"
 
 #: scene/2d/navigation_agent_2d.cpp
 #, fuzzy
@@ -23582,9 +23632,8 @@ msgid "A RoomGroup should not be a child or grandchild of a Portal."
 msgstr "RoomGroup nie powinien być potomkiem Portalu."
 
 #: scene/3d/portal.cpp
-#, fuzzy
 msgid "Portal Active"
-msgstr " [portale aktywne]"
+msgstr "Portal Aktywny"
 
 #: scene/3d/portal.cpp scene/resources/occluder_shape_polygon.cpp
 msgid "Two Way"
@@ -25209,6 +25258,11 @@ msgstr "Folder:"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
+msgid "Drag And Drop Selection Enabled"
+msgstr "Tylko zaznaczenie"
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
 msgid "Hiding Enabled"
 msgstr "Włącz"
 
@@ -25545,9 +25599,8 @@ msgid "Draw 2D Outlines"
 msgstr "Utwórz obrys"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Kierunki"
+msgstr "Odbicia"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -25620,23 +25673,20 @@ msgstr "Ścieżka eksportu"
 
 #: scene/main/viewport.cpp
 msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Ten Viewport nie jest ustawiony jako Render Target. Jeśli chcesz wyświetlić "
-"jego zawartość na ekranie dodaj go jako dziecko węzła typu Control, aby "
-"otrzymał jakiś rozmiar. W przeciwnym wypadku ustawi opcję RenderTarget i "
-"przyporządkuj jego teksturę dla któregoś węzła."
-
-#: scene/main/viewport.cpp
-msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
 "Wielkość Viewportu musi być większa lub równa 2 piksele w obu wymiarach, by "
 "cokolwiek renderować."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-"
+"Sampling.\n"
+"HDR is only supported in Viewports that have their Usage set to 3D or 3D No-"
+"Effects.\n"
+"HDR will be disabled for this Viewport."
+msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "ARVR"
@@ -26730,7 +26780,7 @@ msgstr "Warunek"
 
 #: scene/resources/environment.cpp
 msgid "Fog"
-msgstr ""
+msgstr "Mgła"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26912,9 +26962,8 @@ msgstr ""
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
-#, fuzzy
 msgid "2"
-msgstr "2D"
+msgstr "2"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
