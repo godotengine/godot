@@ -2866,6 +2866,12 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
 		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
+	} else if (p_variant_type == Variant::OBJECT && CACHED_CLASS(Node)->is_assignable_from(p_type.type_class)) {
+		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
+		CRASH_COND(field_native_class == nullptr);
+
+		r_hint = PROPERTY_HINT_NODE_TYPE;
+		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
 	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
 		// Nested arrays are not supported in the inspector
 
