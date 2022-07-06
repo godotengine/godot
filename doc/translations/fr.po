@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-28 04:52+0000\n"
+"PO-Revision-Date: 2022-07-06 04:47+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
@@ -985,7 +985,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two values by the factor defined in "
 "[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
@@ -1005,13 +1004,16 @@ msgid ""
 "To perform eased interpolation with [method lerp], combine it with [method "
 "ease] or [method smoothstep]."
 msgstr ""
-"Interpolation linéaire entre deux valeurs par une valeur normalisée. C'est "
-"l'inverse de [method inverse_lerp].\n"
+"L'interpolation linéaire entre deux valeurs avec un facteur défini par "
+"[code]weight[/code]. Pour faire une interpolation, [code]weight[/code] doit "
+"être entre [code]0.0[/code] et [code]1.0[/code] (inclus). Pour autant, des "
+"valeurs en dehors de cet intervalle sont autorisés pour faire une "
+"[i]extrapolation[/i].\n"
 "Si les arguments [code]from[/code] et [code]to[/code] sont de type [int] ou "
-"[float], la valeur de retour est un [float].\n"
+"[float], la valeur retournée est un [float].\n"
 "Si les deux sont du même type de vecteur ([Vector2], [Vector3] ou [Color]), "
-"la valeur de retour sera du même type ([code]lerp[/code] appelle alors la "
-"méthode du type de vecteur [code]linear_interpolate[/code]).\n"
+"la valeur de retour sera du même type (puisque [code]lerp[/code] appelle "
+"alors la méthode [code]linear_interpolate[/code] du même type).\n"
 "[codeblock]\n"
 "lerp(0, 4, 0.75) # Retourne 3.0\n"
 "lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Retourne Vector2(2, 3.5)\n"
@@ -4060,6 +4062,10 @@ msgid ""
 "down on the key after it \"bottoms out\". This message is different from "
 "polyphonic after-touch as it indicates the highest pressure across all keys."
 msgstr ""
+"Le message de pression de canal MIDI. Ce message est le plus souvent envoyé "
+"en appuyant sur la touche après qu'il « se retire » . Ce message est "
+"différent de l'après-touche polyphonique car il indique la plus haute "
+"pression sur toutes les clés."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4074,6 +4080,9 @@ msgid ""
 "MIDI system exclusive message. This has behavior exclusive to the device "
 "you're receiving input from. Getting this data is not implemented in Godot."
 msgstr ""
+"Le message exclusif du système MIDI. Cela a un comportement exclusif à "
+"l'appareil dont vous recevez l'entrée. Obtenir cette donnée n'est pas "
+"implémenté dans Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4086,30 +4095,43 @@ msgid ""
 "MIDI song position pointer message. Gives the number of 16th notes since the "
 "start of the song. Getting this data is not implemented in Godot."
 msgstr ""
+"Le message de position de chanson MIDI. Donne le nombre de seizième de note "
+"depuis le début de la chanson. Obtenir cette donnée n'est pas implémenté "
+"dans Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI song select message. Specifies which sequence or song is to be played. "
 "Getting this data is not implemented in Godot."
 msgstr ""
+"Le message de sélectionne de la chanson. Spécifie quelle séquence ou quelle "
+"chanson doit être jouée. Obtenir cette donnée n'est pas implémenté dans "
+"Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI tune request message. Upon receiving a tune request, all analog "
 "synthesizers should tune their oscillators."
 msgstr ""
+"Le message de requête d'accordage MIDI. À la réception d'une requête "
+"d'accordage, tous les synthétiseurs analogiques devraient accorder leurs "
+"oscillateurs."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI timing clock message. Sent 24 times per quarter note when "
 "synchronization is required."
 msgstr ""
+"Le message d'horloge MIDI. Envoyé 24 fois par quart de note lorsque la "
+"synchronisation est requise."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI start message. Start the current sequence playing. This message will be "
 "followed with Timing Clocks."
 msgstr ""
+"Le message de démarrage MIDI. Commence la séquence actuelle. Ce message sera "
+"suivi avec un message d'horloge."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI continue message. Continue at the point the sequence was stopped."
@@ -5206,7 +5228,6 @@ msgstr ""
 "entrée, le dialogue sera accepté."
 
 #: doc/classes/AcceptDialog.xml
-#, fuzzy
 msgid ""
 "Removes the [code]button[/code] from the dialog. Does NOT free the "
 "[code]button[/code]. The [code]button[/code] must be a [Button] added with "
@@ -5214,9 +5235,11 @@ msgid ""
 "the [code]button[/code] will no longer emit this dialog's [signal "
 "custom_action] signal or cancel this dialog."
 msgstr ""
-"Enlever le [code]bouton[/code] de la boite de la boîte de dialogue. Ne "
-"libère PAS le bouton. Le bouton dois être un [Button] ajouté avec la méthode "
-"[method add_button] ou [method add_cancel] ."
+"Retire le [code]button[/code] de la boite de dialogue. Ne libère PAS le "
+"[code]button[/code]. Le [code]button[/code] doit être un [Button] ajouté "
+"avec la méthode [method add_button] ou [method add_cancel]. Après être "
+"retiré, appuyer sur [code]button[/code] n'émettra plus le signal [signal "
+"custom_action] du dialogue ni ne l'annulera."
 
 #: doc/classes/AcceptDialog.xml
 msgid "Sets autowrapping for the text in the dialog."
@@ -8408,6 +8431,10 @@ msgid ""
 "binds animations to animation nodes.\n"
 "Once set, [Animation] nodes can be added to the [AnimationTreePlayer]."
 msgstr ""
+"Le chemin vers le [AnimationPlayer] d'où cette [AnimationTreePlayer] "
+"connecte les animations aux nœuds d'animation.\n"
+"Une fois défini, les nœuds [Animation] peuvent être ajoutés au "
+"[AnimationTreePlayer]."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid "The thread in which to update animations."
@@ -8592,6 +8619,10 @@ msgid ""
 "See [member ProjectSettings.physics/3d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
+"La vitesse à laquelle les objets arrêtent de se déplacer dans cette zone. "
+"Représente la vitesse linéaire perdue par seconde.\n"
+"Voir [member ProjectSettings.physics/3d/default_linear_damp] pour plus de "
+"détails sur l'amortissement."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "If [code]true[/code], other monitoring areas can detect this area."
@@ -10832,6 +10863,9 @@ msgid ""
 "the AR/VR eyes to [VisualServer]. The value comes from an internal call to "
 "[method OS.get_ticks_usec]."
 msgstr ""
+"Retourne l'horodatage absolu (en μs) de la dernière mise à jour des yeux AR/"
+"VR du [ARVRServer] envoyée au [VisualServer]. La valeur est récupérée via un "
+"appel interne à [method OS.get_ticks_usec]"
 
 #: doc/classes/ARVRServer.xml
 msgid ""
@@ -10839,6 +10873,9 @@ msgid ""
 "difference between [method get_last_commit_usec] and [method "
 "get_last_process_usec] when committing."
 msgstr ""
+"Retourne la durée (en μs) de la dernière trame. Ceci est calculé comme la "
+"différence entre [method get_last_commit_usec] et [method "
+"get_last_process_usec] lorsque vous commettez."
 
 #: doc/classes/ARVRServer.xml
 msgid ""
@@ -10846,6 +10883,9 @@ msgid ""
 "callback. The value comes from an internal call to [method OS."
 "get_ticks_usec]."
 msgstr ""
+"Retourne l'horodatage absolu (en μs) du dernier appel de mise à jour du "
+"[ARVRServer]. La valeur vient est récupérée via un appel interne à [method "
+"OS.get_ticks_usec]"
 
 #: doc/classes/ARVRServer.xml
 msgid ""
@@ -12137,6 +12177,8 @@ msgid ""
 "High-pass filter, in Hz. Frequencies higher than this value will not be "
 "affected by the distortion. Value can range from 1 to 20000."
 msgstr ""
+"Le filtre passe-haut, en Hz. Les fréquences supérieures à cette valeur ne "
+"seront pas affectées par la distorsion. La valeur peut aller de 1 à 20000 Hz."
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid "Distortion type."
@@ -12147,12 +12189,16 @@ msgid ""
 "Increases or decreases the volume after the effect. Value can range from -80 "
 "to 24."
 msgstr ""
+"Augmente ou diminue le volume sonore après l'application de l'effet. La "
+"valeur peut aller de -80 à 24 dB."
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid ""
 "Increases or decreases the volume before the effect. Value can range from "
 "-60 to 60."
 msgstr ""
+"Augmente ou diminue le volume sonore avant l'application de l'effet. La "
+"valeur peut aller de -60 à 60 dB."
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid ""
@@ -12165,6 +12211,8 @@ msgid ""
 "Low-resolution digital distortion effect. You can use it to emulate the "
 "sound of early digital audio devices."
 msgstr ""
+"Effet de distorsion numérique à basse résolution. Vous pouvez l'utiliser "
+"pour émuler le son des tous premiers périphériques audio numériques."
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid ""
@@ -12530,6 +12578,10 @@ msgid ""
 "are more demanding on the CPU and may cause audio cracking if the CPU can't "
 "keep up."
 msgstr ""
+"Le facteur de suréchantillonnage à utiliser. Des valeurs plus élevées "
+"entraînent une meilleure qualité, mais nécessitent plus de puissance du CPU "
+"et peuvent provoquer des craquements audibles si le CPU n'est pas assez "
+"puissant."
 
 #: doc/classes/AudioEffectPitchShift.xml
 msgid ""
@@ -12818,6 +12870,8 @@ msgid ""
 "Returns the [AudioEffectInstance] assigned to the given bus and effect "
 "indices (and optionally channel)."
 msgstr ""
+"Retourne le [AudioEffectInstance] assigné au bus et aux indices de l'effet "
+"donnés (et le canal en option)."
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the index of the bus with the name [code]bus_name[/code]."
@@ -12832,26 +12886,32 @@ msgid ""
 "Returns the peak volume of the left speaker at bus index [code]bus_idx[/"
 "code] and channel index [code]channel[/code]."
 msgstr ""
+"Retourne le volume de crête du haut-parleur gauche à l'index du bus "
+"[code]bus_idx[/code] et l'index du canal [code]canal[/code]."
 
 #: doc/classes/AudioServer.xml
 msgid ""
 "Returns the peak volume of the right speaker at bus index [code]bus_idx[/"
 "code] and channel index [code]channel[/code]."
 msgstr ""
+"Retourne le volume de crête du haut-parleur droit à l'index de bus "
+"[code]bus_idx[/code] et l'index de canal [code]canal[/code]."
 
 #: doc/classes/AudioServer.xml
 msgid ""
 "Returns the name of the bus that the bus at index [code]bus_idx[/code] sends "
 "to."
 msgstr ""
+"Retourne le nom du bus vers lequel le bus à l'index [code]bus_idx[/code] "
+"envoie l'audio."
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the volume of the bus at index [code]bus_idx[/code] in dB."
-msgstr ""
+msgstr "Retourne le volume du bus à l'index [code]bus_idx[/code] en dB."
 
 #: doc/classes/AudioServer.xml
 msgid "Returns the names of all audio devices detected on the system."
-msgstr ""
+msgstr "Retourne les noms de tous les appareils audio détectés sur le système."
 
 #: doc/classes/AudioServer.xml
 #, fuzzy
@@ -12887,6 +12947,8 @@ msgid ""
 "If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus "
 "at index [code]bus_idx[/code] is enabled."
 msgstr ""
+"Si [code]true[/code], l'effet à l'index [code]effect_idx[/code] sur le bus à "
+"l'index [code]bus_idx[/code] est activé."
 
 #: doc/classes/AudioServer.xml
 msgid "If [code]true[/code], the bus at index [code]bus_idx[/code] is muted."
@@ -12897,12 +12959,15 @@ msgstr ""
 msgid ""
 "If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode."
 msgstr ""
+"Si [code]true[/code], le bus à l'index [code]bus_idx[/code] est en mode solo."
 
 #: doc/classes/AudioServer.xml
 msgid ""
 "Locks the audio driver's main loop.\n"
 "[b]Note:[/b] Remember to unlock it afterwards."
 msgstr ""
+"Verrouille la boucle principale du pilote audio.\n"
+"[b]Note :[/b] Il est important de la déverrouiller après utilisation."
 
 #: doc/classes/AudioServer.xml
 msgid ""
@@ -12930,6 +12995,7 @@ msgstr "Remplace le [AudioBusLayout] actuellement utilisé."
 msgid ""
 "Sets the name of the bus at index [code]bus_idx[/code] to [code]name[/code]."
 msgstr ""
+"Définit le nom du bus à l'index [code]bus_idx[/code] avec [code]name[/code]."
 
 #: doc/classes/AudioServer.xml
 msgid ""
@@ -12944,6 +13010,8 @@ msgid ""
 "Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/"
 "code]."
 msgstr ""
+"Définit le volume du bus à l'index [code]bus_idx[/code] à [code]volume_db[/"
+"code]."
 
 #: doc/classes/AudioServer.xml
 msgid "Swaps the position of two effects in bus [code]bus_idx[/code]."
@@ -12954,6 +13022,8 @@ msgid ""
 "Unlocks the audio driver's main loop. (After locking it, you should always "
 "unlock it.)"
 msgstr ""
+"Déverrouille la boucle principale du pilote audio. (Après le verrouillage, "
+"vous devriez toujours le déverrouiller.)"
 
 #: doc/classes/AudioServer.xml
 msgid "Number of available audio buses."
@@ -12998,6 +13068,8 @@ msgid ""
 "Scales the rate at which audio is played (i.e. setting it to [code]0.5[/"
 "code] will make the audio be played twice as fast)."
 msgstr ""
+"Mets à l'échelle la fréquence à laquelle l'audio est joué (c'est-à-dire que "
+"la valeur [code]0.5[/code] jouera l'audio deux fois plus vite)."
 
 #: doc/classes/AudioServer.xml
 msgid "Emitted when the [AudioBusLayout] changes."
@@ -13029,6 +13101,9 @@ msgid ""
 "music playback, and support WAV (via [AudioStreamSample]) and OGG (via "
 "[AudioStreamOGGVorbis]) file formats."
 msgstr ""
+"La classe de base pour les flux audio. Les flux audio sont utilisés pour les "
+"effets sonores et la lecture de musique, et supportent les formats de "
+"fichiers WAV (via [AudioStreamSample)] et OGG (via [AudioStreamOGGVorbis)]."
 
 #: doc/classes/AudioStream.xml doc/classes/AudioStreamPlayer.xml
 msgid "Audio streams"
@@ -13060,6 +13135,15 @@ msgid ""
 "class from GDScript, consider using a lower [member mix_rate] such as 11,025 "
 "Hz or 22,050 Hz."
 msgstr ""
+"Ce flux audio ne joue pas de sons par défaut, les données audio doivent être "
+"générées à partir d'un script. Voir aussi [AudioStreamGeneratorPlayback].\n"
+"Voir aussi [AudioEffectSpectrumAnalyzer] pour l'analyse spectrale de l'audio "
+"en temps réel.\n"
+"[b]Note :[/b] En raison des contraintes de performance, il est préférable "
+"d'utiliser cette classe à partir de code C# ou d'un langage compilée via "
+"GDNative. Si vous souhaitez tout de même utiliser cette classe avec "
+"GDScript, envisagez d'utiliser une fréquence [member mix_rate] plus faible "
+"comme 11025 Hz ou 22050 Hz."
 
 #: doc/classes/AudioStreamGenerator.xml
 msgid ""
@@ -13068,6 +13152,11 @@ msgid ""
 "resulting in increased CPU usage and more risk for audio cracking if the CPU "
 "can't keep up."
 msgstr ""
+"La longueur de la mémoire tampon à générer (en secondes). Les valeurs "
+"inférieures entraînent moins de latence, mais exigent que le script génère "
+"les données audio plus rapidement, ce qui entraîne une utilisation plus "
+"important du CPU et plus de risques de craquements audio si le CPU n'est pas "
+"assez puissant."
 
 #: doc/classes/AudioStreamGenerator.xml
 msgid ""
@@ -13130,6 +13219,11 @@ msgid ""
 "added again. Therefore, make sure your script can always generate and push "
 "new audio frames fast enough to avoid audio cracking."
 msgstr ""
+"Retourne le nombre de frames de données audio restantes à jouer. Si ce "
+"nombre atteint [code]0[/code], l'audio cessera de jouer jusqu'à ce que de "
+"nouvelles frames soient ajoutés. Par conséquent, assurez-vous que votre "
+"script peut toujours générer et pousser de nouveaux frames audio assez "
+"rapidement pour éviter les craquements audio."
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 msgid ""
@@ -13137,6 +13231,10 @@ msgid ""
 "efficient than [method push_frame] in C# and compiled languages via "
 "GDNative, but [method push_buffer] may be [i]less[/i] efficient in GDScript."
 msgstr ""
+"Ajoute plusieurs frames de données audio dans la mémoire tampon. Ceci est "
+"généralement plus efficace que [method push_frame] pour le C# et les "
+"langages compilés avec GDNative, mais [method push_buffer] peut être "
+"[i]moins[/i] efficace avec GDScript."
 
 #: doc/classes/AudioStreamGeneratorPlayback.xml
 msgid ""
@@ -13144,6 +13242,10 @@ msgid ""
 "efficient than [method push_buffer] in C# and compiled languages via "
 "GDNative, but [method push_frame] may be [i]more[/i] efficient in GDScript."
 msgstr ""
+"Ajouter une seule frame de données audio dans la mémoire tampon. Ceci est "
+"généralement moins efficace que [method push_buffer] pour le C# et les "
+"langages compilés avec GDNative, mais [method push_frame] peut être "
+"[i]moins[/i] efficace avec GDScript."
 
 #: modules/minimp3/doc_classes/AudioStreamMP3.xml
 #, fuzzy
@@ -13167,7 +13269,7 @@ msgstr ""
 #: modules/minimp3/doc_classes/AudioStreamMP3.xml
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml
 msgid "Time in seconds at which the stream starts after being looped."
-msgstr ""
+msgstr "Le temps en secondes où le flux commence après avoir bouclé."
 
 #: modules/stb_vorbis/doc_classes/AudioStreamOGGVorbis.xml
 msgid "OGG Vorbis audio stream driver."
@@ -13182,6 +13284,8 @@ msgid ""
 "Can play, loop, pause a scroll through audio. See [AudioStream] and "
 "[AudioStreamOGGVorbis] for usage."
 msgstr ""
+"Peut jouer, boucler, faire pause dans l'audio. Voir [AudioStream] et "
+"[AudioStreamOGGVorbis] pour l'utilisation."
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Plays back audio non-positionally."
@@ -13193,6 +13297,9 @@ msgid ""
 "To play audio positionally, use [AudioStreamPlayer2D] or "
 "[AudioStreamPlayer3D] instead of [AudioStreamPlayer]."
 msgstr ""
+"Joue un flux audio indépendamment de la position.\n"
+"Pour jouer audio en fonction de la position, utilisez [AudioStreamPlayer2D] "
+"ou [AudioStreamPlayer3D] au lieu de [AudioStreamPlayer]."
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Returns the position in the [AudioStream] in seconds."
@@ -13281,6 +13388,7 @@ msgstr "L'audio sera joué sur tous les canaux surround."
 msgid ""
 "The audio will be played on the second channel, which is usually the center."
 msgstr ""
+"L'audio sera joué sur le deuxième canal, qui est généralement le centre."
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid "Plays positional sound in 2D space."
@@ -13295,6 +13403,13 @@ msgid ""
 "[member volume_db] to a very low value like [code]-100[/code] (which isn't "
 "audible to human hearing)."
 msgstr ""
+"Joue l'audio étant amortit suivan la distance du centre d'écran.\n"
+"Voir aussi [AudioStreamPlayer] pour jouer un son indépendemment de la "
+"position.\n"
+"[b]Note :[/b] Masquer un nœud [AudioStreamPlayer2D] ne désactive pas sa "
+"sortie audio. Pour désactiver temporairement la sortie audio d'un "
+"[AudioStreamPlayer2D], choisissez une valeur très basse pour [member "
+"volume_db] comme [code]-100[/code] (qui n'est pas audible humainement)."
 
 #: doc/classes/AudioStreamPlayer2D.xml doc/classes/AudioStreamPlayer3D.xml
 msgid "Returns the position in the [AudioStream]."
@@ -13324,6 +13439,12 @@ msgid ""
 "\"water\" area so that sounds played in the water are redirected through an "
 "audio bus to make them sound like they are being played underwater."
 msgstr ""
+"Détermine quelles calques du [Area2D] affectent le son pour les effets de "
+"réverbération et du bus audio. Les zones peuvent être utilisées pour "
+"rediriger le [AudioStream] afin qu'ils soient joués dans un certain bus "
+"audio. Un exemple de la façon dont vous pouvez utiliser ceci est de faire "
+"une zone \"eau\" de sorte que les sons joués dans l'eau sont redirigés par "
+"un bus audio pour les faire sonner comme ils étaient joués sous l'eau."
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid "Dampens audio over distance with this as an exponent."
@@ -13399,6 +13520,10 @@ msgid ""
 "disable the dampening effect entirely, set this to [code]20500[/code] as "
 "this frequency is above the human hearing limit."
 msgstr ""
+"Amortit l'audio en utilisant un filtre passe-bas au-dessus de la fréquence "
+"spécifiée, en Hz. Pour désactiver entièrement l'effet d'amortissement, "
+"définissez la fréquence à [code]20500[/code] car cette fréquence est "
+"supérieure à la limite de l'audition humaine."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "Amount how much the filter affects the loudness, in decibels."
@@ -13579,6 +13704,13 @@ msgid ""
 "This class can also be used to store dynamically-generated PCM audio data. "
 "See also [AudioStreamGenerator] for procedural audio generation."
 msgstr ""
+"AudioStreamSample stocke des échantillons sonores chargés depuis des "
+"fichiers WAV. Pour jouer le son enregistré, utilisez un [AudioStreamPlayer] "
+"(pour l'audio indépendamment de la position) ou AudioStreamPlayer2D]/"
+"[AudioStreamPlayer3D (en fonction de la position). Le son peut être bouclé.\n"
+"Cette classe peut également être utilisée pour stocker des données audio "
+"dynamiques au format PCM. Voir aussi [AudioStreamGenerator] pour la "
+"génération audio procédurale."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
@@ -13587,6 +13719,11 @@ msgid ""
 "[b]Note:[/b] A [code].wav[/code] extension is automatically appended to "
 "[code]path[/code] if it is missing."
 msgstr ""
+"Enregistre le AudioStreamSample dans un fichier WAV à l'emplacement "
+"[code]path[/code]. Les échantillons au format IMA ADPCM peuvent être "
+"enregistrés.\n"
+"[b]Note :[/b] L'extension [code].wav[/code] est automatiquement ajoutée au "
+"[code]path[/code] si elle manque."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
@@ -13594,6 +13731,10 @@ msgid ""
 "[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned "
 "PCM8 to signed PCM8, subtract 128 from each byte."
 msgstr ""
+"Contient les données audio en octets.\n"
+"[b]Note :[/b] Cette propriété s'attend à des données PCM8 signées. Pour "
+"convertir des PCM8 non signés en PCM8, il faut soustraire 128 de chaque "
+"octet."
 
 #: doc/classes/AudioStreamSample.xml
 msgid "Audio format. See [enum Format] constants for values."
@@ -13607,6 +13748,9 @@ msgid ""
 "sample). This information will be imported automatically from the WAV file "
 "if present."
 msgstr ""
+"Le point de départ de la boucle (en nombre de frames depuis le début de "
+"l'échantillon). Ces informations seront automatiquement importées depuis le "
+"fichier WAV si elles y sont présentes."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
@@ -13614,12 +13758,18 @@ msgid ""
 "sample). This information will be imported automatically from the WAV file "
 "if present."
 msgstr ""
+"Le point de fin de la boucle (en nombre de frames depuis le début de "
+"l'échantillon). Ces informations seront automatiquement importées depuis le "
+"fichier WAV si elles y sont présentes."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
 "The loop mode. This information will be imported automatically from the WAV "
 "file if present. See [enum LoopMode] constants for values."
 msgstr ""
+"Le mode de boucle. Ces informations seront automatiquement importées depuis "
+"fichier WAV si elles y sont présentes. Voir les constantes [enum LoopMode] "
+"pour les valeurs possibles."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
@@ -13683,6 +13833,8 @@ msgid ""
 "Audio loops the data between [member loop_begin] and [member loop_end], "
 "playing back and forth."
 msgstr ""
+"Les données audio bouclent entre [member loop_begin] et [member loop_end], "
+"jouant en arrière puis en avant."
 
 #: doc/classes/AudioStreamSample.xml
 msgid ""
@@ -13698,6 +13850,9 @@ msgid ""
 "accessed in your shader scripts through the "
 "[code]texture(SCREEN_TEXTURE, ...)[/code] function."
 msgstr ""
+"Copie une région de l'écran (ou l'écran entier) vers une mémoire tampon afin "
+"qu'il puisse être accédé dans vos shaders avec la fonction "
+"[code]texture(SCREEN_TEXTURE, ...)[/code]."
 
 #: doc/classes/BackBufferCopy.xml
 msgid ""
@@ -13801,6 +13956,17 @@ msgid ""
 "[b]Note:[/b] [member bounce_indirect_energy] only has an effect if [member "
 "bounces] is set to a value greater than or equal to [code]1[/code]."
 msgstr ""
+"Le multiplicateur d'énergie à chaque rebond. Des valeurs plus élevées "
+"rendront l'éclairage indirect plus lumineux. Une valeur de [code]1.0[/code] "
+"représente un comportement physiquement réaliste, mais des valeurs plus "
+"élevées peuvent être utilisées pour rendre l'éclairage indirect plus visible "
+"avec un faible nombre de rebonds. Cela peut être utilisé pour accélérer les "
+"temps de calcul des lumières en réduisant le nombre de [member bounces] puis "
+"en augmentant [member bounce_indirect_energy]. Contrairement à [member "
+"BakedLightmapData.energy], cette propriété n'affecte pas l'éclairage direct "
+"émis par les lumières, les matériaux avec émission et l'environnement.\n"
+"[b]Note :[/b] [member bounce_indirect_energy] a seulement un effet si "
+"[member bounces] est à une valeur supérieure ou égale à [code]1[/code]."
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -13850,6 +14016,9 @@ msgid ""
 "[constant ENVIRONMENT_MODE_CUSTOM_COLOR] or [constant "
 "ENVIRONMENT_MODE_CUSTOM_SKY]."
 msgstr ""
+"Le facteur d'énergie lorsque [member environment_mode] est défini à "
+"[constant ENVIRONMENT_MODE_CUSTOM_COLOR] ou [constant "
+"ENVIRONMENT_MODE_CUSTOM_SKY]."
 
 #: doc/classes/BakedLightmap.xml
 msgid ""
@@ -14027,17 +14196,25 @@ msgid ""
 "directly (it doesn't display anything). Other types of buttons inherit from "
 "it."
 msgstr ""
+"BaseButton est la classe de base abstraite pour les boutons, elle ne doit "
+"donc pas être utilisée directement (elle ne montre rien du tout). D'autres "
+"types de boutons héritent de cette classe."
 
 #: doc/classes/BaseButton.xml
 msgid ""
 "Called when the button is pressed. If you need to know the button's pressed "
 "state (and [member toggle_mode] is active), use [method _toggled] instead."
 msgstr ""
+"Appelé quand le bouton est pressé. Si vous avez besoin de connaître l'état "
+"du bouton activé (et que [member toggle_mode] est actif), utilisez plutôt "
+"[méthode _toggled]."
 
 #: doc/classes/BaseButton.xml
 msgid ""
 "Called when the button is toggled (only if [member toggle_mode] is active)."
 msgstr ""
+"Appelé quand un bouton est basculé (seulement si [member toggle_mode] est "
+"actif)."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14046,6 +14223,10 @@ msgid ""
 "to \"draw\" signal. The visual state of the button is defined by the [enum "
 "DrawMode] enum."
 msgstr ""
+"Retourne l'état visuel utilisé pour dessiner le bouton. Ceci est utile "
+"surtout pour implémenter votre propre code d'affichage en surchargeant "
+"_draw() ou en se connectant au signal \"draw\". L'état visuel du bouton est "
+"défini par l'enumération [enum DrawMode]."
 
 #: doc/classes/BaseButton.xml
 #, fuzzy
@@ -14065,6 +14246,13 @@ msgid ""
 "[b]Note:[/b] This method doesn't unpress other buttons in its button [member "
 "group]."
 msgstr ""
+"Change l'état [member pressed] du bouton, sans émettre le signal [signal "
+"toggled]. Utilisez lorsque vous voulez simplement changer l'état du bouton "
+"sans envoyer l'événement quand il est manuellement pressé (par exemple au "
+"moment de l'initialisation de la scène). Fonctionne seulement si [member "
+"toggle_mode] est [code]true[/code].\n"
+"[b]Note :[/b] Cette méthode ne déselectionne pas les autres boutons dans son "
+"[member group]."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14080,12 +14268,18 @@ msgid ""
 "To allow both left-click and right-click, use [code]BUTTON_MASK_LEFT | "
 "BUTTON_MASK_RIGHT[/code]."
 msgstr ""
+"La masque binaire pour choisir quels boutons de clic de la souris permet "
+"d'appuyer sur ce bouton.\n"
+"Pour permettre à la fois le clic gauche et le clic droit, utilisez "
+"[code]BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT[/code]."
 
 #: doc/classes/BaseButton.xml
 msgid ""
 "If [code]true[/code], the button is in disabled state and can't be clicked "
 "or toggled."
 msgstr ""
+"Si [code]true[/code], le bouton est désactivé et il ne peut donc pas être "
+"appuyé ou basculé."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14093,6 +14287,9 @@ msgid ""
 "will be removed in Godot 4.0. This property no longer has any effect when "
 "set. Please use [member Control.focus_mode] instead."
 msgstr ""
+"[i]Obsolète.[/i] Cette propriété est obsolète en raison de sa redondance et "
+"sera enlevée dans Godot 4.0. Cette propriété n'a plus d'effet quand elle est "
+"définie. Veuillez plutôt utiliser [member Control.focus_mode]."
 
 #: doc/classes/BaseButton.xml
 msgid "[ButtonGroup] associated to the button."
@@ -14106,6 +14303,11 @@ msgid ""
 "Signals will be emitted at the same moment regardless of this property's "
 "value."
 msgstr ""
+"Si [code]true[/code], le bouton reste pressé quand le clic est maintenu mais "
+"que le curseur est déplacé en dehors du bouton.\n"
+"[b]Note :[/b] Cette propriété n'affecte que l'aspect visuel du bouton. Les "
+"signaux seront toujours émis au même moment, peu importe la valeur de cette "
+"propriété."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14116,6 +14318,12 @@ msgid ""
 "emitted. If you want to change the pressed state without emitting that "
 "signal, use [method set_pressed_no_signal]."
 msgstr ""
+"Si [code]true[/code], l'état du bouton est appuyé. Ce qui signifie que le "
+"bouton est soit appuyé ou basculé (si [member toggle_mode] est actif). Ne "
+"fonctionne que si [member toggle_mode] est [code]true[/code].\n"
+"[b]Note :[/b] Activer [member pressed] émettra le signal [signal toggled]. "
+"Si vous voulez changer l'état pressé sans émettre ce signal, utilisez plutôt "
+"[method set_pressed_no_signal]."
 
 #: doc/classes/BaseButton.xml
 msgid "[ShortCut] associated to the button."
@@ -14164,6 +14372,8 @@ msgid ""
 "The normal state (i.e. not pressed, not hovered, not toggled and enabled) of "
 "buttons."
 msgstr ""
+"L'état normal (c'est-à-dire non pressé, non survolé, non basculé ni activé) "
+"des boutons."
 
 #: doc/classes/BaseButton.xml
 msgid "The state of buttons are pressed."
@@ -14210,6 +14420,17 @@ msgid ""
 "For more information, read the \"Matrices and transforms\" documentation "
 "article."
 msgstr ""
+"Une matrice 3×3 utilisée pour la rotation et la mise à l'échelle en 3D. "
+"Presque toujours utilisé comme base orthogonale pour une Transform.\n"
+"Contient 3 champs vectoriels X, Y et Z qui composent ses colonnes, qui sont "
+"généralement interprétées comme les vecteurs de base locaux d'une "
+"transformation. Pour une telle utilisation, c'est composé d'une mise à "
+"l'échelle et d'une matrice de rotation, dans cet ordre (M = R.S)\n"
+"Peut également être accessible comme un tableau de vecteurs 3D. Ces vecteurs "
+"sont normalement orthogonaux l'un avec l'autre, mais ne sont pas "
+"nécessairement normalisés (en raison de la mise à l'échelle).\n"
+"Pour plus d'informations, lisez l'article de documentation « Matrices et "
+"transformations »."
 
 #: doc/classes/Basis.xml doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid "Matrices and transforms"
@@ -14221,7 +14442,6 @@ msgstr "Utiliser les transformations 3D"
 
 #: doc/classes/Basis.xml doc/classes/Line2D.xml doc/classes/Transform.xml
 #: doc/classes/Transform2D.xml doc/classes/Vector2.xml doc/classes/Vector3.xml
-#, fuzzy
 msgid "Matrix Transform Demo"
 msgstr "Démo de transformation matricielle"
 
@@ -14256,16 +14476,21 @@ msgid ""
 "Consider using the [Quat] constructor instead, which uses a quaternion "
 "instead of Euler angles."
 msgstr ""
+"Construit une matrice de base de rotation pure à partir des angles d'Euler "
+"spécifiés (suivant la convention YXZ : lors de la *composition*, d'abord Y, "
+"puis X, et enfin Z), qui sont donnés dans un vecteur comme (angle X, angle "
+"Y, angle Z).\n"
+"Vous pouvez considérer l'utilisation du constructeur [Quat], qui utilise un "
+"quaternion au lieu des angles d'Euler."
 
 #: doc/classes/Basis.xml
-#, fuzzy
 msgid ""
 "Constructs a pure rotation basis matrix, rotated around the given "
 "[code]axis[/code] by [code]angle[/code] (in radians). The axis must be a "
 "normalized vector."
 msgstr ""
-"Construit un quaternion qui tournera autour de l'axe donné selon l'angle "
-"spécifié. L'axe doit être un vecteur normalisé."
+"Construit un quaternion qui tournera autour de l'axe [code]axis[/code] par "
+"[code]angle[/code] (en radians). L'axe doit être un vecteur normalisé."
 
 #: doc/classes/Basis.xml
 msgid "Constructs a basis matrix from 3 axis vectors (matrix columns)."
@@ -14387,18 +14612,24 @@ msgid ""
 "The basis matrix's X vector (column 0). Equivalent to array index [code]0[/"
 "code]."
 msgstr ""
+"Le vecteur X (la colonne 0) de la matrice de la base. Équivalent à l'index "
+"de tableau [code]0[/code]."
 
 #: doc/classes/Basis.xml doc/classes/Transform2D.xml
 msgid ""
 "The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/"
 "code]."
 msgstr ""
+"Le vecteur Y (la colonne 1) de la matrice de la base. Équivalent à l'index "
+"de tableau [code]1[/code]."
 
 #: doc/classes/Basis.xml
 msgid ""
 "The basis matrix's Z vector (column 2). Equivalent to array index [code]2[/"
 "code]."
 msgstr ""
+"Le vecteur Z (la colonne 2) de la matrice de la base. Équivalent à l'index "
+"de tableau [code]2[/code]."
 
 #: doc/classes/Basis.xml
 msgid ""
@@ -14407,24 +14638,34 @@ msgid ""
 "This constant can be used to make your code clearer, and for consistency "
 "with C#."
 msgstr ""
+"La base d'identité, sans rotation ni mise à l'échelle.\n"
+"Ceci est identique à [code]Basis()[/code] sans aucun paramètre. Cette "
+"constante peut être utilisée pour que votre code soit plus clair, et pour la "
+"cohérence avec C#."
 
 #: doc/classes/Basis.xml
 msgid ""
 "The basis that will flip something along the X axis when used in a "
 "transformation."
 msgstr ""
+"La base qui appliquera un effet miroir suivant l'axe X lorsqu'elle est "
+"utilisée dans une transformation."
 
 #: doc/classes/Basis.xml
 msgid ""
 "The basis that will flip something along the Y axis when used in a "
 "transformation."
 msgstr ""
+"La base qui appliquera un effet miroir suivant l'axe Y lorsqu'elle est "
+"utilisée dans une transformation."
 
 #: doc/classes/Basis.xml
 msgid ""
 "The basis that will flip something along the Z axis when used in a "
 "transformation."
 msgstr ""
+"La base qui appliquera un effet miroir suivant l'axe Z lorsqu'elle est "
+"utilisée dans une transformation."
 
 #: doc/classes/BitMap.xml
 msgid "Boolean matrix."
@@ -14436,6 +14677,10 @@ msgid ""
 "a binary matrix (every matrix element takes only one bit) and query the "
 "values using natural cartesian coordinates."
 msgstr ""
+"Un tableau bidimensionnel de valeurs booléennes, peut être utilisé pour "
+"stocker efficacement une matrice binaire (chaque élément matrice ne contient "
+"qu'un bit) et faire des requêtes sur ces valeurs à l'aide de coordonnées "
+"naturelles cartésiennes."
 
 #: doc/classes/BitMap.xml
 msgid ""
@@ -14444,6 +14689,10 @@ msgid ""
 "are being converted into white pixels, and [code]false[/code] bits into "
 "black."
 msgstr ""
+"Retourne une image de la même taille que la bitmap au format [enum.Format] "
+"du type [code]FORMAT_L8[/code]. Les valeurs [code]true[/code] de l'image "
+"seront converties en pixels blancs, et les valeurs [code]false[/code] en "
+"noir."
 
 #: doc/classes/BitMap.xml
 msgid ""
@@ -14459,6 +14708,10 @@ msgid ""
 "that position is equal to [code]threshold[/code] or less, and [code]true[/"
 "code] in other case."
 msgstr ""
+"Crée un bitmap qui correspond aux dimensions de l'image donnée, chaque "
+"élément du bitmap sera remplacé par [code]false[/code] si l'opacité de ce "
+"pixel est inférieur ou égal à [code]threshold[/code], et [code]true[/code] "
+"sinon."
 
 #: doc/classes/BitMap.xml
 msgid "Returns bitmap's value at the specified position."
@@ -14481,6 +14734,12 @@ msgid ""
 "area where the morphological operation is applied. Pixels located outside "
 "the [code]rect[/code] are unaffected by [method grow_mask]."
 msgstr ""
+"Applique une dilatation ou une érosion morphologique du bitmap. Si "
+"[code]pixels[/code] est positif, une dilatation est appliquée au bitmap. Si "
+"[code]pixels[/code] est négatif, une érosion est appliquée. [code]rect[/"
+"code] définit la zone où l'opération morphologique est appliquée. Les pixels "
+"situés à l'extérieur du [code]rect[/code] ne sont pas affectés par [method "
+"grow_mask]."
 
 #: doc/classes/BitMap.xml
 msgid "Resizes the image to [code]new_size[/code]."
@@ -14607,6 +14866,9 @@ msgid ""
 "Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have "
 "a parent, or its rest pose relative to its parent."
 msgstr ""
+"Retourne la [code]Transform2D[/code] du nœud pour la position de repos "
+"[member rest] s'il n'a pas de parent, ou si sa position de repos est "
+"relative à son parent."
 
 #: doc/classes/Bone2D.xml
 msgid ""
@@ -14633,6 +14895,9 @@ msgid ""
 "for this node to attach to. The BoneAttachment node will copy the transform "
 "of the selected bone."
 msgstr ""
+"Ce nœud doit être l'enfant d'un nœud [Skeleton]. Vous pouvez alors "
+"sélectionner un os pour que ce nœud soit attaché. Le nœud BoneAttachment "
+"copiera la transformation de l'os sélectionné."
 
 #: doc/classes/BoneAttachment.xml
 msgid "The name of the attached bone."
@@ -14767,6 +15032,11 @@ msgid ""
 "Examples: [code]bool(\"False\")[/code] returns [code]true[/code], "
 "[code]bool(\"\")[/code] returns [code]false[/code]."
 msgstr ""
+"Convertit une valeur [String] en valeur booléenne, cette méthode retournera "
+"[code]false[/code] si [code]\"\"[/code] est donné, et [code]true[/code] pour "
+"toute chaîne non vide.\n"
+"Exemples : [code]bool(\"False\")[/code] retourne [code]true[/code], "
+"[code]bool(\"\")[/code] retourne [code]false[/code]."
 
 #: doc/classes/BoxContainer.xml
 msgid "Base class for box containers."
@@ -14777,12 +15047,16 @@ msgid ""
 "Arranges child controls vertically or horizontally, and rearranges the "
 "controls automatically when their minimum size changes."
 msgstr ""
+"Arrange les contrôles enfants verticalement ou horizontalement, et "
+"réorganise les contrôles automatiquement lorsque leur taille minimale change."
 
 #: doc/classes/BoxContainer.xml
 msgid ""
 "Adds a control to the box as a spacer. If [code]true[/code], [code]begin[/"
 "code] will insert the spacer control in front of other children."
 msgstr ""
+"Ajoute un contrôle à la boîte comme espace. Si [code]true[/code], "
+"[code]begin[/code] insérera le contrôle d'espace devant les autres enfants."
 
 #: doc/classes/BoxContainer.xml
 msgid ""
@@ -14819,20 +15093,22 @@ msgstr ""
 #: doc/classes/RigidBody.xml doc/classes/SphereShape.xml
 #: doc/classes/StaticBody.xml
 msgid "3D Physics Tests Demo"
-msgstr ""
+msgstr "Démo des tests de physique 3D"
 
 #: doc/classes/BoxShape.xml doc/classes/CollisionShape.xml
 #: modules/gridmap/doc_classes/GridMap.xml doc/classes/KinematicBody.xml
 #: doc/classes/Mesh.xml doc/classes/MeshInstance.xml
 #: doc/classes/MeshLibrary.xml
 msgid "3D Kinematic Character Demo"
-msgstr ""
+msgstr "Démo de caractère cinématique 3D"
 
 #: doc/classes/BoxShape.xml
 msgid ""
 "The box's half extents. The width, height and depth of this shape is twice "
 "the half extents."
 msgstr ""
+"La demi-étendue de la boîte. La largeur, la hauteur et la profondeur de "
+"cette forme sont deux fois plus larges."
 
 #: doc/classes/Button.xml
 msgid "Standard themed Button."
@@ -14893,7 +15169,7 @@ msgstr ""
 #: doc/classes/PoolStringArray.xml doc/classes/ProjectSettings.xml
 #: doc/classes/ResourceLoader.xml doc/classes/RichTextLabel.xml
 msgid "OS Test Demo"
-msgstr ""
+msgstr "Démo de test de système d'exploitation"
 
 #: doc/classes/Button.xml
 msgid ""
@@ -14909,12 +15185,17 @@ msgid ""
 "clipped, when disabled the Button will always be wide enough to hold the "
 "text."
 msgstr ""
+"Lorsque cette propriété est activée, un texte trop grand pour ce bouton sera "
+"tronqué, et lorsque le bouton est désactivé, il sera toujours assez grand "
+"pour contenir tout le texte."
 
 #: doc/classes/Button.xml
 msgid ""
 "When enabled, the button's icon will expand/shrink to fit the button's size "
 "while keeping its aspect."
 msgstr ""
+"Lorsque actif, l'icône du bouton s'étendra/se réduira selon la taille du "
+"bouton et gardera son aspect."
 
 #: doc/classes/Button.xml
 msgid "Flat buttons don't display decoration."
@@ -14927,6 +15208,11 @@ msgid ""
 "property of [Button] and [code]content_margin_*[/code] properties of the "
 "used [StyleBox]es."
 msgstr ""
+"L'icône du bouton, si le texte est présent, l'icône sera placée avant le "
+"texte.\n"
+"Pour modifier la marge et l'espacement de l'icône, utilisez la propriété "
+"[code]hseparation[/code] du thème pour le [Button] et les propriétés "
+"[code]content_margin_*[/code] de la [StyleBox] utilisée."
 
 #: doc/classes/Button.xml
 msgid ""
@@ -14934,6 +15220,10 @@ msgid ""
 "button. Uses the same [enum TextAlign] constants as the text alignment. If "
 "centered, text will draw on top of the icon."
 msgstr ""
+"Spécifie si l'icône doit être alignée sur la gauche, la droite ou au centre "
+"d'un bouton. Utilisez les mêmes constantes [enum TextAlign] que pour "
+"l'alignement du texte. Si l'icône est centrée, elle sera affichée sous le "
+"texte."
 
 #: doc/classes/Button.xml doc/classes/LinkButton.xml
 msgid "The button's text that will be displayed inside the button's area."
@@ -14965,6 +15255,9 @@ msgid ""
 "text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
+"La [Color] du texte utilisée lorsque le [Button] a le focus. Ne fait que "
+"remplacer la couleur normale du texte du bouton. Les couleurs définies pour "
+"les états désactivé, survolé et pressé sont prioritaires sur cette couleur."
 
 #: doc/classes/Button.xml
 msgid "Text [Color] used when the [Button] is being hovered."
@@ -14992,6 +15285,9 @@ msgid ""
 "current [StyleBox], so using [StyleBoxEmpty] will just disable the focus "
 "visual effect."
 msgstr ""
+"La [StyleBox] utilisée lorsque le [Button] a le focus. Elle est affichée par "
+"dessus la [StyleBox] actuelle, donc en utilisant [StyleBoxEmpty], ne fera "
+"que désactiver l'effet visuel quand le bouton a le focus."
 
 #: doc/classes/Button.xml
 msgid "[StyleBox] used when the [Button] is being hovered."
@@ -15015,6 +15311,10 @@ msgid ""
 "Only one allows being pressed.\n"
 "[member BaseButton.toggle_mode] should be [code]true[/code]."
 msgstr ""
+"Un groupe de [Button]. Tous les boutons enfants directs et indirects "
+"deviennent des boutons radios. Un seul de ces boutons peut être pressé à la "
+"fois.\n"
+"[member BaseButton.toggle_mode] devrait être [code]true[/code]."
 
 #: doc/classes/ButtonGroup.xml
 msgid ""
@@ -15098,6 +15398,9 @@ msgid ""
 "[code]enable_next[/code] is [code]true[/code], request to make the next "
 "camera current, if any."
 msgstr ""
+"Si c'est la caméra actuelle, elle ne sera plus l'actuelle. Si "
+"[code]enable_next[/code] est [code]true[/code], passe à la caméra suivante "
+"pour la rendre actuelle, s'il y en a une."
 
 #: doc/classes/Camera.xml
 msgid "Returns the camera's RID from the [VisualServer]."
@@ -15110,6 +15413,10 @@ msgid ""
 "to the position and orientation of the camera by subclassed cameras such as "
 "[ClippedCamera], [InterpolatedCamera] and [ARVRCamera]."
 msgstr ""
+"Retourne la transformation de la caméra avec les décalages vertical ([member "
+"v_offset]) et horizontal ([member h_offset]) ; et tout autre ajustement "
+"apporté à la position et à l'orientation de la caméra par les sous-classes "
+"de caméra comme [ClippedCamera], [InterpolatedCamera] et [ARVRCamera]."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15539,6 +15846,9 @@ msgid ""
 "The custom [Viewport] node attached to the [Camera2D]. If [code]null[/code] "
 "or not a [Viewport], uses the default viewport instead."
 msgstr ""
+"Le nœud [Viewport] personnalisé attaché à la [Camera2D]. Si [code]null[/"
+"code] ou que ça n'est pas un [Viewport], ça utilise la fenêtre d'affichage "
+"par défaut à la place."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15627,6 +15937,13 @@ msgid ""
 "without smoothing, even with this setting enabled, invoke [method "
 "reset_smoothing]."
 msgstr ""
+"Si [code]true[/code], la caméra s'arrête en douceur quand elle atteint ses "
+"limites.\n"
+"Cette propriété n'a aucun effet si [member smoothing_enabled] est "
+"[code]false[/code].\n"
+"[b]Note :[/b] Pour mettre immédiatement à jour la position de la caméra "
+"activée sans ralenti, même avec ce réglage activé, appelez [method "
+"reset_smoothing]."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15679,6 +15996,8 @@ msgid ""
 "Speed in pixels per second of the camera's smoothing effect when [member "
 "smoothing_enabled] is [code]true[/code]."
 msgstr ""
+"La vitesse en pixels par seconde de l'effet de ralenti de la caméra quand "
+"[member smoothing_enabled] est [code]true[/code]."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15687,6 +16006,10 @@ msgid ""
 "example, use [code]Vector2(0.5, 0.5)[/code] for a 2× zoom-in, and "
 "[code]Vector2(4, 4)[/code] for a 4× zoom-out."
 msgstr ""
+"Le zoom de l'appareil photo relatif à la fenêtre d'affichage. Les valeurs "
+"supérieures à [code]Vector2(1, 1)[/code] font un zoom arrière et les valeurs "
+"plus petites un zoom avant. Par exemple, utilisez [code]Vector2(0.5, 0.5)[/"
+"code] pour un zoom à 50%, et [code]Vector2(4, 4)[/code] pour un zoom 4×."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15705,10 +16028,12 @@ msgstr ""
 "et la taille de l'écran."
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr "La caméra se met à jour avec le rappel [code]_physics_process[/code]."
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr "La caméra se met à jour durant l'appel de [code]_process[/code]."
 
@@ -16082,6 +16407,8 @@ msgid ""
 "Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for "
 "related documentation."
 msgstr ""
+"Dessine un [Mesh] en 2D, en utilisant la texture spécifiée. Voir "
+"[MeshInstance2D] pour la documentation en rapport."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16143,6 +16470,8 @@ msgid ""
 "Draws a [MultiMesh] in 2D with the provided texture. See "
 "[MultiMeshInstance2D] for related documentation."
 msgstr ""
+"Dessine un [MultiMesh] en 2D avec la texture spécifiée. Voir "
+"[MultiMeshInstance2D] pour la documentation en rapport."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16381,6 +16710,8 @@ msgid ""
 "Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is "
 "in using the coordinate system of the [CanvasLayer]."
 msgstr ""
+"Retourne la position de la souris dans le [CanvasLayer] que ce [CanvasItem] "
+"utilise suivant le système de coordonnées du [CanvasLayer]."
 
 #: doc/classes/CanvasItem.xml
 msgid "Returns the global transform matrix of this item."
@@ -16398,6 +16729,8 @@ msgid ""
 "Returns the mouse's position in this [CanvasItem] using the local coordinate "
 "system of this [CanvasItem]."
 msgstr ""
+"Retourne la position de la souris dans le [CanvasItem] en utilisant le "
+"système de coordonnées local au [CanvasItem]."
 
 #: doc/classes/CanvasItem.xml
 msgid "Returns the transform matrix of this item."
@@ -16422,6 +16755,8 @@ msgid ""
 "Hide the [CanvasItem] if it's currently visible. This is equivalent to "
 "setting [member visible] to [code]false[/code]."
 msgstr ""
+"Cacher les [CanvasItem] s'ils sont actuellement visibles. C'est équivalent à "
+"[member visible] à [code]false[/code]."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16436,6 +16771,8 @@ msgid ""
 "Returns [code]true[/code] if the node is set as top-level. See [method "
 "set_as_toplevel]."
 msgstr ""
+"Retourne [code]true[/code] si le nœud est défini comme de niveau supérieur. "
+"Voir [méthode set_as_toplevel]."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16452,16 +16789,24 @@ msgid ""
 "also visible. If any antecedent is hidden, this node will not be visible in "
 "the scene tree."
 msgstr ""
+"Retourne [code]true[/code] si le nœud est présent dans le [SceneTree], que "
+"sa propriété [member visible] est [code]true[/code] et que tous ses parents "
+"sont également visibles. Si un parent est caché, ce nœud ne sera pas visible "
+"dans l'arborescence de la scène."
 
 #: doc/classes/CanvasItem.xml
 msgid "Assigns [code]screen_point[/code] as this node's new local transform."
 msgstr ""
+"Assigne [code]screen_point[/code] comme la nouvelle position locale de ce "
+"nœud."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Transformations issued by [code]event[/code]'s inputs are applied in local "
 "space instead of global space."
 msgstr ""
+"Les transformations émises par les entrées de [code]event[/code] sont "
+"appliquées dans l'espace local au lieu de l'espace global."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16503,12 +16848,18 @@ msgid ""
 "[Popup], the correct way to make them visible is to call one of the multiple "
 "[code]popup*()[/code] functions instead."
 msgstr ""
+"Affiche le [CanvasItem] s'il est actuellement caché. Ceci est équivalent à "
+"[member visible] à [code]true[/code]. Pour les contrôles hérités de [Popup], "
+"appelez plutôt l'une des fonctions [code]popup*()[/code] pour le rendre "
+"visible."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Queue the [CanvasItem] for update. [constant NOTIFICATION_DRAW] will be "
 "called on idle time to request redraw."
 msgstr ""
+"Ajoute le [CanvasItem] pour être mis à jour. [constant NOTIFICATION_DRAW] "
+"sera émise sur le temps inoccupé pour demander la mise à jour."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16543,6 +16894,8 @@ msgid ""
 "If [code]true[/code], the parent [CanvasItem]'s [member material] property "
 "is used as this one's material."
 msgstr ""
+"Si [code]true[/code], la propriété [member material] du [CanvasItem] parent "
+"est utilisée comme matériau de celui-ci."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16553,12 +16906,21 @@ msgid ""
 "visible is to call one of the multiple [code]popup*()[/code] functions "
 "instead."
 msgstr ""
+"Si [code]true[/code], ce [CanvasItem] est affiché. Le nœud n'est visible que "
+"si tous ses parents le sont également (en d'autres termes, [méthode "
+"is_visible_in_tree] doit retourner [code]true[/code]).\n"
+"[b]Note :[/b] Pour les contrôles qui héritent de [Popup], la bonne manière "
+"de les rendre visible est plutôt d'appeler l'une des fonctions [code]popup*()"
+"[/code]."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "Emitted when the [CanvasItem] must redraw. This can only be connected "
 "realtime, as deferred will not allow drawing."
 msgstr ""
+"Émis lorsque le [CanvasItem] doit être redessiné. Ça ne peut être que "
+"connecté qu'en temps réel, puisque le différer peut ne pas permettre le "
+"dessin."
 
 #: doc/classes/CanvasItem.xml
 msgid "Emitted when becoming hidden."
@@ -16570,6 +16932,9 @@ msgid ""
 "or when an action is taking place that may have impacted these boundaries (e."
 "g. changing [member Sprite.texture])."
 msgstr ""
+"Émis quand la position ou la taille du [Rect2] a changé, ou lorsqu'une "
+"action a changé ces valeurs là (par exemple en changeant [member Sprite."
+"texture])"
 
 #: doc/classes/CanvasItem.xml
 msgid "Emitted when the visibility (hidden/visible) changes."
@@ -16708,6 +17073,7 @@ msgid ""
 "Render the material using both light and non-light sensitive material "
 "properties."
 msgstr ""
+"Fait le rendu du matériau avec et sans lumière des propriétés matérielles."
 
 #: doc/classes/CanvasItemMaterial.xml
 msgid "Render the material as if there were no light."
@@ -16751,18 +17117,24 @@ msgid ""
 "Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
 "setting [member visible] to [code]false[/code]."
 msgstr ""
+"Masque tous les [CanvasItem] dans ce [CanvasLayer]. Ceci est équivalent à "
+"définir [member visible] à [code]false[/code]."
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
 "Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to "
 "setting [member visible] to [code]true[/code]."
 msgstr ""
+"Affiche tous les [CanvasItem] dans ce [CanvasLayer]. Ceci est équivalent à "
+"définir [member visible] à [code]true[/code]."
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
 "The custom [Viewport] node assigned to the [CanvasLayer]. If [code]null[/"
 "code], uses the default viewport instead."
 msgstr ""
+"Le nœud [Viewport] personnalisé assigné au [CanvasLayer]. Si [code]null[/"
+"code], ça utilise la fenêtre d'affichage par défaut à la place."
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
@@ -16776,6 +17148,10 @@ msgid ""
 "into the foreground should have increasing scales, while layers moving into "
 "the background should have decreasing scales."
 msgstr ""
+"Change la mise à l'échelle du calque en utilisant [member "
+"follow_viewport_enable]. Les calques se déplaçant au premier plan devraient "
+"avoir des mises à l'échelle croissantes, tandis que les calques se déplaçant "
+"dans le fond devraient avoir des mises à l'échelle décroissantes."
 
 #: doc/classes/CanvasLayer.xml
 msgid "Layer index for draw order. Lower values are drawn first."
@@ -16810,6 +17186,10 @@ msgid ""
 "Unlike [member CanvasItem.visible], visibility of a [CanvasLayer] isn't "
 "propagated to underlying layers."
 msgstr ""
+"Si [code]false[/code], tous les [CanvasItem] dans ce [CanvasLayer] sont "
+"cachés.\n"
+"Contrairement à [member CanvasItem.visible], la visibilité d'un "
+"[CanvasLayer] n'est pas propagée aux calques enfants."
 
 #: doc/classes/CanvasLayer.xml
 #, fuzzy
@@ -16842,6 +17222,10 @@ msgid ""
 "[b]Note:[/b] The capsule's total height is equal to [member mid_height] + 2 "
 "* [member radius]."
 msgstr ""
+"La hauteur de la partie du cylindrique au milieu de la capsule (donc sans "
+"les bouts hémisphériques).\n"
+"[b]Note :[/b] La hauteur totale de la capsule est égale à [member "
+"mid_height] + 2 * [member radius]."
 
 #: doc/classes/CapsuleMesh.xml
 msgid "Number of radial segments on the capsule mesh."
@@ -16880,12 +17264,16 @@ msgid ""
 "CenterContainer keeps children controls centered. This container keeps all "
 "children to their minimum size, in the center."
 msgstr ""
+"CenterContainer garde centrés les contrôles enfants. Ce conteneur garde tous "
+"les enfants à leur taille minimale, dans son centre."
 
 #: doc/classes/CenterContainer.xml
 msgid ""
 "If [code]true[/code], centers children relative to the [CenterContainer]'s "
 "top left corner."
 msgstr ""
+"Si [code]true[/code], centre les enfants par rapport au coin supérieur "
+"gauche du [CenterContainer])."
 
 #: doc/classes/CharFXTransform.xml
 msgid ""
@@ -17190,6 +17578,9 @@ msgid ""
 "normal text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
+"La couleur du texte du [CheckButton] quand il a le focus. Ne remplace que la "
+"couleur de texte normale du bouton. Les états désactivés, survolé et pressés "
+"sont prioritaire sur cette couleur."
 
 #: doc/classes/CheckButton.xml
 msgid "The [CheckButton] text's font color when it's hovered."
@@ -17209,10 +17600,12 @@ msgstr "La couleur de la police du texte du [CheckButton] quand il est appuyé."
 #: doc/classes/CheckButton.xml
 msgid "The vertical offset used when rendering the toggle icons (in pixels)."
 msgstr ""
+"Le décalage vertical utilisé lors du rendu des icônes de basculement (en "
+"pixels)."
 
 #: doc/classes/CheckButton.xml
 msgid "The separation between the toggle icon and the text (in pixels)."
-msgstr ""
+msgstr "La séparation entre l'icône de basculement et le texte (en pixels)."
 
 #: doc/classes/CheckButton.xml
 msgid "The [Font] to use for the [CheckButton] text."
@@ -17258,6 +17651,8 @@ msgid ""
 "The [StyleBox] to display as a background when the [CheckButton] is hovered "
 "and pressed."
 msgstr ""
+"La [StyleBox] à afficher en fond lorsque le [CheckButton] est survolé et "
+"appuyé."
 
 #: doc/classes/CheckButton.xml
 msgid ""
@@ -17276,6 +17671,9 @@ msgid ""
 "small characters and its collision detection with everything else is very "
 "fast."
 msgstr ""
+"Forme circulaire pour les collisions 2D. Cette forme est utile pour "
+"modéliser les boules ou les petits caractères et sa détection des collisions "
+"avec les autres éléments est très rapide."
 
 #: doc/classes/CircleShape2D.xml
 msgid "The circle's radius."
@@ -17295,6 +17693,8 @@ msgid ""
 "Returns [code]true[/code] if you can instance objects from the specified "
 "[code]class[/code], [code]false[/code] in other case."
 msgstr ""
+"Retourne [code]true[/code] si vous pouvez instancer des objets à partir de "
+"[code]class[/code], [code]false[/code] dans un autre cas."
 
 #: doc/classes/ClassDB.xml
 msgid "Returns whether the specified [code]class[/code] is available or not."
@@ -17305,12 +17705,17 @@ msgid ""
 "Returns a category associated with the class for use in documentation and "
 "the Asset Library. Debug mode required."
 msgstr ""
+"Retourne une catégorie associée à la classe à utiliser dans la documentation "
+"et la bibliothèque de ressources. Le mode débogage est nécessaire pour "
+"récupérer cette information."
 
 #: doc/classes/ClassDB.xml
 msgid ""
 "Returns an array with all the keys in [code]enum[/code] of [code]class[/"
 "code] or its ancestry."
 msgstr ""
+"Retourne un tableau avec toutes les clés dans l'énumeration [code]enum[/"
+"code] de la [code]class[/code] ou de ses parents."
 
 #: doc/classes/ClassDB.xml
 #, fuzzy
@@ -17335,6 +17740,8 @@ msgid ""
 "Returns an array with the names all the integer constants of [code]class[/"
 "code] or its ancestry."
 msgstr ""
+"Retourne un tableau avec le nom de toutes les constantes entières de "
+"[code]class[/code] ou de son parent."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17347,6 +17754,15 @@ msgid ""
 "[b]Note:[/b] In exported release builds the debug info is not available, so "
 "the returned dictionaries will contain only method names."
 msgstr ""
+"Retourne un tableau avec toutes les méthodes de [code]class[/code] ou son "
+"parent si [code]no_inheritance[/code] est [code]false[/code]. Chaque élément "
+"du tableau est un [Dictionary] avec les clés suivantes : [code]args[/code], "
+"[code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/"
+"code] et [code]return: (class_name, hint, hint_string, name, type, usage)[/"
+"code].\n"
+"[b]Note :[/b] Dans la version exportée, les informations de débogage ne sont "
+"pas disponibles, les dictionnaires retournés ne contiendront donc que le nom "
+"des méthodes."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17361,6 +17777,8 @@ msgid ""
 "Returns an array with all the properties of [code]class[/code] or its "
 "ancestry if [code]no_inheritance[/code] is [code]false[/code]."
 msgstr ""
+"Retourne un tableau avec toutes les propriétés de [code]class[/code] ou de "
+"son parent si [code]no_inheritance[/code] est [code]false[/code]."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17370,6 +17788,11 @@ msgid ""
 "[code]name[/code], [code]return: (class_name, hint, hint_string, name, type, "
 "usage)[/code]."
 msgstr ""
+"Retourne les données [code]signal[/code] de [code]class[/code] ou de son "
+"parent. La valeur retournée est un [Dictionary] avec les clés suivantes : "
+"[code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/"
+"code], [code]name[/code] et [code]return: (class_name, hint, hint_string, "
+"name, type, usage)[/code]."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17377,6 +17800,9 @@ msgid ""
 "if [code]no_inheritance[/code] is [code]false[/code]. Every element of the "
 "array is a [Dictionary] as described in [method class_get_signal]."
 msgstr ""
+"Retourne un tableau avec tous les signaux de [code]class[/code] ou son "
+"parent si [code]no_inheritance[/code] est [code]false[/code]. Chaque élément "
+"du tableau est un [Dictionary] comme détaillé dans [method class_get_signal]."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17391,6 +17817,8 @@ msgid ""
 "Returns whether [code]class[/code] or its ancestry has an integer constant "
 "called [code]name[/code] or not."
 msgstr ""
+"Retourne si [code]class[/code] ou son parent a une constante entière appelée "
+"[code]name[/code] ou non."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17483,6 +17911,8 @@ msgid ""
 "Returns [code]true[/code] if the specified bit index is on.\n"
 "[b]Note:[/b] Bit indices range from 0-19."
 msgstr ""
+"Retourne [code]true[/code] si l'index de bit spécifié est actif.\n"
+"[b]Note :[/b] Les indices de bit vont de 0 à 19."
 
 #: doc/classes/ClippedCamera.xml
 msgid "Removes a collision exception with the specified node."
@@ -17497,6 +17927,8 @@ msgid ""
 "Sets the specified bit index to the [code]value[/code].\n"
 "[b]Note:[/b] Bit indices range from 0-19."
 msgstr ""
+"Définit l'index de bit spécifié à [code]valeur[/code].\n"
+"[b]Note :[/b] Les indices des bit vont de 0 à 19."
 
 #: doc/classes/ClippedCamera.xml
 msgid "If [code]true[/code], the camera stops on contact with [Area]s."
@@ -17516,6 +17948,11 @@ msgid ""
 "physics_introduction.html#collision-layers-and-masks]Collision layers and "
 "masks[/url] in the documentation for more information."
 msgstr ""
+"Le masque de collision de la caméra. Seuls les objets dans au moins une "
+"calque de collision correspondant au masque seront détectés. Voir "
+"[url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-"
+"and-masks]Calques et masques de collision[/url] dans la documentation pour "
+"plus d'informations."
 
 #: doc/classes/ClippedCamera.xml
 msgid ""
@@ -17541,6 +17978,13 @@ msgid ""
 "owners are not nodes and do not appear in the editor, but are accessible "
 "through code using the [code]shape_owner_*[/code] methods."
 msgstr ""
+"CollisionObject est la classe de base pour les objets physiques. Il peut "
+"contenir n'importe quel nombre de formes [Shape] de collision. Chaque forme "
+"doit être assignée à un [i]propriétaire de forme[ /i]. Le CollisionObject "
+"peut avoir n'importe quel nombre de propriétaires de forme. Les "
+"propriétaires de forme ne sont pas des nœuds et ne apparaissent pas dans "
+"l'éditeur, mais sont accessibles par le code en utilisant les méthodes "
+"[code]shape_owner_*[/code]."
 
 #: doc/classes/CollisionObject.xml
 msgid ""
@@ -17550,6 +17994,11 @@ msgid ""
 "surface at that point. Connect to the [signal input_event] signal to easily "
 "pick up these events."
 msgstr ""
+"Reçoie les [InputEvent] non traités. [code]position[/code] est la position "
+"dans l'espace global du curseur de la souris sur la surface de la forme avec "
+"index [code]shape_idx[/code] et [code]normal[/code] est le vecteur de "
+"normale de la surface à ce point. Connectez-vous au signal [signal "
+"input_event] pour récupérer facilement ces événements."
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
@@ -18001,6 +18450,13 @@ msgid ""
 "only helper to create shapes, use [method CollisionObject."
 "shape_owner_get_shape] to get the actual shape."
 msgstr ""
+"Un élément d'aide de l'éditeur pour créer et modifier des formes de "
+"collision dans l'espace 3D. Vous pouvez utiliser ce nœud pour représenter "
+"toutes sortes de formes de collision, par exemple, ajoutez-le à un [Area] "
+"pour lui donner une forme de détection, ou l'ajoutez-le à un [PhysicsBody] "
+"pour créer un objet solide. [b]IMPORTANT[/b] : c'est une aide de l'éditeur "
+"qui ne sert qu'à créer des formes, utiliser [method CollisionObject."
+"shape_owner_get_shape] pour obtenir la forme réelle."
 
 #: doc/classes/CollisionShape.xml doc/classes/CollisionShape2D.xml
 #: doc/classes/Physics2DDirectBodyState.xml
@@ -18048,6 +18504,13 @@ msgid ""
 "Editor-only helper to create shapes, use [method CollisionObject2D."
 "shape_owner_get_shape] to get the actual shape."
 msgstr ""
+"Un élément d'aide de l'éditeur pour créer et modifier des formes de "
+"collision dans l'espace 2D. Vous pouvez utiliser ce nœud pour représenter "
+"toutes sortes de formes de collision, par exemple, ajoutez-le à un [Area] "
+"pour lui donner une forme de détection, ou l'ajoutez-le à un [PhysicsBody] "
+"pour créer un objet solide. [b]IMPORTANT[/b] : c'est une aide de l'éditeur "
+"qui ne sert qu'à créer des formes, utiliser [method CollisionObject."
+"shape_owner_get_shape] pour obtenir la forme réelle."
 
 #: doc/classes/CollisionShape2D.xml doc/classes/KinematicBody2D.xml
 #: doc/classes/RectangleShape2D.xml doc/classes/TileMap.xml
@@ -18245,6 +18708,12 @@ msgid ""
 "var darkgreen = green.darkened(0.2) # 20% darker than regular green\n"
 "[/codeblock]"
 msgstr ""
+"Retourne une nouvelle couleur à partir de cette couleur en plus foncée par "
+"le pourcentage donné (de 0 à 1).\n"
+"[codeblock]\n"
+"var green = Couleur(0.0, 1.0, 0.0) # Vert vif\n"
+"var darkgreen = vert.darkened(0.2) # 20% plus foncé que le vert vif\n"
+"/[codeblock]"
 
 #: doc/classes/Color.xml
 msgid ""
@@ -18268,6 +18737,11 @@ msgid ""
 "This is useful when determining light or dark color. Colors with a luminance "
 "smaller than 0.5 can be generally considered dark."
 msgstr ""
+"Retourne la luminosité de la couleur dans l'intervalle [code][0.0, 1.0][/"
+"code].\n"
+"Ceci est utile pour déterminer si c'est une couleur claire ou foncée. Les "
+"couleurs avec une luminosité inférieure à 0,5 peuvent généralement être "
+"considérées comme sombres."
 
 #: doc/classes/Color.xml
 msgid ""
@@ -18428,7 +18902,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "Retourne la chaîne de caractères avec le code hexadécimal façon HTML au "
-"format ARGB (par exemple [code]ff34f822[/code)].\n"
+"format ARGB (par exemple [code]ff34f822[/code]).\n"
 "Définir [code]with_alpha[/code] à [code]false[/code] ne retourne pas la "
 "valeur alpha dans le code hexadécimal retourné.\n"
 "[codeblock]\n"
@@ -18862,7 +19336,7 @@ msgstr "Couleur marron."
 #: doc/classes/Color.xml
 #, fuzzy
 msgid "Medium aquamarine color."
-msgstr "Couleur bleu-marin moyenne."
+msgstr "Couleur bleu-marine moyenne."
 
 #: doc/classes/Color.xml
 msgid "Medium blue color."
@@ -19089,22 +19563,18 @@ msgid "Violet color."
 msgstr "Couleur violette."
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid "Web gray color."
 msgstr "Couleur gris Web."
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid "Web green color."
-msgstr "Couleur verte web."
+msgstr "Couleur vert Web."
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid "Web maroon color."
 msgstr "Couleur marron Web."
 
 #: doc/classes/Color.xml
-#, fuzzy
 msgid "Web purple color."
 msgstr "Couleur violet Web."
 
@@ -19271,6 +19741,13 @@ msgid ""
 "preview swatch to be visible. Make sure to set [member Control."
 "rect_min_size] to a big enough value to give the button enough space."
 msgstr ""
+"Encapsule un [ColorPicker] le rendant accessible en appuyant sur un bouton. "
+"En appuyant sur le bouton, le [ColorPicker] deviendra visible.\n"
+"Voir aussi [BaseButton] qui contient des propriétés et des méthodes communes "
+"associées à ce nœud.\n"
+"[b]Note :[/b] Par défaut, le bouton peut ne pas être assez large pour que "
+"les palettes de couleur soit visibles. Assurez-vous de configurer [member "
+"Control.rect_min_size] avec une taille suffisante grande pour le bouton."
 
 #: doc/classes/ColorPickerButton.xml
 msgid ""
@@ -19279,6 +19756,10 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Retourne le [ColorPicker] que ce nœud bascule.\n"
+"[b]Avertissement :[/b] Il s'agit d'un nœud interne requis, le retirer et le "
+"supprimer peut causer un plantage. Si vous voulez le cacher ou l'un de ses "
+"enfants, utilisez la propriété [member CanvasItem.visible]."
 
 #: doc/classes/ColorPickerButton.xml
 msgid ""
@@ -19289,6 +19770,12 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Retourne la commande suivante [PopupPanel] qui vous permet de vous connecter "
+"aux signaux de la fenêtre surgissante. Cela vous permet de gérer les "
+"événements lorsque le ColorPicker est affiché ou caché.\n"
+"[b]Avertissement :[/b] Il s'agit d'un nœud interne requis, le retirer et le "
+"supprimer peut causer un plantage. Si vous voulez le cacher ou l'un de ses "
+"enfants, utilisez la propriété [member CanvasItem.visible]."
 
 #: doc/classes/ColorPickerButton.xml
 msgid ""
@@ -19306,6 +19793,8 @@ msgid ""
 "Emitted when the [ColorPicker] is created (the button is pressed for the "
 "first time)."
 msgstr ""
+"Émis lorsque le [ColorPicker] est créé (le bouton est pressé pour la "
+"première fois)."
 
 #: doc/classes/ColorPickerButton.xml
 msgid "Emitted when the [ColorPicker] is closed."
@@ -19326,6 +19815,9 @@ msgid ""
 "normal text color of the button. Disabled, hovered, and pressed states take "
 "precedence over this color."
 msgstr ""
+"La [Color] du texte utilisée lorsque le [ColorPickerButton] a le focus. Il "
+"suffit de remplacer la couleur de texte normale du bouton. Les états "
+"désactivé, survolé et pressé sont prioritaires par rapport à cette couleur."
 
 #: doc/classes/ColorPickerButton.xml
 msgid "Text [Color] used when the [ColorPickerButton] is being hovered."
@@ -19358,6 +19850,9 @@ msgid ""
 "over the current [StyleBox], so using [StyleBoxEmpty] will just disable the "
 "focus visual effect."
 msgstr ""
+"La [StyleBox] utilisée lorsque le [ColorPickerButton] a le focus. Il est "
+"affiché par dessus la [StyleBox] actuelle, donc utiliser [StyleBoxEmpty] ne "
+"fera que désactiver l'effet visuel de focus."
 
 #: doc/classes/ColorPickerButton.xml
 msgid "[StyleBox] used when the [ColorPickerButton] is being hovered."
@@ -19380,6 +19875,8 @@ msgid ""
 "Displays a rectangle filled with a solid [member color]. If you need to "
 "display the border alone, consider using [ReferenceRect] instead."
 msgstr ""
+"Affiche un rectangle rempli de la couleur [member color]. Si vous devez "
+"seulement afficher la bordure, utilisez plutôt un [ReferenceRect]."
 
 #: doc/classes/ColorRect.xml
 msgid ""
@@ -19406,6 +19903,13 @@ msgid ""
 "work with static [PhysicsBody] nodes like [StaticBody] and will not work "
 "with [KinematicBody] or [RigidBody] with a mode other than Static."
 msgstr ""
+"Une ressource en forme de polygone concave, qui peut être utilisée dans un "
+"[PhysicsBody] ou une aire. Cette forme est créée à partir d'une liste de "
+"triangles.\n"
+"[b]Note :[/b] Lorsque qu'elle est utilisée pour les collisions, "
+"[ConcavePolygonShape] ne fonctionnera qu'avec les nœuds statiques "
+"[PhysicsBody] comme les [StaticBody] et non pas avec [KinematicBody] ou "
+"[RigidBody] quand ils ne sont pas en mode Static."
 
 #: doc/classes/ConcavePolygonShape.xml
 msgid "Returns the faces (an array of triangles)."
@@ -19432,6 +19936,18 @@ msgid ""
 "uses a more complex method of collision detection, and a convex one forces "
 "itself to be convex in order to speed up collision detection."
 msgstr ""
+"Une ressource en forme de polygone concave pour la physique 2D. Elle est "
+"composée de segments et est optimal pour les collisions complexes de "
+"concaves polygonales. Cependant, il n'est pas conseillé de l'utiliser pour "
+"les nœuds [RigidBody2D]. Un CollisionPolygon2D décomposé en convexes "
+"(solides) ou plusieurs objets convexes sont conseillés dans ce cas. Sinon, "
+"une forme en polygone concave 2D est préférable pour les collisions "
+"statiques.\n"
+"La principale différence entre un [ConvexPolygonShape2D] et un "
+"[ConcavePolygonShape2D] est qu'un polygone concave suppose qu'il contient "
+"des zones creusées à l'intérieur et doit utiliser une méthode plus complexe "
+"pour détecter les collisions, alors qu'un polygone convexe n'admet aucune "
+"zone creusée pour pouvoir accélérer la détection des collisions."
 
 #: doc/classes/ConcavePolygonShape2D.xml
 msgid ""
@@ -19702,6 +20218,11 @@ msgid ""
 "loaded in the [ConfigFile] object which the method was called on.\n"
 "Returns one of the [enum Error] code constants ([code]OK[/code] on success)."
 msgstr ""
+"Charge le fichier de configuration crypté spécifié comme paramètre, en "
+"utilisant le mode de passe [code]password[/code] donné pour le décrypter. Le "
+"contenu du fichier est interprété puis chargé dans l'objet [ConfigFile] sur "
+"lequel la méthode a été appelée.\n"
+"Retourne un des codes [enum Error] ([code]OK[/code] si c'est un succès)."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -19709,6 +20230,10 @@ msgid ""
 "parsed and loaded in the ConfigFile object which the method was called on.\n"
 "Returns one of the [enum Error] code constants ([code]OK[/code] on success)."
 msgstr ""
+"Interprète la chaîne passée comme étant le contenu d'un fichier de "
+"configuration. La chaîne est interprétée puis chargée dans l'objet "
+"ConfigFile sur lequel la méthode a été appelée.\n"
+"Retourne un des codes [enum Error] ([code]OK[/code] si c'est un succès)."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -19716,6 +20241,9 @@ msgid ""
 "parameter. The output file uses an INI-style structure.\n"
 "Returns one of the [enum Error] code constants ([code]OK[/code] on success)."
 msgstr ""
+"Enregistre le contenu de l'objet [ConfigFile] au fichier spécifié en "
+"paramètre. Le fichier de sortie utilise une structure de type INI.\n"
+"Retourne un des codes [enum Error] ([code]OK[/code] si c'est un succès)."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -20413,6 +20941,10 @@ msgid ""
 "[member focus_neighbour_left], [member focus_neighbour_right] and [member "
 "focus_neighbour_top]."
 msgstr ""
+"Retourne le voisin de focus identifié par la constante [code]margin[/code] "
+"de l'énumération [enum Margin]. Une méthode de getter pour [member "
+"focus_neighbour_bottom], [member focus_neighbour_left], [member "
+"focus_neighbour_right] et [member focus_neighbour_top]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20427,12 +20959,18 @@ msgid ""
 "code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne une [Font] du premier [Theme] correspondant dans l'arborescence si "
+"ce [Theme] a une propriété de police nommée [code]name[/code] et du type de "
+"thème [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
 "Returns the position and size of the control relative to the top-left corner "
 "of the screen. See [member rect_position] and [member rect_size]."
 msgstr ""
+"Retourne la position et la taille du contrôle par rapport au coin supérieur "
+"gauche de l'écran. Voir [member rect_position] et [member rect_size]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20441,6 +20979,10 @@ msgid ""
 "code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne une icône du premier [Theme] correspondant dans l'arborescence si "
+"ce [Theme] a une propriété d'icône nommée [code]name[/code] et du type de "
+"thème [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20448,6 +20990,10 @@ msgid ""
 "Margin] enum. A getter method for [member margin_bottom], [member "
 "margin_left], [member margin_right] and [member margin_top]."
 msgstr ""
+"Retourne l'ancre identifiée par la constante [code]margin[/code] de "
+"l'énumeration [enum Margin]. Une méthode de getter pour [member "
+"margin_bottom], [member margin_left], [member margin_right] et [member "
+"margin_top]."
 
 #: doc/classes/Control.xml
 msgid "Returns the minimum size for this control. See [member rect_min_size]."
@@ -20468,6 +21014,8 @@ msgid ""
 "Returns the position and size of the control relative to the top-left corner "
 "of the parent Control. See [member rect_position] and [member rect_size]."
 msgstr ""
+"Retourne la position et la taille du contrôle par rapport au coin supérieur "
+"gauche du contrôle parent. Voir [member rect_position] et [member rect_size]."
 
 #: doc/classes/Control.xml
 msgid "Returns the rotation (in radians)."
@@ -20480,6 +21028,10 @@ msgid ""
 "[code]theme_type[/code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne une [StyleBox] du premier [Theme] correspondant dans l'arborescence "
+"si ce [Theme] a une propriété de boîte de style nommée [code]name[/code] et "
+"du type de thème [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20506,6 +21058,13 @@ msgid ""
 "be clicked instead\n"
 "[/codeblock]"
 msgstr ""
+"Crée un [InputEventMouseButton] qui tente de cliquer sur le contrôle. Si "
+"l'événement est bien reçu, le contrôle prend le focus.\n"
+"[codeblock]\n"
+"func _process(delta:)\n"
+"    grab_click_focus() # Lorsque vous cliquez sur un autre contrôle, ce nœud "
+"sera cliqué à la place\n"
+"/[codeblock]"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20522,6 +21081,10 @@ msgid ""
 "code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne [code]true[/code] s'il y a un [Theme] correspondant dans "
+"l'arborescence qui a une propriété de couleur nommé [code]name[/code] et du "
+"type de thème [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20540,6 +21103,10 @@ msgid ""
 "[code]theme_type[/code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne [code]true[/code] s'il y a un [Theme] correspondant dans "
+"l'arborescence qui a une propriété de constante nommée [/code]name[/code] et "
+"du type de thème [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20612,6 +21179,12 @@ msgid ""
 "[b]Note:[/b] If you want to check if a point is inside the control, you can "
 "use [code]get_rect().has_point(point)[/code]."
 msgstr ""
+"Une méthode virtuelle à implémenter par l'utilisateur. Retourne si le "
+"[code]point[/code] donné est à l'intérieur de ce contrôle.\n"
+"Si ce n'est pas le cas, le comportement par défaut vérifie si le point se "
+"trouve dans le rectant englobant du contrôle.\n"
+"[b]Note :[/b] Si vous voulez vérifier si un point est à l'intérieur du "
+"contrôle, vous pouvez utiliser [code]get_rect().has_point(point[/code]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20746,6 +21319,11 @@ msgid ""
 "If [code]keep_margins[/code] is [code]true[/code], control's position will "
 "also be updated."
 msgstr ""
+"Définit les ancres avec le préréglage [code]preset[/code] de l'énumeration "
+"[enum Control.LayoutPreset]. C'est le code équivalent à l'utilisation du "
+"menu \"Mise en page\" dans l'éditeur 2D.\n"
+"Si [code]keep_margins[/code] est [code]true[/code], la position du contrôle "
+"sera également mise à jour."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20883,6 +21461,10 @@ msgid ""
 "margin_bottom], [member margin_left], [member margin_right] and [member "
 "margin_top]."
 msgstr ""
+"Régle la marge identifiée par la constante [code]margin[/code] de "
+"l'énumeration [enum Margin] à [code]offset[/code]. Une méthode de setter "
+"pour [member margin_bottom], [member margin_left], [member margin_right] et "
+"[member margin_top]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20896,6 +21478,16 @@ msgid ""
 "Use parameter [code]margin[/code] to determine the gap between the [Control] "
 "and the edges."
 msgstr ""
+"Définit les marges avec le préréglage [code]preset[/code] de l'énumeration "
+"[enum Control.LayoutPreset]. C'est le code équivalent à l'utilisation du "
+"menu Layout dans l'éditeur 2D.\n"
+"Utilisez le paramètre [code]resize_mode[/code] avec des constantes de [enum "
+"Control.LayoutPresetMode] pour mieux déterminer la taille résultante du "
+"[Control]. La taille constante sera ignorée si elle est utilisée avec des "
+"préréglages qui changent la taille, par exemple [code]PRESET_LEFT_WIDE[/"
+"code].\n"
+"Utiliser le paramètre [code]margin[/code] pour déterminer l'écart entre le "
+"[Contrôle] et les bords."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20903,6 +21495,9 @@ msgid ""
 "If [code]keep_margins[/code] is [code]true[/code], control's anchors will be "
 "updated instead of margins."
 msgstr ""
+"Défini le [member rect_position] à la [code]position[/code] spécifiée.\n"
+"Si [code]keep_margins[/code] est [code]true[/code], les ancres du contrôle "
+"sont mis à jour au lieu des marges."
 
 #: doc/classes/Control.xml
 msgid "Sets the rotation (in radians)."
@@ -20914,6 +21509,9 @@ msgid ""
 "If [code]keep_margins[/code] is [code]true[/code], control's anchors will be "
 "updated instead of margins."
 msgstr ""
+"Définit la taille (voir [member rect_size]).\n"
+"Si [code]keep_margins[/code] est [code]true[/code], les ancres du contrôle "
+"sont mis à jour au lieu des marges."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20941,6 +21539,10 @@ msgid ""
 "moves or changes size. You can use one of the [enum Anchor] constants for "
 "convenience."
 msgstr ""
+"L'ancre du bord du bas du nœud par rapport à l'origine, le centre, ou la fin "
+"de son contrôle parent. Il modifie la mise à jour de la marge inférieure "
+"lorsque le nœud se déplace ou change la taille. Vous pouvez utiliser une des "
+"constantes de [enum Anchor] suivant les besoins."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20949,6 +21551,10 @@ msgid ""
 "moves or changes size. You can use one of the [enum Anchor] constants for "
 "convenience."
 msgstr ""
+"L'ancre du bord gauche du nœud par rapport à l'origine, le centre ou la fin "
+"de son contrôle parent. Il modifie la mise à jour de la marge gauche lorsque "
+"le nœud se déplace ou change la taille. Vous pouvez utiliser une des "
+"constantes de [enum Anchor] suivant les besoins."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20957,6 +21563,10 @@ msgid ""
 "moves or changes size. You can use one of the [enum Anchor] constants for "
 "convenience."
 msgstr ""
+"L'ancre du bord droit du nœud par rapport à l'origine, le centre ou la fin "
+"de son contrôle parent. Il modifie la mise à jour de la marge droite lorsque "
+"le nœud se déplace ou change la taille. Vous pouvez utiliser une des "
+"constantes de [enum Anchor] suivant les besoins."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20964,6 +21574,10 @@ msgid ""
 "parent control. It changes how the top margin updates when the node moves or "
 "changes size. You can use one of the [enum Anchor] constants for convenience."
 msgstr ""
+"L'ancre du bord du haut du nœud par rapport à l'origine, le centre ou la fin "
+"de son contrôle parent. Il modifie la mise à jour de la marge supérieure "
+"lorsque le nœud se déplace ou change la taille. Vous pouvez utiliser une des "
+"constantes de [enum Anchor] suivant les besoins."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21065,6 +21679,10 @@ msgid ""
 "grow if its horizontal minimum size is changed to be greater than its "
 "current size, as the control always has to be at least the minimum size."
 msgstr ""
+"Control la direction sur l'axe horizontal selon lequel le contrôle doit "
+"croître si sa taille minimale horizontale est modifiée pour être supérieure "
+"à sa taille actuelle, car le contrôle doit toujours avoir au moins sa taille "
+"minimale."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21072,6 +21690,10 @@ msgid ""
 "if its vertical minimum size is changed to be greater than its current size, "
 "as the control always has to be at least the minimum size."
 msgstr ""
+"Control la direction sur l'axe vertical selon lequel le contrôle doit "
+"croître si sa taille minimale verticale est changée pour être supérieure à "
+"sa taille actuelle, car le contrôle doit toujours avoir au moins sa taille "
+"minimale."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21124,6 +21746,11 @@ msgid ""
 "handling. The viewport first hides the modal and after marks the input as "
 "handled."
 msgstr ""
+"Active quand l'entrée doit se propager lorsque vous fermez le contrôle en "
+"tant que modale.\n"
+"Si [code]false[/code], arrête le traitement de l'événement lors de la "
+"manipulation de l'événement d'entrée de la fenêtre d'affichage. La fenêtre "
+"d'affichage cache d'abord la modale et après marque l'entrée comme traitée."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21217,12 +21844,18 @@ msgid ""
 "to this control's rectangle. If [code]true[/code], parts of a child which "
 "would be visibly outside of this control's rectangle will not be rendered."
 msgstr ""
+"Active quand le rendu des [CanvasItem] enfants doit être limité au rectangle "
+"engobant de ce contrôle. Si [code]true[/code], des parties des enfants qui "
+"seraient normalement visibles en-dehors de ce rectangle des contrôles seront "
+"cachées."
 
 #: doc/classes/Control.xml
 msgid ""
 "The node's global position, relative to the world (usually to the top-left "
 "corner of the window)."
 msgstr ""
+"La position globale du nœud, par rapport au coordonnées globales "
+"(généralement au coin haut-gauche de la fenêtre)."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21231,6 +21864,11 @@ msgid ""
 "this size, even if its content is smaller. If it's set to (0, 0), the node "
 "sizes automatically to fit its content, be it a texture or child nodes."
 msgstr ""
+"La taille minimale du rectangle englobant. Si vous le fixez à une valeur "
+"supérieure à (0, 0), le rectangle englobant du nœud aura toujours au moins "
+"cette taille, même si son contenu est plus petit. Si cette taille est à (0, "
+"0), le nœud sera redimensionné automatiquement pour s'adapter à son contenu, "
+"qu'il s'agisse d'une texture ou d'un nœud enfant."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21239,6 +21877,10 @@ msgid ""
 "around this pivot. Set this property to [member rect_size] / 2 to pivot "
 "around the Control's center."
 msgstr ""
+"Par défaut, et le pivot du nœud est son coin supérieur gauche. Lorsque vous "
+"modifiez son [member rect_rotation] ou [member rect_scale], il tournera ou "
+"changera d'échelle autour de ce pivot. Définir cette propriété à [member "
+"rect_size] / 2 permet de pivoter autour du centre du contrôle."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21246,12 +21888,17 @@ msgid ""
 "rectangle's top-left corner. The property is not affected by [member "
 "rect_pivot_offset]."
 msgstr ""
+"La position du nœud, par rapport à son parent. Elle correspond au coin "
+"supérieur gauche du rectangle. La propriété n'est pas affectée par [member "
+"rect_pivot_offset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "The node's rotation around its pivot, in degrees. See [member "
 "rect_pivot_offset] to change the pivot's position."
 msgstr ""
+"La rotation du nœud autour de son pivot, en degrés. Voir [member "
+"rect_pivot_offset] pour modifier la position du pivot."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21291,6 +21938,8 @@ msgid ""
 "The size of the node's bounding rectangle, in pixels. [Container] nodes "
 "update this property automatically."
 msgstr ""
+"La taille du rectangle englobant du nœud, en pixels. Les nœuds [Container] "
+"mettent à jour cette propriété automatiquement."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21298,6 +21947,9 @@ msgid ""
 "on the X axis. Use one of the [enum SizeFlags] constants to change the "
 "flags. See the constants to learn what each does."
 msgstr ""
+"Signale au [Container] parent qu'il devrait redimensionner et placer le nœud "
+"sur l'axe X. Utilisez l'une des constantes [enum SizeFlags] pour changer les "
+"drapeaux. Voyez les constantes pour apprendre ce que chacun fait."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21307,6 +21959,11 @@ msgid ""
 "its neighbour a ratio of 1, this node will take two thirds of the available "
 "space."
 msgstr ""
+"Si le nœud et au moins un de ses voisins utilisent le drapeau de taille "
+"[constant SIZE_EXPAND], le [Container] parent le laissera prendre plus ou "
+"moins d'espace selon cette propriété. Si ce nœud a un rapport d'étirement de "
+"2 et son voisin un rapport de 1, ce nœud prendra les deux tiers (deux fois "
+"plus que l'autre) de l'espace disponible."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21314,12 +21971,17 @@ msgid ""
 "on the Y axis. Use one of the [enum SizeFlags] constants to change the "
 "flags. See the constants to learn what each does."
 msgstr ""
+"Signale au [Container] parent qu'il devrait redimensionner et placer le nœud "
+"sur l'axe Y. Utilisez l'une des constantes [enum SizeFlags] pour changer les "
+"drapeaux. Voyez les constantes pour apprendre ce que chacun fait."
 
 #: doc/classes/Control.xml
 msgid ""
 "Changing this property replaces the current [Theme] resource this node and "
 "all its [Control] children use."
 msgstr ""
+"Changer cette propriété remplace la ressource [Theme] actuelle que ce nœud "
+"et tous ses [Contrôle] enfants utilisent."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21388,6 +22050,12 @@ msgid ""
 "at least until the mouse is moved to reach the parent's [code]Rect[/code] "
 "area."
 msgstr ""
+"Émis lorsque la souris entre dans le [code]Rect[/code] du contrôle, à "
+"condition que l'événement l'atteigne.\n"
+"[b]Note :[/b] [signal mouse_entered] ne sera pas émis si la souris entre "
+"dans un nœud [Control] enfant avant d'entrer dans le [code]Rect[/code], au "
+"moins jusqu'à ce que la souris soit déplacée pour atteindre le [code]Rect[/"
+"code] du parent."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21428,6 +22096,8 @@ msgid ""
 "Emitted when one of the size flags changes. See [member "
 "size_flags_horizontal] and [member size_flags_vertical]."
 msgstr ""
+"Émis lorsque l'un des drapeaux de taille change. Voir [member "
+"size_flags_horizontal] et [member size_flags_vertical]."
 
 #: doc/classes/Control.xml
 msgid "The node cannot grab focus. Use with [member focus_mode]."
@@ -21446,11 +22116,16 @@ msgid ""
 "The node can grab focus on mouse click or using the arrows and the Tab keys "
 "on the keyboard. Use with [member focus_mode]."
 msgstr ""
+"Le nœud peut obtenir le focus lors d'un clic de souris ou en utilisant les "
+"flèches et la touche de tabulation du clavier. À utiliser avec [member "
+"focus_mode]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Sent when the node changes size. Use [member rect_size] to get the new size."
 msgstr ""
+"Envoyé quand le nœud change de taille. Utilisez [member rect_size] pour "
+"obtenir la nouvelle taille."
 
 #: doc/classes/Control.xml
 msgid "Sent when the mouse pointer enters the node."
@@ -21474,28 +22149,38 @@ msgid ""
 "control. Happens when you call one of the [code]add_*_override[/code] "
 "methods."
 msgstr ""
+"Envoyé lorsque le [member theme] du nœud change, juste avant que Godot ne "
+"redessine le contrôle. Ça arrive quand vous appelez l'une des méthodes "
+"[code]add_*_override[/code]."
 
 #: doc/classes/Control.xml
 msgid "Sent when an open modal dialog closes. See [method show_modal]."
 msgstr ""
+"Envoyé quand un dialogue modal ouvert se ferme. Voir [method show_modal]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Sent when this node is inside a [ScrollContainer] which has begun being "
 "scrolled."
 msgstr ""
+"Envoyé quand ce nœud est à l'intérieur d'un [ScrollContainer] qui a commencé "
+"à défilé."
 
 #: doc/classes/Control.xml
 msgid ""
 "Sent when this node is inside a [ScrollContainer] which has stopped being "
 "scrolled."
 msgstr ""
+"Envoyé quand ce nœud est à l'intérieur d'un [ScrollContainer] qui a cessé de "
+"défilé."
 
 #: doc/classes/Control.xml
 msgid ""
 "Show the system's arrow mouse cursor when the user hovers the node. Use with "
 "[member mouse_default_cursor_shape]."
 msgstr ""
+"Affiche le curseur système de la souris quand l'utilisateur survole le nœud. "
+"À utiliser avec [member mouse_default_cursor_shape]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21623,72 +22308,98 @@ msgid ""
 "Show the system's vertical split mouse cursor when the user hovers the node. "
 "On Windows, it's the same as [constant CURSOR_VSIZE]."
 msgstr ""
+"Affiche le curseur système de la souris avec un séparateur vertical lorsque "
+"l'utilisateur survole le nœud. Sur Windows, il est identique à [constant "
+"CURSOR_VSIZE]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Show the system's horizontal split mouse cursor when the user hovers the "
 "node. On Windows, it's the same as [constant CURSOR_HSIZE]."
 msgstr ""
+"Affiche le curseur système de la souris avec un séparateur horizontal "
+"lorsque l'utilisateur survole le nœud. Sur Windows, il est identique à "
+"[constant CURSOR_HSIZE]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Show the system's help mouse cursor when the user hovers the node, a "
 "question mark."
 msgstr ""
+"Affiche le curseur système de la souris pour l'aide lorsque l'utilisateur "
+"survole le nœud, avec un point d'interrogation."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the top-left of the parent control's bounds. Use with "
 "[method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres jusqu'au coin gauche supérieur du rectangle "
+"englobant du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the top-right of the parent control's bounds. Use with "
 "[method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres jusqu'au coin droit du rectangle englobant du "
+"contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the bottom-left of the parent control's bounds. Use "
 "with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres jusqu'au coin bas-gauche du rectangle "
+"englobant du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the bottom-right of the parent control's bounds. Use "
 "with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres jusqu'au coin bas-droit du rectangle englobant "
+"du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the center of the left edge of the parent control's "
 "bounds. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres au centre du bord gauche du rectangle "
+"englobant du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the center of the top edge of the parent control's "
 "bounds. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres au centre du bord supérieur du rectangle "
+"englobant du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the center of the right edge of the parent control's "
 "bounds. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres au centre du bord droit du rectangle englobant "
+"du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the center of the bottom edge of the parent control's "
 "bounds. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres au centre du bord du bas du rectangle "
+"englobant du contrôle parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to the center of the parent control's bounds. Use with "
 "[method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres au centre du rectangle englobant de contrôle parent. "
+"À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21696,6 +22407,10 @@ msgid ""
 "becomes relative to the left edge and the top margin relative to the top "
 "left corner of the node's parent. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres sur le bord gauche du contrôle parent. La marge "
+"gauche devient alors relative au bord gauche et à la marge supérieure par "
+"rapport au coin supérieur gauche du nœud parent). À utiliser avec [méthod "
+"set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21704,6 +22419,11 @@ msgid ""
 "edge, and the right margin relative to the top right corner of the node's "
 "parent. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres sur le bord supérieur du contrôle parent. La "
+"marge gauche devient alors par rapport au coin supérieur gauche, à la marge "
+"supérieure par rapport au bord supérieur, et à la marge droite par rapport "
+"au coin supérieur droit du nœud parent . À utiliser avec [méthod "
+"set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21711,6 +22431,10 @@ msgid ""
 "becomes relative to the right edge and the top margin relative to the top "
 "right corner of the node's parent. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres au bord droit du contrôle parent. La marge droite "
+"devient alors par rapport au bord droit et à la marge supérieure par rapport "
+"au coin supérieur droit du nœud parent. À utiliser avec [méthod "
+"set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21719,18 +22443,26 @@ msgid ""
 "the bottom edge, and the right margin relative to the bottom right corner of "
 "the node's parent. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres au bord inférieur du contrôle parent. La marge gauche "
+"devient alors par rapport au coin inférieur gauche, à la marge inférieure "
+"par rapport au bord inférieur, et à la marge droite par rapport au coin "
+"inférieur droit du nœud parent. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to a vertical line that cuts the parent control in half. "
 "Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres sur une ligne verticale qui coupe le contrôle parent "
+"en deux. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Snap all 4 anchors to a horizontal line that cuts the parent control in "
 "half. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise les 4 ancres sur une ligne horizontale qui coupe le contrôle "
+"parent en deux. À utiliser avec [méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21739,6 +22471,11 @@ msgid ""
 "parent control. This is equivalent to the \"Full Rect\" layout option in the "
 "editor. Use with [method set_anchors_preset]."
 msgstr ""
+"Magnétise toutes les 4 ancres aux angles respectifs du contrôle parent. "
+"Réglez toutes les 4 marges à 0 après avoir appliqué ce préréglage et le "
+"[Control] s'adaptera à son contrôle parent. Ceci est équivalent à l'option "
+"de mise en page \"Rectangle complet\" dans l'éditeur. À utiliser avec "
+"[méthod set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid "The control will be resized to its minimum size."
@@ -21762,6 +22499,9 @@ msgid ""
 "the available space without pushing any other node. Use with [member "
 "size_flags_horizontal] and [member size_flags_vertical]."
 msgstr ""
+"Signale au [Container] parent d'étendre les limites de ce nœud pour remplir "
+"tout l'espace disponible sans pousser un autre nœud. À utiliser avec [member "
+"size_flags_horizontal] et [member size_flags_vertical]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21771,12 +22511,19 @@ msgid ""
 "size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and "
 "[member size_flags_vertical]."
 msgstr ""
+"Signale au [Container] parent de laisser ce nœud prendre tout l'espace "
+"disponible sur l'axe spécifié. Si plusieurs nœuds voisins sont prêts à "
+"s'étendre, ils partagent l'espace en fonction de leur rapport d'étirement. "
+"Voir [member size_flags_stretch_ratio]. À utiliser avec [member "
+"size_flags_horizontal] et [member size_flags_vertical]."
 
 #: doc/classes/Control.xml
 msgid ""
 "Sets the node's size flags to both fill and expand. See the 2 constants "
 "above for more information."
 msgstr ""
+"Définit les drapeaux de taille du nœud pour à la fois remplir et s'étendre. "
+"Voir les 2 constantes ci-dessus pour plus d'informations."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21882,6 +22629,10 @@ msgid ""
 "variables, like [member anchor_left]. To change all 4 anchors at once, use "
 "[method set_anchors_preset]."
 msgstr ""
+"Magnétise l'un des 4 côtés d'ancrage à l'origine de l'ancrage [code]Rect[/"
+"code], en haut à gauche. Utilisez-le avec l'une des variables membres "
+"[code]anchor_[* /code], comme [member anchor_left]. Pour modifier les 4 "
+"ancres à la fois, utilisez [method set_anchors_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21890,6 +22641,10 @@ msgid ""
 "member variables, like [member anchor_left]. To change all 4 anchors at "
 "once, use [method set_anchors_preset]."
 msgstr ""
+"Magnétise l'un des 4 côtés d'ancrage à l'extrémité de l'extrémité "
+"[code]Rect[/code], en bas à droite. Utilisez-le avec l'une des variables "
+"membres [code]anchor_[* /code], comme [member anchor_left]. Pour modifier "
+"les 4 ancres à la fois, utilisez [method set_anchors_preset]."
 
 #: doc/classes/ConvexPolygonShape.xml
 msgid "Convex polygon shape for 3D physics."
@@ -22110,7 +22865,6 @@ msgstr "L'amortissement varie le long de cette [Curve]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
-#, fuzzy
 msgid "Damping randomness ratio."
 msgstr "Ratio d’amortissement aléatoire."
 
@@ -22139,6 +22893,8 @@ msgid ""
 "Sets the [Color]s to modulate particles by when using [constant "
 "EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS]."
 msgstr ""
+"Définit les [Color] pour moduler les particules en utilisant [constant "
+"EMISSION_SHAPE_POINTS] ou [constant EMISSION_SHAPE_DIRECTED_POINTS]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
@@ -22153,6 +22909,9 @@ msgid ""
 "Sets the initial positions to spawn particles when using [constant "
 "EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS]."
 msgstr ""
+"Définit les positions initiales pour les particules créées en utilisant "
+"[constant EMISSION_SHAPE_POINTS] ou [constant "
+"EMISSION_SHAPE_DIRECTED_POINTS]."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -22172,6 +22931,8 @@ msgid ""
 "The inner radius for the ring shaped emitter when using [constant "
 "EMISSION_SHAPE_RING]."
 msgstr ""
+"Le rayon intérieur de l'émetteur en anneau quand définit à [constant "
+"EMISSION_SHAPE_RING]."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -22404,6 +23165,9 @@ msgid ""
 "Each particle's initial direction range from [code]+spread[/code] to [code]-"
 "spread[/code] degrees. Applied to X/Z plane and Y/Z planes."
 msgstr ""
+"La direction initiale de chaque particule dans l'intervalle de "
+"[code]+spread[/code] à [code]-spread[/code] degrés. Appliquée aux plans sur "
+"X/Z et aux plans sur Y/Z."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -22633,6 +23397,8 @@ msgid ""
 "The sphere's radius if [member emission_shape] is set to [constant "
 "EMISSION_SHAPE_SPHERE]."
 msgstr ""
+"Le rayon de la sphère si [member emission_shape] est [constant "
+"EMISSION_SHAPE_SPHERE]."
 
 #: doc/classes/CPUParticles2D.xml doc/classes/Particles.xml
 #: doc/classes/Particles2D.xml
@@ -22682,6 +23448,8 @@ msgid ""
 "Particles will be emitted on the surface of a sphere flattened to two "
 "dimensions."
 msgstr ""
+"Les particules seront émises à la surface d'une sphère aplatie en deux "
+"dimensions."
 
 #: doc/classes/CPUParticles2D.xml
 msgid "Particles will be emitted in the area of a rectangle."
@@ -22778,6 +23546,11 @@ msgid ""
 "string-comparison-with-double-hmac-strategy]this blog post[/url] for more "
 "information."
 msgstr ""
+"Compare deux [PoolByteArray] pour l'égalité sans fuite temporelle "
+"d'informations afin de prévenir les attaques temporelles.\n"
+"Voir [url=https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-"
+"string-comparison-with-double-hmac-strategy]ce blog[/url] pour plus "
+"d'informations."
 
 #: doc/classes/Crypto.xml
 msgid ""
@@ -22816,6 +23589,8 @@ msgid ""
 "Generates an RSA [CryptoKey] that can be used for creating self-signed "
 "certificates and passed to [method StreamPeerSSL.accept_stream]."
 msgstr ""
+"Génère une [CryptoKey] RSA qui peut être utilisé pour créer des certificats "
+"autosignés et transmis à [method StreamPeerSSL.accept_stream]"
 
 #: doc/classes/Crypto.xml
 msgid ""
@@ -22991,7 +23766,6 @@ msgid ""
 msgstr ""
 
 #: modules/csg/doc_classes/CSGCylinder.xml
-#, fuzzy
 msgid "A CSG Cylinder shape."
 msgstr "Une forme de cylindre CSG."
 
@@ -23113,12 +23887,18 @@ msgid ""
 "shape. If [code]false[/code] the top half of the material is repeated every "
 "step of the extrusion."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], par défaut, la moitié "
+"supérieure du [member material] est étirée sur toute la longueur de la forme "
+"extrudée. Si [code]false[/code] la partie supérieure du matériau est répétée "
+"à chaque étape de l'extrusion."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "When [member mode] is [constant MODE_PATH], the path interval or ratio of "
 "path points to extrusions."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], l'intervalle de chemin ou le "
+"rapport de chemin pointe vers les extrusions."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23126,6 +23906,10 @@ msgid ""
 "interval should be by distance ([constant PATH_INTERVAL_DISTANCE]) or "
 "subdivision fractions ([constant PATH_INTERVAL_SUBDIVIDE])."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], cela déterminera si "
+"l'intervalle doit être suivant la distance ([constant "
+"PATH_INTERVAL_DISTANCE]) ou suivant une fraction des sous-divisions "
+"([constant PATH_INTERVAL_SUBDIVIDE])."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23133,6 +23917,9 @@ msgid ""
 "the path are joined, by adding an extrusion between the last and first "
 "points of the path."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], si [code]true[/code] les "
+"extrémités du chemin sont jointes, en ajoutant une extrusion entre le "
+"dernier et le premier points du chemin."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23140,24 +23927,34 @@ msgid ""
 "[Transform] of the [CSGPolygon] is used as the starting point for the "
 "extrusions, not the [Transform] of the [member path_node]."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], si [code]true[/code] la "
+"[Transform] du [CSGPolygon] est utilisée comme point de départ pour les "
+"extrusions, et non pas la [Transform] du [member path_node]."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "When [member mode] is [constant MODE_PATH], the location of the [Path] "
 "object used to extrude the [member polygon]."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], l'emplacement de l'objet "
+"[Path] utilisé pour extruder le [member polygon]."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "When [member mode] is [constant MODE_PATH], the [enum PathRotation] method "
 "used to rotate the [member polygon] as it is extruded."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], la méthode [enum "
+"PathRotation] utilisée pour faire pivoter le [member polygon] selon son "
+"extrusion."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "When [member mode] is [constant MODE_PATH], extrusions that are less than "
 "this angle, will be merged together to reduce polygon count."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], les extrusions qui sont "
+"inférieures à cet angle seront fusionnés pour réduire le nombre de polygones."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23165,6 +23962,10 @@ msgid ""
 "path, in meters, the texture coordinates will tile. When set to 0, texture "
 "coordinates will match geometry exactly with no tiling."
 msgstr ""
+"Lorsque [member mode] est [constant MODE_PATH], c'est la distance le long du "
+"chemin, en mètres, que les coordonnées de texture seront répétées. Quand à "
+"0, les coordonnées de texture correspondront exactement à la géométrie sans "
+"répétition."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23175,6 +23976,12 @@ msgid ""
 "[b]Note:[/b] If only 1 or 2 points are defined in [member polygon], no mesh "
 "will be generated."
 msgstr ""
+"Le tableau de points qui définit le polygone 2D extrudé. Cela peut être un "
+"polygone convexe ou concave avec 3 points ou plus. Le polygone ne doit "
+"[i]pas[/i] avoir de bords qui sont des intersections. Sinon, la "
+"triangulation échouera et aucun maillage ne sera généré.\n"
+"[b]Note :[/b] Si seulement 1 ou 2 points sont définis dans [member polygon], "
+"aucun maillage ne sera généré."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 #, fuzzy
@@ -23216,6 +24023,9 @@ msgid ""
 "[b]Note:[/b] Requires the path's Z coordinates to continually decrease to "
 "ensure viable shapes."
 msgstr ""
+"La forme [member polygon] n'a pas pivoté.\n"
+"[b]Note :[/b] Nécessite que les coordonnées Z du chemin diminuent en "
+"continue pour assurer des formes viables."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23224,12 +24034,17 @@ msgid ""
 "[b]Note:[/b] Requires the path's Z coordinates to continually decrease to "
 "ensure viable shapes."
 msgstr ""
+"La forme [member polygon] est pivotée le long du chemin, mais elle n'est pas "
+"pivotée autour de l'axe du chemin.\n"
+"[b]Note :[/b] Nécessite que les coordonnées Z du chemin diminuent en "
+"continue pour assurer des formes viables."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "The [member polygon] shape follows the path and its rotations around the "
 "path axis."
 msgstr ""
+"La forme [member polygon] suit le chemin et pivote autour de l'axe du chemin."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -23237,12 +24052,17 @@ msgid ""
 "will determine the distance, in meters, each interval of the path will "
 "extrude."
 msgstr ""
+"Lorsque [member mode] est défini à [constant MODE_PATH], [member "
+"path_interval] déterminera la distance, en mètres, entre chaque intervalle "
+"où le chemin s'extrudera."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
 "When [member mode] is set to [constant MODE_PATH], [member path_interval] "
 "will subdivide the polygons along the path."
 msgstr ""
+"Lorsque [member mode] est défini [constant MODE_PATH], [member "
+"path_interval] divisera les polygones le long du chemin."
 
 #: modules/csg/doc_classes/CSGPrimitive.xml
 msgid "Base class for CSG primitives."
@@ -23304,12 +24124,16 @@ msgid ""
 "Sets individual bits on the layer mask. Use this if you only need to change "
 "one layer's value."
 msgstr ""
+"Définit des bits individuels sur le masque de calque. Utilisez ceci si vous "
+"n'avez besoin que de changer de calque."
 
 #: modules/csg/doc_classes/CSGShape.xml doc/classes/SoftBody.xml
 msgid ""
 "Sets individual bits on the collision mask. Use this if you only need to "
 "change one layer's value."
 msgstr ""
+"Définit des bits individuels sur le masque de collision. Utilisez ceci si "
+"vous n'avez besoin que de changer de calque."
 
 #: modules/csg/doc_classes/CSGShape.xml
 msgid ""
@@ -23624,6 +24448,16 @@ msgid ""
 "this, increase [member subdivide_depth], [member subdivide_height] and "
 "[member subdivide_width] until you no longer notice UV jittering."
 msgstr ""
+"Générer un cuboïde [PrimitiveMesh] aligné sur les axes.\n"
+"La projection des UV du cube est disposée selon une disposition de 3×2 qui "
+"permet de placer une texture sur chaque face individuellement. Pour "
+"appliquer la même texture sur toutes les faces, modifiez la propriété UV du "
+"matériau actif à [code]Vector3(3, 2, 1)[/code].\n"
+"[b]Note :[/b] Lors de l'utilisation d'une grande texture [CubeMesh] (par "
+"exemple pour le sol), vous pouvez tomber sur des problèmes de jittering de "
+"l'UV suivant l'angle de la caméra. Pour résoudre cela, augmentez [member "
+"subdivide_depth], [member subdivide_height] et [member subdivide_width] "
+"jusqu'à ce que vous ne remarquez plus le jittering de l'UV."
 
 #: doc/classes/CubeMesh.xml
 msgid "Size of the cuboid mesh."
@@ -23632,14 +24466,17 @@ msgstr "Taille du maillage cuboïde."
 #: doc/classes/CubeMesh.xml
 msgid "Number of extra edge loops inserted along the Z axis."
 msgstr ""
+"Le nombre de boucles de bord supplémentaires insérées le long de l'axe Z."
 
 #: doc/classes/CubeMesh.xml
 msgid "Number of extra edge loops inserted along the Y axis."
 msgstr ""
+"Le nombre de boucles de bord supplémentaires insérées le long de l'axe Y."
 
 #: doc/classes/CubeMesh.xml
 msgid "Number of extra edge loops inserted along the X axis."
 msgstr ""
+"Le nombre de boucles de bord supplémentaires insérées le long de l'axe X."
 
 #: doc/classes/CullInstance.xml
 msgid "Parent of all nodes that can be culled by the Portal system."
@@ -23753,6 +24590,9 @@ msgid ""
 "ranges between [code]0[/code] and [code]1[/code] on the Y axis and positions "
 "points relative to the [code]0.5[/code] Y position."
 msgstr ""
+"Une courbe qui peut être sauvegardée et réutilisée pour d'autres objets. Par "
+"défaut, elle va de [code]0[/code] à [code]1[/code] selon l'axe Y et les "
+"positions sont relatives à la position [code]0.5[/code] de l'axe Y."
 
 #: doc/classes/Curve.xml
 msgid ""
@@ -23762,6 +24602,12 @@ msgid ""
 "assignments to the [code]*_tangent[/code] angle if [code]*_mode[/code] is "
 "set to [constant TANGENT_FREE]."
 msgstr ""
+"Ajoute un point à la courbe. Pour chaque côté, si le [code]*_mode[/code] est "
+"[constant TANGENT_LINEAR], l'angle [code]*_tangent[/code] (en degrés) "
+"utilise la pente de la courbe définie par rapport à la demi-distance du "
+"point adjacent. Permet des spécifier des tangentes personnalisées avec "
+"[code]*_tangent[/code] si [code]*_mode[/code] est défini à [constant "
+"TANGENT_FREE]."
 
 #: doc/classes/Curve.xml
 msgid "Recomputes the baked cache of points for the curve."
@@ -23772,6 +24618,8 @@ msgid ""
 "Removes points that are closer than [code]CMP_EPSILON[/code] (0.00001) units "
 "to their neighbor on the curve."
 msgstr ""
+"Retire les points qui sont plus proches que [code]CMP_EPSILON[/code] "
+"(0.00001) unités à leur voisin sur la courbe."
 
 #: doc/classes/Curve.xml doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid "Removes all points from the curve."
@@ -23816,6 +24664,8 @@ msgid ""
 "Returns the Y value for the point that would exist at the X position "
 "[code]offset[/code] along the curve."
 msgstr ""
+"Retourne la valeur Y pour un point qui existerait à la position X "
+"[code]offset[/code] le long de la courbe."
 
 #: doc/classes/Curve.xml
 msgid ""
@@ -23823,6 +24673,9 @@ msgid ""
 "[code]offset[/code] along the curve using the baked cache. Bakes the curve's "
 "points if not already baked."
 msgstr ""
+"Retourne la valeur Y pour un point qui existerait à la position X "
+"[code]offset[/code] le long de la courbe en utilisant le cache précalculé. "
+"Précalcule les points de la courbe suivante si ça n'a pas déjà été fait."
 
 #: doc/classes/Curve.xml
 msgid "Removes the point at [code]index[/code] from the curve."
@@ -23897,6 +24750,8 @@ msgid ""
 "The curve calculates the tangent on this side of the point as the slope "
 "halfway towards the adjacent point."
 msgstr ""
+"La courbe calcule la tangente de ce côté du point comme la pente avec la "
+"demi-distance du point adjacent."
 
 #: doc/classes/Curve.xml
 msgid "The total number of available tangent modes."
@@ -24696,13 +25551,17 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -24714,8 +25573,12 @@ msgstr ""
 "Voir [enum ShadowDepthRange]."
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
-msgstr "Distance maximale pour les fractionnements d’ombre."
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
+msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid "The light's shadow rendering algorithm. See [enum ShadowMode]."
@@ -24732,23 +25595,23 @@ msgstr ""
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -33073,9 +33936,8 @@ msgstr ""
 "[Gradient]."
 
 #: doc/classes/GradientTexture2D.xml
-#, fuzzy
 msgid "Gradient-filled 2D texture."
-msgstr "Texture remplie de gradients."
+msgstr "Texture de gradient 2D."
 
 #: doc/classes/GradientTexture2D.xml
 msgid ""
@@ -34350,9 +35212,8 @@ msgstr ""
 "valeur redimensionnera [member map_data]."
 
 #: doc/classes/HFlowContainer.xml
-#, fuzzy
 msgid "Horizontal flow container."
-msgstr "Conteneur de boîte horizontale."
+msgstr "Conteneur de flux horizontal."
 
 #: doc/classes/HFlowContainer.xml
 msgid "Horizontal version of [FlowContainer]."
@@ -36022,7 +36883,6 @@ msgstr ""
 "max_redirects]."
 
 #: doc/classes/Image.xml
-#, fuzzy
 msgid "Image datatype."
 msgstr "Type de données d’image."
 
@@ -37515,7 +38375,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
+"compatibility reasons. It is however recommended to enable it for games "
+"which don't require very reactive input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -38155,10 +39018,11 @@ msgstr "Type d’évènement d’entrée pour les évènements de mouvement de s
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
+"rendered, allowing for precise input reporting, at the expense of CPU usage. "
+"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
+"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -38525,6 +39389,13 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], et que la cible est définie, la caméra se déplacera "
 "automatiquement."
+
+#: doc/classes/InterpolatedCamera.xml
+#, fuzzy
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
+msgstr ""
+"La méthode de mise à jour de la camera. Voir [enum Camera2DProcessMode]."
 
 #: doc/classes/InterpolatedCamera.xml
 msgid ""
@@ -42519,37 +43390,32 @@ msgstr ""
 "un tableau des sommets donc ce tableau doit être présent."
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Mesh array contains normals."
 msgstr "Un maillage de points contient des normales."
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Mesh array contains tangents."
 msgstr "Un maillage de points contient des tangentes."
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Mesh array contains colors."
-msgstr "Un maillage de points contient les couleurs."
+msgstr "Un maillage de points contient des couleurs."
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Mesh array contains UVs."
-msgstr "Un maillage de points contient les UV."
+msgstr "Un maillage de points contient des UV."
 
 #: doc/classes/Mesh.xml
 msgid "Mesh array contains second UV."
-msgstr "Un maillage de points contient les UV secondaires."
+msgstr "Un maillage de points contient des UV secondaires."
 
 #: doc/classes/Mesh.xml
-#, fuzzy
 msgid "Mesh array contains bones."
-msgstr "Un maillage de points contient les os."
+msgstr "Un maillage de points contient des os."
 
 #: doc/classes/Mesh.xml
 msgid "Mesh array contains bone weights."
-msgstr "Un maillage de points contient les poids des os."
+msgstr "Un maillage de points contient des poids d'os."
 
 #: doc/classes/Mesh.xml
 msgid "Mesh array uses indices."
@@ -44554,7 +45420,7 @@ msgid ""
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -44665,6 +45531,14 @@ msgid ""
 "A bitfield determining all navigation map layers the [NavigationAgent2D] "
 "belongs to. On path requests the agent will ignore navmeshes without at "
 "least one matching layer."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -47349,7 +48223,7 @@ msgstr ""
 
 #: doc/classes/Node2D.xml
 msgid "Local [Transform2D]."
-msgstr "[Transform2D] local."
+msgstr "[Transform2D] locale."
 
 #: doc/classes/Node2D.xml
 msgid ""
@@ -51953,7 +52827,7 @@ msgstr "Représente la taille de l'énumération [enum Monitor]."
 
 #: doc/classes/PHashTranslation.xml
 msgid "Optimized translation."
-msgstr "Translation optimisée."
+msgstr "Traduction optimisée."
 
 #: doc/classes/PHashTranslation.xml
 msgid ""
@@ -59564,8 +60438,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -68718,10 +69592,32 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
-"Formate la chaîne de caractères en remplaçant toutes les occurences de "
-"[code]placeholder[/code] par [code]values[/code]."
 
 #: doc/classes/String.xml
 msgid "If the string is a valid file path, returns the base directory name."
@@ -69445,9 +70341,11 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
 
 #: doc/classes/StyleBox.xml
@@ -70427,12 +71325,12 @@ msgstr ""
 "[code]tab_idx[/code], le rendant non-interactif."
 
 #: doc/classes/TabContainer.xml
-#, fuzzy
 msgid ""
 "If [code]hidden[/code] is [code]true[/code], hides the tab at index "
 "[code]tab_idx[/code], making it disappear from the tab area."
 msgstr ""
-"Retourne [code]true[/code] si la piste à l'index [code]idx[/code] est active."
+"Si [code]hidden[/code] est [code]true[/code], cache l'onglet à l'index "
+"[code]tab_idx[/code], se faisait disparaitre de l'aire des onglets."
 
 #: doc/classes/TabContainer.xml
 msgid "Sets an icon for the tab at index [code]tab_idx[/code]."
@@ -71234,6 +72132,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr "Si [code]true[/code], un clic droit affiche le menu contextuel."
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "Si [code]true[/code], la valeur peut être sélectionnée et modifiée."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -74138,13 +75041,13 @@ msgstr ""
 "matrice. L'axe [code]axis[/code] doit être normalisé."
 
 #: doc/classes/Transform.xml
-#, fuzzy
 msgid ""
 "Returns a copy of the transform with its basis and origin scaled by the "
 "given [code]scale[/code] factor, using matrix multiplication."
 msgstr ""
-"Met à l'échelle le transform par le facteur d'échelle donné, en utilisant la "
-"multiplication matricielle."
+"Retourne une copie de la transformation avec sa base et son origine mis à "
+"l'échelle par le facteur [code]scale[/code], en utilisant la multiplication "
+"matricielle."
 
 #: doc/classes/Transform.xml doc/classes/Transform2D.xml
 msgid ""
@@ -77426,9 +78329,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VFlowContainer.xml
-#, fuzzy
 msgid "Vertical flow container."
-msgstr "Conteneur vertical."
+msgstr "Conteneur de flux vertical."
 
 #: doc/classes/VFlowContainer.xml
 msgid "Vertical version of [FlowContainer]."
@@ -77976,9 +78878,10 @@ msgstr ""
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -78011,8 +78914,12 @@ msgstr ""
 "l'arrière-plan de manière transparente."
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
-msgstr "Le mode de rendu de la fenêtre d'affichage."
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
+msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""

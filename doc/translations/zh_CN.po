@@ -62,7 +62,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-23 04:30+0000\n"
+"PO-Revision-Date: 2022-07-05 23:52+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hans/>\n"
@@ -5171,19 +5171,19 @@ msgstr ""
 
 #: doc/classes/AnimatedSprite.xml doc/classes/SpriteBase3D.xml
 msgid "If [code]true[/code], texture will be centered."
-msgstr "为 [code]true[/code] 时纹理将被居中。"
+msgstr "如果为 [code]true[/code]，纹理将被居中。"
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Sprite.xml
 #: doc/classes/SpriteBase3D.xml doc/classes/TextureButton.xml
 #: doc/classes/TextureRect.xml
 msgid "If [code]true[/code], texture is flipped horizontally."
-msgstr "为 [code]true[/code] 时纹理将被水平翻转。"
+msgstr "如果为 [code]true[/code]，纹理将被水平翻转。"
 
 #: doc/classes/AnimatedSprite.xml doc/classes/Sprite.xml
 #: doc/classes/SpriteBase3D.xml doc/classes/TextureButton.xml
 #: doc/classes/TextureRect.xml
 msgid "If [code]true[/code], texture is flipped vertically."
-msgstr "为 [code]true[/code] 时纹理将被垂直翻转。"
+msgstr "如果为 [code]true[/code]，纹理将被垂直翻转。"
 
 #: doc/classes/AnimatedSprite.xml doc/classes/AnimatedSprite3D.xml
 msgid "The displayed animation frame's index."
@@ -7945,7 +7945,7 @@ msgstr "该区域音频总线的名称。"
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid ""
 "If [code]true[/code], the area's audio bus overrides the default audio bus."
-msgstr "为 [code]true[/code] 时该区域的音频总线将覆盖默认的音频总线。"
+msgstr "如果为 [code]true[/code]，该区域的音频总线将覆盖默认的音频总线。"
 
 #: doc/classes/Area.xml
 msgid ""
@@ -7991,13 +7991,14 @@ msgstr ""
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "If [code]true[/code], other monitoring areas can detect this area."
-msgstr "为 [code]true[/code] 时其他监测区域可以检测到这个区域。"
+msgstr "如果为 [code]true[/code]，其他监测区域可以检测到这个区域。"
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid ""
 "If [code]true[/code], the area detects bodies or areas entering and exiting "
 "it."
-msgstr "为 [code]true[/code] 时该区域能够检测到进入和退出该区域的实体或区域。"
+msgstr ""
+"如果为 [code]true[/code]，该区域能够检测到进入和退出该区域的实体或区域。"
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "The area's priority. Higher priority areas are processed first."
@@ -8013,7 +8014,7 @@ msgstr ""
 
 #: doc/classes/Area.xml
 msgid "If [code]true[/code], the area applies reverb to its associated audio."
-msgstr "为 [code]true[/code] 时该区域会将混响应用于其相关音频。"
+msgstr "如果为 [code]true[/code]，该区域会将混响应用于其相关音频。"
 
 #: doc/classes/Area.xml
 msgid "The reverb bus name to use for this area's associated audio."
@@ -12370,7 +12371,7 @@ msgstr "停止音频。"
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
 msgid "If [code]true[/code], audio plays when added to scene tree."
-msgstr "为 [code]true[/code] 时在添加到场景树时播放音频。"
+msgstr "如果为 [code]true[/code]，在添加到场景树时将播放音频。"
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
 msgid "Bus on which this audio is playing."
@@ -14962,7 +14963,7 @@ msgid ""
 "without smoothing, even with this setting enabled, invoke [method "
 "reset_smoothing]."
 msgstr ""
-"为 [code]true[/code] 时，相机会在达到极限时平滑地停止。\n"
+"如果为 [code]true[/code]，相机会在达到极限时平滑地停止。\n"
 "当 [member smoothing_enabled] 为 [code]false[/code] 时，该属性无效。\n"
 "[b]注意：[/b]要立即将相机的位置更新到限制范围内而不进行平滑，即使启用了此设"
 "置，也要调用 [method reset_smoothing]。"
@@ -15003,15 +15004,15 @@ msgstr "相机的过程回调。请参阅[enum Camera2DProcessMode]。"
 
 #: doc/classes/Camera2D.xml
 msgid "If [code]true[/code], the camera view rotates with the target."
-msgstr "为 [code]true[/code] 时，相机视图将随目标旋转。"
+msgstr "如果为 [code]true[/code]，相机视图将随目标旋转。"
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "If [code]true[/code], the camera smoothly moves towards the target at "
 "[member smoothing_speed]."
 msgstr ""
-"为 [code]true[/code] 时，相机将以 [member smoothing_speed] 的速度平滑地朝目标"
-"移动。"
+"如果为 [code]true[/code]，相机将以 [member smoothing_speed] 的速度平滑地朝目"
+"标移动。"
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15045,10 +15046,12 @@ msgid ""
 msgstr "相机的位置要考虑垂直/水平偏移和屏幕尺寸。"
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr "相机通过 [code]_physics_process[/code] 回调进行更新。"
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr "相机通过 [code]_process[/code] 回调进行更新。"
 
@@ -16766,11 +16769,11 @@ msgstr ""
 
 #: doc/classes/ClippedCamera.xml
 msgid "If [code]true[/code], the camera stops on contact with [Area]s."
-msgstr "为 [code]true[/code] 时，相机将在与 [Area] 接触时停止。"
+msgstr "如果为 [code]true[/code]，相机将在与 [Area] 接触时停止。"
 
 #: doc/classes/ClippedCamera.xml
 msgid "If [code]true[/code], the camera stops on contact with [PhysicsBody]s."
-msgstr "为 [code]true[/code] 时，相机将在与 [PhysicsBody] 接触时停止。"
+msgstr "如果为 [code]true[/code]，相机将在与 [PhysicsBody] 接触时停止。"
 
 #: doc/classes/ClippedCamera.xml
 msgid ""
@@ -21615,7 +21618,7 @@ msgstr ""
 msgid ""
 "The [Mesh] used for each particle. If [code]null[/code], particles will be "
 "spheres."
-msgstr "每个粒子使用的 [Mesh]。如果[code]null[/code]，则粒子将是球形。"
+msgstr "每个粒子使用的 [Mesh]。如果为 [code]null[/code]，则粒子将为球形。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/Particles2D.xml
@@ -21640,7 +21643,7 @@ msgstr ""
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's orbital velocity will vary along this [Curve]."
-msgstr "每个粒子的轨道速度将沿此 [Curve] 变化。"
+msgstr "每个粒子的轨道速度将跟随这个 [Curve] 变化。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -21661,7 +21664,7 @@ msgstr "径向加速度应用于每个粒子。使粒子加速远离原点。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's radial acceleration will vary along this [Curve]."
-msgstr "每个粒子的径向加速度将沿此 [Curve] 变化。"
+msgstr "每个粒子的径向加速度将跟随这个 [Curve] 变化。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -21676,31 +21679,31 @@ msgstr "发射寿命随机率。"
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
 msgid "Initial scale applied to each particle."
-msgstr "初始比例应用于每个粒子。"
+msgstr "每个粒子的初始缩放。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's scale will vary along this [Curve]."
-msgstr "每个粒子的比例将随着 [Curve] 的变化而变化。"
+msgstr "每个粒子的缩放将跟随这个 [Curve] 变化。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
 msgid "Scale randomness ratio."
-msgstr "标度随机率。"
+msgstr "缩放随机率。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/Particles2D.xml
 msgid ""
 "Particle system's running speed scaling ratio. A value of [code]0[/code] can "
 "be used to pause the particles."
-msgstr "粒子系统的运行速度缩放比例。值[code]0[/code]可用于暂停粒子。"
+msgstr "粒子系统的运行速度缩放比例。将值设为 [code]0[/code] 可用于暂停粒子。"
 
 #: doc/classes/CPUParticles.xml
 msgid ""
 "Each particle's initial direction range from [code]+spread[/code] to [code]-"
 "spread[/code] degrees. Applied to X/Z plane and Y/Z planes."
 msgstr ""
-"每个粒子的初始方向范围为[code]+spread[/code]至[code]-spread[/code]度。适用于"
-"X/Z平面和Y/Z平面。"
+"每个粒子的初始方向范围为 [code]+spread[/code] 至 [code]-spread[/code] 度。适"
+"用于 X/Z 平面和 Y/Z 平面。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -21713,7 +21716,7 @@ msgstr ""
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's tangential acceleration will vary along this [Curve]."
-msgstr "每个粒子的切向加速度将沿此 [Curve] 变化。"
+msgstr "每个粒子的切向加速度将跟随这个 [Curve] 变化。"
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -21932,23 +21935,23 @@ msgstr "每个粒子的初始颜色。如果定义了 [member texture]，它将�
 msgid ""
 "Each particle's color will vary along this [Gradient] (multiplied with "
 "[member color])."
-msgstr "每个粒子的颜色将随着这个 [Gradient] 变化，即与 [member color] 相乘。"
+msgstr "每个粒子的颜色将随着这个 [Gradient] 变化（与 [member color] 相乘）。"
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "The rectangle's extents if [member emission_shape] is set to [constant "
 "EMISSION_SHAPE_RECTANGLE]."
 msgstr ""
-"如果 [member emission_shape] 设置为 [constant EMISSION_SHAPE_RECTANGLE]，则矩"
-"形的范围。"
+"[member emission_shape] 设置为 [constant EMISSION_SHAPE_RECTANGLE] 时，该矩形"
+"的范围。"
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "The sphere's radius if [member emission_shape] is set to [constant "
 "EMISSION_SHAPE_SPHERE]."
 msgstr ""
-"如果 [member emission_shape] 设置为 [constant EMISSION_SHAPE_SPHERE]，则球体"
-"的半径。"
+"[member emission_shape] 设置为 [constant EMISSION_SHAPE_SPHERE] 时，该球体的"
+"半径。"
 
 #: doc/classes/CPUParticles2D.xml doc/classes/Particles.xml
 #: doc/classes/Particles2D.xml
@@ -22070,7 +22073,7 @@ msgstr ""
 "    key.save(\"user://generated.key\")\n"
 "    cert.save(\"user://generated.crt\")\n"
 "    # 加密\n"
-"    var data = \"Some data\"\n"
+"    var data = \"具体的数据\"\n"
 "    var encrypted = crypto.encrypt(key, data.to_utf8())\n"
 "    # 解密\n"
 "    var decrypted = crypto.decrypt(key, encrypted)\n"
@@ -24229,9 +24232,12 @@ msgstr ""
 "换的世界空间坐标（原点）会被忽略。只会用基来确定光线的方向。"
 
 #: doc/classes/DirectionalLight.xml
+#, fuzzy
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 "远处阴影分裂的额外偏置量。如果自身阴影只产生远处的分裂，增加这个值可以修复它"
 "们。"
@@ -24239,9 +24245,10 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
-"如果为 [code]true[/code]，则会牺牲阴影细节，以换取更平滑的分割之间的过渡。"
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -24250,8 +24257,12 @@ msgid ""
 msgstr "优化阴影渲染的细节与运动。见 [enum ShadowDepthRange]。"
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
-msgstr "阴影分割的最大距离。"
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
+msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid "The light's shadow rendering algorithm. See [enum ShadowMode]."
@@ -24264,32 +24275,35 @@ msgid ""
 msgstr "当物体垂直于光线时，可用于修复自身阴影的特殊情况。"
 
 #: doc/classes/DirectionalLight.xml
+#, fuzzy
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 "相机到影子分割1的距离。相对于[member directional_shadow_max_distance]。只有当"
 "[member directional_shadow_mode]是[code]SHADOW_PARALLEL_2_SPLITS[/code]或"
 "[code]SHADOW_PARALLEL_4_SPLITS[/code]时才使用。"
 
 #: doc/classes/DirectionalLight.xml
+#, fuzzy
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 "阴影分割1到分割2的距离。相对于[member directional_shadow_max_distance]。仅在"
 "[member directional_shadow_mode]为[code]SHADOW_PARALLEL_2_SPLITS[/code]或"
 "[code]SHADOW_PARALLEL_4_SPLITS[/code]时使用。"
 
 #: doc/classes/DirectionalLight.xml
+#, fuzzy
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 "从影子分割2到分割3的距离。相对于[member directional_shadow_max_distance]。只"
 "有当[member directional_shadow_mode]为[code]SHADOW_PARALLEL_4_SPLITS[/code]时"
@@ -24905,9 +24919,9 @@ msgid ""
 "control whose size changes over time, unless a pixel art aesthetic is "
 "desired."
 msgstr ""
-"为 [code]true[/code] 时将使用过滤功能。如果字体过度采样被禁用或无效，这将使字"
-"体在缩放时变得模糊，而非像素化。当在尺寸随时变化的控件中使用字体时，建议启用"
-"这个功能，除非是像素设计。"
+"如果为 [code]true[/code]，将使用过滤功能。如果字体过度采样被禁用或无效，这将"
+"使字体在缩放时变得模糊，而非像素化。当在尺寸随时变化的控件中使用字体时，建议"
+"启用这个功能，除非是像素设计。"
 
 #: doc/classes/DynamicFont.xml
 msgid ""
@@ -24915,8 +24929,8 @@ msgid ""
 "appearance when downscaling it if font oversampling is disabled or "
 "ineffective."
 msgstr ""
-"为 [code]true[/code] 时将使用 mipmap 多级渐远纹理。在字体过度采样被禁用或无效"
-"时，可改善字体缩小时的表现。"
+"如果为 [code]true[/code]，将使用 mipmap 多级渐远纹理。在字体过度采样被禁用或"
+"无效时，可改善字体缩小时的表现。"
 
 #: doc/classes/DynamicFont.xml
 msgid "Spacing at the top."
@@ -24950,8 +24964,8 @@ msgid ""
 "If [code]true[/code], the font is rendered with anti-aliasing. This property "
 "applies both to the main font and its outline (if it has one)."
 msgstr ""
-"为 [code]true[/code] 时将以抗锯齿方式渲染该字体。此属性既适用于主字体，也适用"
-"于其轮廓（如果有）。"
+"如果为 [code]true[/code]，将以抗锯齿方式渲染该字体。此属性既适用于主字体，也"
+"适用于其轮廓（如果有）。"
 
 #: doc/classes/DynamicFontData.xml
 msgid "The path to the vector font file."
@@ -26310,8 +26324,8 @@ msgid ""
 "If [code]true[/code], enables distraction-free mode which hides side docks "
 "to increase the space available for the main view."
 msgstr ""
-"为 [code]true[/code] 时将启用专注模式，该模式会隐藏侧边面板，增加主视图的可用"
-"空间。"
+"如果为 [code]true[/code]，将启用专注模式，该模式会隐藏侧边面板，增加主视图的"
+"可用空间。"
 
 #: doc/classes/EditorPlugin.xml
 msgid "Used by the editor to extend its functionality."
@@ -26325,7 +26339,7 @@ msgid ""
 "editor."
 msgstr ""
 "编辑器使用插件来扩展功能。最常见的插件类型是编辑给定的节点或资源类型、导入插"
-"件和导出插件。另请参阅[EditorScript]向编辑器添加函数。"
+"件和导出插件。另请参阅 [EditorScript] 向编辑器添加函数。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26344,7 +26358,7 @@ msgstr ""
 "将控件添加到底部面板（包含“输出”“调试”“动画”等）。返回对添加的按钮的引用。您"
 "可以根据需要隐藏/显示按钮。停用插件后，请确保使用 [method "
 "remove_control_from_bottom_panel] 移除自定义控件，并使用 [method Node."
-"queue_free] 释放。"
+"queue_free] 将其释放。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26357,11 +26371,11 @@ msgid ""
 "with [method remove_control_from_container] and free it with [method Node."
 "queue_free]."
 msgstr ""
-"将自定义控件添加到容器中（参阅 [enum CustomControlContainer]）。在编辑器用户"
-"界面中，有许多位置可以添加自定义控件。\n"
+"将自定义控件添加到容器中（见 [enum CustomControlContainer]）。在编辑器用户界"
+"面中，有许多位置可以添加自定义控件。\n"
 "请记住，您必须自己管理您的自定义控件的可见性（并且很可能在添加后隐藏它）。\n"
-"当你的插件停用时，请确保使用 [method remove_control_from_container] 删除你的"
-"自定义控件，并使用 [method Node.queue_free] 释放它。"
+"当你的插件被停用时，请确保使用 [method remove_control_from_container] 删除你"
+"的自定义控件，并使用 [method Node.queue_free] 将其释放。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26535,7 +26549,7 @@ msgstr ""
 msgid ""
 "Called by the engine when the user disables the [EditorPlugin] in the Plugin "
 "tab of the project settings window."
-msgstr "当用户在项目设置窗口的插件选项卡中禁用[EditorPlugin]时，由引擎调用。"
+msgstr "当用户在项目设置窗口的插件选项卡中禁用 [EditorPlugin] 时，由引擎调用。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -26569,8 +26583,8 @@ msgid ""
 "    return false\n"
 "[/codeblock]"
 msgstr ""
-"当2D编辑器的视窗被更新时，由引擎调用。使用 [code]overlay[/code] [Control] 进"
-"行绘制。你可以通过调用 [method update_overlays] 手动更新视窗。\n"
+"引擎会在 2D 编辑器的视区发生更新时调用。使用 [code]overlay[/code] [Control] "
+"进行绘制。你可以通过调用 [method update_overlays] 手动更新视窗。\n"
 "[codeblock]\n"
 "func forward_canvas_draw_over_viewport(overlay):\n"
 "    # 在光标位置画一个圆。\n"
@@ -26661,7 +26675,7 @@ msgid ""
 "    return false\n"
 "[/codeblock]"
 msgstr ""
-"当3D编辑器的视窗被更新时，由引擎调用。使用 [code]overlay[/code] 控件 "
+"引擎会在 3D 编辑器的视区发生更新时调用。使用 [code]overlay[/code] 控件 "
 "[Control] 进行绘制。你可以通过调用 [method update_overlays] 更新覆盖手动更新"
 "视窗。\n"
 "[codeblock]\n"
@@ -26993,9 +27007,9 @@ msgid ""
 "inside [method forward_spatial_gui_input]. It might be especially usable if "
 "your plugin will want to use raycast in the scene."
 msgstr ""
-"如果你想在[method forward_spatial_gui_input]里面接收来自3D视图屏幕的输入，请"
-"使用这个方法。如果你的插件想要在场景中使用光线广播，那么这个方法可能特别有"
-"用。"
+"如果你想在 [method forward_spatial_gui_input] 里面接收来自 3D 视图屏幕的输"
+"入，请使用这个方法。如果你的插件想要在场景中使用光线投射，那么这个方法可能特"
+"别有用。"
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28874,7 +28888,7 @@ msgid ""
 "the editor and when running the project from the editor, but it will "
 "evaluate to [code]false[/code] when the code is run from an exported project."
 msgstr ""
-"为 [code]true[/code] 时表示该脚本目前正在编辑器内运行。这对 [code]tool[/"
+"如果为 [code]true[/code]，表示该脚本目前正在编辑器内运行。这对 [code]tool[/"
 "code] 脚本很有用，可以在特定条件下绘制编辑器辅助内容，或者防止在编辑器中意外"
 "地运行会影响场景状态的“游戏”代码。\n"
 "[codeblock]\n"
@@ -37613,6 +37627,7 @@ msgid "Controls the mouse mode. See [enum MouseMode] for more information."
 msgstr "控制鼠标模式。详情请参阅 [enum MouseMode]。"
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "If [code]true[/code], similar input events sent by the operating system are "
 "accumulated. When input accumulation is enabled, all input events generated "
@@ -37623,7 +37638,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
+"compatibility reasons. It is however recommended to enable it for games "
+"which don't require very reactive input, as this will decrease CPU usage."
 msgstr ""
 "如果为 [code]true[/code]，会对操作系统发送的类似输入事件进行累积。当启用输入"
 "累积时，在一帧中产生的所有输入事件将被合并，并在该帧完成渲染时发出。因此，这"
@@ -38355,13 +38373,15 @@ msgid "Input event type for mouse motion events."
 msgstr "鼠标移动事件的输入事件类型。"
 
 #: doc/classes/InputEventMouseMotion.xml
+#, fuzzy
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
+"rendered, allowing for precise input reporting, at the expense of CPU usage. "
+"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
+"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -38761,6 +38781,12 @@ msgid ""
 "If [code]true[/code], and a target is set, the camera will move "
 "automatically."
 msgstr "如果为 [code]true[/code]，并且设置了目标，相机将自动移动。"
+
+#: doc/classes/InterpolatedCamera.xml
+#, fuzzy
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
+msgstr "相机的过程回调。请参阅[enum Camera2DProcessMode]。"
 
 #: doc/classes/InterpolatedCamera.xml
 msgid ""
@@ -45389,7 +45415,7 @@ msgstr ""
 "允许代理偏离理想路径的最大距离。可能为了防撞而产生偏离。超出最大距离时，会重"
 "新计算理想路径。"
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -45521,6 +45547,14 @@ msgid ""
 msgstr ""
 "位域，用于决定该 [NavigationAgent2D] 所属的导航地图层。请求路径时，代理会忽略"
 "没有任何匹配层的导航网格。"
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
+msgstr ""
 
 #: doc/classes/NavigationMesh.xml
 msgid "A mesh to approximate the walkable areas and obstacles."
@@ -51787,8 +51821,8 @@ msgid ""
 "Shows all resources in the game. Optionally, the list can be written to a "
 "file by specifying a file path in [code]tofile[/code]."
 msgstr ""
-"显示游戏中的所有资源。也可以通过在[code]tofile[/code]中指定文件路径将该列表写"
-"入文件。"
+"显示游戏中的所有资源。也可以通过在 [code]tofile[/code] 中指定文件路径将该列表"
+"写入文件。"
 
 #: doc/classes/OS.xml
 msgid "Shows the list of loaded textures sorted by size in memory."
@@ -51808,16 +51842,17 @@ msgid ""
 "Windows or bounce the dock icon on OSX.\n"
 "[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
 msgstr ""
-"要求用户注意该窗口。它会在Windows上闪烁任务栏按钮，或在OSX上弹出Dock图标。\n"
-"[b]注意：[/b]这个方法在Linux、macOS和Windows上实现。"
+"要求用户注意该窗口。它会在 Windows 上闪烁任务栏按钮，或在 OSX 上让 Dock 图标"
+"弹跳。\n"
+"[b]注意：[/b]这个方法在 Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
 "At the moment this function is only used by [code]AudioDriverOpenSL[/code] "
 "to request permission for [code]RECORD_AUDIO[/code] on Android."
 msgstr ""
-"目前，这个函数只被[code]AudioDriverOpenSL[/code]用来请求Android上"
-"[code]RECORD_AUDIO[/code]的权限。"
+"目前，这个函数只被 [code]AudioDriverOpenSL[/code] 用来请求 Android 上 "
+"[code]RECORD_AUDIO[/code] 的权限。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51826,9 +51861,9 @@ msgid ""
 "applications.\n"
 "[b]Note:[/b] This method is implemented on Android."
 msgstr ""
-"通过这个功能，你可以申请危险的权限，因为在Android应用程序中，正常的权限会在安"
+"你可以通过这个函数申请危险的权限，因为在 Android 应用程序中，正常的权限会在安"
 "装时自动授予。\n"
-"[b]注意：[/b]此方法在Android上实现。"
+"[b]注意：[/b]这个方法在 Android 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51875,15 +51910,15 @@ msgstr ""
 "应用程序可以通过使用 [method get_ime_selection] 和 [method get_ime_text] 函数"
 "来检索组合状态。\n"
 "输入完成时提交完成的组合字符串。\n"
-"[b]注意：[/b]该方法在 Linux、macOS 和 Windows 上实现。"
+"[b]注意：[/b]这个方法在 Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
 "Sets position of IME suggestion list popup (in window coordinates).\n"
 "[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
 msgstr ""
-"设置 IME 建议列表弹出窗口的位置（在窗口坐标中）。\n"
-"[b]注意：[/b]此方法在 Linux、macOS 和 Windows 上实现。"
+"设置 IME 建议列表弹出窗口的位置（使用窗口坐标）。\n"
+"[b]注意：[/b]这个方法在 Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51896,7 +51931,7 @@ msgstr ""
 "使用多尺寸平台特定图标文件设置游戏的图标（在 Windows 上是 [code]*.ico[/"
 "code]，在 macOS 上是 [code]*.icns[/code]）。\n"
 "适当的大小子图标用于窗口标题、任务栏/程序坞和窗口选择对话框。\n"
-"[b]注意：[/b]此方法在 macOS 和 Windows 上实现。"
+"[b]注意：[/b]这个方法在 macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid "Sets the name of the current thread."
@@ -51904,7 +51939,7 @@ msgstr "设置当前线程的名称。"
 
 #: doc/classes/OS.xml
 msgid "Enables backup saves if [code]enabled[/code] is [code]true[/code]."
-msgstr "如果[code]enabled[/code]为 [code]true[/code]，则启用备份保存。"
+msgstr "如果 [code]enabled[/code] 为 [code]true[/code]，则启用备份保存。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51912,7 +51947,7 @@ msgid ""
 "[b]Note:[/b] This method is implemented on Linux, macOS and Windows."
 msgstr ""
 "设置窗口是否应始终位于顶部。\n"
-"[b]注意：[/b]该方法在 Linux、macOS 和 Windows 上实现。"
+"[b]注意：[/b]这个方法在 Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51937,18 +51972,18 @@ msgstr ""
 "设置窗口的一个接受鼠标事件的多边形区域。该区域外的鼠标事件将被传递出去。\n"
 "传递一个空数组将禁用穿透支持（所有鼠标事件将被窗口拦截，这是默认行为）。\n"
 "[codeblock]\n"
-"# 设置区域，使用Path2D节点。\n"
-"OS.set_window_mouse_passthrough($Path2D.curve.get_baked_points() )\n"
+"# 设置区域，使用 Path2D 节点。\n"
+"OS.set_window_mouse_passthrough($Path2D.curve.get_baked_points())\n"
 "\n"
-"# 设置区域，使用Polygon2D节点。\n"
+"# 设置区域，使用 Polygon2D 节点。\n"
 "OS.set_window_mouse_passthrough($Polygon2D.polygon)\n"
 "\n"
 "# 重置区域为默认值。\n"
-"OS.set_window_mouse_passthrough([] )\n"
+"OS.set_window_mouse_passthrough([])\n"
 "[/codeblock]\n"
-"[b]注意：[/b]在Windows上，位于区域外的窗口部分不会被绘制，而在Linux和macOS上"
-"则会。\n"
-"[b]注意：[/b]这个方法在Linux、macOS和Windows上实现。"
+"[b]注意：[/b]在 Windows 上，位于区域外的窗口部分不会被绘制，而在 Linux 和 "
+"macOS 上则会。\n"
+"[b]注意：[/b]这个方法在 Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51960,7 +51995,7 @@ msgstr ""
 "将窗口标题设置为指定的字符串。\n"
 "[b]注意：[/b]应该偶尔使用，不要每帧都设置，因为这会对某些窗口管理器的性能产生"
 "负面影响。\n"
-"[b]注意：[/b]该方法在 HTML5、Linux、macOS 和 Windows 上实现。"
+"[b]注意：[/b]这个方法在 HTML5、Linux、macOS 和 Windows 上实现。"
 
 #: doc/classes/OS.xml
 msgid ""
@@ -51991,7 +52026,7 @@ msgstr ""
 "[code]mailto[/code] URL 方案[/url]。\n"
 "可以使用 [method ProjectSettings.globalize_path] 将 [code]res://[/code] 和 "
 "[code]user://[/code] 路径转换为本方法所使用的系统路径。\n"
-"[b]注意：[/b]本方法在 Android、iOS、HTML5、Linux、macOS、以及 Windows 上实"
+"[b]注意：[/b]这个方法在 Android、iOS、HTML5、Linux、macOS、以及 Windows 上实"
 "现。"
 
 #: doc/classes/OS.xml
@@ -52011,7 +52046,7 @@ msgstr ""
 "测）。\n"
 "需要把 [code]multiline[/code] 参数设置为 [code]true[/code] 才能输入多行文本，"
 "如在 [TextEdit] 中。\n"
-"[b]注意：[/b]此方法在 Android、iOS 和 UWP 上实现。"
+"[b]注意：[/b]这个方法在 Android、iOS 和 UWP 上实现。"
 
 #: doc/classes/OS.xml
 msgid "The clipboard from the host OS. Might be unavailable on some platforms."
@@ -52330,27 +52365,27 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Landscape screen orientation."
-msgstr "横向屏幕方向。"
+msgstr "横屏方向。"
 
 #: doc/classes/OS.xml
 msgid "Portrait screen orientation."
-msgstr "纵向屏幕方向。"
+msgstr "竖屏方向。"
 
 #: doc/classes/OS.xml
 msgid "Reverse landscape screen orientation."
-msgstr "反转横向屏幕方向。"
+msgstr "倒横屏方向。"
 
 #: doc/classes/OS.xml
 msgid "Reverse portrait screen orientation."
-msgstr "反转纵向屏幕方向。"
+msgstr "倒竖屏方向。"
 
 #: doc/classes/OS.xml
 msgid "Uses landscape or reverse landscape based on the hardware sensor."
-msgstr "根据硬件传感器使用横向或反向横向。"
+msgstr "根据硬件传感器使用横屏或倒横屏方向。"
 
 #: doc/classes/OS.xml
 msgid "Uses portrait or reverse portrait based on the hardware sensor."
-msgstr "根据硬件传感器使用纵向或反向纵向。"
+msgstr "根据硬件传感器使用竖屏或倒竖屏。"
 
 #: doc/classes/OS.xml
 msgid "Uses most suitable orientation based on the hardware sensor."
@@ -52542,7 +52577,7 @@ msgstr ""
 
 #: doc/classes/PackedScene.xml
 msgid "If passed to [method instance], blocks edits to the scene state."
-msgstr "如果传递给[method instance]，则阻止对场景状态的编辑。"
+msgstr "如果传递给 [method instance]，则阻止对场景状态的编辑。"
 
 #: doc/classes/PackedScene.xml
 msgid ""
@@ -52561,7 +52596,7 @@ msgid ""
 msgstr ""
 "如果传递给 [method instance]，向本地场景提供本地场景资源。只有主场景应该接收"
 "主编辑状态。\n"
-"[b]注意：[/b]只在编辑器构建中可用。"
+"[b]注意：[/b]仅在编辑器构建中可用。"
 
 #: doc/classes/PackedScene.xml
 msgid ""
@@ -52653,10 +52688,10 @@ msgid ""
 "Do not use this option if the serialized object comes from untrusted sources "
 "to avoid potential security threats such as remote code execution."
 msgstr ""
-"[i]已废弃。[/i] 你应该使用 [code]get_var[/code] 和 [code]put_var[/code] 参数"
-"来代替它。\n"
-"如果为 [code]true[/code]，多人游戏API将允许在RPC/RSETs期间对对象进行编码和解"
-"码。\n"
+"[i]已废弃。[/i]你应该使用 [code]get_var[/code] 和 [code]put_var[/code] 参数来"
+"代替它。\n"
+"如果为 [code]true[/code]，多人游戏 API 将允许在 RPC/RSET 期间对对象进行编码和"
+"解码。\n"
 "[b]警告：[/b]反序列化的对象可能包含会被执行的代码。如果序列化的对象来自不受信"
 "任的来源，请不要使用这个选项，以避免潜在的安全威胁，如远程代码执行。"
 
@@ -52739,17 +52774,17 @@ msgstr "表示当前正在与远程对等方进行握手的 [PacketPeerDTLS] 的
 #: doc/classes/PacketPeerDTLS.xml
 msgid ""
 "A status representing a [PacketPeerDTLS] that is connected to a remote peer."
-msgstr "表示连接到远程对等方的[PacketPeerDTLS]的状态。"
+msgstr "表示连接到远程对等方的 [PacketPeerDTLS] 的状态。"
 
 #: doc/classes/PacketPeerDTLS.xml
 msgid "A status representing a [PacketPeerDTLS] in a generic error state."
-msgstr "表示处于一般错误状态的[PacketPeerDTLS]的状态。"
+msgstr "表示处于一般错误状态的 [PacketPeerDTLS] 的状态。"
 
 #: doc/classes/PacketPeerDTLS.xml
 msgid ""
 "An error status that shows a mismatch in the DTLS certificate domain "
 "presented by the host and the domain requested for validation."
-msgstr "显示主机提供的DTLS证书域与请求验证的域不匹配的错误状态。"
+msgstr "显示主机提供的 DTLS 证书域与请求验证的域不匹配的错误状态。"
 
 #: doc/classes/PacketPeerStream.xml
 msgid "Wrapper to use a PacketPeer over a StreamPeer."
@@ -52768,16 +52803,16 @@ msgstr ""
 
 #: doc/classes/PacketPeerStream.xml
 msgid "The wrapped [StreamPeer] object."
-msgstr "被·包装的[StreamPeer]对象。"
+msgstr "被包装的 [StreamPeer] 对象。"
 
 #: doc/classes/PacketPeerUDP.xml
 msgid "UDP packet peer."
-msgstr "UDP数据包客户端。"
+msgstr "UDP 数据包客户端。"
 
 #: doc/classes/PacketPeerUDP.xml
 msgid ""
 "UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s."
-msgstr "UDP数据包对等体。可以用来发送原始的UDP数据包以及[Variant]。"
+msgstr "UDP 数据包对等体。可以用来发送原始的 UDP 数据包以及 [Variant]。"
 
 #: doc/classes/PacketPeerUDP.xml
 msgid "Closes the UDP socket the [PacketPeerUDP] is currently listening on."
@@ -52905,9 +52940,9 @@ msgid ""
 "[b]Note:[/b] [method set_broadcast_enabled] must be enabled before sending "
 "packets to a broadcast address (e.g. [code]255.255.255.255[/code])."
 msgstr ""
-"设置发送数据包和变量的目标地址和端口。如果需要，将使用DNS解析一个主机名。\n"
+"设置发送数据包和变量的目标地址和端口。如果需要，将使用 DNS 解析主机名。\n"
 "[b]注意：[/b]在向广播地址（例如：[code]255.255.255.255[/code]）发送数据包之"
-"前，必须启用[method set_broadcast_enabled]。"
+"前，必须启用 [method set_broadcast_enabled]。"
 
 #: doc/classes/PacketPeerUDP.xml
 msgid ""
@@ -53047,8 +53082,8 @@ msgid ""
 "limit, the background will stop scrolling. Must be lower than [member "
 "scroll_limit_end] to work."
 msgstr ""
-"开始滚动的左上角限制。如果相机超出这个限制，背景将停止滚动。必须低于[member "
-"scroll_limit_end]才能工作。"
+"开始滚动的左上角限制。如果相机超出这个限制，背景将停止滚动。必须低于 [member "
+"scroll_limit_end] 才能工作。"
 
 #: doc/classes/ParallaxBackground.xml
 msgid ""
@@ -53056,8 +53091,8 @@ msgid ""
 "limit, the background will stop scrolling. Must be higher than [member "
 "scroll_limit_begin] to work."
 msgstr ""
-"右下角限制滚动结束。如果相机超出这个限制，背景将停止滚动。必须高于[member "
-"scroll_limit_begin]才能工作。"
+"右下角限制滚动结束。如果相机超出这个限制，背景将停止滚动。必须高于 [member "
+"scroll_limit_begin] 才能工作。"
 
 #: doc/classes/ParallaxBackground.xml
 msgid ""
@@ -53065,8 +53100,8 @@ msgid ""
 "[Camera2D], but can be used to manually manage scrolling when no camera is "
 "present."
 msgstr ""
-"视差背景的滚动值。使用[Camera2D]时自动计算，但可用于手动管理无摄像头时的滚"
-"动。"
+"视差背景的滚动值。使用 [Camera2D] 时会自动计算，但也可用于手动管理无摄像机时"
+"的滚动。"
 
 #: doc/classes/ParallaxLayer.xml
 msgid "A parallax scrolling layer to be used with [ParallaxBackground]."
@@ -53092,15 +53127,15 @@ msgid ""
 "scrolling background. If an axis is set to [code]0[/code], the [Texture] "
 "will not be mirrored."
 msgstr ""
-"视差图层的[Texture]镜像。用于创建无限滚动的背景。如果一个轴被设置为[code]0[/"
-"code]，[Texture]将不会被镜像。"
+"视差图层的 [Texture] 镜像。用于创建无限滚动的背景。如果某个轴被设置为 "
+"[code]0[/code]，[Texture] 将不会被镜像。"
 
 #: doc/classes/ParallaxLayer.xml
 msgid ""
 "The ParallaxLayer's offset relative to the parent ParallaxBackground's "
 "[member ParallaxBackground.scroll_offset]."
 msgstr ""
-"ParallaxLayer 相对于父 ParallaxBackground 的偏移量 [member "
+"该 ParallaxLayer 的偏移量，相对于父 ParallaxBackground 的 [member "
 "ParallaxBackground.scroll_offset]。"
 
 #: doc/classes/ParallaxLayer.xml
@@ -62852,10 +62887,13 @@ msgid ""
 msgstr "阴影贴图的细分象限大小。请参阅阴影映射文档。"
 
 #: doc/classes/ProjectSettings.xml
+#, fuzzy
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
-msgstr "阴影图集的尺寸（用于 OmniLight 和 SpotLight）。见文档。"
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
+msgstr ""
+"设置阴影图集的图像大小（用于全向光和聚光）。该值将被四舍五入到最接近的 2 的"
+"幂。"
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -64068,8 +64106,8 @@ msgid ""
 "queries are required between physics frames (or during the same frame) use "
 "[method force_raycast_update] after adjusting the raycast."
 msgstr ""
-"RayCast 表示一条从原点到目标位置 [code]cast_to[/code] 的直线。它被用来查询2D"
-"空间，以便沿着射线的路径找到最近的物体。\n"
+"RayCast 表示一条从原点到目标位置 [code]cast_to[/code] 的直线。它被用来查询 "
+"2D 空间，以便沿着射线的路径找到最近的物体。\n"
 "RayCast2D 可以忽略一些物体，通过 [code]add_exception[/code] 将它们添加到异常"
 "列表中，通过设置碰撞层进行适当的过滤，或者通过类型掩码过滤物体类型。\n"
 "RayCast2D 可以被配置为报告 [Area2D]（[member collide_with_areas]）和 "
@@ -66926,11 +66964,12 @@ msgid ""
 "[code]body[/code] the [Node], if it exists in the tree, of the other "
 "[PhysicsBody2D] or [TileMap]."
 msgstr ""
-"当与另一个[PhysicsBody2D]或[TileMap]发生碰撞时触发。需要将[member "
-"contact_monitor]设置为 [code]true[/code]，并且将[member contacts_reported]设"
-"置得足够高以检测所有的碰撞。如果[TileSet]有碰撞[Shape2D]，就会检测到[TileMap]"
-"的。\n"
-"[code]body[/code]是其他[PhysicsBody2D]或[TileMap]的[Node]，如果它存在于树中。"
+"当与另一个 [PhysicsBody2D] 或 [TileMap] 发生碰撞时触发。需要将 [member "
+"contact_monitor] 设置为 [code]true[/code]，并且将 [member contacts_reported] "
+"设置得足够高以检测所有的碰撞。如果[TileSet] 有碰撞 [Shape2D]，就会检测到 "
+"[TileMap] 的。\n"
+"[code]body[/code] 是其他 [PhysicsBody2D] 或 [TileMap] 的 [Node]，如果它存在于"
+"树中。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -67001,20 +67040,22 @@ msgid ""
 "RigidBody2D used by the [Physics2DServer]. Get the [CollisionShape2D] node "
 "with [code]self.shape_owner_get_owner(local_shape_index)[/code]."
 msgstr ""
-"当这个RigidBody2D的一个[Shape2D]和另一个[PhysicsBody2D]或[TileMap]的[Shape2D]"
-"之间的碰撞结束时触发。要求[member contact_monitor]设置为 [code]true[/code]，"
-"[member contacts_reported]设置得足够高以检测所有的碰撞。如果[TileSet]有碰撞"
-"[Shape2D]，就会检测到[TileMap]的。\n"
-"[code]body_rid[/code] [Physics2DServer]使用的其他[PhysicsBody2D]或[TileSet]的"
-"[CollisionObject2D]的 [RID]。\n"
-"[code]body[/code] 另一个[PhysicsBody2D]或[TileMap]的[Node]，如果它存在于树"
-"中。\n"
-"[code]body_shape_index[/code] 由[Physics2DServer]使用的其他[PhysicsBody2D]或"
-"[TileMap]的[Shape2D]的索引。用[code]body."
-"shape_owner_get_owner(body_shape_index)[/code]获得[CollisionShape2D]节点。\n"
-"[code]local_shape_index[/code]这个RigidBody2D的[Shape2D]的索引，由"
-"[Physics2DServer]使用。用[code]self.shape_owner_get_owner(local_shape_index)"
-"[/code]获取[CollisionShape2D]节点。"
+"当这个 RigidBody2D 的一个 [Shape2D] 和另一个 [PhysicsBody2D] 或 [TileMap] 的 "
+"[Shape2D] 之间的碰撞结束时触发。要求 [member contact_monitor] 设置为 "
+"[code]true[/code]，[member contacts_reported] 设置得足够高以检测所有的碰撞。"
+"如果 [TileSet] 有碰撞 [Shape2D]，就会检测到 [TileMap] 的。\n"
+"[code]body_rid[/code] [Physics2DServer] 使用的其他 [PhysicsBody2D] 或 "
+"[TileSet] 的 [CollisionObject2D] 的 [RID]。\n"
+"[code]body[/code] 另一个 [PhysicsBody2D] 或 [TileMap] 的 [Node]，如果它存在于"
+"树中。\n"
+"[code]body_shape_index[/code] 由 [Physics2DServer] 使用的其他 "
+"[PhysicsBody2D] 或 [TileMap] 的 [Shape2D]的索引。用 [code]body."
+"shape_owner_get_owner(body_shape_index)[/code] 获得 [CollisionShape2D] 节"
+"点。\n"
+"[code]local_shape_index[/code] 这个 RigidBody2D 的 [Shape2D] 的索引，由 "
+"[Physics2DServer] 使用。用 [code]self."
+"shape_owner_get_owner(local_shape_index)[/code] 获取 [CollisionShape2D] 节"
+"点。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -67032,14 +67073,14 @@ msgstr "静态模式。物体的行为就像一个[StaticBody2D]，不会移动�
 msgid ""
 "Character mode. Similar to [constant MODE_RIGID], but the body can not "
 "rotate."
-msgstr "角色模式。与[constant MODE_RIGID]类似，但主体不能旋转。"
+msgstr "角色模式。与 [constant MODE_RIGID] 类似，但主体不能旋转。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
 "Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved "
 "by code."
 msgstr ""
-"运动学模式。这个物体的行为就像一个[KinematicBody2D]，必须通过代码来移动。"
+"运动学模式。这个物体的行为就像一个 [KinematicBody2D]，必须通过代码来移动。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
@@ -67053,14 +67094,13 @@ msgstr ""
 msgid ""
 "Continuous collision detection enabled using raycasting. This is faster than "
 "shapecasting but less precise."
-msgstr "使用射线投射启用连续碰撞检测。这比 shapecasting 快，但精度较低。"
+msgstr "使用射线投射启用连续碰撞检测。这比形状投射快，但精度较低。"
 
 #: doc/classes/RigidBody2D.xml
 msgid ""
 "Continuous collision detection enabled using shapecasting. This is the "
 "slowest CCD method and the most precise."
-msgstr ""
-"使用 shapecasting 启用连续碰撞检测。这是最慢的 CCD 方法，也是最精确的。"
+msgstr "使用形状投射启用连续碰撞检测。这是最慢的 CCD 方法，也是最精确的。"
 
 #: doc/classes/Room.xml
 msgid "Room node, used to group objects together locally for [Portal] culling."
@@ -67611,8 +67651,8 @@ msgid ""
 "scene as the result of [method PackedScene.get_state]."
 msgstr ""
 "维护一个与场景相关的资源、节点、导出的和重写的属性以及内置脚本的列表。\n"
-"这个类不能直接实例化，它是作为[method PackedScene.get_state]的结果为一个给定"
-"的场景检索的。"
+"这个类不能直接实例化，它是作为 [method PackedScene.get_state] 的结果为一个给"
+"定的场景检索的。"
 
 #: doc/classes/SceneState.xml
 msgid ""
@@ -67640,7 +67680,7 @@ msgstr ""
 
 #: doc/classes/SceneState.xml
 msgid "Returns the method connected to the signal at [code]idx[/code]."
-msgstr "返回连接到[code]idx[/code]处信号的方法。"
+msgstr "返回连接到 [code]idx[/code] 处信号的方法。"
 
 #: doc/classes/SceneState.xml
 msgid "Returns the name of the signal at [code]idx[/code]."
@@ -67720,9 +67760,9 @@ msgid ""
 "If [code]for_parent[/code] is [code]true[/code], returns the path of the "
 "[code]idx[/code] node's parent instead."
 msgstr ""
-"返回 [code]idx[/code]处的节点的路径。\n"
-"如果[code]for_parent[/code]是[code]true[/code]，则返回 [code]idx[/code]节点的"
-"父节点的路径。"
+"返回 [code]idx[/code] 处的节点的路径。\n"
+"如果 [code]for_parent[/code] 是 [code]true[/code]，则返回 [code]idx[/code] 节"
+"点的父节点的路径。"
 
 #: doc/classes/SceneState.xml
 msgid ""
@@ -67757,8 +67797,8 @@ msgid ""
 "Returns [code]true[/code] if the node at [code]idx[/code] is an "
 "[InstancePlaceholder]."
 msgstr ""
-"如果[code]idx[/code]处的节点是一个[InstancePlaceholder]，返回 [code]true[/"
-"code]。"
+"如果 [code]idx[/code] 处的节点是一个 [InstancePlaceholder]，则返回 "
+"[code]true[/code]。"
 
 #: doc/classes/SceneState.xml
 msgid ""
@@ -67958,7 +67998,7 @@ msgstr "返回此 [SceneTree] 的 [member network_peer] 的唯一对等 ID。"
 
 #: doc/classes/SceneTree.xml
 msgid "Returns the number of nodes in this [SceneTree]."
-msgstr "返回此[SceneTree]中的节点数。"
+msgstr "返回此 [SceneTree] 中的节点数。"
 
 #: doc/classes/SceneTree.xml
 msgid "Returns a list of all nodes assigned to the given group."
@@ -67974,7 +68014,7 @@ msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid "Returns the sender's peer ID for the most recently received RPC call."
-msgstr "返回最近收到的RPC调用的发送者的对等ID。"
+msgstr "返回最近收到的 RPC 调用的发送者的对等 ID。"
 
 #: doc/classes/SceneTree.xml
 msgid "Returns [code]true[/code] if the given group exists."
@@ -68316,23 +68356,23 @@ msgstr "当 [SceneTree] 层次结构发生变化（移动或重命名子项等�
 
 #: doc/classes/SceneTree.xml
 msgid "Call a group with no flags (default)."
-msgstr "调用没有标志的组（默认）。"
+msgstr "对组进行调用时，不使用标志（默认）。"
 
 #: doc/classes/SceneTree.xml
 msgid "Call a group in reverse scene order."
-msgstr "以相反的场景顺序调用组。"
+msgstr "对组进行调用时，使用逆场景序。"
 
 #: doc/classes/SceneTree.xml
 msgid "Call a group immediately (calls are normally made on idle)."
-msgstr "立即调用一个组（调用通常在空闲时进行）。"
+msgstr "对组进行调用时，立即执行（正常情况下是在空闲时调用的）。"
 
 #: doc/classes/SceneTree.xml
 msgid "Call a group only once even if the call is executed many times."
-msgstr "即使调用多次执行，也只调用一次组。"
+msgstr "对组进行调用时，即便执行了多次调用也只调用一次。"
 
 #: doc/classes/SceneTree.xml
 msgid "No stretching."
-msgstr "未拉伸。"
+msgstr "不拉伸。"
 
 #: doc/classes/SceneTree.xml
 msgid "Render stretching in higher resolution (interpolated)."
@@ -68342,7 +68382,7 @@ msgstr "以更高的分辨率渲染拉伸（插值）。"
 msgid ""
 "Keep the specified display resolution. No interpolation. Content may appear "
 "pixelated."
-msgstr "保持指定的显示分辨率。没有插值。内容可能会出现像素化。"
+msgstr "保持指定的显示分辨率。不做插值。内容可能会出现像素化。"
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -68360,13 +68400,13 @@ msgstr "在任意轴上用黑条填充来保持相同的长宽比。这可以防
 msgid ""
 "Expand vertically. Left/right black bars may appear if the window is too "
 "wide."
-msgstr "垂直展开。如果窗口太宽，可能会出现左/右黑条。"
+msgstr "垂直扩展。如果窗口太宽，可能会出现左/右黑条。"
 
 #: doc/classes/SceneTree.xml
 msgid ""
 "Expand horizontally. Top/bottom black bars may appear if the window is too "
 "tall."
-msgstr "水平展开。如果窗口太高，可能会出现顶部/底部黑条。"
+msgstr "水平扩展。如果窗口太高，可能会出现顶部/底部黑条。"
 
 #: doc/classes/SceneTree.xml
 msgid ""
@@ -68393,9 +68433,9 @@ msgid ""
 "The timer will be dereferenced after its time elapses. To preserve the "
 "timer, you can keep a reference to it. See [Reference]."
 msgstr ""
-"由场景树管理的一次性定时器，它在完成时发[signal timeout] 信号。请参阅 "
+"由场景树管理的一次性定时器，它在完成时发 [signal timeout] 信号。另请参阅 "
 "[method SceneTree.create_timer]。\n"
-"与 [Timer] 相反，它不需要实例化节点。常用于创建一次性的延迟定时器，如下面的例"
+"与 [Timer] 不同，它不需要实例化节点。常用于创建一次性的延迟定时器，如下面的例"
 "子：\n"
 "[codeblock]\n"
 "func some_function():\n"
@@ -73594,9 +73634,32 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
-"格式化字符串，将所有的 [code]placeholder[/code] 替换为 [code]values[/code]。"
 
 #: doc/classes/String.xml
 msgid "If the string is a valid file path, returns the base directory name."
@@ -74414,13 +74477,12 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
-"使用具有给定 [RID] 的 [CanvasItem] 绘制此StyleBox。\n"
-"您可以在 [CanvasItem] 派生节点上使用 [method Object.get_instance_id] 获取 "
-"[RID] 值。"
 
 #: doc/classes/StyleBox.xml
 msgid "Returns the size of this [StyleBox] without the margins."
@@ -76270,6 +76332,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr "为 [code]true[/code] 时右键单击会显示上下文菜单。"
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "如果为 [code]true[/code]，则可以选择和编辑该值。"
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -83788,12 +83855,14 @@ msgid "The subdivision amount of the fourth quadrant on the shadow atlas."
 msgstr "阴影图集上第四象限的细分量。"
 
 #: doc/classes/Viewport.xml
+#, fuzzy
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 "阴影图集的分辨率（用于全向光和聚光）。该值将四舍五入到最接近的 2 的幂。\n"
 "[b]注意：[/b]如果设置为 0，阴影将不可见。由于用户创建的视区默认值为 0，因此必"
@@ -83830,8 +83899,12 @@ msgid ""
 msgstr "如果为 [code]true[/code]，该视窗应使其背景渲染为透明。"
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
-msgstr "视窗的渲染模式。"
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
+msgstr ""
 
 #: doc/classes/Viewport.xml
 msgid ""

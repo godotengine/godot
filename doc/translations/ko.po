@@ -15,12 +15,13 @@
 # whatthesamuel <alex01763@gmail.com>, 2021.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
 # vrSono <global.sonogong@gmail.com>, 2022.
+# 김태우 <ogosengi3@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-13 03:39+0000\n"
-"Last-Translator: vrSono <global.sonogong@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:30+0000\n"
+"Last-Translator: 김태우 <ogosengi3@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ko/>\n"
 "Language: ko\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -88,7 +89,7 @@ msgstr "(%s를 덮어씀)"
 
 #: doc/tools/make_rst.py
 msgid "Default"
-msgstr ""
+msgstr "기본값"
 
 #: doc/tools/make_rst.py
 msgid "Setter"
@@ -96,7 +97,7 @@ msgstr "Setter"
 
 #: doc/tools/make_rst.py
 msgid "value"
-msgstr ""
+msgstr "값"
 
 #: doc/tools/make_rst.py
 msgid "Getter"
@@ -12316,10 +12317,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr ""
 
@@ -19650,13 +19653,17 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -19666,7 +19673,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -19683,23 +19694,23 @@ msgstr ""
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -30129,7 +30140,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
+"compatibility reasons. It is however recommended to enable it for games "
+"which don't require very reactive input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -30703,10 +30717,11 @@ msgstr ""
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
+"rendered, allowing for precise input reporting, at the expense of CPU usage. "
+"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
+"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -31026,6 +31041,11 @@ msgstr ""
 msgid ""
 "If [code]true[/code], and a target is set, the camera will move "
 "automatically."
+msgstr ""
+
+#: doc/classes/InterpolatedCamera.xml
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
 msgstr ""
 
 #: doc/classes/InterpolatedCamera.xml
@@ -36462,7 +36482,7 @@ msgid ""
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -36573,6 +36593,14 @@ msgid ""
 "A bitfield determining all navigation map layers the [NavigationAgent2D] "
 "belongs to. On path requests the agent will ignore navmeshes without at "
 "least one matching layer."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -50318,8 +50346,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -58692,7 +58720,31 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -59289,9 +59341,11 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
 
 #: doc/classes/StyleBox.xml
@@ -60834,6 +60888,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr ""
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "매개변수의 코사인 값을 반환합니다."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -66936,9 +66995,10 @@ msgstr ""
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -66967,7 +67027,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
 msgstr ""
 
 #: doc/classes/Viewport.xml
