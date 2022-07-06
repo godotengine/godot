@@ -535,6 +535,7 @@ void EditorData::remove_scene(int p_idx) {
 		}
 
 		memdelete(edited_scene[p_idx].root);
+		edited_scene.write[p_idx].root = nullptr;
 	}
 
 	if (current_edited_scene > p_idx) {
