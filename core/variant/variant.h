@@ -503,7 +503,7 @@ public:
 	}
 
 	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
-	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
+	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid);
 	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);

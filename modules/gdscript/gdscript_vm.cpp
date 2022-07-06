@@ -654,12 +654,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(dst, 2);
 
 #ifdef DEBUG_ENABLED
-
 				Variant ret;
 				Variant::evaluate(op, *a, *b, ret, valid);
 #else
 				Variant::evaluate(op, *a, *b, *dst, valid);
 #endif
+
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (ret.get_type() == Variant::STRING) {
@@ -680,15 +680,28 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_OPERATOR_VALIDATED) {
 				CHECK_SPACE(5);
 
-				int operator_idx = _code_ptr[ip + 4];
-				GD_ERR_BREAK(operator_idx < 0 || operator_idx >= _operator_funcs_count);
-				Variant::ValidatedOperatorEvaluator operator_func = _operator_funcs_ptr[operator_idx];
+				bool valid;
+				Variant::Operator op = (Variant::Operator)_code_ptr[ip + 4];
+				GD_ERR_BREAK(op >= Variant::OP_MAX);
 
 				GET_INSTRUCTION_ARG(a, 0);
 				GET_INSTRUCTION_ARG(b, 1);
 				GET_INSTRUCTION_ARG(dst, 2);
 
-				operator_func(a, b, dst);
+				Variant::ValidatedOperatorEvaluator operator_func = _operator_funcs_ptr[(int)op];
+				operator_func(a, b, dst, valid);
+
+#ifdef DEBUG_ENABLED
+				if (!valid) {
+					if (dst->get_type() == Variant::STRING) {
+						err_text = *dst;
+						err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
+					} else {
+						err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+					}
+					OPCODE_BREAK;
+				}
+#endif
 
 				ip += 5;
 			}

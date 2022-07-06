@@ -46,8 +46,9 @@ public:
 		*r_ret = a + b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) + *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) + PtrToArg<B>::convert(right), r_ret);
@@ -64,8 +65,9 @@ public:
 		*r_ret = a - b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) - *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) - PtrToArg<B>::convert(right), r_ret);
@@ -82,8 +84,9 @@ public:
 		*r_ret = a * b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) * *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) * PtrToArg<B>::convert(right), r_ret);
@@ -100,8 +103,9 @@ public:
 		*r_ret = R(Math::pow((double)a, (double)b));
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = R(Math::pow((double)*VariantGetInternalPtr<A>::get_ptr(left), (double)*VariantGetInternalPtr<B>::get_ptr(right)));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(R(Math::pow((double)PtrToArg<A>::convert(left), (double)PtrToArg<B>::convert(right))), r_ret);
@@ -118,8 +122,9 @@ public:
 		*r_ret = a.xform(b);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<A>::get_ptr(left)->xform(*VariantGetInternalPtr<B>::get_ptr(right));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left).xform(PtrToArg<B>::convert(right)), r_ret);
@@ -136,8 +141,9 @@ public:
 		*r_ret = b.xform_inv(a);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<B>::get_ptr(right)->xform_inv(*VariantGetInternalPtr<A>::get_ptr(left));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<B>::convert(right).xform_inv(PtrToArg<A>::convert(left)), r_ret);
@@ -154,8 +160,9 @@ public:
 		*r_ret = a / b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
@@ -177,8 +184,15 @@ public:
 		*r_ret = a / b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
+		if (b == 0) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
@@ -200,9 +214,16 @@ public:
 		*r_ret = a / b;
 		r_valid = true;
 	}
-	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
 		VariantTypeChanger<Vector2i>::change(r_ret);
-		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) / *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) / b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
@@ -224,9 +245,16 @@ public:
 		*r_ret = a / b;
 		r_valid = true;
 	}
-	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
 		VariantTypeChanger<Vector3i>::change(r_ret);
-		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) / *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) / b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) / PtrToArg<Vector3i>::convert(right), r_ret);
@@ -243,8 +271,9 @@ public:
 		*r_ret = a % b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
@@ -266,8 +295,15 @@ public:
 		*r_ret = a % b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
+		if (b == 0) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
@@ -289,9 +325,16 @@ public:
 		*r_ret = a % b;
 		r_valid = true;
 	}
-	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const Vector2i &b = *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+		if (unlikely(b.x == 0 || b.y == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
 		VariantTypeChanger<Vector2i>::change(r_ret);
-		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) % *VariantGetInternalPtr<Vector2i>::get_ptr(right);
+		*VariantGetInternalPtr<Vector2i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector2i>::get_ptr(left) % b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector2i>::encode(PtrToArg<Vector2i>::convert(left) / PtrToArg<Vector2i>::convert(right), r_ret);
@@ -313,9 +356,16 @@ public:
 		*r_ret = a % b;
 		r_valid = true;
 	}
-	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const Vector3i &b = *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+		if (unlikely(b.x == 0 || b.y == 0 || b.z == 0)) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
 		VariantTypeChanger<Vector3i>::change(r_ret);
-		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) % *VariantGetInternalPtr<Vector3i>::get_ptr(right);
+		*VariantGetInternalPtr<Vector3i>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector3i>::get_ptr(left) % b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<Vector3i>::encode(PtrToArg<Vector3i>::convert(left) % PtrToArg<Vector3i>::convert(right), r_ret);
@@ -331,8 +381,9 @@ public:
 		*r_ret = -a;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = -*VariantGetInternalPtr<A>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(-PtrToArg<A>::convert(left), r_ret);
@@ -348,8 +399,9 @@ public:
 		*r_ret = a;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left), r_ret);
@@ -374,8 +426,9 @@ public:
 		*r_ret = a << b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) << *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) << PtrToArg<B>::convert(right), r_ret);
@@ -400,8 +453,20 @@ public:
 		*r_ret = a >> b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >> *VariantGetInternalPtr<B>::get_ptr(right);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
+
+#if defined(DEBUG_ENABLED)
+		if (b < 0 || a < 0) {
+			*r_ret = "Invalid operands for bit shifting. Only positive operands are supported.";
+			r_valid = false;
+			return;
+		}
+#endif
+
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = a >> b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) >> PtrToArg<B>::convert(right), r_ret);
@@ -418,8 +483,9 @@ public:
 		*r_ret = a | b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) | *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) | PtrToArg<B>::convert(right), r_ret);
@@ -436,8 +502,9 @@ public:
 		*r_ret = a & b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) & *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) & PtrToArg<B>::convert(right), r_ret);
@@ -454,8 +521,9 @@ public:
 		*r_ret = a ^ b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) ^ *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(PtrToArg<A>::convert(left) ^ PtrToArg<B>::convert(right), r_ret);
@@ -471,8 +539,9 @@ public:
 		*r_ret = ~a;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = ~*VariantGetInternalPtr<A>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<R>::encode(~PtrToArg<A>::convert(left), r_ret);
@@ -489,8 +558,9 @@ public:
 		*r_ret = a == b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) == *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) == PtrToArg<B>::convert(right), r_ret);
@@ -506,10 +576,11 @@ public:
 		*r_ret = a == b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Object *a = left->get_validated_object();
 		const Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == PtrToArg<Object *>::convert(right), r_ret);
@@ -524,9 +595,10 @@ public:
 		*r_ret = a == nullptr;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Object *a = left->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == nullptr;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == nullptr, r_ret);
@@ -541,9 +613,10 @@ public:
 		*r_ret = nullptr == b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr == b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(nullptr == PtrToArg<Object *>::convert(right), r_ret);
@@ -560,8 +633,9 @@ public:
 		*r_ret = a != b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) != *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) != PtrToArg<B>::convert(right), r_ret);
@@ -577,10 +651,11 @@ public:
 		*r_ret = a != b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		Object *a = left->get_validated_object();
 		Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) != PtrToArg<Object *>::convert(right), r_ret);
@@ -595,9 +670,10 @@ public:
 		*r_ret = a != nullptr;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		Object *a = left->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != nullptr;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) != nullptr, r_ret);
@@ -612,9 +688,10 @@ public:
 		*r_ret = nullptr != b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		Object *b = right->get_validated_object();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr != b;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(nullptr != PtrToArg<Object *>::convert(right), r_ret);
@@ -631,8 +708,9 @@ public:
 		*r_ret = a < b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) < *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) < PtrToArg<B>::convert(right), r_ret);
@@ -649,8 +727,9 @@ public:
 		*r_ret = a <= b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) <= *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) <= PtrToArg<B>::convert(right), r_ret);
@@ -667,8 +746,9 @@ public:
 		*r_ret = a > b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) > *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) > PtrToArg<B>::convert(right), r_ret);
@@ -685,8 +765,9 @@ public:
 		*r_ret = a >= b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >= *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) >= PtrToArg<B>::convert(right), r_ret);
@@ -703,8 +784,9 @@ public:
 		*r_ret = a && b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) && *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) && PtrToArg<B>::convert(right), r_ret);
@@ -721,8 +803,9 @@ public:
 		*r_ret = a || b;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) || *VariantGetInternalPtr<B>::get_ptr(right);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) || PtrToArg<B>::convert(right), r_ret);
@@ -743,8 +826,9 @@ public:
 		*r_ret = xor_op(a, b);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = xor_op(*VariantGetInternalPtr<A>::get_ptr(left), *VariantGetInternalPtr<B>::get_ptr(right));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(xor_op(PtrToArg<A>::convert(left), PtrToArg<B>::convert(right)), r_ret);
@@ -760,8 +844,9 @@ public:
 		*r_ret = !a;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(!PtrToArg<A>::convert(left));
@@ -792,9 +877,10 @@ public:
 		*r_ret = sum;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*r_ret = Array();
 		_add_arrays(*VariantGetInternalPtr<Array>::get_ptr(r_ret), *VariantGetInternalPtr<Array>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		Array ret;
@@ -815,9 +901,10 @@ public:
 		*r_ret = sum;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector<T>>::get_ptr(left);
 		VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret)->append_array(*VariantGetInternalPtr<Vector<T>>::get_ptr(right));
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		Vector<T> sum = PtrToArg<Vector<T>>::convert(left);
@@ -842,10 +929,9 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, &r_valid);
-		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), &r_valid);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), nullptr), r_ret);
@@ -865,10 +951,9 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, *VariantGetInternalPtr<Array>::get_ptr(&p_right), &r_valid);
-		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), &r_valid);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Array>::convert(right), nullptr), r_ret);
@@ -891,10 +976,9 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, p_right.get_validated_object(), &r_valid);
-		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), &r_valid);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Object *>::convert(right), nullptr), r_ret);
@@ -917,10 +1001,9 @@ public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 		*r_ret = do_mod(a, *VariantGetInternalPtr<T>::get_ptr(&p_right), &r_valid);
-		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), &r_valid);
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<T>::convert(right), nullptr), r_ret);
@@ -935,8 +1018,9 @@ public:
 		*r_ret = true;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = true;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(true, r_ret);
@@ -951,8 +1035,9 @@ public:
 		*r_ret = false;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = false;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(false, r_ret);
@@ -1022,8 +1107,9 @@ _FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
 			r_valid = true;                                                                                                  \
 		}                                                                                                                    \
                                                                                                                              \
-		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                   \
+		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {    \
 			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
+			r_valid = true;                                                                                                  \
 		}                                                                                                                    \
                                                                                                                              \
 		static void ptr_evaluate(const void *left, const void *right, void *r_ret) {                                         \
@@ -1176,8 +1262,9 @@ public:
 		*r_ret = !*VariantGetInternalPtr<bool>::get_ptr(&p_left);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<bool>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(!PtrToArg<bool>::convert(left), r_ret);
@@ -1191,8 +1278,9 @@ public:
 		*r_ret = !*VariantGetInternalPtr<int64_t>::get_ptr(&p_left);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<int64_t>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(!PtrToArg<int64_t>::convert(left), r_ret);
@@ -1206,8 +1294,9 @@ public:
 		*r_ret = !*VariantGetInternalPtr<double>::get_ptr(&p_left);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<double>::get_ptr(left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(!PtrToArg<double>::convert(left), r_ret);
@@ -1221,8 +1310,9 @@ public:
 		*r_ret = p_left.get_validated_object() == nullptr;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = left->get_validated_object() == nullptr;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == nullptr, r_ret);
@@ -1242,10 +1332,11 @@ public:
 		*r_ret = str_b.find(str_a) != -1;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(left);
 		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<String>::convert(right).find(PtrToArg<Left>::convert(left)) != -1, r_ret);
@@ -1263,10 +1354,11 @@ public:
 		*r_ret = str_b.find(str_a) != -1;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Left &str_a = *VariantGetInternalPtr<Left>::get_ptr(left);
 		const String str_b = VariantGetInternalPtr<StringName>::get_ptr(right)->operator String();
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).operator String().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
@@ -1284,10 +1376,11 @@ public:
 		*r_ret = b.find(a) != -1;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(a) != -1;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<B>::convert(right).find(PtrToArg<A>::convert(left)) != -1, r_ret);
@@ -1302,9 +1395,10 @@ public:
 		*r_ret = b.find(Variant()) != -1;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(Variant()) != -1;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Array>::convert(right).find(Variant()) != -1, r_ret);
@@ -1319,9 +1413,10 @@ public:
 		*r_ret = b.find(p_left) != -1;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(*left) != -1;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Array>::convert(right).find(PtrToArg<Object *>::convert(left)) != -1, r_ret);
@@ -1339,10 +1434,11 @@ public:
 		*r_ret = b.has(a);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(a);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(PtrToArg<A>::convert(left)), r_ret);
@@ -1358,9 +1454,10 @@ public:
 		*r_ret = b.has(Variant());
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(Variant());
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(Variant()), r_ret);
@@ -1376,9 +1473,10 @@ public:
 		*r_ret = b.has(p_left);
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(*left);
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(PtrToArg<Object *>::convert(left)), r_ret);
@@ -1395,7 +1493,6 @@ public:
 			r_valid = false;
 			return;
 		}
-
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
 
 		bool exist;
@@ -1403,14 +1500,19 @@ public:
 		*r_ret = exist;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		Object *l = right->get_validated_object();
-		ERR_FAIL_COND(l == nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		Object *b = right->get_validated_object();
+		if (!b) {
+			*r_ret = "Invalid base object for 'in'";
+			r_valid = false;
+			return;
+		}
 		const String &a = *VariantGetInternalPtr<String>::get_ptr(left);
 
-		bool valid;
-		l->get(a, &valid);
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
+		bool exist;
+		b->get(a, &exist);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = exist;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		bool valid;
@@ -1429,7 +1531,6 @@ public:
 			r_valid = false;
 			return;
 		}
-
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(&p_left);
 
 		bool exist;
@@ -1437,14 +1538,19 @@ public:
 		*r_ret = exist;
 		r_valid = true;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		Object *l = right->get_validated_object();
-		ERR_FAIL_COND(l == nullptr);
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret, bool &r_valid) {
+		Object *b = right->get_validated_object();
+		if (!b) {
+			*r_ret = "Invalid base object for 'in'";
+			r_valid = false;
+			return;
+		}
 		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(left);
 
-		bool valid;
-		l->get(a, &valid);
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
+		bool exist;
+		b->get(a, &exist);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = exist;
+		r_valid = true;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		bool valid;
