@@ -48,12 +48,13 @@
 # Bozhko Artyom Dmitrievich <jek_sun@mail.ru>, 2022.
 # FuzzMix <fmwolfiechad@gmail.com>, 2022.
 # МАН69К <weblate@mah69k.net>, 2022.
+# Vadim Mitroshkin <Vadim7540@yandex.ru>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-08 06:47+0000\n"
-"Last-Translator: FuzzMix <fmwolfiechad@gmail.com>\n"
+"PO-Revision-Date: 2022-07-03 00:44+0000\n"
+"Last-Translator: Bozhko Artyom Dmitrievich <jek_sun@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ru/>\n"
 "Language: ru\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -154,7 +155,8 @@ msgstr ""
 #: doc/tools/make_rst.py
 msgid ""
 "This method accepts any number of arguments after the ones described here."
-msgstr "Этот метод принимает любое количество аргументов после описанных."
+msgstr ""
+"Этот метод принимает любое количество аргументов после описанных здесь."
 
 #: doc/tools/make_rst.py
 msgid "This method is used to construct a type."
@@ -533,7 +535,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Compares two values by checking their actual contents, recursing into any "
 "[Array] or [Dictionary] up to its deepest level.\n"
@@ -559,9 +560,9 @@ msgstr ""
 "- Для [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/"
 "code], [code]Object[/code] и [code]RID[/code], [code]deep_equal[/code] и "
 "[code]==[/code] работают одинаково.\n"
-"- Для [code]Dictionary[/code], [code]==[/code] рассматривает равенство и "
-"только если обе переменные указывают на один и тот же [code]Dictionary[/"
-"code], без рекурсии или просмотра содержимого вообще.\n"
+"- Для [code]Dictionary[/code], [code]==[/code] рассматривает равенство "
+"тогда, и только тогда, когда обе переменные указывают на один и тот же "
+"[code]Dictionary[/code], без рекурсии или просмотра содержимого вообще.\n"
 "- Для [code]Array[/code], [code]==[/code] считается равенством тогда, и "
 "только тогда, когда каждый элемент в первом [code]Array[/code] равен "
 "элементу во втором [code]Array[/code], как сообщает [code]==[/code]. Это "
@@ -1006,7 +1007,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
@@ -1032,7 +1032,7 @@ msgstr ""
 "Линейная интерполяция между двумя углами (в радианах) по нормализованному "
 "значению.\n"
 "Аналогично [методу lerp], но корректно интерполируется, когда углы "
-"оборачивают вокруг [constant @GDScript.TAU]. Чтобы выполнить упрощенную "
+"оборачивают вокруг [константы @GDScript.TAU]. Чтобы выполнить упрощенную "
 "интерполяцию с помощью [метода lerp_angle], объедините его с [методом ease] "
 "или [методом smoothstep].\n"
 "[codeblock]\n"
@@ -1043,7 +1043,14 @@ msgstr ""
 "    var max_angle = deg2rad(90.0)\n"
 "    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
 "    elapsed += delta\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Примечание:[/b] Этот метод проходит через кратчайший путь между "
+"[code]from[/code] и [code]to[/code]. Тем не менее, если разница между этими "
+"двумя  углами и любым целым числом [code]k[/code] приблизительно [code]PI + "
+"k * TAU[/code], неочевидно в какую сторону [/code]из-за ошибок в точности "
+"чисел с плавающей точкой. Например, [code]lerp_angle(0, PI, weight)[/code] "
+"оборачивается против часовой стрелки, а [code]lerp_angle(0, PI + 5 * TAU, "
+"weight)[/code] оборачивается по часовой."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1292,7 +1299,6 @@ msgstr ""
 "координат (оси X и Y)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the integer modulus of [code]a/b[/code] that wraps equally in "
 "positive and negative.\n"
@@ -1314,28 +1320,21 @@ msgstr ""
 "Возвращает целочисленный модуль [code]a/b[/code], который одинаково "
 "переносится как в положительный, так и в отрицательный.\n"
 "[codeblock]\n"
-"var i = -6\n"
-"while i < 5:\n"
-"    prints(i, posmod(i, 3))\n"
-"    i += 1\n"
+"for i in range(-3, 4):\n"
+"    print(\"%2d %2d %2d\" % [i, i % 3, posmod(i, 3)])\n"
 "[/codeblock]\n"
 "Produces:\n"
 "[codeblock]\n"
-"-6 0\n"
-"-5 1\n"
-"-4 2\n"
-"-3 0\n"
-"-2 1\n"
-"-1 2\n"
-"0 0\n"
-"1 1\n"
-"2 2\n"
-"3 0\n"
-"4 1\n"
+"-3  0  0\n"
+"-2 -2  1\n"
+"-1 -1  2\n"
+" 0  0  0\n"
+" 1  1  1\n"
+" 2  2  2\n"
+" 3  0  0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the result of [code]base[/code] raised to the power of [code]exp[/"
 "code].\n"
@@ -1346,7 +1345,7 @@ msgstr ""
 "Возвращает результат возведения числа [code]x[/code] в степени [code]y[/"
 "code].\n"
 "[codeblock]\n"
-"pow(2, 5) # Возвращает 32\n"
+"pow(2, 5) # Возвращает 32.0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1525,7 +1524,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Converts an angle expressed in radians to degrees.\n"
 "[codeblock]\n"
@@ -1534,7 +1532,7 @@ msgid ""
 msgstr ""
 "Преобразует угол, выраженный в радианах, в градусы.\n"
 "[codeblock]\n"
-"rad2deg(0.523599) # Возвращает 30\n"
+"rad2deg(0.523599) # Возвращает 30.0\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1581,7 +1579,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a random unsigned 32-bit integer. Use remainder to obtain a random "
 "value in the interval [code][0, N - 1][/code] (where N is smaller than "
@@ -1660,6 +1657,44 @@ msgid ""
 "3\n"
 "[/codeblock]"
 msgstr ""
+"Возвращает массив с заданным диапазоном. [метод range] может быть вызван "
+"тремя способами:\n"
+"[code]range(n: int)[/code]: Начинается с 0, увеличивается с шагом в 1 и "
+"останавливается [i]перед[/i] [code]n[/code]. Аргумент [code]n[/code] это "
+"[b]эксклюзив[/b].\n"
+"[code]range(b: int, n: int)[/code]: Начинается с [code]b[/code], "
+"увеличивается с шагом в 1 и останавливается [i]перед[/i] [code]n[/code]. "
+"Аргументы [code]b[/code] и [code]n[/code] это [b]инклюзив[/b] и "
+"[b]эксклюзив[/b], соответственно.\n"
+"[code]range(b: int, n: int, s: int)[/code]: Начинается с [code]b[/code], "
+"увеличивается/уменьшается с шагом [code]s[/code], и останавливается "
+"[i]перед[/i] [code]n[/code]. Аргументы [code]b[/code] и [code]n[/code] это "
+"[b]инклюзив[/b] и [b]эксклюзив[/b], соответственно. Аргумент [code]s[/code] "
+"[b]может[/b] быть негативным, но не [code]0[/code]. Если [code]s[/code] это "
+"[code]0[/code], будет выведено сообщение об ошибке.\n"
+"[метод range] преобразует все аргументы в [int] перед обработкой.\n"
+"[b]Примечание:[/b] Возвращает пустой массив, если ни одно значение не "
+"удовлетворяет ограничению на значение (e.g. [code]range(2, 5, -1)[/code] или "
+"[code]range(5, 5, 1)[/code]).\n"
+"Примеры:\n"
+"[codeblock]\n"
+"print(range(4))        # Prints [0, 1, 2, 3]\n"
+"print(range(2, 5))     # Prints [2, 3, 4]\n"
+"print(range(0, 6, 2))  # Prints [0, 2, 4]\n"
+"print(range(4, 1, -1)) # Prints [4, 3, 2]\n"
+"[/codeblock]\n"
+"Чтобы выполнить итерацию по [Array] в обратном порядке, используйте:\n"
+"[codeblock]\n"
+"var array = [3, 6, 9]\n"
+"for i in range(array.size(), 0, -1):\n"
+"    print(array[i - 1])\n"
+"[/codeblock]\n"
+"Вывод:\n"
+"[codeblock]\n"
+"9\n"
+"6\n"
+"3\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1676,7 +1711,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Rounds [code]s[/code] to the nearest whole number, with halfway cases "
 "rounded away from zero.\n"
@@ -1687,11 +1721,14 @@ msgid ""
 "[/codeblock]\n"
 "See also [method floor], [method ceil], [method stepify], and [int]."
 msgstr ""
-"Округляет [code]s[/code] к ближайшему целому числу, при этом середины "
-"округляются от нуля.\n"
+"Округляет [code]s[/code] к ближайшему целому числу, при этом 0.5 округляется "
+"в большую сторону.\n"
 "[codeblock]\n"
-"round(2.6) # Возвращает 3\n"
-"[/codeblock]"
+"a = round(2.49) # Возвращает 2.0\n"
+"a = round(2.5)  # Возвращает 3.0\n"
+"a = round(2.51) # Возвращает 3.0\n"
+"[/codeblock]\n"
+"См. также[метод floor], [метод ceil], [метод stepify], и [int]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -13799,10 +13836,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr ""
 
@@ -21231,13 +21270,17 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -21247,7 +21290,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -21264,23 +21311,23 @@ msgstr ""
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -31684,7 +31731,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
+"compatibility reasons. It is however recommended to enable it for games "
+"which don't require very reactive input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -32258,10 +32308,11 @@ msgstr ""
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
+"rendered, allowing for precise input reporting, at the expense of CPU usage. "
+"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
+"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -32583,6 +32634,11 @@ msgid ""
 "If [code]true[/code], and a target is set, the camera will move "
 "automatically."
 msgstr "Если [code]true[/code], текстура отражена по вертикали."
+
+#: doc/classes/InterpolatedCamera.xml
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
+msgstr ""
 
 #: doc/classes/InterpolatedCamera.xml
 msgid ""
@@ -38070,7 +38126,7 @@ msgid ""
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -38181,6 +38237,14 @@ msgid ""
 "A bitfield determining all navigation map layers the [NavigationAgent2D] "
 "belongs to. On path requests the agent will ignore navmeshes without at "
 "least one matching layer."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -51969,8 +52033,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -60441,7 +60505,31 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -61038,9 +61126,11 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
 
 #: doc/classes/StyleBox.xml
@@ -62596,6 +62686,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr ""
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "Если [code]true[/code], текстура будет центрирована."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -68866,9 +68961,10 @@ msgstr ""
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -68898,7 +68994,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
 msgstr ""
 
 #: doc/classes/Viewport.xml
