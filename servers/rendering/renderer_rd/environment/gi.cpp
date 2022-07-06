@@ -312,19 +312,6 @@ float GI::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
 	return voxel_gi->normal_bias;
 }
 
-void GI::voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->anisotropy_strength = p_strength;
-}
-
-float GI::voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->anisotropy_strength;
-}
-
 void GI::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);

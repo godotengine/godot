@@ -84,8 +84,6 @@ public:
 		bool interior = false;
 		bool use_two_bounces = false;
 
-		float anisotropy_strength = 0.5;
-
 		uint32_t version = 1;
 		uint32_t data_version = 1;
 
@@ -417,9 +415,6 @@ public:
 
 	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) override;
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override;
-
-	virtual void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) override;
-	virtual float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const override;
 
 	virtual uint32_t voxel_gi_get_version(RID p_probe) const override;
 	uint32_t voxel_gi_get_data_version(RID p_probe);
