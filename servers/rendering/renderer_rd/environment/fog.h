@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.cpp                                         */
+/*  fog.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_globals.h"
+#ifndef FOG_RD_H
+#define FOG_RD_H
 
-bool RenderingServerGlobals::threaded = false;
+#include "core/templates/local_vector.h"
+#include "core/templates/rid_owner.h"
+#include "servers/rendering/environment/renderer_fog.h"
+#include "servers/rendering/storage/utilities.h"
 
-RendererUtilities *RenderingServerGlobals::utilities = nullptr;
-RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
-RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
-RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
-RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
-RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
-RendererGI *RenderingServerGlobals::gi = nullptr;
-RendererFog *RenderingServerGlobals::fog = nullptr;
-RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
-RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+namespace RendererRD {
 
-RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
-RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+class Fog : public RendererFog {
+public:
+	struct FogVolume {
+		RID material;
+		Vector3 extents = Vector3(1, 1, 1);
+
+		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+
+		Dependency dependency;
+	};
+
+private:
+	static Fog *singleton;
+
+	mutable RID_Owner<FogVolume, true> fog_volume_owner;
+
+public:
+	static Fog *get_singleton() { return singleton; }
+
+	Fog();
+	~Fog();
+
+	/* FOG VOLUMES */
+
+	FogVolume *get_fog_volume(RID p_rid) { return fog_volume_owner.get_or_null(p_rid); };
+	bool owns_fog_volume(RID p_rid) { return fog_volume_owner.owns(p_rid); };
+
+	virtual RID fog_volume_allocate() override;
+	virtual void fog_volume_initialize(RID p_rid) override;
+	virtual void fog_free(RID p_rid) override;
+
+	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
+	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override;
+	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override;
+	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
+	RID fog_volume_get_material(RID p_fog_volume) const;
+	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override;
+	Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+};
+
+} // namespace RendererRD
+
+#endif // !FOG_RD_H

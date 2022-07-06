@@ -31,7 +31,6 @@
 #ifndef LIGHT_STORAGE_H
 #define LIGHT_STORAGE_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererLightStorage {

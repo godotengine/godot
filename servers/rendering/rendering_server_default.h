@@ -524,8 +524,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererFog
+#define server_name RSG::fog
 
 	FUNCRIDSPLIT(fog_volume)
 
@@ -534,6 +534,12 @@ public:
 	FUNC2(fog_volume_set_material, RID, RID)
 
 	/* VISIBILITY_NOTIFIER */
+
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererUtilities
+#define server_name RSG::utilities
 
 	FUNCRIDSPLIT(visibility_notifier)
 	FUNC2(visibility_notifier_set_aabb, RID, const AABB &)

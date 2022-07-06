@@ -2270,10 +2270,9 @@ void RendererCanvasRenderRD::set_time(double p_time) {
 void RendererCanvasRenderRD::update() {
 }
 
-RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
+RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	storage = p_storage;
 
 	{ //create default samplers
 

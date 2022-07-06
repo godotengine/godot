@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rendering_server_globals.cpp                                         */
+/*  utilities.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rendering_server_globals.h"
+#include "utilities.h"
 
-bool RenderingServerGlobals::threaded = false;
+void Dependency::changed_notify(DependencyChangedNotification p_notification) {
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		if (E.key->changed_callback) {
+			E.key->changed_callback(p_notification, E.key);
+		}
+	}
+}
 
-RendererUtilities *RenderingServerGlobals::utilities = nullptr;
-RendererLightStorage *RenderingServerGlobals::light_storage = nullptr;
-RendererMaterialStorage *RenderingServerGlobals::material_storage = nullptr;
-RendererMeshStorage *RenderingServerGlobals::mesh_storage = nullptr;
-RendererParticlesStorage *RenderingServerGlobals::particles_storage = nullptr;
-RendererTextureStorage *RenderingServerGlobals::texture_storage = nullptr;
-RendererGI *RenderingServerGlobals::gi = nullptr;
-RendererFog *RenderingServerGlobals::fog = nullptr;
-RendererCanvasRender *RenderingServerGlobals::canvas_render = nullptr;
-RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
+void Dependency::deleted_notify(const RID &p_rid) {
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		if (E.key->deleted_callback) {
+			E.key->deleted_callback(p_rid, E.key);
+		}
+	}
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		E.key->dependencies.erase(this);
+	}
+	instances.clear();
+}
 
-RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
-RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+Dependency::~Dependency() {
+#ifdef DEBUG_ENABLED
+	if (instances.size()) {
+		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
+		for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+			E.key->dependencies.erase(this);
+		}
+	}
+#endif
+}

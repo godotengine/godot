@@ -154,12 +154,14 @@ uint64_t RendererCompositorRD::frame = 1;
 void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
-	memdelete(storage);
+	memdelete(effects);
+	memdelete(fog);
 	memdelete(particles_storage);
 	memdelete(light_storage);
 	memdelete(mesh_storage);
 	memdelete(material_storage);
 	memdelete(texture_storage);
+	memdelete(utilities);
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
@@ -287,28 +289,29 @@ RendererCompositorRD::RendererCompositorRD() {
 
 	singleton = this;
 
+	utilities = memnew(RendererRD::Utilities);
 	texture_storage = memnew(RendererRD::TextureStorage);
 	material_storage = memnew(RendererRD::MaterialStorage);
 	mesh_storage = memnew(RendererRD::MeshStorage);
 	light_storage = memnew(RendererRD::LightStorage);
 	particles_storage = memnew(RendererRD::ParticlesStorage);
-	storage = memnew(RendererStorageRD);
-	canvas = memnew(RendererCanvasRenderRD(storage));
+	fog = memnew(RendererRD::Fog);
+	canvas = memnew(RendererCanvasRenderRD());
 
 	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (back_end || textures_per_stage < 48) {
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
 	} else { // back_end == false
 		// default to our high end renderer
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
 	}
 
 	scene->init();
 
 	// now we're ready to create our effects,
-	storage->init_effects(!scene->_render_buffers_can_be_storage());
+	effects = memnew(EffectsRD(!scene->_render_buffers_can_be_storage()));
 }
 
 RendererCompositorRD::~RendererCompositorRD() {

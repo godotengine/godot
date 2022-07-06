@@ -34,15 +34,13 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	RendererStorageRD *storage = nullptr;
-
 	enum {
 		BASE_UNIFORM_SET = 0,
 		MATERIAL_UNIFORM_SET = 1,
@@ -462,7 +460,7 @@ public:
 	void set_time(double p_time);
 	void update();
 	bool free(RID p_rid);
-	RendererCanvasRenderRD(RendererStorageRD *p_storage);
+	RendererCanvasRenderRD();
 	~RendererCanvasRenderRD();
 };
 

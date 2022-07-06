@@ -1712,7 +1712,7 @@ void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->extents = p_extents;
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
@@ -1736,7 +1736,7 @@ void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID
 		texture_add_to_decal_atlas(decal->textures[p_type]);
 	}
 
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_DECAL);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_DECAL);
 }
 
 void TextureStorage::decal_set_emission_energy(RID p_decal, float p_energy) {
@@ -1761,7 +1761,7 @@ void TextureStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->cull_mask = p_layers;
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void TextureStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {

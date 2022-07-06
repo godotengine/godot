@@ -139,12 +139,12 @@ void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_
 		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
 		case RS::LIGHT_PARAM_SHADOW_BIAS: {
 			light->version++;
-			light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+			light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 		} break;
 		case RS::LIGHT_PARAM_SIZE: {
 			if ((light->param[p_param] > CMP_EPSILON) != (p_value > CMP_EPSILON)) {
 				//changing from no size to size and the opposite
-				light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+				light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 			}
 		} break;
 		default: {
@@ -160,7 +160,7 @@ void LightStorage::light_set_shadow(RID p_light, bool p_enabled) {
 	light->shadow = p_enabled;
 
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_projector(RID p_light, RID p_texture) {
@@ -182,7 +182,7 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 		if (light->projector.is_valid()) {
 			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 		}
-		light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
 	}
 }
 
@@ -200,7 +200,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) {
@@ -220,7 +220,7 @@ void LightStorage::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled)
 	light->reverse_cull = p_enabled;
 
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) {
@@ -230,7 +230,7 @@ void LightStorage::light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mod
 	light->bake_mode = p_bake_mode;
 
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) {
@@ -240,7 +240,7 @@ void LightStorage::light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMo
 	light->omni_shadow_mode = p_mode;
 
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 RS::LightOmniShadowMode LightStorage::light_omni_get_shadow_mode(RID p_light) {
@@ -256,7 +256,7 @@ void LightStorage::light_directional_set_shadow_mode(RID p_light, RS::LightDirec
 
 	light->directional_shadow_mode = p_mode;
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 void LightStorage::light_directional_set_blend_splits(RID p_light, bool p_enable) {
@@ -265,7 +265,7 @@ void LightStorage::light_directional_set_blend_splits(RID p_light, bool p_enable
 
 	light->directional_blend_splits = p_enable;
 	light->version++;
-	light->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
 }
 
 bool LightStorage::light_directional_get_blend_splits(RID p_light) const {
@@ -475,5 +475,105 @@ void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
 float LightStorage::lightmap_get_probe_capture_update_speed() const {
 	return 0;
 }
+
+/* LIGHT SHADOW MAPPING */
+/*
+
+RID LightStorage::canvas_light_occluder_create() {
+	CanvasOccluder *co = memnew(CanvasOccluder);
+	co->index_id = 0;
+	co->vertex_id = 0;
+	co->len = 0;
+
+	return canvas_occluder_owner.make_rid(co);
+}
+
+void LightStorage::canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {
+	CanvasOccluder *co = canvas_occluder_owner.get(p_occluder);
+	ERR_FAIL_COND(!co);
+
+	co->lines = p_lines;
+
+	if (p_lines.size() != co->len) {
+		if (co->index_id) {
+			glDeleteBuffers(1, &co->index_id);
+		} if (co->vertex_id) {
+			glDeleteBuffers(1, &co->vertex_id);
+		}
+
+		co->index_id = 0;
+		co->vertex_id = 0;
+		co->len = 0;
+	}
+
+	if (p_lines.size()) {
+		PoolVector<float> geometry;
+		PoolVector<uint16_t> indices;
+		int lc = p_lines.size();
+
+		geometry.resize(lc * 6);
+		indices.resize(lc * 3);
+
+		PoolVector<float>::Write vw = geometry.write();
+		PoolVector<uint16_t>::Write iw = indices.write();
+
+		PoolVector<Vector2>::Read lr = p_lines.read();
+
+		const int POLY_HEIGHT = 16384;
+
+		for (int i = 0; i < lc / 2; i++) {
+			vw[i * 12 + 0] = lr[i * 2 + 0].x;
+			vw[i * 12 + 1] = lr[i * 2 + 0].y;
+			vw[i * 12 + 2] = POLY_HEIGHT;
+
+			vw[i * 12 + 3] = lr[i * 2 + 1].x;
+			vw[i * 12 + 4] = lr[i * 2 + 1].y;
+			vw[i * 12 + 5] = POLY_HEIGHT;
+
+			vw[i * 12 + 6] = lr[i * 2 + 1].x;
+			vw[i * 12 + 7] = lr[i * 2 + 1].y;
+			vw[i * 12 + 8] = -POLY_HEIGHT;
+
+			vw[i * 12 + 9] = lr[i * 2 + 0].x;
+			vw[i * 12 + 10] = lr[i * 2 + 0].y;
+			vw[i * 12 + 11] = -POLY_HEIGHT;
+
+			iw[i * 6 + 0] = i * 4 + 0;
+			iw[i * 6 + 1] = i * 4 + 1;
+			iw[i * 6 + 2] = i * 4 + 2;
+
+			iw[i * 6 + 3] = i * 4 + 2;
+			iw[i * 6 + 4] = i * 4 + 3;
+			iw[i * 6 + 5] = i * 4 + 0;
+		}
+
+		//if same buffer len is being set, just use BufferSubData to avoid a pipeline flush
+
+		if (!co->vertex_id) {
+			glGenBuffers(1, &co->vertex_id);
+			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
+			glBufferData(GL_ARRAY_BUFFER, lc * 6 * sizeof(real_t), vw.ptr(), GL_STATIC_DRAW);
+		} else {
+			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, lc * 6 * sizeof(real_t), vw.ptr());
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		if (!co->index_id) {
+			glGenBuffers(1, &co->index_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, lc * 3 * sizeof(uint16_t), iw.ptr(), GL_DYNAMIC_DRAW);
+		} else {
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lc * 3 * sizeof(uint16_t), iw.ptr());
+		}
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
+
+		co->len = lc;
+	}
+}
+*/
 
 #endif // !GLES3_ENABLED

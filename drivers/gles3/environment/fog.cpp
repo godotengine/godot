@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_storage.cpp                                                 */
+/*  fog.cpp                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,41 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "renderer_storage.h"
+#ifdef GLES3_ENABLED
 
-RendererStorage *RendererStorage::base_singleton = nullptr;
+#include "fog.h"
 
-void RendererStorage::Dependency::changed_notify(DependencyChangedNotification p_notification) {
-	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
-		if (E.key->changed_callback) {
-			E.key->changed_callback(p_notification, E.key);
-		}
-	}
+using namespace GLES3;
+
+/* FOG */
+
+RID Fog::fog_volume_allocate() {
+	return RID();
 }
 
-void RendererStorage::Dependency::deleted_notify(const RID &p_rid) {
-	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
-		if (E.key->deleted_callback) {
-			E.key->deleted_callback(p_rid, E.key);
-		}
-	}
-	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
-		E.key->dependencies.erase(this);
-	}
-	instances.clear();
+void Fog::fog_volume_initialize(RID p_rid) {
 }
 
-RendererStorage::Dependency::~Dependency() {
-#ifdef DEBUG_ENABLED
-	if (instances.size()) {
-		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
-		for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
-			E.key->dependencies.erase(this);
-		}
-	}
-#endif
+void Fog::fog_free(RID p_rid) {
 }
 
-RendererStorage::RendererStorage() {
-	base_singleton = this;
+void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 }
+
+void Fog::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+}
+
+void Fog::fog_volume_set_material(RID p_fog_volume, RID p_material) {
+}
+
+AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
+	return AABB();
+}
+
+RS::FogVolumeShape Fog::fog_volume_get_shape(RID p_fog_volume) const {
+	return RS::FOG_VOLUME_SHAPE_BOX;
+}
+
+#endif // GLES3_ENABLED

@@ -37,7 +37,6 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
@@ -47,8 +46,8 @@
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/storage/utilities.h"
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 struct RenderDataRD;
@@ -87,11 +86,10 @@ public:
 		uint32_t version = 1;
 		uint32_t data_version = 1;
 
-		RendererStorage::Dependency dependency;
+		Dependency dependency;
 	};
 
 private:
-	RendererStorageRD *storage = nullptr;
 	static GI *singleton;
 
 	/* VOXEL GI STORAGE */
@@ -430,7 +428,6 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage = nullptr;
 		GI *gi = nullptr;
 
 		RID probe;
@@ -554,7 +551,6 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage = nullptr;
 		GI *gi = nullptr;
 
 		// used for rendering (voxelization)
@@ -775,7 +771,7 @@ public:
 	GI();
 	~GI();
 
-	void init(RendererStorageRD *p_storage, RendererSceneSkyRD *p_sky);
+	void init(RendererSceneSkyRD *p_sky);
 	void free();
 
 	SDFGI *create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
