@@ -122,16 +122,18 @@ class MethodDef:
 
 
 class ConstantDef:
-    def __init__(self, name, value, text):  # type: (str, str, Optional[str]) -> None
+    def __init__(self, name, value, text, bitfield):  # type: (str, str, Optional[str], Optional[bool]) -> None
         self.name = name
         self.value = value
         self.text = text
+        self.is_bitfield = bitfield
 
 
 class EnumDef:
-    def __init__(self, name):  # type: (str) -> None
+    def __init__(self, name, bitfield):  # type: (str, Optional[bool]) -> None
         self.name = name
         self.values = OrderedDict()  # type: OrderedDict[str, ConstantDef]
+        self.is_bitfield = bitfield
 
 
 class ThemeItemDef:
@@ -305,7 +307,8 @@ class State:
                 constant_name = constant.attrib["name"]
                 value = constant.attrib["value"]
                 enum = constant.get("enum")
-                constant_def = ConstantDef(constant_name, value, constant.text)
+                is_bitfield = constant.get("is_bitfield") or False
+                constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
                 if enum is None:
                     if constant_name in class_def.constants:
                         print_error('{}.xml: Duplicate constant "{}".'.format(class_name, constant_name), self)
@@ -318,7 +321,7 @@ class State:
                         enum_def = class_def.enums[enum]
 
                     else:
-                        enum_def = EnumDef(enum)
+                        enum_def = EnumDef(enum, is_bitfield)
                         class_def.enums[enum] = enum_def
 
                     enum_def.values[constant_name] = constant_def
@@ -706,7 +709,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write(".. _class_{}_constant_{}:\n\n".format(class_name, value.name))
 
-            f.write("enum **{}**:\n\n".format(e.name))
+            if e.is_bitfield:
+                f.write("flags **{}**:\n\n".format(e.name))
+            else:
+                f.write("enum **{}**:\n\n".format(e.name))
+
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
