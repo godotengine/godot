@@ -1855,7 +1855,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 
 	while (suite) {
 		for (int i = 0; i < suite->statements.size(); i++) {
-			if (suite->statements[i]->start_line > p_context.current_line) {
+			if (suite->statements[i]->end_line >= p_context.current_line) {
 				break;
 			}
 
