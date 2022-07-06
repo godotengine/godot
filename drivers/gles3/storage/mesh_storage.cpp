@@ -64,6 +64,8 @@ void MeshStorage::mesh_free(RID p_rid) {
 	mesh_clear(p_rid);
 	mesh_set_shadow_mesh(p_rid, RID());
 	Mesh *mesh = mesh_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!mesh);
+
 	mesh->dependency.deleted_notify(p_rid);
 	if (mesh->instances.size()) {
 		ERR_PRINT("deleting mesh with active instances");
