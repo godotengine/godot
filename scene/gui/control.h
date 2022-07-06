@@ -158,73 +158,70 @@ private:
 		}
 	};
 
-	struct Data {
-		Point2 pos_cache;
-		Size2 size_cache;
-		Size2 minimum_size_cache;
-		bool minimum_size_valid = false;
+	Point2 pos_cache;
+	Size2 size_cache;
+	Size2 minimum_size_cache;
+	bool minimum_size_valid = false;
 
-		Size2 last_minimum_size;
-		bool updating_last_minimum_size = false;
+	Size2 last_minimum_size;
+	bool updating_last_minimum_size = false;
 
-		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
-		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
-		FocusMode focus_mode = FOCUS_NONE;
-		GrowDirection h_grow = GROW_DIRECTION_END;
-		GrowDirection v_grow = GROW_DIRECTION_END;
+	real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
+	real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
+	FocusMode focus_mode = FOCUS_NONE;
+	GrowDirection h_grow = GROW_DIRECTION_END;
+	GrowDirection v_grow = GROW_DIRECTION_END;
 
-		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
-		bool is_rtl_dirty = true;
-		bool is_rtl = false;
+	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
+	bool is_rtl_dirty = true;
+	bool is_rtl = false;
 
-		bool auto_translate = true;
+	bool auto_translate = true;
 
-		real_t rotation = 0.0;
-		Vector2 scale = Vector2(1, 1);
-		Vector2 pivot_offset;
-		bool size_warning = true;
+	real_t rotation = 0.0;
+	Vector2 scale = Vector2(1, 1);
+	Vector2 pivot_offset;
+	bool size_warning = true;
 
-		int h_size_flags = SIZE_FILL;
-		int v_size_flags = SIZE_FILL;
-		real_t expand = 1.0;
-		Point2 custom_minimum_size;
+	int h_size_flags = SIZE_FILL;
+	int v_size_flags = SIZE_FILL;
+	real_t stretch_ratio = 1.0;
+	Point2 custom_minimum_size;
 
-		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
-		bool force_pass_scroll_events = true;
+	MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+	bool force_pass_scroll_events = true;
 
-		bool clip_contents = false;
+	bool clip_contents = false;
 
-		bool block_minimum_size_adjust = false;
-		bool disable_visibility_clip = false;
+	bool block_minimum_size_adjust = false;
+	bool disable_visibility_clip = false;
 
-		Control *parent = nullptr;
-		ObjectID drag_owner;
-		Ref<Theme> theme;
-		Control *theme_owner = nullptr;
-		Window *theme_owner_window = nullptr;
-		Window *parent_window = nullptr;
-		StringName theme_type_variation;
+	Control *parent = nullptr;
+	ObjectID drag_owner;
+	Ref<Theme> theme;
+	Control *theme_owner = nullptr;
+	Window *theme_owner_window = nullptr;
+	Window *parent_window = nullptr;
+	StringName theme_type_variation;
 
-		String tooltip;
-		CursorShape default_cursor = CURSOR_ARROW;
+	String tooltip;
+	CursorShape default_cursor = CURSOR_ARROW;
 
-		List<Control *>::Element *RI = nullptr;
+	List<Control *>::Element *RI = nullptr;
 
-		CanvasItem *parent_canvas_item = nullptr;
+	CanvasItem *parent_canvas_item = nullptr;
 
-		NodePath focus_neighbor[4];
-		NodePath focus_next;
-		NodePath focus_prev;
+	NodePath focus_neighbor[4];
+	NodePath focus_next;
+	NodePath focus_prev;
 
-		bool bulk_theme_override = false;
-		Theme::ThemeIconMap icon_override;
-		Theme::ThemeStyleMap style_override;
-		Theme::ThemeFontMap font_override;
-		Theme::ThemeFontSizeMap font_size_override;
-		Theme::ThemeColorMap color_override;
-		Theme::ThemeConstantMap constant_override;
-
-	} data;
+	bool bulk_theme_override = false;
+	Theme::ThemeIconMap icon_override;
+	Theme::ThemeStyleMap style_override;
+	Theme::ThemeFontMap font_override;
+	Theme::ThemeFontSizeMap font_size_override;
+	Theme::ThemeColorMap color_override;
+	Theme::ThemeConstantMap constant_override;
 
 	static constexpr unsigned properties_managed_by_container_count = 12;
 	static String properties_managed_by_container[properties_managed_by_container_count];
@@ -374,7 +371,9 @@ public:
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const { return is_auto_translating() ? tr(p_string) : p_string; };
+	_FORCE_INLINE_ String atr(const String p_string) const {
+		return is_auto_translating() ? tr(p_string) : p_string;
+	};
 
 	/* POSITIONING */
 

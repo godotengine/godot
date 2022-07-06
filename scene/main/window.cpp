@@ -825,9 +825,9 @@ void Window::_notification(int p_what) {
 
 			if (theme.is_null()) {
 				Control *parent_c = cast_to<Control>(get_parent());
-				if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-					theme_owner = parent_c->data.theme_owner;
-					theme_owner_window = parent_c->data.theme_owner_window;
+				if (parent_c && (parent_c->theme_owner || parent_c->theme_owner_window)) {
+					theme_owner = parent_c->theme_owner;
+					theme_owner_window = parent_c->theme_owner_window;
 					notification(NOTIFICATION_THEME_CHANGED);
 				} else {
 					Window *parent_w = cast_to<Window>(get_parent());
@@ -1225,7 +1225,7 @@ Rect2i Window::get_usable_parent_rect() const {
 void Window::add_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
-	if (child_c && child_c->data.theme.is_null() && (theme_owner || theme_owner_window)) {
+	if (child_c && child_c->theme.is_null() && (theme_owner || theme_owner_window)) {
 		Control::_propagate_theme_changed(child_c, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
 	}
 
@@ -1243,7 +1243,7 @@ void Window::add_child_notify(Node *p_child) {
 void Window::remove_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
-	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
+	if (child_c && (child_c->theme_owner || child_c->theme_owner_window) && child_c->theme.is_null()) {
 		Control::_propagate_theme_changed(child_c, nullptr, nullptr);
 	}
 
@@ -1271,8 +1271,8 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 		Control::_propagate_theme_changed(this, nullptr, this);
 	} else {
 		Control *parent_c = cast_to<Control>(get_parent());
-		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
+		if (parent_c && (parent_c->theme_owner || parent_c->theme_owner_window)) {
+			Control::_propagate_theme_changed(this, parent_c->theme_owner, parent_c->theme_owner_window);
 		} else {
 			Window *parent_w = cast_to<Window>(get_parent());
 			if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
