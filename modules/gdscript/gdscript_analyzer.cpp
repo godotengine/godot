@@ -1362,7 +1362,13 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					if (all_is_constant) {
 						switch (args.size()) {
 							case 1:
-								reduced = args[0];
+								if (args[0].get_type() == Variant::FLOAT) {
+									Callable::CallError temp;
+									const Variant *construct_arg = &args[0];
+									Variant::construct(Variant::INT, reduced, &construct_arg, 1, temp);
+								} else {
+									reduced = args[0];
+								}
 								break;
 							case 2:
 								reduced = Vector2i(args[0], args[1]);
@@ -1393,7 +1399,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	if (list_resolved) {
 		variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		variable_type.kind = GDScriptParser::DataType::BUILTIN;
-		variable_type.builtin_type = Variant::INT; // Can this ever be a float or something else?
+		variable_type.builtin_type = Variant::INT; // Can this ever be a float or something else? // :)
 		p_for->variable->set_datatype(variable_type);
 	} else if (p_for->list) {
 		resolve_node(p_for->list);
