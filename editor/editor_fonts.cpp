@@ -276,9 +276,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Custom font */
 
-	bool font_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/font_antialiased");
-	int font_hinting_setting = (int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EditorSettings::get_singleton()->get("interface/editor/font_subpixel_positioning");
+	const bool font_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/font_antialiased");
+	const int font_hinting_setting = (int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
+	const TextServer::SubpixelPositioning font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 
 	TextServer::Hinting font_hinting;
 	switch (font_hinting_setting) {
