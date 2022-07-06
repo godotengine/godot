@@ -425,6 +425,11 @@ msgstr "Meta"
 msgid "Command"
 msgstr "Perintah"
 
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Physical"
+msgstr " (Secara fisik)"
+
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -5599,6 +5604,11 @@ msgstr "Lebar Peta kecil"
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Tombol Ekstra Mouse Navigasi Riwayat"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Drag And Drop Selection"
+msgstr "Isi Seleksi GridMap"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -18874,6 +18884,11 @@ msgstr "Package setidaknya harus memiliki sebuah pemisah '.'."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
+msgid "Custom Build"
+msgstr "Gunakan Direktori Pengguna Kustom"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "Use Custom Build"
 msgstr "Gunakan Direktori Pengguna Kustom"
 
@@ -18881,6 +18896,16 @@ msgstr "Gunakan Direktori Pengguna Kustom"
 #, fuzzy
 msgid "Export Format"
 msgstr "Lokasi Ekspor"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Min SDK"
+msgstr "Ukuran Garis Tepi:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Target SDK"
+msgstr "FPS Sasaran"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #, fuzzy
@@ -18923,16 +18948,6 @@ msgstr "Inspeksi Instance Sebelumnya"
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr "Kode"
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Min SDK"
-msgstr "Ukuran Garis Tepi:"
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Target SDK"
-msgstr "FPS Sasaran"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -19174,7 +19189,7 @@ msgstr "\"Gunakan Build Custom\" harus diaktifkan untuk menggunakan plugin."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "\"Pelacakan Tangan\" hanya valid ketika \"Mode Xr\" bernilai \"Oculus Mobile "
@@ -19182,7 +19197,7 @@ msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
-msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Pelacakan Tangan\" hanya valid ketika \"Mode Xr\" bernilai \"Oculus Mobile "
 "VR\"."
@@ -19195,20 +19210,41 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid ""
-"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
-"enabled."
+"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr ""
 "Versi \"Target SDK\" harus lebih tinggi atau sama dengan versi \"Min SDK\"."
 
@@ -20881,7 +20917,7 @@ msgstr "Perbesar Pandangan"
 msgid "Custom Viewport"
 msgstr "Penampil Kustom"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
 #: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 #, fuzzy
@@ -21627,12 +21663,32 @@ msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
+msgid "Pathfinding"
+msgstr "Mengikat"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
 msgid "Path Desired Distance"
 msgstr "Target Jarak yang Diinginkan"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr "Target Jarak yang Diinginkan"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Max Distance"
+msgstr "Pilih Jarak:"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance"
+msgstr "Lanjut"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance Enabled"
+msgstr "Aktifkan"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Neighbor Dist"
@@ -21650,16 +21706,6 @@ msgstr "Balik secara Horizontal"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Max Speed"
 msgstr "Kecepatan Maks"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Path Max Distance"
-msgstr "Pilih Jarak:"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Avoidance Enabled"
-msgstr "Aktifkan"
 
 #: scene/2d/navigation_agent_2d.cpp
 #, fuzzy
@@ -25037,6 +25083,11 @@ msgstr "Direktori:"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
+msgid "Drag And Drop Selection Enabled"
+msgstr "Hanya yang Dipilih"
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
 msgid "Hiding Enabled"
 msgstr "Aktifkan"
 
@@ -25443,24 +25494,20 @@ msgid "Viewport Path"
 msgstr "Lokasi Ekspor"
 
 #: scene/main/viewport.cpp
-msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Viewport ini tidak diatur sebagai target render. Jika anda berniat untuk "
-"menampilkan konten-kontennya secara langsung ke layar, jadikan viewport ini "
-"sebagai child dari sebuah Control agar ia bisa memperoleh ukuran. Jika "
-"tidak, jadikan sebagai RenderTarget dan tetapkan tekstur internal nya ke "
-"beberapa node untuk ditampilkan."
-
-#: scene/main/viewport.cpp
 #, fuzzy
 msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr "Ukuran viewport harus lebih besar dari 0 untuk me-render apa pun."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-"
+"Sampling.\n"
+"HDR is only supported in Viewports that have their Usage set to 3D or 3D No-"
+"Effects.\n"
+"HDR will be disabled for this Viewport."
+msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "ARVR"

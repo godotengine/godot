@@ -413,6 +413,11 @@ msgstr "Meta"
 msgid "Command"
 msgstr "Comunidad"
 
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Physical"
+msgstr " (Física)"
+
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -5628,6 +5633,11 @@ msgstr ""
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
 msgstr ""
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Drag And Drop Selection"
+msgstr "Selección de GridMap"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -18901,6 +18911,11 @@ msgid "The package must have at least one '.' separator."
 msgstr "El paquete debe tener al menos un '.' como separador."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Custom Build"
+msgstr "CustomNode"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
 msgstr ""
 
@@ -18908,6 +18923,16 @@ msgstr ""
 #, fuzzy
 msgid "Export Format"
 msgstr "Ruta de Exportación"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Min SDK"
+msgstr "Tamaño de Outline:"
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Target SDK"
+msgstr "Objetivo"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #, fuzzy
@@ -18951,16 +18976,6 @@ msgstr "Inspeccionar Instancia Previa"
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr ""
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Min SDK"
-msgstr "Tamaño de Outline:"
-
-#: platform/android/export/export_plugin.cpp
-#, fuzzy
-msgid "Target SDK"
-msgstr "Objetivo"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -19213,15 +19228,17 @@ msgid "\"Use Custom Build\" must be enabled to use the plugins."
 msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "\"Hand Tracking\" sólo es válido cuando \"Xr Mode\" es \"Oculus Mobile "
 "VrApi\" o \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "\"Passthrough\" sólo es válido cuando \"Xr Mode\" es \"OpenXR\"."
 
 #: platform/android/export/export_plugin.cpp
@@ -19230,22 +19247,45 @@ msgstr ""
 "\"Export AAB\" sólo es válido cuando \"Use Custom Build\" está activado."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Cambiar el \"Min Sdk\" sólo es válido cuando \"Use Custom Build\" está "
 "activado."
 
 #: platform/android/export/export_plugin.cpp
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
 msgid ""
-"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
-"enabled."
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Cambiar el \"Target Sdk\" sólo es válido cuando \"Use Custom Build\" está "
 "activado."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr ""
 "La versión de \"Target Sdk\" debe ser mayor o igual a la versión de \"Min "
 "Sdk\"."
@@ -20984,7 +21024,7 @@ msgstr "Zoom In"
 msgid "Custom Viewport"
 msgstr "1 Viewport"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
 #: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 #, fuzzy
@@ -21762,12 +21802,32 @@ msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
+msgid "Pathfinding"
+msgstr "Binding"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
 msgid "Path Desired Distance"
 msgstr "Elegir Instancia:"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Path Max Distance"
+msgstr "Elegir Instancia:"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance"
+msgstr "Avanzado"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance Enabled"
+msgstr "Activar"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Neighbor Dist"
@@ -21785,16 +21845,6 @@ msgstr "Espejar Horizontalmente"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Max Speed"
 msgstr "Velocidad Máxima"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Path Max Distance"
-msgstr "Elegir Instancia:"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Avoidance Enabled"
-msgstr "Activar"
 
 #: scene/2d/navigation_agent_2d.cpp
 msgid ""
@@ -25190,6 +25240,11 @@ msgstr "Carpeta:"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
+msgid "Drag And Drop Selection Enabled"
+msgstr "Solo Selección"
+
+#: scene/gui/text_edit.cpp
+#, fuzzy
 msgid "Hiding Enabled"
 msgstr "Activar"
 
@@ -25602,23 +25657,20 @@ msgstr "Ruta de Exportación"
 
 #: scene/main/viewport.cpp
 msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Este viewport no está seteado como render target. Si tienes intención de que "
-"muestre contenidos directo a la pantalla, haz un hijo de un Control para que "
-"pueda obtener un tamaño. Alternativamente, haz un RenderTarget y asigna su "
-"textura interna a algún otro nodo para mostrar."
-
-#: scene/main/viewport.cpp
-msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
 "El tamaño del Viewport debe ser mayor o igual a 2 píxeles en ambas "
 "dimensiones para renderizar cualquier cosa."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-"
+"Sampling.\n"
+"HDR is only supported in Viewports that have their Usage set to 3D or 3D No-"
+"Effects.\n"
+"HDR will be disabled for this Viewport."
+msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "ARVR"
