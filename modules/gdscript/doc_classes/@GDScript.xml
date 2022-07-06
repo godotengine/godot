@@ -263,6 +263,12 @@
 			<description>
 			</description>
 		</annotation>
+		<annotation name="@export_category">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+			</description>
+		</annotation>
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
@@ -339,6 +345,13 @@
 			<description>
 			</description>
 		</annotation>
+		<annotation name="@export_group">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="prefix" type="String" default="null" />
+			<description>
+			</description>
+		</annotation>
 		<annotation name="@export_multiline">
 			<return type="void" />
 			<description>
@@ -363,6 +376,13 @@
 			<argument index="3" name="slider1" type="String" default="null" />
 			<argument index="4" name="slider2" type="String" default="null" />
 			<argument index="5" name="slider3" type="String" default="null" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_subgroup">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="prefix" type="String" default="null" />
 			<description>
 			</description>
 		</annotation>
