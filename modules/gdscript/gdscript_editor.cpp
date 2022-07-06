@@ -2040,7 +2040,10 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 							return true;
 						case GDScriptParser::ClassNode::Member::VARIABLE:
 							if (!is_static) {
-								if (member.variable->initializer) {
+								if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
+									r_type.type = member.variable->get_datatype();
+									return true;
+								} else if (member.variable->initializer) {
 									const GDScriptParser::ExpressionNode *init = member.variable->initializer;
 									if (init->is_constant) {
 										r_type.value = init->reduced_value;
@@ -2062,9 +2065,6 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 										r_type.type = init->get_datatype();
 										return true;
 									}
-								} else if (member.variable->get_datatype().is_set() && !member.variable->get_datatype().is_variant()) {
-									r_type.type = member.variable->get_datatype();
-									return true;
 								}
 							}
 							// TODO: Check assignments in constructor.
