@@ -41,6 +41,7 @@
 
 class OS_OSX : public OS_Unix {
 	bool force_quit = false;
+	bool force_disable_xr = false;
 
 	JoypadOSX *joypad_osx = nullptr;
 
@@ -105,6 +106,9 @@ public:
 	virtual String get_processor_name() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	virtual void disable_xr() override;
+	virtual bool is_disable_xr() const override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;

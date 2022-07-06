@@ -331,6 +331,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --text-driver <driver>                       Text driver (Fonts, BiDi, shaping)\n");
 	OS::get_singleton()->print("  --tablet-driver <driver>                     Pen tablet input driver.\n");
 	OS::get_singleton()->print("  --headless                                   Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
+	OS::get_singleton()->print("  --disable-xr                                 Force disabling of xr. Run the engine so that xr is disabled.\n");
 	OS::get_singleton()->print("  --write-movie <file>                         Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS. Disabling vsync can speed up movie writing but makes interaction more difficult.\n");
 	OS::get_singleton()->print("  --disable-vsync                              Force disabling of vsync. Run the engine in a way that a movie is written (by default .avi MJPEG). Fixed FPS is forced when enabled, but can be used to change movie FPS.\n");
 
@@ -1164,6 +1165,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "--disable-xr") {
+			OS::get_singleton()->disable_xr();
 		} else if (I->get() == "--disable-vsync") {
 			disable_vsync = true;
 		} else if (I->get() == "--print-fps") {

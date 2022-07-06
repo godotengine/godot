@@ -446,6 +446,14 @@ void OS_LinuxBSD::run() {
 	main_loop->finalize();
 }
 
+void OS_LinuxBSD::disable_xr() {
+	force_disable_xr = true;
+}
+
+bool OS_LinuxBSD::is_disable_xr() const {
+	return force_disable_xr;
+}
+
 void OS_LinuxBSD::disable_crash_handler() {
 	crash_handler.disable();
 }

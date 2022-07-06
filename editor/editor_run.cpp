@@ -109,6 +109,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back("--disable-crash-handler");
 	}
 
+	if (OS::get_singleton()->is_disable_xr()) {
+		args.push_back("--disable-xr");
+	}
+
 	Rect2 screen_rect;
 	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
 	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);

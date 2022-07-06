@@ -240,6 +240,9 @@ public:
 
 	virtual bool is_single_window() const;
 
+	virtual void disable_xr() {}
+	virtual bool is_disable_xr() const { return false; }
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}

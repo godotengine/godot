@@ -416,6 +416,14 @@ bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
+void OS_OSX::disable_xr() {
+	force_disable_xr = true;
+}
+
+bool OS_OSX::is_disable_xr() const {
+	return force_disable_xr;
+}
+
 void OS_OSX::disable_crash_handler() {
 	crash_handler.disable();
 }

@@ -91,6 +91,7 @@ class OS_Windows : public OS {
 #endif
 
 	bool force_quit;
+	bool force_disable_xr = false;
 	HWND main_window;
 
 	// functions used by main to initialize/deinitialize the OS
@@ -171,6 +172,9 @@ public:
 	void run();
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	virtual void disable_xr() override;
+	virtual bool is_disable_xr() const override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;

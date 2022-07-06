@@ -44,6 +44,7 @@ class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
 
 	bool force_quit;
+	bool force_disable_xr = false;
 
 #ifdef JOYDEV_ENABLED
 	JoypadLinux *joypad = nullptr;
@@ -96,6 +97,9 @@ public:
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();
+
+	virtual void disable_xr() override;
+	virtual bool is_disable_xr() const override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
