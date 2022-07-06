@@ -191,6 +191,9 @@ public:
 
 	virtual Error shell_open(String p_uri) override;
 
+	virtual Error register_protocol(String p_protocol) override;
+	virtual Error unregister_protocol(String p_protocol) override;
+
 	void run();
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;

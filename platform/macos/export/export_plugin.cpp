@@ -82,6 +82,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/protocol"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
@@ -346,6 +347,17 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+		} else if (lines[i].find("$registered_protocols") != -1) {
+			String protocol = p_preset->get("application/protocol");
+			if (!protocol.is_empty()) {
+				String s = "\t<key>CFBundleURLTypes</key>\n\t<array>\n";
+				s += "\t\t<dict>\n\t\t\t<key>CFBundleURLName</key>\n";
+				s += "\t\t\t<string>org.godot.URLSchema" + protocol.to_upper() + "</string>\n";
+				s += "\t\t\t<key>CFBundleURLSchemes</key>\n\t\t\t<array>\n";
+				s += "\t\t\t\t<string>" + protocol + "</string>\n";
+				s += "\t\t\t</array>\n\t\t</dict>\n\t</array>\n";
+				strnew += lines[i].replace("$registered_protocols", s);
+			}
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {

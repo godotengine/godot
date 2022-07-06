@@ -111,6 +111,8 @@ protected:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
+	bool _validate_protocol(const String &p_protocol);
+
 public:
 	typedef int64_t ProcessID;
 
@@ -156,6 +158,10 @@ public:
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
+
+	// E.g. register_protocol("myapp") will redirect links like myapp://uri to the executable
+	virtual Error register_protocol(String p_protocol);
+	virtual Error unregister_protocol(String p_protocol);
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;

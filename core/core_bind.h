@@ -178,6 +178,8 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+	Error register_protocol(String p_protocol);
+	Error unregister_protocol(String p_protocol);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;

@@ -561,6 +561,16 @@
 				Shows all resources currently used by the game.
 			</description>
 		</method>
+		<method name="register_protocol">
+			<return type="int" enum="Error" />
+			<argument index="0" name="protocol" type="String" />
+			<description>
+				Associates links that look like [code]protocol://uri[/code] with this executable.
+				When the OS opens a link like this, such as when the user clicks on a button in their web browser, the executable will launch with the given [code]uri[/code] as the [code]--uri[/code] command line argument, such as [code]myapp://launch/12345[/code] running [code]myapp.exe --uri="myapp://launch/12345"[/code].
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success, [code]ERR_INVALID_PARAMETER[/code] if the given protocol is invalid).
+				[b]Note:[/b] This method is implemented on Linux and Windows, but on macOS you need to use the export dialog to register a protocol.
+			</description>
+		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<argument index="0" name="name" type="String" />
@@ -619,6 +629,15 @@
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="unregister_protocol">
+			<return type="int" enum="Error" />
+			<argument index="0" name="protocol" type="String" />
+			<description>
+				Removes the association between links that look like [code]protocol://uri[/code] and this game's executable.
+				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				[b]Note:[/b] This will remove any protocol with this name registered on the user level, whether or not it was registered by your game. For example, it can unregister protocols registered by other Godot games.
 			</description>
 		</method>
 	</methods>

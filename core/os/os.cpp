@@ -326,6 +326,40 @@ Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
+bool OS::_validate_protocol(const String &p_protocol) {
+#ifdef TOOLS_ENABLED
+	// This warning should be shared between platforms, so putting it here.
+	// However, it's not technically related to validation.
+	WARN_PRINT("Registering protocols in the editor likely won't work as expected, since it will point to the editor binary. Consider only doing this in exported projects.");
+#endif
+	// https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.2.1
+	// Protocols can't be empty, must be lowercase, must start with a letter,
+	// can only contain letters, numbers, '+', '-', and '.' characters.
+	if (p_protocol.is_empty()) {
+		return false;
+	}
+	if (p_protocol[0] < 'a' || p_protocol[0] > 'z') {
+		ERR_PRINT("Invalid protocol character: " + String::chr(p_protocol[0]) + ". Protocols must start with a lowercase letter.");
+		return false;
+	}
+	for (int i = 1; i < p_protocol.length(); i++) {
+		char32_t c = p_protocol[i];
+		if (c != '+' && c != '-' && c != '.' && !(c >= 'a' && c <= 'z') && !(c >= '0' && c <= '9')) {
+			ERR_PRINT("Invalid protocol character: " + String::chr(c) + ". Protocols must be lowercase, must start with a letter, can only contain letters, numbers, '+', '-', and '.' characters.");
+			return false;
+		}
+	}
+	return true;
+}
+
+Error OS::register_protocol(String p_protocol) {
+	return ERR_UNAVAILABLE;
+}
+
+Error OS::unregister_protocol(String p_protocol) {
+	return ERR_UNAVAILABLE;
+}
+
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {

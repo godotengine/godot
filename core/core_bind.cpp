@@ -252,6 +252,14 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
+Error OS::register_protocol(String p_protocol) {
+	return ::OS::get_singleton()->register_protocol(p_protocol);
+}
+
+Error OS::unregister_protocol(String p_protocol) {
+	return ::OS::get_singleton()->unregister_protocol(p_protocol);
+}
+
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -638,6 +646,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("register_protocol", "protocol"), &OS::register_protocol);
+	ClassDB::bind_method(D_METHOD("unregister_protocol", "protocol"), &OS::unregister_protocol);
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 

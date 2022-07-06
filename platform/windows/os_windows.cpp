@@ -44,6 +44,7 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "windows_terminal_logger.h"
+#include "winreg.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
@@ -815,6 +816,66 @@ Error OS_Windows::shell_open(String p_uri) {
 				return FAILED;
 		}
 	}
+}
+
+Error OS_Windows::register_protocol(String p_protocol) {
+	ERR_FAIL_COND_V(!_validate_protocol(p_protocol), ERR_INVALID_PARAMETER);
+	const String open_command = "\"" + get_executable_path().replace("/", "\\") + "\" --uri=\"%1\"";
+
+	// Create the subkey of HKEY_CLASSES_ROOT if it does not exist.
+	HKEY hkey;
+	String key_path = "SOFTWARE\\Classes\\" + p_protocol;
+	LONG open_res = RegCreateKeyEx(HKEY_CURRENT_USER, key_path.utf8().get_data(), 0, nullptr, 0, KEY_SET_VALUE, nullptr, &hkey, nullptr);
+	if (open_res != ERROR_SUCCESS) {
+		return FAILED;
+	}
+
+	// Set some headers.
+	String proto_name = "URL:" + p_protocol;
+	LONG set_res1 = RegSetValueEx(hkey, nullptr, 0, REG_SZ, (BYTE *)proto_name.utf8().get_data(), proto_name.utf8().length() + 1);
+	LONG set_res2 = RegSetValueEx(hkey, "URL Protocol", 0, REG_SZ, (BYTE *)"", 0);
+	// Close the key.
+	LONG close_res = RegCloseKey(hkey);
+
+	// Check if all operations were successful.
+	if (set_res1 != ERROR_SUCCESS || set_res2 != ERROR_SUCCESS || close_res != ERROR_SUCCESS) {
+		return FAILED;
+	}
+
+	// Set the shell/open/command subkey.
+	String shell_path = "SOFTWARE\\Classes\\" + p_protocol + "\\shell\\open\\command";
+	open_res = RegCreateKeyEx(HKEY_CURRENT_USER, shell_path.utf8().get_data(), 0, nullptr, 0, KEY_SET_VALUE, nullptr, &hkey, nullptr);
+	if (open_res != ERROR_SUCCESS) {
+		return FAILED;
+	}
+	LONG set_res3 = RegSetValueEx(hkey, nullptr, 0, REG_SZ, (BYTE *)open_command.utf8().get_data(), open_command.utf8().length() + 1);
+	// Close the key.
+	LONG close_res2 = RegCloseKey(hkey);
+
+	// Check if all operations were successful.
+	if (set_res3 != ERROR_SUCCESS || close_res2 != ERROR_SUCCESS) {
+		return FAILED;
+	}
+
+	return OK;
+}
+
+Error OS_Windows::unregister_protocol(String p_protocol) {
+	// Check if the registration exists
+	HKEY hkey;
+	String key_path = "SOFTWARE\\Classes\\";
+	LONG open_res = RegOpenKeyEx(HKEY_CURRENT_USER, key_path.utf8().get_data(), 0, KEY_ALL_ACCESS, &hkey);
+	if (open_res != ERROR_SUCCESS) {
+		return FAILED;
+	}
+
+	// Delete all subkeys
+	LONG delete_res = RegDeleteTree(hkey, p_protocol.utf8().get_data());
+	if (delete_res != ERROR_SUCCESS) {
+		return FAILED;
+	}
+
+	return OK;
 }
 
 String OS_Windows::get_locale() const {

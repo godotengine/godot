@@ -242,6 +242,46 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	return !err_code ? ok : FAILED;
 }
 
+Error OS_LinuxBSD::register_protocol(String p_protocol) {
+	ERR_FAIL_COND_V(!_validate_protocol(p_protocol), ERR_INVALID_PARAMETER);
+	// Generate the desktop entry.
+	const String scheme_handler = "x-scheme-handler/" + p_protocol;
+	const String name = "\nName=" + p_protocol.to_upper() + " Protocol Handler";
+	const String exec = "\nExec=\"" + get_executable_path() + "\" --uri=\"%u\"";
+	const String mime = "\nMimeType=" + scheme_handler + ";\n";
+	// Example file:
+	// [Desktop Entry]
+	// Type=Application
+	// Name=MYPROTOCOL Protocol Handler
+	// Exec=/path/to/godot --uri="%u"
+	// MimeType=x-scheme-handler/myprotocol;
+	const String desktop_entry = "[Desktop Entry]\nType=Application" + name + exec + mime;
+	// Write the desktop entry to a file.
+	const String file_name = p_protocol + "-protocol-handler.desktop";
+	{
+		const String path = get_environment("HOME") + "/.local/share/applications/" + file_name;
+		Error err;
+		Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err);
+		if (err) {
+			return err;
+		}
+		file->store_string(desktop_entry);
+	}
+	// Register this new file with xdg-mime.
+	List<String> args;
+	args.push_back("default");
+	args.push_back(file_name);
+	args.push_back(scheme_handler);
+	return execute("xdg-mime", args);
+}
+
+Error OS_LinuxBSD::unregister_protocol(String p_protocol) {
+	const String file_name = p_protocol + "-protocol-handler.desktop";
+	const String path = get_environment("HOME") + "/.local/share/applications/" + file_name;
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return da->remove(path);
+}
+
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
