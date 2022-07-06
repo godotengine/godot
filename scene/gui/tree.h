@@ -567,7 +567,8 @@ private:
 		TreeItem *hover_item = nullptr;
 		int hover_cell = -1;
 
-		Point2i text_editor_position;
+		Point2i popup_editor_position;
+		Point2i popup_menu_position;
 
 		bool rtl = false;
 	} cache;

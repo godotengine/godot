@@ -2836,8 +2836,13 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).is_empty() ? i : s.get_slicec(':', 1).to_int());
 					}
 
-					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_position(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - theme_cache.offset);
+					Rect2 rect = p_item->get_meta("__focus_rect");
+
+					Point2i popup_menu_pos = get_screen_position() + rect.position + Point2i(0, rect.size.height);
+					cache.popup_menu_position = popup_menu_pos;
+
+					popup_menu->set_size(Size2(rect.size.width, 0));
+					popup_menu->set_position(popup_menu_pos);
 					popup_menu->popup();
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
@@ -3773,8 +3778,11 @@ bool Tree::edit_selected() {
 			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).is_empty() ? i : s2.get_slicec(':', 1).to_int());
 		}
 
+		Point2i popup_menu_pos = get_screen_position() + rect.position + Point2i(0, rect.size.height);
+		cache.popup_menu_position = popup_menu_pos;
+
 		popup_menu->set_size(Size2(rect.size.width, 0));
-		popup_menu->set_position(get_screen_position() + rect.position + Point2i(0, rect.size.height));
+		popup_menu->set_position(popup_menu_pos);
 		popup_menu->popup();
 		popup_edited_item = s;
 		popup_edited_item_col = col;
@@ -3785,9 +3793,10 @@ bool Tree::edit_selected() {
 
 		Vector2 ofs(0, Math::floor((text_editor->get_size().height - rect.size.height) / 2)); // "floor()" centers vertically.
 
-		Point2i textedpos = get_screen_position() + rect.position - ofs;
-		cache.text_editor_position = textedpos;
-		popup_rect.position = textedpos;
+		Point2i popup_editor_pos = get_screen_position() + rect.position - ofs;
+
+		cache.popup_editor_position = popup_editor_pos;
+		popup_rect.position = popup_editor_pos;
 		popup_rect.size = rect.size;
 
 		// Account for icon.
@@ -4071,13 +4080,20 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (popup_edited_item != nullptr) {
 				Rect2 rect = popup_edited_item->get_meta("__focus_rect");
-				Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
-				Point2i textedpos = get_global_position() + rect.position - ofs;
 
-				if (cache.text_editor_position != textedpos) {
-					cache.text_editor_position = textedpos;
-					text_editor->set_position(textedpos);
-					value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
+				Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
+				Point2i popup_editor_pos = get_screen_position() + rect.position - ofs;
+
+				if (cache.popup_editor_position != popup_editor_pos) {
+					cache.popup_editor_position = popup_editor_pos;
+					popup_editor->set_position(popup_editor_pos);
+				}
+
+				Point2i popup_menu_pos = get_screen_position() + rect.position + Point2i(0, rect.size.height);
+
+				if (cache.popup_menu_position != popup_menu_pos) {
+					cache.popup_menu_position = popup_menu_pos;
+					popup_menu->set_position(popup_menu_pos);
 				}
 			}
 		} break;
