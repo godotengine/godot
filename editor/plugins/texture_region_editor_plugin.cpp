@@ -925,6 +925,12 @@ void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_pro
 	if (p_prop == StringName("atlas") || p_prop == StringName("texture") || p_prop == StringName("region")) {
 		_edit_region();
 	}
+	if (Object::cast_to<NinePatchRect>(p_changed) && (p_prop == StringName("region_rect") || p_prop == StringName("patch_margin_left") || p_prop == StringName("patch_margin_right") || p_prop == StringName("patch_margin_top") || p_prop == StringName("patch_margin_bottom"))) {
+		_edit_region();
+	}
+	if (Object::cast_to<StyleBoxTexture>(p_changed) && (p_prop == StringName("content_margin_left") || p_prop == StringName("content_margin_right") || p_prop == StringName("content_margin_top") || p_prop == StringName("content_margin_bottom"))) {
+		_edit_region();
+	}
 }
 
 void TextureRegionEditor::_edit_region() {
