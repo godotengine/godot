@@ -2920,7 +2920,9 @@ void DisplayServerOSX::make_rendering_thread() {
 
 void DisplayServerOSX::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	gl_manager->swap_buffers();
+	if (gl_manager) {
+		gl_manager->swap_buffers();
+	}
 #endif
 }
 
