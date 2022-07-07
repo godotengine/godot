@@ -917,6 +917,13 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		return;
 	}
 
+	if (omit_forces_integration) {
+		// Custom behaviour.
+		btBody->setGravity(btVector3(0, 0, 0));
+		btBody->setDamping(0, 0);
+		return;
+	}
+
 	Vector3 newGravity(0.0, 0.0, 0.0);
 	real_t newLinearDamp = MAX(0.0, linearDamp);
 	real_t newAngularDamp = MAX(0.0, angularDamp);
