@@ -1976,43 +1976,6 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 	return Variant();
 }
 
-void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
-		to_time = length + CMP_EPSILON; //include a little more if at the end
-	}
-	int to = vt->find_value(to_time);
-
-	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
-		//find exact (0 delta), return if found
-		p_indices->push_back(to);
-		return;
-	}
-	// can't really send the events == time, will be sent in the next frame.
-	// if event>=len then it will probably never be requested by the anim player.
-
-	if (to >= 0 && vt->values[to].time >= to_time) {
-		to--;
-	}
-
-	if (to < 0) {
-		return; // not bother
-	}
-
-	int from = vt->find_value(from_time);
-
-	// position in the right first event.+
-	if (from < 0 || vt->values[from].time < from_time) {
-		from++;
-	}
-
-	int max = vt->values.size();
-
-	for (int i = from; i <= to; i++) {
-		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-		p_indices->push_back(i);
-	}
-}
-
 void Animation::value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	BaseTrack *t = tracks[p_track];
@@ -2049,8 +2012,8 @@ void Animation::value_track_get_key_indices(int p_track, double p_time, double p
 
 			if (from_time > to_time) {
 				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, from_time, length, p_indices);
-				_value_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
+				vt->find_value_in_interval(from_time, length, p_indices);
+				vt->find_value_in_interval(0, to_time, p_indices);
 				return;
 			}
 		} break;
@@ -2060,20 +2023,19 @@ void Animation::value_track_get_key_indices(int p_track, double p_time, double p
 
 			if (p_pingponged == -1) {
 				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, 0, from_time, p_indices);
-				_value_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
+				vt->find_value_in_interval(0, from_time, p_indices);
+				vt->find_value_in_interval(0, to_time, p_indices);
 				return;
 			}
 			if (p_pingponged == 1) {
 				// handle loop by splitting
-				_value_track_get_key_indices_in_range(vt, from_time, length, p_indices);
-				_value_track_get_key_indices_in_range(vt, to_time, length, p_indices);
+				vt->find_value_in_interval(from_time, length, p_indices);
+				vt->find_value_in_interval(to_time, length, p_indices);
 				return;
 			}
 		} break;
 	}
-
-	_value_track_get_key_indices_in_range(vt, from_time, to_time, p_indices);
+	vt->find_value_in_interval(from_time, to_time, p_indices);
 }
 
 void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
@@ -2094,40 +2056,6 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	return vt->update_mode;
-}
-
-template <class T>
-void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
-		to_time = length + CMP_EPSILON; //include a little more if at the end
-	}
-
-	int to = _find(p_array, to_time);
-
-	// can't really send the events == time, will be sent in the next frame.
-	// if event>=len then it will probably never be requested by the anim player.
-
-	if (to >= 0 && p_array[to].time >= to_time) {
-		to--;
-	}
-
-	if (to < 0) {
-		return; // not bother
-	}
-
-	int from = _find(p_array, from_time);
-
-	// position in the right first event.+
-	if (from < 0 || p_array[from].time < from_time) {
-		from++;
-	}
-
-	int max = p_array.size();
-
-	for (int i = from; i <= to; i++) {
-		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-		p_indices->push_back(i);
-	}
 }
 
 void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
@@ -2220,39 +2148,6 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 	}
 }
 
-void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const {
-	if (from_time != length && to_time == length) {
-		to_time = length + CMP_EPSILON; //include a little more if at the end
-	}
-
-	int to = mt->find_value(to_time);
-
-	// can't really send the events == time, will be sent in the next frame.
-	// if event>=len then it will probably never be requested by the anim player.
-
-	if (to >= 0 && mt->values[to].time >= to_time) {
-		to--;
-	}
-
-	if (to < 0) {
-		return; // not bother
-	}
-
-	int from = mt->find_value(from_time);
-
-	// position in the right first event.+
-	if (from < 0 || mt->values[from].time < from_time) {
-		from++;
-	}
-
-	int max = mt->values.size();
-
-	for (int i = from; i <= to; i++) {
-		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
-		p_indices->push_back(i);
-	}
-}
-
 void Animation::method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	BaseTrack *t = tracks[p_track];
@@ -2293,8 +2188,8 @@ void Animation::method_track_get_key_indices(int p_track, double p_time, double 
 
 			if (from_time > to_time) {
 				// handle loop by splitting
-				_method_track_get_key_indices_in_range(mt, from_time, length, p_indices);
-				_method_track_get_key_indices_in_range(mt, 0, to_time, p_indices);
+				mt->find_value_in_interval(from_time, length, p_indices);
+				mt->find_value_in_interval(0, to_time, p_indices);
 				return;
 			}
 		} break;
@@ -2307,13 +2202,13 @@ void Animation::method_track_get_key_indices(int p_track, double p_time, double 
 			}
 
 			if (p_pingponged == -1) {
-				_method_track_get_key_indices_in_range(mt, 0, from_time, p_indices);
-				_method_track_get_key_indices_in_range(mt, 0, to_time, p_indices);
+				mt->find_value_in_interval(0, from_time, p_indices);
+				mt->find_value_in_interval(0, to_time, p_indices);
 				return;
 			}
 			if (p_pingponged == 1) {
-				_method_track_get_key_indices_in_range(mt, from_time, length, p_indices);
-				_method_track_get_key_indices_in_range(mt, to_time, length, p_indices);
+				mt->find_value_in_interval(from_time, length, p_indices);
+				mt->find_value_in_interval(to_time, length, p_indices);
 				return;
 			}
 		} break;
@@ -2321,7 +2216,7 @@ void Animation::method_track_get_key_indices(int p_track, double p_time, double 
 			break;
 	}
 
-	_method_track_get_key_indices_in_range(mt, from_time, to_time, p_indices);
+	mt->find_value_in_interval(from_time, to_time, p_indices);
 }
 
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
