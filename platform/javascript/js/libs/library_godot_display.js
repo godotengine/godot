@@ -73,7 +73,7 @@ const GodotDisplayVK = {
 			GodotDisplayVK.textarea = create('textarea');
 			GodotDisplayVK.updateSize();
 		},
-		show: function (text, multiline, start, end) {
+		show: function (text, type, start, end) {
 			if (!GodotDisplayVK.textinput || !GodotDisplayVK.textarea) {
 				return;
 			}
@@ -81,7 +81,46 @@ const GodotDisplayVK = {
 				GodotDisplayVK.hide();
 			}
 			GodotDisplayVK.updateSize();
-			const elem = multiline ? GodotDisplayVK.textarea : GodotDisplayVK.textinput;
+
+			let elem = GodotDisplayVK.textinput;
+			switch (type) {
+			case 0: // KEYBOARD_TYPE_DEFAULT
+				elem.type = 'text';
+				elem.inputmode = '';
+				break;
+			case 1: // KEYBOARD_TYPE_MULTILINE
+				elem = GodotDisplayVK.textarea;
+				break;
+			case 2: // KEYBOARD_TYPE_NUMBER
+				elem.type = 'text';
+				elem.inputmode = 'numeric';
+				break;
+			case 3: // KEYBOARD_TYPE_NUMBER_DECIMAL
+				elem.type = 'text';
+				elem.inputmode = 'decimal';
+				break;
+			case 4: // KEYBOARD_TYPE_PHONE
+				elem.type = 'tel';
+				elem.inputmode = '';
+				break;
+			case 5: // KEYBOARD_TYPE_EMAIL_ADDRESS
+				elem.type = 'email';
+				elem.inputmode = '';
+				break;
+			case 6: // KEYBOARD_TYPE_PASSWORD
+				elem.type = 'password';
+				elem.inputmode = '';
+				break;
+			case 7: // KEYBOARD_TYPE_URL
+				elem.type = 'url';
+				elem.inputmode = '';
+				break;
+			default:
+				elem.type = 'text';
+				elem.inputmode = '';
+				break;
+			}
+
 			elem.readonly = false;
 			elem.disabled = false;
 			elem.value = text;
@@ -694,11 +733,11 @@ const GodotDisplay = {
 	 * Virtual Keyboard
 	 */
 	godot_js_display_vk_show__sig: 'viiii',
-	godot_js_display_vk_show: function (p_text, p_multiline, p_start, p_end) {
+	godot_js_display_vk_show: function (p_text, p_type, p_start, p_end) {
 		const text = GodotRuntime.parseString(p_text);
 		const start = p_start > 0 ? p_start : 0;
 		const end = p_end > 0 ? p_end : start;
-		GodotDisplayVK.show(text, p_multiline, start, end);
+		GodotDisplayVK.show(text, p_type, start, end);
 	},
 
 	godot_js_display_vk_hide__sig: 'v',
