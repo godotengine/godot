@@ -68,7 +68,7 @@ namespace Godot
         /// </value>
         public int this[int index]
         {
-            get
+            readonly get
             {
                 switch (index)
                 {
@@ -109,7 +109,7 @@ namespace Godot
         /// <summary>
         /// Helper method for deconstruction into a tuple.
         /// </summary>
-        public void Deconstruct(out int x, out int y, out int z, out int w)
+        public readonly void Deconstruct(out int x, out int y, out int z, out int w)
         {
             x = this.x;
             y = this.y;
@@ -121,7 +121,7 @@ namespace Godot
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Abs(int)"/> called on each component.</returns>
-        public Vector4i Abs()
+        public readonly Vector4i Abs()
         {
             return new Vector4i(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z), Mathf.Abs(w));
         }
@@ -134,7 +134,7 @@ namespace Godot
         /// <param name="min">The vector with minimum allowed values.</param>
         /// <param name="max">The vector with maximum allowed values.</param>
         /// <returns>The vector with all components clamped.</returns>
-        public Vector4i Clamp(Vector4i min, Vector4i max)
+        public readonly Vector4i Clamp(Vector4i min, Vector4i max)
         {
             return new Vector4i
             (
@@ -150,7 +150,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="LengthSquared"/>
         /// <returns>The length of this vector.</returns>
-        public real_t Length()
+        public readonly real_t Length()
         {
             int x2 = x * x;
             int y2 = y * y;
@@ -166,7 +166,7 @@ namespace Godot
         /// you need to compare vectors or need the squared length for some formula.
         /// </summary>
         /// <returns>The squared length of this vector.</returns>
-        public int LengthSquared()
+        public readonly int LengthSquared()
         {
             int x2 = x * x;
             int y2 = y * y;
@@ -181,7 +181,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
         /// <returns>The index of the highest axis.</returns>
-        public Axis MaxAxisIndex()
+        public readonly Axis MaxAxisIndex()
         {
             int max_index = 0;
             int max_value = x;
@@ -201,7 +201,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.W"/>.
         /// </summary>
         /// <returns>The index of the lowest axis.</returns>
-        public Axis MinAxisIndex()
+        public readonly Axis MinAxisIndex()
         {
             int min_index = 0;
             int min_value = x;
@@ -222,7 +222,7 @@ namespace Godot
         /// by calling <see cref="Mathf.Sign(int)"/> on each component.
         /// </summary>
         /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
-        public Vector4i Sign()
+        public readonly Vector4i Sign()
         {
             return new Vector4i(Mathf.Sign(x), Mathf.Sign(y), Mathf.Sign(z), Mathf.Sign(w));
         }
@@ -627,7 +627,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Vector4i other && Equals(other);
         }
@@ -637,7 +637,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>Whether or not the vectors are equal.</returns>
-        public bool Equals(Vector4i other)
+        public readonly bool Equals(Vector4i other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
         }
@@ -646,7 +646,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Vector4i"/>.
         /// </summary>
         /// <returns>A hash code for this vector.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
         }
@@ -655,7 +655,7 @@ namespace Godot
         /// Converts this <see cref="Vector4i"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"({x}, {y}, {z}, {w})";
         }
@@ -664,7 +664,7 @@ namespace Godot
         /// Converts this <see cref="Vector4i"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)}), {w.ToString(format)})";
         }

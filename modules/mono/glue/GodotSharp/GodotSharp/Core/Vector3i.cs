@@ -58,7 +58,7 @@ namespace Godot
         /// </value>
         public int this[int index]
         {
-            get
+            readonly get
             {
                 switch (index)
                 {
@@ -94,7 +94,7 @@ namespace Godot
         /// <summary>
         /// Helper method for deconstruction into a tuple.
         /// </summary>
-        public void Deconstruct(out int x, out int y, out int z)
+        public readonly void Deconstruct(out int x, out int y, out int z)
         {
             x = this.x;
             y = this.y;
@@ -105,7 +105,7 @@ namespace Godot
         /// Returns a new vector with all components in absolute values (i.e. positive).
         /// </summary>
         /// <returns>A vector with <see cref="Mathf.Abs(int)"/> called on each component.</returns>
-        public Vector3i Abs()
+        public readonly Vector3i Abs()
         {
             return new Vector3i(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
         }
@@ -118,7 +118,7 @@ namespace Godot
         /// <param name="min">The vector with minimum allowed values.</param>
         /// <param name="max">The vector with maximum allowed values.</param>
         /// <returns>The vector with all components clamped.</returns>
-        public Vector3i Clamp(Vector3i min, Vector3i max)
+        public readonly Vector3i Clamp(Vector3i min, Vector3i max)
         {
             return new Vector3i
             (
@@ -135,7 +135,7 @@ namespace Godot
         /// </summary>
         /// <param name="to">The other vector to use.</param>
         /// <returns>The squared distance between the two vectors.</returns>
-        public int DistanceSquaredTo(Vector3i to)
+        public readonly int DistanceSquaredTo(Vector3i to)
         {
             return (to - this).LengthSquared();
         }
@@ -146,7 +146,7 @@ namespace Godot
         /// <seealso cref="DistanceSquaredTo(Vector3i)"/>
         /// <param name="to">The other vector to use.</param>
         /// <returns>The distance between the two vectors.</returns>
-        public real_t DistanceTo(Vector3i to)
+        public readonly real_t DistanceTo(Vector3i to)
         {
             return (to - this).Length();
         }
@@ -156,7 +156,7 @@ namespace Godot
         /// </summary>
         /// <param name="with">The other vector to use.</param>
         /// <returns>The dot product of the two vectors.</returns>
-        public int Dot(Vector3i with)
+        public readonly int Dot(Vector3i with)
         {
             return x * with.x + y * with.y + z * with.z;
         }
@@ -166,7 +166,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="LengthSquared"/>
         /// <returns>The length of this vector.</returns>
-        public real_t Length()
+        public readonly real_t Length()
         {
             int x2 = x * x;
             int y2 = y * y;
@@ -181,7 +181,7 @@ namespace Godot
         /// you need to compare vectors or need the squared length for some formula.
         /// </summary>
         /// <returns>The squared length of this vector.</returns>
-        public int LengthSquared()
+        public readonly int LengthSquared()
         {
             int x2 = x * x;
             int y2 = y * y;
@@ -195,7 +195,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
         /// <returns>The index of the highest axis.</returns>
-        public Axis MaxAxisIndex()
+        public readonly Axis MaxAxisIndex()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
@@ -205,7 +205,7 @@ namespace Godot
         /// If all components are equal, this method returns <see cref="Axis.Z"/>.
         /// </summary>
         /// <returns>The index of the lowest axis.</returns>
-        public Axis MinAxisIndex()
+        public readonly Axis MinAxisIndex()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }
@@ -218,7 +218,7 @@ namespace Godot
         /// <returns>
         /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="mod"/>.
         /// </returns>
-        public Vector3i PosMod(int mod)
+        public readonly Vector3i PosMod(int mod)
         {
             Vector3i v = this;
             v.x = Mathf.PosMod(v.x, mod);
@@ -235,7 +235,7 @@ namespace Godot
         /// <returns>
         /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="modv"/>'s components.
         /// </returns>
-        public Vector3i PosMod(Vector3i modv)
+        public readonly Vector3i PosMod(Vector3i modv)
         {
             Vector3i v = this;
             v.x = Mathf.PosMod(v.x, modv.x);
@@ -250,7 +250,7 @@ namespace Godot
         /// by calling <see cref="Mathf.Sign(int)"/> on each component.
         /// </summary>
         /// <returns>A vector with all components as either <c>1</c>, <c>-1</c>, or <c>0</c>.</returns>
-        public Vector3i Sign()
+        public readonly Vector3i Sign()
         {
             Vector3i v = this;
             v.x = Mathf.Sign(v.x);
@@ -674,7 +674,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Vector3i other && Equals(other);
         }
@@ -684,7 +684,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>Whether or not the vectors are equal.</returns>
-        public bool Equals(Vector3i other)
+        public readonly bool Equals(Vector3i other)
         {
             return x == other.x && y == other.y && z == other.z;
         }
@@ -693,7 +693,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Vector3i"/>.
         /// </summary>
         /// <returns>A hash code for this vector.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode();
         }
@@ -702,7 +702,7 @@ namespace Godot
         /// Converts this <see cref="Vector3i"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"({x}, {y}, {z})";
         }
@@ -711,7 +711,7 @@ namespace Godot
         /// Converts this <see cref="Vector3i"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"({x.ToString(format)}, {y.ToString(format)}, {z.ToString(format)})";
         }

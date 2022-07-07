@@ -13,7 +13,7 @@ namespace GodotTools.IdeMessaging.Utils
             return waitAsyncTask.ContinueWith<IDisposable>(t => wrapper, cancellationToken).ConfigureAwait(false);
         }
 
-        private struct SemaphoreSlimWaitReleaseWrapper : IDisposable
+        private readonly struct SemaphoreSlimWaitReleaseWrapper : IDisposable
         {
             private readonly SemaphoreSlim semaphoreSlim;
 

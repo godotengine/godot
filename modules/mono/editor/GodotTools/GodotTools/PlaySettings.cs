@@ -1,6 +1,6 @@
 namespace GodotTools
 {
-    public struct PlaySettings
+    public readonly struct PlaySettings
     {
         public bool HasDebugger { get; }
         public string DebuggerHost { get; }

@@ -22,7 +22,7 @@ namespace GodotTools.Export
         public bool FullAot;
 
         private bool _useInterpreter;
-        public bool UseInterpreter { get => _useInterpreter && !LLVMOnly; set => _useInterpreter = value; }
+        public bool UseInterpreter { readonly get => _useInterpreter && !LLVMOnly; set => _useInterpreter = value; }
 
         public string[] ExtraAotOptions;
         public string[] ExtraOptimizerOptions;
