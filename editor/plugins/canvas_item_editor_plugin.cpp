@@ -3697,7 +3697,7 @@ void CanvasItemEditor::_draw_transform_message() {
 		return;
 	}
 
-	Ref<FontFile> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Point2 msgpos = Point2(RULER_WIDTH + 5 * EDSCALE, viewport->get_size().y - 20 * EDSCALE);
 	viewport->draw_string(font, msgpos + Point2(1, 1), transform_message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));

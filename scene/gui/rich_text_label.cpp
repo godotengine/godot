@@ -2081,7 +2081,7 @@ Ref<Font> RichTextLabel::_find_font(Item *p_item) {
 		fontitem = fontitem->parent;
 	}
 
-	return Ref<FontFile>();
+	return Ref<Font>();
 }
 
 int RichTextLabel::_find_font_size(Item *p_item) {
@@ -4002,7 +4002,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "name" || subtag_a[0] == "n") {
 						String fnt = subtag_a[1];
-						Ref<Font> font_data = ResourceLoader::load(fnt, "FontFile");
+						Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
 						if (font_data.is_valid()) {
 							fc->set_base_font(font_data);
 						}
