@@ -286,7 +286,7 @@ namespace Godot
             return proj * cm;
         }
 
-        public real_t Determinant()
+        public readonly real_t Determinant()
         {
             return x.w * y.z * z.y * w.x - x.z * y.w * z.y * w.x -
                    x.w * y.y * z.z * w.x + x.y * y.w * z.z * w.x +
@@ -302,13 +302,13 @@ namespace Godot
                    x.y * y.x * z.z * w.w + x.x * y.y * z.z * w.w;
         }
 
-        public real_t GetAspect()
+        public readonly real_t GetAspect()
         {
             Vector2 vpHe = GetViewportHalfExtents();
             return vpHe.x / vpHe.y;
         }
 
-        public real_t GetFov()
+        public readonly real_t GetFov()
         {
             Plane rightPlane = new Plane(x.w - x.x, y.w - y.x, z.w - z.x, -w.w + w.x).Normalized();
             if (z.x == 0 && z.y == 0)
@@ -327,7 +327,7 @@ namespace Godot
             return Mathf.RadToDeg(Mathf.Atan(aspect * Mathf.Tan(Mathf.DegToRad(fovx) * (real_t)0.5)) * (real_t)2.0);
         }
 
-        public real_t GetLodMultiplier()
+        public readonly real_t GetLodMultiplier()
         {
             if (IsOrthogonal())
             {
@@ -341,14 +341,14 @@ namespace Godot
             }
         }
 
-        public int GetPixelsPerMeter(int forPixelWidth)
+        public readonly int GetPixelsPerMeter(int forPixelWidth)
         {
             Vector3 result = this * new Vector3(1, 0, -1);
 
             return (int)((result.x * (real_t)0.5 + (real_t)0.5) * forPixelWidth);
         }
 
-        public Plane GetProjectionPlane(Planes plane)
+        public readonly Plane GetProjectionPlane(Planes plane)
         {
             Plane newPlane = plane switch
             {
@@ -364,36 +364,36 @@ namespace Godot
             return newPlane.Normalized();
         }
 
-        public Vector2 GetFarPlaneHalfExtents()
+        public readonly Vector2 GetFarPlaneHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Far).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
             return new Vector2(res.Value.x, res.Value.y);
         }
 
-        public Vector2 GetViewportHalfExtents()
+        public readonly Vector2 GetViewportHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Near).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
             return new Vector2(res.Value.x, res.Value.y);
         }
 
-        public real_t GetZFar()
+        public readonly real_t GetZFar()
         {
             return GetProjectionPlane(Planes.Far).D;
         }
 
-        public real_t GetZNear()
+        public readonly real_t GetZNear()
         {
             return -GetProjectionPlane(Planes.Near).D;
         }
 
-        public Projection FlippedY()
+        public readonly Projection FlippedY()
         {
             Projection proj = this;
             proj.y = -proj.y;
             return proj;
         }
 
-        public Projection PerspectiveZNearAdjusted(real_t newZNear)
+        public readonly Projection PerspectiveZNearAdjusted(real_t newZNear)
         {
             Projection proj = this;
             real_t zFar = GetZFar();
@@ -404,7 +404,7 @@ namespace Godot
             return proj;
         }
 
-        public Projection JitterOffseted(Vector2 offset)
+        public readonly Projection JitterOffseted(Vector2 offset)
         {
             Projection proj = this;
             proj.w.x += offset.x;
@@ -412,7 +412,7 @@ namespace Godot
             return proj;
         }
 
-        public Projection Inverse()
+        public readonly Projection Inverse()
         {
             Projection proj = this;
             int i, j, k;
@@ -535,7 +535,7 @@ namespace Godot
             return proj;
         }
 
-        public bool IsOrthogonal()
+        public readonly bool IsOrthogonal()
         {
             return w.w == (real_t)1.0;
         }
@@ -654,7 +654,7 @@ namespace Godot
         /// </exception>
         public Vector4 this[int column]
         {
-            get
+            readonly get
             {
                 switch (column)
                 {
@@ -702,7 +702,7 @@ namespace Godot
         /// </exception>
         public real_t this[int column, int row]
         {
-            get
+            readonly get
             {
                 switch (column)
                 {
@@ -772,7 +772,7 @@ namespace Godot
         /// Serves as the hash function for <see cref="Projection"/>.
         /// </summary>
         /// <returns>A hash code for this projection.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
         }
@@ -781,7 +781,7 @@ namespace Godot
         /// Converts this <see cref="Projection"/> to a string.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"{x.x}, {x.y}, {x.z}, {x.w}\n{y.x}, {y.y}, {y.z}, {y.w}\n{z.x}, {z.y}, {z.z}, {z.w}\n{w.x}, {w.y}, {w.z}, {w.w}\n";
         }
@@ -790,7 +790,7 @@ namespace Godot
         /// Converts this <see cref="Projection"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
             return $"{x.x.ToString(format)}, {x.y.ToString(format)}, {x.z.ToString(format)}, {x.w.ToString(format)}\n" +
                 $"{y.x.ToString(format)}, {y.y.ToString(format)}, {y.z.ToString(format)}, {y.w.ToString(format)}\n" +
@@ -804,7 +804,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Projection other && Equals(other);
         }
@@ -814,7 +814,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other projection.</param>
         /// <returns>Whether or not the projections are exactly equal.</returns>
-        public bool Equals(Projection other)
+        public readonly bool Equals(Projection other)
         {
             return x == other.x && y == other.y && z == other.z && w == other.w;
         }
