@@ -160,6 +160,7 @@ public:
 
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 
 	bool is_layered_allowed() const { return _allow_layered; }
