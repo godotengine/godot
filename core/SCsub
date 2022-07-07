@@ -129,9 +129,18 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
-    if env["platform"] in ["android", "iphone", "linuxbsd", "osx"]:
-        # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
+
+    # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h,
+    # i.e. x86_64 platforms with GNUC compatible assembly.
+    # We apparently can't rely on those macros in the .S file itself (see GH-62810).
+    # Could theoretically compile for iOS and Android x86_64 but ¯\_(ツ)_/¯
+    if (env["platform"] == "linuxbsd" and env["bits"] == "64") or (
+        env["platform"] == "osx" and env["arch"] == "x86_64"
+    ):
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
+    else:
+        env_thirdparty.Append(CPPDEFINES=["ZSTD_DISABLE_ASM"])
+
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
