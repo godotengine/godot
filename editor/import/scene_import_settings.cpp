@@ -542,12 +542,6 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
-	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path); // Use the scene singleton here because we want to see the full thing.
-	if (scene == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
-		return;
-	}
-
 	// Visibility
 	data_mode->set_tab_hidden(1, p_for_animation);
 	data_mode->set_tab_hidden(2, p_for_animation);
@@ -591,6 +585,12 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 				}
 			}
 		}
+	}
+
+	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path, defaults); // Use the scene singleton here because we want to see the full thing.
+	if (scene == nullptr) {
+		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
+		return;
 	}
 
 	first_aabb = true;
