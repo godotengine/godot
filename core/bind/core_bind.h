@@ -274,8 +274,23 @@ public:
 	void dump_memory_to_file(const String &p_file);
 	void dump_resources_to_file(const String &p_file);
 
+	enum VirtualKeyboardType {
+		KEYBOARD_TYPE_DEFAULT,
+		KEYBOARD_TYPE_MULTILINE,
+		KEYBOARD_TYPE_NUMBER,
+		KEYBOARD_TYPE_NUMBER_DECIMAL,
+		KEYBOARD_TYPE_PHONE,
+		KEYBOARD_TYPE_EMAIL_ADDRESS,
+		KEYBOARD_TYPE_PASSWORD,
+		KEYBOARD_TYPE_URL
+	};
+
+	void _show_virtual_keyboard(const String &p_existing_text = "", bool p_multiline = false) {
+		show_virtual_keyboard(p_existing_text, p_multiline ? KEYBOARD_TYPE_MULTILINE : KEYBOARD_TYPE_DEFAULT);
+	}
+
 	bool has_virtual_keyboard() const;
-	void show_virtual_keyboard(const String &p_existing_text = "", bool p_multiline = false);
+	void show_virtual_keyboard(const String &p_existing_text = "", VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT);
 	void hide_virtual_keyboard();
 	int get_virtual_keyboard_height();
 
@@ -410,6 +425,7 @@ VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
+VARIANT_ENUM_CAST(_OS::VirtualKeyboardType);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 VARIANT_ENUM_CAST(_OS::HandleType);

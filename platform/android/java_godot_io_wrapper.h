@@ -80,7 +80,7 @@ public:
 	float get_screen_refresh_rate(float p_fallback);
 	String get_unique_id();
 	bool has_vk();
-	void show_vk(const String &p_existing, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end);
+	void show_vk(const String &p_existing, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end);
 	void hide_vk();
 	int get_vk_height();
 	void set_vk_height(int p_height);
