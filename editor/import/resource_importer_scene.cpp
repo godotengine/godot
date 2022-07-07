@@ -144,11 +144,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	ERR_FAIL_COND_V_MSG(current_options == nullptr && current_options_dict == nullptr, Variant(), "get_option_value called from a function where option values are not available.");
 	ERR_FAIL_COND_V_MSG(current_options && !current_options->has(p_name), Variant(), "get_option_value called with unexisting option argument: " + String(p_name));
 	ERR_FAIL_COND_V_MSG(current_options_dict && !current_options_dict->has(p_name), Variant(), "get_option_value called with unexisting option argument: " + String(p_name));
-	if (current_options) {
-		(*current_options)[p_name];
+	if (current_options && current_options->has(p_name)) {
+		return (*current_options)[p_name];
 	}
-	if (current_options_dict) {
-		(*current_options_dict)[p_name];
+	if (current_options_dict && current_options_dict->has(p_name)) {
+		return (*current_options_dict)[p_name];
 	}
 	return Variant();
 }
