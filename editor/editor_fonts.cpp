@@ -164,11 +164,6 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	default_font_bold_msdf->set_fallbacks(fallbacks_bold);
 
 	Ref<FontFile> default_font_mono = load_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_hinting, font_antialiased, true, font_subpixel_positioning);
-	{
-		Dictionary opentype_features_mono;
-		opentype_features_mono["calt"] = 0;
-		default_font_mono->set_opentype_feature_overrides(opentype_features_mono); // Disable contextual alternates (coding ligatures).
-	}
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
@@ -276,23 +271,45 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
 		mono_fc->set_base_font(default_font_mono);
 	}
-
-	String code_font_custom_variations = EditorSettings::get_singleton()->get("interface/editor/code_font_custom_variations");
-	Dictionary variations_mono;
-	if (!code_font_custom_variations.is_empty()) {
-		Vector<String> variation_tags = code_font_custom_variations.split(",");
-		for (int i = 0; i < variation_tags.size(); i++) {
-			Vector<String> subtag_a = variation_tags[i].split("=");
-			if (subtag_a.size() == 2) {
-				variations_mono[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_float();
-			} else if (subtag_a.size() == 1) {
-				variations_mono[TS->name_to_tag(subtag_a[0])] = 1;
-			}
-		}
-		mono_fc->set_variation_opentype(variations_mono);
-	}
 	mono_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	mono_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+
+	Ref<FontVariation> mono_other_fc = mono_fc->duplicate();
+
+	// Enable contextual alternates (coding ligatures) and custom features for the source editor font.
+	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	switch (ot_mode) {
+		case 1: { // Disable ligatures.
+			Dictionary ftrs;
+			ftrs[TS->name_to_tag("calt")] = 0;
+			mono_fc->set_opentype_features(ftrs);
+		} break;
+		case 2: { // Custom.
+			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+			Dictionary ftrs;
+			for (int i = 0; i < subtag.size(); i++) {
+				Vector<String> subtag_a = subtag[i].split("=");
+				if (subtag_a.size() == 2) {
+					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
+				} else if (subtag_a.size() == 1) {
+					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+				}
+			}
+			mono_fc->set_opentype_features(ftrs);
+		} break;
+		default: { // Default.
+			Dictionary ftrs;
+			ftrs[TS->name_to_tag("calt")] = 1;
+			mono_fc->set_opentype_features(ftrs);
+		} break;
+	}
+
+	{
+		// Disable contextual alternates (coding ligatures).
+		Dictionary ftrs;
+		ftrs[TS->name_to_tag("calt")] = 0;
+		mono_other_fc->set_opentype_features(ftrs);
+	}
 
 	Ref<FontVariation> italic_fc = default_fc->duplicate();
 	italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
@@ -359,11 +376,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("source", "EditorFonts", mono_fc);
 
 	p_theme->set_font_size("expression_size", "EditorFonts", (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
-	p_theme->set_font("expression", "EditorFonts", mono_fc);
+	p_theme->set_font("expression", "EditorFonts", mono_other_fc);
 
 	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
-	p_theme->set_font("output_source", "EditorFonts", mono_fc);
+	p_theme->set_font("output_source", "EditorFonts", mono_other_fc);
 
 	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
-	p_theme->set_font("status_source", "EditorFonts", mono_fc);
+	p_theme->set_font("status_source", "EditorFonts", mono_other_fc);
 }

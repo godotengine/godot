@@ -1638,37 +1638,34 @@ void CodeTextEditor::_apply_settings_change() {
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
 	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
 
-	Ref<Font> fb = text_editor->get_theme_font(SNAME("font"));
-	Ref<FontVariation> fc = fb;
-	if (fc.is_null()) {
-		fc.instantiate();
-		fc->set_base_font(fb);
-	}
-
-	switch (ot_mode) {
-		case 1: { // Disable ligatures.
-			fc->set_opentype_features(Dictionary());
-		} break;
-		case 2: { // Custom.
-			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
-			Dictionary ftrs;
-			for (int i = 0; i < subtag.size(); i++) {
-				Vector<String> subtag_a = subtag[i].split("=");
-				if (subtag_a.size() == 2) {
-					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
-				} else if (subtag_a.size() == 1) {
-					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
+	if (fc.is_valid()) {
+		switch (ot_mode) {
+			case 1: { // Disable ligatures.
+				Dictionary ftrs;
+				ftrs[TS->name_to_tag("calt")] = 0;
+				fc->set_opentype_features(ftrs);
+			} break;
+			case 2: { // Custom.
+				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+				Dictionary ftrs;
+				for (int i = 0; i < subtag.size(); i++) {
+					Vector<String> subtag_a = subtag[i].split("=");
+					if (subtag_a.size() == 2) {
+						ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
+					} else if (subtag_a.size() == 1) {
+						ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+					}
 				}
-			}
-			fc->set_opentype_features(ftrs);
-		} break;
-		default: { // Default.
-			Dictionary ftrs;
-			ftrs[TS->name_to_tag("calt")] = 1;
-			fc->set_opentype_features(ftrs);
-		} break;
+				fc->set_opentype_features(ftrs);
+			} break;
+			default: { // Default.
+				Dictionary ftrs;
+				ftrs[TS->name_to_tag("calt")] = 1;
+				fc->set_opentype_features(ftrs);
+			} break;
+		}
 	}
-	text_editor->add_theme_font_override("font", fc);
 
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
@@ -1870,34 +1867,33 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
-	Ref<Font> fb = text_editor->get_theme_font(SNAME("font"));
-	Ref<FontVariation> fc = fb;
-	if (fc.is_null()) {
-		fc.instantiate();
-		fc->set_base_font(fb);
-	}
-	switch (ot_mode) {
-		case 1: { // Disable ligatures.
-			fc->set_opentype_features(Dictionary());
-		} break;
-		case 2: { // Custom.
-			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
-			Dictionary ftrs;
-			for (int i = 0; i < subtag.size(); i++) {
-				Vector<String> subtag_a = subtag[i].split("=");
-				if (subtag_a.size() == 2) {
-					ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
-				} else if (subtag_a.size() == 1) {
-					ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
+	if (fc.is_valid()) {
+		switch (ot_mode) {
+			case 1: { // Disable ligatures.
+				Dictionary ftrs;
+				ftrs[TS->name_to_tag("calt")] = 0;
+				fc->set_opentype_features(ftrs);
+			} break;
+			case 2: { // Custom.
+				Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+				Dictionary ftrs;
+				for (int i = 0; i < subtag.size(); i++) {
+					Vector<String> subtag_a = subtag[i].split("=");
+					if (subtag_a.size() == 2) {
+						ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
+					} else if (subtag_a.size() == 1) {
+						ftrs[TS->name_to_tag(subtag_a[0])] = 1;
+					}
 				}
-			}
-			fc->set_opentype_features(ftrs);
-		} break;
-		default: { // Default.
-			Dictionary ftrs;
-			ftrs[TS->name_to_tag("calt")] = 1;
-			fc->set_opentype_features(ftrs);
-		} break;
+				fc->set_opentype_features(ftrs);
+			} break;
+			default: { // Default.
+				Dictionary ftrs;
+				ftrs[TS->name_to_tag("calt")] = 1;
+				fc->set_opentype_features(ftrs);
+			} break;
+		}
 	}
 	text_editor->add_theme_font_override("font", fc);
 
