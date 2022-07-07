@@ -621,9 +621,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
+	// Add command line arguments.
 	for (int i = 0; i < argc; i++) {
 		args.push_back(String::utf8(argv[i]));
+	}
+
+	// Add arguments received from macOS LaunchService (URL schemas, file associations).
+	for (const String &arg : platform_args) {
+		args.push_back(arg);
 	}
 
 	List<String>::Element *I = args.front();
