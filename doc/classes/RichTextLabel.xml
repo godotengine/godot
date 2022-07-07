@@ -276,18 +276,10 @@
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 			</description>
 		</method>
-		<method name="push_font_features">
-			<return type="void" />
-			<argument index="0" name="opentype_features" type="Dictionary" />
-			<description>
-				Adds a [code][ot_feature][/code] tag to the tag stack. Overrides default OpenType font feature for its duration.
-			</description>
-		</method>
 		<method name="push_font_size">
 			<return type="void" />
 			<argument index="0" name="font_size" type="int" />
 			<description>
-				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
 		<method name="push_hint">

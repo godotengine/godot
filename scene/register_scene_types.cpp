@@ -853,8 +853,11 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
-	GDREGISTER_CLASS(FontData);
-	GDREGISTER_CLASS(Font);
+
+	GDREGISTER_ABSTRACT_CLASS(Font);
+	GDREGISTER_CLASS(FontFile);
+	GDREGISTER_CLASS(FontVariation);
+
 	GDREGISTER_CLASS(Curve);
 
 	GDREGISTER_CLASS(SceneReplicationConfig);
@@ -921,9 +924,9 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
 	ClassDB::add_compatibility_class("BakedLightmap", "LightmapGI");
 	ClassDB::add_compatibility_class("BakedLightmapData", "LightmapGIData");
-	ClassDB::add_compatibility_class("BitmapFont", "Font");
-	ClassDB::add_compatibility_class("DynamicFont", "Font");
-	ClassDB::add_compatibility_class("DynamicFontData", "FontData");
+	ClassDB::add_compatibility_class("BitmapFont", "FontFile");
+	ClassDB::add_compatibility_class("DynamicFont", "FontFile");
+	ClassDB::add_compatibility_class("DynamicFontData", "FontFile");
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
@@ -1113,7 +1116,7 @@ void initialize_theme() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	bool font_antialiased = (bool)GLOBAL_DEF_RST("gui/theme/default_font_antialiased", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiased", PropertyInfo(Variant::BOOL, "gui/theme/default_font_antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));

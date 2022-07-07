@@ -45,7 +45,30 @@
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
-class DynamicFontImportSettingsData;
+class DynamicFontImportSettings;
+
+class DynamicFontImportSettingsData : public RefCounted {
+	GDCLASS(DynamicFontImportSettingsData, RefCounted)
+	friend class DynamicFontImportSettings;
+
+	HashMap<StringName, Variant> settings;
+	HashMap<StringName, Variant> defaults;
+	List<ResourceImporter::ImportOption> options;
+	DynamicFontImportSettings *owner = nullptr;
+
+	HashSet<char32_t> selected_chars;
+	HashSet<int32_t> selected_glyphs;
+
+	Ref<FontFile> fd;
+
+public:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	Ref<FontFile> get_font() const;
+};
+
 class EditorFileDialog;
 class EditorInspector;
 class EditorLocaleDialog;
@@ -67,21 +90,19 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
 
-	EditorLocaleDialog *locale_select = nullptr;
-	Vector<String> script_codes;
-
 	// Root layout
 	Label *label_warn = nullptr;
 	TabContainer *main_pages = nullptr;
 
 	// Page 1 layout: Rendering Options
 	Label *page1_description = nullptr;
+	Label *font_name_label = nullptr;
 	Label *font_preview_label = nullptr;
 	EditorInspector *inspector_general = nullptr;
 
 	void _main_prop_changed(const String &p_edited_property);
 
-	// Page 2 layout: Configurations
+	// Page 2 layout: Preload Configurations
 	Label *page2_description = nullptr;
 	Label *label_vars = nullptr;
 	Button *add_var = nullptr;
@@ -95,19 +116,23 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	void _variation_changed(const String &p_edited_property);
 	void _variations_validate();
 
-	// Page 3 layout: Text to select glyphs
-	Label *page3_description = nullptr;
+	TabContainer *preload_pages = nullptr;
+
+	// Page 2.1 layout: Text to select glyphs
+	Label *page2_1_description = nullptr;
 	Label *label_glyphs = nullptr;
 	TextEdit *text_edit = nullptr;
-	LineEdit *ftr_edit = nullptr;
-	LineEdit *lang_edit = nullptr;
+	EditorInspector *inspector_text = nullptr;
+
+	List<ResourceImporter::ImportOption> options_text;
+	Ref<DynamicFontImportSettingsData> text_settings_data;
 
 	void _change_text_opts();
 	void _glyph_text_selected();
 	void _glyph_clear();
 
-	// Page 4 layout: Character map
-	Label *page4_description = nullptr;
+	// Page 2.2 layout: Character map
+	Label *page2_2_description = nullptr;
 	Tree *glyph_table = nullptr;
 	Tree *glyph_tree = nullptr;
 	TreeItem *glyph_root = nullptr;
@@ -119,51 +144,12 @@ class DynamicFontImportSettings : public ConfirmationDialog {
 	bool _char_update(int32_t p_char);
 	void _range_update(int32_t p_start, int32_t p_end);
 
-	// Page 5 layout: Metadata override
-	Label *page5_description = nullptr;
-	Button *add_lang = nullptr;
-	Button *add_script = nullptr;
-	Button *add_ot = nullptr;
-
-	PopupMenu *menu_scripts = nullptr;
-	PopupMenu *menu_ot = nullptr;
-	PopupMenu *menu_ot_ss = nullptr;
-	PopupMenu *menu_ot_cv = nullptr;
-	PopupMenu *menu_ot_cu = nullptr;
-
-	Tree *lang_list = nullptr;
-	TreeItem *lang_list_root = nullptr;
-	Label *label_langs = nullptr;
-
-	Tree *script_list = nullptr;
-	TreeItem *script_list_root = nullptr;
-	Label *label_script = nullptr;
-
-	Tree *ot_list = nullptr;
-	TreeItem *ot_list_root = nullptr;
-	Label *label_ot = nullptr;
-
-	void _lang_add();
-	void _lang_add_item(const String &p_locale);
-	void _lang_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
-
-	void _script_add();
-	void _script_add_item(int p_option);
-	void _script_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
-
-	void _ot_add();
-	void _ot_add_item(int p_option);
-	void _ot_remove(Object *p_item, int p_column, int p_id, MouseButton p_button);
-
 	// Common
 
 	void _add_glyph_range_item(int32_t p_start, int32_t p_end, const String &p_name);
 
-	Ref<Font> font_preview;
-	Ref<Font> font_main;
-
-	RBSet<char32_t> selected_chars;
-	RBSet<int32_t> selected_glyphs;
+	Ref<FontFile> font_preview;
+	Ref<FontFile> font_main;
 
 	void _re_import();
 

@@ -60,7 +60,6 @@ private:
 	String title;
 	Ref<TextLine> title_buf;
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
@@ -147,10 +146,6 @@ public:
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;

@@ -46,7 +46,7 @@ void CodeEdit::_notification(int p_what) {
 			line_spacing = get_theme_constant(SNAME("line_spacing"));
 
 			set_gutter_width(main_gutter, get_line_height());
-			set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+			set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', font_size).width);
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
 
 			breakpoint_color = get_theme_color(SNAME("breakpoint_color"));
@@ -86,7 +86,7 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const float char_size = font->get_char_size('0', 0, font_size).width;
+				const float char_size = font->get_char_size('0', font_size).width;
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
 					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
@@ -123,7 +123,7 @@ void CodeEdit::_notification(int p_what) {
 				}
 
 				const int scroll_width = code_completion_options_count > code_completion_max_lines ? code_completion_scroll_width : 0;
-				const int code_completion_base_width = font->get_string_size(code_completion_base, font_size).width;
+				const int code_completion_base_width = font->get_string_size(code_completion_base, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 				if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
 					code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
 				} else {
@@ -178,8 +178,8 @@ void CodeEdit::_notification(int p_what) {
 
 					for (int j = 0; j < code_completion_options[l].matches.size(); j++) {
 						Pair<int, int> match = code_completion_options[l].matches[j];
-						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), font_size).width;
-						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), font_size).width;
+						int match_offset = font->get_string_size(code_completion_options[l].display.substr(0, match.first), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+						int match_len = font->get_string_size(code_completion_options[l].display.substr(match.first, match.second), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 
 						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Size2(match_len, row_height)), code_completion_existing_color);
 					}
@@ -208,11 +208,11 @@ void CodeEdit::_notification(int p_what) {
 
 				int max_width = 0;
 				for (int i = 0; i < line_count; i++) {
-					max_width = MAX(max_width, font->get_string_size(code_hint_lines[i], font_size).x);
+					max_width = MAX(max_width, font->get_string_size(code_hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 				}
 				Size2 minsize = sb->get_minimum_size() + Size2(max_width, line_count * font_height + (line_spacing * line_count - 1));
 
-				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), font_size).x;
+				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 				if (code_hint_xpos == -0xFFFF) {
 					code_hint_xpos = get_caret_draw_pos().x - offset;
 				}
@@ -232,8 +232,8 @@ void CodeEdit::_notification(int p_what) {
 					int begin = 0;
 					int end = 0;
 					if (line.contains(String::chr(0xFFFF))) {
-						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), font_size).x;
-						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), font_size).x;
+						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
@@ -2795,7 +2795,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				offset = line_height;
 			}
 
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 			code_completion_options.push_back(option);
 		}
 
@@ -2906,7 +2906,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			code_completion_options.push_back(option);
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 			continue;
 		}
 
@@ -3012,7 +3012,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
 			option.matches.clear();
 
@@ -3029,7 +3029,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, font_size).width + offset);
+			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
 		}
 	}
 
@@ -3085,7 +3085,7 @@ void CodeEdit::_text_changed() {
 	}
 
 	if (font.is_valid()) {
-		set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', 0, font_size).width);
+		set_gutter_width(line_number_gutter, (line_number_digits + 1) * font->get_char_size('0', font_size).width);
 	}
 
 	lc = get_line_count();

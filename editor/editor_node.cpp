@@ -146,7 +146,7 @@
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
-#include "editor/plugins/font_editor_plugin.h"
+#include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -165,7 +165,6 @@
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
-#include "editor/plugins/ot_features_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
@@ -187,7 +186,6 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
-#include "editor/plugins/text_control_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -7125,7 +7123,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
 	add_editor_plugin(memnew(CurveEditorPlugin));
 	add_editor_plugin(memnew(FontEditorPlugin));
-	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin));
 	add_editor_plugin(memnew(TextureEditorPlugin));
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
 	add_editor_plugin(memnew(Texture3DEditorPlugin));
@@ -7140,7 +7137,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
 	add_editor_plugin(memnew(InputEventEditorPlugin));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
-	add_editor_plugin(memnew(TextControlEditorPlugin));
 	add_editor_plugin(memnew(ControlEditorPlugin));
 	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));

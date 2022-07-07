@@ -219,7 +219,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->get_theme_constant(SNAME("close_h_offset"));
 		int close_v_ofs = p_window->get_theme_constant(SNAME("close_v_offset"));
 
-		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size);
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
 		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		int x = (r.size.width - title_text.get_size().x) / 2;

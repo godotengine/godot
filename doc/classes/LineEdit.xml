@@ -37,12 +37,6 @@
 				Erases the [LineEdit]'s [member text].
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="delete_char_at_caret">
 			<return type="void" />
 			<description>
@@ -68,13 +62,6 @@
 			<description>
 				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
@@ -147,14 +134,6 @@
 			<return type="void" />
 			<description>
 				Selects the whole [String].
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 	</methods>

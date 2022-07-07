@@ -322,7 +322,7 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
+				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -1087,7 +1087,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
-			int w = font->get_string_size(label, font_size).width;
+			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
 				w += hs + icon->get_width();
 			}
@@ -3429,6 +3429,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 
 		if (editor_property_map.has(p_path)) {
 			for (EditorProperty *E : editor_property_map[p_path]) {
+				E->set_checked(p_checked);
 				E->update_property();
 				E->update_revert_and_pin_status();
 				E->update_cache();

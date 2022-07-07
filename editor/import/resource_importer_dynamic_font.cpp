@@ -66,7 +66,7 @@ String ResourceImporterDynamicFont::get_save_extension() const {
 }
 
 String ResourceImporterDynamicFont::get_resource_type() const {
-	return "FontData";
+	return "FontFile";
 }
 
 bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -103,7 +103,7 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	bool msdf = p_preset == PRESET_MSDF;
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "face_index"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Rendering", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
@@ -114,63 +114,19 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0.f));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::TRANSFORM2D, "transform"), Transform2D()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), Array()));
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Compress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides"), Dictionary()));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/char_ranges"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/glyph_ranges"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "preload/configurations"), Vector<String>()));
-
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "support_overrides/language_enabled"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "support_overrides/language_disabled"), Vector<String>()));
-
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "support_overrides/script_enabled"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "support_overrides/script_disabled"), Vector<String>()));
-}
-
-bool ResourceImporterDynamicFont::_decode_variation(const String &p_token, Dictionary &r_variations, Vector2i &r_size, String &r_name, Vector2i &r_spacing) {
-	Vector<String> tokens = p_token.split("=");
-	if (tokens.size() == 2) {
-		if (tokens[0] == "name") {
-			r_name = tokens[1];
-		} else if (tokens[0] == "size") {
-			r_size.x = tokens[1].to_int();
-		} else if (tokens[0] == "outline_size") {
-			r_size.y = tokens[1].to_int();
-		} else if (tokens[0] == "spacing_space") {
-			r_spacing.x = tokens[1].to_int();
-		} else if (tokens[0] == "spacing_glyph") {
-			r_spacing.y = tokens[1].to_int();
-		} else {
-			r_variations[tokens[0]] = tokens[1].to_float();
-		}
-		return true;
-	} else {
-		WARN_PRINT("Invalid variation: '" + p_token + "'.");
-		return false;
-	}
-}
-
-bool ResourceImporterDynamicFont::_decode_range(const String &p_token, int32_t &r_pos) {
-	if (p_token.begins_with("U+") || p_token.begins_with("u+") || p_token.begins_with("0x")) {
-		// Unicode character hex index.
-		r_pos = p_token.substr(2).hex_to_int();
-		return true;
-	} else if (p_token.length() == 3 && p_token[0] == '\'' && p_token[2] == '\'') {
-		// Unicode character.
-		r_pos = p_token.unicode_at(1);
-		return true;
-	} else if (p_token.is_numeric()) {
-		// Unicode character decimal index.
-		r_pos = p_token.to_int();
-		return true;
-	} else {
-		return false;
-	}
+	// Hide from the main UI, only for advanced import dialog.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "preload", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Array()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "language_support", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Dictionary()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "script_support", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Dictionary()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_features", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), Dictionary()));
 }
 
 bool ResourceImporterDynamicFont::has_advanced_options() const {
@@ -183,30 +139,26 @@ void ResourceImporterDynamicFont::show_advanced_options(const String &p_path) {
 Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing dynamic font from: " + p_source_file);
 
-	int face_index = p_options["face_index"];
-
 	bool antialiased = p_options["antialiased"];
 	bool generate_mipmaps = p_options["generate_mipmaps"];
 	bool msdf = p_options["multichannel_signed_distance_field"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
-	Dictionary ot_ov = p_options["opentype_feature_overrides"];
+	Dictionary ot_ov = p_options["opentype_features"];
 
 	bool autohinter = p_options["force_autohinter"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
 	real_t oversampling = p_options["oversampling"];
-	real_t embolden = p_options["embolden"];
-	Transform2D transform = p_options["transform"];
+	Array fallbacks = p_options["fallbacks"];
 
 	// Load base font data.
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_source_file);
 
 	// Create font.
-	Ref<FontData> font;
+	Ref<FontFile> font;
 	font.instantiate();
 	font->set_data(data);
-	font->set_face_index(face_index);
 	font->set_antialiased(antialiased);
 	font->set_generate_mipmaps(generate_mipmaps);
 	font->set_multichannel_signed_distance_field(msdf);
@@ -216,105 +168,52 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font->set_fixed_size(0);
 	font->set_force_autohinter(autohinter);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
-	font->set_embolden(embolden);
-	font->set_transform(transform);
 	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
+	font->set_fallbacks(fallbacks);
 
-	Vector<String> lang_en = p_options["support_overrides/language_enabled"];
-	for (int i = 0; i < lang_en.size(); i++) {
-		font->set_language_support_override(lang_en[i], true);
+	Dictionary langs = p_options["language_support"];
+	for (int i = 0; i < langs.size(); i++) {
+		String key = langs.get_key_at_index(i);
+		bool enabled = langs.get_value_at_index(i);
+		font->set_language_support_override(key, enabled);
 	}
 
-	Vector<String> lang_dis = p_options["support_overrides/language_disabled"];
-	for (int i = 0; i < lang_dis.size(); i++) {
-		font->set_language_support_override(lang_dis[i], false);
+	Dictionary scripts = p_options["script_support"];
+	for (int i = 0; i < scripts.size(); i++) {
+		String key = scripts.get_key_at_index(i);
+		bool enabled = scripts.get_value_at_index(i);
+		font->set_script_support_override(key, enabled);
 	}
 
-	Vector<String> scr_en = p_options["support_overrides/script_enabled"];
-	for (int i = 0; i < scr_en.size(); i++) {
-		font->set_script_support_override(scr_en[i], true);
-	}
+	Array preload_configurations = p_options["preload"];
 
-	Vector<String> scr_dis = p_options["support_overrides/script_disabled"];
-	for (int i = 0; i < scr_dis.size(); i++) {
-		font->set_script_support_override(scr_dis[i], false);
-	}
+	for (int i = 0; i < preload_configurations.size(); i++) {
+		Dictionary preload_config = preload_configurations[i];
 
-	Vector<String> variations = p_options["preload/configurations"];
-	Vector<String> char_ranges = p_options["preload/char_ranges"];
-	Vector<String> gl_ranges = p_options["preload/glyph_ranges"];
+		Dictionary variation = preload_config.has("variation_opentype") ? preload_config["variation_opentype"].operator Dictionary() : Dictionary();
+		double embolden = preload_config.has("variation_embolden") ? preload_config["variation_embolden"].operator double() : 0;
+		int face_index = preload_config.has("variation_face_index") ? preload_config["variation_face_index"].operator int() : 0;
+		Transform2D transform = preload_config.has("variation_transform") ? preload_config["variation_transform"].operator Transform2D() : Transform2D();
+		Vector2i size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
+		String name = preload_config.has("name") ? preload_config["name"].operator String() : vformat("Configuration %d", i);
 
-	for (int i = 0; i < variations.size(); i++) {
-		String name;
-		Dictionary var;
-		Vector2i size = Vector2(16, 0);
-		Vector2i spacing;
+		RID conf_rid = font->find_variation(variation, face_index, embolden, transform);
 
-		Vector<String> variation_tags = variations[i].split(",");
-		for (int j = 0; j < variation_tags.size(); j++) {
-			if (!_decode_variation(variation_tags[j], var, size, name, spacing)) {
-				WARN_PRINT(vformat(TTR("Invalid variation: \"%s\""), variations[i]));
-				continue;
-			}
-		}
-		RID conf = font->find_cache(var);
-
-		for (int j = 0; j < char_ranges.size(); j++) {
-			int32_t start, end;
-			Vector<String> tokens = char_ranges[j].split("-");
-			if (tokens.size() == 2) {
-				if (!_decode_range(tokens[0], start) || !_decode_range(tokens[1], end)) {
-					WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), char_ranges[j]));
-					continue;
-				}
-			} else if (tokens.size() == 1) {
-				if (!_decode_range(tokens[0], start)) {
-					WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), char_ranges[j]));
-					continue;
-				}
-				end = start;
-			} else {
-				WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), char_ranges[j]));
-				continue;
-			}
-
-			// Preload character ranges for each variations / sizes.
-			print_verbose(vformat(TTR("Pre-rendering range U+%s...%s from configuration \"%s\" (%d / %d)..."), String::num_int64(start, 16), String::num_int64(end, 16), name, i + 1, variations.size()));
-			TS->font_render_range(conf, size, start, end);
+		Array chars = preload_config["chars"];
+		for (int j = 0; j < chars.size(); j++) {
+			char32_t c = chars[j].operator int();
+			TS->font_render_range(conf_rid, size, c, c);
 		}
 
-		for (int j = 0; j < gl_ranges.size(); j++) {
-			int32_t start, end;
-			Vector<String> tokens = gl_ranges[j].split("-");
-			if (tokens.size() == 2) {
-				if (!_decode_range(tokens[0], start) || !_decode_range(tokens[1], end)) {
-					WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), gl_ranges[j]));
-					continue;
-				}
-			} else if (tokens.size() == 1) {
-				if (!_decode_range(tokens[0], start)) {
-					WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), gl_ranges[j]));
-					continue;
-				}
-				end = start;
-			} else {
-				WARN_PRINT(vformat(TTR("Invalid range: \"%s\""), gl_ranges[j]));
-				continue;
-			}
-
-			// Preload glyph range for each variations / sizes.
-			print_verbose(vformat(TTR("Pre-rendering glyph range 0x%s...%s from configuration \"%s\" (%d / %d)..."), String::num_int64(start, 16), String::num_int64(end, 16), name, i + 1, variations.size()));
-			for (int32_t k = start; k <= end; k++) {
-				TS->font_render_glyph(conf, size, k);
-			}
+		Array glyphs = preload_config["glyphs"];
+		for (int j = 0; j < glyphs.size(); j++) {
+			int32_t c = glyphs[j];
+			TS->font_render_glyph(conf_rid, size, c);
 		}
-
-		TS->font_set_spacing(conf, size.x, TextServer::SPACING_SPACE, spacing.x);
-		TS->font_set_spacing(conf, size.x, TextServer::SPACING_GLYPH, spacing.y);
 	}
 
-	int flg = ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	int flg = 0;
 	if ((bool)p_options["compress"]) {
 		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
 	}
