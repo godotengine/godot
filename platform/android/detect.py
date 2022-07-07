@@ -96,22 +96,19 @@ def configure(env):
 
     if env["android_arch"] == "armv7":
         target_triple = "armv7a-linux-androideabi"
-        bin_utils = "arm-linux-androideabi"
         env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         target_triple = "aarch64-linux-android"
-        bin_utils = target_triple
         env.extra_suffix = ".armv8" + env.extra_suffix
     elif env["android_arch"] == "x86":
         target_triple = "i686-linux-android"
-        bin_utils = target_triple
         env.extra_suffix = ".x86" + env.extra_suffix
     elif env["android_arch"] == "x86_64":
         target_triple = "x86_64-linux-android"
-        bin_utils = target_triple
         env.extra_suffix = ".x86_64" + env.extra_suffix
 
     target_option = ["-target", target_triple + str(get_min_sdk_version(env["ndk_platform"]))]
+    env.Append(ASFLAGS=[target_option, "-c"])
     env.Append(CCFLAGS=target_option)
     env.Append(LINKFLAGS=target_option)
 
@@ -152,13 +149,12 @@ def configure(env):
 
     toolchain_path = ndk_root + "/toolchains/llvm/prebuilt/" + host_subpath
     compiler_path = toolchain_path + "/bin"
-    bin_utils_path = toolchain_path + "/" + bin_utils + "/bin"
 
     env["CC"] = compiler_path + "/clang"
     env["CXX"] = compiler_path + "/clang++"
     env["AR"] = compiler_path + "/llvm-ar"
     env["RANLIB"] = compiler_path + "/llvm-ranlib"
-    env["AS"] = bin_utils_path + "/as"
+    env["AS"] = compiler_path + "/clang"
 
     # Disable exceptions and rtti on non-tools (template) builds
     if env["tools"]:
