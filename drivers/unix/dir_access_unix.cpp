@@ -343,7 +343,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name)) {
+	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
@@ -505,7 +505,7 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
-	if (current_dir.parse_utf8(real_current_dir_name)) {
+	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
 
