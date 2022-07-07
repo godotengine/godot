@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Godot.SourceGenerators
 {
-    internal struct MethodInfo
+    internal readonly struct MethodInfo
     {
         public MethodInfo(string name, PropertyInfo returnVal, MethodFlags flags,
             List<PropertyInfo>? arguments,
