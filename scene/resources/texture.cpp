@@ -3016,12 +3016,12 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 }
 
 void ImageTextureLayered::update_layer(const Ref<Image> &p_image, int p_layer) {
-	ERR_FAIL_COND(texture.is_valid());
-	ERR_FAIL_COND(p_image.is_null());
-	ERR_FAIL_COND(p_image->get_format() != format);
-	ERR_FAIL_COND(p_image->get_width() != width || p_image->get_height() != height);
-	ERR_FAIL_INDEX(p_layer, layers);
-	ERR_FAIL_COND(p_image->has_mipmaps() != mipmaps);
+	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != format, "Image format must match texture's image format.");
+	ERR_FAIL_COND_MSG(p_image->get_width() != width || p_image->get_height() != height, "Image size must match texture's image size.");
+	ERR_FAIL_COND_MSG(p_image->has_mipmaps() != mipmaps, "Image mipmap configuration must match texture's image mipmap configuration.");
+	ERR_FAIL_INDEX_MSG(p_layer, layers, "Layer index is out of bounds.");
 	RS::get_singleton()->texture_2d_update(texture, p_image, p_layer);
 }
 
