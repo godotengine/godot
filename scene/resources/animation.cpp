@@ -1976,68 +1976,6 @@ Variant Animation::value_track_interpolate(int p_track, double p_time) const {
 	return Variant();
 }
 
-void Animation::value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
-	ERR_FAIL_INDEX(p_track, tracks.size());
-	BaseTrack *t = tracks[p_track];
-	ERR_FAIL_COND(t->type != TYPE_VALUE);
-
-	ValueTrack *vt = static_cast<ValueTrack *>(t);
-
-	double from_time = p_time - p_delta;
-	double to_time = p_time;
-
-	if (from_time > to_time) {
-		SWAP(from_time, to_time);
-	}
-
-	switch (loop_mode) {
-		case LOOP_NONE: {
-			if (from_time < 0) {
-				from_time = 0;
-			}
-			if (from_time > length) {
-				from_time = length;
-			}
-
-			if (to_time < 0) {
-				to_time = 0;
-			}
-			if (to_time > length) {
-				to_time = length;
-			}
-		} break;
-		case LOOP_LINEAR: {
-			from_time = Math::fposmod(from_time, length);
-			to_time = Math::fposmod(to_time, length);
-
-			if (from_time > to_time) {
-				// handle loop by splitting
-				vt->find_value_in_interval(from_time, length, p_indices);
-				vt->find_value_in_interval(0, to_time, p_indices);
-				return;
-			}
-		} break;
-		case LOOP_PINGPONG: {
-			from_time = Math::pingpong(from_time, length);
-			to_time = Math::pingpong(to_time, length);
-
-			if (p_pingponged == -1) {
-				// handle loop by splitting
-				vt->find_value_in_interval(0, from_time, p_indices);
-				vt->find_value_in_interval(0, to_time, p_indices);
-				return;
-			}
-			if (p_pingponged == 1) {
-				// handle loop by splitting
-				vt->find_value_in_interval(from_time, length, p_indices);
-				vt->find_value_in_interval(to_time, length, p_indices);
-				return;
-			}
-		} break;
-	}
-	vt->find_value_in_interval(from_time, to_time, p_indices);
-}
-
 void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	BaseTrack *t = tracks[p_track];
@@ -2146,77 +2084,6 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 	} else {
 		t->find_value_in_interval(from_time, to_time, p_indices);
 	}
-}
-
-void Animation::method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
-	ERR_FAIL_INDEX(p_track, tracks.size());
-	BaseTrack *t = tracks[p_track];
-	ERR_FAIL_COND(t->type != TYPE_METHOD);
-
-	MethodTrack *mt = static_cast<MethodTrack *>(t);
-
-	double from_time = p_time - p_delta;
-	double to_time = p_time;
-
-	if (from_time > to_time) {
-		SWAP(from_time, to_time);
-	}
-
-	switch (loop_mode) {
-		case LOOP_NONE: {
-			if (from_time < 0) {
-				from_time = 0;
-			}
-			if (from_time > length) {
-				from_time = length;
-			}
-
-			if (to_time < 0) {
-				to_time = 0;
-			}
-			if (to_time > length) {
-				to_time = length;
-			}
-		} break;
-		case LOOP_LINEAR: {
-			if (from_time > length || from_time < 0) {
-				from_time = Math::fposmod(from_time, length);
-			}
-			if (to_time > length || to_time < 0) {
-				to_time = Math::fposmod(to_time, length);
-			}
-
-			if (from_time > to_time) {
-				// handle loop by splitting
-				mt->find_value_in_interval(from_time, length, p_indices);
-				mt->find_value_in_interval(0, to_time, p_indices);
-				return;
-			}
-		} break;
-		case LOOP_PINGPONG: {
-			if (from_time > length || from_time < 0) {
-				from_time = Math::pingpong(from_time, length);
-			}
-			if (to_time > length || to_time < 0) {
-				to_time = Math::pingpong(to_time, length);
-			}
-
-			if (p_pingponged == -1) {
-				mt->find_value_in_interval(0, from_time, p_indices);
-				mt->find_value_in_interval(0, to_time, p_indices);
-				return;
-			}
-			if (p_pingponged == 1) {
-				mt->find_value_in_interval(from_time, length, p_indices);
-				mt->find_value_in_interval(to_time, length, p_indices);
-				return;
-			}
-		} break;
-		default:
-			break;
-	}
-
-	mt->find_value_in_interval(from_time, to_time, p_indices);
 }
 
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
@@ -2802,10 +2669,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("value_track_set_update_mode", "track_idx", "mode"), &Animation::value_track_set_update_mode);
 	ClassDB::bind_method(D_METHOD("value_track_get_update_mode", "track_idx"), &Animation::value_track_get_update_mode);
 
-	ClassDB::bind_method(D_METHOD("value_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_value_track_get_key_indices);
 	ClassDB::bind_method(D_METHOD("value_track_interpolate", "track_idx", "time_sec"), &Animation::value_track_interpolate);
 
-	ClassDB::bind_method(D_METHOD("method_track_get_key_indices", "track_idx", "time_sec", "delta"), &Animation::_method_track_get_key_indices);
 	ClassDB::bind_method(D_METHOD("method_track_get_name", "track_idx", "key_idx"), &Animation::method_track_get_name);
 	ClassDB::bind_method(D_METHOD("method_track_get_params", "track_idx", "key_idx"), &Animation::method_track_get_params);
 

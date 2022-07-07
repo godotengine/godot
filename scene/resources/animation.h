@@ -81,7 +81,6 @@ private:
 	struct Key {
 		real_t transition = 1.0;
 		double time = 0.0; // time in secs
-		double duration = 0.0; // duration in secs (0.0 duration is a trigger)
 	};
 
 	class BaseTrack {
@@ -428,27 +427,6 @@ private:
 
 	// bind helpers
 private:
-	Vector<int> _value_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		value_track_get_key_indices(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-	Vector<int> _method_track_get_key_indices(int p_track, double p_time, double p_delta) const {
-		List<int> idxs;
-		track_get_key_indices_in_range(p_track, p_time, p_delta, &idxs);
-		Vector<int> idxr;
-
-		for (int &E : idxs) {
-			idxr.push_back(E);
-		}
-		return idxr;
-	}
-
 	bool _position_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_alowed_linear_err, real_t p_allowed_angular_error, const Vector3 &p_norm);
 	bool _rotation_track_optimize_key(const TKey<Quaternion> &t0, const TKey<Quaternion> &t1, const TKey<Quaternion> &t2, real_t p_allowed_angular_error, float p_max_optimizable_angle);
 	bool _scale_track_optimize_key(const TKey<Vector3> &t0, const TKey<Vector3> &t1, const TKey<Vector3> &t2, real_t p_allowed_linear_error);
@@ -550,11 +528,9 @@ public:
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Variant value_track_interpolate(int p_track, double p_time) const;
-	void value_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
-	void method_track_get_key_indices(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
