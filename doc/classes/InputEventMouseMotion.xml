@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Contains mouse and pen motion information. Supports relative, absolute positions and speed. See [method Node._input].
-		[b]Note:[/b] By default, this event can be emitted multiple times per frame rendered, allowing for precise input reporting, at the expense of CPU usage. You can set [member Input.use_accumulated_input] to [code]true[/code] to let multiple events merge into a single emitted event per frame.
+		[b]Note:[/b] The behavior of this event is affected by the value of [member Input.use_accumulated_input]. When set to [code]true[/code] (default), mouse/pen motion events received from the OS will be merged to emit an accumulated event only once per frame rendered at most. When set to [code]false[/code], the events will be emitted as received, which means that they can be emitted multiple times per frame rendered, allowing for precise input reporting at the expense of CPU usage.
 		[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider implementing [url=https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to avoid visible gaps in lines if the user is moving the mouse quickly.
 	</description>
 	<tutorials>
