@@ -2797,7 +2797,7 @@ ProjectManager::ProjectManager() {
 		tabs->add_child(asset_library);
 		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
-		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
+		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
 
 	{
