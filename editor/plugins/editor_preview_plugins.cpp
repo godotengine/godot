@@ -127,13 +127,9 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	}
 	Vector2i new_size_i(MAX(1, (int)new_size.x), MAX(1, (int)new_size.y));
 	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
@@ -171,14 +167,9 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, c
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex;
-	ptex.instantiate();
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
@@ -239,13 +230,9 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, 
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
@@ -282,11 +269,8 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	img.instantiate();
 	Error err = img->load(path);
 	if (err == OK) {
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
 		post_process_preview(img);
-		ptex->create_from_image(img);
-		return ptex;
+		return ImageTexture::create_from_image(img);
 
 	} else {
 		return Ref<Texture2D>();
@@ -336,9 +320,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 		int thumbnail_size = MAX(p_size.x, p_size.y);
 		img->resize(thumbnail_size, thumbnail_size, Image::INTERPOLATE_CUBIC);
 		post_process_preview(img);
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-		ptex->create_from_image(img);
-		return ptex;
+		return ImageTexture::create_from_image(img);
 	}
 
 	return Ref<Texture2D>();
@@ -591,13 +573,8 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 			}
 		}
 	}
-
 	post_process_preview(img);
-
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
@@ -676,12 +653,10 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 
 	//post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;
 	image.instantiate();
 	image->create(w, h, false, Image::FORMAT_RGB8, img);
-	ptex->create_from_image(image);
-	return ptex;
+	return ImageTexture::create_from_image(image);
 }
 
 EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
@@ -746,12 +721,9 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
@@ -859,13 +831,9 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-	ptex->create_from_image(img);
-
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
@@ -915,11 +883,7 @@ Ref<Texture2D> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from
 		ptex.instantiate();
 		ptex->set_width(p_size.width * GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR * EDSCALE);
 		ptex->set_gradient(gradient);
-
-		Ref<ImageTexture> itex;
-		itex.instantiate();
-		itex->create_from_image(ptex->get_image());
-		return itex;
+		return ImageTexture::create_from_image(ptex->get_image());
 	}
 	return Ref<Texture2D>();
 }

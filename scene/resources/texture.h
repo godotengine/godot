@@ -110,7 +110,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void create_from_image(const Ref<Image> &p_image);
+	void set_image(const Ref<Image> &p_image);
+	static Ref<ImageTexture> create_from_image(const Ref<Image> &p_image);
 
 	Image::Format get_format() const;
 

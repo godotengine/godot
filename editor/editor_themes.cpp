@@ -97,7 +97,6 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 		return p_texture;
 	}
 
-	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = p_texture->get_image();
 	ERR_FAIL_NULL_V(img, Ref<Texture2D>());
 	img = img->duplicate();
@@ -109,14 +108,12 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 		img->flip_x();
 	}
 
-	texture->create_from_image(img);
-	return texture;
+	return ImageTexture::create_from_image(img);
 }
 
 #ifdef MODULE_SVG_ENABLED
 // See also `generate_icon()` in `scene/resources/default_theme.cpp`.
 static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, float p_saturation = 1.0, Dictionary p_convert_colors = Dictionary()) {
-	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
 	// Upsample icon generation only if the editor scale isn't an integer multiplier.
@@ -129,9 +126,9 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
-	icon->create_from_image(img); // in this case filter really helps
 
-	return icon;
+	// In this case filter really helps.
+	return ImageTexture::create_from_image(img);
 }
 #endif
 

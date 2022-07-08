@@ -678,7 +678,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					if (!texture.is_valid()) {
 						texture.instantiate();
 					}
-					texture->create_from_image(dropped_resource);
+					texture->set_image(dropped_resource);
 					dropped_resource = texture;
 					break;
 				}

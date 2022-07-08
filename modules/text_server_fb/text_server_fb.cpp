@@ -1493,9 +1493,7 @@ void TextServerFallback::font_set_texture_image(const RID &p_font_rid, const Vec
 		img->generate_mipmaps();
 	}
 
-	tex.texture = Ref<ImageTexture>();
-	tex.texture.instantiate();
-	tex.texture->create_from_image(img);
+	tex.texture = ImageTexture::create_from_image(img);
 	tex.dirty = false;
 }
 
@@ -1786,8 +1784,7 @@ RID TextServerFallback::font_get_glyph_texture_rid(const RID &p_font_rid, const 
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
-					tex.texture.instantiate();
-					tex.texture->create_from_image(img);
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
 					tex.texture->update(img);
 				}
@@ -1826,8 +1823,7 @@ Size2 TextServerFallback::font_get_glyph_texture_size(const RID &p_font_rid, con
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
-					tex.texture.instantiate();
-					tex.texture->create_from_image(img);
+					tex.texture = ImageTexture::create_from_image(img);
 				} else {
 					tex.texture->update(img);
 				}
@@ -2140,8 +2136,7 @@ void TextServerFallback::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
-						tex.texture.instantiate();
-						tex.texture->create_from_image(img);
+						tex.texture = ImageTexture::create_from_image(img);
 					} else {
 						tex.texture->update(img);
 					}
@@ -2219,8 +2214,7 @@ void TextServerFallback::font_draw_glyph_outline(const RID &p_font_rid, const RI
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
-						tex.texture.instantiate();
-						tex.texture->create_from_image(img);
+						tex.texture = ImageTexture::create_from_image(img);
 					} else {
 						tex.texture->update(img);
 					}

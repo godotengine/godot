@@ -3202,12 +3202,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			state->images.push_back(Ref<Texture2D>());
 			continue;
 		}
-
-		Ref<ImageTexture> t;
-		t.instantiate();
-		t->create_from_image(img);
-
-		state->images.push_back(t);
+		state->images.push_back(ImageTexture::create_from_image(img));
 	}
 
 	print_verbose("glTF: Total images: " + itos(state->images.size()));
@@ -3428,7 +3423,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					}
 				}
 				orm_image->generate_mipmaps();
-				orm_texture->create_from_image(orm_image);
+				orm_texture->set_image(orm_image);
 				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
 					orm_texture->set_name(material->get_name() + "_orm");
@@ -3476,7 +3471,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 								img->set_pixel(x, y, c);
 							}
 						}
-						tex->create_from_image(img);
+						tex->set_image(img);
 					}
 				}
 			}
@@ -3784,13 +3779,8 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	}
 	rm_img->generate_mipmaps();
 	r_spec_gloss->diffuse_img->generate_mipmaps();
-	Ref<ImageTexture> diffuse_image_texture;
-	diffuse_image_texture.instantiate();
-	diffuse_image_texture->create_from_image(r_spec_gloss->diffuse_img);
-	p_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_image_texture);
-	Ref<ImageTexture> rm_image_texture;
-	rm_image_texture.instantiate();
-	rm_image_texture->create_from_image(rm_img);
+	p_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, ImageTexture::create_from_image(r_spec_gloss->diffuse_img));
+	Ref<ImageTexture> rm_image_texture = ImageTexture::create_from_image(rm_img);
 	if (has_roughness) {
 		p_material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, rm_image_texture);
 		p_material->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
