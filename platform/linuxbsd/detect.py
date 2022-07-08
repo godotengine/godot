@@ -298,6 +298,12 @@ def configure(env):
 
     ## Flags
 
+    if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
+        env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+        env.ParseConfig("pkg-config fontconfig --cflags --libs")
+    else:
+        print("Warning: fontconfig libraries not found. Disabling the system fonts support.")
+
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])

@@ -81,10 +81,7 @@ class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
 	PopupMenu *change_type = nullptr;
-	bool updating = false;
-	bool dropping = false;
 
-	Ref<EditorPropertyArrayObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
@@ -106,28 +103,34 @@ class EditorPropertyArray : public EditorProperty {
 	Button *reorder_selected_button = nullptr;
 
 	void _page_changed(int p_page);
-	void _length_changed(double p_page);
-	void _add_element();
-	void _edit_pressed();
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-	void _change_type(Object *p_button, int p_index);
-	void _change_type_menu(int p_index);
-
-	void _object_id_selected(const StringName &p_property, ObjectID p_id);
-	void _remove_pressed(int p_index);
-
-	void _button_draw();
-	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
 
 protected:
+	Ref<EditorPropertyArrayObject> object;
+
+	bool updating = false;
+	bool dropping = false;
+
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void _add_element();
+	virtual void _length_changed(double p_page);
+	virtual void _edit_pressed();
+	virtual void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	virtual void _change_type(Object *p_button, int p_index);
+	virtual void _change_type_menu(int p_index);
+
+	virtual void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	virtual void _remove_pressed(int p_index);
+
+	virtual void _button_draw();
+	virtual bool _is_drop_valid(const Dictionary &p_drag_data) const;
+	virtual bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
