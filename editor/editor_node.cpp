@@ -6958,12 +6958,10 @@ EditorNode::EditorNode() {
 	ScriptTextEditor::register_editor(); //register one for text scripts
 	TextEditor::register_editor();
 
-	// Asset Library can't work on Web editor for now as most assets are sourced
-	// directly from GitHub which does not set CORS.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin(this)));
 	} else {
-		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
+		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
 
 	//add interface before adding plugins
