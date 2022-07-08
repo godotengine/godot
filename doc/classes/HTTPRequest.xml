@@ -156,7 +156,7 @@
 			Maximum number of allowed redirects. This is used to prevent endless redirect loops.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
-			If set to a value greater than [code]0.0[/code], the HTTP request will time out after [code]timeout[/code] seconds have passed and the request is not [i]completed[/i] yet. For small HTTP requests such as REST API usage, set [member timeout] to a value greater than [code]0.0[/code] to prevent the application from getting stuck if the request fails to get a response in a timely manner. For file downloads, leave this to [code]0.0[/code] to prevent the download from failing if it takes too much time.
+			If set to a value greater than [code]0.0[/code] before the request starts, the HTTP request will time out after [code]timeout[/code] seconds have passed and the request is not [i]completed[/i] yet. For small HTTP requests such as REST API usage, set [member timeout] to a value between [code]10.0[/code] and [code]30.0[/code] to prevent the application from getting stuck if the request fails to get a response in a timely manner. For file downloads, leave this to [code]0.0[/code] to prevent the download from failing if it takes too much time.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
