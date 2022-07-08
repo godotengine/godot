@@ -3098,7 +3098,7 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		}
 		if (rb->msaa == RS::VIEWPORT_MSAA_DISABLED) {
-			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, (RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT)) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 		} else {
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 		}

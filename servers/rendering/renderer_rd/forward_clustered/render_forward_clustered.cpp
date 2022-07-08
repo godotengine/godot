@@ -346,7 +346,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 
 		color_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 		tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		depth_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -436,7 +436,7 @@ void RenderForwardClustered::_allocate_normal_roughness_texture(RenderBufferData
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 	if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-		tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	} else {
 		tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
@@ -449,7 +449,7 @@ void RenderForwardClustered::_allocate_normal_roughness_texture(RenderBufferData
 		fb.push_back(rb->normal_roughness_buffer);
 		rb->depth_normal_roughness_fb = RD::get_singleton()->framebuffer_create(fb, RD::INVALID_ID, rb->view_count);
 	} else {
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 		tf.samples = rb->texture_samples;
 		rb->normal_roughness_buffer_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
