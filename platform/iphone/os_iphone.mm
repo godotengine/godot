@@ -202,6 +202,8 @@ bool OSIPhone::iterate() {
 		return true;
 	}
 
+	input->flush_buffered_events();
+
 	return Main::iteration();
 };
 
