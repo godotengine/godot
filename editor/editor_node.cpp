@@ -2332,6 +2332,13 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		return;
 	}
 
+	play_button->set_pressed(false);
+	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	play_scene_button->set_pressed(false);
+	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
+	play_custom_scene_button->set_pressed(false);
+	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+
 	String write_movie_file;
 	if (write_movie_button->is_pressed()) {
 		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
@@ -2345,13 +2352,6 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 			return;
 		}
 	}
-
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
 
 	String run_filename;
 
@@ -2791,9 +2791,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
-		} break;
-		case RUN_WRITE_MOVIE: {
-			_update_write_movie_icon();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -4956,14 +4953,6 @@ String EditorNode::get_run_playing_scene() const {
 	return run_filename;
 }
 
-void EditorNode::_update_write_movie_icon() {
-	if (write_movie_button->is_pressed()) {
-		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWriteEnabled"), SNAME("EditorIcons")));
-	} else {
-		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
-	}
-}
-
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
@@ -6732,15 +6721,12 @@ EditorNode::EditorNode() {
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
-	write_movie_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_WRITE_MOVIE));
 	write_movie_button->set_tooltip(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-	// Restore these values to something more useful so it ignores the theme
-	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.4));
-	write_movie_button->add_theme_color_override("icon_pressed_color", Color(1, 1, 1, 1));
-	write_movie_button->add_theme_color_override("icon_hover_color", Color(1.2, 1.2, 1.2, 0.4));
-	write_movie_button->add_theme_color_override("icon_hover_pressed_color", Color(1.2, 1.2, 1.2, 1));
-	write_movie_button->add_theme_color_override("icon_focus_color", Color(1, 1, 1, 1));
-	write_movie_button->add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.4));
+
+	// This button behaves differently, so color it as such.
+	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
+	write_movie_button->add_theme_color_override("icon_pressed_color", gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
