@@ -57,6 +57,7 @@
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
 			Bus on which this audio is playing.
+			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
 			Maximum distance from which audio is still hearable.
