@@ -481,7 +481,7 @@ private:
 		int height = 0;
 		float fsr_sharpness = 0.2f;
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
-		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_FXAA;
 		bool use_taa = false;
 		bool use_debanding = false;
 		uint32_t view_count = 1;

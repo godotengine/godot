@@ -298,7 +298,7 @@ private:
 	PositionalShadowAtlasQuadrantSubdiv positional_shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa = MSAA_DISABLED;
-	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
+	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_FXAA;
 	bool use_taa = false;
 
 	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;

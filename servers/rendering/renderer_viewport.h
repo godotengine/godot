@@ -157,7 +157,7 @@ public:
 
 			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 			msaa = RS::VIEWPORT_MSAA_DISABLED;
-			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_FXAA;
 			use_debanding = false;
 			use_occlusion_culling = false;
 			occlusion_buffer_dirty = true;
