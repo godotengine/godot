@@ -610,6 +610,8 @@ private:
 	void _go_down();
 	void _go_up();
 
+	bool _scroll(bool p_horizontal, float p_pages);
+
 protected:
 	static void _bind_methods();
 

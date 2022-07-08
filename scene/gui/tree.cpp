@@ -2967,6 +2967,15 @@ void Tree::_go_down() {
 	accept_event();
 }
 
+bool Tree::_scroll(bool p_horizontal, float p_pages) {
+	ScrollBar *scroll = p_horizontal ? (ScrollBar *)h_scroll : (ScrollBar *)v_scroll;
+
+	double prev_value = scroll->get_value();
+	scroll->set_value(scroll->get_value() + scroll->get_page() * p_pages);
+
+	return scroll->get_value() != prev_value;
+}
+
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -3481,17 +3490,25 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::WHEEL_UP: {
-				double prev_value = v_scroll->get_value();
-				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * mb->get_factor() / 8);
-				if (v_scroll->get_value() != prev_value) {
+				if (_scroll(false, -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				double prev_value = v_scroll->get_value();
-				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * mb->get_factor() / 8);
-				if (v_scroll->get_value() != prev_value) {
+				if (_scroll(false, mb->get_factor() / 8)) {
+					accept_event();
+				}
+
+			} break;
+			case MouseButton::WHEEL_LEFT: {
+				if (_scroll(true, -mb->get_factor() / 8)) {
+					accept_event();
+				}
+
+			} break;
+			case MouseButton::WHEEL_RIGHT: {
+				if (_scroll(true, mb->get_factor() / 8)) {
 					accept_event();
 				}
 
