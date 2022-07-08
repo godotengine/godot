@@ -1895,7 +1895,6 @@ CodeTextEditor::CodeTextEditor() {
 			} break;
 		}
 	}
-	text_editor->add_theme_font_override("font", fc);
 
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);

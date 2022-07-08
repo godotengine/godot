@@ -342,7 +342,11 @@ void Button::_notification(int p_what) {
 				} break;
 			}
 
-			text_buf->draw_outline(ci, text_ofs, get_theme_constant(SNAME("outline_size")), get_theme_color(SNAME("font_outline_color")));
+			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+			int outline_size = get_theme_constant(SNAME("outline_size"));
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
+			}
 			text_buf->draw(ci, text_ofs, color);
 		} break;
 	}
