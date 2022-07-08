@@ -407,22 +407,22 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
-	blend_space_draw->draw_line(Point2(1, 0), Point2(1, s.height - 1), linecolor);
-	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor);
+	blend_space_draw->draw_line(Point2(1, 0), Point2(1, s.height - 1), linecolor, Math::round(EDSCALE));
+	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
-	blend_space_draw->draw_line(Point2(0, 0), Point2(5 * EDSCALE, 0), linecolor);
+	blend_space_draw->draw_line(Point2(0, 0), Point2(5 * EDSCALE, 0), linecolor, Math::round(EDSCALE));
 	if (blend_space->get_min_space().y < 0) {
 		int y = (blend_space->get_max_space().y / (blend_space->get_max_space().y - blend_space->get_min_space().y)) * s.height;
-		blend_space_draw->draw_line(Point2(0, y), Point2(5 * EDSCALE, y), linecolor);
+		blend_space_draw->draw_line(Point2(0, y), Point2(5 * EDSCALE, y), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
-		blend_space_draw->draw_line(Point2(5 * EDSCALE, y), Point2(s.width, y), linecolor_soft);
+		blend_space_draw->draw_line(Point2(5 * EDSCALE, y), Point2(s.width, y), linecolor_soft, Math::round(EDSCALE));
 	}
 
 	if (blend_space->get_min_space().x < 0) {
 		int x = (-blend_space->get_min_space().x / (blend_space->get_max_space().x - blend_space->get_min_space().x)) * s.width;
-		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
+		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
-		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
+		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft, Math::round(EDSCALE));
 	}
 
 	if (snap->is_pressed()) {
@@ -435,7 +435,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 				int idx = int(v / blend_space->get_snap().x);
 
 				if (i > 0 && prev_idx != idx) {
-					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft);
+					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft, Math::round(EDSCALE));
 				}
 
 				prev_idx = idx;
@@ -449,7 +449,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 				int idx = int(v / blend_space->get_snap().y);
 
 				if (i > 0 && prev_idx != idx) {
-					blend_space_draw->draw_line(Point2(0, i), Point2(s.width, i), linecolor_soft);
+					blend_space_draw->draw_line(Point2(0, i), Point2(s.width, i), linecolor_soft, Math::round(EDSCALE));
 				}
 
 				prev_idx = idx;
@@ -478,7 +478,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		}
 
 		for (int j = 0; j < 3; j++) {
-			blend_space_draw->draw_line(points[j], points[(j + 1) % 3], linecolor, 1);
+			blend_space_draw->draw_line(points[j], points[(j + 1) % 3], linecolor, Math::round(EDSCALE), true);
 		}
 
 		Color color;
@@ -533,9 +533,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		}
 
 		for (int i = 0; i < points.size() - 1; i++) {
-			blend_space_draw->draw_line(points[i], points[i + 1], linecolor, 2);
+			blend_space_draw->draw_line(points[i], points[i + 1], linecolor, Math::round(2 * EDSCALE), true);
 		}
-		blend_space_draw->draw_line(points[points.size() - 1], blend_space_draw->get_local_mouse_position(), linecolor, 2);
+		blend_space_draw->draw_line(points[points.size() - 1], blend_space_draw->get_local_mouse_position(), linecolor, Math::round(2 * EDSCALE), true);
 	}
 
 	///draw cursor position
@@ -564,15 +564,15 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 			Color lcol = color;
 			lcol.a *= 0.4;
-			blend_space_draw->draw_line(point, closest, lcol, 2);
+			blend_space_draw->draw_line(point, closest, lcol, Math::round(2 * EDSCALE), true);
 		}
 
 		float mind = 5 * EDSCALE;
 		float maxd = 15 * EDSCALE;
-		blend_space_draw->draw_line(point + Vector2(mind, 0), point + Vector2(maxd, 0), color, 2);
-		blend_space_draw->draw_line(point + Vector2(-mind, 0), point + Vector2(-maxd, 0), color, 2);
-		blend_space_draw->draw_line(point + Vector2(0, mind), point + Vector2(0, maxd), color, 2);
-		blend_space_draw->draw_line(point + Vector2(0, -mind), point + Vector2(0, -maxd), color, 2);
+		blend_space_draw->draw_line(point + Vector2(mind, 0), point + Vector2(maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(point + Vector2(-mind, 0), point + Vector2(-maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(point + Vector2(0, mind), point + Vector2(0, maxd), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(point + Vector2(0, -mind), point + Vector2(0, -maxd), color, Math::round(2 * EDSCALE));
 	}
 }
 
