@@ -64,6 +64,7 @@
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
 			The bus on which this audio is playing.
+			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
 			Decides in which step the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] should be calculated.
