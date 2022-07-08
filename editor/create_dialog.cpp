@@ -57,10 +57,10 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		set_title(vformat(TTR("Change %s Type"), base_type));
-		get_ok_button()->set_text(TTR("Change"));
+		set_ok_button_text(TTR("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 	}
 
 	_load_favorites_and_history();

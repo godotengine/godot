@@ -211,5 +211,5 @@ EditorDirDialog::EditorDirDialog() {
 	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
 
-	get_ok_button()->set_text(TTR("Choose"));
+	set_ok_button_text(TTR("Choose"));
 }

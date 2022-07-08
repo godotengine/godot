@@ -830,7 +830,7 @@ ShaderEditor::ShaderEditor() {
 	vbc->add_child(dl);
 
 	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload_shader_from_disk));
-	disk_changed->get_ok_button()->set_text(TTR("Reload"));
+	disk_changed->set_ok_button_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));

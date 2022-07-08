@@ -568,7 +568,7 @@ GroupDialog::GroupDialog() {
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
-	error->get_ok_button()->set_text(TTR("Close"));
+	error->set_ok_button_text(TTR("Close"));
 
 	_add_group_text_changed("");
 }
