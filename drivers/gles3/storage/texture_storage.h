@@ -132,6 +132,17 @@ struct CanvasTexture {
 	bool cleared_cache = true;
 };
 
+/* CANVAS SHADOW */
+
+struct CanvasLightShadow {
+	RID self;
+	int size;
+	int height;
+	GLuint fbo;
+	GLuint depth;
+	GLuint distance; //for older devices
+};
+
 struct RenderTarget;
 
 struct Texture {
@@ -364,6 +375,10 @@ private:
 
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
+	/* CANVAS SHADOW */
+
+	RID_PtrOwner<CanvasLightShadow> canvas_light_shadow_owner;
+
 	/* Texture API */
 
 	mutable RID_Owner<Texture> texture_owner;
@@ -402,6 +417,10 @@ public:
 
 	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) override;
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
+
+	/* CANVAS SHADOW */
+
+	RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* Texture API */
 

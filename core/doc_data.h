@@ -103,6 +103,7 @@ public:
 		String value;
 		bool is_value_valid = false;
 		String enumeration;
+		bool is_bitfield = false;
 		String description;
 		bool operator<(const ConstantDoc &p_const) const {
 			return name < p_const.name;
@@ -111,6 +112,7 @@ public:
 
 	struct EnumDoc {
 		String name = "@unnamed_enum";
+		bool is_bitfield = false;
 		String description;
 		Vector<DocData::ConstantDoc> values;
 	};
@@ -163,6 +165,7 @@ public:
 		Vector<ConstantDoc> constants;
 		HashMap<String, String> enums;
 		Vector<PropertyDoc> properties;
+		Vector<MethodDoc> annotations;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;
 		String script_path;

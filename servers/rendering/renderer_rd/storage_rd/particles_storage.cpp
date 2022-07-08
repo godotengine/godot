@@ -30,7 +30,6 @@
 
 #include "particles_storage.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "texture_storage.h"
 
@@ -321,7 +320,7 @@ void ParticlesStorage::particles_set_amount(RID p_particles, int p_amount) {
 	particles->prev_phase = 0;
 	particles->clear = true;
 
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void ParticlesStorage::particles_set_lifetime(RID p_particles, double p_lifetime) {
@@ -356,7 +355,7 @@ void ParticlesStorage::particles_set_custom_aabb(RID p_particles, const AABB &p_
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->custom_aabb = p_aabb;
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void ParticlesStorage::particles_set_speed_scale(RID p_particles, double p_scale) {
@@ -370,7 +369,7 @@ void ParticlesStorage::particles_set_use_local_coordinates(RID p_particles, bool
 	ERR_FAIL_COND(!particles);
 
 	particles->use_local_coords = p_enable;
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void ParticlesStorage::particles_set_fixed_fps(RID p_particles, int p_fps) {
@@ -386,7 +385,7 @@ void ParticlesStorage::particles_set_fixed_fps(RID p_particles, int p_fps) {
 	particles->prev_phase = 0;
 	particles->clear = true;
 
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void ParticlesStorage::particles_set_interpolate(RID p_particles, bool p_enable) {
@@ -419,7 +418,7 @@ void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, doub
 	particles->prev_phase = 0;
 	particles->clear = true;
 
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
@@ -436,7 +435,7 @@ void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vec
 	particles->trail_bind_poses = p_bind_poses;
 	particles->trail_bind_poses_dirty = true;
 
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES);
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
 }
 
 void ParticlesStorage::particles_set_collision_base_size(RID p_particles, real_t p_size) {
@@ -458,7 +457,7 @@ void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_mat
 	ERR_FAIL_COND(!particles);
 
 	particles->process_material = p_material;
-	particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_PARTICLES); //the instance buffer may have changed
+	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES); //the instance buffer may have changed
 }
 
 RID ParticlesStorage::particles_get_process_material(RID p_particles) const {
@@ -545,7 +544,7 @@ void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_tran
 
 	int32_t idx = particles->emission_buffer->particle_count;
 	if (idx < particles->emission_buffer->particle_max) {
-		RendererStorageRD::store_transform(p_transform, particles->emission_buffer->data[idx].xform);
+		RendererRD::MaterialStorage::store_transform(p_transform, particles->emission_buffer->data[idx].xform);
 
 		particles->emission_buffer->data[idx].velocity[0] = p_velocity.x;
 		particles->emission_buffer->data[idx].velocity[1] = p_velocity.y;
@@ -766,9 +765,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	frame_params.randomness = p_particles->randomness;
 
 	if (p_particles->use_local_coords) {
-		RendererStorageRD::store_transform(Transform3D(), frame_params.emission_transform);
+		RendererRD::MaterialStorage::store_transform(Transform3D(), frame_params.emission_transform);
 	} else {
-		RendererStorageRD::store_transform(p_particles->emission_transform, frame_params.emission_transform);
+		RendererRD::MaterialStorage::store_transform(p_particles->emission_transform, frame_params.emission_transform);
 	}
 
 	frame_params.cycle = p_particles->cycle_number;
@@ -858,7 +857,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 				ParticlesFrameParams::Attractor &attr = frame_params.attractors[frame_params.attractor_count];
 
-				RendererStorageRD::store_transform(to_collider, attr.transform);
+				RendererRD::MaterialStorage::store_transform(to_collider, attr.transform);
 				attr.strength = pc->attractor_strength;
 				attr.attenuation = pc->attractor_attenuation;
 				attr.directionality = pc->attractor_directionality;
@@ -906,7 +905,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 				ParticlesFrameParams::Collider &col = frame_params.colliders[frame_params.collider_count];
 
-				RendererStorageRD::store_transform(to_collider, col.transform);
+				RendererRD::MaterialStorage::store_transform(to_collider, col.transform);
 				switch (pc->type) {
 					case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
 						col.type = ParticlesFrameParams::COLLISION_TYPE_SPHERE;
@@ -1203,7 +1202,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 		RD::get_singleton()->compute_list_end();
-		RendererStorageRD::base_singleton->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+		RendererCompositorRD::singleton->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
 	copy_push_constant.total_particles *= copy_push_constant.total_particles;
@@ -1383,7 +1382,7 @@ void ParticlesStorage::update_particles() {
 				}
 
 				for (int i = 0; i < particles->trail_bind_poses.size(); i++) {
-					RendererStorageRD::store_transform(particles->trail_bind_poses[i], &particles_shader.pose_update_buffer[i * 16]);
+					RendererRD::MaterialStorage::store_transform(particles->trail_bind_poses[i], &particles_shader.pose_update_buffer[i * 16]);
 				}
 
 				RD::get_singleton()->buffer_update(particles->trail_bind_pose_buffer, 0, particles->trail_bind_poses.size() * 16 * sizeof(float), particles_shader.pose_update_buffer.ptr());
@@ -1457,14 +1456,14 @@ void ParticlesStorage::update_particles() {
 				// In local mode, particle positions are calculated locally (relative to the node position)
 				// and they're also drawn locally.
 				// It works as expected, so we just pass an identity transform.
-				RendererStorageRD::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
+				RendererRD::MaterialStorage::store_transform(Transform3D(), copy_push_constant.inv_emission_transform);
 			} else {
 				// In global mode, particle positions are calculated globally (relative to the canvas origin)
 				// but they're drawn locally.
 				// So, we need to pass the inverse of the emission transform to bring the
 				// particles to local coordinates before drawing.
 				Transform3D inv = particles->emission_transform.affine_inverse();
-				RendererStorageRD::store_transform(inv, copy_push_constant.inv_emission_transform);
+				RendererRD::MaterialStorage::store_transform(inv, copy_push_constant.inv_emission_transform);
 			}
 
 			copy_push_constant.total_particles = total_amount;
@@ -1500,7 +1499,7 @@ void ParticlesStorage::update_particles() {
 			RD::get_singleton()->compute_list_end();
 		}
 
-		particles->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+		particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 	}
 }
 
@@ -1756,7 +1755,7 @@ void ParticlesStorage::particles_collision_set_collision_type(RID p_particles_co
 		particles_collision->heightfield_texture = RID();
 	}
 	particles_collision->type = p_type;
-	particles_collision->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
@@ -1770,7 +1769,7 @@ void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_col
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->radius = p_radius;
-	particles_collision->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void ParticlesStorage::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
@@ -1778,7 +1777,7 @@ void ParticlesStorage::particles_collision_set_box_extents(RID p_particles_colli
 	ERR_FAIL_COND(!particles_collision);
 
 	particles_collision->extents = p_extents;
-	particles_collision->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void ParticlesStorage::particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) {
@@ -1812,7 +1811,7 @@ void ParticlesStorage::particles_collision_set_field_texture(RID p_particles_col
 void ParticlesStorage::particles_collision_height_field_update(RID p_particles_collision) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_COND(!particles_collision);
-	particles_collision->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {

@@ -170,7 +170,7 @@ hb_shape_plan_key_t::equal (const hb_shape_plan_key_t *other)
 
 
 /**
- * hb_shape_plan_create: (Xconstructor)
+ * hb_shape_plan_create:
  * @face: #hb_face_t to use
  * @props: The #hb_segment_properties_t of the segment
  * @user_features: (array length=num_user_features): The list of user-selected features
@@ -198,7 +198,7 @@ hb_shape_plan_create (hb_face_t                     *face,
 }
 
 /**
- * hb_shape_plan_create2: (Xconstructor)
+ * hb_shape_plan_create2:
  * @face: #hb_face_t to use
  * @props: The #hb_segment_properties_t of the segment
  * @user_features: (array length=num_user_features): The list of user-selected features
@@ -231,7 +231,8 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		  num_coords,
 		  shaper_list);
 
-  assert (props->direction != HB_DIRECTION_INVALID);
+  if (unlikely (props->direction == HB_DIRECTION_INVALID))
+    return hb_shape_plan_get_empty ();
 
   hb_shape_plan_t *shape_plan;
 

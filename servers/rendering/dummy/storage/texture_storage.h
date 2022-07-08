@@ -38,6 +38,8 @@ namespace RendererDummy {
 
 class TextureStorage : public RendererTextureStorage {
 private:
+	static TextureStorage *singleton;
+
 	struct DummyTexture {
 		Ref<Image> image;
 	};
@@ -45,10 +47,11 @@ private:
 
 public:
 	static TextureStorage *get_singleton() {
-		// Here we cheat until we can retire RasterizerStorageDummy::free()
-
-		return (TextureStorage *)RSG::texture_storage;
+		return singleton;
 	};
+
+	TextureStorage();
+	~TextureStorage();
 
 	virtual bool can_create_resources_async() const override { return false; }
 

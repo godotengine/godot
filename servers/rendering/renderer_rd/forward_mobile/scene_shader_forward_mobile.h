@@ -32,7 +32,6 @@
 #define RSSR_SCENE_SHADER_FM_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_mobile.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -40,7 +39,6 @@ namespace RendererSceneRenderImplementation {
 class SceneShaderForwardMobile {
 private:
 	static SceneShaderForwardMobile *singleton;
-	RendererStorageRD *storage = nullptr;
 
 public:
 	enum ShaderVersion {
@@ -207,7 +205,7 @@ public:
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
 
-	void init(RendererStorageRD *p_storage, const String p_defines);
+	void init(const String p_defines);
 	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 

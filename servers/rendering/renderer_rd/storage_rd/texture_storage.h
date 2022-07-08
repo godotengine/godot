@@ -33,8 +33,8 @@
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -193,7 +193,7 @@ struct Decal {
 	float distance_fade_length = 1;
 	float normal_fade = 0.0;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct RenderTarget {

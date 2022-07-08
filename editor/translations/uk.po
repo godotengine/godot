@@ -23,13 +23,14 @@
 # Wald Sin <naaveranos@gmail.com>, 2022.
 # Гліб Соколов <ramithes@i.ua>, 2022.
 # Max Donchenko <maxx.donchenko@gmail.com>, 2022.
+# Artem <artem@molotov.work>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-12 13:19+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2022-07-03 00:44+0000\n"
+"Last-Translator: Artem <artem@molotov.work>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -378,14 +379,12 @@ msgid "Max Size (KB)"
 msgstr "Макс. розмір (кБ)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Режим переміщення"
+msgstr "Режим миші"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Видалити введення"
+msgstr "Використати накопичувальне введення"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -411,6 +410,11 @@ msgstr "Meta"
 #: core/os/input_event.cpp
 msgid "Command"
 msgstr "Команда"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Physical"
+msgstr " (фізичний)"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -662,14 +666,12 @@ msgid "Script Templates Search Path"
 msgstr "Шлях пошуку для шаблонів скриптів"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Автоматично завантажувати під час запуску"
+msgstr "Автоматичне завантаження керування версіями під час запуску"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Керування версіями"
+msgstr "Назва додатка керування версіями"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2186,7 +2188,7 @@ msgstr "Відкрити"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Власник: %s (Загалом: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2746,22 +2748,19 @@ msgstr "Оберіть"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Експортування проєкту для платформи:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with errors."
-msgstr "Повні шляхи до файлів"
+msgstr "Завершено з помилками."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Пакунок успішно встановлено!"
+msgstr "Завершено успішно."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Не вдалося:"
+msgstr "Помилка."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2776,29 +2775,24 @@ msgid "Packing"
 msgstr "Пакування"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Зберегти як"
+msgstr "Зберегти PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Неможливо створити теку."
+msgstr "Не вдалося створити файл «%s»."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Не вдалося експортувати файли проєкту"
+msgstr "Не вдалося експортувати файли проєкту."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Неможливо відкрити файл для запису:"
+msgstr "Не вдалося відкрити файл для читання зі шляху «%s»."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Зберегти як"
+msgstr "Зберегти ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2918,30 +2912,25 @@ msgid "Custom release template not found."
 msgstr "Нетипового шаблону випуску не знайдено."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Керування шаблонами"
+msgstr "Приготувати шаблон"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Вказаного шляху для експортування не існує:"
+msgstr "Вказаного шляху для експортування не існує."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Файл шаблону не знайдено:"
+msgstr "Не знайдено файла шаблона: «%s»."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Неправильний шаблон експорту:"
+msgstr "Не вдалося скопіювати шаблон експортування."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Фаска"
+msgstr "Вбудовування PCK"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -5216,9 +5205,8 @@ msgstr ""
 "меню «Експорт» або визначне наявний набір як придатний до використання."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "Проєкт"
+msgstr "Запуск проєкту"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5500,6 +5488,11 @@ msgstr "Ширина мінікарти"
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Додаткові кнопки миші для навігації журналом"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Drag And Drop Selection"
+msgstr "Вибір GridMap"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -7156,12 +7149,18 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: виявлено текстуру, як використано як нормальну карту у просторовій "
+"формі. Вмикаємо стискання червоно-зеленої текстури для зменшення споживання "
+"пам'яті (канал синього відкинуто)."
 
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: виявлено, що текстуру використано у просторовій формі. Вмикаємо "
+"фільтрування, повторення, створення множинного відтворення та стискання "
+"текстур у відеопам'яті."
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
@@ -11504,9 +11503,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некоректна геометрія, неможливо замінити сіткою."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to MeshInstance2D"
-msgstr "Перетворити на Mesh2D"
+msgstr "Перетворити на MeshInstance2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -12875,14 +12873,12 @@ msgid "Selected Collision"
 msgstr "Позначене зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision One Way"
-msgstr "Тільки виділити"
+msgstr "Позначене односпрямоване зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Selected Collision One Way Margin"
-msgstr "Поле зіткнення BVH"
+msgstr "Поле позначеного односпрямованого зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Selected Navigation"
@@ -14142,9 +14138,8 @@ msgid "Export templates for this platform are missing:"
 msgstr "Немає шаблонів експортування для цієї платформи:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Project Export"
-msgstr "Засновники проєкту"
+msgstr "Експортування проєкту"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -16705,7 +16700,7 @@ msgstr "Копіювати вузол шляху"
 
 #: modules/gdscript/gdscript.cpp modules/visual_script/visual_script.cpp
 msgid "Max Call Stack"
-msgstr ""
+msgstr "Максимум стеку викликів"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
@@ -16815,11 +16810,11 @@ msgstr "Кількість розсіювання"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Buffer View"
-msgstr ""
+msgstr "Перегляд буфера розріджених індексів"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Byte Offset"
-msgstr ""
+msgstr "Байтовий зсув розріджених індексів"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Component Type"
@@ -18362,12 +18357,25 @@ msgid "The package must have at least one '.' separator."
 msgstr "У назві пакунка має бути принаймні один роздільник «.»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Custom Build"
+msgstr "Нетипова збірка"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
 msgstr "Нетипова збірка"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Export Format"
 msgstr "Формат експортування"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Min SDK"
+msgstr "Мін. SDK"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Target SDK"
+msgstr "SDK призначення"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #, fuzzy
@@ -18405,14 +18413,6 @@ msgstr "Вилучити попередньо встановлене"
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr "Код"
-
-#: platform/android/export/export_plugin.cpp
-msgid "Min SDK"
-msgstr "Мін. SDK"
-
-#: platform/android/export/export_plugin.cpp
-msgid "Target SDK"
-msgstr "SDK призначення"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 msgid "Package"
@@ -18651,15 +18651,17 @@ msgstr ""
 "«Використовувати нетипову збірку»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
 "«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
 "«Oculus Mobile VR» або «OpenXR»."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
+#, fuzzy
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr ""
 "«Стеженням за руками» можна скористатися, лише якщо «Режим Xr» дорівнює "
 "«OpenXR»."
@@ -18671,22 +18673,45 @@ msgstr ""
 "нетипове збирання»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
-"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
+"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Пункт «Мін. SDK» є чинним, лише якщо увімкнено «Використовувати нетипове "
 "збирання»."
 
 #: platform/android/export/export_plugin.cpp
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
 msgid ""
-"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
-"enabled."
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
 "Пункт «SDK цілі» є чинним, лише якщо увімкнено «Використовувати нетипове "
 "збирання»."
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr "Версія «SDK цілі» має бути більшою або рівною за версію «Мін. SDK»."
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
@@ -19029,7 +19054,7 @@ msgstr "Опис використання мікрофона"
 
 #: platform/iphone/export/export.cpp
 msgid "Photolibrary Usage Description"
-msgstr "Опис використання бібліотеки фотографій"
+msgstr "Опис використання бібліотеки світлин"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 120 X 120"
@@ -19349,7 +19374,7 @@ msgstr "Опис використання календаря"
 
 #: platform/osx/export/export.cpp
 msgid "Photos Library Usage Description"
-msgstr "Опис використання бібліотеки фотографій"
+msgstr "Опис використання бібліотеки світлин"
 
 #: platform/osx/export/export.cpp
 msgid "Desktop Folder Usage Description"
@@ -19430,7 +19455,7 @@ msgstr "Календарі"
 
 #: platform/osx/export/export.cpp
 msgid "Photos Library"
-msgstr "Бібліотека фотографій"
+msgstr "Бібліотека світлин"
 
 #: platform/osx/export/export.cpp
 msgid "Apple Events"
@@ -19815,7 +19840,7 @@ msgid ""
 "Privacy: Photo library access is enabled, but usage description is not "
 "specified."
 msgstr ""
-"Конфіденційність: увімкнено доступ до бібліотеки фотографій, але опис "
+"Конфіденційність: увімкнено доступ до бібліотеки світлин, але опис "
 "використання не вказано."
 
 #: platform/osx/export/export.cpp
@@ -20348,7 +20373,7 @@ msgstr "Масштаб"
 msgid "Custom Viewport"
 msgstr "1 панель перегляду"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
 #: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 msgid "Process Mode"
@@ -21036,12 +21061,31 @@ msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
+msgid "Pathfinding"
+msgstr "Палітурка"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
 msgid "Path Desired Distance"
 msgstr "U-відстань контуру"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr ""
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Path Max Distance"
+msgstr "Макс. відстань контуру"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance"
+msgstr "Додатково"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance Enabled"
+msgstr "Приховування увімкнено"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Neighbor Dist"
@@ -21058,15 +21102,6 @@ msgstr "Віддзеркалити горизонтально"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Max Speed"
 msgstr "Макс. швидкість"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-msgid "Path Max Distance"
-msgstr "Макс. відстань контуру"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
-msgid "Avoidance Enabled"
-msgstr "Приховування увімкнено"
 
 #: scene/2d/navigation_agent_2d.cpp
 #, fuzzy
@@ -24180,6 +24215,11 @@ msgid "Fold Gutter"
 msgstr "Міжстовпцевий проміжок згортання"
 
 #: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Drag And Drop Selection Enabled"
+msgstr "Увімкнено позначення"
+
+#: scene/gui/text_edit.cpp
 msgid "Hiding Enabled"
 msgstr "Приховування увімкнено"
 
@@ -24538,23 +24578,20 @@ msgstr "Шлях до панелі перегляду"
 
 #: scene/main/viewport.cpp
 msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Ця панель показу не є ціллю обробки зображення. Якщо ви хочете, щоб її вміст "
-"було безпосередньо показано на екрані, зробіть її дочірньою для вузла "
-"Control, щоб у неї був розмір. Крім того, можна зробити її RenderTarget і "
-"пов'язати її внутрішню текстуру з одним із вузлів для показу."
-
-#: scene/main/viewport.cpp
-msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr ""
 "Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
 "або рівним 2 пікселям в обох вимірах."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-"
+"Sampling.\n"
+"HDR is only supported in Viewports that have their Usage set to 3D or 3D No-"
+"Effects.\n"
+"HDR will be disabled for this Viewport."
+msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "ARVR"

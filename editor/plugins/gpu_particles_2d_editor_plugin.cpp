@@ -299,12 +299,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	img.instantiate();
 	img->create(w, h, false, Image::FORMAT_RGF, texdata);
-
-	Ref<ImageTexture> imgt;
-	imgt.instantiate();
-	imgt->create_from_image(img);
-
-	pm->set_emission_point_texture(imgt);
+	pm->set_emission_point_texture(ImageTexture::create_from_image(img));
 	pm->set_emission_point_count(vpc);
 
 	if (capture_colors) {
@@ -320,10 +315,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
-
-		imgt.instantiate();
-		imgt->create_from_image(img);
-		pm->set_emission_color_texture(imgt);
+		pm->set_emission_color_texture(ImageTexture::create_from_image(img));
 	}
 
 	if (valid_normals.size()) {
@@ -343,10 +335,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGF, normdata);
-
-		imgt.instantiate();
-		imgt->create_from_image(img);
-		pm->set_emission_normal_texture(imgt);
+		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {
 		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);

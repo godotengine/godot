@@ -138,8 +138,11 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
-		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+		} else {
+			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
+			property.hint_string = "0,0,1";
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}

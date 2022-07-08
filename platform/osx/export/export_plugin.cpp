@@ -252,7 +252,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
-			it->create_from_image(copy);
+			it->set_image(copy);
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
@@ -1086,6 +1086,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
 				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
+					f.unref();
 					if (is_execute) {
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
@@ -1665,9 +1666,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformOSX::EditorExportPlatformOSX() {
-	Ref<Image> img = memnew(Image(_osx_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_osx_logo)));
 }
 
 EditorExportPlatformOSX::~EditorExportPlatformOSX() {

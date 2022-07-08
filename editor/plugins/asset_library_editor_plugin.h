@@ -301,6 +301,8 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_external_asset(String p_zip_path, String p_title);
 
+	void _update_asset_items_columns();
+
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
 
@@ -311,7 +313,6 @@ protected:
 
 public:
 	void disable_community_support();
-	void set_columns(int p_columns);
 
 	EditorAssetLibrary(bool p_templates_only = false);
 };

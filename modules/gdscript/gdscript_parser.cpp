@@ -105,6 +105,10 @@ void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const 
 	}
 }
 
+bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
+	return valid_annotations.has(p_annotation_name);
+}
+
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	// TODO: Should this be static?
@@ -131,6 +135,11 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@export_flags_3d_render"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_RENDER, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 	register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
+	// Export grouping annotations.
+	register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
+	register_annotation(MethodInfo("@export_group", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_GROUP>, 1);
+	register_annotation(MethodInfo("@export_subgroup", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::STRING, "prefix")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_SUBGROUP>, 1);
+	// Warning annotations.
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, 0, true);
 	// Networking.
 	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::network_annotations<Multiplayer::RPC_MODE_AUTHORITY>, 4, true);
@@ -519,9 +528,13 @@ void GDScriptParser::parse_program() {
 	head = alloc_node<ClassNode>();
 	current_class = head;
 
+	// If we happen to parse an annotation before extends or class_name keywords, track it.
+	// @tool is allowed, but others should fail.
+	AnnotationNode *premature_annotation = nullptr;
+
 	if (match(GDScriptTokenizer::Token::ANNOTATION)) {
-		// Check for @tool annotation.
-		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::CLASS_LEVEL);
+		// Check for @tool, script-level, or standalone annotation.
+		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 		if (annotation != nullptr) {
 			if (annotation->name == SNAME("@tool")) {
 				// TODO: don't allow @tool anywhere else. (Should all script annotations be the first thing?).
@@ -531,7 +544,14 @@ void GDScriptParser::parse_program() {
 				}
 				// @tool annotation has no specific target.
 				annotation->apply(this, nullptr);
+			} else if (annotation->applies_to(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE)) {
+				premature_annotation = annotation;
+				if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+					push_error(R"(Expected newline after a standalone annotation.)");
+				}
+				annotation->apply(this, head);
 			} else {
+				premature_annotation = annotation;
 				annotation_stack.push_back(annotation);
 			}
 		}
@@ -541,8 +561,8 @@ void GDScriptParser::parse_program() {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
 			case GDScriptTokenizer::Token::CLASS_NAME:
-				if (!annotation_stack.is_empty()) {
-					push_error(R"("class_name" should be used before annotations.)");
+				if (premature_annotation != nullptr) {
+					push_error(R"("class_name" should be used before annotations (except @tool).)");
 				}
 				advance();
 				if (head->identifier != nullptr) {
@@ -552,8 +572,8 @@ void GDScriptParser::parse_program() {
 				}
 				break;
 			case GDScriptTokenizer::Token::EXTENDS:
-				if (!annotation_stack.is_empty()) {
-					push_error(R"("extends" should be used before annotations.)");
+				if (premature_annotation != nullptr) {
+					push_error(R"("extends" should be used before annotations (except @tool).)");
 				}
 				advance();
 				if (head->extends_used) {
@@ -574,12 +594,12 @@ void GDScriptParser::parse_program() {
 	}
 
 	if (match(GDScriptTokenizer::Token::ANNOTATION)) {
-		// Check for @icon annotation.
-		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::CLASS_LEVEL);
+		// Check for a script-level, or standalone annotation.
+		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 		if (annotation != nullptr) {
-			if (annotation->name == SNAME("@icon")) {
+			if (annotation->applies_to(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE)) {
 				if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
-					push_error(R"(Expected newline after "@icon" annotation.)");
+					push_error(R"(Expected newline after a standalone annotation.)");
 				}
 				annotation->apply(this, head);
 			} else {
@@ -807,9 +827,18 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				break;
 			case GDScriptTokenizer::Token::ANNOTATION: {
 				advance();
-				AnnotationNode *annotation = parse_annotation(AnnotationInfo::CLASS_LEVEL);
+
+				// Check for class-level annotations.
+				AnnotationNode *annotation = parse_annotation(AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 				if (annotation != nullptr) {
-					annotation_stack.push_back(annotation);
+					if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
+						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
+							push_error(R"(Expected newline after a standalone annotation.)");
+						}
+						annotation->apply(this, head);
+					} else {
+						annotation_stack.push_back(annotation);
+					}
 				}
 				break;
 			}
@@ -1748,6 +1777,10 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
+		const SuiteNode::Local &local = current_suite->get_local(n_for->variable->name);
+		if (local.type != SuiteNode::Local::UNDEFINED) {
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->variable->name), n_for->variable);
+		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
 	suite->parent_for = n_for;
@@ -3662,6 +3695,36 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	return true;
 }
 
+template <PropertyUsageFlags t_usage>
+bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation, Node *p_node) {
+	AnnotationNode *annotation = const_cast<AnnotationNode *>(p_annotation);
+
+	annotation->export_info.name = annotation->resolved_arguments[0];
+
+	switch (t_usage) {
+		case PROPERTY_USAGE_CATEGORY: {
+			annotation->export_info.usage = t_usage;
+		} break;
+
+		case PROPERTY_USAGE_GROUP: {
+			annotation->export_info.usage = t_usage;
+			if (annotation->resolved_arguments.size() == 2) {
+				annotation->export_info.hint_string = annotation->resolved_arguments[1];
+			}
+		} break;
+
+		case PROPERTY_USAGE_SUBGROUP: {
+			annotation->export_info.usage = t_usage;
+			if (annotation->resolved_arguments.size() == 2) {
+				annotation->export_info.hint_string = annotation->resolved_arguments[1];
+			}
+		} break;
+	}
+
+	current_class->add_member_group(annotation);
+	return true;
+}
+
 bool GDScriptParser::warning_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 #ifdef DEBUG_ENABLED
 	bool has_error = false;
@@ -4145,6 +4208,8 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 				break;
 			case ClassNode::Member::ENUM_VALUE:
 				break; // Nothing. Will be printed by enum.
+			case ClassNode::Member::GROUP:
+				break; // Nothing. Groups are only used by inspector.
 			case ClassNode::Member::UNDEFINED:
 				push_line("<unknown member>");
 				break;

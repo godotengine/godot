@@ -2931,10 +2931,6 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
 			}
 		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
-			ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
-		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "clear_icon", p_item_name, edited_type);
 			if (edited_theme->has_icon(p_item_name, edited_type)) {
@@ -3698,7 +3694,7 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 
 	// If we are editing a theme already and this particular resource happens to belong to it,
 	// then we just keep editing it, despite not being able to directly handle it.
-	// This only goes one layer deep, but if required this can be extended to support, say, FontData inside of Font.
+	// This only goes one layer deep, but if required this can be extended to support, say, Font inside of Font.
 	bool belongs_to_theme = false;
 
 	if (Object::cast_to<Font>(p_node)) {

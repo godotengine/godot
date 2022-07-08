@@ -125,6 +125,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "constant") {
 			topic = "class_constant";
 			table = &this->constant_line;
+		} else if (tag == "annotation") {
+			topic = "class_annotation";
+			table = &this->annotation_line;
 		} else if (tag == "theme_item") {
 			topic = "theme_item";
 			table = &this->theme_property_line;
@@ -183,7 +186,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// The margins increase as the width of the editor help container increases.
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	int font_size = get_theme_font_size(SNAME("doc_source_size"), SNAME("EditorFonts"));
-	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
+	real_t char_width = doc_code_font->get_char_size('x', font_size).width;
 	const int new_display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
@@ -274,7 +277,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->add_text(" ");
 	}
 
-	if (p_overview && !p_method.description.is_empty()) {
+	if (p_overview && !p_method.description.strip_edges().is_empty()) {
 		class_desc->push_meta("@method " + p_method.name);
 	}
 
@@ -282,7 +285,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	_add_text(p_method.name);
 	class_desc->pop();
 
-	if (p_overview && !p_method.description.is_empty()) {
+	if (p_overview && !p_method.description.strip_edges().is_empty()) {
 		class_desc->pop(); //meta
 	}
 
@@ -412,7 +415,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 				class_desc->pop(); //cell
 			}
 
-			if (!m[i].description.is_empty() || m[i].errors_returned.size() > 0) {
+			if (!m[i].description.strip_edges().is_empty() || m[i].errors_returned.size() > 0) {
 				r_method_descrpitons = true;
 			}
 
@@ -611,7 +614,7 @@ void EditorHelp::_update_doc() {
 	class_desc->add_newline();
 
 	// Brief description
-	if (!cd.brief_description.is_empty()) {
+	if (!cd.brief_description.strip_edges().is_empty()) {
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
@@ -625,7 +628,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Class description
-	if (!cd.description.is_empty()) {
+	if (!cd.description.strip_edges().is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
 		description_line = class_desc->get_paragraph_count() - 2;
 		class_desc->push_color(title_color);
@@ -692,7 +695,7 @@ void EditorHelp::_update_doc() {
 	if (cd.is_script_doc) {
 		has_properties = false;
 		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.is_empty()) {
+			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
 			}
 			has_properties = true;
@@ -718,7 +721,7 @@ void EditorHelp::_update_doc() {
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 			// Ignore undocumented private.
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.is_empty()) {
+			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
 				continue;
 			}
 			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
@@ -743,7 +746,7 @@ void EditorHelp::_update_doc() {
 				describe = true;
 			}
 
-			if (!cd.properties[i].description.is_empty()) {
+			if (!cd.properties[i].description.strip_edges().is_empty()) {
 				describe = true;
 			}
 
@@ -856,7 +859,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 		// Ignore undocumented non virtual private.
-		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.is_empty() && !cd.methods[i].qualifiers.contains("virtual")) {
+		if (cd.methods[i].name.begins_with("_") && cd.methods[i].description.strip_edges().is_empty() && !cd.methods[i].qualifiers.contains("virtual")) {
 			continue;
 		}
 		methods.push_back(cd.methods[i]);
@@ -976,7 +979,7 @@ void EditorHelp::_update_doc() {
 			class_desc->pop(); // monofont
 
 			// Theme item description.
-			if (!cd.theme_properties[i].description.is_empty()) {
+			if (!cd.theme_properties[i].description.strip_edges().is_empty()) {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
 				class_desc->push_indent(1);
@@ -1018,8 +1021,8 @@ void EditorHelp::_update_doc() {
 			signal_line[cd.signals[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
 
 			class_desc->push_font(doc_code_font); // monofont
-			class_desc->push_color(headline_color);
 			_add_bulletpoint();
+			class_desc->push_color(headline_color);
 			_add_text(cd.signals[i].name);
 			class_desc->pop();
 			class_desc->push_color(symbol_color);
@@ -1048,7 +1051,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(")");
 			class_desc->pop();
 			class_desc->pop(); // end monofont
-			if (!cd.signals[i].description.is_empty()) {
+			if (!cd.signals[i].description.strip_edges().is_empty()) {
 				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
 				class_desc->push_indent(1);
@@ -1079,7 +1082,7 @@ void EditorHelp::_update_doc() {
 				enums[cd.constants[i].enumeration].push_back(cd.constants[i]);
 			} else {
 				// Ignore undocumented private.
-				if (cd.constants[i].name.begins_with("_") && cd.constants[i].description.is_empty()) {
+				if (cd.constants[i].name.begins_with("_") && cd.constants[i].description.strip_edges().is_empty()) {
 					continue;
 				}
 				constants.push_back(cd.constants[i]);
@@ -1105,7 +1108,11 @@ void EditorHelp::_update_doc() {
 
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(title_color);
-				class_desc->add_text("enum  ");
+				if (E.value.size() && E.value[0].is_bitfield) {
+					class_desc->add_text("flags  ");
+				} else {
+					class_desc->add_text("enum  ");
+				}
 				class_desc->pop();
 				String e = E.key;
 				if ((e.get_slice_count(".") > 1) && (e.get_slice(".", 0) == edited_class)) {
@@ -1151,8 +1158,8 @@ void EditorHelp::_update_doc() {
 					constant_line[enum_list[i].name] = class_desc->get_paragraph_count() - 2;
 
 					class_desc->push_font(doc_code_font);
-					class_desc->push_color(headline_color);
 					_add_bulletpoint();
+					class_desc->push_color(headline_color);
 					_add_text(enum_list[i].name);
 					class_desc->pop();
 					class_desc->push_color(symbol_color);
@@ -1236,7 +1243,7 @@ void EditorHelp::_update_doc() {
 
 				class_desc->add_newline();
 
-				if (!constants[i].description.is_empty()) {
+				if (!constants[i].description.strip_edges().is_empty()) {
 					class_desc->push_font(doc_font);
 					class_desc->push_color(comment_color);
 					_add_text(DTR(constants[i].description));
@@ -1253,6 +1260,112 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 			class_desc->add_newline();
 		}
+	}
+
+	// Annotations
+	if (!cd.annotations.is_empty()) {
+		if (sort_methods) {
+			cd.annotations.sort();
+		}
+
+		section_line.push_back(Pair<String, int>(TTR("Annotations"), class_desc->get_paragraph_count() - 2));
+		class_desc->push_color(title_color);
+		class_desc->push_font(doc_title_font);
+		class_desc->push_font_size(doc_title_font_size);
+		class_desc->add_text(TTR("Annotations"));
+		class_desc->pop(); // font size
+		class_desc->pop(); // font
+		class_desc->pop(); // color
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+
+		class_desc->push_indent(1);
+
+		for (int i = 0; i < cd.annotations.size(); i++) {
+			annotation_line[cd.annotations[i].name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description.
+
+			class_desc->push_font(doc_code_font); // monofont
+			_add_bulletpoint();
+			class_desc->push_color(headline_color);
+			_add_text(cd.annotations[i].name);
+			class_desc->pop();
+
+			if (cd.annotations[i].arguments.size() > 0) {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("(");
+				class_desc->pop();
+				for (int j = 0; j < cd.annotations[i].arguments.size(); j++) {
+					class_desc->push_color(text_color);
+					if (j > 0) {
+						class_desc->add_text(", ");
+					}
+
+					_add_text(cd.annotations[i].arguments[j].name);
+					class_desc->add_text(": ");
+					_add_type(cd.annotations[i].arguments[j].type);
+					if (!cd.annotations[i].arguments[j].default_value.is_empty()) {
+						class_desc->push_color(symbol_color);
+						class_desc->add_text(" = ");
+						class_desc->pop();
+						_add_text(cd.annotations[i].arguments[j].default_value);
+					}
+
+					class_desc->pop();
+				}
+
+				if (cd.annotations[i].qualifiers.contains("vararg")) {
+					class_desc->push_color(text_color);
+					if (cd.annotations[i].arguments.size()) {
+						class_desc->add_text(", ");
+					}
+					class_desc->push_color(symbol_color);
+					class_desc->add_text("...");
+					class_desc->pop();
+					class_desc->pop();
+				}
+
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(")");
+				class_desc->pop();
+			}
+
+			if (!cd.annotations[i].qualifiers.is_empty()) {
+				class_desc->push_color(qualifier_color);
+				class_desc->add_text(" ");
+				_add_text(cd.annotations[i].qualifiers);
+				class_desc->pop();
+			}
+
+			class_desc->pop(); // end monofont
+
+			if (!cd.annotations[i].description.strip_edges().is_empty()) {
+				class_desc->push_font(doc_font);
+				class_desc->push_color(comment_color);
+				class_desc->push_indent(1);
+				_add_text(DTR(cd.annotations[i].description));
+				class_desc->pop(); // indent
+				class_desc->pop();
+				class_desc->pop(); // font
+			} else {
+				class_desc->push_indent(1);
+				class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+				class_desc->add_text(" ");
+				class_desc->push_color(comment_color);
+				if (cd.is_script_doc) {
+					class_desc->append_text(TTR("There is currently no description for this annotation."));
+				} else {
+					class_desc->append_text(TTR("There is currently no description for this annotation. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+				}
+				class_desc->pop();
+				class_desc->pop(); // indent
+			}
+			class_desc->add_newline();
+			class_desc->add_newline();
+		}
+
+		class_desc->pop();
+		class_desc->add_newline();
 	}
 
 	// Property descriptions
@@ -1500,6 +1613,10 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	} else if (what == "class_constant") {
 		if (constant_line.has(name)) {
 			line = constant_line[name];
+		}
+	} else if (what == "class_annotation") {
+		if (annotation_line.has(name)) {
+			line = annotation_line[name];
 		}
 	} else if (what == "class_global") {
 		if (constant_line.has(name)) {

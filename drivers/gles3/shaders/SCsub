@@ -10,7 +10,7 @@ if "GLES3_GLSL" in env["BUILDERS"]:
     glsl_files = [str(f) for f in Glob("*.glsl") if str(f) not in gl_include_files]
 
     # make sure we recompile shaders if include files change
-    env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files)
+    env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files + ["#gles3_builders.py"])
 
     env.GLES3_GLSL("canvas.glsl")
     env.GLES3_GLSL("copy.glsl")

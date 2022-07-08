@@ -53,6 +53,9 @@ DEFINE_NULL_NAMESPACE_BYTES (AAT, SettingName) = {0xFF,0xFF, 0xFF,0xFF};
 const unsigned char _hb_Null_AAT_Lookup[2] = {0xFF, 0xFF};
 
 
+/* hb_map_t */
+
+const hb_codepoint_t minus_1 = -1;
 
 /* hb_face_t */
 

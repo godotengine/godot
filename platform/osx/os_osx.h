@@ -57,7 +57,7 @@ class OS_OSX : public OS_Unix {
 
 	MainLoop *main_loop = nullptr;
 
-	String open_with_filename;
+	List<String> launch_service_args;
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
@@ -73,8 +73,8 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
-	String get_open_with_filename() const;
-	void set_open_with_filename(const String &p_path);
+	virtual void set_cmdline_platform_args(const List<String> &p_args);
+	virtual List<String> get_cmdline_platform_args() const override;
 
 	virtual String get_name() const override;
 

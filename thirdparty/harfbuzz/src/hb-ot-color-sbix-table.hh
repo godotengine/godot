@@ -298,6 +298,12 @@ struct sbix
 
       const PNGHeader &png = *blob->as<PNGHeader>();
 
+      if (png.IHDR.height >= 65536 || png.IHDR.width >= 65536)
+      {
+	hb_blob_destroy (blob);
+	return false;
+      }
+
       extents->x_bearing = x_offset;
       extents->y_bearing = png.IHDR.height + y_offset;
       extents->width     = png.IHDR.width;

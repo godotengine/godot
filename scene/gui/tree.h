@@ -63,7 +63,6 @@ private:
 		String text;
 		String suffix;
 		Ref<TextLine> text_buf;
-		Dictionary opentype_features;
 		String language;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
@@ -219,10 +218,6 @@ public:
 
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
-
-	void set_opentype_feature(int p_column, const String &p_name, int p_value);
-	int get_opentype_feature(int p_column, const String &p_name) const;
-	void clear_opentype_features(int p_column);
 
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
@@ -429,7 +424,6 @@ private:
 		bool clip_content = false;
 		String title;
 		Ref<TextLine> text_buf;
-		Dictionary opentype_features;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		ColumnInfo() {
@@ -616,6 +610,8 @@ private:
 	void _go_down();
 	void _go_up();
 
+	bool _scroll(bool p_horizontal, float p_pages);
+
 protected:
 	static void _bind_methods();
 
@@ -665,10 +661,6 @@ public:
 
 	void set_column_title_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_column_title_direction(int p_column) const;
-
-	void set_column_title_opentype_feature(int p_column, const String &p_name, int p_value);
-	int get_column_title_opentype_feature(int p_column, const String &p_name) const;
-	void clear_column_title_opentype_features(int p_column);
 
 	void set_column_title_language(int p_column, const String &p_language);
 	String get_column_title_language(int p_column) const;

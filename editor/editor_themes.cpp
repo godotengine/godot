@@ -97,7 +97,6 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 		return p_texture;
 	}
 
-	Ref<ImageTexture> texture(memnew(ImageTexture));
 	Ref<Image> img = p_texture->get_image();
 	ERR_FAIL_NULL_V(img, Ref<Texture2D>());
 	img = img->duplicate();
@@ -109,14 +108,12 @@ static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false,
 		img->flip_x();
 	}
 
-	texture->create_from_image(img);
-	return texture;
+	return ImageTexture::create_from_image(img);
 }
 
 #ifdef MODULE_SVG_ENABLED
 // See also `generate_icon()` in `scene/resources/default_theme.cpp`.
 static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, float p_saturation = 1.0, Dictionary p_convert_colors = Dictionary()) {
-	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
 	// Upsample icon generation only if the editor scale isn't an integer multiplier.
@@ -129,9 +126,9 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color,
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
-	icon->create_from_image(img); // in this case filter really helps
 
-	return icon;
+	// In this case filter really helps.
+	return ImageTexture::create_from_image(img);
 }
 #endif
 
@@ -1683,6 +1680,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color completion_existing_color = alpha2;
 	// Same opacity as the scroll grabber editor icon.
 	const Color completion_scroll_color = Color(mono_value, mono_value, mono_value, 0.29);
+	const Color completion_scroll_hovered_color = Color(mono_value, mono_value, mono_value, 0.4);
 	const Color completion_font_color = font_color;
 	const Color text_color = font_color;
 	const Color line_number_color = dim_color;
@@ -1721,6 +1719,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/completion_selected_color", completion_selected_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_existing_color", completion_existing_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_color", completion_scroll_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/completion_scroll_hovered_color", completion_scroll_hovered_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/completion_font_color", completion_font_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/text_color", text_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/line_number_color", line_number_color, true);
@@ -1766,6 +1765,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));
 	theme->set_color("completion_existing_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_existing_color"));
 	theme->set_color("completion_scroll_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_color"));
+	theme->set_color("completion_scroll_hovered_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_scroll_hovered_color"));
 	theme->set_color("completion_font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_font_color"));
 	theme->set_color("font_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/text_color"));
 	theme->set_color("line_number_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/line_number_color"));

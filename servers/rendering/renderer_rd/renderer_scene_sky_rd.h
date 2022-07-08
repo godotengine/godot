@@ -33,11 +33,13 @@
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/sky.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/shader_compiler.h"
 
 // Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 class RendererSceneRenderRD;
@@ -63,7 +65,6 @@ public:
 	};
 
 private:
-	RendererStorageRD *storage = nullptr;
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 	RID index_buffer;
@@ -211,10 +212,10 @@ public:
 		Vector<Layer> layers;
 
 		void clear_reflection_data();
-		void update_reflection_data(RendererStorageRD *p_storage, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality, int p_roughness_layers, RD::DataFormat p_texture_format);
-		void create_reflection_fast_filter(RendererStorageRD *p_storage, bool p_use_arrays);
-		void create_reflection_importance_sample(RendererStorageRD *p_storage, bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
-		void update_reflection_mipmaps(RendererStorageRD *p_storage, int p_start, int p_end);
+		void update_reflection_data(int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality, int p_roughness_layers, RD::DataFormat p_texture_format);
+		void create_reflection_fast_filter(bool p_use_arrays);
+		void create_reflection_importance_sample(bool p_use_arrays, int p_cube_side, int p_base_layer, uint32_t p_sky_ggx_samples_quality);
+		void update_reflection_mipmaps(int p_start, int p_end);
 	};
 
 	/* Sky shader */
@@ -267,9 +268,9 @@ public:
 		Vector3 prev_position;
 		float prev_time;
 
-		void free(RendererStorageRD *p_storage);
+		void free();
 
-		RID get_textures(RendererStorageRD *p_storage, SkyTextureSetVersion p_version, RID p_default_shader_rd);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd);
 		bool set_radiance_size(int p_radiance_size);
 		bool set_mode(RS::SkyMode p_mode);
 		bool set_material(RID p_material);
@@ -289,7 +290,7 @@ public:
 	static RendererRD::MaterialData *_create_sky_material_funcs(RendererRD::ShaderData *p_shader);
 
 	RendererSceneSkyRD();
-	void init(RendererStorageRD *p_storage);
+	void init();
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~RendererSceneSkyRD();
 

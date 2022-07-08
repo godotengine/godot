@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-06-20 06:44+0000\n"
+"PO-Revision-Date: 2022-06-30 16:42+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -465,6 +465,11 @@ msgstr "Meta"
 #: core/os/input_event.cpp
 msgid "Command"
 msgstr "Command"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Physical"
+msgstr " （物理）"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -5429,6 +5434,11 @@ msgstr "小地图宽度"
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "使用专门鼠标按键查看历史"
+
+#: editor/editor_settings.cpp
+#, fuzzy
+msgid "Drag And Drop Selection"
+msgstr "GridMap 选择"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -18065,12 +18075,25 @@ msgid "The package must have at least one '.' separator."
 msgstr "包必须至少有一个 “.” 分隔符。"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
+msgid "Custom Build"
+msgstr "使用自定义构建"
+
+#: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
 msgstr "使用自定义构建"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Export Format"
 msgstr "导出格式"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Min SDK"
+msgstr "最小 SDK"
+
+#: platform/android/export/export_plugin.cpp
+msgid "Target SDK"
+msgstr "目标 SDK"
 
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 msgid "Architectures"
@@ -18107,14 +18130,6 @@ msgstr "清除上次安装"
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
 msgstr "代码"
-
-#: platform/android/export/export_plugin.cpp
-msgid "Min SDK"
-msgstr "最小 SDK"
-
-#: platform/android/export/export_plugin.cpp
-msgid "Target SDK"
-msgstr "目标 SDK"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 msgid "Package"
@@ -18337,14 +18352,14 @@ msgstr "必须启用 “使用自定义构建” 才能使用插件。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VrApi\" "
+"\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
-"“Hand Tracking”只有在当“Xr Mode”是“Oculus Mobile VrApi”或“OpenXR”时才有效。"
+"“Hand Tracking”只有在当“XR Mode”是“Oculus Mobile VrApi”或“OpenXR”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Passthrough\" is only valid when \"Xr Mode\" is \"OpenXR\"."
-msgstr "“Passthrough”只有在当“Xr Mode”是“OpenXR”时才有效。"
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr "“Passthrough”只有在当“XR Mode”是“OpenXR”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
@@ -18352,18 +18367,38 @@ msgstr "“Export AAB”只有在当启用“Use Custom Build”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"Changing the \"Min Sdk\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "修改“Min Sdk”只有在当启用“Use Custom Build”时才有效。"
+"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
+msgstr "修改“Min SDK”只有在当启用“Use Custom Build”时才有效。"
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
-"Changing the \"Target Sdk\" is only valid when \"Use Custom Build\" is "
-"enabled."
-msgstr "修改“Target Sdk”只有在当启用“Use Custom Build”时才有效。"
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-msgid "\"Target Sdk\" version must be greater or equal to \"Min Sdk\" version."
-msgstr "“Target Sdk”版本必须大于等于“Min Sdk”版本。"
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
+msgstr "修改“Target SDK”只有在当启用“Use Custom Build”时才有效。"
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid ""
+"\"Target SDK\" %d is higher than the default version %d. This may work, but "
+"wasn't tested and may be unstable."
+msgstr ""
+
+#: platform/android/export/export_plugin.cpp
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr "“Target SDK”版本必须大于等于“Min SDK”版本。"
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
@@ -19894,7 +19929,7 @@ msgstr "缩放"
 msgid "Custom Viewport"
 msgstr "自定义视区"
 
-#: scene/2d/camera_2d.cpp scene/3d/camera.cpp
+#: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
 #: scene/animation/animation_tree_player.cpp scene/main/timer.cpp
 msgid "Process Mode"
@@ -20567,15 +20602,34 @@ msgid ""
 "will be removed in a future version. Use 'Navigation2DServer.map_get_path()' "
 "instead."
 msgstr ""
+"“Navigation2D”节点和“Navigation2D.get_simple_path()”已废弃，会在将来的版本中"
+"移除。请用“Navigation2DServer.map_get_path()”替代。"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
+msgid "Pathfinding"
+msgstr "绑定"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Path Desired Distance"
-msgstr "目标期望距离"
+msgstr "路径期望距离"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
 msgstr "目标期望距离"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Path Max Distance"
+msgstr "路径最大距离"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+#, fuzzy
+msgid "Avoidance"
+msgstr "高级"
+
+#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
+msgid "Avoidance Enabled"
+msgstr "启用避障"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Neighbor Dist"
@@ -20592,14 +20646,6 @@ msgstr "时间下限"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Max Speed"
 msgstr "最大速度"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-msgid "Path Max Distance"
-msgstr "路径最大距离"
-
-#: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-msgid "Avoidance Enabled"
-msgstr "启用避障"
 
 #: scene/2d/navigation_agent_2d.cpp
 msgid ""
@@ -21699,6 +21745,8 @@ msgid ""
 "be removed in a future version. Use 'NavigationServer.map_get_path()' "
 "instead."
 msgstr ""
+"“Navigation”节点和“Navigation.get_simple_path()”已废弃，会在将来的版本中移"
+"除。请用“NavigationServer.map_get_path()”替代。"
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -23603,6 +23651,11 @@ msgid "Fold Gutter"
 msgstr "折叠栏"
 
 #: scene/gui/text_edit.cpp
+#, fuzzy
+msgid "Drag And Drop Selection Enabled"
+msgstr "启用选择"
+
+#: scene/gui/text_edit.cpp
 msgid "Hiding Enabled"
 msgstr "启用隐藏"
 
@@ -23959,20 +24012,18 @@ msgstr "Viewport 路径"
 
 #: scene/main/viewport.cpp
 msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"这个视窗未被设置为渲染目标。如果你想让其直接在屏幕上显示内容，请使其成为 "
-"Control 的子节点，这样一来该 Viewport 才会有大小。否则请为其设置 "
-"RenderTarget 并分配其内部纹理来显示。"
-
-#: scene/main/viewport.cpp
-msgid ""
 "The Viewport size must be greater than or equal to 2 pixels on both "
 "dimensions to render anything."
 msgstr "Viewport 的宽高都大于等于 2 像素时才能进行渲染。"
+
+#: scene/main/viewport.cpp
+msgid ""
+"This Viewport has HDR enabled, but its Usage is set to 2D or 2D No-"
+"Sampling.\n"
+"HDR is only supported in Viewports that have their Usage set to 3D or 3D No-"
+"Effects.\n"
+"HDR will be disabled for this Viewport."
+msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "ARVR"
@@ -25482,14 +25533,12 @@ msgid "Walkable Low Height Spans"
 msgstr "可行走低高度范围"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Baking AABB"
-msgstr "正在生成 AABB"
+msgstr "烘焙 AABB"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Baking AABB Offset"
-msgstr "基础偏移"
+msgstr "烘焙 AABB 偏移"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"

@@ -32,6 +32,7 @@
 #define MATERIAL_STORAGE_DUMMY_H
 
 #include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererDummy {
 
@@ -87,7 +88,7 @@ public:
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
-	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) override {}
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
 };
 
 } // namespace RendererDummy

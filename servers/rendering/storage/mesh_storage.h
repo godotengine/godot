@@ -31,8 +31,8 @@
 #ifndef MESH_STORAGE_H
 #define MESH_STORAGE_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
+#include "utilities.h"
 
 class RendererMeshStorage {
 public:
@@ -130,7 +130,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
-	virtual void skeleton_update_dependency(RID p_base, RendererStorage::DependencyTracker *p_instance) = 0;
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 };
 
 #endif // !MESH_STORAGE_H

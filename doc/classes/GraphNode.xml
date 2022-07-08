@@ -17,12 +17,6 @@
 				Disables all input and output slots of the GraphNode.
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="clear_slot">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -98,13 +92,6 @@
 				Returns the type of the output connection [code]idx[/code].
 			</description>
 		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color" />
 			<argument index="0" name="idx" type="int" />
@@ -152,14 +139,6 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_slot">

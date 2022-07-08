@@ -110,7 +110,7 @@ private:
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
 	bool use_input_buffering = false;
-	bool use_accumulated_input = false;
+	bool use_accumulated_input = true;
 
 	int mouse_from_touch_index = -1;
 

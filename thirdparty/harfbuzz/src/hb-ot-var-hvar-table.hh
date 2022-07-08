@@ -319,10 +319,15 @@ struct HVARVVAR
 						hvar_plan.index_map_plans.as_array ()));
   }
 
-  float get_advance_var (hb_codepoint_t glyph, hb_font_t *font) const
+  float get_advance_var (hb_codepoint_t  glyph,
+			 hb_font_t      *font,
+			 VariationStore::cache_t *store_cache = nullptr) const
   {
     uint32_t varidx = (this+advMap).map (glyph);
-    return (this+varStore).get_delta (varidx, font->coords, font->num_coords);
+    return (this+varStore).get_delta (varidx,
+				      font->coords,
+				      font->num_coords,
+				      store_cache);
   }
 
   float get_side_bearing_var (hb_codepoint_t glyph,
@@ -335,7 +340,7 @@ struct HVARVVAR
 
   bool has_side_bearing_deltas () const { return lsbMap && rsbMap; }
 
-  protected:
+  public:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
   Offset32To<VariationStore>

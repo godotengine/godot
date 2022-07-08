@@ -127,6 +127,8 @@ jobs:
       - name: Unit tests
         if: ${{ matrix.tests }}
         run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
           ${{ matrix.bin }} --test --headless
 
       # Check class reference

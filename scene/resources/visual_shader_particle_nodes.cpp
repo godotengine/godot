@@ -470,7 +470,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector2> 
 		image->set_pixel(i, 0, Color(v.x, v.y, 0));
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}
@@ -491,7 +491,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector3> 
 		image->set_pixel(i, 0, Color(v.x, v.y, v.z));
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}
@@ -511,7 +511,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Color> &p
 		image->set_pixel(i, 0, p_array[i]);
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}

@@ -6,10 +6,8 @@
 	<description>
 		A [Texture2D] based on an [Image]. For an image to be displayed, an [ImageTexture] has to be created from it using the [method create_from_image] method:
 		[codeblock]
-		var texture = ImageTexture.new()
-		var image = Image.new()
-		image.load("res://icon.png")
-		texture.create_from_image(image)
+		var image = Image.load_from_file("res://icon.png")
+		var texture = ImageTexture.create_from_image(image)
 		$Sprite2D.texture = texture
 		[/codeblock]
 		This way, textures can be created at run-time by loading images both from within the editor and externally.
@@ -31,11 +29,11 @@
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
 	</tutorials>
 	<methods>
-		<method name="create_from_image">
-			<return type="void" />
+		<method name="create_from_image" qualifiers="static">
+			<return type="ImageTexture" />
 			<argument index="0" name="image" type="Image" />
 			<description>
-				Initializes the texture by allocating and setting the data from an [Image].
+				Creates a new [ImageTexture] and initializes it by allocating and setting the data from an [Image].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">

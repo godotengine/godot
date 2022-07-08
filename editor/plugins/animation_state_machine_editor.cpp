@@ -1224,7 +1224,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = selected_nodes.has(E) ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 		s.width += strsize;
 		s.height += MAX(font->get_height(font_size), play->get_height());
 		s.width += sep + play->get_width();
@@ -1379,7 +1379,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = selected_nodes.has(name) ? style_selected : style;
-		int strsize = font->get_string_size(name, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 		NodeRect &nr = node_rects.write[i];
 
 		Vector2 offset = nr.node.position;

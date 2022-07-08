@@ -597,7 +597,7 @@ void add_exposed_classes(Context &r_context) {
 						(exposed_class.name != r_context.names_cache.object_class || String(method.name) != "free"),
 						warn_msg.utf8().get_data());
 
-			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				method.return_type.name = return_info.class_name;
 				method.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
@@ -626,7 +626,7 @@ void add_exposed_classes(Context &r_context) {
 				ArgumentData arg;
 				arg.name = orig_arg_name;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
@@ -694,7 +694,7 @@ void add_exposed_classes(Context &r_context) {
 				ArgumentData arg;
 				arg.name = orig_arg_name;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
@@ -732,13 +732,13 @@ void add_exposed_classes(Context &r_context) {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(class_name, &constants, true);
 
-		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
+		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
 
-		for (const KeyValue<StringName, List<StringName>> &K : enum_map) {
+		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &K : enum_map) {
 			EnumData enum_;
 			enum_.name = K.key;
 
-			for (const StringName &E : K.value) {
+			for (const StringName &E : K.value.constants) {
 				const StringName &constant_name = E;
 				TEST_FAIL_COND(String(constant_name).find("::") != -1,
 						"Enum constant contains '::', check bindings to remove the scope: '",

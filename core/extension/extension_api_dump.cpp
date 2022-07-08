@@ -46,7 +46,7 @@ static String get_type_name(const PropertyInfo &p_info) {
 			return p_info.hint_string + "*";
 		}
 	}
-	if (p_info.type == Variant::INT && (p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM)) {
+	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD))) {
 		return String("enum::") + String(p_info.class_name);
 	}
 	if (p_info.class_name != StringName()) {
@@ -665,6 +665,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				for (const StringName &F : enum_list) {
 					Dictionary d2;
 					d2["name"] = String(F);
+					d2["is_bitfield"] = ClassDB::is_enum_bitfield(class_name, F);
 
 					Array values;
 					List<StringName> enum_constant_list;

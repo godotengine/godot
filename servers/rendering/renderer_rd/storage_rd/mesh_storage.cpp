@@ -210,6 +210,8 @@ void MeshStorage::mesh_free(RID p_rid) {
 	mesh_clear(p_rid);
 	mesh_set_shadow_mesh(p_rid, RID());
 	Mesh *mesh = mesh_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!mesh);
+
 	mesh->dependency.deleted_notify(p_rid);
 	if (mesh->instances.size()) {
 		ERR_PRINT("deleting mesh with active instances");
@@ -218,7 +220,7 @@ void MeshStorage::mesh_free(RID p_rid) {
 		for (Mesh *E : mesh->shadow_owners) {
 			Mesh *shadow_owner = E;
 			shadow_owner->shadow_mesh = RID();
-			shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+			shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 		}
 	}
 	mesh_owner.free(p_rid);
@@ -429,12 +431,12 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
 	}
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
-		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 
 	mesh->material_cache.clear();
@@ -501,7 +503,7 @@ void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_mat
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	mesh->surfaces[p_surface]->material = p_material;
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 	mesh->material_cache.clear();
 }
 
@@ -692,7 +694,7 @@ void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 		shadow_mesh->shadow_owners.insert(mesh);
 	}
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
 void MeshStorage::mesh_clear(RID p_mesh) {
@@ -740,12 +742,12 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 		_mesh_instance_clear(mi);
 	}
 	mesh->has_bone_weights = false;
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
-		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 }
 
@@ -1209,7 +1211,7 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 		multimesh->buffer = RD::get_singleton()->storage_buffer_create(multimesh->instances * multimesh->stride_cache * 4);
 	}
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MULTIMESH);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
 }
 
 int MeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
@@ -1243,7 +1245,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		}
 	}
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
 #define MULTIMESH_DIRTY_REGION_SIZE 512
@@ -1602,7 +1604,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		const float *data = p_buffer.ptr();
 
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
-		multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+		multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 	}
 }
 
@@ -1644,7 +1646,7 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 
 	multimesh->visible_instances = p_visible;
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
 }
 
 int MeshStorage::multimesh_get_visible_instances(RID p_multimesh) const {
@@ -1703,7 +1705,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 				//aabb is dirty..
 				_multimesh_re_create_aabb(multimesh, data, visible_instances);
 				multimesh->aabb_dirty = false;
-				multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+				multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 			}
 		}
 
@@ -1781,7 +1783,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 		}
 	}
 
-	skeleton->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA);
+	skeleton->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_SKELETON_DATA);
 }
 
 int MeshStorage::skeleton_get_bone_count(RID p_skeleton) const {
@@ -1902,7 +1904,7 @@ void MeshStorage::_update_dirty_skeletons() {
 
 		skeleton_dirty_list = skeleton->dirty_list;
 
-		skeleton->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES);
+		skeleton->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_SKELETON_BONES);
 
 		skeleton->version++;
 
@@ -1913,7 +1915,7 @@ void MeshStorage::_update_dirty_skeletons() {
 	skeleton_dirty_list = nullptr;
 }
 
-void MeshStorage::skeleton_update_dependency(RID p_skeleton, RendererStorage::DependencyTracker *p_instance) {
+void MeshStorage::skeleton_update_dependency(RID p_skeleton, DependencyTracker *p_instance) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
 

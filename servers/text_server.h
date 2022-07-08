@@ -161,6 +161,7 @@ public:
 		SPACING_SPACE,
 		SPACING_TOP,
 		SPACING_BOTTOM,
+		SPACING_MAX,
 	};
 
 	enum FontStyle {
@@ -284,9 +285,6 @@ public:
 	virtual void font_set_scale(const RID &p_font_rid, int64_t p_size, double p_scale) = 0;
 	virtual double font_get_scale(const RID &p_font_rid, int64_t p_size) const = 0;
 
-	virtual void font_set_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing, int64_t p_value) = 0;
-	virtual int64_t font_get_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing) const = 0;
-
 	virtual int64_t font_get_texture_count(const RID &p_font_rid, const Vector2i &p_size) const = 0;
 	virtual void font_clear_textures(const RID &p_font_rid, const Vector2i &p_size) = 0;
 	virtual void font_remove_texture(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) = 0;
@@ -385,6 +383,9 @@ public:
 
 	virtual void shaped_text_set_preserve_control(const RID &p_shaped, bool p_enabled) = 0;
 	virtual bool shaped_text_get_preserve_control(const RID &p_shaped) const = 0;
+
+	virtual void shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) = 0;
+	virtual int64_t shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const = 0;
 
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) = 0;

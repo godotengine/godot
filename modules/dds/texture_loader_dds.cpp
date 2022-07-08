@@ -409,9 +409,7 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 	}
 
 	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));
-
-	Ref<ImageTexture> texture = memnew(ImageTexture);
-	texture->create_from_image(img);
+	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 
 	if (r_error) {
 		*r_error = OK;

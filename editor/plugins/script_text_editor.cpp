@@ -886,6 +886,9 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 				emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
 
 			} break;
+			case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+				emit_signal(SNAME("go_to_help"), "class_annotation:" + result.class_name + ":" + result.class_member);
+			} break;
 			case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: {
 				emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
 			} break;
@@ -1862,11 +1865,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	if (default_color_mode == 1) {
-		color_picker->set_hsv_mode(true);
-	} else if (default_color_mode == 2) {
-		color_picker->set_raw_mode(true);
-	}
+	color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 
 	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
 	color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
