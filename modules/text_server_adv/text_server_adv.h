@@ -133,12 +133,19 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 	Vector<NumSystemData> num_systems;
+
+	struct FeatureInfo {
+		StringName name;
+		Variant::Type vtype = Variant::INT;
+		bool hidden = false;
+	};
+
 	HashMap<StringName, int32_t> feature_sets;
-	HashMap<int32_t, StringName> feature_sets_inv;
+	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
 	void _insert_num_systems_lang();
 	void _insert_feature_sets();
-	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag);
+	_FORCE_INLINE_ void _insert_feature(const StringName &p_name, int32_t p_tag, Variant::Type p_vtype = Variant::INT, bool p_hidden = false);
 
 	// ICU support data.
 
@@ -176,16 +183,13 @@ class TextServerAdvanced : public TextServerExtension {
 		Vector2 advance;
 	};
 
-	struct FontDataForSizeAdvanced {
+	struct FontForSizeAdvanced {
 		double ascent = 0.0;
 		double descent = 0.0;
 		double underline_position = 0.0;
 		double underline_thickness = 0.0;
 		double scale = 1.0;
 		double oversampling = 1.0;
-
-		int spacing_glyph = 0;
-		int spacing_space = 0;
 
 		Vector2i size;
 
@@ -199,7 +203,7 @@ class TextServerAdvanced : public TextServerExtension {
 		FT_StreamRec stream;
 #endif
 
-		~FontDataForSizeAdvanced() {
+		~FontForSizeAdvanced() {
 			if (hb_handle != nullptr) {
 				hb_font_destroy(hb_handle);
 			}
@@ -211,7 +215,7 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
-	struct FontDataAdvanced {
+	struct FontAdvanced {
 		Mutex mutex;
 
 		bool antialiased = true;
@@ -232,7 +236,7 @@ class TextServerAdvanced : public TextServerExtension {
 		String font_name;
 		String style_name;
 
-		HashMap<Vector2i, FontDataForSizeAdvanced *, VariantHasher, VariantComparator> cache;
+		HashMap<Vector2i, FontForSizeAdvanced *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
 		HashSet<uint32_t> supported_scripts;
@@ -250,28 +254,28 @@ class TextServerAdvanced : public TextServerExtension {
 		int face_index = 0;
 		mutable ThreadWorkPool work_pool;
 
-		~FontDataAdvanced() {
+		~FontAdvanced() {
 			work_pool.finish();
-			for (const KeyValue<Vector2i, FontDataForSizeAdvanced *> &E : cache) {
+			for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontDataForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
+	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontDataAdvanced *p_font_data, FontDataForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontDataForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontDataAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontDataAdvanced *p_font_data, const Vector2i &p_size) const;
-	_FORCE_INLINE_ void _font_clear_cache(FontDataAdvanced *p_font_data);
+	_FORCE_INLINE_ bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size) const;
+	_FORCE_INLINE_ void _font_clear_cache(FontAdvanced *p_font_data);
 	void _generateMTSDF_threaded(uint32_t y, void *p_td) const;
 
-	_FORCE_INLINE_ Vector2i _get_size(const FontDataAdvanced *p_font_data, int p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size(const FontAdvanced *p_font_data, int p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -281,7 +285,7 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	}
 
-	_FORCE_INLINE_ Vector2i _get_size_outline(const FontDataAdvanced *p_font_data, const Vector2i &p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size_outline(const FontAdvanced *p_font_data, const Vector2i &p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -292,6 +296,8 @@ class TextServerAdvanced : public TextServerExtension {
 	}
 
 	_FORCE_INLINE_ double _get_extra_advance(RID p_font_rid, int p_font_size) const;
+	_FORCE_INLINE_ Variant::Type _get_tag_type(int64_t p_tag) const;
+	_FORCE_INLINE_ bool _get_tag_hidden(int64_t p_tag) const;
 
 	// Shaped text cache data.
 	struct TrimData {
@@ -351,6 +357,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double descent = 0.0; // Descent for horizontal layout, 1/2 of width for vertical.
 		double width = 0.0; // Width for horizontal layout, height for vertical.
 		double width_trimmed = 0.0;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
 
 		double upos = 0.0;
 		double uthk = 0.0;
@@ -389,7 +396,7 @@ class TextServerAdvanced : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
-	mutable RID_PtrOwner<FontDataAdvanced> font_owner;
+	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
 
 	void _realign(ShapedTextDataAdvanced *p_sd) const;
@@ -407,11 +414,11 @@ class TextServerAdvanced : public TextServerExtension {
 	static hb_font_funcs_t *funcs;
 
 	struct bmp_font_t {
-		TextServerAdvanced::FontDataForSizeAdvanced *face = nullptr;
+		TextServerAdvanced::FontForSizeAdvanced *face = nullptr;
 		bool unref = false; /* Whether to destroy bm_face when done. */
 	};
 
-	static bmp_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
+	static bmp_font_t *_bmp_font_create(TextServerAdvanced::FontForSizeAdvanced *p_face, bool p_unref);
 	static void _bmp_font_destroy(void *p_data);
 	static hb_bool_t _bmp_get_nominal_glyph(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_unicode, hb_codepoint_t *r_glyph, void *p_user_data);
 	static hb_position_t _bmp_get_glyph_h_advance(hb_font_t *p_font, void *p_font_data, hb_codepoint_t p_glyph, void *p_user_data);
@@ -422,8 +429,8 @@ class TextServerAdvanced : public TextServerExtension {
 	static hb_bool_t _bmp_get_font_h_extents(hb_font_t *p_font, void *p_font_data, hb_font_extents_t *r_metrics, void *p_user_data);
 	static void _bmp_create_font_funcs();
 	static void _bmp_free_font_funcs();
-	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontDataForSizeAdvanced *p_face, bool p_unref);
-	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontDataForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
+	static void _bmp_font_set_funcs(hb_font_t *p_font, TextServerAdvanced::FontForSizeAdvanced *p_face, bool p_unref);
+	static hb_font_t *_bmp_font_create(TextServerAdvanced::FontForSizeAdvanced *p_face, hb_destroy_func_t p_destroy);
 
 	hb_font_t *_font_get_hb_handle(const RID &p_font, int64_t p_font_size) const;
 
@@ -546,9 +553,6 @@ public:
 	virtual void font_set_scale(const RID &p_font_rid, int64_t p_size, double p_scale) override;
 	virtual double font_get_scale(const RID &p_font_rid, int64_t p_size) const override;
 
-	virtual void font_set_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing, int64_t p_value) override;
-	virtual int64_t font_get_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing) const override;
-
 	virtual int64_t font_get_texture_count(const RID &p_font_rid, const Vector2i &p_size) const override;
 	virtual void font_clear_textures(const RID &p_font_rid, const Vector2i &p_size) override;
 	virtual void font_remove_texture(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index) override;
@@ -645,6 +649,9 @@ public:
 
 	virtual void shaped_text_set_preserve_control(const RID &p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(const RID &p_shaped) const override;
+
+	virtual void shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) override;
+	virtual int64_t shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const override;
 
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) override;

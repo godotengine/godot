@@ -33,6 +33,7 @@
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
 
@@ -48,10 +49,6 @@
 #ifdef HAVE_MNTENT
 #include <mntent.h>
 #endif
-
-Ref<DirAccess> DirAccessUnix::create_fs() {
-	return memnew(DirAccessUnix);
-}
 
 Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!
@@ -216,10 +213,11 @@ static bool _filter_drive(struct mntent *mnt) {
 #endif
 
 static void _get_drives(List<String> *list) {
+	// Add root.
 	list->push_back("/");
 
 #if defined(HAVE_MNTENT) && defined(X11_ENABLED)
-	// Check /etc/mtab for the list of mounted partitions
+	// Check /etc/mtab for the list of mounted partitions.
 	FILE *mtab = setmntent("/etc/mtab", "r");
 	if (mtab) {
 		struct mntent mnt;
@@ -239,7 +237,7 @@ static void _get_drives(List<String> *list) {
 	}
 #endif
 
-	// Add $HOME
+	// Add $HOME.
 	const char *home = getenv("HOME");
 	if (home) {
 		// Only add if it's not a duplicate
@@ -248,7 +246,8 @@ static void _get_drives(List<String> *list) {
 			list->push_back(home_name);
 		}
 
-		// Check $HOME/.config/gtk-3.0/bookmarks
+		// Check GTK+3 bookmarks for both XDG locations (Documents, Downloads, etc.)
+		// and potential user-defined bookmarks.
 		char path[1024];
 		snprintf(path, 1024, "%s/.config/gtk-3.0/bookmarks", home);
 		FILE *fd = fopen(path, "r");
@@ -257,7 +256,7 @@ static void _get_drives(List<String> *list) {
 			while (fgets(string, 1024, fd)) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
-					// Strip any unwanted edges on the strings and push_back if it's not a duplicate
+					// Strip any unwanted edges on the strings and push_back if it's not a duplicate.
 					String fpath = String::utf8(string + 7).strip_edges().split_spaces()[0].uri_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
@@ -266,6 +265,12 @@ static void _get_drives(List<String> *list) {
 			}
 
 			fclose(fd);
+		}
+
+		// Add Desktop dir.
+		String dpath = OS::get_singleton()->get_system_dir(OS::SystemDir::SYSTEM_DIR_DESKTOP);
+		if (dpath.length() > 0 && !list->find(dpath)) {
+			list->push_back(dpath);
 		}
 	}
 
@@ -338,7 +343,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name)) {
+	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
@@ -500,7 +505,7 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
-	if (current_dir.parse_utf8(real_current_dir_name)) {
+	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
 

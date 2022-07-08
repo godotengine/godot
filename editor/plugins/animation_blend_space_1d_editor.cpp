@@ -215,7 +215,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		blend_space_draw->draw_rect(Rect2(Point2(), s), color, false);
 	}
 
-	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor);
+	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
 	if (blend_space->get_min_space() < 0) {
 		float point = 0.0;
@@ -224,9 +224,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		float x = point;
 
-		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor);
+		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
-		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft);
+		blend_space_draw->draw_line(Point2(x, s.height - 5 * EDSCALE), Point2(x, 0), linecolor_soft, Math::round(EDSCALE));
 	}
 
 	if (snap->is_pressed()) {
@@ -240,7 +240,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 				int idx = int(v / blend_space->get_snap());
 
 				if (i > 0 && prev_idx != idx) {
-					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft);
+					blend_space_draw->draw_line(Point2(i, 0), Point2(i, s.height), linecolor_soft, Math::round(EDSCALE));
 				}
 
 				prev_idx = idx;
@@ -297,10 +297,10 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 		float mind = 5 * EDSCALE;
 		float maxd = 15 * EDSCALE;
-		blend_space_draw->draw_line(gui_point + Vector2(mind, 0), gui_point + Vector2(maxd, 0), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(-mind, 0), gui_point + Vector2(-maxd, 0), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(0, mind), gui_point + Vector2(0, maxd), color, 2);
-		blend_space_draw->draw_line(gui_point + Vector2(0, -mind), gui_point + Vector2(0, -maxd), color, 2);
+		blend_space_draw->draw_line(gui_point + Vector2(mind, 0), gui_point + Vector2(maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(-mind, 0), gui_point + Vector2(-maxd, 0), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(0, mind), gui_point + Vector2(0, maxd), color, Math::round(2 * EDSCALE));
+		blend_space_draw->draw_line(gui_point + Vector2(0, -mind), gui_point + Vector2(0, -maxd), color, Math::round(2 * EDSCALE));
 	}
 }
 

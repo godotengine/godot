@@ -54,31 +54,31 @@ struct hb_draw_funcs_t
 #define HB_DRAW_FUNC_IMPLEMENT(name) void *name;
     HB_DRAW_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_DRAW_FUNC_IMPLEMENT
-  } user_data;
+  } *user_data;
 
   struct {
 #define HB_DRAW_FUNC_IMPLEMENT(name) hb_destroy_func_t name;
     HB_DRAW_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_DRAW_FUNC_IMPLEMENT
-  } destroy;
+  } *destroy;
 
   void emit_move_to (void *draw_data, hb_draw_state_t &st,
 		     float to_x, float to_y)
   { func.move_to (this, draw_data, &st,
 		  to_x, to_y,
-		  user_data.move_to); }
+		  !user_data ? nullptr : user_data->move_to); }
   void emit_line_to (void *draw_data, hb_draw_state_t &st,
 		     float to_x, float to_y)
   { func.line_to (this, draw_data, &st,
 		  to_x, to_y,
-		  user_data.line_to); }
+		  !user_data ? nullptr : user_data->line_to); }
   void emit_quadratic_to (void *draw_data, hb_draw_state_t &st,
 			  float control_x, float control_y,
 			  float to_x, float to_y)
   { func.quadratic_to (this, draw_data, &st,
 		       control_x, control_y,
 		       to_x, to_y,
-		       user_data.quadratic_to); }
+		       !user_data ? nullptr : user_data->quadratic_to); }
   void emit_cubic_to (void *draw_data, hb_draw_state_t &st,
 		      float control1_x, float control1_y,
 		      float control2_x, float control2_y,
@@ -87,10 +87,10 @@ struct hb_draw_funcs_t
 		   control1_x, control1_y,
 		   control2_x, control2_y,
 		   to_x, to_y,
-		   user_data.cubic_to); }
+		   !user_data ? nullptr : user_data->cubic_to); }
   void emit_close_path (void *draw_data, hb_draw_state_t &st)
   { func.close_path (this, draw_data, &st,
-		     user_data.close_path); }
+		     !user_data ? nullptr : user_data->close_path); }
 
 
   void move_to (void *draw_data, hb_draw_state_t &st,

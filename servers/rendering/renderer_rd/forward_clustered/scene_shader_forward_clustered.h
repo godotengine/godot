@@ -32,7 +32,6 @@
 #define RSSR_SCENE_SHADER_FC_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -42,8 +41,6 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	RendererStorageRD *storage = nullptr;
-
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
 		SHADER_VERSION_DEPTH_PASS_DP,
@@ -249,7 +246,7 @@ public:
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 
-	void init(RendererStorageRD *p_storage, const String p_defines);
+	void init(const String p_defines);
 	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 

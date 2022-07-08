@@ -34,10 +34,10 @@
 #ifdef GLES3_ENABLED
 
 #include "effects/copy_effects.h"
+#include "environment/fog.h"
 #include "environment/gi.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "storage/config.h"
 #include "storage/light_storage.h"
@@ -45,6 +45,7 @@
 #include "storage/mesh_storage.h"
 #include "storage/particles_storage.h"
 #include "storage/texture_storage.h"
+#include "storage/utilities.h"
 
 class RasterizerGLES3 : public RendererCompositor {
 private:
@@ -55,27 +56,29 @@ private:
 
 protected:
 	GLES3::Config *config = nullptr;
+	GLES3::Utilities *utilities = nullptr;
 	GLES3::TextureStorage *texture_storage = nullptr;
 	GLES3::MaterialStorage *material_storage = nullptr;
 	GLES3::MeshStorage *mesh_storage = nullptr;
 	GLES3::ParticlesStorage *particles_storage = nullptr;
 	GLES3::LightStorage *light_storage = nullptr;
 	GLES3::GI *gi = nullptr;
+	GLES3::Fog *fog = nullptr;
 	GLES3::CopyEffects *copy_effects = nullptr;
-	RasterizerStorageGLES3 *storage = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
 
 	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect);
 
 public:
+	RendererUtilities *get_utilities() { return utilities; }
 	RendererLightStorage *get_light_storage() { return light_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; }
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
 	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
 	RendererTextureStorage *get_texture_storage() { return texture_storage; }
 	RendererGI *get_gi() { return gi; }
-	RendererStorage *get_storage() { return storage; }
+	RendererFog *get_fog() { return fog; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 

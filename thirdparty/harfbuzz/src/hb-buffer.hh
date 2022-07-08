@@ -57,6 +57,7 @@
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
 static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
+HB_MARK_AS_FLAG_T (hb_glyph_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_serialize_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_diff_flags_t);
@@ -69,12 +70,13 @@ enum hb_buffer_scratch_flags_t {
   HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT		= 0x00000008u,
   HB_BUFFER_SCRATCH_FLAG_HAS_CGJ			= 0x00000010u,
   HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS		= 0x00000020u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE		= 0x00000040u,
 
-  /* Reserved for complex shapers' internal use. */
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX0			= 0x01000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX1			= 0x02000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX2			= 0x04000000u,
-  HB_BUFFER_SCRATCH_FLAG_COMPLEX3			= 0x08000000u,
+  /* Reserved for shapers' internal use. */
+  HB_BUFFER_SCRATCH_FLAG_SHAPER0			= 0x01000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER1			= 0x02000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER2			= 0x04000000u,
+  HB_BUFFER_SCRATCH_FLAG_SHAPER3			= 0x08000000u,
 };
 HB_MARK_AS_FLAG_T (hb_buffer_scratch_flags_t);
 
@@ -106,6 +108,7 @@ struct hb_buffer_t
   hb_segment_properties_t props; /* Script, language, direction */
 
   bool successful; /* Allocations successful */
+  bool shaping_failed; /* Shaping failure */
   bool have_output; /* Whether we have an output buffer going on */
   bool have_positions; /* Whether we have positions */
 
@@ -130,9 +133,7 @@ struct hb_buffer_t
    * Managed by enter / leave
    */
 
-#ifndef HB_NDEBUG
   uint8_t allocated_var_bits;
-#endif
   uint8_t serial;
   hb_buffer_scratch_flags_t scratch_flags; /* Have space-fallback, etc. */
   unsigned int max_len; /* Maximum allowed len. */
@@ -161,38 +162,40 @@ struct hb_buffer_t
 
   void allocate_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
     unsigned int bits = (1u<<end) - (1u<<start);
     assert (0 == (allocated_var_bits & bits));
     allocated_var_bits |= bits;
-#endif
+  }
+  bool try_allocate_var (unsigned int start, unsigned int count)
+  {
+    unsigned int end = start + count;
+    assert (end <= 8);
+    unsigned int bits = (1u<<end) - (1u<<start);
+    if (allocated_var_bits & bits)
+      return false;
+    allocated_var_bits |= bits;
+    return true;
   }
   void deallocate_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
     unsigned int bits = (1u<<end) - (1u<<start);
     assert (bits == (allocated_var_bits & bits));
     allocated_var_bits &= ~bits;
-#endif
   }
   void assert_var (unsigned int start, unsigned int count)
   {
-#ifndef HB_NDEBUG
     unsigned int end = start + count;
     assert (end <= 8);
-    unsigned int bits = (1u<<end) - (1u<<start);
+    HB_UNUSED unsigned int bits = (1u<<end) - (1u<<start);
     assert (bits == (allocated_var_bits & bits));
-#endif
   }
   void deallocate_var_all ()
   {
-#ifndef HB_NDEBUG
     allocated_var_bits = 0;
-#endif
   }
 
   hb_glyph_info_t &cur (unsigned int i = 0) { return info[idx + i]; }
@@ -549,7 +552,7 @@ struct hb_buffer_t
 #ifdef HB_NO_BUFFER_MESSAGE
    return true;
 #else
-    if (!messaging ())
+    if (likely (!messaging ()))
       return true;
 
     message_depth++;
@@ -619,9 +622,10 @@ DECLARE_NULL_INSTANCE (hb_buffer_t);
 #define HB_BUFFER_XALLOCATE_VAR(b, func, var) \
   b->func (offsetof (hb_glyph_info_t, var) - offsetof(hb_glyph_info_t, var1), \
 	   sizeof (b->info[0].var))
-#define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,   var ())
-#define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var, var ())
-#define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,     var ())
+#define HB_BUFFER_ALLOCATE_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, allocate_var,     var ())
+#define HB_BUFFER_TRY_ALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, try_allocate_var, var ())
+#define HB_BUFFER_DEALLOCATE_VAR(b, var)	HB_BUFFER_XALLOCATE_VAR (b, deallocate_var,   var ())
+#define HB_BUFFER_ASSERT_VAR(b, var)		HB_BUFFER_XALLOCATE_VAR (b, assert_var,       var ())
 
 
 #endif /* HB_BUFFER_HH */

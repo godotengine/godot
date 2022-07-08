@@ -2284,6 +2284,21 @@ Error Image::load(const String &p_path) {
 	return ImageLoader::load_image(p_path, this);
 }
 
+Ref<Image> Image::load_from_file(const String &p_path) {
+#ifdef DEBUG_ENABLED
+	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
+		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+	}
+#endif
+	Ref<Image> image;
+	image.instantiate();
+	Error err = ImageLoader::load_image(p_path, image);
+	if (err != OK) {
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Failed to load image. Error %d", err));
+	}
+	return image;
+}
+
 Error Image::save_png(const String &p_path) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
@@ -3183,6 +3198,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
+	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));

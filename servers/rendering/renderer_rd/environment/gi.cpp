@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -184,7 +183,7 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 	voxel_gi->version++;
 	voxel_gi->data_version++;
 
-	voxel_gi->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	voxel_gi->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 AABB GI::voxel_gi_get_bounds(RID p_voxel_gi) const {
@@ -312,19 +311,6 @@ float GI::voxel_gi_get_normal_bias(RID p_voxel_gi) const {
 	return voxel_gi->normal_bias;
 }
 
-void GI::voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND(!voxel_gi);
-
-	voxel_gi->anisotropy_strength = p_strength;
-}
-
-float GI::voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const {
-	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_COND_V(!voxel_gi, 0);
-	return voxel_gi->anisotropy_strength;
-}
-
 void GI::voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);
@@ -390,7 +376,6 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	storage = p_gi->storage;
 	gi = p_gi;
 	num_cascades = p_env->sdfgi_cascades;
 	min_cell_size = p_env->sdfgi_min_cell_size;
@@ -1287,7 +1272,7 @@ void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, RendererSceneSk
 
 		if (p_env->background == RS::ENV_BG_CLEAR_COLOR) {
 			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
-			Color c = storage->get_default_clear_color().srgb_to_linear();
+			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
@@ -1636,7 +1621,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 		}
 
 		for (uint32_t v = 0; v < p_view_count; v++) {
-			RendererStorageRD::store_camera(p_camera_with_transforms[v], scene_data.projection[v]);
+			RendererRD::MaterialStorage::store_camera(p_camera_with_transforms[v], scene_data.projection[v]);
 		}
 
 		RD::get_singleton()->buffer_update(debug_probes_scene_data_ubo, 0, sizeof(SDFGIShader::DebugProbesSceneData), &scene_data, RD::BARRIER_MASK_RASTER);
@@ -3218,11 +3203,9 @@ GI::~GI() {
 	singleton = nullptr;
 }
 
-void GI::init(RendererStorageRD *p_storage, RendererSceneSkyRD *p_sky) {
+void GI::init(RendererSceneSkyRD *p_sky) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-
-	storage = p_storage;
 
 	/* GI */
 
@@ -3633,8 +3616,6 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 			RD::get_singleton()->free(rb->rbgi.reflection_buffer);
 		}
 
-		print_line("Allocating GI buffers"); // TESTING REMOVE BEFORE MERGING
-
 		// Remember the view count we're using
 		rb->rbgi.view_count = p_view_count;
 
@@ -3681,7 +3662,7 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 		}
 
 		for (uint32_t v = 0; v < p_view_count; v++) {
-			RendererStorageRD::store_camera(p_projections[v].inverse(), scene_data.inv_projection[v]);
+			RendererRD::MaterialStorage::store_camera(p_projections[v].inverse(), scene_data.inv_projection[v]);
 			scene_data.eye_offset[v][0] = p_eye_offsets[v].x;
 			scene_data.eye_offset[v][1] = p_eye_offsets[v].y;
 			scene_data.eye_offset[v][2] = p_eye_offsets[v].z;
@@ -3689,7 +3670,7 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 		}
 
 		// Note that we will be ignoring the origin of this transform.
-		RendererStorageRD::store_transform(p_cam_transform, scene_data.cam_transform);
+		RendererRD::MaterialStorage::store_transform(p_cam_transform, scene_data.cam_transform);
 
 		scene_data.screen_size[0] = rb->internal_width;
 		scene_data.screen_size[1] = rb->internal_height;
@@ -3923,7 +3904,6 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 RID GI::voxel_gi_instance_create(RID p_base) {
 	VoxelGIInstance voxel_gi;
 	voxel_gi.gi = this;
-	voxel_gi.storage = storage;
 	voxel_gi.probe = p_base;
 	RID rid = voxel_gi_instance_owner.make_rid(voxel_gi);
 	return rid;

@@ -114,7 +114,9 @@
 		</constant>
 		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE" value="5" enum="InternalImportCategory">
 		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="6" enum="InternalImportCategory">
+		<constant name="INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE" value="6" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="7" enum="InternalImportCategory">
 		</constant>
 	</constants>
 </class>

@@ -621,9 +621,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
+	// Add command line arguments.
 	for (int i = 0; i < argc; i++) {
 		args.push_back(String::utf8(argv[i]));
+	}
+
+	// Add arguments received from macOS LaunchService (URL schemas, file associations).
+	for (const String &arg : platform_args) {
+		args.push_back(arg);
 	}
 
 	List<String>::Element *I = args.front();
@@ -691,12 +698,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
 
 			show_help = true;
-			exit_code = OK;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "--version") {
 			print_line(get_full_version_string());
-			exit_code = OK;
+			exit_code = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
 		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
@@ -1460,11 +1467,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* Determine audio and video drivers */
 
 	// Display driver, e.g. X11, Wayland.
-	// print_line("requested display driver : " + display_driver);
+	// Make sure that headless is the last one, which it is assumed to be by design.
+	DEV_ASSERT(String("headless") == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 		String name = DisplayServer::get_create_function_name(i);
-		// print_line("\t" + itos(i) + " : " + name);
-
 		if (display_driver == name) {
 			display_driver_idx = i;
 			break;
@@ -1472,6 +1478,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (display_driver_idx < 0) {
+		// If the requested driver wasn't found, pick the first entry.
+		// If all else failed it would be the headless server.
 		display_driver_idx = 0;
 	}
 
@@ -1484,6 +1492,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
+	// Make sure that dummy is the last one, which it is assumed to be by design.
+	DEV_ASSERT(String("Dummy") == AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name());
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 		if (audio_driver == AudioDriverManager::get_driver(i)->get_name()) {
 			audio_driver_idx = i;
@@ -1492,7 +1502,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver_idx < 0) {
-		audio_driver_idx = 0; // 0 Is always available as the dummy driver (no sound)
+		// If the requested driver wasn't found, pick the first entry.
+		// If all else failed it would be the dummy driver (no sound).
+		audio_driver_idx = 0;
 	}
 
 	if (write_movie_path != String()) {
@@ -1685,10 +1697,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
-			//ok i guess we can't use this display server, try other ones
-			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+			// We can't use this display server, try other ones as fallback.
+			// Skip headless (always last registered) because that's not what users
+			// would expect if they didn't request it explicitly.
+			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
 				if (i == display_driver_idx) {
-					continue; //don't try the same twice
+					continue; // Don't try the same twice.
 				}
 				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 				if (err == OK && display_server != nullptr) {

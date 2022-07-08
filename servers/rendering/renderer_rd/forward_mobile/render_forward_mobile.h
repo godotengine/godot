@@ -35,7 +35,7 @@
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -597,7 +597,7 @@ protected:
 
 			bool dirty_dependencies = false;
 
-			RendererStorage::DependencyTracker dependency_tracker;
+			DependencyTracker dependency_tracker;
 		};
 
 		Data *data = nullptr;
@@ -613,8 +613,8 @@ protected:
 public:
 	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth) override;
 
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceForwardMobile>::List geometry_instance_dirty_list;
 
@@ -668,7 +668,7 @@ public:
 	virtual bool is_volumetric_supported() const override;
 	virtual uint32_t get_max_elements() const override;
 
-	RenderForwardMobile(RendererStorageRD *p_storage);
+	RenderForwardMobile();
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation

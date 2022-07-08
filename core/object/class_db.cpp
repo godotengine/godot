@@ -536,7 +536,7 @@ MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_n
 	return nullptr;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant) {
+void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -555,13 +555,15 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 			enum_name = enum_name.get_slicec('.', 1);
 		}
 
-		List<StringName> *constants_list = type->enum_map.getptr(enum_name);
+		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
 
 		if (constants_list) {
-			constants_list->push_back(p_name);
+			constants_list->constants.push_back(p_name);
+			constants_list->is_bitfield = p_is_bitfield;
 		} else {
-			List<StringName> new_list;
-			new_list.push_back(p_name);
+			ClassInfo::EnumInfo new_list;
+			new_list.is_bitfield = p_is_bitfield;
+			new_list.constants.push_back(p_name);
 			type->enum_map[enum_name] = new_list;
 		}
 	}
@@ -645,8 +647,8 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
-			List<StringName> &constants_list = E.value;
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
+			List<StringName> &constants_list = E.value.constants;
 			const List<StringName>::Element *found = constants_list.find(p_name);
 			if (found) {
 				return E.key;
@@ -669,7 +671,7 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
 			p_enums->push_back(E.key);
 		}
 
@@ -687,10 +689,10 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const List<StringName> *constants = type->enum_map.getptr(p_enum);
+		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
 
 		if (constants) {
-			for (const List<StringName>::Element *E = constants->front(); E; E = E->next()) {
+			for (const List<StringName>::Element *E = constants->constants.front(); E; E = E->next()) {
 				p_constants->push_back(E->get());
 			}
 		}
@@ -736,6 +738,25 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 
 	while (type) {
 		if (type->enum_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
+bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
 			return true;
 		}
 		if (p_no_inheritance) {

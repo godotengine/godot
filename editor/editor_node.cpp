@@ -134,6 +134,7 @@
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/bit_map_editor_plugin.h"
+#include "editor/plugins/bone_map_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
@@ -145,7 +146,7 @@
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
-#include "editor/plugins/font_editor_plugin.h"
+#include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -164,7 +165,6 @@
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
-#include "editor/plugins/ot_features_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
@@ -186,7 +186,6 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
-#include "editor/plugins/text_control_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -2333,6 +2332,13 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		return;
 	}
 
+	play_button->set_pressed(false);
+	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	play_scene_button->set_pressed(false);
+	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
+	play_custom_scene_button->set_pressed(false);
+	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+
 	String write_movie_file;
 	if (write_movie_button->is_pressed()) {
 		if (p_current && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->has_meta("movie_file")) {
@@ -2346,13 +2352,6 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 			return;
 		}
 	}
-
-	play_button->set_pressed(false);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
 
 	String run_filename;
 
@@ -2792,9 +2791,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 			project_settings_editor->popup_project_settings();
-		} break;
-		case RUN_WRITE_MOVIE: {
-			_update_write_movie_icon();
 		} break;
 		case FILE_INSTALL_ANDROID_SOURCE: {
 			if (p_confirmed) {
@@ -4047,10 +4043,8 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 		Ref<Image> img = memnew(Image);
 		Error err = ImageLoader::load_image(p_path, img);
 		if (err == OK) {
-			Ref<ImageTexture> icon = memnew(ImageTexture);
 			img->resize(16 * EDSCALE, 16 * EDSCALE, Image::INTERPOLATE_LANCZOS);
-			icon->create_from_image(img);
-			return icon;
+			return ImageTexture::create_from_image(img);
 		}
 	}
 	return nullptr;
@@ -4957,14 +4951,6 @@ String EditorNode::get_run_playing_scene() const {
 	return run_filename;
 }
 
-void EditorNode::_update_write_movie_icon() {
-	if (write_movie_button->is_pressed()) {
-		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWriteEnabled"), SNAME("EditorIcons")));
-	} else {
-		write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
-	}
-}
-
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
@@ -5405,9 +5391,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 		Ref<Image> img = texture->get_image();
 		img = img->duplicate();
 		img->resize(48, 48); // meh
-		Ref<ImageTexture> resized_pic = Ref<ImageTexture>(memnew(ImageTexture));
-		resized_pic->create_from_image(img);
-		preview = resized_pic;
+		preview = ImageTexture::create_from_image(img);
 	}
 
 	drag_preview->set_texture(preview);
@@ -6137,7 +6121,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
 	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "Script,MeshLibrary");
 	EDITOR_DEF("interface/inspector/default_color_picker_mode", 0);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW", PROPERTY_USAGE_DEFAULT));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW,OKHSL", PROPERTY_USAGE_DEFAULT));
 	EDITOR_DEF("interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "interface/inspector/default_color_picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle", PROPERTY_USAGE_DEFAULT));
 
@@ -6733,15 +6717,12 @@ EditorNode::EditorNode() {
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
-	write_movie_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option), make_binds(RUN_WRITE_MOVIE));
 	write_movie_button->set_tooltip(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-	// Restore these values to something more useful so it ignores the theme
-	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.4));
-	write_movie_button->add_theme_color_override("icon_pressed_color", Color(1, 1, 1, 1));
-	write_movie_button->add_theme_color_override("icon_hover_color", Color(1.2, 1.2, 1.2, 0.4));
-	write_movie_button->add_theme_color_override("icon_hover_pressed_color", Color(1.2, 1.2, 1.2, 1));
-	write_movie_button->add_theme_color_override("icon_focus_color", Color(1, 1, 1, 1));
-	write_movie_button->add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.4));
+
+	// This button behaves differently, so color it as such.
+	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
+	write_movie_button->add_theme_color_override("icon_pressed_color", gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
@@ -7071,12 +7052,10 @@ EditorNode::EditorNode() {
 	ScriptTextEditor::register_editor(); // Register one for text scripts.
 	TextEditor::register_editor();
 
-	// Asset Library can't work on Web editor for now as most assets are sourced
-	// directly from GitHub which does not set CORS.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
-		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
+		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
 
 	// Add interface before adding plugins.
@@ -7124,7 +7103,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin));
 	add_editor_plugin(memnew(CurveEditorPlugin));
 	add_editor_plugin(memnew(FontEditorPlugin));
-	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin));
 	add_editor_plugin(memnew(TextureEditorPlugin));
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin));
 	add_editor_plugin(memnew(Texture3DEditorPlugin));
@@ -7139,11 +7117,11 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticlesCollisionSDF3DEditorPlugin));
 	add_editor_plugin(memnew(InputEventEditorPlugin));
 	add_editor_plugin(memnew(SubViewportPreviewEditorPlugin));
-	add_editor_plugin(memnew(TextControlEditorPlugin));
 	add_editor_plugin(memnew(ControlEditorPlugin));
 	add_editor_plugin(memnew(GradientTexture2DEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));
 	add_editor_plugin(memnew(RayCast2DEditorPlugin));
+	add_editor_plugin(memnew(BoneMapEditorPlugin));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));

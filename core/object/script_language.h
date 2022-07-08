@@ -350,6 +350,7 @@ public:
 		LOOKUP_RESULT_CLASS_SIGNAL,
 		LOOKUP_RESULT_CLASS_ENUM,
 		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE,
+		LOOKUP_RESULT_CLASS_ANNOTATION,
 		LOOKUP_RESULT_MAX
 	};
 
@@ -402,6 +403,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
+	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;
 
 	struct ProfilingInfo {
 		StringName signature;

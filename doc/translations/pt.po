@@ -9,12 +9,13 @@
 # Renu <ifpilucas@gmail.com>, 2022.
 # Diogo Gomes <dgomes@graphnode.com>, 2022.
 # El_ExpertPlayer <xpertnathan37@gmail.com>, 2022.
+# Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-13 03:39+0000\n"
-"Last-Translator: El_ExpertPlayer <xpertnathan37@gmail.com>\n"
+"PO-Revision-Date: 2022-06-29 10:31+0000\n"
+"Last-Translator: Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pt/>\n"
 "Language: pt\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -78,7 +79,7 @@ msgstr "Herdado por:"
 
 #: doc/tools/make_rst.py
 msgid "(overrides %s)"
-msgstr ""
+msgstr "(recopiar %s)"
 
 #: doc/tools/make_rst.py
 msgid "Default"
@@ -86,7 +87,7 @@ msgstr "Padrão"
 
 #: doc/tools/make_rst.py
 msgid "Setter"
-msgstr "Definidor"
+msgstr "Setter"
 
 #: doc/tools/make_rst.py
 msgid "value"
@@ -94,13 +95,13 @@ msgstr "valor"
 
 #: doc/tools/make_rst.py
 msgid "Getter"
-msgstr "Buscador"
+msgstr "Getter"
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method should typically be overridden by the user to have any effect."
 msgstr ""
-"Este método normalmente deve ser substituído pelo usuário para ter algum "
+"Este método normalmente deve ser reescrito pelo usuário para que tenha algum "
 "efeito."
 
 #: doc/tools/make_rst.py
@@ -907,7 +908,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two values by the factor defined in "
 "[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
@@ -927,20 +927,25 @@ msgid ""
 "To perform eased interpolation with [method lerp], combine it with [method "
 "ease] or [method smoothstep]."
 msgstr ""
-"Interpola linearmente entre dois valores através de um valor normalizado. "
-"Este método é o oposto do método [method inverse_lerp].\n"
+"Interpola linearmente entre dois valores pelo fator definido em "
+"[code]weight[/code]. Para realizar a interpolação, [code]weight[/code] deve "
+"estar entre [code]0.0[/code] e [code]1.0[/code] (inclusive). No entanto, "
+"valores fora desse intervalo são permitidos e podem ser usados para realizar "
+"[i]extrapolação[/i].\n"
 "Se os argumentos [code]from[/code] e [code]to[/code] forem do tipo [int] ou "
-"[float], o retorno é um valor do tipo [float].\n"
-"Se ambos são vetores de mesmo tipo ([Vector2], [Vector3] ou [Color]), o "
-"valor retornado será do mesmo tipo ([code]lerp[/code] então chamará o método "
-"[code]lerp[/code] do tipo de vetor em questão).\n"
+"[float], o valor de retorno será um [float].\n"
+"Se ambos forem do mesmo tipo de vetor ([Vector2], [Vector3] ou [Color]), o "
+"valor de retorno será do mesmo tipo ([code]lerp[/code] então chama o método "
+"[code]linear_interpolate[/code] do tipo de vetor).\n"
 "[codeblock]\n"
-"lerp(0, 4, 0.75) # Retorna 3.0\n"
-"lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # Retorna Vector2(2, 3.5)\n"
-"[/codeblock]"
+"lerp(0, 4, 0,75) # Retorna 3,0\n"
+"lerp(Vetor2(1, 5), Vetor2(3, 2), 0.5) # Retorna Vetor2(2, 3.5)\n"
+"[/codeblock]\n"
+"Veja também [method inverse_lerp] que realiza o inverso desta operação. Para "
+"realizar a interpolação facilitada com [method lerp], combine-o com [method "
+"easy] ou [method smoothstep]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Linearly interpolates between two angles (in radians) by a normalized "
 "value.\n"
@@ -963,10 +968,12 @@ msgid ""
 "example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, "
 "while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise."
 msgstr ""
-"Faz a interpolação linear entre dois ângulos (em radianos) por um valor "
+"Interpola linearmente entre dois ângulos (em radianos) por um valor "
 "normalizado.\n"
-"Semelhante à [method lerp], mas faz a interpolação corretamente quando os "
-"ângulos passam através de [constant @GDScript.TAU].\n"
+"Semelhante a [method lerp], mas interpola corretamente quando os ângulos "
+"envolvem [constant @GDScript.TAU]. Para realizar a interpolação facilitada "
+"com [method lerp_angle], combine-o com [method easy] ou [method "
+"smoothstep].\n"
 "[codeblock]\n"
 "extends Sprite\n"
 "var elapsed = 0.0\n"
@@ -975,7 +982,14 @@ msgstr ""
 "    var max_angle = deg2rad(90.0)\n"
 "    rotation = lerp_angle(min_angle, max_angle, elapsed)\n"
 "    elapsed += delta\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Nota:[/b] Este método lê o caminho mais curto entre [code]from[/code] e "
+"[code]to[/code]. No entanto, quando esses dois ângulos estão aproximadamente "
+"[code]PI + k * TAU[/code] separados para qualquer inteiro [code]k[/code], "
+"não é óbvio de que maneira eles interpretam devido a erros de precisão de "
+"ponto flutuante. Por exemplo, [code]lerp_angle(0, PI, weight)[/code] lê no "
+"sentido anti-horário, enquanto [code]lerp_angle(0, PI + 5 * TAU, weight)[/"
+"code] lê no sentido horário."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1463,7 +1477,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a random floating point value between [code]from[/code] and "
 "[code]to[/code] (both endpoints inclusive).\n"
@@ -1472,12 +1485,12 @@ msgid ""
 "[/codeblock]\n"
 "[b]Note:[/b] This is equivalent to [code]randf() * (to - from) + from[/code]."
 msgstr ""
-"Intervalo aleatório, retorna qualquer número real entre [code]from[/code] e "
-"[code]to[/code].\n"
+"Retorna um valor de ponto flutuante aleatório entre [code]from[/code] e "
+"[code]to[/code] (ambos os endpoints inclusive).\n"
 "[codeblock]\n"
-"prints(rand_range(0, 1), rand_range(0, 1)) # Imprime por exemplo 0.135591 "
-"0.405263\n"
-"[/codeblock]"
+"prints(rand_range(0, 1), rand_range(0, 1)) # Prints e.g. 0.135591 0.405263\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] Isso é equivalente a [code]randf() * (to - from) + from[/code]."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -4579,9 +4592,8 @@ msgstr ""
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
-#, fuzzy
 msgid "Vector math"
-msgstr "Vetor utilizado para matemática 2D."
+msgstr "Matemática vetorial"
 
 #: doc/classes/AABB.xml doc/classes/Rect2.xml doc/classes/Vector2.xml
 #: doc/classes/Vector3.xml
@@ -5798,9 +5810,8 @@ msgstr ""
 #: doc/classes/AnimationNodeOneShot.xml doc/classes/AnimationNodeOutput.xml
 #: doc/classes/AnimationNodeTimeScale.xml
 #: doc/classes/AnimationNodeTransition.xml
-#, fuzzy
 msgid "AnimationTree"
-msgstr "Nó de animação."
+msgstr "AnimationTree"
 
 #: doc/classes/AnimationNodeAdd3.xml doc/classes/AnimationNodeAnimation.xml
 #: doc/classes/AnimationNodeBlend2.xml
@@ -6493,9 +6504,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
-#, fuzzy
 msgid "Animation tutorial index"
-msgstr "Nó de animação."
+msgstr "Índice do tutorial de animação"
 
 #: doc/classes/AnimationPlayer.xml
 msgid ""
@@ -6784,9 +6794,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationTree.xml
-#, fuzzy
 msgid "Using AnimationTree"
-msgstr "Reseta este [AnimationTreePlayer]."
+msgstr "Usando AnimationTree"
 
 #: doc/classes/AnimationTree.xml
 msgid "Manually advance the animations by the specified time (in seconds)."
@@ -12958,10 +12967,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr ""
 
@@ -13749,9 +13760,8 @@ msgstr ""
 "camada -1 ou abaixo)."
 
 #: doc/classes/CanvasLayer.xml
-#, fuzzy
 msgid "Canvas layers"
-msgstr "Camada para desenhar no ecrã."
+msgstr "Camadas de tela"
 
 #: doc/classes/CanvasLayer.xml
 msgid "Returns the RID of the canvas used by this layer."
@@ -14821,9 +14831,8 @@ msgstr ""
 #: doc/classes/Physics2DDirectSpaceState.xml
 #: doc/classes/PhysicsDirectBodyState.xml
 #: doc/classes/PhysicsDirectSpaceState.xml doc/classes/RigidBody.xml
-#, fuzzy
 msgid "Physics introduction"
-msgstr "Interpolação cúbica."
+msgstr "Introdução à física"
 
 #: doc/classes/CollisionShape.xml
 msgid ""
@@ -16390,9 +16399,8 @@ msgid "GUI tutorial index"
 msgstr ""
 
 #: doc/classes/Control.xml
-#, fuzzy
 msgid "Control node gallery"
-msgstr "Tecla Control."
+msgstr "Galeria de *nós* de controle"
 
 #: doc/classes/Control.xml
 msgid "All GUI Demos"
@@ -20292,13 +20300,17 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -20308,7 +20320,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -20325,23 +20341,23 @@ msgstr ""
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -30704,7 +30720,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
+"compatibility reasons. It is however recommended to enable it for games "
+"which don't require very reactive input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -31278,10 +31297,11 @@ msgstr ""
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
+"rendered, allowing for precise input reporting, at the expense of CPU usage. "
+"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
+"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -31604,6 +31624,11 @@ msgstr ""
 msgid ""
 "If [code]true[/code], and a target is set, the camera will move "
 "automatically."
+msgstr ""
+
+#: doc/classes/InterpolatedCamera.xml
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
 msgstr ""
 
 #: doc/classes/InterpolatedCamera.xml
@@ -37046,7 +37071,7 @@ msgid ""
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -37157,6 +37182,14 @@ msgid ""
 "A bitfield determining all navigation map layers the [NavigationAgent2D] "
 "belongs to. On path requests the agent will ignore navmeshes without at "
 "least one matching layer."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -38441,7 +38474,7 @@ msgstr ""
 
 #: doc/classes/Node.xml
 msgid "Nodes and Scenes"
-msgstr ""
+msgstr "Nós e Cenas"
 
 #: doc/classes/Node.xml
 msgid "All Demos"
@@ -49310,68 +49343,67 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 3."
-msgstr ""
+msgstr "Nome opcional para a camada 3 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 30."
-msgstr ""
+msgstr "Nome opcional para a camada 30 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 31."
-msgstr ""
+msgstr "Nome opcional para a camada 31 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 32."
-msgstr ""
+msgstr "Nome opcional para a camada 32 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 4."
-msgstr ""
+msgstr "Nome opcional para a camada 4 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 5."
-msgstr ""
+msgstr "Nome opcional para a camada 5 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 6."
-msgstr ""
+msgstr "Nome opcional para a camada 6 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 7."
-msgstr ""
+msgstr "Nome opcional para a camada 7 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 8."
-msgstr ""
+msgstr "Nome opcional para a camada 8 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D physics layer 9."
-msgstr ""
+msgstr "Nome opcional para a camada 9 de física 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 1."
-msgstr "Nome opcional para a camada 1 da renderização 3D."
+msgstr "Nome opcional para a camada 1 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 10."
-msgstr "Nome opcional para a camada 10 da renderização 3D."
+msgstr "Nome opcional para a camada 10 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 11."
-msgstr "Nome opcional para a camada 11 da renderização 3D."
+msgstr "Nome opcional para a camada 11 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 12."
-msgstr "Nome opcional para a camada 12 da renderização 3D."
+msgstr "Nome opcional para a camada 12 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 13."
-msgstr "Nome opcional para a camada 13 da renderização 3D."
+msgstr "Nome opcional para a camada 13 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid "Optional name for the 3D render layer 14."
-msgstr "Nome opcional para a camada 14 da renderização 3D"
+msgstr "Nome opcional para a camada 14 de renderização 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 15."
@@ -49434,38 +49466,53 @@ msgid ""
 "The locale to fall back to if a translation isn't available in a given "
 "language. If left empty, [code]en[/code] (English) will be used."
 msgstr ""
+"A localidade para retornar se uma tradução não estiver disponível em um "
+"determinado idioma. Se deixado em branco, [code]en[/code] (inglês) será "
+"usado."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "If non-empty, this locale will be used when running the project from the "
 "editor."
 msgstr ""
+"Se não estiver vazio, essa localidade será usada ao executar o projeto a "
+"partir do editor."
 
 #: doc/classes/ProjectSettings.xml
 msgid "If [code]true[/code], logs all output to files."
-msgstr ""
+msgstr "Se [code]true[/code], registra todas os resultados nos arquivos."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Desktop override for [member logging/file_logging/enable_file_logging], as "
 "log files are not readily accessible on mobile/Web platforms."
 msgstr ""
+"Substituição da área de trabalho para [member logging/file_logging/"
+"enable_file_logging], pois os arquivos de log não são facilmente acessíveis "
+"em plataformas móveis/Web."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Path to logs within the project. Using an [code]user://[/code] path is "
 "recommended."
 msgstr ""
+"Caminho para logs dentro do projeto. Recomenda se utilizar um caminho "
+"[code]user://[/code]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Specifies the maximum amount of log files allowed (used for rotation)."
 msgstr ""
+"Especifica a quantidade máxima de arquivos de log permitidos (usados para "
+"rotação)."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Godot uses a message queue to defer some function calls. If you run out of "
 "space on it (you will see an error), you can increase the size here."
 msgstr ""
+"Godot usa uma fila de mensagens para adiar algumas chamadas de função. Se "
+"você ficar sem espaço nela (você verá um erro), você pode aumentar o tamanho "
+"aqui."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49474,6 +49521,11 @@ msgid ""
 "on threads. If servers get stalled too often when loading resources in a "
 "thread, increase this number."
 msgstr ""
+"Isso é usado por servidores quando usado no modo multi-threading (servidores "
+"e visual). Os RIDs são pré-alocados para evitar a interrupção do servidor "
+"que os solicita em encadeamentos. Se os servidores ficarem paralisados com "
+"muita frequência ao carregar recursos em um encadeamento, aumente esse "
+"número."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49486,6 +49538,14 @@ msgid ""
 "in the editor, which also includes C# [code]tool[/code] scripts running "
 "within the editor as well as editor plugin code."
 msgstr ""
+"A política a ser usada para exceções Mono (C#) não tratadas. O padrão "
+"\"Terminate Application\" sai do projeto assim que uma exceção não tratada é "
+"lançada. Em vez disso, \"Log Error\" registra uma mensagem de erro no "
+"console e não interromperá a execução do projeto quando uma exceção não "
+"tratada for lançada.\n"
+"[b]Observação:[/b] A política de exceção não tratada é sempre definida como "
+"\"Erro de log\" no editor, que também inclui scripts C# [code]tool[/code] "
+"executados no editor, bem como o código do plug-in do editor."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49493,42 +49553,57 @@ msgid ""
 "map_set_cell_height].\n"
 "[b]Note:[/b] Currently not implemented."
 msgstr ""
+"Altura de célula padrão para mapas de navegação 2D. Consulte [método "
+"Navigation2DServer.map_set_cell_height].\n"
+"[b]Observação:[/b] atualmente não implementado."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default cell size for 2D navigation maps. See [method Navigation2DServer."
 "map_set_cell_size]."
 msgstr ""
+"Tamanho de célula padrão para mapas de navegação 2D. Consulte [method "
+"Navigation2DServer.map_set_cell_size]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default edge connection margin for 2D navigation maps. See [method "
 "Navigation2DServer.map_set_edge_connection_margin]."
 msgstr ""
+"Margem de conexão de borda padrão para mapas de navegação 2D. Consulte "
+"[method Navigation2DServer.map_set_edge_connection_margin]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default cell height for 3D navigation maps. See [method NavigationServer."
 "map_set_cell_height]."
 msgstr ""
+"Altura de célula padrão para mapas de navegação 3D. Consulte [method "
+"NavigationServer.map_set_cell_height]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default cell size for 3D navigation maps. See [method NavigationServer."
 "map_set_cell_size]."
 msgstr ""
+"Tamanho de célula padrão para mapas de navegação 3D. Consulte [method "
+"NavigationServer.map_set_cell_size]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default edge connection margin for 3D navigation maps. See [method "
 "NavigationServer.map_set_edge_connection_margin]."
 msgstr ""
+"Margem de conexão de borda padrão para mapas de navegação 3D. Consulte "
+"[method NavigationServer.map_set_edge_connection_margin]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Default map up vector for 3D navigation maps. See [method NavigationServer."
 "map_set_up]."
 msgstr ""
+"Vetor de mapa padrão para mapas de navegação 3D. Consulte [method "
+"NavigationServer.map_set_up]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49536,6 +49611,9 @@ msgid ""
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
+"Quantidade máxima de caracteres permitidos para enviar como saída do "
+"depurador. Acima desse valor, o conteúdo é descartado. Isso ajuda a não "
+"travar a conexão do depurador."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49543,6 +49621,9 @@ msgid ""
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
+"Número máximo de erros permitidos a serem enviados como saída do depurador. "
+"Acima desse valor, o conteúdo é descartado. Isso ajuda a não travar a "
+"conexão do depurador."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49550,6 +49631,9 @@ msgid ""
 "this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
+"Quantidade máxima de mensagens permitidas para enviar como saída do "
+"depurador. Acima desse valor, o conteúdo é descartado. Isso ajuda a não "
+"travar a conexão do depurador."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49557,6 +49641,9 @@ msgid ""
 "Over this value, content is dropped. This helps not to stall the debugger "
 "connection."
 msgstr ""
+"Número máximo de avisos que podem ser enviados como saída do depurador. "
+"Acima desse valor, o conteúdo é descartado. Isso ajuda a não travar a "
+"conexão do depurador."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -49564,56 +49651,64 @@ msgid ""
 "specified as a power of two). The default value [code]16[/code] is equal to "
 "65,536 bytes. Over this size, data is dropped."
 msgstr ""
+"Tamanho padrão do fluxo de pares de pacotes para desserializar dados Godot "
+"(em bytes, especificado como uma potência de dois). O valor padrão [code]16[/"
+"code] é igual a 65.536 bytes. Acima desse tamanho, os dados são descartados."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Timeout (in seconds) for connection attempts using TCP."
-msgstr ""
+msgstr "Tempo limite (em segundos) para tentativas de conexão usando TCP."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum size (in kiB) for the [WebRTCDataChannel] input buffer."
-msgstr ""
+msgstr "Tamanho máximo (em kiB) para o buffer de entrada [WebRTCDataChannel]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum size (in kiB) for the [WebSocketClient] input buffer."
-msgstr ""
+msgstr "Tamanho máximo (em kiB) para o buffer de entrada [WebSocketClient]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum number of concurrent input packets for [WebSocketClient]."
 msgstr ""
+"Número máximo de pacotes de entrada simultâneos para [WebSocketClient]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum size (in kiB) for the [WebSocketClient] output buffer."
-msgstr ""
+msgstr "Tamanho máximo (em kiB) para o buffer de saída [WebSocketClient]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum number of concurrent output packets for [WebSocketClient]."
-msgstr ""
+msgstr "Número máximo de pacotes de saída simultâneos para [WebSocketClient]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum size (in kiB) for the [WebSocketServer] input buffer."
-msgstr ""
+msgstr "Tamanho máximo (em kiB) para o buffer de entrada [WebSocketServer]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum number of concurrent input packets for [WebSocketServer]."
 msgstr ""
+"Número máximo de pacotes de entrada simultâneos para [WebSocketServer]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum size (in kiB) for the [WebSocketServer] output buffer."
-msgstr ""
+msgstr "Tamanho máximo (em kiB) para o buffer de saída [WebSocketServer]."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Maximum number of concurrent output packets for [WebSocketServer]."
-msgstr ""
+msgstr "Número máximo de pacotes de saída simultâneos para [WebSocketServer]."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "Amount of read ahead used by remote filesystem. Higher values decrease the "
 "effects of latency at the cost of higher bandwidth usage."
 msgstr ""
+"Quantidade de leitura antecipada usada pelo sistema de arquivos remoto. "
+"Valores mais altos diminuem os efeitos da latência ao custo de maior uso de "
+"largura de banda."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Page size used by remote filesystem (in bytes)."
-msgstr ""
+msgstr "Tamanho da página usado pelo sistema de arquivos remoto (em bytes)."
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
@@ -50756,8 +50851,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -59151,7 +59246,31 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -59748,9 +59867,11 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
 
 #: doc/classes/StyleBox.xml
@@ -61289,6 +61410,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr ""
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "Se [code]true[/code], o objeto é desenhado por cima do pai dele."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -67385,9 +67511,10 @@ msgstr ""
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -67416,7 +67543,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
 msgstr ""
 
 #: doc/classes/Viewport.xml

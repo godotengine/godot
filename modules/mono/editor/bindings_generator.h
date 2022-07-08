@@ -60,6 +60,7 @@ class BindingsGenerator {
 	struct EnumInterface {
 		StringName cname;
 		List<ConstantInterface> constants;
+		bool is_flags = false;
 
 		_FORCE_INLINE_ bool operator==(const EnumInterface &p_ienum) const {
 			return p_ienum.cname == cname;

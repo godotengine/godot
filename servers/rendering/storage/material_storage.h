@@ -31,8 +31,8 @@
 #ifndef MATERIAL_STORAGE_H
 #define MATERIAL_STORAGE_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
+#include "utilities.h"
 
 class RendererMaterialStorage {
 public:
@@ -95,7 +95,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
-	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) = 0;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 };
 
 #endif // !MATERIAL_STORAGE_H

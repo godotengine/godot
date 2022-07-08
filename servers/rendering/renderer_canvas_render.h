@@ -31,7 +31,7 @@
 #ifndef RENDERINGSERVERCANVASRENDER_H
 #define RENDERINGSERVERCANVASRENDER_H
 
-#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering_server.h"
 
 class RendererCanvasRender {
 public:
@@ -257,11 +257,7 @@ public:
 			RID texture;
 
 			CommandMesh() { type = TYPE_MESH; }
-			~CommandMesh() {
-				if (mesh_instance.is_valid()) {
-					RendererStorage::base_singleton->free(mesh_instance);
-				}
-			}
+			~CommandMesh();
 		};
 
 		struct CommandMultiMesh : public Command {

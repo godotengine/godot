@@ -31,8 +31,8 @@
 #ifdef GLES3_ENABLED
 
 #include "mesh_storage.h"
-#include "../rasterizer_storage_gles3.h"
 #include "material_storage.h"
+#include "utilities.h"
 
 using namespace GLES3;
 
@@ -64,6 +64,8 @@ void MeshStorage::mesh_free(RID p_rid) {
 	mesh_clear(p_rid);
 	mesh_set_shadow_mesh(p_rid, RID());
 	Mesh *mesh = mesh_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!mesh);
+
 	mesh->dependency.deleted_notify(p_rid);
 	if (mesh->instances.size()) {
 		ERR_PRINT("deleting mesh with active instances");
@@ -72,7 +74,7 @@ void MeshStorage::mesh_free(RID p_rid) {
 		for (Mesh *E : mesh->shadow_owners) {
 			Mesh *shadow_owner = E;
 			shadow_owner->shadow_mesh = RID();
-			shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+			shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 		}
 	}
 	mesh_owner.free(p_rid);
@@ -268,12 +270,12 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		_mesh_instance_add_surface(mi, mesh, mesh->surface_count - 1);
 	}
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
-		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 
 	mesh->material_cache.clear();
@@ -314,7 +316,7 @@ void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_mat
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
 	mesh->surfaces[p_surface]->material = p_material;
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 	mesh->material_cache.clear();
 }
 
@@ -335,10 +337,10 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 
 	RS::SurfaceData sd;
 	sd.format = s.format;
-	sd.vertex_data = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+	sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
 
 	if (s.attribute_buffer != 0) {
-		sd.attribute_data = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
+		sd.attribute_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
 	}
 
 	sd.vertex_count = s.vertex_count;
@@ -346,14 +348,14 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.primitive = s.primitive;
 
 	if (sd.index_count) {
-		sd.index_data = RasterizerStorageGLES3::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.index_buffer, s.index_buffer_size);
+		sd.index_data = Utilities::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.index_buffer, s.index_buffer_size);
 	}
 
 	sd.aabb = s.aabb;
 	for (uint32_t i = 0; i < s.lod_count; i++) {
 		RS::SurfaceData::LOD lod;
 		lod.edge_length = s.lods[i].edge_length;
-		lod.index_data = RasterizerStorageGLES3::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.lods[i].index_buffer, s.lods[i].index_buffer_size);
+		lod.index_data = Utilities::buffer_get_data(GL_ELEMENT_ARRAY_BUFFER, s.lods[i].index_buffer, s.lods[i].index_buffer_size);
 		sd.lods.push_back(lod);
 	}
 
@@ -504,7 +506,7 @@ void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 		shadow_mesh->shadow_owners.insert(mesh);
 	}
 
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
 void MeshStorage::mesh_clear(RID p_mesh) {
@@ -553,12 +555,12 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 		_mesh_instance_clear(mi);
 	}
 	mesh->has_bone_weights = false;
-	mesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
-		shadow_owner->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 }
 
@@ -899,7 +901,7 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MULTIMESH);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
 }
 
 int MeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
@@ -926,14 +928,14 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	} else if (multimesh->instances) {
 		// Need to re-create AABB. Unfortunately, calling this has a penalty.
 		if (multimesh->buffer_set) {
-			Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
 			const uint8_t *r = buffer.ptr();
 			const float *data = (const float *)r;
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
 		}
 	}
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MESH);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 }
 
 #define MULTIMESH_DIRTY_REGION_SIZE 512
@@ -950,7 +952,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 		float *w = multimesh->data_cache.ptrw();
 
 		if (multimesh->buffer_set) {
-			Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
 
 			{
 				const uint8_t *r = buffer.ptr();
@@ -1348,7 +1350,7 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		const float *data = multimesh->data_cache.ptr();
 
 		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
-		multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+		multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 	}
 }
 
@@ -1363,7 +1365,7 @@ Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	} else {
 		// Buffer not cached, so fetch from GPU memory. This can be a stalling operation, avoid whenever possible.
 
-		Vector<uint8_t> buffer = RasterizerStorageGLES3::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+		Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
 		ret.resize(multimesh->instances * multimesh->stride_cache);
 		{
 			float *w = ret.ptrw();
@@ -1439,7 +1441,7 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 
 	multimesh->visible_instances = p_visible;
 
-	multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
 }
 
 int MeshStorage::multimesh_get_visible_instances(RID p_multimesh) const {
@@ -1493,7 +1495,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 			if (multimesh->aabb_dirty && multimesh->mesh.is_valid()) {
 				_multimesh_re_create_aabb(multimesh, data, visible_instances);
 				multimesh->aabb_dirty = false;
-				multimesh->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+				multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 			}
 		}
 
@@ -1542,7 +1544,12 @@ Transform2D MeshStorage::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bo
 	return Transform2D();
 }
 
-void MeshStorage::skeleton_update_dependency(RID p_base, RendererStorage::DependencyTracker *p_instance) {
+void MeshStorage::skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) {
+}
+
+/* OCCLUDER */
+
+void MeshStorage::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
 }
 
 #endif // GLES3_ENABLED

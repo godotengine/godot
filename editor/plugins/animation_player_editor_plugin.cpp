@@ -135,7 +135,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
 				autoplay_reset_img->blit_rect(reset_img, Rect2(Point2(), icon_size), Point2(icon_size.x, 0));
 				autoplay_reset_icon.instantiate();
-				autoplay_reset_icon->create_from_image(autoplay_reset_img);
+				autoplay_reset_icon->set_image(autoplay_reset_img);
 			}
 			stop->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 

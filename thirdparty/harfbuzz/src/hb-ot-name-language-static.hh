@@ -45,7 +45,7 @@ struct hb_ot_language_map_t
 };
 
 static const hb_ot_language_map_t
-hb_ms_language_map[] =
+_hb_ms_language_map[] =
 {
   {0x0001,	"ar"},	/* ??? */
   {0x0004,	"zh"},	/* ??? */
@@ -298,7 +298,7 @@ hb_ms_language_map[] =
 };
 
 static const hb_ot_language_map_t
-hb_mac_language_map[] =
+_hb_mac_language_map[] =
 {
   {  0,	"en"},	/* English */
   {  1,	"fr"},	/* French */
@@ -441,16 +441,16 @@ hb_language_t
 _hb_ot_name_language_for_ms_code (unsigned int code)
 {
   return _hb_ot_name_language_for (code,
-				   hb_ms_language_map,
-				   ARRAY_LENGTH (hb_ms_language_map));
+				   _hb_ms_language_map,
+				   ARRAY_LENGTH (_hb_ms_language_map));
 }
 
 hb_language_t
 _hb_ot_name_language_for_mac_code (unsigned int code)
 {
   return _hb_ot_name_language_for (code,
-				   hb_mac_language_map,
-				   ARRAY_LENGTH (hb_mac_language_map));
+				   _hb_mac_language_map,
+				   ARRAY_LENGTH (_hb_mac_language_map));
 }
 
 #endif /* HB_OT_NAME_LANGUAGE_STATIC_HH */

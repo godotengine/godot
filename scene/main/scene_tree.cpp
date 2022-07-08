@@ -412,9 +412,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
-	_notify_group_pause(SNAME("physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("_physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
-	_notify_group_pause(SNAME("physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("_physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -449,8 +449,8 @@ bool SceneTree::process(double p_time) {
 
 	flush_transform_notifications();
 
-	_notify_group_pause(SNAME("process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause(SNAME("process"), Node::NOTIFICATION_PROCESS);
+	_notify_group_pause(SNAME("_process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause(SNAME("_process"), Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack

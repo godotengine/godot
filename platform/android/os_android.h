@@ -122,6 +122,8 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
+	virtual Error move_to_trash(const String &p_path) override;
+
 	void vibrate_handheld(int p_duration_ms) override;
 
 	virtual String get_config_path() const override;

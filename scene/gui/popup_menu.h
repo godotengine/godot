@@ -47,7 +47,6 @@ class PopupMenu : public Popup {
 		Ref<TextLine> text_buf;
 		Ref<TextLine> accel_text_buf;
 
-		Dictionary opentype_features;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
 
@@ -171,8 +170,6 @@ public:
 	void set_item_text(int p_idx, const String &p_text);
 
 	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
-	void set_item_opentype_feature(int p_idx, const String &p_name, int p_value);
-	void clear_item_opentype_features(int p_idx);
 	void set_item_language(int p_idx, const String &p_language);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_checked(int p_idx, bool p_checked);
@@ -195,7 +192,6 @@ public:
 
 	String get_item_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
-	int get_item_opentype_feature(int p_idx, const String &p_name) const;
 	String get_item_language(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;

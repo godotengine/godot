@@ -99,7 +99,7 @@ namespace GodotTools.Build
             if (Utils.OS.IsWindows)
             {
                 // %APPDATA% for both
-                return new[] {Path.Combine(applicationData, "NuGet", "NuGet.Config")};
+                return new[] { Path.Combine(applicationData, "NuGet", "NuGet.Config") };
             }
 
             var paths = new string[2];
@@ -156,6 +156,7 @@ namespace GodotTools.Build
   </packageSources>
 </configuration>
 ";
+                    System.IO.Directory.CreateDirectory(Path.GetDirectoryName(nuGetConfigPath));
                     System.IO.File.WriteAllText(nuGetConfigPath, defaultConfig, Encoding.UTF8); // UTF-8 with BOM
                 }
 

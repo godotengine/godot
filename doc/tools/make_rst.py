@@ -36,6 +36,7 @@ BASE_STRINGS = [
     "Signals",
     "Enumerations",
     "Constants",
+    "Annotations",
     "Property Descriptions",
     "Constructor Descriptions",
     "Method Descriptions",
@@ -122,16 +123,18 @@ class MethodDef:
 
 
 class ConstantDef:
-    def __init__(self, name, value, text):  # type: (str, str, Optional[str]) -> None
+    def __init__(self, name, value, text, bitfield):  # type: (str, str, Optional[str], Optional[bool]) -> None
         self.name = name
         self.value = value
         self.text = text
+        self.is_bitfield = bitfield
 
 
 class EnumDef:
-    def __init__(self, name):  # type: (str) -> None
+    def __init__(self, name, bitfield):  # type: (str, Optional[bool]) -> None
         self.name = name
         self.values = OrderedDict()  # type: OrderedDict[str, ConstantDef]
+        self.is_bitfield = bitfield
 
 
 class ThemeItemDef:
@@ -155,6 +158,7 @@ class ClassDef:
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.operators = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
+        self.annotations = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
@@ -305,7 +309,8 @@ class State:
                 constant_name = constant.attrib["name"]
                 value = constant.attrib["value"]
                 enum = constant.get("enum")
-                constant_def = ConstantDef(constant_name, value, constant.text)
+                is_bitfield = constant.get("is_bitfield") or False
+                constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
                 if enum is None:
                     if constant_name in class_def.constants:
                         print_error('{}.xml: Duplicate constant "{}".'.format(class_name, constant_name), self)
@@ -318,10 +323,31 @@ class State:
                         enum_def = class_def.enums[enum]
 
                     else:
-                        enum_def = EnumDef(enum)
+                        enum_def = EnumDef(enum, is_bitfield)
                         class_def.enums[enum] = enum_def
 
                     enum_def.values[constant_name] = constant_def
+
+        annotations = class_root.find("annotations")
+        if annotations is not None:
+            for annotation in annotations:
+                assert annotation.tag == "annotation"
+
+                annotation_name = annotation.attrib["name"]
+                qualifiers = annotation.get("qualifiers")
+
+                params = parse_arguments(annotation)
+
+                desc_element = annotation.find("description")
+                annotation_desc = None
+                if desc_element is not None:
+                    annotation_desc = desc_element.text
+
+                annotation_def = MethodDef(annotation_name, return_type, params, annotation_desc, qualifiers)
+                if annotation_name not in class_def.annotations:
+                    class_def.annotations[annotation_name] = []
+
+                class_def.annotations[annotation_name].append(annotation_def)
 
         signals = class_root.find("signals")
         if signals is not None:
@@ -706,7 +732,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write(".. _class_{}_constant_{}:\n\n".format(class_name, value.name))
 
-            f.write("enum **{}**:\n\n".format(e.name))
+            if e.is_bitfield:
+                f.write("flags **{}**:\n\n".format(e.name))
+            else:
+                f.write("enum **{}**:\n\n".format(e.name))
+
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
@@ -731,6 +761,26 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write(" --- " + rstize_text(constant.text.strip(), state))
 
             f.write("\n\n")
+
+    if len(class_def.annotations) > 0:
+        f.write(make_heading("Annotations", "-"))
+        index = 0
+
+        for method_list in class_def.annotations.values():
+            for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write("----\n\n")
+
+                if i == 0:
+                    f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
+
+                ret_type, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {} {}\n\n".format(ret_type, signature))
+
+                if m.description is not None and m.description.strip() != "":
+                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+
+                index += 1
 
     # Property descriptions
     if any(not p.overrides for p in class_def.properties.values()) > 0:
@@ -1064,6 +1114,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
                         if method_param not in class_def.signals:
                             print_error('{}.xml: Unresolved signal "{}".'.format(state.current_class, param), state)
                         ref_type = "_signal"
+
+                    elif cmd.startswith("annotation"):
+                        if method_param not in class_def.annotations:
+                            print_error('{}.xml: Unresolved annotation "{}".'.format(state.current_class, param), state)
+                        ref_type = "_annotation"
 
                     elif cmd.startswith("constant"):
                         found = False

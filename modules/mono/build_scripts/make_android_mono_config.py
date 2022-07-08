@@ -43,7 +43,7 @@ String get_godot_android_mono_config() {
 	Compression::decompress(w, config_uncompressed_size, config_compressed_data,
 			config_compressed_size, Compression::MODE_DEFLATE);
 	String s;
-	if (s.parse_utf8((const char *)w, data.size())) {
+	if (s.parse_utf8((const char *)w, data.size()) != OK) {
 		ERR_FAIL_V(String());
 	}
 	return s;

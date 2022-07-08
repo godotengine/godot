@@ -106,8 +106,7 @@
 		    if error != OK:
 		        push_error("Couldn't load the image.")
 
-		    var texture = ImageTexture.new()
-		    texture.create_from_image(image)
+		    var texture = ImageTexture.create_from_image(image)
 
 		    # Display the image in a TextureRect node.
 		    var texture_rect = TextureRect.new()

@@ -271,6 +271,9 @@ public:
 
 	bool is_valid_string() const;
 
+	/* debug, error messages */
+	void print_unicode_error(const String &p_message, bool p_critical = false) const;
+
 	/* complex helpers */
 	String substr(int p_from, int p_chars = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
@@ -373,11 +376,11 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
+	Error parse_utf8(const char *p_utf8, int p_len = -1);
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	Char16String utf16() const;
-	bool parse_utf16(const char16_t *p_utf16, int p_len = -1); //return true on error
+	Error parse_utf16(const char16_t *p_utf16, int p_len = -1);
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */

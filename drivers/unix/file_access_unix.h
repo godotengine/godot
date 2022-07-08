@@ -49,7 +49,6 @@ class FileAccessUnix : public FileAccess {
 	String path;
 	String path_src;
 
-	static Ref<FileAccess> create_libc();
 	void _close();
 
 public:

@@ -175,7 +175,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_begin_" + itos(p_viewport->self.get_id());
-		RSG::storage->capture_timestamp(rt_id);
+		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 
@@ -212,7 +212,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::storage->get_default_clear_color();
+	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::texture_storage->get_default_clear_color();
 
 	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
 		RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
@@ -521,7 +521,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_end_" + itos(p_viewport->self.get_id());
-		RSG::storage->capture_timestamp(rt_id);
+		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 }
@@ -1259,7 +1259,7 @@ void RendererViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time,
 }
 
 void RendererViewport::set_default_clear_color(const Color &p_color) {
-	RSG::storage->set_default_clear_color(p_color);
+	RSG::texture_storage->set_default_clear_color(p_color);
 }
 
 // Workaround for setting this on thread.

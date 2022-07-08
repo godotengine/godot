@@ -44,7 +44,8 @@ struct str_encoder_t
 
   void encode_byte (unsigned char b)
   {
-    if (unlikely (buff.push (b) == &Crap (unsigned char)))
+    buff.push (b);
+    if (unlikely (buff.in_error ()))
       set_error ();
   }
 

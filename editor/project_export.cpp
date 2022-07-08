@@ -366,16 +366,17 @@ void ProjectExportDialog::_update_feature_list() {
 	}
 
 	custom_feature_display->clear();
+	String text;
 	bool first = true;
 	for (const String &E : fset) {
-		String f = E;
 		if (!first) {
-			f += ", ";
+			text += ", ";
 		} else {
 			first = false;
 		}
-		custom_feature_display->add_text(f);
+		text += E;
 	}
+	custom_feature_display->add_text(text);
 }
 
 void ProjectExportDialog::_custom_features_changed(const String &p_text) {

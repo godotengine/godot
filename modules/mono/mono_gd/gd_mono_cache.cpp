@@ -140,8 +140,11 @@ void CachedData::clear_godot_api_cache() {
 	field_ExportAttribute_hintString = nullptr;
 	class_SignalAttribute = nullptr;
 	class_ToolAttribute = nullptr;
-	class_AnyPeerAttribute = nullptr;
-	class_AuthorityAttribute = nullptr;
+	class_RPCAttribute = nullptr;
+	property_RPCAttribute_Mode = nullptr;
+	property_RPCAttribute_CallLocal = nullptr;
+	property_RPCAttribute_TransferMode = nullptr;
+	property_RPCAttribute_TransferChannel = nullptr;
 	class_GodotMethodAttribute = nullptr;
 	field_GodotMethodAttribute_methodName = nullptr;
 	class_ScriptPathAttribute = nullptr;
@@ -268,8 +271,11 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hintString, CACHED_CLASS(ExportAttribute)->get_field("hintString"));
 	CACHE_CLASS_AND_CHECK(SignalAttribute, GODOT_API_CLASS(SignalAttribute));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
-	CACHE_CLASS_AND_CHECK(AnyPeerAttribute, GODOT_API_CLASS(AnyPeerAttribute));
-	CACHE_CLASS_AND_CHECK(AuthorityAttribute, GODOT_API_CLASS(AuthorityAttribute));
+	CACHE_CLASS_AND_CHECK(RPCAttribute, GODOT_API_CLASS(RPCAttribute));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, Mode, CACHED_CLASS(RPCAttribute)->get_property("Mode"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, CallLocal, CACHED_CLASS(RPCAttribute)->get_property("CallLocal"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferMode, CACHED_CLASS(RPCAttribute)->get_property("TransferMode"));
+	CACHE_PROPERTY_AND_CHECK(RPCAttribute, TransferChannel, CACHED_CLASS(RPCAttribute)->get_property("TransferChannel"));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 	CACHE_CLASS_AND_CHECK(ScriptPathAttribute, GODOT_API_CLASS(ScriptPathAttribute));

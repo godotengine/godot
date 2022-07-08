@@ -465,7 +465,7 @@ void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, c
 
 		Basis to_lm = lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
-		RendererStorageRD::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = RendererRD::LightStorage::get_singleton()->lightmap_uses_spherical_harmonics(lightmap);
 
@@ -1534,15 +1534,15 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 	CameraMatrix projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
-	RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix);
-	RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
-	RendererStorageRD::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
-	RendererStorageRD::store_transform(p_render_data->cam_transform.affine_inverse(), scene_state.ubo.view_matrix);
+	RendererRD::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
+	RendererRD::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
+	RendererRD::MaterialStorage::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
+	RendererRD::MaterialStorage::store_transform(p_render_data->cam_transform.affine_inverse(), scene_state.ubo.view_matrix);
 
 	for (uint32_t v = 0; v < p_render_data->view_count; v++) {
 		projection = correction * p_render_data->view_projection[v];
-		RendererStorageRD::store_camera(projection, scene_state.ubo.projection_matrix_view[v]);
-		RendererStorageRD::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix_view[v]);
+		RendererRD::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix_view[v]);
+		RendererRD::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix_view[v]);
 
 		scene_state.ubo.eye_offset[v][0] = p_render_data->view_eye_offset[v].x;
 		scene_state.ubo.eye_offset[v][1] = p_render_data->view_eye_offset[v].y;
@@ -1555,10 +1555,10 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	scene_state.ubo.pancake_shadows = p_pancake_shadows;
 
-	RendererStorageRD::store_soft_shadow_kernel(directional_penumbra_shadow_kernel_get(), scene_state.ubo.directional_penumbra_shadow_kernel);
-	RendererStorageRD::store_soft_shadow_kernel(directional_soft_shadow_kernel_get(), scene_state.ubo.directional_soft_shadow_kernel);
-	RendererStorageRD::store_soft_shadow_kernel(penumbra_shadow_kernel_get(), scene_state.ubo.penumbra_shadow_kernel);
-	RendererStorageRD::store_soft_shadow_kernel(soft_shadow_kernel_get(), scene_state.ubo.soft_shadow_kernel);
+	RendererRD::MaterialStorage::store_soft_shadow_kernel(directional_penumbra_shadow_kernel_get(), scene_state.ubo.directional_penumbra_shadow_kernel);
+	RendererRD::MaterialStorage::store_soft_shadow_kernel(directional_soft_shadow_kernel_get(), scene_state.ubo.directional_soft_shadow_kernel);
+	RendererRD::MaterialStorage::store_soft_shadow_kernel(penumbra_shadow_kernel_get(), scene_state.ubo.penumbra_shadow_kernel);
+	RendererRD::MaterialStorage::store_soft_shadow_kernel(soft_shadow_kernel_get(), scene_state.ubo.soft_shadow_kernel);
 
 	Size2 screen_pixel_size = Vector2(1.0, 1.0) / Size2(p_screen_size);
 	scene_state.ubo.screen_pixel_size[0] = screen_pixel_size.x;
@@ -1648,7 +1648,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 			Basis sky_transform = environment_get_sky_orientation(p_render_data->environment);
 			sky_transform = sky_transform.inverse() * p_render_data->cam_transform.basis;
-			RendererStorageRD::store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
+			RendererRD::MaterialStorage::store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
 
 			scene_state.ubo.use_ambient_cubemap = (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ambient_src == RS::ENV_AMBIENT_SOURCE_SKY;
 			scene_state.ubo.use_ambient_light = scene_state.ubo.use_ambient_cubemap || ambient_src == RS::ENV_AMBIENT_SOURCE_COLOR;
@@ -1866,9 +1866,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		GeometryInstanceForwardMobile::PushConstant push_constant;
 
 		if (inst->store_transform_cache) {
-			RendererStorageRD::store_transform(inst->transform, push_constant.transform);
+			RendererRD::MaterialStorage::store_transform(inst->transform, push_constant.transform);
 		} else {
-			RendererStorageRD::store_transform(Transform3D(), push_constant.transform);
+			RendererRD::MaterialStorage::store_transform(Transform3D(), push_constant.transform);
 		}
 
 		push_constant.flags = inst->flags_cache;
@@ -2032,7 +2032,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 /* Geometry instance */
 
 RendererSceneRender::GeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base) {
-	RS::InstanceType type = storage->get_base_type(p_base);
+	RS::InstanceType type = RSG::utilities->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
 	GeometryInstanceForwardMobile *ginstance = geometry_instance_alloc.alloc();
@@ -2373,7 +2373,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->surface_index = p_surface;
 
 	if (ginstance->data->dirty_dependencies) {
-		storage->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
+		RSG::utilities->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
 	}
 
 	//shadow
@@ -2609,16 +2609,16 @@ void RenderForwardMobile::_update_dirty_geometry_instances() {
 	}
 }
 
-void RenderForwardMobile::_geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker) {
+void RenderForwardMobile::_geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker) {
 	switch (p_notification) {
-		case RendererStorage::DEPENDENCY_CHANGED_MATERIAL:
-		case RendererStorage::DEPENDENCY_CHANGED_MESH:
-		case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
-		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
-		case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA: {
+		case Dependency::DEPENDENCY_CHANGED_MATERIAL:
+		case Dependency::DEPENDENCY_CHANGED_MESH:
+		case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
+		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RenderForwardMobile *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 		} break;
-		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
+		case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceForwardMobile *ginstance = static_cast<GeometryInstanceForwardMobile *>(p_tracker->userdata);
 			if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
 				ginstance->instance_count = RendererRD::MeshStorage::get_singleton()->multimesh_get_instances_to_draw(ginstance->data->base);
@@ -2629,7 +2629,7 @@ void RenderForwardMobile::_geometry_instance_dependency_changed(RendererStorage:
 		} break;
 	}
 }
-void RenderForwardMobile::_geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker) {
+void RenderForwardMobile::_geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker) {
 	static_cast<RenderForwardMobile *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 }
 
@@ -2695,8 +2695,7 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 	_base_uniforms_changed(); //also need this
 }
 
-RenderForwardMobile::RenderForwardMobile(RendererStorageRD *p_storage) :
-		RendererSceneRenderRD(p_storage) {
+RenderForwardMobile::RenderForwardMobile() {
 	singleton = this;
 
 	sky.set_texture_format(_render_buffers_get_color_format());
@@ -2728,7 +2727,7 @@ RenderForwardMobile::RenderForwardMobile(RendererStorageRD *p_storage) :
 		defines += "\n#define MATERIAL_UNIFORM_SET " + itos(MATERIAL_UNIFORM_SET) + "\n";
 	}
 
-	scene_shader.init(p_storage, defines);
+	scene_shader.init(defines);
 
 	// !BAS! maybe we need a mobile version of this setting?
 	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");

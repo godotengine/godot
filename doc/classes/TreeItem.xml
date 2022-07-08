@@ -42,13 +42,6 @@
 				Resets the color for the given column to default.
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="create_child">
 			<return type="TreeItem" />
 			<argument index="0" name="idx" type="int" default="-1" />
@@ -230,23 +223,15 @@
 		<method name="get_next" qualifiers="const">
 			<return type="TreeItem" />
 			<description>
-				Returns the next TreeItem in the tree or a null object if there is none.
+				Returns the next sibling TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_next_visible">
 			<return type="TreeItem" />
 			<argument index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Returns the next visible TreeItem in the tree or a null object if there is none.
+				Returns the next visible sibling TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
@@ -258,14 +243,14 @@
 		<method name="get_prev">
 			<return type="TreeItem" />
 			<description>
-				Returns the previous TreeItem in the tree or a null object if there is none.
+				Returns the previous sibling TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_visible">
 			<return type="TreeItem" />
 			<argument index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Returns the previous visible TreeItem in the tree or a null object if there is none.
+				Returns the previous visible sibling TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -578,15 +563,6 @@
 			<argument index="1" name="meta" type="Variant" />
 			<description>
 				Sets the metadata value for the given column, which can be retrieved later using [method get_metadata]. This can be used, for example, to store a reference to the original data.
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text.
 			</description>
 		</method>
 		<method name="set_range">

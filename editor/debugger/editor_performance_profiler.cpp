@@ -136,7 +136,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 
 		draw_color.a = 0.9f;
-		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1), font_size).width;
+		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 		if (value_position < 0) {
 			value_position = 0;
 		}
@@ -184,7 +184,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				monitor_draw->draw_line(rect.position + Point2(from, 0), rect.position + Point2(from, rect.size.y), line_color, Math::round(EDSCALE));
 
 				String label = _create_label(e->get(), current.type);
-				Size2 size = graph_font->get_string_size(label, font_size);
+				Size2 size = graph_font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				Vector2 text_top_left_position = Vector2(from, h2) - (size + Vector2(MARKER_MARGIN, MARKER_MARGIN));
 				if (text_top_left_position.x < 0) {
 					text_top_left_position.x = from + MARKER_MARGIN;

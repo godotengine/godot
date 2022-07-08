@@ -40,7 +40,7 @@
 
 
 /**
- * hb_set_create: (Xconstructor)
+ * hb_set_create:
  *
  * Creates a new, initially empty set.
  *
@@ -186,6 +186,7 @@ hb_set_t *
 hb_set_copy (const hb_set_t *set)
 {
   hb_set_t *copy = hb_set_create ();
+  if (unlikely (!copy)) return nullptr;
   copy->set (*set);
   return copy;
 }
@@ -356,6 +357,23 @@ hb_set_is_equal (const hb_set_t *set,
 		 const hb_set_t *other)
 {
   return set->is_equal (*other);
+}
+
+/**
+ * hb_set_hash:
+ * @set: A set
+ *
+ * Creates a hash representing @set.
+ *
+ * Return value:
+ * A hash of @set.
+ *
+ * Since: 4.4.0
+ **/
+HB_EXTERN unsigned int
+hb_set_hash (const hb_set_t *set)
+{
+  return set->hash ();
 }
 
 /**

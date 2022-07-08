@@ -135,6 +135,12 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	String import_id;
 	bool has_import_id = false;
 
+	bool created = false;
+	if (!material_set.has(p_material)) {
+		material_set.insert(p_material);
+		created = true;
+	}
+
 	if (p_material->has_meta("import_id")) {
 		import_id = p_material->get_meta("import_id");
 		has_import_id = true;
@@ -142,7 +148,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 		import_id = p_material->get_name();
 		has_import_id = true;
 	} else {
-		import_id = "@MATERIAL:" + itos(material_set.size());
+		import_id = "@MATERIAL:" + itos(material_set.size() - 1);
 	}
 
 	if (!material_map.has(import_id)) {
@@ -160,14 +166,12 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	Ref<Texture2D> icon = get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons"));
 
 	TreeItem *item = p_tree->create_item(p_parent);
-	item->set_text(0, p_material->get_name());
-	item->set_icon(0, icon);
-
-	bool created = false;
-	if (!material_set.has(p_material)) {
-		material_set.insert(p_material);
-		created = true;
+	if (p_material->get_name().is_empty()) {
+		item->set_text(0, TTR("<Unnamed Material>"));
+	} else {
+		item->set_text(0, p_material->get_name());
 	}
+	item->set_icon(0, icon);
 
 	item->set_meta("type", "Material");
 	item->set_meta("import_id", import_id);
@@ -339,6 +343,8 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
 			} else if (Object::cast_to<AnimationPlayer>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(p_node)) {
+				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
@@ -536,12 +542,6 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
-	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path); // Use the scene singleton here because we want to see the full thing.
-	if (scene == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
-		return;
-	}
-
 	// Visibility
 	data_mode->set_tab_hidden(1, p_for_animation);
 	data_mode->set_tab_hidden(2, p_for_animation);
@@ -587,6 +587,12 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 		}
 	}
 
+	scene = ResourceImporterScene::get_scene_singleton()->pre_import(p_path, defaults); // Use the scene singleton here because we want to see the full thing.
+	if (scene == nullptr) {
+		EditorNode::get_singleton()->show_warning(TTR("Error opening scene"));
+		return;
+	}
+
 	first_aabb = true;
 
 	_update_scene();
@@ -604,6 +610,9 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	_update_view_gizmos();
 	_update_camera();
 
+	// Start with the root item (Scene) selected.
+	scene_tree->get_root()->select(0);
+
 	if (p_for_animation) {
 		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
 	} else {
@@ -615,6 +624,13 @@ SceneImportSettings *SceneImportSettings::singleton = nullptr;
 
 SceneImportSettings *SceneImportSettings::get_singleton() {
 	return singleton;
+}
+
+Node *SceneImportSettings::get_selected_node() {
+	if (selected_id == "") {
+		return nullptr;
+	}
+	return node_map[selected_id].node;
 }
 
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
@@ -657,6 +673,8 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 				scene_import_settings_data->hide_options = editing_animation;
 			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
+			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
+				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;

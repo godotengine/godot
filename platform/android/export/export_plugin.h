@@ -116,7 +116,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
 
-	bool _has_storage_permission(const Vector<String> &p_permissions);
+	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
+
+	bool _has_manage_external_storage_permission(const Vector<String> &p_permissions);
 
 	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
 

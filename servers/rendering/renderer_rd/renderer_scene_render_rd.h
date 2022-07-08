@@ -41,7 +41,6 @@
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/renderer_scene.h"
@@ -102,7 +101,6 @@ class RendererSceneRenderRD : public RendererSceneRender {
 	friend RendererRD::GI;
 
 protected:
-	RendererStorageRD *storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
@@ -1512,7 +1510,7 @@ public:
 
 	void init();
 
-	RendererSceneRenderRD(RendererStorageRD *p_storage);
+	RendererSceneRenderRD();
 	~RendererSceneRenderRD();
 };
 
