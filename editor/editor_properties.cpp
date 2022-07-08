@@ -3010,12 +3010,7 @@ void EditorPropertyColor::_popup_closed() {
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	if (default_color_mode == 1) {
-		picker->get_picker()->set_hsv_mode(true);
-	} else if (default_color_mode == 2) {
-		picker->get_picker()->set_raw_mode(true);
-	}
-
+	picker->get_picker()->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
 	picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
