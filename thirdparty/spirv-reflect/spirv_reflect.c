@@ -119,6 +119,7 @@ typedef struct SpvReflectPrvDecorations {
   bool                            is_noperspective;
   bool                            is_flat;
   bool                            is_non_writable;
+  bool                            is_non_readable;
   SpvReflectPrvNumberDecoration   set;
   SpvReflectPrvNumberDecoration   binding;
   SpvReflectPrvNumberDecoration   input_attachment_index;
@@ -306,7 +307,12 @@ static SpvReflectResult IntersectSortedUint32(
   size_t*         res_size
 )
 {
+  *pp_res = NULL;
   *res_size = 0;
+  if (IsNull(p_arr0) || IsNull(p_arr1)) {
+    return SPV_REFLECT_RESULT_SUCCESS;
+  }
+
   const uint32_t* arr0_end = p_arr0 + arr0_size;
   const uint32_t* arr1_end = p_arr1 + arr1_size;
 
@@ -324,7 +330,6 @@ static SpvReflectResult IntersectSortedUint32(
     }
   }
 
-  *pp_res = NULL;
   if (*res_size > 0) {
     *pp_res = (uint32_t*)calloc(*res_size, sizeof(**pp_res));
     if (IsNull(*pp_res)) {
@@ -487,6 +492,9 @@ static SpvReflectDecorationFlags ApplyDecorations(const SpvReflectPrvDecorations
   }
   if (p_decoration_fields->is_non_writable) {
     decorations |= SPV_REFLECT_DECORATION_NON_WRITABLE;
+  }
+  if (p_decoration_fields->is_non_readable) {
+    decorations |= SPV_REFLECT_DECORATION_NON_READABLE;
   }
   return decorations;
 }
@@ -1364,6 +1372,7 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
       case SpvDecorationNoPerspective:
       case SpvDecorationFlat:
       case SpvDecorationNonWritable:
+      case SpvDecorationNonReadable:
       case SpvDecorationLocation:
       case SpvDecorationBinding:
       case SpvDecorationDescriptorSet:
@@ -1459,6 +1468,11 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser)
 
       case SpvDecorationNonWritable: {
         p_target_decorations->is_non_writable = true;
+      }
+      break;
+
+      case SpvDecorationNonReadable: {
+        p_target_decorations->is_non_readable = true;
       }
       break;
 
@@ -1970,6 +1984,7 @@ static SpvReflectResult ParseDescriptorBindings(
     p_descriptor->count = 1;
     p_descriptor->uav_counter_id = p_node->decorations.uav_counter_buffer.value;
     p_descriptor->type_description = p_type;
+    p_descriptor->decoration_flags = ApplyDecorations(&p_node->decorations);
 
     // If this is in the StorageBuffer storage class, it's for sure a storage
     // buffer descriptor. We need to handle this case earlier because in SPIR-V
@@ -3208,8 +3223,8 @@ static SpvReflectResult ParseExecutionModes(
       // Read entry point id
       uint32_t entry_point_id = 0;
       CHECKED_READU32(p_parser, p_node->word_offset + 1, entry_point_id);
-      
-      // Find entry point 
+
+      // Find entry point
       SpvReflectEntryPoint* p_entry_point = NULL;
       for (size_t entry_point_idx = 0; entry_point_idx < p_module->entry_point_count; ++entry_point_idx) {
         if (p_module->entry_points[entry_point_idx].id == entry_point_id) {
@@ -3221,7 +3236,7 @@ static SpvReflectResult ParseExecutionModes(
       if (IsNull(p_entry_point)) {
         return SPV_REFLECT_RESULT_ERROR_SPIRV_INVALID_ENTRY_POINT;
       }
-      
+
       // Read execution mode
       uint32_t execution_mode = (uint32_t)INVALID_VALUE;
       CHECKED_READU32(p_parser, p_node->word_offset + 2, execution_mode);
@@ -3288,12 +3303,60 @@ static SpvReflectResult ParseExecutionModes(
         case SpvExecutionModeLocalSizeId:
         case SpvExecutionModeLocalSizeHintId:
         case SpvExecutionModePostDepthCoverage:
+        case SpvExecutionModeDenormPreserve:
+        case SpvExecutionModeDenormFlushToZero:
+        case SpvExecutionModeSignedZeroInfNanPreserve:
+        case SpvExecutionModeRoundingModeRTE:
+        case SpvExecutionModeRoundingModeRTZ:
         case SpvExecutionModeStencilRefReplacingEXT:
+        case SpvExecutionModeOutputLinesNV:
         case SpvExecutionModeOutputPrimitivesNV:
         case SpvExecutionModeOutputTrianglesNV:
           break;
       }
+      p_entry_point->execution_mode_count++;
     }
+    uint32_t* indices = (uint32_t*)calloc(p_module->entry_point_count, sizeof(indices));
+    if (IsNull(indices)) {
+      return SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED;
+    }
+    for (size_t entry_point_idx = 0; entry_point_idx < p_module->entry_point_count; ++entry_point_idx) {
+      SpvReflectEntryPoint* p_entry_point = &p_module->entry_points[entry_point_idx];
+      p_entry_point->execution_modes =
+          (SpvExecutionMode*)calloc(p_entry_point->execution_mode_count, sizeof(*p_entry_point->execution_modes));
+      if (IsNull(p_entry_point->execution_modes)) {
+        SafeFree(indices);
+        return SPV_REFLECT_RESULT_ERROR_ALLOC_FAILED;
+      }
+    }
+
+    for (size_t node_idx = 0; node_idx < p_parser->node_count; ++node_idx) {
+      SpvReflectPrvNode* p_node = &(p_parser->nodes[node_idx]);
+      if (p_node->op != SpvOpExecutionMode) {
+        continue;
+      }
+
+      // Read entry point id
+      uint32_t entry_point_id = 0;
+      CHECKED_READU32(p_parser, p_node->word_offset + 1, entry_point_id);
+
+      // Find entry point
+      SpvReflectEntryPoint* p_entry_point = NULL;
+      uint32_t* idx = NULL;
+      for (size_t entry_point_idx = 0; entry_point_idx < p_module->entry_point_count; ++entry_point_idx) {
+        if (p_module->entry_points[entry_point_idx].id == entry_point_id) {
+          p_entry_point = &p_module->entry_points[entry_point_idx];
+          idx = &indices[entry_point_idx];
+          break;
+        }
+      }
+
+      // Read execution mode
+      uint32_t execution_mode = (uint32_t)INVALID_VALUE;
+      CHECKED_READU32(p_parser, p_node->word_offset + 2, execution_mode);
+      p_entry_point->execution_modes[(*idx)++] = (SpvExecutionMode)execution_mode;
+    }
+    SafeFree(indices);
   }
   return SPV_REFLECT_RESULT_SUCCESS;
 }
@@ -3649,7 +3712,11 @@ static SpvReflectResult CreateShaderModule(
   if (flags & SPV_REFLECT_MODULE_FLAG_NO_COPY) {
     // Set internal size and pointer to args passed in
     p_module->_internal->spirv_size = size;
+#if defined(__cplusplus)
+    p_module->_internal->spirv_code = const_cast<uint32_t*>(static_cast<const uint32_t*>(p_code)); // cast that const away
+#else
     p_module->_internal->spirv_code = (void*)p_code; // cast that const away
+#endif
     p_module->_internal->spirv_word_count = (uint32_t)(size / SPIRV_WORD_SIZE);
   }
   else {
@@ -3903,6 +3970,7 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module)
     SafeFree(p_entry->interface_variables);
     SafeFree(p_entry->used_uniforms);
     SafeFree(p_entry->used_push_constants);
+    SafeFree(p_entry->execution_modes);
   }
   SafeFree(p_module->entry_points);
 // -- GODOT begin --
@@ -5093,6 +5161,7 @@ const char* spvReflectSourceLanguage(SpvSourceLanguage source_lang)
     case SpvSourceLanguageOpenCL_CPP     : return "OpenCL_CPP";
     case SpvSourceLanguageHLSL           : return "HLSL";
     case SpvSourceLanguageCPP_for_OpenCL : return "CPP_for_OpenCL";
+    case SpvSourceLanguageSYCL           : return "SYCL";
     case SpvSourceLanguageMax:
       break;
   }
