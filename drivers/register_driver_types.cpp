@@ -34,11 +34,11 @@
 #include "drivers/png/image_loader_png.h"
 #include "drivers/png/resource_saver_png.h"
 
-static ImageLoaderPNG *image_loader_png;
+static Ref<ImageLoaderPNG> image_loader_png;
 static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
-	image_loader_png = memnew(ImageLoaderPNG);
+	image_loader_png.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_png);
 
 	resource_saver_png.instantiate();
@@ -46,9 +46,8 @@ void register_core_driver_types() {
 }
 
 void unregister_core_driver_types() {
-	if (image_loader_png) {
-		memdelete(image_loader_png);
-	}
+	ImageLoader::remove_image_format_loader(image_loader_png);
+	image_loader_png.unref();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_png);
 	resource_saver_png.unref();

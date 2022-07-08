@@ -249,6 +249,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
+	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
+	GDREGISTER_CLASS(ImageFormatLoaderExtension);
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(NativeExtension);
