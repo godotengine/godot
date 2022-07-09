@@ -726,14 +726,14 @@ public:
 
 	enum UpdateMode {
 		UPDATE_DISABLED,
-		UPDATE_ONCE, //then goes to disabled
-		UPDATE_WHEN_VISIBLE, // default
+		UPDATE_ONCE, // Then goes to disabled, default value.
+		UPDATE_WHEN_VISIBLE, // It doesn't make sense, because SubViewport has no concept of visible.
 		UPDATE_WHEN_PARENT_VISIBLE,
 		UPDATE_ALWAYS
 	};
 
 private:
-	UpdateMode update_mode = UPDATE_WHEN_VISIBLE;
+	UpdateMode update_mode = UPDATE_ONCE;
 	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
 	bool size_2d_override_stretch = false;
 

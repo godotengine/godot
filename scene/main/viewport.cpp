@@ -4007,11 +4007,6 @@ Viewport::~Viewport() {
 
 void SubViewport::set_size(const Size2i &p_size) {
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
-
-	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
-	if (c) {
-		c->update_minimum_size();
-	}
 }
 
 Size2i SubViewport::get_size() const {
@@ -4090,10 +4085,30 @@ void SubViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+			SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+			if (c) {
+				set_handle_input_locally(false); //do not handle input locally here
+				if (c->is_visible_in_tree()) {
+					set_update_mode(SubViewport::UPDATE_ALWAYS);
+				} else {
+					set_update_mode(SubViewport::UPDATE_DISABLED);
+				}
+				c->update_minimum_size();
+				c->update();
+				connect(SNAME("size_changed"), Callable(c, "update_minimum_size"));
+				connect(SNAME("size_changed"), Callable(c, "update"));
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+			SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+			if (c) {
+				c->update_minimum_size();
+				c->update();
+				disconnect(SNAME("size_changed"), Callable(c, "update_minimum_size"));
+				disconnect(SNAME("size_changed"), Callable(c, "update"));
+			}
 		} break;
 	}
 }
@@ -4134,6 +4149,8 @@ void SubViewport::_bind_methods() {
 
 SubViewport::SubViewport() {
 	set_size(get_size());
+	set_update_mode(get_update_mode());
+	set_clear_mode(get_clear_mode());
 }
 
 SubViewport::~SubViewport() {}
