@@ -4132,6 +4132,8 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
 }
 
-SubViewport::SubViewport() {}
+SubViewport::SubViewport() {
+	set_size(get_size());
+}
 
 SubViewport::~SubViewport() {}
