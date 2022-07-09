@@ -541,7 +541,8 @@ public:
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
 
 			RID sdf_store_uniform_set;
-			RID sdf_direct_light_uniform_set;
+			RID sdf_direct_light_static_uniform_set;
+			RID sdf_direct_light_dynamic_uniform_set;
 			RID scroll_uniform_set;
 			RID scroll_occlusion_uniform_set;
 			RID integrate_uniform_set;
