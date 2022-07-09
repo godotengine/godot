@@ -62,7 +62,8 @@ private:
 	};
 
 	struct PeerInfo {
-		HashSet<ObjectID> known_nodes;
+		HashSet<ObjectID> sync_nodes;
+		HashSet<ObjectID> spawn_nodes;
 		HashMap<uint32_t, ObjectID> recv_nodes;
 		uint16_t last_sent_sync = 0;
 		uint16_t last_recv_sync = 0;
@@ -73,7 +74,7 @@ private:
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
 	HashMap<int, PeerInfo> peers_info;
 	HashSet<ObjectID> spawned_nodes;
-	HashSet<ObjectID> path_only_nodes;
+	HashSet<ObjectID> synced_nodes;
 
 	TrackedNode &_track(const ObjectID &p_id);
 	void _untrack(const ObjectID &p_id);
@@ -82,7 +83,9 @@ private:
 public:
 	const HashSet<int> get_peers() const { return known_peers; }
 	const HashSet<ObjectID> &get_spawned_nodes() const { return spawned_nodes; }
-	const HashSet<ObjectID> &get_path_only_nodes() const { return path_only_nodes; }
+	bool is_spawned_node(const ObjectID &p_id) const { return spawned_nodes.has(p_id); }
+	const HashSet<ObjectID> &get_synced_nodes() const { return synced_nodes; }
+	bool is_synced_node(const ObjectID &p_id) const { return synced_nodes.has(p_id); }
 
 	MultiplayerSynchronizer *get_synchronizer(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_synchronizer() : nullptr; }
 	MultiplayerSpawner *get_spawner(const ObjectID &p_id) { return tracked_nodes.has(p_id) ? tracked_nodes[p_id].get_spawner() : nullptr; }
@@ -90,7 +93,6 @@ public:
 	bool update_last_node_sync(const ObjectID &p_id, uint16_t p_time);
 	bool update_sync_time(const ObjectID &p_id, uint64_t p_msec);
 
-	const HashSet<ObjectID> get_known_nodes(int p_peer);
 	uint32_t get_net_id(const ObjectID &p_id) const;
 	void set_net_id(const ObjectID &p_id, uint32_t p_net_id);
 	uint32_t ensure_net_id(const ObjectID &p_id);
@@ -104,8 +106,17 @@ public:
 	Error config_add_sync(Node *p_node, MultiplayerSynchronizer *p_sync);
 	Error config_del_sync(Node *p_node, MultiplayerSynchronizer *p_sync);
 
-	Error peer_add_node(int p_peer, const ObjectID &p_id);
-	Error peer_del_node(int p_peer, const ObjectID &p_id);
+	Error peer_add_sync(int p_peer, const ObjectID &p_id);
+	Error peer_del_sync(int p_peer, const ObjectID &p_id);
+
+	const HashSet<ObjectID> get_peer_sync_nodes(int p_peer);
+	bool is_peer_sync(int p_peer, const ObjectID &p_id) const;
+
+	Error peer_add_spawn(int p_peer, const ObjectID &p_id);
+	Error peer_del_spawn(int p_peer, const ObjectID &p_id);
+
+	const HashSet<ObjectID> get_peer_spawn_nodes(int p_peer);
+	bool is_peer_spawn(int p_peer, const ObjectID &p_id) const;
 
 	const HashMap<uint32_t, ObjectID> peer_get_remotes(int p_peer) const;
 	Node *peer_get_remote(int p_peer, uint32_t p_net_id);

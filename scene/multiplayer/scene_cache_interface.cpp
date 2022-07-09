@@ -187,18 +187,29 @@ bool SceneCacheInterface::is_cache_confirmed(NodePath p_path, int p_peer) {
 	return F->value;
 }
 
-bool SceneCacheInterface::send_object_cache(Object *p_obj, NodePath p_path, int p_peer_id, int &r_id) {
+int SceneCacheInterface::make_object_cache(Object *p_obj) {
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V(!node, false);
+	ERR_FAIL_COND_V(!node, -1);
+	NodePath for_path = multiplayer->get_root_path().rel_path_to(node->get_path());
 	// See if the path is cached.
-	PathSentCache *psc = path_send_cache.getptr(p_path);
+	PathSentCache *psc = path_send_cache.getptr(for_path);
 	if (!psc) {
 		// Path is not cached, create.
-		path_send_cache[p_path] = PathSentCache();
-		psc = path_send_cache.getptr(p_path);
+		path_send_cache[for_path] = PathSentCache();
+		psc = path_send_cache.getptr(for_path);
 		psc->id = last_send_cache_id++;
 	}
-	r_id = psc->id;
+	return psc->id;
+}
+
+bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r_id) {
+	Node *node = Object::cast_to<Node>(p_obj);
+	ERR_FAIL_COND_V(!node, false);
+
+	r_id = make_object_cache(p_obj);
+	ERR_FAIL_COND_V(r_id < 0, false);
+	NodePath for_path = multiplayer->get_root_path().rel_path_to(node->get_path());
+	PathSentCache *psc = path_send_cache.getptr(for_path);
 
 	bool has_all_peers = true;
 	List<int> peers_to_add; // If one is missing, take note to add it.
@@ -233,7 +244,7 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, NodePath p_path, int 
 	}
 
 	if (peers_to_add.size()) {
-		_send_confirm_path(node, p_path, psc, peers_to_add);
+		_send_confirm_path(node, for_path, psc, peers_to_add);
 	}
 
 	return has_all_peers;
