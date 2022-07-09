@@ -59,6 +59,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
 	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
 	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
+	ClassDB::bind_method(D_METHOD("_set_commit_list_size"), &VersionControlEditorPlugin::_set_commit_list_size);
 	ClassDB::bind_method(D_METHOD("_refresh_remote_list"), &VersionControlEditorPlugin::_refresh_remote_list);
 	ClassDB::bind_method(D_METHOD("_ssh_public_key_selected"), &VersionControlEditorPlugin::_ssh_public_key_selected);
 	ClassDB::bind_method(D_METHOD("_ssh_private_key_selected"), &VersionControlEditorPlugin::_ssh_private_key_selected);
@@ -194,7 +195,7 @@ void VersionControlEditorPlugin::_set_up() {
 	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton()->initialize(res_dir), "VCS was not initialized.");
 
 	_refresh_stage_area();
-	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
+	_refresh_commit_list();
 	_refresh_branch_list();
 	_refresh_remote_list();
 }
@@ -240,7 +241,7 @@ String VersionControlEditorPlugin::_get_date_string_from(int64_t p_unix_timestam
 			Time::get_singleton()->get_offset_string_from_offset_minutes(p_offset_minutes));
 }
 
-void VersionControlEditorPlugin::_refresh_commit_list(int p_index) {
+void VersionControlEditorPlugin::_refresh_commit_list() {
 	CHECK_PLUGIN_INITIALIZED();
 
 	commit_list->get_root()->clear_children();
@@ -269,6 +270,10 @@ void VersionControlEditorPlugin::_refresh_commit_list(int p_index) {
 		item->set_text(2, commit.author.strip_edges());
 		item->set_metadata(0, meta_data);
 	}
+}
+
+void VersionControlEditorPlugin::_set_commit_list_size(int p_index) {
+	_refresh_commit_list();
 }
 
 void VersionControlEditorPlugin::_refresh_remote_list() {
@@ -307,7 +312,7 @@ void VersionControlEditorPlugin::_commit() {
 	commit_message->set_text("");
 
 	_refresh_stage_area();
-	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
+	_refresh_commit_list();
 	_refresh_branch_list();
 	_clear_diff();
 }
@@ -322,7 +327,7 @@ void VersionControlEditorPlugin::_branch_item_selected(int p_index) {
 	ScriptEditor::get_singleton()->reload_scripts();
 
 	_refresh_branch_list();
-	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
+	_refresh_commit_list();
 	_refresh_stage_area();
 	_clear_diff();
 
@@ -474,7 +479,7 @@ void VersionControlEditorPlugin::_pull() {
 	EditorVCSInterface::get_singleton()->pull(remote_select->get_selected_metadata());
 	_refresh_stage_area();
 	_refresh_branch_list();
-	_refresh_commit_list(commit_list_size_button->get_selected_metadata());
+	_refresh_commit_list();
 	_clear_diff();
 	_update_opened_tabs();
 }
@@ -1283,7 +1288,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_size_button->set_item_metadata(1, 20);
 	commit_list_size_button->add_item("30");
 	commit_list_size_button->set_item_metadata(2, 30);
-	commit_list_size_button->connect("item_selected", this, "_refresh_commit_list");
+	commit_list_size_button->connect("item_selected", this, "_set_commit_list_size");
 	commit_list_hbc->add_child(commit_list_size_button);
 
 	commit_list = memnew(Tree);
