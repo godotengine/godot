@@ -4731,7 +4731,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					}
 
 					if (may_be_writable) {
-						info.writable = !(bool)(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+						info.writable = !(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
 					} else {
 						info.writable = false;
 					}
@@ -4757,6 +4757,10 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 								//also, verify that it's the same size
 								ERR_FAIL_COND_V_MSG(uniform_info[set][k].length != info.length, Vector<uint8_t>(),
 										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+
+								//also, verify that it has the same writability
+								ERR_FAIL_COND_V_MSG(uniform_info[set][k].writable != info.writable, Vector<uint8_t>(),
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
 
 								//just append stage mask and return
 								uniform_info.write[set].write[k].stages |= 1 << stage;
