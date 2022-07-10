@@ -34,129 +34,140 @@
 #include <android/input.h>
 #include <core/os/keyboard.h>
 
-struct _WinTranslatePair {
-	Key keysym = Key::NONE;
-	unsigned int keycode = 0;
+#define AKEYCODE_MAX 0xFFFF
+
+struct AndroidGodotCodePair {
+	unsigned int android_code = 0;
+	Key godot_code = Key::NONE;
 };
 
-static _WinTranslatePair _ak_to_keycode[] = {
-	{ Key::TAB, AKEYCODE_TAB },
-	{ Key::ENTER, AKEYCODE_ENTER },
-	{ Key::SHIFT, AKEYCODE_SHIFT_LEFT },
-	{ Key::SHIFT, AKEYCODE_SHIFT_RIGHT },
-	{ Key::ALT, AKEYCODE_ALT_LEFT },
-	{ Key::ALT, AKEYCODE_ALT_RIGHT },
-	{ Key::MENU, AKEYCODE_MENU },
-	{ Key::PAUSE, AKEYCODE_MEDIA_PLAY_PAUSE },
-	{ Key::ESCAPE, AKEYCODE_BACK },
-	{ Key::SPACE, AKEYCODE_SPACE },
-	{ Key::PAGEUP, AKEYCODE_PAGE_UP },
-	{ Key::PAGEDOWN, AKEYCODE_PAGE_DOWN },
-	{ Key::HOME, AKEYCODE_HOME }, //(0x24)
-	{ Key::LEFT, AKEYCODE_DPAD_LEFT },
-	{ Key::UP, AKEYCODE_DPAD_UP },
-	{ Key::RIGHT, AKEYCODE_DPAD_RIGHT },
-	{ Key::DOWN, AKEYCODE_DPAD_DOWN },
-	{ Key::PERIODCENTERED, AKEYCODE_DPAD_CENTER },
-	{ Key::BACKSPACE, AKEYCODE_DEL },
-	{ Key::KEY_0, AKEYCODE_0 },
-	{ Key::KEY_1, AKEYCODE_1 },
-	{ Key::KEY_2, AKEYCODE_2 },
-	{ Key::KEY_3, AKEYCODE_3 },
-	{ Key::KEY_4, AKEYCODE_4 },
-	{ Key::KEY_5, AKEYCODE_5 },
-	{ Key::KEY_6, AKEYCODE_6 },
-	{ Key::KEY_7, AKEYCODE_7 },
-	{ Key::KEY_8, AKEYCODE_8 },
-	{ Key::KEY_9, AKEYCODE_9 },
-	{ Key::A, AKEYCODE_A },
-	{ Key::B, AKEYCODE_B },
-	{ Key::C, AKEYCODE_C },
-	{ Key::D, AKEYCODE_D },
-	{ Key::E, AKEYCODE_E },
-	{ Key::F, AKEYCODE_F },
-	{ Key::G, AKEYCODE_G },
-	{ Key::H, AKEYCODE_H },
-	{ Key::I, AKEYCODE_I },
-	{ Key::J, AKEYCODE_J },
-	{ Key::K, AKEYCODE_K },
-	{ Key::L, AKEYCODE_L },
-	{ Key::M, AKEYCODE_M },
-	{ Key::N, AKEYCODE_N },
-	{ Key::O, AKEYCODE_O },
-	{ Key::P, AKEYCODE_P },
-	{ Key::Q, AKEYCODE_Q },
-	{ Key::R, AKEYCODE_R },
-	{ Key::S, AKEYCODE_S },
-	{ Key::T, AKEYCODE_T },
-	{ Key::U, AKEYCODE_U },
-	{ Key::V, AKEYCODE_V },
-	{ Key::W, AKEYCODE_W },
-	{ Key::X, AKEYCODE_X },
-	{ Key::Y, AKEYCODE_Y },
-	{ Key::Z, AKEYCODE_Z },
-	{ Key::HOMEPAGE, AKEYCODE_EXPLORER },
-	{ Key::LAUNCH0, AKEYCODE_BUTTON_A },
-	{ Key::LAUNCH1, AKEYCODE_BUTTON_B },
-	{ Key::LAUNCH2, AKEYCODE_BUTTON_C },
-	{ Key::LAUNCH3, AKEYCODE_BUTTON_X },
-	{ Key::LAUNCH4, AKEYCODE_BUTTON_Y },
-	{ Key::LAUNCH5, AKEYCODE_BUTTON_Z },
-	{ Key::LAUNCH6, AKEYCODE_BUTTON_L1 },
-	{ Key::LAUNCH7, AKEYCODE_BUTTON_R1 },
-	{ Key::LAUNCH8, AKEYCODE_BUTTON_L2 },
-	{ Key::LAUNCH9, AKEYCODE_BUTTON_R2 },
-	{ Key::LAUNCHA, AKEYCODE_BUTTON_THUMBL },
-	{ Key::LAUNCHB, AKEYCODE_BUTTON_THUMBR },
-	{ Key::LAUNCHC, AKEYCODE_BUTTON_START },
-	{ Key::LAUNCHD, AKEYCODE_BUTTON_SELECT },
-	{ Key::LAUNCHE, AKEYCODE_BUTTON_MODE },
-	{ Key::VOLUMEMUTE, AKEYCODE_MUTE },
-	{ Key::VOLUMEDOWN, AKEYCODE_VOLUME_DOWN },
-	{ Key::VOLUMEUP, AKEYCODE_VOLUME_UP },
-	{ Key::BACK, AKEYCODE_MEDIA_REWIND },
-	{ Key::FORWARD, AKEYCODE_MEDIA_FAST_FORWARD },
-	{ Key::MEDIANEXT, AKEYCODE_MEDIA_NEXT },
-	{ Key::MEDIAPREVIOUS, AKEYCODE_MEDIA_PREVIOUS },
-	{ Key::MEDIASTOP, AKEYCODE_MEDIA_STOP },
-	{ Key::PLUS, AKEYCODE_PLUS },
-	{ Key::EQUAL, AKEYCODE_EQUALS }, // the '+' key
-	{ Key::COMMA, AKEYCODE_COMMA }, // the ',' key
-	{ Key::MINUS, AKEYCODE_MINUS }, // the '-' key
-	{ Key::SLASH, AKEYCODE_SLASH }, // the '/?' key
-	{ Key::BACKSLASH, AKEYCODE_BACKSLASH },
-	{ Key::BRACKETLEFT, AKEYCODE_LEFT_BRACKET },
-	{ Key::BRACKETRIGHT, AKEYCODE_RIGHT_BRACKET },
-	{ Key::CTRL, AKEYCODE_CTRL_LEFT },
-	{ Key::CTRL, AKEYCODE_CTRL_RIGHT },
-	{ Key::UNKNOWN, 0 }
+static AndroidGodotCodePair android_godot_code_pairs[] = {
+	{ AKEYCODE_UNKNOWN, Key::UNKNOWN }, // (0) Unknown key code.
+	{ AKEYCODE_HOME, Key::HOME }, // (3) Home key.
+	{ AKEYCODE_BACK, Key::BACK }, // (4) Back key.
+	{ AKEYCODE_0, Key::KEY_0 }, // (7) '0' key.
+	{ AKEYCODE_1, Key::KEY_1 }, // (8) '1' key.
+	{ AKEYCODE_2, Key::KEY_2 }, // (9) '2' key.
+	{ AKEYCODE_3, Key::KEY_3 }, // (10) '3' key.
+	{ AKEYCODE_4, Key::KEY_4 }, // (11) '4' key.
+	{ AKEYCODE_5, Key::KEY_5 }, // (12) '5' key.
+	{ AKEYCODE_6, Key::KEY_6 }, // (13) '6' key.
+	{ AKEYCODE_7, Key::KEY_7 }, // (14) '7' key.
+	{ AKEYCODE_8, Key::KEY_8 }, // (15) '8' key.
+	{ AKEYCODE_9, Key::KEY_9 }, // (16) '9' key.
+	{ AKEYCODE_STAR, Key::ASTERISK }, // (17) '*' key.
+	{ AKEYCODE_POUND, Key::NUMBERSIGN }, // (18) '#' key.
+	{ AKEYCODE_DPAD_UP, Key::UP }, // (19) Directional Pad Up key.
+	{ AKEYCODE_DPAD_DOWN, Key::DOWN }, // (20) Directional Pad Down key.
+	{ AKEYCODE_DPAD_LEFT, Key::LEFT }, // (21) Directional Pad Left key.
+	{ AKEYCODE_DPAD_RIGHT, Key::RIGHT }, // (22) Directional Pad Right key.
+	{ AKEYCODE_VOLUME_UP, Key::VOLUMEUP }, // (24) Volume Up key.
+	{ AKEYCODE_VOLUME_DOWN, Key::VOLUMEDOWN }, // (25) Volume Down key.
+	{ AKEYCODE_CLEAR, Key::CLEAR }, // (28) Clear key.
+	{ AKEYCODE_A, Key::A }, // (29) 'A' key.
+	{ AKEYCODE_B, Key::B }, // (30) 'B' key.
+	{ AKEYCODE_C, Key::C }, // (31) 'C' key.
+	{ AKEYCODE_D, Key::D }, // (32) 'D' key.
+	{ AKEYCODE_E, Key::E }, // (33) 'E' key.
+	{ AKEYCODE_F, Key::F }, // (34) 'F' key.
+	{ AKEYCODE_G, Key::G }, // (35) 'G' key.
+	{ AKEYCODE_H, Key::H }, // (36) 'H' key.
+	{ AKEYCODE_I, Key::I }, // (37) 'I' key.
+	{ AKEYCODE_J, Key::J }, // (38) 'J' key.
+	{ AKEYCODE_K, Key::K }, // (39) 'K' key.
+	{ AKEYCODE_L, Key::L }, // (40) 'L' key.
+	{ AKEYCODE_M, Key::M }, // (41) 'M' key.
+	{ AKEYCODE_N, Key::N }, // (42) 'N' key.
+	{ AKEYCODE_O, Key::O }, // (43) 'O' key.
+	{ AKEYCODE_P, Key::P }, // (44) 'P' key.
+	{ AKEYCODE_Q, Key::Q }, // (45) 'Q' key.
+	{ AKEYCODE_R, Key::R }, // (46) 'R' key.
+	{ AKEYCODE_S, Key::S }, // (47) 'S' key.
+	{ AKEYCODE_T, Key::T }, // (48) 'T' key.
+	{ AKEYCODE_U, Key::U }, // (49) 'U' key.
+	{ AKEYCODE_V, Key::V }, // (50) 'V' key.
+	{ AKEYCODE_W, Key::W }, // (51) 'W' key.
+	{ AKEYCODE_X, Key::X }, // (52) 'X' key.
+	{ AKEYCODE_Y, Key::Y }, // (53) 'Y' key.
+	{ AKEYCODE_Z, Key::Z }, // (54) 'Z' key.
+	{ AKEYCODE_COMMA, Key::COMMA }, // (55) ',’ key.
+	{ AKEYCODE_PERIOD, Key::PERIOD }, // (56) '.' key.
+	{ AKEYCODE_ALT_LEFT, Key::ALT }, // (57) Left Alt modifier key.
+	{ AKEYCODE_ALT_RIGHT, Key::ALT }, // (58) Right Alt modifier key.
+	{ AKEYCODE_SHIFT_LEFT, Key::SHIFT }, // (59) Left Shift modifier key.
+	{ AKEYCODE_SHIFT_RIGHT, Key::SHIFT }, // (60) Right Shift modifier key.
+	{ AKEYCODE_TAB, Key::TAB }, // (61) Tab key.
+	{ AKEYCODE_SPACE, Key::SPACE }, // (62) Space key.
+	{ AKEYCODE_ENTER, Key::ENTER }, // (66) Enter key.
+	{ AKEYCODE_DEL, Key::BACKSPACE }, // (67) Backspace key.
+	{ AKEYCODE_GRAVE, Key::QUOTELEFT }, // (68) '`' (backtick) key.
+	{ AKEYCODE_MINUS, Key::MINUS }, // (69) '-'.
+	{ AKEYCODE_EQUALS, Key::EQUAL }, // (70) '=' key.
+	{ AKEYCODE_LEFT_BRACKET, Key::BRACKETLEFT }, // (71) '[' key.
+	{ AKEYCODE_RIGHT_BRACKET, Key::BRACKETRIGHT }, // (72) ']' key.
+	{ AKEYCODE_BACKSLASH, Key::BACKSLASH }, // (73) '\' key.
+	{ AKEYCODE_SEMICOLON, Key::SEMICOLON }, // (74) ';' key.
+	{ AKEYCODE_APOSTROPHE, Key::APOSTROPHE }, // (75) ''' (apostrophe) key.
+	{ AKEYCODE_SLASH, Key::SLASH }, // (76) '/' key.
+	{ AKEYCODE_AT, Key::AT }, // (77) '@' key.
+	{ AKEYCODE_PLUS, Key::PLUS }, // (81) '+' key.
+	{ AKEYCODE_MENU, Key::MENU }, // (82) Menu key.
+	{ AKEYCODE_SEARCH, Key::SEARCH }, // (84) Search key.
+	{ AKEYCODE_MEDIA_STOP, Key::MEDIASTOP }, // (86) Stop media key.
+	{ AKEYCODE_MEDIA_PREVIOUS, Key::MEDIAPREVIOUS }, // (88) Play Previous media key.
+	{ AKEYCODE_PAGE_UP, Key::PAGEUP }, // (92) Page Up key.
+	{ AKEYCODE_PAGE_DOWN, Key::PAGEDOWN }, // (93) Page Down key.
+	{ AKEYCODE_ESCAPE, Key::ESCAPE }, // (111) Escape key.
+	{ AKEYCODE_FORWARD_DEL, Key::KEY_DELETE }, // (112) Forward Delete key.
+	{ AKEYCODE_CTRL_LEFT, Key::CTRL }, // (113) Left Control modifier key.
+	{ AKEYCODE_CTRL_RIGHT, Key::CTRL }, // (114) Right Control modifier key.
+	{ AKEYCODE_CAPS_LOCK, Key::CAPSLOCK }, // (115) Caps Lock key.
+	{ AKEYCODE_SCROLL_LOCK, Key::SCROLLLOCK }, // (116) Scroll Lock key.
+	{ AKEYCODE_META_LEFT, Key::META }, // (117) Left Meta modifier key.
+	{ AKEYCODE_META_RIGHT, Key::META }, // (118) Right Meta modifier key.
+	{ AKEYCODE_SYSRQ, Key::PRINT }, // (120) System Request / Print Screen key.
+	{ AKEYCODE_BREAK, Key::PAUSE }, // (121) Break / Pause key.
+	{ AKEYCODE_INSERT, Key::INSERT }, // (124) Insert key.
+	{ AKEYCODE_FORWARD, Key::FORWARD }, // (125) Forward key.
+	{ AKEYCODE_MEDIA_PLAY, Key::MEDIAPLAY }, // (126) Play media key.
+	{ AKEYCODE_MEDIA_RECORD, Key::MEDIARECORD }, // (130) Record media key.
+	{ AKEYCODE_F1, Key::F1 }, // (131) F1 key.
+	{ AKEYCODE_F2, Key::F2 }, // (132) F2 key.
+	{ AKEYCODE_F3, Key::F3 }, // (133) F3 key.
+	{ AKEYCODE_F4, Key::F4 }, // (134) F4 key.
+	{ AKEYCODE_F5, Key::F5 }, // (135) F5 key.
+	{ AKEYCODE_F6, Key::F6 }, // (136) F6 key.
+	{ AKEYCODE_F7, Key::F7 }, // (137) F7 key.
+	{ AKEYCODE_F8, Key::F8 }, // (138) F8 key.
+	{ AKEYCODE_F9, Key::F9 }, // (139) F9 key.
+	{ AKEYCODE_F10, Key::F10 }, // (140) F10 key.
+	{ AKEYCODE_F11, Key::F11 }, // (141) F11 key.
+	{ AKEYCODE_F12, Key::F12 }, // (142) F12 key.
+	{ AKEYCODE_NUM_LOCK, Key::NUMLOCK }, // (143) Num Lock key.
+	{ AKEYCODE_NUMPAD_0, Key::KP_0 }, // (144) Numeric keypad '0' key.
+	{ AKEYCODE_NUMPAD_1, Key::KP_1 }, // (145) Numeric keypad '1' key.
+	{ AKEYCODE_NUMPAD_2, Key::KP_2 }, // (146) Numeric keypad '2' key.
+	{ AKEYCODE_NUMPAD_3, Key::KP_3 }, // (147) Numeric keypad '3' key.
+	{ AKEYCODE_NUMPAD_4, Key::KP_4 }, // (148) Numeric keypad '4' key.
+	{ AKEYCODE_NUMPAD_5, Key::KP_5 }, // (149) Numeric keypad '5' key.
+	{ AKEYCODE_NUMPAD_6, Key::KP_6 }, // (150) Numeric keypad '6' key.
+	{ AKEYCODE_NUMPAD_7, Key::KP_7 }, // (151) Numeric keypad '7' key.
+	{ AKEYCODE_NUMPAD_8, Key::KP_8 }, // (152) Numeric keypad '8' key.
+	{ AKEYCODE_NUMPAD_9, Key::KP_9 }, // (153) Numeric keypad '9' key.
+	{ AKEYCODE_NUMPAD_DIVIDE, Key::KP_DIVIDE }, // (154) Numeric keypad '/' key (for division).
+	{ AKEYCODE_NUMPAD_MULTIPLY, Key::KP_MULTIPLY }, // (155) Numeric keypad '*' key (for multiplication).
+	{ AKEYCODE_NUMPAD_SUBTRACT, Key::KP_SUBTRACT }, // (156) Numeric keypad '-' key (for subtraction).
+	{ AKEYCODE_NUMPAD_ADD, Key::KP_ADD }, // (157) Numeric keypad '+' key (for addition).
+	{ AKEYCODE_NUMPAD_DOT, Key::KP_PERIOD }, // (158) Numeric keypad '.' key (for decimals or digit grouping).
+	{ AKEYCODE_NUMPAD_ENTER, Key::KP_ENTER }, // (160) Numeric keypad Enter key.
+	{ AKEYCODE_VOLUME_MUTE, Key::VOLUMEMUTE }, // (164) Volume Mute key.
+	{ AKEYCODE_YEN, Key::YEN }, // (216) Japanese Yen key.
+	{ AKEYCODE_HELP, Key::HELP }, // (259) Help key.
+	{ AKEYCODE_REFRESH, Key::REFRESH }, // (285) Refresh key.
+	{ AKEYCODE_MAX, Key::UNKNOWN }
 };
-/*
-TODO: map these android key:
-	AKEYCODE_SOFT_LEFT       = 1,
-	AKEYCODE_SOFT_RIGHT      = 2,
-	AKEYCODE_CALL            = 5,
-	AKEYCODE_ENDCALL         = 6,
-	AKEYCODE_STAR            = 17,
-	AKEYCODE_POUND           = 18,
-	AKEYCODE_POWER           = 26,
-	AKEYCODE_CAMERA          = 27,
-	AKEYCODE_CLEAR           = 28,
-	AKEYCODE_SYM             = 63,
-	AKEYCODE_ENVELOPE        = 65,
-	AKEYCODE_GRAVE           = 68,
-	AKEYCODE_SEMICOLON       = 74,
-	AKEYCODE_APOSTROPHE      = 75,
-	AKEYCODE_AT              = 77,
-	AKEYCODE_NUM             = 78,
-	AKEYCODE_HEADSETHOOK     = 79,
-	AKEYCODE_FOCUS           = 80,   // *Camera* focus
-	AKEYCODE_NOTIFICATION    = 83,
-	AKEYCODE_SEARCH          = 84,
-	AKEYCODE_PICTSYMBOLS     = 94,
-	AKEYCODE_SWITCH_CHARSET  = 95,
-*/
 
-Key android_get_keysym(unsigned int p_code);
+Key godot_code_from_android_code(unsigned int p_code);
+Key godot_code_from_unicode(unsigned int p_code);
 
 #endif // ANDROID_KEYS_UTILS_H
