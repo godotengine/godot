@@ -83,7 +83,7 @@ private:
 public:
 	void process_event(Ref<InputEvent> &p_event);
 	void process_joy_event(const JoypadEvent &p_event);
-	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
+	void process_key_event(int p_scancode, int p_physical_scancode, int p_unicode, bool p_pressed);
 	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
 	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor, float event_horizontal_factor);

@@ -92,11 +92,9 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
-		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
-
 		for (int i = 0; i < count; ++i) {
-			GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, true);
-			GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, false);
+			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, true);
+			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, false);
 
 			if (mHasSelection) {
 				mHasSelection = false;
@@ -107,8 +105,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void onTextChanged(final CharSequence pCharSequence, final int start, final int before, final int count) {
-		//Log.d(TAG, "onTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",before: " + before);
-
 		final int[] newChars = new int[count];
 		for (int i = start; i < start + count; ++i) {
 			newChars[i - start] = pCharSequence.charAt(i);
@@ -119,8 +115,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 				// Return keys are handled through action events
 				continue;
 			}
-			GodotLib.key(0, 0, key, true);
-			GodotLib.key(0, 0, key, false);
+			GodotLib.key(key, 0, key, true);
+			GodotLib.key(key, 0, key, false);
 		}
 	}
 
@@ -131,16 +127,16 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 			for (int i = 0; i < characters.length(); i++) {
 				final int ch = characters.codePointAt(i);
-				GodotLib.key(0, 0, ch, true);
-				GodotLib.key(0, 0, ch, false);
+				GodotLib.key(ch, 0, ch, true);
+				GodotLib.key(ch, 0, ch, false);
 			}
 		}
 
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			// Enter key has been pressed
 			mView.queueEvent(() -> {
-				GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, true);
-				GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, false);
+				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, true);
+				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, false);
 			});
 			mView.requestFocus();
 			return true;
