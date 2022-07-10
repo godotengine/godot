@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_editor_plugin.h                                         */
+/*  audio_stream_import_settings.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
-#define AUDIO_STREAM_EDITOR_PLUGIN_H
+#ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
+#define AUDIO_STREAM_IMPORT_SETTINGS_H
 
 #include "editor/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/texture.h"
 
-class AudioStreamEditor : public ColorRect {
-	GDCLASS(AudioStreamEditor, ColorRect);
+class AudioStreamImportSettings : public ConfirmationDialog {
+	GDCLASS(AudioStreamImportSettings, ConfirmationDialog);
 
+	CheckBox *bpm_enabled = nullptr;
+	SpinBox *bpm_edit = nullptr;
+	CheckBox *beats_enabled = nullptr;
+	SpinBox *beats_edit = nullptr;
+	Label *bar_beats_label = nullptr;
+	SpinBox *bar_beats_edit = nullptr;
+	CheckBox *loop = nullptr;
+	SpinBox *loop_offset = nullptr;
+	ColorRect *color_rect = nullptr;
 	Ref<AudioStream> stream;
 	AudioStreamPlayer *_player = nullptr;
 	ColorRect *_preview = nullptr;
@@ -46,18 +56,42 @@ class AudioStreamEditor : public ColorRect {
 	Label *_current_label = nullptr;
 	Label *_duration_label = nullptr;
 
+	HScrollBar *zoom_bar = nullptr;
+	Button *zoom_in = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_out = nullptr;
+
 	Button *_play_button = nullptr;
 	Button *_stop_button = nullptr;
 
+	bool updating_settings = false;
+
 	float _current = 0;
 	bool _dragging = false;
+	bool _beat_len_dragging = false;
 	bool _pausing = false;
+	int _hovering_beat = -1;
+
+	HashMap<StringName, Variant> params;
+	String importer;
+	String path;
 
 	void _audio_changed();
+
+	static AudioStreamImportSettings *singleton;
+
+	void _settings_changed();
+
+	void _reimport();
 
 protected:
 	void _notification(int p_what);
 	void _preview_changed(ObjectID p_which);
+	void _preview_zoom_in();
+	void _preview_zoom_out();
+	void _preview_zoom_reset();
+	void _preview_zoom_offset_changed(double);
+
 	void _play();
 	void _stop();
 	void _on_finished();
@@ -65,27 +99,18 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
+	void _set_beat_len_to(real_t p_x);
+	void _on_indicator_mouse_exited();
+	int _get_beat_at_pos(real_t p_x);
+
 	static void _bind_methods();
 
 public:
-	void edit(Ref<AudioStream> p_stream);
-	AudioStreamEditor();
+	void edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream);
+
+	static AudioStreamImportSettings *get_singleton() { return singleton; }
+
+	AudioStreamImportSettings();
 };
 
-class AudioStreamEditorPlugin : public EditorPlugin {
-	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
-
-	AudioStreamEditor *audio_editor = nullptr;
-
-public:
-	virtual String get_name() const override { return "Audio"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-
-	AudioStreamEditorPlugin();
-	~AudioStreamEditorPlugin();
-};
-
-#endif // AUDIO_STREAM_EDITOR_PLUGIN_H
+#endif // AUDIO_STREAM_IMPORT_SETTINGS_H

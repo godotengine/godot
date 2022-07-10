@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaylist" inherits="AudioStream" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A class for playing multiple audio clips in a sequence
+	</brief_description>
+	<description>
+		A class for playing multiple audio clips in a sequence, based on their tempo and length in beats. Clips can be added either through drag and drop into inspector or through script.
+		BPM and beats information is imported into clips, however if a clip does not have this it will use the class' default BPM and calculate the beats automatically.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_list_stream">
+			<return type="AudioStream" />
+			<argument index="0" name="stream_number" type="int" />
+			<description>
+				Returns a stream based on its number
+			</description>
+		</method>
+		<method name="get_stream_beats">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_list_stream">
+			<return type="void" />
+			<argument index="0" name="stream_number" type="int" />
+			<argument index="1" name="audio_stream" type="AudioStream" />
+			<description>
+				Sets a stream based on its number
+			</description>
+		</method>
+		<method name="set_stream_beats">
+			<return type="void" />
+			<argument index="0" name="beat_count" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bpm" type="int" setter="set_bpm" getter="get_bpm" default="120">
+			Sets default BPM for the playlist
+		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="get_loop" default="false">
+			Enables looping
+		</member>
+		<member name="shuffle" type="bool" setter="set_shuffle" getter="get_shuffle" default="false">
+			Shuffles the order of the clips
+		</member>
+		<member name="stream_count" type="int" setter="set_stream_count" getter="get_stream_count" default="1">
+			Sets the amount of clips playlist can take, with a maximum of 64
+		</member>
+	</members>
+	<constants>
+		<constant name="MAX_STREAMS" value="64">
+		</constant>
+	</constants>
+</class>

@@ -315,6 +315,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	} mode;
 	StringName count_property;
 	StringName array_element_prefix;
+	String swap_method;
 
 	int count = 0;
 
@@ -336,6 +337,9 @@ class EditorInspectorArray : public EditorInspectorSection {
 	int begin_array_index = 0;
 	int end_array_index = 0;
 
+	bool movable = true;
+	bool numbered = false;
+
 	enum MenuOptions {
 		OPTION_MOVE_UP = 0,
 		OPTION_MOVE_DOWN,
@@ -353,7 +357,9 @@ class EditorInspectorArray : public EditorInspectorSection {
 		MarginContainer *margin = nullptr;
 		HBoxContainer *hbox = nullptr;
 		TextureRect *move_texture_rect = nullptr;
+		Label *number = nullptr;
 		VBoxContainer *vbox = nullptr;
+		Button *erase = nullptr;
 	};
 	LocalVector<ArrayElement> array_elements;
 
@@ -389,6 +395,8 @@ class EditorInspectorArray : public EditorInspectorSection {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 
+	void _remove_item(int p_index);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -397,7 +405,7 @@ public:
 	void set_undo_redo(UndoRedo *p_undo_redo);
 
 	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable);
-	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable);
+	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
 	EditorInspectorArray();
