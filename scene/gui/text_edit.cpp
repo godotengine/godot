@@ -1217,7 +1217,7 @@ void TextEdit::_notification(int p_what) {
 									if (brace_open_mismatch) {
 										current_color = brace_mismatch_color;
 									}
-									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
+									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
 									draw_rect(rect, current_color);
 								}
 
@@ -1226,7 +1226,7 @@ void TextEdit::_notification(int p_what) {
 									if (brace_close_mismatch) {
 										current_color = brace_mismatch_color;
 									}
-									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, font->get_underline_thickness(font_size));
+									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
 									draw_rect(rect, current_color);
 								}
 							}
