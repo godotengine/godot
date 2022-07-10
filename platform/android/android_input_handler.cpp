@@ -61,14 +61,17 @@ void AndroidInputHandler::process_event(Ref<InputEvent> &p_event) {
 	input->parse_input_event(p_event);
 }
 
-void AndroidInputHandler::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_scancode, int p_physical_scancode, int p_unicode, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instance();
-	int val = p_unicode_char;
-	unsigned int scancode = android_get_keysym(p_keycode);
-	unsigned int phy_scancode = android_get_keysym(p_scancode);
 
-	switch (scancode) {
+	unsigned int physical_scancode = godot_code_from_android_code(p_physical_scancode);
+	unsigned int scancode = physical_scancode;
+	if (p_scancode != 0) {
+		scancode = godot_code_from_unicode(p_scancode);
+	}
+
+	switch (physical_scancode) {
 		case KEY_SHIFT: {
 			shift_mem = p_pressed;
 		} break;
@@ -81,25 +84,18 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_scancode, int p
 		case KEY_META: {
 			meta_mem = p_pressed;
 		} break;
+		default:
+			break;
 	}
 
 	ev->set_scancode(scancode);
-	ev->set_physical_scancode(phy_scancode);
-
-	ev->set_unicode(val);
+	ev->set_physical_scancode(physical_scancode);
+	ev->set_unicode(p_unicode);
 	ev->set_pressed(p_pressed);
 
 	_set_key_modifier_state(ev);
 
-	if (val == '\n') {
-		ev->set_scancode(KEY_ENTER);
-	} else if (val == 61448) {
-		ev->set_scancode(KEY_BACKSPACE);
-		ev->set_unicode(KEY_BACKSPACE);
-	} else if (val == 61453) {
-		ev->set_scancode(KEY_ENTER);
-		ev->set_unicode(KEY_ENTER);
-	} else if (p_scancode == 4) {
+	if (p_physical_scancode == AKEYCODE_BACK) {
 		if (MainLoop *main_loop = OS::get_singleton()->get_main_loop()) {
 			main_loop->call_deferred("notification", MainLoop::NOTIFICATION_WM_GO_BACK_REQUEST);
 		}
