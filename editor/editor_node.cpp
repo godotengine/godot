@@ -172,7 +172,6 @@
 #include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/polygon_3d_editor_plugin.h"
 #include "editor/plugins/ray_cast_2d_editor_plugin.h"
-#include "editor/plugins/replication_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -7065,7 +7064,6 @@ EditorNode::EditorNode() {
 
 	// More visually meaningful to have this later.
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
-	add_editor_plugin(memnew(ReplicationEditorPlugin));
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 	add_editor_plugin(memnew(ShaderEditorPlugin));

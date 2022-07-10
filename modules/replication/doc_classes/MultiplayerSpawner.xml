@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiplayerSpawner" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_spawn_custom" qualifiers="virtual">
+			<return type="Node" />
+			<argument index="0" name="custom_data" type="Variant" />
+			<description>
+				Virtual method called when spawning a custom node, either on the multiplayer authority or on a puppet.
+
+				Do not add custom nodes to the scene, as this is done automatically.
+			</description>
+		</method>
+		<method name="spawn_custom">
+			<return type="Node" />
+			<argument index="0" name="custom_data" type="Variant" default="null" />
+			<description>
+				Request, as the multiplayer authority, to spawn a node on all clients. Calls [method _spawn_custom] internally.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="spawn_limit" type="int" setter="set_spawn_limit" getter="get_spawn_limit" default="0">
+			Maxmium node count that can be spawned. Includes both custom spawns and spawned scenes. A value of 0 means no limit.
+		</member>
+		<member name="spawn_path" type="NodePath" setter="set_spawn_path" getter="get_spawn_path" default="NodePath(&quot;..&quot;)">
+			Parent node that listens for spawnable children. Custom spawned nodes are added here too.
+		</member>
+		<member name="spawnable_scenes" type="Array" setter="set_spawnable_scenes" getter="get_spawnable_scenes" default="[]">
+			Array of scenes that, when added as a child of [member spawn_path], are automatically spawned on multiplayer puppets.
+		</member>
+	</members>
+	<signals>
+		<signal name="despawned">
+			<argument index="0" name="scene_index" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+				Signal emitted after the multiplayer authority despawns a scene instance. Not called for custom spawns.
+			</description>
+		</signal>
+		<signal name="spawned">
+			<argument index="0" name="scene_index" type="int" />
+			<argument index="1" name="node" type="Node" />
+			<description>
+				Signal emitted after the multiplayer authority spawns a scene instance. Not called for custom spawns.
+			</description>
+		</signal>
+	</signals>
+</class>

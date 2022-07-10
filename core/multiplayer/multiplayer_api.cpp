@@ -39,7 +39,6 @@
 #include "core/os/os.h"
 #endif
 
-MultiplayerReplicationInterface *(*MultiplayerAPI::create_default_replication_interface)(MultiplayerAPI *p_multiplayer) = nullptr;
 MultiplayerRPCInterface *(*MultiplayerAPI::create_default_rpc_interface)(MultiplayerAPI *p_multiplayer) = nullptr;
 MultiplayerCacheInterface *(*MultiplayerAPI::create_default_cache_interface)(MultiplayerAPI *p_multiplayer) = nullptr;
 
@@ -85,7 +84,6 @@ void MultiplayerAPI::poll() {
 			return; // It's also possible that a packet or RPC caused a disconnection, so also check here.
 		}
 	}
-	replicator->on_network_process();
 }
 
 void MultiplayerAPI::clear() {
@@ -129,7 +127,6 @@ void MultiplayerAPI::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
 		multiplayer_peer->connect("connection_failed", callable_mp(this, &MultiplayerAPI::_connection_failed));
 		multiplayer_peer->connect("server_disconnected", callable_mp(this, &MultiplayerAPI::_server_disconnected));
 	}
-	replicator->on_reset();
 }
 
 Ref<MultiplayerPeer> MultiplayerAPI::get_multiplayer_peer() const {
@@ -162,15 +159,6 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 
 		case NETWORK_COMMAND_RAW: {
 			_process_raw(p_from, p_packet, p_packet_len);
-		} break;
-		case NETWORK_COMMAND_SPAWN: {
-			replicator->on_spawn_receive(p_from, p_packet, p_packet_len);
-		} break;
-		case NETWORK_COMMAND_DESPAWN: {
-			replicator->on_despawn_receive(p_from, p_packet, p_packet_len);
-		} break;
-		case NETWORK_COMMAND_SYNC: {
-			replicator->on_sync_receive(p_from, p_packet, p_packet_len);
 		} break;
 	}
 }
@@ -402,12 +390,10 @@ Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants
 void MultiplayerAPI::_add_peer(int p_id) {
 	connected_peers.insert(p_id);
 	cache->on_peer_change(p_id, true);
-	replicator->on_peer_change(p_id, true);
 	emit_signal(SNAME("peer_connected"), p_id);
 }
 
 void MultiplayerAPI::_del_peer(int p_id) {
-	replicator->on_peer_change(p_id, false);
 	cache->on_peer_change(p_id, false);
 	connected_peers.erase(p_id);
 	emit_signal(SNAME("peer_disconnected"), p_id);
@@ -422,7 +408,6 @@ void MultiplayerAPI::_connection_failed() {
 }
 
 void MultiplayerAPI::_server_disconnected() {
-	replicator->on_reset();
 	emit_signal(SNAME("server_disconnected"));
 }
 
@@ -517,22 +502,6 @@ void MultiplayerAPI::rpcp(Object *p_obj, int p_peer_id, const StringName &p_meth
 	rpc->rpcp(p_obj, p_peer_id, p_method, p_arg, p_argcount);
 }
 
-Error MultiplayerAPI::spawn(Object *p_object, Variant p_config) {
-	return replicator->on_spawn(p_object, p_config);
-}
-
-Error MultiplayerAPI::despawn(Object *p_object, Variant p_config) {
-	return replicator->on_despawn(p_object, p_config);
-}
-
-Error MultiplayerAPI::replication_start(Object *p_object, Variant p_config) {
-	return replicator->on_replication_start(p_object, p_config);
-}
-
-Error MultiplayerAPI::replication_stop(Object *p_object, Variant p_config) {
-	return replicator->on_replication_stop(p_object, p_config);
-}
-
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &MultiplayerAPI::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &MultiplayerAPI::get_root_path);
@@ -567,11 +536,6 @@ void MultiplayerAPI::_bind_methods() {
 }
 
 MultiplayerAPI::MultiplayerAPI() {
-	if (create_default_replication_interface) {
-		replicator = Ref<MultiplayerReplicationInterface>(create_default_replication_interface(this));
-	} else {
-		replicator.instantiate();
-	}
 	if (create_default_rpc_interface) {
 		rpc = Ref<MultiplayerRPCInterface>(create_default_rpc_interface(this));
 	} else {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_replication_interface.h                                        */
+/*  multiplayer_synchronizer.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,57 +28,69 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_TREE_REPLICATOR_INTERFACE_H
-#define SCENE_TREE_REPLICATOR_INTERFACE_H
+#ifndef MULTIPLAYER_SYNCHRONIZER_H
+#define MULTIPLAYER_SYNCHRONIZER_H
 
-#include "core/multiplayer/multiplayer_api.h"
+#include "core/templates/local_vector.h"
+#include "core/variant/typed_array.h"
+#include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
-#include "scene/multiplayer/scene_replication_state.h"
+#include "scene_replication_config.h"
 
-class SceneReplicationInterface : public MultiplayerReplicationInterface {
-	GDCLASS(SceneReplicationInterface, MultiplayerReplicationInterface);
+class MultiplayerSpawner;
+
+class MultiplayerSynchronizer : public Node {
+	GDCLASS(MultiplayerSynchronizer, Node);
+
+	friend class MultiplayerSpawner;
 
 private:
-	void _send_sync(int p_peer, uint64_t p_msec);
-	Error _send_spawn(Node *p_node, MultiplayerSpawner *p_spawner, int p_peer);
-	Error _send_despawn(Node *p_node, int p_peer);
-	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
+	NodePath root_path = NodePath("..");
+	real_t replication_interval = 0.0;
+	Ref<SceneReplicationConfig> replication_config;
 
-	void _free_remotes(int p_peer);
+	Node *root_node = nullptr;
+	bool spawn_synced = false;
 
-	Ref<SceneReplicationState> rep_state;
-	MultiplayerAPI *multiplayer = nullptr;
-	PackedByteArray packet_cache;
-	int sync_mtu = 1350; // Highly dependent on underlying protocol.
-
-	// An hack to apply the initial state before ready.
-	ObjectID pending_spawn;
-	const uint8_t *pending_buffer = nullptr;
-	int pending_buffer_size = 0;
+	List<int> watching_peers;
 
 protected:
-	static MultiplayerReplicationInterface *_create(MultiplayerAPI *p_multiplayer);
+	enum SynchronizeAction {
+		READY,
+		SYNC,
+	};
+
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	bool _get_path_target(const NodePath &p_path, Node *&r_node, StringName &r_prop);
+
+	void _update_root_node();
+
+	bool _create_payload(const SynchronizeAction p_action, Array &r_payload);
+	void _apply_payload(const Array &p_payload);
+
+	void _on_peer_connected(const int p_peer);
+	//void _on_peer_disconnected(const int p_peer);
+
+	void _rpc_synchronize_reliable(const Array &p_payload);
+	void _rpc_synchronize(const Array &p_payload);
+	void _rpc_request_synchronize();
+
+	void _synchronize(const int p_peer, const SynchronizeAction p_action);
 
 public:
-	static void make_default();
+	NodePath get_root_path() const;
+	void set_root_path(const NodePath &p_path);
 
-	virtual void on_reset() override;
-	virtual void on_peer_change(int p_id, bool p_connected) override;
+	void set_replication_interval(double p_interval);
+	double get_replication_interval() const;
 
-	virtual Error on_spawn(Object *p_obj, Variant p_config) override;
-	virtual Error on_despawn(Object *p_obj, Variant p_config) override;
-	virtual Error on_replication_start(Object *p_obj, Variant p_config) override;
-	virtual Error on_replication_stop(Object *p_obj, Variant p_config) override;
-	virtual void on_network_process() override;
+	void set_replication_config(Ref<SceneReplicationConfig> p_config);
+	Ref<SceneReplicationConfig> get_replication_config();
 
-	virtual Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
-	virtual Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
-	virtual Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
-
-	SceneReplicationInterface(MultiplayerAPI *p_multiplayer) {
-		rep_state.instantiate();
-		multiplayer = p_multiplayer;
-	}
+	MultiplayerSynchronizer();
 };
 
-#endif // SCENE_TREE_REPLICATOR_INTERFACE_H
+#endif // MULTIPLAYER_SYNCHRONIZER_H

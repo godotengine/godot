@@ -36,85 +36,83 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/scene_replication_config.h"
 
 class MultiplayerSpawner : public Node {
 	GDCLASS(MultiplayerSpawner, Node);
 
 public:
 	enum {
-		INVALID_ID = 0xFF,
+		CUSTOM_SCENE_INDEX = 0xFFFFFFFF,
 	};
 
 private:
-	struct SpawnableScene {
-		String path;
-		Ref<PackedScene> cache;
-	};
-
-	LocalVector<SpawnableScene> spawnable_scenes;
-
-	HashSet<ResourceUID::ID> spawnable_ids;
-	NodePath spawn_path;
-
 	struct SpawnInfo {
-		Variant args;
-		int id = INVALID_ID;
-		SpawnInfo(Variant p_args, int p_id) {
-			id = p_id;
-			args = p_args;
-		}
+		uint32_t scene_index;
+		Variant custom_data;
+
+		SpawnInfo(uint32_t p_scene_index, Variant p_custom_data) :
+				scene_index(p_scene_index), custom_data(p_custom_data) {}
+
+		// Empty constructor for HashMap internally.
 		SpawnInfo() {}
 	};
 
-	ObjectID spawn_node;
-	HashMap<ObjectID, SpawnInfo> tracked_nodes;
-	bool auto_spawn = false;
+	NodePath spawn_path = NodePath("..");
 	uint32_t spawn_limit = 0;
+	Array spawnable_scenes;
 
-	void _update_spawn_node();
-	void _track(Node *p_node, const Variant &p_argument, int p_scene_id = INVALID_ID);
-	void _node_added(Node *p_node);
-	void _node_exit(ObjectID p_id);
-	void _node_ready(ObjectID p_id);
-
-	Vector<String> _get_spawnable_scenes() const;
-	void _set_spawnable_scenes(const Vector<String> &p_scenes);
+	Node *spawn_node = nullptr;
+	HashMap<Node *, SpawnInfo> tracked_nodes;
+	Vector<Node *> spawned_nodes;
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+// Editor-only array properties.
 #ifdef TOOLS_ENABLED
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 #endif
+
+	void _update_spawn_node();
+	void _on_child_added(Node *p_node);
+
+	void _create_spawn_payloads(Node *p_parent, Node *p_node, Array &r_payloads) const;
+	void _apply_spawn_payloads(Node *p_parent, Node *p_node, const Array &p_payloads, int &p_index) const;
+
+	void _track(Node *p_node, const uint32_t p_scene_index, const Variant &p_custom_data);
+	void _spawn_tracked_node(Node *p_node);
+	void _despawn_tracked_node(Node *p_node);
+
+	void _send_spawns(const int p_peer);
+
+	void _on_peer_connected(const int p_peer);
+	//void _on_peer_disconnected(const int p_peer);
+
+	void _rpc_spawn(const String &p_name, const uint32_t p_scene_index, const Variant &p_custom_data, const Array &p_payloads);
+	void _rpc_despawn(const int p_index);
+	void _rpc_request_spawns();
+
 public:
-	Node *get_spawn_node() const { return spawn_node.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_node)) : nullptr; }
-
-	void add_spawnable_scene(const String &p_path);
-	int get_spawnable_scene_count() const;
-	String get_spawnable_scene(int p_idx) const;
-	void clear_spawnable_scenes();
-
 	NodePath get_spawn_path() const;
 	void set_spawn_path(const NodePath &p_path);
-	uint32_t get_spawn_limit() const { return spawn_limit; }
-	void set_spawn_limit(uint32_t p_limit) { spawn_limit = p_limit; }
-	bool is_auto_spawning() const;
-	void set_auto_spawning(bool p_enabled);
 
-	const Variant get_spawn_argument(const ObjectID &p_id) const;
-	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;
-	int find_spawnable_scene_index_from_path(const String &p_path) const;
-	Node *spawn(const Variant &p_data = Variant());
+	void set_spawn_limit(uint32_t p_limit);
+	uint32_t get_spawn_limit() const;
+
+	Array get_spawnable_scenes() const;
+	void set_spawnable_scenes(const Array &p_scenes);
+
+	Node *spawn_custom(const Variant &p_data = Variant());
+
+	Node *instantiate_scene(const uint32_t p_scene_index);
 	Node *instantiate_custom(const Variant &p_data);
-	Node *instantiate_scene(int p_idx);
 
-	GDVIRTUAL1R(Object *, _spawn_custom, const Variant &);
+	GDVIRTUAL1R(Node *, _spawn_custom, const Variant &);
 
-	MultiplayerSpawner() {}
+	MultiplayerSpawner();
 };
 
 #endif // MULTIPLAYER_SPAWNER_H
