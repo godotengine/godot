@@ -222,6 +222,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->show();
 	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
+	get_ok()->set_disabled(false);
 	name->set_text(current->get_name());
 
 	List<String> extension_list = current->get_platform()->get_binary_extensions(current);
@@ -267,8 +268,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		}
 
 		export_button->set_disabled(true);
-		get_ok()->set_disabled(true);
-
 	} else {
 		if (error != String()) {
 			Vector<String> items = error.split("\n", false);
@@ -287,7 +286,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_error->hide();
 		export_templates_error->hide();
 		export_button->set_disabled(false);
-		get_ok()->set_disabled(false);
 	}
 
 	custom_features->set_text(current->get_custom_features());
