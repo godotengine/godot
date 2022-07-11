@@ -74,10 +74,15 @@ void TextParagraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextParagraph::tab_align);
 
-	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextParagraph::set_flags);
-	ClassDB::bind_method(D_METHOD("get_flags"), &TextParagraph::get_flags);
+	ClassDB::bind_method(D_METHOD("set_break_flags", "flags"), &TextParagraph::set_break_flags);
+	ClassDB::bind_method(D_METHOD("get_break_flags"), &TextParagraph::get_break_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justify,Word Justify,Trim Edge Spaces After Justify,Justify Only After Last Tab,Break Mandatory,Break Words,Break Graphemes"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "break_flags", PROPERTY_HINT_FLAGS, "Mandatory,Word Bouns,Grapheme Bound,Adaptive"), "set_break_flags", "get_break_flags");
+
+	ClassDB::bind_method(D_METHOD("set_justification_flags", "flags"), &TextParagraph::set_justification_flags);
+	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextParagraph::get_justification_flags);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justication,Trim Edge Spaces After Justication,Justify Only After Last Tab,Constrain Ellipsis"), "set_justification_flags", "get_justification_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextParagraph::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextParagraph::get_text_overrun_behavior);
@@ -154,7 +159,7 @@ void TextParagraph::_shape_lines() {
 
 		if (h_offset > 0) {
 			// Dropcap, flow around.
-			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, flags);
+			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width - h_offset, 0, brk_flags);
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
 				RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 				float h = (TS->shaped_text_get_orientation(line) == TextServer::ORIENTATION_HORIZONTAL) ? TS->shaped_text_get_size(line).y : TS->shaped_text_get_size(line).x;
@@ -172,7 +177,7 @@ void TextParagraph::_shape_lines() {
 			}
 		}
 		// Use fixed for the rest of lines.
-		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, flags);
+		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(rid, width, start, brk_flags);
 		for (int i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
 			if (!tab_stops.is_empty()) {
@@ -181,43 +186,43 @@ void TextParagraph::_shape_lines() {
 			lines_rid.push_back(line);
 		}
 
-		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIM;
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
-					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 					break;
 				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 					break;
 				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
 					break;
 				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					break;
 				case TextServer::OVERRUN_NO_TRIMMING:
 					break;
 			}
 		}
 
-		bool autowrap_enabled = ((flags & TextServer::BREAK_WORD_BOUND) == TextServer::BREAK_WORD_BOUND) || ((flags & TextServer::BREAK_GRAPHEME_BOUND) == TextServer::BREAK_GRAPHEME_BOUND);
+		bool autowrap_enabled = brk_flags.has_flag(TextServer::BREAK_WORD_BOUND) || brk_flags.has_flag(TextServer::BREAK_GRAPHEME_BOUND);
 
 		// Fill after min_size calculation.
 		if (autowrap_enabled) {
 			int visible_lines = (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
 			bool lines_hidden = visible_lines > 0 && visible_lines < (int)lines_rid.size();
 			if (lines_hidden) {
-				overrun_flags |= TextServer::OVERRUN_ENFORCE_ELLIPSIS;
+				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				for (int i = 0; i < (int)lines_rid.size(); i++) {
 					if (i < visible_lines - 1 || (int)lines_rid.size() == 1) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width, flags);
+						TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
 					}
@@ -231,10 +236,10 @@ void TextParagraph::_shape_lines() {
 			// Autowrap disabled.
 			for (int i = 0; i < (int)lines_rid.size(); i++) {
 				if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, flags);
-					overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 				}
@@ -420,17 +425,30 @@ void TextParagraph::tab_align(const Vector<float> &p_tab_stops) {
 	lines_dirty = true;
 }
 
-void TextParagraph::set_flags(uint16_t p_flags) {
+void TextParagraph::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	_THREAD_SAFE_METHOD_
 
-	if (flags != p_flags) {
-		flags = p_flags;
+	if (jst_flags != p_flags) {
+		jst_flags = p_flags;
 		lines_dirty = true;
 	}
 }
 
-uint16_t TextParagraph::get_flags() const {
-	return flags;
+BitField<TextServer::JustificationFlag> TextParagraph::get_justification_flags() const {
+	return jst_flags;
+}
+
+void TextParagraph::set_break_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	_THREAD_SAFE_METHOD_
+
+	if (brk_flags != p_flags) {
+		brk_flags = p_flags;
+		lines_dirty = true;
+	}
+}
+
+BitField<TextServer::LineBreakFlag> TextParagraph::get_break_flags() const {
+	return brk_flags;
 }
 
 void TextParagraph::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {

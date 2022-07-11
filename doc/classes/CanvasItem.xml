@@ -169,9 +169,10 @@
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="max_lines" type="int" default="-1" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="flags" type="int" default="99" />
-			<argument index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<argument index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<argument index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<argument index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines and draws it using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
@@ -187,9 +188,10 @@
 			<argument index="6" name="max_lines" type="int" default="-1" />
 			<argument index="7" name="size" type="int" default="1" />
 			<argument index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="9" name="flags" type="int" default="99" />
-			<argument index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<argument index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<argument index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<argument index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines and draws text outline using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
@@ -279,7 +281,7 @@
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="7" name="flags" type="int" default="3" />
+			<argument index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<argument index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -316,7 +318,7 @@
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="size" type="int" default="1" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="flags" type="int" default="3" />
+			<argument index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<argument index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>

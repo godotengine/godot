@@ -92,10 +92,10 @@ public:
 	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 	GDVIRTUAL1RC(int64_t, font_get_face_count, RID);
 
-	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
-	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;
-	GDVIRTUAL2(font_set_style, RID, int64_t);
-	GDVIRTUAL1RC(int64_t, font_get_style, RID);
+	virtual void font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) override;
+	virtual BitField<FontStyle> font_get_style(const RID &p_font_rid) const override;
+	GDVIRTUAL2(font_set_style, RID, BitField<FontStyle>);
+	GDVIRTUAL1RC(BitField<FontStyle>, font_get_style, RID);
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_name(const RID &p_font_rid) const override;
@@ -396,9 +396,9 @@ public:
 	GDVIRTUAL3RC(RID, shaped_text_substr, RID, int64_t, int64_t);
 	GDVIRTUAL1RC(RID, shaped_text_get_parent, RID);
 
-	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, int64_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
+	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
 	virtual double shaped_text_tab_align(const RID &p_shaped, const PackedFloat32Array &p_tab_stops) override;
-	GDVIRTUAL3R(double, shaped_text_fit_to_width, RID, double, int64_t);
+	GDVIRTUAL3R(double, shaped_text_fit_to_width, RID, double, BitField<TextServer::JustificationFlag>);
 	GDVIRTUAL2R(double, shaped_text_tab_align, RID, const PackedFloat32Array &);
 
 	virtual bool shaped_text_shape(const RID &p_shaped) override;
@@ -421,12 +421,12 @@ public:
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const override;
 	GDVIRTUAL1RC(Vector2i, shaped_text_get_range, RID);
 
-	virtual PackedInt32Array shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start = 0, bool p_once = true, int64_t /*TextBreakFlag*/ p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
-	virtual PackedInt32Array shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start = 0, int64_t p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
-	virtual PackedInt32Array shaped_text_get_word_breaks(const RID &p_shaped, int64_t p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const override;
-	GDVIRTUAL5RC(PackedInt32Array, shaped_text_get_line_breaks_adv, RID, const PackedFloat32Array &, int64_t, bool, int64_t);
-	GDVIRTUAL4RC(PackedInt32Array, shaped_text_get_line_breaks, RID, double, int64_t, int64_t);
-	GDVIRTUAL2RC(PackedInt32Array, shaped_text_get_word_breaks, RID, int64_t);
+	virtual PackedInt32Array shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start = 0, bool p_once = true, BitField<TextServer::LineBreakFlag> p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
+	virtual PackedInt32Array shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start = 0, BitField<TextServer::LineBreakFlag> p_break_flags = BREAK_MANDATORY | BREAK_WORD_BOUND) const override;
+	virtual PackedInt32Array shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const override;
+	GDVIRTUAL5RC(PackedInt32Array, shaped_text_get_line_breaks_adv, RID, const PackedFloat32Array &, int64_t, bool, BitField<TextServer::LineBreakFlag>);
+	GDVIRTUAL4RC(PackedInt32Array, shaped_text_get_line_breaks, RID, double, int64_t, BitField<TextServer::LineBreakFlag>);
+	GDVIRTUAL2RC(PackedInt32Array, shaped_text_get_word_breaks, RID, BitField<TextServer::GraphemeFlag>);
 
 	virtual int64_t shaped_text_get_trim_pos(const RID &p_shaped) const override;
 	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const override;
@@ -437,8 +437,8 @@ public:
 	GDVIRTUAL1RC(GDNativeConstPtr<const Glyph>, shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC(int64_t, shaped_text_get_ellipsis_glyph_count, RID);
 
-	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, int64_t p_trim_flags) override;
-	GDVIRTUAL3(shaped_text_overrun_trim_to_width, RID, double, int64_t);
+	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
+	GDVIRTUAL3(shaped_text_overrun_trim_to_width, RID, double, BitField<TextServer::TextOverrunFlag>);
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const override;

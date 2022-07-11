@@ -558,7 +558,7 @@
 		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
 			Font family name.
 		</member>
-		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" default="0">
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
 			Font style flags, see [enum TextServer.FontStyle].
 		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">

@@ -2652,6 +2652,8 @@
 		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags">
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
+		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags">
+		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].
 		</constant>

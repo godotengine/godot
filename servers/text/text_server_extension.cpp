@@ -438,12 +438,12 @@ int64_t TextServerExtension::font_get_face_count(const RID &p_font_rid) const {
 	return 0;
 }
 
-void TextServerExtension::font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) {
+void TextServerExtension::font_set_style(const RID &p_font_rid, BitField<TextServer::FontStyle> p_style) {
 	GDVIRTUAL_CALL(font_set_style, p_font_rid, p_style);
 }
 
-int64_t /*FontStyle*/ TextServerExtension::font_get_style(const RID &p_font_rid) const {
-	int64_t ret;
+BitField<TextServer::FontStyle> TextServerExtension::font_get_style(const RID &p_font_rid) const {
+	BitField<TextServer::FontStyle> ret = 0;
 	if (GDVIRTUAL_CALL(font_get_style, p_font_rid, ret)) {
 		return ret;
 	}
@@ -1192,7 +1192,7 @@ RID TextServerExtension::shaped_text_get_parent(const RID &p_shaped) const {
 	return RID();
 }
 
-double TextServerExtension::shaped_text_fit_to_width(const RID &p_shaped, double p_width, int64_t p_jst_flags) {
+double TextServerExtension::shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags) {
 	double ret;
 	if (GDVIRTUAL_CALL(shaped_text_fit_to_width, p_shaped, p_width, p_jst_flags, ret)) {
 		return ret;
@@ -1272,7 +1272,7 @@ Vector2i TextServerExtension::shaped_text_get_range(const RID &p_shaped) const {
 	return Vector2i();
 }
 
-PackedInt32Array TextServerExtension::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, int64_t p_break_flags) const {
+PackedInt32Array TextServerExtension::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, BitField<TextServer::LineBreakFlag> p_break_flags) const {
 	PackedInt32Array ret;
 	if (GDVIRTUAL_CALL(shaped_text_get_line_breaks_adv, p_shaped, p_width, p_start, p_once, p_break_flags, ret)) {
 		return ret;
@@ -1280,7 +1280,7 @@ PackedInt32Array TextServerExtension::shaped_text_get_line_breaks_adv(const RID 
 	return TextServer::shaped_text_get_line_breaks_adv(p_shaped, p_width, p_start, p_once, p_break_flags);
 }
 
-PackedInt32Array TextServerExtension::shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start, int64_t p_break_flags) const {
+PackedInt32Array TextServerExtension::shaped_text_get_line_breaks(const RID &p_shaped, double p_width, int64_t p_start, BitField<TextServer::LineBreakFlag> p_break_flags) const {
 	PackedInt32Array ret;
 	if (GDVIRTUAL_CALL(shaped_text_get_line_breaks, p_shaped, p_width, p_start, p_break_flags, ret)) {
 		return ret;
@@ -1288,7 +1288,7 @@ PackedInt32Array TextServerExtension::shaped_text_get_line_breaks(const RID &p_s
 	return TextServer::shaped_text_get_line_breaks(p_shaped, p_width, p_start, p_break_flags);
 }
 
-PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, int64_t p_grapheme_flags) const {
+PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
 	PackedInt32Array ret;
 	if (GDVIRTUAL_CALL(shaped_text_get_word_breaks, p_shaped, p_grapheme_flags, ret)) {
 		return ret;
@@ -1328,7 +1328,7 @@ int64_t TextServerExtension::shaped_text_get_ellipsis_glyph_count(const RID &p_s
 	return -1;
 }
 
-void TextServerExtension::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, int64_t p_trim_flags) {
+void TextServerExtension::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
 	GDVIRTUAL_CALL(shaped_text_overrun_trim_to_width, p_shaped_line, p_width, p_trim_flags);
 }
 
