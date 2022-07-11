@@ -36,6 +36,13 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
+#define DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
+#ifdef DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
+#else
+#define DEBUG_LOG_WAYLAND(...)
+#endif
+
 // Implementation specific methods.
 
 void DisplayServerWayland::_poll_events_thread(void *p_wls) {
@@ -111,12 +118,12 @@ String DisplayServerWayland::read_data_control_offer(zwlr_data_control_offer_v1 
 
 			if (last_bytes_read == 0) {
 				// We're done, we've reached the EOF.
-				print_verbose(vformat("Clipboard: done reading %d bytes.", bytes_read));
+				DEBUG_LOG_WAYLAND(vformat("Clipboard: done reading %d bytes.", bytes_read));
 				close(fds[0]);
 				break;
 			}
 
-			print_verbose(vformat("Clipboard: read chunk of %d bytes.", last_bytes_read));
+			DEBUG_LOG_WAYLAND(vformat("Clipboard: read chunk of %d bytes.", last_bytes_read));
 
 			bytes_read += last_bytes_read;
 
@@ -417,9 +424,9 @@ void DisplayServerWayland::_delete_window(WindowID p_window) {
 	WindowData &wd = wls.windows[p_window];
 
 	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		print_verbose(vformat("Deleting popup %d.", p_window));
+		DEBUG_LOG_WAYLAND(vformat("Deleting popup %d.", p_window));
 	} else {
-		print_verbose(vformat("Deleting window %d.", p_window));
+		DEBUG_LOG_WAYLAND(vformat("Deleting window %d.", p_window));
 	}
 
 	if (window_get_flag(WINDOW_FLAG_POPUP, p_window) && wls.popup_menu_stack.size() > 0) {
@@ -535,6 +542,13 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	if (strcmp(interface, zwlr_data_control_manager_v1_interface.name) == 0) {
 		globals.wlr_data_control_manager = (struct zwlr_data_control_manager_v1 *)wl_registry_bind(wl_registry, name, &zwlr_data_control_manager_v1_interface, 2);
 		globals.wlr_data_control_manager_name = name;
+
+		for (SeatState &ss : wls->seats) {
+			if (!ss.wlr_data_control_device) {
+				ss.wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss.wl_seat);
+				zwlr_data_control_device_v1_add_listener(ss.wlr_data_control_device, &wlr_data_control_device_listener, &ss);
+			}
+		}
 		return;
 	}
 }
@@ -577,6 +591,12 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.wlr_data_control_manager_name) {
 		zwlr_data_control_manager_v1_destroy(globals.wlr_data_control_manager);
 		globals.wlr_data_control_manager = nullptr;
+
+		// Destroy any seat data device that's there.
+		for (SeatState &ss : wls->seats) {
+			zwlr_data_control_device_v1_destroy(ss.wlr_data_control_device);
+			ss.wlr_data_control_device = nullptr;
+		}
 	}
 
 	{
@@ -724,8 +744,10 @@ void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat,
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	ss->wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss->wl_seat);
-	zwlr_data_control_device_v1_add_listener(ss->wlr_data_control_device, &wlr_data_control_device_listener, ss);
+	if (wls->globals.wlr_data_control_manager) {
+		ss->wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss->wl_seat);
+		zwlr_data_control_device_v1_add_listener(ss->wlr_data_control_device, &wlr_data_control_device_listener, ss);
+	}
 }
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -755,7 +777,7 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 	ERR_FAIL_COND_MSG(pd.pointed_window_id == INVALID_WINDOW_ID, "Cursor focused to an invalid window.");
 
-	print_verbose(vformat("Pointing window %d", pd.pointed_window_id));
+	DEBUG_LOG_WAYLAND(vformat("Pointing window %d", pd.pointed_window_id));
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
@@ -785,7 +807,7 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 
 	pd.pointed_window_id = INVALID_WINDOW_ID;
 
-	print_verbose("Left a surface");
+	DEBUG_LOG_WAYLAND("Left a surface");
 }
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1182,10 +1204,10 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 
 	if (wlr_data_control_source == ss->selection_data_control_source) {
 		data_to_send = &ss->selection_data;
-		print_verbose("Clipboard: requested selection.");
+		DEBUG_LOG_WAYLAND("Clipboard: requested selection.");
 	} else if (wlr_data_control_source == ss->primary_data_control_source) {
 		data_to_send = &ss->primary_data;
-		print_verbose("Clipboard: requested primary selection.");
+		DEBUG_LOG_WAYLAND("Clipboard: requested primary selection.");
 	}
 
 	if (data_to_send) {
@@ -1196,9 +1218,9 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 		}
 
 		if (written_bytes > 0) {
-			print_verbose(vformat("Clipboard: sent %d bytes.", written_bytes));
+			DEBUG_LOG_WAYLAND(vformat("Clipboard: sent %d bytes.", written_bytes));
 		} else if (written_bytes == 0) {
-			print_verbose("Clipboard: no bytes sent.");
+			DEBUG_LOG_WAYLAND("Clipboard: no bytes sent.");
 		} else {
 			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
 		}
@@ -1217,7 +1239,7 @@ void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, str
 
 		ss->selection_data.clear();
 
-		print_verbose("Clipboard: selection set by another program.");
+		DEBUG_LOG_WAYLAND("Clipboard: selection set by another program.");
 		return;
 	}
 
@@ -1227,7 +1249,7 @@ void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, str
 
 		ss->primary_data.clear();
 
-		print_verbose("Clipboard: primary selection set by another program.");
+		DEBUG_LOG_WAYLAND("Clipboard: primary selection set by another program.");
 		return;
 	}
 }
@@ -1248,6 +1270,8 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	msg->id = wd->id;
 	msg->rect = wd->rect;
 	wls->message_queue.push_back(msg);
+
+	DEBUG_LOG_WAYLAND(vformat("xdg surface id %d on configure rect %s", wd->id, wd->rect));
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -1258,6 +1282,8 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 		wd->rect.size.width = width;
 		wd->rect.size.height = height;
 	}
+
+	DEBUG_LOG_WAYLAND(vformat("xdg toplevel on configure width %d height %d", width, height));
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
@@ -1284,7 +1310,7 @@ void DisplayServerWayland::_xdg_popup_on_configure(void *data, struct xdg_popup 
 	wd->rect.size.height = height;
 
 	// DEBUG
-	print_verbose("xdg popup on configure");
+	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on configure x %d y %d width %d height %d", wd->id, x, y, width, height));
 }
 
 void DisplayServerWayland::_xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup) {
@@ -1301,12 +1327,12 @@ void DisplayServerWayland::_xdg_popup_on_popup_done(void *data, struct xdg_popup
 	wls->message_queue.push_back(msg);
 
 	// DEBUG
-	print_verbose(vformat("Window %d xdg popup on popup done", wd->id));
+	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on popup done", wd->id));
 }
 
 void DisplayServerWayland::_xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token) {
 	// DEBUG
-	print_verbose("xdg popup on repositioned");
+	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on repositioned", ((WindowData *)data)->id));
 }
 
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
@@ -1331,6 +1357,9 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_MOUSE:
 		case FEATURE_SUBWINDOWS:
 			return true;
+		case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD_PRIMARY:
+			return wls.globals.wlr_data_control_manager != nullptr;
 		default: {
 		}
 	}
@@ -1360,7 +1389,7 @@ DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	// TODO
-	print_verbose("wayland stub warp_mouse");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub warp_mouse to %s", p_to));
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
@@ -1472,7 +1501,7 @@ Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
 	// TODO
-	print_verbose("wayland stub screen_get_usable_rect");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_get_usable_rect screen %d, returning Rect2i(0, 0, 1920, 1080)", p_screen));
 	return Rect2i(0, 0, 1920, 1080);
 }
 
@@ -1516,7 +1545,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 
 bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
 	// TODO
-	print_verbose("wayland stub screen_is_touchscreen");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_is_touchscreen screen %d, returning false", p_screen));
 	return false;
 }
 
@@ -1524,12 +1553,12 @@ bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	// TODO
-	print_verbose("wayland stub screen_set_keep_on");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_set_keep_on %s", p_enable ? "true" : "false"));
 }
 
 bool DisplayServerWayland::screen_is_kept_on() const {
 	// TODO
-	print_verbose("wayland stub screen_is_kept_on");
+	DEBUG_LOG_WAYLAND("wayland stub screen_is_kept_on, returning false");
 	return false;
 }
 
@@ -1537,7 +1566,7 @@ bool DisplayServerWayland::screen_is_kept_on() const {
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	// TODO
-	print_verbose("wayland stub get_window_list");
+	DEBUG_LOG_WAYLAND("wayland stub get_window_list, returning empty Vector<DisplayServer::WindowID>");
 
 	return Vector<DisplayServer::WindowID>();
 }
@@ -1553,7 +1582,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 	WindowData &wd = wls.windows[p_id];
 
 	if (!wd.visible) {
-		print_verbose(vformat("Showing window %d", p_id));
+		DEBUG_LOG_WAYLAND(vformat("Showing window %d", p_id));
 
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
@@ -1562,23 +1591,24 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 
 		if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
-			ERR_FAIL_COND_MSG(wd.parent == INVALID_WINDOW_ID, "Popups must have a parent.");
+			ERR_FAIL_COND_MSG(!wls.windows.has(wd.parent), "Popups must have a valid parent.");
 
 			WindowData &parent_wd = wls.windows[wd.parent];
 
-			struct xdg_positioner *xdg_positioner = xdg_wm_base_create_positioner(wls.globals.xdg_wm_base);
-			xdg_positioner_set_size(xdg_positioner, wd.rect.size.x, wd.rect.size.y);
-			xdg_positioner_set_anchor(xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
-			xdg_positioner_set_gravity(xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
-			xdg_positioner_set_anchor_rect(xdg_positioner, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
-			xdg_positioner_set_offset(xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
+			wd.xdg_positioner = xdg_wm_base_create_positioner(wls.globals.xdg_wm_base);
+			xdg_positioner_set_size(wd.xdg_positioner, wd.rect.size.x, wd.rect.size.y);
+			xdg_positioner_set_gravity(wd.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
+			xdg_positioner_set_anchor(wd.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
+			xdg_positioner_set_anchor_rect(wd.xdg_positioner, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
 
-			print_verbose(vformat("Created popup at %s", wd.rect.position));
+			xdg_positioner_set_offset(wd.xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
 
-			wd.xdg_popup = xdg_surface_get_popup(wd.xdg_surface, parent_wd.xdg_surface, xdg_positioner);
+			xdg_surface_set_window_geometry(parent_wd.xdg_surface, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
+
+			wd.xdg_popup = xdg_surface_get_popup(wd.xdg_surface, parent_wd.xdg_surface, wd.xdg_positioner);
 			xdg_popup_add_listener(wd.xdg_popup, &xdg_popup_listener, &wd);
 
-			xdg_positioner_destroy(xdg_positioner);
+			DEBUG_LOG_WAYLAND(vformat("Created popup at %s", wd.rect.position));
 		} else {
 			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
@@ -1669,18 +1699,18 @@ Rect2i DisplayServerWayland::window_get_popup_safe_rect(WindowID p_window) const
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
 	// TODO
-	print_verbose("wayland stub get_window_at_screen_position");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub get_window_at_screen_position position %s", p_position));
 	return WindowID(0);
 }
 
 void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_attach_instance_id");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_attach_instance_id instance %s window %d", p_instance, p_window));
 }
 
 ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::WindowID p_window) const {
 	// TODO
-	print_verbose("wayland stub window_get_attached_instance_id");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_attached_instance_id window %d, returning ObjectID()", p_window));
 	return ObjectID();
 }
 
@@ -1700,7 +1730,7 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_mouse_passthrough");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s window %d", p_region, p_window));
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
@@ -1732,12 +1762,12 @@ void DisplayServerWayland::window_set_input_event_callback(const Callable &p_cal
 
 void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_input_text_callback");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_input_text_callback, callable %s window %d", p_callable, p_window));
 }
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_drop_files_callback");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_drop_files_callback callable %s window %d", p_callable, p_window));
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
@@ -1751,7 +1781,7 @@ int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_wi
 
 void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_current_screen");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_current_screen screen %d window %d", p_screen, p_window));
 }
 
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
@@ -1760,6 +1790,7 @@ Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_wind
 	ERR_FAIL_COND_V(!wls.windows.has(p_window), Point2i());
 
 	if (wls.windows[p_window].xdg_toplevel) {
+		// We can't know the position of toplevels with the standard protocol.
 		return Point2i();
 	} else {
 		return wls.windows[p_window].rect.position;
@@ -1772,23 +1803,35 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
-	wd.rect.position = p_position;
+	// NOTE: Setting the position of a non borderless windows (windows without an
+	// xdg_popup) is not supported.
+
+	if (wd.xdg_popup) {
+		ERR_FAIL_COND(!wd.xdg_positioner || !wls.windows.has(wd.parent));
+		WindowData &parent_wd = wls.windows[p_window];
+
+		xdg_positioner_set_offset(wd.xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
+		xdg_popup_reposition(wd.xdg_popup, wd.xdg_positioner, 0);
+
+		// Wait configure.
+		wl_display_roundtrip(wls.display);
+	}
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_max_size");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_max_size %s window %d", p_size, p_window));
 }
 
 Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
 	// TODO
-	print_verbose("wayland stub window_get_max_size");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_max_size window %d, returning Size2i(1920, 1080)", p_window));
 	return Size2i(1920, 1080);
 }
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 	// TODO
-	print_verbose("wayland stub gl_window_make_current");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub gl_window_make_current window %d", p_window_id));
 }
 
 // TODO: Make accurate with the X11 implementation.
@@ -1832,12 +1875,12 @@ void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window
 
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_min_size");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_min_size size %s window %d", p_size, p_window));
 }
 
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
 	// TODO
-	print_verbose("wayland stub window_get_min_size");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_min_size window %d, returning Size2i(0, 0)", p_window));
 	return Size2i(0, 0);
 }
 
@@ -1881,18 +1924,18 @@ Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_wind
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_mode");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mode mode %d window %d", p_mode, p_window));
 }
 
 DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
 	// TODO
-	print_verbose("wayland stub window_get_mode");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_mode window %d", p_window));
 	return WINDOW_MODE_WINDOWED;
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
 	// TODO
-	print_verbose("wayland stub window_is_maximize_allowed");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_is_maximize_allowed window %d, returning false", p_window));
 	return false;
 }
 
@@ -1902,7 +1945,7 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
-	print_verbose(vformat("Window %d set flag %d", p_window, p_flag));
+	DEBUG_LOG_WAYLAND(vformat("Window %d set flag %d", p_window, p_flag));
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
@@ -1930,12 +1973,12 @@ bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::Wi
 
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_request_attention");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_request_attention window %d", p_window));
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_move_to_foreground");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_move_to_foreground window %d", p_window));
 }
 
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window) const {
@@ -1950,18 +1993,18 @@ bool DisplayServerWayland::can_any_window_draw() const {
 
 void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_ime_active");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s window %d", p_active ? "true" : "false", p_window));
 }
 
 void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window) {
 	// TODO
-	print_verbose("wayland stub window_set_ime_position");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window));
 }
 
 void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
 	// TODO: Figure out whether it is possible to disable VSync with Wayland
 	// (doubt it) or handle any other mode.
-	print_verbose("wayland stub window_set_vsync_mode");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_vsync_mode mode %d window %d", p_vsync_mode, p_window));
 }
 
 DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_vsync_mode) const {
@@ -1992,7 +2035,7 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO
-	print_verbose("wayland stub cursor_set_custom_image");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub cursor_set_custom_image cursor %s shape %d hotspot %s", p_cursor, p_shape, p_hotspot));
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
@@ -2184,32 +2227,32 @@ void DisplayServerWayland::process_events() {
 
 void DisplayServerWayland::release_rendering_thread() {
 	// TODO
-	print_verbose("wayland stub release_rendering_thread");
+	DEBUG_LOG_WAYLAND("wayland stub release_rendering_thread");
 }
 
 void DisplayServerWayland::make_rendering_thread() {
 	// TODO
-	print_verbose("wayland stub make_rendering_thread");
+	DEBUG_LOG_WAYLAND("wayland stub make_rendering_thread");
 }
 
 void DisplayServerWayland::swap_buffers() {
 	// TODO
-	print_verbose("wayland stub swap_buffers");
+	DEBUG_LOG_WAYLAND("wayland stub swap_buffers");
 }
 
 void DisplayServerWayland::set_context(Context p_context) {
 	// TODO
-	print_verbose("wayland stub set_context");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub set_context context %s", p_context));
 }
 
 void DisplayServerWayland::set_native_icon(const String &p_filename) {
 	// TODO
-	print_verbose("wayland stub set_native_icon");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub set_native_icon filename %s", p_filename));
 }
 
 void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
 	// TODO
-	print_verbose("wayland stub set_icon");
+	DEBUG_LOG_WAYLAND(vformat("wayland stub set_icon %s", p_icon));
 }
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
@@ -2258,7 +2301,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	// TODO: Perhaps gracefully handle missing protocols when possible?
 	// TODO: Split this huge check into something more manageble.
-	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wp_pointer_constraints || !wls.globals.wlr_data_control_manager || !wls.globals.xdg_wm_base);
+	ERR_FAIL_COND(!wls.globals.wl_shm || !wls.globals.wl_compositor || !wls.globals.wp_pointer_constraints || !wls.globals.xdg_wm_base);
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);

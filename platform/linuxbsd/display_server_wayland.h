@@ -128,6 +128,7 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_toplevel *xdg_toplevel = nullptr;
 
 		struct xdg_popup *xdg_popup = nullptr;
+		struct xdg_positioner *xdg_positioner = nullptr;
 
 		RBSet<WindowID> children;
 		WindowID parent = INVALID_WINDOW_ID;
@@ -337,7 +338,6 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
 	// wlr-protocols event handlers.
-
 	static void _wlr_data_control_device_on_data_offer(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
 	static void _wlr_data_control_device_on_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
 	static void _wlr_data_control_device_on_finished(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device);
@@ -424,7 +424,6 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	// wlr-protocols event listeners.
-
 	static constexpr struct zwlr_data_control_device_v1_listener wlr_data_control_device_listener = {
 		.data_offer = _wlr_data_control_device_on_data_offer,
 		.selection = _wlr_data_control_device_on_selection,
@@ -438,7 +437,6 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	// wayland-protocols event listeners.
-
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
 		.relative_motion = _wp_relative_pointer_on_relative_motion,
 	};
