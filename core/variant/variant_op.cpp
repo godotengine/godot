@@ -1105,8 +1105,11 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 	evaluate(OP_IN, p_index, *this, ret, valid);
 	if (r_valid) {
 		*r_valid = valid;
+	}
+	if (valid) {
+		ERR_FAIL_COND_V(ret.type != BOOL, false);
+		return *VariantGetInternalPtr<bool>::get_ptr(&ret);
+	} else {
 		return false;
 	}
-	ERR_FAIL_COND_V(ret.type != BOOL, false);
-	return *VariantGetInternalPtr<bool>::get_ptr(&ret);
 }
