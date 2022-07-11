@@ -7647,9 +7647,6 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 
 	rect = dl->viewport.intersection(rect);
 
-	if (rect.get_area() == 0) {
-		return;
-	}
 	VkRect2D scissor;
 	scissor.offset.x = rect.position.x;
 	scissor.offset.y = rect.position.y;
