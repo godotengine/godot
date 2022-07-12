@@ -4317,20 +4317,27 @@ void EditorNode::_dock_floating_close_request(Control *p_control) {
 	_edit_current();
 }
 
-void EditorNode::_dock_make_float() {
+void EditorNode::_dock_make_selected_float() {
 	Control *dock = dock_slot[dock_popup_selected_idx]->get_current_tab_control();
-	ERR_FAIL_COND(!dock);
+	_dock_make_float(dock, dock_popup_selected_idx);
+
+	dock_select_popup->hide();
+	_edit_current();
+}
+
+void EditorNode::_dock_make_float(Control *p_control, int p_slot_index) {
+	ERR_FAIL_COND(!p_control);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
 	// Remember size and position before removing it from the main window.
-	Size2 dock_size = dock->get_size() + borders * 2;
-	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
+	Size2 dock_size = p_control->get_size() + borders * 2;
+	Point2 dock_screen_pos = p_control->get_global_position() + get_tree()->get_root()->get_position() - borders;
 
-	int dock_index = dock->get_index();
-	dock_slot[dock_popup_selected_idx]->remove_child(dock);
+	int dock_index = p_control->get_index() - 1;
+	dock_slot[p_slot_index]->remove_child(p_control);
 
 	Window *window = memnew(Window);
-	window->set_title(dock->get_name());
+	window->set_title(p_control->get_name());
 	Panel *p = memnew(Panel);
 	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
 	p->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -4342,24 +4349,22 @@ void EditorNode::_dock_make_float() {
 	margin->add_theme_constant_override("margin_left", borders.width);
 	margin->add_theme_constant_override("margin_bottom", borders.height);
 	window->add_child(margin);
-	dock->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
-	margin->add_child(dock);
+	p_control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	margin->add_child(p_control);
 	window->set_wrap_controls(true);
 	window->set_size(dock_size);
 	window->set_position(dock_screen_pos);
 	window->set_transient(true);
-	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request), varray(dock));
-	window->set_meta("dock_slot", dock_popup_selected_idx);
+	window->connect("close_requested", callable_mp(this, &EditorNode::_dock_floating_close_request), varray(p_control));
+	window->set_meta("dock_slot", p_slot_index);
 	window->set_meta("dock_index", dock_index);
 	gui_base->add_child(window);
 
-	dock_select_popup->hide();
+	p_control->show();
 
 	_update_dock_containers();
 
-	floating_docks.push_back(dock);
-
-	_edit_current();
+	floating_docks.push_back(p_control);
 }
 
 void EditorNode::_update_dock_containers() {
@@ -4385,6 +4390,27 @@ void EditorNode::_update_dock_containers() {
 	} else {
 		right_hsplit->hide();
 	}
+}
+
+EditorNode::DockFindResult EditorNode::_find_dock_slot(const String &p_dock_name) const {
+	DockFindResult result;
+
+	// FIXME: Find it, in a horribly inefficient way.
+	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+		if (!dock_slot[i]->has_node(p_dock_name)) {
+			continue;
+		}
+
+		result.dock_control = Object::cast_to<Control>(dock_slot[i]->get_node(p_dock_name));
+		if (!result.dock_control) {
+			continue;
+		}
+
+		result.dock_slot_index = i;
+		break;
+	}
+
+	return result;
 }
 
 void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
@@ -4594,6 +4620,23 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 		}
 	}
 
+	{
+		Dictionary values;
+
+		for (Control *dock : floating_docks) {
+			String name = dock->get_name();
+			Window *window = (Window *)dock->get_viewport();
+
+			Rect2i rect;
+			rect.position = window->get_position();
+			rect.size = window->get_size();
+
+			values[name] = rect;
+		}
+
+		p_layout->set_value(p_section, "dock_floating", values);
+	}
+
 	p_layout->set_value(p_section, "dock_filesystem_split", FileSystemDock::get_singleton()->get_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_display_mode", FileSystemDock::get_singleton()->get_display_mode());
 	p_layout->set_value(p_section, "dock_filesystem_file_sort", FileSystemDock::get_singleton()->get_file_sort());
@@ -4739,6 +4782,11 @@ void EditorNode::_dock_tab_changed(int p_tab) {
 }
 
 void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	for (int i = floating_docks.size() - 1; i >= 0; i--) {
+		Control *dock = floating_docks[i];
+		_dock_floating_close_request(dock);
+	}
+
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1))) {
 			continue;
@@ -4748,21 +4796,12 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 
 		for (int j = 0; j < names.size(); j++) {
 			String name = names[j];
-			// FIXME: Find it, in a horribly inefficient way.
-			int atidx = -1;
-			Control *node = nullptr;
-			for (int k = 0; k < DOCK_SLOT_MAX; k++) {
-				if (!dock_slot[k]->has_node(name)) {
-					continue;
-				}
-				node = Object::cast_to<Control>(dock_slot[k]->get_node(name));
-				if (!node) {
-					continue;
-				}
-				atidx = k;
-				break;
-			}
-			if (atidx == -1) { // Well, it's not anywhere.
+
+			DockFindResult result = _find_dock_slot(name);
+			int atidx = result.dock_slot_index;
+			Control *node = result.dock_control;
+
+			if (!node) {
 				continue;
 			}
 
@@ -4778,6 +4817,30 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 			dock_slot[i]->add_child(node);
 			dock_slot[i]->show();
+		}
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_floating")) {
+		Dictionary dictionary = p_layout->get_value(p_section, "dock_floating");
+
+		Array keys = dictionary.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &name = keys[i];
+			Rect2i rect = dictionary[name];
+
+			DockFindResult result = _find_dock_slot(name);
+			int atidx = result.dock_slot_index;
+			Control *node = result.dock_control;
+
+			if (!node) {
+				continue;
+			}
+
+			_dock_make_float(node, atidx);
+
+			Window *window = (Window *)node->get_viewport();
+			window->set_position(rect.position);
+			window->set_size(rect.size);
 		}
 	}
 
@@ -6275,7 +6338,7 @@ EditorNode::EditorNode() {
 	dock_float->set_text(TTR("Make Floating"));
 	dock_float->set_focus_mode(Control::FOCUS_NONE);
 	dock_float->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_float));
+	dock_float->connect("pressed", callable_mp(this, &EditorNode::_dock_make_selected_float));
 
 	dock_vb->add_child(dock_float);
 

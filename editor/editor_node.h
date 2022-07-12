@@ -238,6 +238,11 @@ private:
 		Button *button = nullptr;
 	};
 
+	struct DockFindResult {
+		int dock_slot_index = -1;
+		Control *dock_control = nullptr;
+	};
+
 	struct ExportDefer {
 		String preset;
 		String path;
@@ -607,6 +612,7 @@ private:
 
 	void _update_dock_containers();
 
+	DockFindResult _find_dock_slot(const String &p_dock_name) const;
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_move_left();
 	void _dock_move_right();
@@ -615,7 +621,8 @@ private:
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
 	void _dock_floating_close_request(Control *p_control);
-	void _dock_make_float();
+	void _dock_make_selected_float();
+	void _dock_make_float(Control *p_control, int p_dock_index);
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hovered(int p_tab);
