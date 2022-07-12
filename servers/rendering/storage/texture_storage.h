@@ -107,7 +107,7 @@ public:
 	virtual void decal_initialize(RID p_rid) = 0;
 	virtual void decal_free(RID p_rid) = 0;
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) = 0;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;

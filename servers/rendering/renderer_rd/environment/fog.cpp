@@ -82,11 +82,11 @@ void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 	fog_volume->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
-void Fog::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+void Fog::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND(!fog_volume);
 
-	fog_volume->extents = p_extents;
+	fog_volume->size = p_size;
 	fog_volume->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
@@ -120,8 +120,8 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 		case RS::FOG_VOLUME_SHAPE_CYLINDER:
 		case RS::FOG_VOLUME_SHAPE_BOX: {
 			AABB aabb;
-			aabb.position = -fog_volume->extents;
-			aabb.size = fog_volume->extents * 2;
+			aabb.position = -fog_volume->size / 2;
+			aabb.size = fog_volume->size;
 			return aabb;
 		}
 		default: {
@@ -131,10 +131,10 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 	}
 }
 
-Vector3 Fog::fog_volume_get_extents(RID p_fog_volume) const {
+Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 	const FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
 	ERR_FAIL_COND_V(!fog_volume, Vector3());
-	return fog_volume->extents;
+	return fog_volume->size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		actions.renames["WORLD_POSITION"] = "world.xyz";
 		actions.renames["OBJECT_POSITION"] = "params.position";
 		actions.renames["UVW"] = "uvw";
-		actions.renames["EXTENTS"] = "params.extents";
+		actions.renames["SIZE"] = "params.size";
 		actions.renames["ALBEDO"] = "albedo";
 		actions.renames["DENSITY"] = "density";
 		actions.renames["EMISSION"] = "emission";
@@ -643,7 +643,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 			Vector3 position = fog_volume_instance->transform.get_origin();
 			RS::FogVolumeShape volume_type = RendererRD::Fog::get_singleton()->fog_volume_get_shape(fog_volume);
-			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_extents(fog_volume);
+			Vector3 extents = RendererRD::Fog::get_singleton()->fog_volume_get_size(fog_volume) / 2;
 
 			if (volume_type != RS::FOG_VOLUME_SHAPE_WORLD) {
 				// Local fog volume.
@@ -683,9 +683,9 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			push_constant.position[0] = position.x;
 			push_constant.position[1] = position.y;
 			push_constant.position[2] = position.z;
-			push_constant.extents[0] = extents.x;
-			push_constant.extents[1] = extents.y;
-			push_constant.extents[2] = extents.z;
+			push_constant.size[0] = extents.x * 2;
+			push_constant.size[1] = extents.y * 2;
+			push_constant.size[2] = extents.z * 2;
 			push_constant.corner[0] = min.x;
 			push_constant.corner[1] = min.y;
 			push_constant.corner[2] = min.z;

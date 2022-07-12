@@ -877,13 +877,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="decal_set_extents">
-			<return type="void" />
-			<param index="0" name="decal" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-			</description>
-		</method>
 		<method name="decal_set_fade">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
@@ -903,6 +896,13 @@
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="fade" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="decal_set_size">
+			<return type="void" />
+			<param index="0" name="decal" type="RID" />
+			<param index="1" name="size" type="Vector3" />
 			<description>
 			</description>
 		</method>
@@ -1218,14 +1218,6 @@
 				Creates a new fog volume and allocates an RID.
 			</description>
 		</method>
-		<method name="fog_volume_set_extents">
-			<return type="void" />
-			<param index="0" name="fog_volume" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
-			</description>
-		</method>
 		<method name="fog_volume_set_material">
 			<return type="void" />
 			<param index="0" name="fog_volume" type="RID" />
@@ -1240,6 +1232,14 @@
 			<param index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
 			<description>
 				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+			</description>
+		</method>
+		<method name="fog_volume_set_size">
+			<return type="void" />
+			<param index="0" name="fog_volume" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -2655,14 +2655,6 @@
 				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
-		<method name="reflection_probe_set_extents">
-			<return type="void" />
-			<param index="0" name="probe" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.extents].
-			</description>
-		</method>
 		<method name="reflection_probe_set_intensity">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
@@ -2699,6 +2691,14 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_size">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.size].
 			</description>
 		</method>
 		<method name="reflection_probe_set_update_mode">
@@ -4091,10 +4091,10 @@
 			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CONE" value="1" enum="FogVolumeShape">
-			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the extents. The cone will be adjusted to fit within the extents. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the size. The cone will be adjusted to fit within the size. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CYLINDER" value="2" enum="FogVolumeShape">
-			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the extents. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the size. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_BOX" value="3" enum="FogVolumeShape">
 			[FogVolume] will be shaped like a box.

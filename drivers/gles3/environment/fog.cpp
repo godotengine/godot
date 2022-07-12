@@ -49,7 +49,7 @@ void Fog::fog_volume_free(RID p_rid) {
 void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 }
 
-void Fog::fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) {
+void Fog::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 }
 
 void Fog::fog_volume_set_material(RID p_fog_volume, RID p_material) {

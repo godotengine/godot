@@ -77,7 +77,7 @@ void GPUParticlesCollisionSDF3DEditorPlugin::_notification(int p_what) {
 
 			const Vector3i size = col_sdf->get_estimated_cell_size();
 
-			const Vector3 extents = col_sdf->get_extents();
+			const Vector3 extents = col_sdf->get_size() / 2;
 
 			int data_size = 2;
 			const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
