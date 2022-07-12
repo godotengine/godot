@@ -266,7 +266,7 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	}
 }
 
-// Get the global position of a point in the window's local coordinate space.
+// Get the "global" position of a point in the window's local coordinate space.
 Point2i DisplayServerWayland::_wayland_state_point_window_to_global(const WaylandState &wls, WindowID p_window, Point2i p_position) {
 	while (p_window != INVALID_WINDOW_ID) {
 		if (!wls.windows.has(p_window)) {
@@ -1304,12 +1304,21 @@ void DisplayServerWayland::_xdg_popup_on_configure(void *data, struct xdg_popup 
 	WindowData *wd = (WindowData *)data;
 	ERR_FAIL_NULL(wd);
 
-	wd->rect.position.x = x;
-	wd->rect.position.y = y;
+	WaylandState *wls = wd->wls;
+	ERR_FAIL_COND(!wls->windows.has(wd->parent));
+
+	// The reported position is an offset from the parent. The engine expects a
+	// screen global position consistent with the main window which, being a
+	// toplevel, is in our case always "at" (0,0) (note: it might be anywhere on
+	// the screen, we just have no way of finding out, so we just lie to the
+	// engine), so we have to convert said offset to this fake "global" value.
+	Point2i global_position = _wayland_state_point_window_to_global(*wls, wd->parent, Point2i(x, y));
+
+	wd->rect.position.x = global_position.x;
+	wd->rect.position.y = global_position.y;
 	wd->rect.size.width = width;
 	wd->rect.size.height = height;
 
-	// DEBUG
 	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on configure x %d y %d width %d height %d", wd->id, x, y, width, height));
 }
 
@@ -1326,12 +1335,10 @@ void DisplayServerWayland::_xdg_popup_on_popup_done(void *data, struct xdg_popup
 	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 	wls->message_queue.push_back(msg);
 
-	// DEBUG
 	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on popup done", wd->id));
 }
 
 void DisplayServerWayland::_xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token) {
-	// DEBUG
 	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on repositioned", ((WindowData *)data)->id));
 }
 
@@ -1602,6 +1609,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			xdg_positioner_set_anchor_rect(wd.xdg_positioner, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
 
 			xdg_positioner_set_offset(wd.xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
+			DEBUG_LOG_WAYLAND(vformat("Parent offset: (%d, %d)", wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y));
 
 			xdg_surface_set_window_geometry(parent_wd.xdg_surface, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
 
