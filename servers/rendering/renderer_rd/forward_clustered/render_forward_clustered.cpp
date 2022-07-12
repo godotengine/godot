@@ -1761,7 +1761,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			CameraMatrix projection = correction * p_render_data->cam_projection;
 			sky.draw(env, can_continue_color, can_continue_depth, color_only_framebuffer, 1, &projection, p_render_data->cam_transform, time);
 		} else {
-			sky.draw(env, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			// For the sky we want our projection without the eye offset or else our view vector will be incorrect.
+			sky.draw(env, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->view_count, p_render_data->projection, p_render_data->cam_transform, time);
 		}
 		RD::get_singleton()->draw_command_end_label();
 	}

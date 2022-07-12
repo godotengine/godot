@@ -765,7 +765,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				CameraMatrix projection = correction * p_render_data->cam_projection;
 				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
-				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				// For the sky we want our projection without the eye offset or else our view vector will be incorrect.
+				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass

@@ -241,8 +241,9 @@ public:
 		Transform3D main_transform;
 		CameraMatrix main_projection;
 
-		Transform3D view_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-		CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+		CameraMatrix projection[RendererSceneRender::MAX_RENDER_VIEWS]; // Projection without eye offset applied
+		Transform3D view_offset[RendererSceneRender::MAX_RENDER_VIEWS]; // eye offset for this view
+		CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS]; // Projection with eye offset applied
 		Vector2 taa_jitter;
 
 		void set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2());

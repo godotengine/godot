@@ -57,8 +57,9 @@ struct RenderDataRD {
 
 	// For stereo rendering
 	uint32_t view_count = 1;
-	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+	CameraMatrix projection[RendererSceneRender::MAX_RENDER_VIEWS]; // unaltered projection matrix
+	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS]; // eye offset for our view
+	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS]; // projection matrix adjusted with our eye offset
 
 	Transform3D prev_cam_transform;
 	CameraMatrix prev_cam_projection;
