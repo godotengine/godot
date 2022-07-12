@@ -235,7 +235,7 @@ private:
 	} decal_atlas;
 
 	struct Decal {
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(2, 2, 2);
 		RID textures[RS::DECAL_TEXTURE_MAX];
 		float emission_energy = 1.0;
 		float albedo_mix = 1.0;
@@ -561,7 +561,7 @@ public:
 	virtual void decal_initialize(RID p_decal) override;
 	virtual void decal_free(RID p_rid) override;
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override;
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override;
@@ -577,9 +577,9 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 
-	_FORCE_INLINE_ Vector3 decal_get_extents(RID p_decal) {
+	_FORCE_INLINE_ Vector3 decal_get_size(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);
-		return decal->extents;
+		return decal->size;
 	}
 
 	_FORCE_INLINE_ RID decal_get_texture(RID p_decal, RS::DecalTexture p_texture) {

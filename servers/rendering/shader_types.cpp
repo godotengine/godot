@@ -464,7 +464,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["WORLD_POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["OBJECT_POSITION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["UVW"] = constt(ShaderLanguage::TYPE_VEC3);
-	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["EXTENTS"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["SIZE"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["SDF"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["ALBEDO"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_FOG].functions["fog"].built_ins["DENSITY"] = ShaderLanguage::TYPE_FLOAT;

@@ -237,6 +237,24 @@ void VoxelGIData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 }
 
+#ifndef DISABLE_DEPRECATED
+bool VoxelGI::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool VoxelGI::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 VoxelGIData::VoxelGIData() {
 	probe = RS::get_singleton()->voxel_gi_create();
 }
@@ -273,14 +291,14 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 	return subdiv;
 }
 
-void VoxelGI::set_extents(const Vector3 &p_extents) {
-	// Prevent very small extents as these break baking if other extents are set very high.
-	extents = Vector3(MAX(1.0, p_extents.x), MAX(1.0, p_extents.y), MAX(1.0, p_extents.z));
+void VoxelGI::set_size(const Vector3 &p_size) {
+	// Prevent very small size dimensions as these breaks baking if other size dimensions are set very high.
+	size = Vector3(MAX(1.0, p_size.x), MAX(1.0, p_size.y), MAX(1.0, p_size.z));
 	update_gizmos();
 }
 
-Vector3 VoxelGI::get_extents() const {
-	return extents;
+Vector3 VoxelGI::get_size() const {
+	return size;
 }
 
 void VoxelGI::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes) {
@@ -300,7 +318,7 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 			Transform3D xf = get_global_transform().affine_inverse() * mi->get_global_transform();
 
-			if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
+			if (AABB(-size / 2, size).intersects(xf.xform(aabb))) {
 				PlotMesh pm;
 				pm.local_xform = xf;
 				pm.mesh = mesh;
@@ -328,7 +346,7 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 				Transform3D xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
 
-				if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
+				if (AABB(-size / 2, size).intersects(xf.xform(aabb))) {
 					PlotMesh pm;
 					pm.local_xform = xf;
 					pm.mesh = mesh;
@@ -352,7 +370,7 @@ Vector3i VoxelGI::get_estimated_cell_size() const {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 	int cell_subdiv = subdiv_value[subdiv];
 	int axis_cell_size[3];
-	AABB bounds = AABB(-extents, extents * 2.0);
+	AABB bounds = AABB(-size / 2, size);
 	int longest_axis = bounds.get_longest_axis_index();
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
 
@@ -390,7 +408,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	Voxelizer baker;
 
-	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0), exposure_normalization);
+	baker.begin_bake(subdiv_value[subdiv], AABB(-size / 2, size), exposure_normalization);
 
 	List<PlotMesh> mesh_list;
 
@@ -448,7 +466,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data_new->get_rid(), exposure_normalization);
 
-		probe_data_new->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
+		probe_data_new->allocate(baker.get_to_cell_space_xform(), AABB(-size / 2, size), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
 
 		set_probe_data(probe_data_new);
 #ifdef TOOLS_ENABLED
@@ -468,7 +486,7 @@ void VoxelGI::_debug_bake() {
 }
 
 AABB VoxelGI::get_aabb() const {
-	return AABB(-extents, extents * 2);
+	return AABB(-size / 2, size);
 }
 
 PackedStringArray VoxelGI::get_configuration_warnings() const {
@@ -489,8 +507,8 @@ void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subdiv", "subdiv"), &VoxelGI::set_subdiv);
 	ClassDB::bind_method(D_METHOD("get_subdiv"), &VoxelGI::get_subdiv);
 
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &VoxelGI::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &VoxelGI::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &VoxelGI::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &VoxelGI::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &VoxelGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &VoxelGI::get_camera_attributes);
@@ -500,7 +518,7 @@ void VoxelGI::_bind_methods() {
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_NONE, "suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_probe_data", "get_probe_data");
 

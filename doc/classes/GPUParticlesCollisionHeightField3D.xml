@@ -13,15 +13,15 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
-			The collision heightmap's extents in 3D units. To improve heightmap quality, [member extents] should be set as small as possible while covering the parts of the scene you need.
-		</member>
 		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_enabled" getter="is_follow_camera_enabled" default="false">
 			If [code]true[/code], the [GPUParticlesCollisionHeightField3D] will follow the current camera in global space. The [GPUParticlesCollisionHeightField3D] does not need to be a child of the [Camera3D] node for this to work.
 			Following the camera has a performance cost, as it will force the heightmap to update whenever the camera moves. Consider lowering [member resolution] to improve performance if [member follow_camera_enabled] is [code]true[/code].
 		</member>
 		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField3D.Resolution" default="2">
 			Higher resolutions can represent small details more accurately in large scenes, at the cost of lower performance. If [member update_mode] is [constant UPDATE_MODE_ALWAYS], consider using the lowest resolution possible.
+		</member>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
+			The collision heightmap's size in 3D units. To improve heightmap quality, [member size] should be set as small as possible while covering the parts of the scene you need.
 		</member>
 		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="GPUParticlesCollisionHeightField3D.UpdateMode" default="0">
 			The update policy to use for the generated heightmap.
