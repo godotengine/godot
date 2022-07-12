@@ -1660,6 +1660,9 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 
 		wl_surface_commit(wd.wl_surface);
 
+		// Wait for the surface to be configured before continuing.
+		wl_display_roundtrip(wls.display);
+
 #ifdef VULKAN_ENABLED
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
