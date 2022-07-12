@@ -105,9 +105,6 @@ private:
 	Error _parse_url(const String &p_url);
 	Error _request();
 
-	bool has_header(const PackedStringArray &p_headers, const String &p_header_name);
-	String get_header_value(const PackedStringArray &p_headers, const String &header_name);
-
 	SafeFlag thread_done;
 	SafeFlag thread_request_quit;
 
@@ -156,6 +153,11 @@ public:
 
 	void set_http_proxy(const String &p_host, int p_port);
 	void set_https_proxy(const String &p_host, int p_port);
+
+	bool has_header(const PackedStringArray &p_headers, const String &p_header_name);
+	String get_header_value(const PackedStringArray &p_headers, const String &header_name);
+
+	Dictionary get_dictionary_from_headers(const PackedStringArray &p_headers);
 
 	HTTPRequest();
 };
