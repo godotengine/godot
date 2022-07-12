@@ -601,7 +601,11 @@ void RendererViewport::draw_viewports() {
 
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
 			Viewport *parent = viewport_owner.get_or_null(vp->parent);
-			if (parent && parent->last_pass == draw_viewports_pass) {
+			// The visibility is judged by comparing the pass count.
+			// If not embedded, the parent is drawn before the child, the condition for parent to be visible is
+			// parent->last_pass == draw_viewports_pass; But when embedded, the child is drawn before the parent,
+			// we estimate based on the visibility of the parent in the previous pass.
+			if (parent && ((parent->last_pass == draw_viewports_pass) || (parent->last_pass == draw_viewports_pass - 1))) {
 				visible = true;
 			}
 		}
