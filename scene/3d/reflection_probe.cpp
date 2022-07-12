@@ -85,38 +85,38 @@ float ReflectionProbe::get_mesh_lod_threshold() const {
 	return mesh_lod_threshold;
 }
 
-void ReflectionProbe::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
+void ReflectionProbe::set_size(const Vector3 &p_size) {
+	size = p_size;
 
 	for (int i = 0; i < 3; i++) {
-		if (extents[i] < 0.01) {
-			extents[i] = 0.01;
+		if (size[i] < 0.01) {
+			size[i] = 0.01;
 		}
 
-		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
+		if ((size[i] - 0.01) / 2 < ABS(origin_offset[i])) {
+			origin_offset[i] = SIGN(origin_offset[i]) * (size[i] - 0.01) / 2;
 		}
 	}
 
-	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
+	RS::get_singleton()->reflection_probe_set_size(probe, size);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
 	update_gizmos();
 }
 
-Vector3 ReflectionProbe::get_extents() const {
-	return extents;
+Vector3 ReflectionProbe::get_size() const {
+	return size;
 }
 
-void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
-	origin_offset = p_extents;
+void ReflectionProbe::set_origin_offset(const Vector3 &p_offset) {
+	origin_offset = p_offset;
 
 	for (int i = 0; i < 3; i++) {
-		if (extents[i] - 0.01 < ABS(origin_offset[i])) {
-			origin_offset[i] = SIGN(origin_offset[i]) * (extents[i] - 0.01);
+		if ((size[i] - 0.01) / 2 < ABS(origin_offset[i])) {
+			origin_offset[i] = SIGN(origin_offset[i]) * (size[i] - 0.01) / 2;
 		}
 	}
-	RS::get_singleton()->reflection_probe_set_extents(probe, extents);
+	RS::get_singleton()->reflection_probe_set_size(probe, size);
 	RS::get_singleton()->reflection_probe_set_origin_offset(probe, origin_offset);
 
 	update_gizmos();
@@ -174,7 +174,7 @@ ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
 AABB ReflectionProbe::get_aabb() const {
 	AABB aabb;
 	aabb.position = -origin_offset;
-	aabb.size = origin_offset + extents;
+	aabb.size = origin_offset + size / 2;
 	return aabb;
 }
 
@@ -205,8 +205,8 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh_lod_threshold", "ratio"), &ReflectionProbe::set_mesh_lod_threshold);
 	ClassDB::bind_method(D_METHOD("get_mesh_lod_threshold"), &ReflectionProbe::get_mesh_lod_threshold);
 
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &ReflectionProbe::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &ReflectionProbe::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &ReflectionProbe::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &ReflectionProbe::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_origin_offset", "origin_offset"), &ReflectionProbe::set_origin_offset);
 	ClassDB::bind_method(D_METHOD("get_origin_offset"), &ReflectionProbe::get_origin_offset);
@@ -229,7 +229,7 @@ void ReflectionProbe::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_NONE, "suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_origin_offset", "get_origin_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "box_projection"), "set_enable_box_projection", "is_box_projection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_as_interior", "is_set_as_interior");

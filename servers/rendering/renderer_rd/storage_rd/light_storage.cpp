@@ -436,14 +436,14 @@ void LightStorage::reflection_probe_set_max_distance(RID p_probe, float p_distan
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
-void LightStorage::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void LightStorage::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	if (reflection_probe->extents == p_extents) {
+	if (reflection_probe->size == p_size) {
 		return;
 	}
-	reflection_probe->extents = p_extents;
+	reflection_probe->size = p_size;
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
@@ -515,8 +515,8 @@ AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
 
 	AABB aabb;
-	aabb.position = -reflection_probe->extents;
-	aabb.size = reflection_probe->extents * 2.0;
+	aabb.position = -reflection_probe->size;
+	aabb.size = reflection_probe->size;
 
 	return aabb;
 }
@@ -535,11 +535,11 @@ uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
 	return reflection_probe->cull_mask;
 }
 
-Vector3 LightStorage::reflection_probe_get_extents(RID p_probe) const {
+Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
-	return reflection_probe->extents;
+	return reflection_probe->size;
 }
 
 Vector3 LightStorage::reflection_probe_get_origin_offset(RID p_probe) const {

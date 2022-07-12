@@ -2112,13 +2112,13 @@ void RendererSceneRenderRD::_setup_reflections(RenderDataRD *p_render_data, cons
 
 		Cluster::ReflectionData &reflection_ubo = cluster.reflections[i];
 
-		Vector3 extents = light_storage->reflection_probe_get_extents(base_probe);
+		Vector3 size = light_storage->reflection_probe_get_size(base_probe);
 
 		rpi->cull_mask = light_storage->reflection_probe_get_cull_mask(base_probe);
 
-		reflection_ubo.box_extents[0] = extents.x;
-		reflection_ubo.box_extents[1] = extents.y;
-		reflection_ubo.box_extents[2] = extents.z;
+		reflection_ubo.box_extents[0] = size.x;
+		reflection_ubo.box_extents[1] = size.y;
+		reflection_ubo.box_extents[2] = size.z;
 		reflection_ubo.index = rpi->atlas_index;
 
 		Vector3 origin_offset = light_storage->reflection_probe_get_origin_offset(base_probe);
@@ -2151,7 +2151,7 @@ void RendererSceneRenderRD::_setup_reflections(RenderDataRD *p_render_data, cons
 		RendererRD::MaterialStorage::store_transform(proj, reflection_ubo.local_matrix);
 
 		if (current_cluster_builder != nullptr) {
-			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_REFLECTION_PROBE, transform, extents);
+			current_cluster_builder->add_box(ClusterBuilderRD::BOX_TYPE_REFLECTION_PROBE, transform, size / 2);
 		}
 
 		rpi->last_pass = RSG::rasterizer->get_frame_number();

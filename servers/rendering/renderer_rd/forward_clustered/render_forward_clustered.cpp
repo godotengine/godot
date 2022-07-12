@@ -1817,8 +1817,8 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 	render_list[RENDER_LIST_SECONDARY].sort_by_key();
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	Vector3 half_extents = p_bounds.size * 0.5;
-	Vector3 center = p_bounds.position + half_extents;
+	Vector3 half_size = p_bounds.size * 0.5;
+	Vector3 center = p_bounds.position + half_size;
 
 	Vector<RID> sbs = {
 		p_albedo_texture,
@@ -1846,16 +1846,16 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 		fb_size.x = p_size[right_axis];
 		fb_size.y = p_size[up_axis];
 
-		scene_data.cam_transform.origin = center + axis * half_extents;
+		scene_data.cam_transform.origin = center + axis * half_size;
 		scene_data.cam_transform.basis.set_column(0, right);
 		scene_data.cam_transform.basis.set_column(1, up);
 		scene_data.cam_transform.basis.set_column(2, axis);
 
 		//print_line("pass: " + itos(i) + " xform " + scene_data.cam_transform);
 
-		float h_size = half_extents[right_axis];
-		float v_size = half_extents[up_axis];
-		float d_size = half_extents[i] * 2.0;
+		float h_size = half_size[right_axis];
+		float v_size = half_size[up_axis];
+		float d_size = half_size[i] * 2.0;
 		scene_data.cam_projection.set_orthogonal(-h_size, h_size, -v_size, v_size, 0, d_size);
 		//print_line("pass: " + itos(i) + " cam hsize: " + rtos(h_size) + " vsize: " + rtos(v_size) + " dsize " + rtos(d_size));
 

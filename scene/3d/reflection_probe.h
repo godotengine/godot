@@ -35,6 +35,7 @@
 
 class ReflectionProbe : public VisualInstance3D {
 	GDCLASS(ReflectionProbe, VisualInstance3D);
+	// Defaults for renderer: servers/rendering/renderer_rd/renderer_storage_rd.h, drivers/gles3/storage/light_storage.h
 
 public:
 	enum UpdateMode {
@@ -52,7 +53,7 @@ private:
 	RID probe;
 	float intensity = 1.0;
 	float max_distance = 0.0;
-	Vector3 extents = Vector3(10, 10, 10);
+	Vector3 size = Vector3(20, 20, 20);
 	Vector3 origin_offset = Vector3(0, 0, 0);
 	bool box_projection = false;
 	bool enable_shadows = false;
@@ -91,10 +92,10 @@ public:
 	void set_mesh_lod_threshold(float p_pixels);
 	float get_mesh_lod_threshold() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
-	void set_origin_offset(const Vector3 &p_extents);
+	void set_origin_offset(const Vector3 &p_offset);
 	Vector3 get_origin_offset() const;
 
 	void set_as_interior(bool p_enable);

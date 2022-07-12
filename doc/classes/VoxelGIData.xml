@@ -26,8 +26,8 @@
 		<method name="get_bounds" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns the bounds of the baked voxel data as an [AABB], which should match [member VoxelGI.extents] after being baked (which only contains the size as a [Vector3]).
-				[b]Note:[/b] If the extents were modified without baking the VoxelGI data, then the value of [method get_bounds] and [member VoxelGI.extents] will not match.
+				Returns the bounds of the baked voxel data as an [AABB], which should match [member VoxelGI.size] after being baked (which only contains the size as a [Vector3]).
+				[b]Note:[/b] If the size was modified without baking the VoxelGI data, then the value of [method get_bounds] and [member VoxelGI.size] will not match.
 			</description>
 		</method>
 		<method name="get_data_cells" qualifiers="const">

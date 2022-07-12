@@ -118,7 +118,7 @@ private:
 	RID voxel_gi;
 
 	Subdiv subdiv = SUBDIV_128;
-	Vector3 extents = Vector3(10, 10, 10);
+	Vector3 size = Vector3(20, 20, 20);
 	Ref<CameraAttributes> camera_attributes;
 
 	struct PlotMesh {
@@ -145,8 +145,8 @@ public:
 	void set_subdiv(Subdiv p_subdiv);
 	Subdiv get_subdiv() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
