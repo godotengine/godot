@@ -185,8 +185,16 @@ int AudioDriverManager::get_driver_count() {
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
 	GLOBAL_DEF_RST("audio/driver/mix_rate", DEFAULT_MIX_RATE);
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/driver/mix_rate",
+			PropertyInfo(Variant::INT,
+					"audio/driver/mix_rate",
+					PROPERTY_HINT_RANGE, "0,44100,1,or_greater,suffix:Hz")); // No negative numbers.
 	GLOBAL_DEF_RST("audio/driver/mix_rate.web", 0); // Safer default output_latency for web (use browser default).
 	GLOBAL_DEF_RST("audio/driver/output_latency", DEFAULT_OUTPUT_LATENCY);
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/driver/output_latency",
+			PropertyInfo(Variant::INT,
+					"audio/driver/output_latency",
+					PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:ms")); // No negative numbers.
 	GLOBAL_DEF_RST("audio/driver/output_latency.web", 50); // Safer default output_latency for web.
 
 	int failed_driver = -1;
@@ -1337,9 +1345,10 @@ void AudioServer::init_channels_and_buffers() {
 }
 
 void AudioServer::init() {
-	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
+	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold", -60.0);
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_threshold", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold", PROPERTY_HINT_NONE, "suffix:dB"));
 	channel_disable_frames = float(GLOBAL_DEF_RST("audio/buses/channel_disable_time", 2.0)) * get_mix_rate();
-	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/buses/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater,suffix:s"));
 	buffer_size = 512; //hardcoded for now
 
 	init_channels_and_buffers();
@@ -1356,7 +1365,8 @@ void AudioServer::init() {
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
 
-	GLOBAL_DEF_RST("audio/video/video_delay_compensation_ms", 0);
+	GLOBAL_DEF_RST("audio/video/video_delay_compensation", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/video/video_delay_compensation", PropertyInfo(Variant::INT, "audio/video/video_delay_compensation", PROPERTY_HINT_NONE, "suffix:ms"));
 }
 
 void AudioServer::update() {

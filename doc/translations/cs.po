@@ -31503,7 +31503,7 @@ msgid ""
 "select the item in question directly. Both of these actions will be reset to "
 "the beginning of the list if the timeout duration has passed since the last "
 "keystroke was registered. You can adjust the timeout duration by changing "
-"[member ProjectSettings.gui/timers/incremental_search_max_interval_msec]."
+"[member ProjectSettings.gui/timers/incremental_search_max_interval]."
 msgstr ""
 
 #: doc/classes/ItemList.xml
@@ -46398,7 +46398,7 @@ msgid ""
 "select the item in question directly. Both of these actions will be reset to "
 "the beginning of the list if the timeout duration has passed since the last "
 "keystroke was registered. You can adjust the timeout duration by changing "
-"[member ProjectSettings.gui/timers/incremental_search_max_interval_msec]."
+"[member ProjectSettings.gui/timers/incremental_search_max_interval]."
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
@@ -64066,7 +64066,7 @@ msgid ""
 "select the item in question directly. Both of these actions will be reset to "
 "the beginning of the list if the timeout duration has passed since the last "
 "keystroke was registered. You can adjust the timeout duration by changing "
-"[member ProjectSettings.gui/timers/incremental_search_max_interval_msec]."
+"[member ProjectSettings.gui/timers/incremental_search_max_interval]."
 msgstr ""
 
 #: doc/classes/Tree.xml

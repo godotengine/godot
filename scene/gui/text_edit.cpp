@@ -5451,8 +5451,8 @@ void TextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("gutter_removed"));
 
 	/* Settings. */
-	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
+	GLOBAL_DEF("gui/timers/text_edit_idle_detect", 3);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect", PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater,suffix:s")); // No negative numbers.
 	GLOBAL_DEF("gui/common/text_edit_undo_stack_max_size", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/common/text_edit_undo_stack_max_size", PropertyInfo(Variant::INT, "gui/common/text_edit_undo_stack_max_size", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
 }
@@ -6678,7 +6678,7 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	idle_detect = memnew(Timer);
 	add_child(idle_detect, false, INTERNAL_MODE_FRONT);
 	idle_detect->set_one_shot(true);
-	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
+	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect"));
 	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
 
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");

@@ -269,23 +269,22 @@
 			Debug build override for [member application/run/flush_stdout_on_print], as performance is less important during debugging.
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
-		<member name="application/run/frame_delay_msec" type="int" setter="" getter="" default="0">
+		<member name="application/run/frame_delay" type="int" setter="" getter="" default="0">
 			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
-		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
+		<member name="application/run/low_processor_mode_sleep" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
-		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
-			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+		<member name="audio/buses/channel_disable_threshold" type="float" setter="" getter="" default="-60.0">
 		</member>
 		<member name="audio/buses/channel_disable_time" type="float" setter="" getter="" default="2.0">
-			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+			Audio buses will disable automatically when sound goes below a given dB threshold for a given time (in seconds). This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
 		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
@@ -316,8 +315,8 @@
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="1.0">
 			The base strength of the panning effect for all AudioStreamPlayer3D nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength].
 		</member>
-		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
-			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
+		<member name="audio/video/video_delay_compensation" type="int" setter="" getter="" default="0">
+			Setting to hardcode audio delay when playing video (in milliseconds). Best to leave this untouched unless you know what you are doing.
 		</member>
 		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="" default="-1">
 			The default compression level for gzip. Affects compressed scenes and resources. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. [code]-1[/code] uses the default gzip compression level, which is identical to [code]6[/code] but could change in the future due to underlying zlib updates.
@@ -651,13 +650,13 @@
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
-		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
+		<member name="gui/timers/incremental_search_max_interval" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
 		</member>
-		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="" default="3">
+		<member name="gui/timers/text_edit_idle_detect" type="float" setter="" getter="" default="3">
 			Timer for detecting idle in [TextEdit] (in seconds).
 		</member>
-		<member name="gui/timers/tooltip_delay_sec" type="float" setter="" getter="" default="0.5">
+		<member name="gui/timers/tooltip_delay" type="float" setter="" getter="" default="0.5">
 			Default delay for tooltips (in seconds).
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
@@ -1402,8 +1401,8 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D render layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
-		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
-			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
+		<member name="memory/limits/message_queue/max_size" type="int" setter="" getter="" default="4096">
+			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size (in kiB) here.
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
@@ -1449,10 +1448,10 @@
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="" default="16">
 			Default size of packet peer stream for deserializing Godot data (in bytes, specified as a power of two). The default value [code]16[/code] is equal to 65,536 bytes. Over this size, data is dropped.
 		</member>
-		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
+		<member name="network/limits/tcp/connect_timeout" type="int" setter="" getter="" default="30">
 			Timeout (in seconds) for connection attempts using TCP.
 		</member>
-		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
+		<member name="network/limits/webrtc/max_channel_in_buffer" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="" default="4">
@@ -1812,7 +1811,7 @@
 		</member>
 		<member name="rendering/limits/spatial_indexer/update_iterations_per_frame" type="int" setter="" getter="" default="10">
 		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
+		<member name="rendering/limits/time/time_rollover" type="float" setter="" getter="" default="3600">
 		</member>
 		<member name="rendering/mesh_lod/lod_change/threshold_pixels" type="float" setter="" getter="" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [ReflectionProbe]. Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member rendering/mesh_lod/lod_change/threshold_pixels] to improve performance at the cost of geometry detail.
@@ -1974,11 +1973,11 @@
 		</member>
 		<member name="rendering/vulkan/rendering/back_end.mobile" type="int" setter="" getter="" default="1">
 		</member>
-		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
+		<member name="rendering/vulkan/staging_buffer/block_size" type="int" setter="" getter="" default="256">
 		</member>
-		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
+		<member name="rendering/vulkan/staging_buffer/max_size" type="int" setter="" getter="" default="128">
 		</member>
-		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.

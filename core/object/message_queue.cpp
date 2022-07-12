@@ -57,7 +57,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 		}
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -84,7 +84,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	if ((buffer_end + room_needed) >= buffer_size) {
 		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -119,7 +119,7 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 	if ((buffer_end + room_needed) >= buffer_size) {
 		print_line("Failed method: " + p_callable);
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -314,8 +314,8 @@ MessageQueue::MessageQueue() {
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
 	singleton = this;
 
-	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
-	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater"));
+	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size", DEFAULT_QUEUE_SIZE_KB);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater,suffix:kb"));
 	buffer_size *= 1024;
 	buffer = memnew_arr(uint8_t, buffer_size);
 }

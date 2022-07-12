@@ -1163,7 +1163,8 @@ static const char *csharp_signals_renames[][2] = {
 };
 
 static const char *project_settings_renames[][2] = {
-	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db" },
+	{ "application/run/frame_delay_msec", "application/run/frame_delay" },
+	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold" },
 	{ "audio/channel_disable_time", "audio/buses/channel_disable_time" },
 	{ "audio/default_bus_layout", "audio/buses/default_bus_layout" },
 	{ "audio/driver", "audio/driver/driver" },
@@ -1171,14 +1172,16 @@ static const char *project_settings_renames[][2] = {
 	{ "audio/mix_rate", "audio/driver/mix_rate" },
 	{ "audio/output_latency", "audio/driver/output_latency" },
 	{ "audio/output_latency.web", "audio/driver/output_latency.web" },
-	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation_ms" },
+	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation" },
 	{ "display/window/vsync/use_vsync", "display/window/vsync/vsync_mode" },
 	{ "editor/main_run_args", "editor/run/main_run_args" },
 	{ "gui/common/swap_ok_cancel", "gui/common/swap_cancel_ok" },
+	{ "network/limits/tcp/connect_timeout_seconds", "network/limits/tcp/connect_timeout" },
 	{ "network/limits/debugger_stdout/max_chars_per_second", "network/limits/debugger/max_chars_per_second" },
 	{ "network/limits/debugger_stdout/max_errors_per_second", "network/limits/debugger/max_errors_per_second" },
 	{ "network/limits/debugger_stdout/max_messages_per_frame", "network/limits/debugger/max_queued_messages" },
 	{ "network/limits/debugger_stdout/max_warnings_per_second", "network/limits/debugger/max_warnings_per_second" },
+	{ "network/limits/webrtc/max_channel_in_buffer_kb", "network/limits/webrtc/max_channel_in_buffer" },
 	{ "network/ssl/certificates", "network/ssl/certificate_bundle_override" },
 	{ "physics/2d/thread_model", "physics/2d/run_on_thread" }, // TODO not sure
 	{ "rendering/environment/default_clear_color", "rendering/environment/defaults/default_clear_color" },
@@ -1958,7 +1961,7 @@ bool ProjectConverter3To4::test_conversion() {
 
 	valid = valid & test_conversion_single_normal("TextEntered", "TextSubmitted", csharp_signals_renames, "csharp signal");
 
-	valid = valid & test_conversion_single_normal("audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db", project_settings_renames, "project setting");
+	valid = valid & test_conversion_single_normal("audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold", project_settings_renames, "project setting");
 
 	valid = valid & test_conversion_single_normal("Transform", "Transform3D", builtin_types_renames, "builtin type");
 

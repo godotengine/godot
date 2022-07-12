@@ -1447,7 +1447,7 @@ SceneTree::SceneTree() {
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
 	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384,suffix:px"));
 	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
 	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
 	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);

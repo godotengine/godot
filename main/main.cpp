@@ -1531,7 +1531,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps",
 			PropertyInfo(Variant::INT,
 					"debug/settings/fps/force_fps",
-					PROPERTY_HINT_RANGE, "0,1000,1"));
+					PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
@@ -1542,29 +1542,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (frame_delay == 0) {
-		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
-		ProjectSettings::get_singleton()->set_custom_property_info("application/run/frame_delay_msec",
+		frame_delay = GLOBAL_DEF("application/run/frame_delay", 0);
+		ProjectSettings::get_singleton()->set_custom_property_info("application/run/frame_delay",
 				PropertyInfo(Variant::INT,
-						"application/run/frame_delay_msec",
+						"application/run/frame_delay",
 						PROPERTY_HINT_RANGE,
-						"0,100,1,or_greater")); // No negative numbers
+						"0,100,1,or_greater,suffix:ms")); // No negative numbers
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
-			GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
-	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec",
+			GLOBAL_DEF("application/run/low_processor_mode_sleep", 6900)); // Roughly 144 FPS
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep",
 			PropertyInfo(Variant::INT,
-					"application/run/low_processor_mode_sleep_usec",
+					"application/run/low_processor_mode_sleep",
 					PROPERTY_HINT_RANGE,
-					"0,33200,1,or_greater")); // No negative numbers
+					String::utf8("0,33200,1,or_greater,suffix:μs"))); // No negative numbers
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
 	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
 			PropertyInfo(Variant::FLOAT,
 					"input_devices/pointing/ios/touch_delay",
-					PROPERTY_HINT_RANGE, "0,1,0.001"));
+					PROPERTY_HINT_RANGE, "0,1,0.001,suffix:s"));
 
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
@@ -2040,6 +2040,14 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
+	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image_hotspot",
+			PropertyInfo(Variant::VECTOR2,
+					"display/mouse_cursor/custom_image_hotspot",
+					PROPERTY_HINT_NONE, "suffix:px"));
+	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/tooltip_position_offset",
+			PropertyInfo(Variant::VECTOR2,
+					"display/mouse_cursor/tooltip_position_offset",
+					PROPERTY_HINT_NONE, "suffix:px"));
 	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image",
 			PropertyInfo(Variant::STRING,
 					"display/mouse_cursor/custom_image",

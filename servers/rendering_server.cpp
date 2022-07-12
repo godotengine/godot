@@ -2835,12 +2835,12 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/textures/lossless_compression/webp_compression_level", 2);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/textures/lossless_compression/webp_compression_level", PropertyInfo(Variant::INT, "rendering/textures/lossless_compression/webp_compression_level", PROPERTY_HINT_RANGE, "0,9,1"));
 
-	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
+	GLOBAL_DEF("rendering/limits/time/time_rollover", 3600);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover", PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,suffix:s"));
 
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384,suffix:px"));
 	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
@@ -2851,6 +2851,7 @@ void RenderingServer::init() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/2d/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/2d/shadow_atlas/size", PROPERTY_HINT_RANGE, "0,16384,or_greater,suffix:px"));
 
 	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end", 0);
 	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end.mobile", 1);
@@ -2860,9 +2861,12 @@ void RenderingServer::init() {
 					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 	// Already defined in RenderingDeviceVulkan::initialize which runs before this code.
 	// We re-define them here just for doctool's sake. Make sure to keep default values in sync.
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size_mb", 128);
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size", 256);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/staging_buffer/block_size", PropertyInfo(Variant::INT, "rendering/vulkan/staging_buffer/block_size", PROPERTY_HINT_RANGE, "0,16384,1,or_greater,suffix:kb"));
+	GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size", 128);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/staging_buffer/max_size", PropertyInfo(Variant::INT, "rendering/vulkan/staging_buffer/max_size", PROPERTY_HINT_RANGE, "0,1024,1,or_greater,suffix:mb"));
+	GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size", 64);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/staging_buffer/texture_upload_region_size", PropertyInfo(Variant::INT, "rendering/vulkan/staging_buffer/texture_upload_region_size", PROPERTY_HINT_RANGE, "0,4096,1,or_greater,suffix:px"));
 	GLOBAL_DEF("rendering/vulkan/descriptor_pools/max_descriptors_per_pool", 64);
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
