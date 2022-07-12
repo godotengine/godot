@@ -1603,7 +1603,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			WindowData &parent_wd = wls.windows[wd.parent];
 
 			wd.xdg_positioner = xdg_wm_base_create_positioner(wls.globals.xdg_wm_base);
-			xdg_positioner_set_size(wd.xdg_positioner, wd.rect.size.x, wd.rect.size.y);
+			xdg_positioner_set_size(wd.xdg_positioner, wd.rect.size.width, wd.rect.size.height);
 			xdg_positioner_set_gravity(wd.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
 			xdg_positioner_set_anchor(wd.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
 			xdg_positioner_set_anchor_rect(wd.xdg_positioner, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
