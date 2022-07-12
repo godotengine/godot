@@ -150,7 +150,15 @@ void EditorDirDialog::_make_dir_confirm() {
 
 	DirAccessRef d = DirAccess::open(dir);
 	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
-	Error err = d->make_dir(makedirname->get_text());
+
+	String dir_name = makedirname->get_text();
+	if (dir_name.begins_with(".")) {
+		mkdirerr->set_text(TTR("Could not use a name with a leading dot."));
+		mkdirerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		return;
+	}
+
+	Error err = d->make_dir(dir_name);
 
 	if (err != OK) {
 		mkdirerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);

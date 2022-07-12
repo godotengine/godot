@@ -1083,9 +1083,16 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 }
 
 void EditorFileDialog::_make_dir_confirm() {
-	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
+	String dir_name = makedirname->get_text().strip_edges();
+	if (dir_name.begins_with(".")) {
+		mkdirerr->set_text(TTR("Could not use a name with a leading dot."));
+		mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
+		return;
+	}
+
+	Error err = dir_access->make_dir(dir_name);
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text().strip_edges());
+		dir_access->change_dir(dir_name);
 		invalidate();
 		update_filters();
 		update_dir();
