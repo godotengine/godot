@@ -33,6 +33,9 @@
 
 #include "core/object/ref_counted.h"
 
+#include "multiplayer_spawner.h"
+#include "multiplayer_synchronizer.h"
+
 class MultiplayerSpawner;
 class MultiplayerSynchronizer;
 class Node;

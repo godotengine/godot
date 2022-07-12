@@ -62,11 +62,11 @@ int MultiplayerPeer::get_transfer_channel() const {
 	return transfer_channel;
 }
 
-void MultiplayerPeer::set_transfer_mode(Multiplayer::TransferMode p_mode) {
+void MultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
 
-Multiplayer::TransferMode MultiplayerPeer::get_transfer_mode() const {
+MultiplayerPeer::TransferMode MultiplayerPeer::get_transfer_mode() const {
 	return transfer_mode;
 }
 
@@ -106,6 +106,10 @@ void MultiplayerPeer::_bind_methods() {
 
 	BIND_CONSTANT(TARGET_PEER_BROADCAST);
 	BIND_CONSTANT(TARGET_PEER_SERVER);
+
+	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE);
+	BIND_ENUM_CONSTANT(TRANSFER_MODE_UNRELIABLE_ORDERED);
+	BIND_ENUM_CONSTANT(TRANSFER_MODE_RELIABLE);
 
 	ADD_SIGNAL(MethodInfo("peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_disconnected", PropertyInfo(Variant::INT, "id")));
@@ -191,17 +195,17 @@ int MultiplayerPeerExtension::get_transfer_channel() const {
 	return MultiplayerPeer::get_transfer_channel();
 }
 
-void MultiplayerPeerExtension::set_transfer_mode(Multiplayer::TransferMode p_mode) {
+void MultiplayerPeerExtension::set_transfer_mode(TransferMode p_mode) {
 	if (GDVIRTUAL_CALL(_set_transfer_mode, p_mode)) {
 		return;
 	}
 	MultiplayerPeer::set_transfer_mode(p_mode);
 }
 
-Multiplayer::TransferMode MultiplayerPeerExtension::get_transfer_mode() const {
+MultiplayerPeer::TransferMode MultiplayerPeerExtension::get_transfer_mode() const {
 	int mode;
 	if (GDVIRTUAL_CALL(_get_transfer_mode, mode)) {
-		return (Multiplayer::TransferMode)mode;
+		return (MultiplayerPeer::TransferMode)mode;
 	}
 	return MultiplayerPeer::get_transfer_mode();
 }

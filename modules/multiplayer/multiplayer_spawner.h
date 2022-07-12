@@ -36,7 +36,8 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/scene_replication_config.h"
+
+#include "scene_replication_config.h"
 
 class MultiplayerSpawner : public Node {
 	GDCLASS(MultiplayerSpawner, Node);

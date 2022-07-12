@@ -32,7 +32,6 @@
 #define MULTIPLAYER_PEER_H
 
 #include "core/io/packet_peer.h"
-#include "core/multiplayer/multiplayer.h"
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
@@ -41,12 +40,19 @@
 class MultiplayerPeer : public PacketPeer {
 	GDCLASS(MultiplayerPeer, PacketPeer);
 
+public:
+	enum TransferMode {
+		TRANSFER_MODE_UNRELIABLE,
+		TRANSFER_MODE_UNRELIABLE_ORDERED,
+		TRANSFER_MODE_RELIABLE
+	};
+
 protected:
 	static void _bind_methods();
 
 private:
 	int transfer_channel = 0;
-	Multiplayer::TransferMode transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
+	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
 	bool refuse_connections = false;
 
 public:
@@ -63,8 +69,8 @@ public:
 
 	virtual void set_transfer_channel(int p_channel);
 	virtual int get_transfer_channel() const;
-	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode);
-	virtual Multiplayer::TransferMode get_transfer_mode() const;
+	virtual void set_transfer_mode(TransferMode p_mode);
+	virtual TransferMode get_transfer_mode() const;
 	virtual void set_refuse_new_connections(bool p_enable);
 	virtual bool is_refusing_new_connections() const;
 
@@ -86,6 +92,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(MultiplayerPeer::ConnectionStatus);
+VARIANT_ENUM_CAST(MultiplayerPeer::TransferMode);
 
 class MultiplayerPeerExtension : public MultiplayerPeer {
 	GDCLASS(MultiplayerPeerExtension, MultiplayerPeer);
@@ -105,8 +112,8 @@ public:
 	/* MultiplayerPeer */
 	virtual void set_transfer_channel(int p_channel) override;
 	virtual int get_transfer_channel() const override;
-	virtual void set_transfer_mode(Multiplayer::TransferMode p_mode) override;
-	virtual Multiplayer::TransferMode get_transfer_mode() const override;
+	virtual void set_transfer_mode(TransferMode p_mode) override;
+	virtual TransferMode get_transfer_mode() const override;
 	virtual void set_target_peer(int p_peer_id) override;
 
 	virtual int get_packet_peer() const override;

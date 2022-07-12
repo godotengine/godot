@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  multiplayer.h                                                        */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MULTIPLAYER_H
-#define MULTIPLAYER_H
+#include "register_types.h"
 
-#include "core/variant/binder_common.h"
+#include "multiplayer_spawner.h"
+#include "multiplayer_synchronizer.h"
+#include "scene_multiplayer.h"
+#include "scene_replication_interface.h"
+#include "scene_rpc_interface.h"
 
-#include "core/string/string_name.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_plugin.h"
+#include "editor/replication_editor_plugin.h"
+#endif
 
-namespace Multiplayer {
-
-enum TransferMode {
-	TRANSFER_MODE_UNRELIABLE,
-	TRANSFER_MODE_UNRELIABLE_ORDERED,
-	TRANSFER_MODE_RELIABLE
-};
-
-enum RPCMode {
-	RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-	RPC_MODE_ANY_PEER, // Any peer can call this RPC
-	RPC_MODE_AUTHORITY, // Only the node's multiplayer authority (server by default) can call this RPC
-};
-
-struct RPCConfig {
-	StringName name;
-	RPCMode rpc_mode = RPC_MODE_DISABLED;
-	bool call_local = false;
-	TransferMode transfer_mode = TRANSFER_MODE_RELIABLE;
-	int channel = 0;
-
-	bool operator==(RPCConfig const &p_other) const {
-		return name == p_other.name;
+void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(SceneReplicationConfig);
+		GDREGISTER_CLASS(MultiplayerSpawner);
+		GDREGISTER_CLASS(MultiplayerSynchronizer);
+		GDREGISTER_CLASS(SceneMultiplayer);
+		MultiplayerAPI::set_default_interface("SceneMultiplayer");
 	}
-};
-
-struct SortRPCConfig {
-	StringName::AlphCompare compare;
-	bool operator()(const RPCConfig &p_a, const RPCConfig &p_b) const {
-		return compare(p_a.name, p_b.name);
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<ReplicationEditorPlugin>();
 	}
-};
+#endif
+}
 
-}; // namespace Multiplayer
-
-// This is needed for proper docs generation (i.e. not "Multiplayer."-prefixed).
-typedef Multiplayer::RPCMode RPCMode;
-typedef Multiplayer::TransferMode TransferMode;
-
-VARIANT_ENUM_CAST(RPCMode);
-VARIANT_ENUM_CAST(TransferMode);
-
-#endif // MULTIPLAYER_H
+void uninitialize_multiplayer_module(ModuleInitializationLevel p_level) {
+}

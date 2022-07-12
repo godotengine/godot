@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_multiplayer_peer.h                                         */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,73 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_MULTIPLAYER_PEER_H
-#define WEBSOCKET_MULTIPLAYER_PEER_H
+#ifndef MULTIPLAYER_REGISTER_TYPES_H
+#define MULTIPLAYER_REGISTER_TYPES_H
 
-#include "core/error/error_list.h"
-#include "core/templates/list.h"
-#include "scene/main/multiplayer_peer.h"
-#include "websocket_peer.h"
+#include "modules/register_module_types.h"
 
-class WebSocketMultiplayerPeer : public MultiplayerPeer {
-	GDCLASS(WebSocketMultiplayerPeer, MultiplayerPeer);
+void initialize_multiplayer_module(ModuleInitializationLevel p_level);
+void uninitialize_multiplayer_module(ModuleInitializationLevel p_level);
 
-private:
-	Vector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
-	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
-	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
-
-protected:
-	enum {
-		SYS_NONE = 0,
-		SYS_ADD = 1,
-		SYS_DEL = 2,
-		SYS_ID = 3,
-
-		PROTO_SIZE = 9
-	};
-
-	struct Packet {
-		int source = 0;
-		int destination = 0;
-		uint8_t *data = nullptr;
-		uint32_t size = 0;
-	};
-
-	List<Packet> _incoming_packets;
-	HashMap<int, Ref<WebSocketPeer>> _peer_map;
-	Packet _current_packet;
-
-	bool _is_multiplayer = false;
-	int _target_peer = 0;
-	int _peer_id = 0;
-
-	static void _bind_methods();
-
-	void _send_add(int32_t p_peer_id);
-	void _send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_type, int32_t p_peer_id);
-	void _send_del(int32_t p_peer_id);
-
-public:
-	/* MultiplayerPeer */
-	void set_target_peer(int p_target_peer) override;
-	int get_packet_peer() const override;
-	int get_unique_id() const override;
-
-	/* PacketPeer */
-	virtual int get_available_packet_count() const override;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-
-	/* WebSocketPeer */
-	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
-	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const = 0;
-
-	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);
-	void _clear();
-
-	WebSocketMultiplayerPeer();
-	~WebSocketMultiplayerPeer();
-};
-
-#endif // WEBSOCKET_MULTIPLAYER_PEER_H
+#endif // MULTIPLAYER_REGISTER_TYPES_H

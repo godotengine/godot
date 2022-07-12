@@ -622,7 +622,7 @@
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
@@ -630,18 +630,24 @@
 			</description>
 		</method>
 		<method name="rpc_config">
-			<return type="int" />
+			<return type="void" />
 			<argument index="0" name="method" type="StringName" />
-			<argument index="1" name="rpc_mode" type="int" enum="RPCMode" />
-			<argument index="2" name="call_local" type="bool" default="false" />
-			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
-			<argument index="4" name="channel" type="int" default="0" />
+			<argument index="1" name="config" type="Variant" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] with the given [code]config[/code] which should be [code]null[/code] (to disable) or a [Dictionary] in the form:
+				[codeblock]
+				{
+				    rpc_mode = MultiplayerAPI.RPCMode,
+				    transfer_mode = MultiplayerPeer.TranferMode,
+				    call_local = false,
+				    channel = 0,
+				}
+				[/codeblock]
+				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="method" type="StringName" />
 			<description>

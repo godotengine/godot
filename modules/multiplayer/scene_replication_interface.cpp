@@ -32,20 +32,14 @@
 
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
-#include "scene/multiplayer/multiplayer_spawner.h"
-#include "scene/multiplayer/multiplayer_synchronizer.h"
+
+#include "multiplayer_spawner.h"
+#include "multiplayer_synchronizer.h"
+#include "scene_multiplayer.h"
 
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
-
-MultiplayerReplicationInterface *SceneReplicationInterface::_create(MultiplayerAPI *p_multiplayer) {
-	return memnew(SceneReplicationInterface(p_multiplayer));
-}
-
-void SceneReplicationInterface::make_default() {
-	MultiplayerAPI::create_default_replication_interface = _create;
-}
 
 void SceneReplicationInterface::_free_remotes(int p_id) {
 	const HashMap<uint32_t, ObjectID> remotes = rep_state->peer_get_remotes(p_id);
@@ -239,7 +233,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		_make_spawn_packet(node, len);
 		for (int pid : to_spawn) {
 			int path_id;
-			multiplayer->send_object_cache(spawner, pid, path_id);
+			multiplayer->get_path_cache()->send_object_cache(spawner, pid, path_id);
 			_send_raw(packet_cache.ptr(), len, pid, true);
 			rep_state->peer_add_spawn(pid, p_oid);
 		}
@@ -267,7 +261,7 @@ Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, 
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	peer->set_target_peer(p_peer);
 	peer->set_transfer_channel(0);
-	peer->set_transfer_mode(p_reliable ? Multiplayer::TRANSFER_MODE_RELIABLE : Multiplayer::TRANSFER_MODE_UNRELIABLE);
+	peer->set_transfer_mode(p_reliable ? MultiplayerPeer::TRANSFER_MODE_RELIABLE : MultiplayerPeer::TRANSFER_MODE_UNRELIABLE);
 	return peer->put_packet(p_buffer, p_size);
 }
 
@@ -306,12 +300,12 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, int &r_len) {
 	}
 
 	// Encode scene ID, path ID, net ID, node name.
-	int path_id = multiplayer->make_object_cache(spawner);
+	int path_id = multiplayer->get_path_cache()->make_object_cache(spawner);
 	CharString cname = p_node->get_name().operator String().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = (uint8_t)MultiplayerAPI::NETWORK_COMMAND_SPAWN;
+	ptr[0] = (uint8_t)SceneMultiplayer::NETWORK_COMMAND_SPAWN;
 	ptr[1] = scene_id;
 	int ofs = 2;
 	ofs += encode_uint32(path_id, &ptr[ofs]);
@@ -339,7 +333,7 @@ Error SceneReplicationInterface::_make_despawn_packet(Node *p_node, int &r_len) 
 	const ObjectID oid = p_node->get_instance_id();
 	MAKE_ROOM(5);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = (uint8_t)MultiplayerAPI::NETWORK_COMMAND_DESPAWN;
+	ptr[0] = (uint8_t)SceneMultiplayer::NETWORK_COMMAND_DESPAWN;
 	int ofs = 1;
 	uint32_t nid = rep_state->get_net_id(oid);
 	ofs += encode_uint32(nid, &ptr[ofs]);
@@ -354,7 +348,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 1;
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_cached_object(p_from, node_target));
+	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_path_cache()->get_cached_object(p_from, node_target));
 	ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
@@ -431,7 +425,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 	}
 	MAKE_ROOM(sync_mtu);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = MultiplayerAPI::NETWORK_COMMAND_SYNC;
+	ptr[0] = SceneMultiplayer::NETWORK_COMMAND_SYNC;
 	int ofs = 1;
 	ofs += encode_uint16(rep_state->peer_sync_next(p_peer), &ptr[1]);
 	// Can only send updates for already notified nodes.
@@ -447,7 +441,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 		uint32_t net_id = rep_state->get_net_id(oid);
 		if (net_id == 0 || (net_id & 0x80000000)) {
 			int path_id = 0;
-			bool verified = multiplayer->send_object_cache(sync, p_peer, path_id);
+			bool verified = multiplayer->get_path_cache()->send_object_cache(sync, p_peer, path_id);
 			ERR_CONTINUE_MSG(path_id < 0, "This should never happen!");
 			if (net_id == 0) {
 				// First time path based ID.
@@ -499,7 +493,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		ofs += 4;
 		Node *node = nullptr;
 		if (net_id & 0x80000000) {
-			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_cached_object(p_from, net_id & 0x7FFFFFFF));
+			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_from, net_id & 0x7FFFFFFF));
 			ERR_FAIL_COND_V(!sync || sync->get_multiplayer_authority() != p_from, ERR_UNAUTHORIZED);
 			node = sync->get_node(sync->get_root_path());
 		} else {
