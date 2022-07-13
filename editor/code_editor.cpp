@@ -332,7 +332,7 @@ void FindReplaceBar::_update_results_count() {
 
 		if (results_count_to_current > results_count) {
 			results_count_to_current = results_count_to_current - results_count;
-		} else if (results_count_to_current == 0) {
+		} else if (results_count_to_current <= 0) {
 			results_count_to_current = results_count;
 		}
 
