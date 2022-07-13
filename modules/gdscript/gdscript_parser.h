@@ -1301,6 +1301,12 @@ private:
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
+	List<Node *> nodes_in_progress;
+	void complete_extents(Node *p_node);
+	void update_extents(Node *p_node);
+	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
+	void reset_extents(Node *p_node, Node *p_from);
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
@@ -1308,13 +1314,8 @@ private:
 		node->next = list;
 		list = node;
 
-		// TODO: Properly set positions for all nodes.
-		node->start_line = previous.start_line;
-		node->end_line = previous.end_line;
-		node->start_column = previous.start_column;
-		node->end_column = previous.end_column;
-		node->leftmost_column = previous.leftmost_column;
-		node->rightmost_column = previous.rightmost_column;
+		reset_extents(node, previous);
+		nodes_in_progress.push_back(node);
 
 		return node;
 	}
