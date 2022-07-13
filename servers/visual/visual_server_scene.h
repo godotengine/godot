@@ -311,6 +311,8 @@ public:
 		AABB aabb;
 		AABB transformed_aabb;
 		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
+		float sorting_offset;
+		bool use_aabb_center;
 		float extra_margin;
 		uint32_t object_id;
 
@@ -371,6 +373,8 @@ public:
 			base_data = nullptr;
 
 			custom_aabb = nullptr;
+			sorting_offset = 0.0f;
+			use_aabb_center = false;
 		}
 
 		~Instance() {
@@ -614,6 +618,7 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
+	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
 	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
 	virtual void instance_reset_physics_interpolation(RID p_instance);
