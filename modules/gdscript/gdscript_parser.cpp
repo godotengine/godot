@@ -1862,7 +1862,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 
 #ifdef DEBUG_ENABLED
-		if (have_wildcard_without_continue) {
+		if (have_wildcard_without_continue && !branch->patterns.is_empty()) {
 			push_warning(branch->patterns[0], GDScriptWarning::UNREACHABLE_PATTERN);
 		}
 
