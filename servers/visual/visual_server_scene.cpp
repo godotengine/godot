@@ -792,6 +792,14 @@ void VisualServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 	instance->layer_mask = p_mask;
 }
 
+void VisualServerScene::instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->sorting_offset = p_sorting_offset;
+	instance->use_aabb_center = p_use_aabb_center;
+}
+
 void VisualServerScene::instance_reset_physics_interpolation(RID p_instance) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -3267,11 +3275,14 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		Instance *ins = instance_cull_result[i];
 
 		if (((1 << ins->base_type) & VS::INSTANCE_GEOMETRY_MASK) && ins->visible && ins->cast_shadows != VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
-			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
+			Vector3 center = ins->transform.origin;
+			if (ins->use_aabb_center) {
+				center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
+			}
 			if (p_cam_orthogonal) {
-				ins->depth = near_plane.distance_to(aabb_center);
+				ins->depth = near_plane.distance_to(center) - ins->sorting_offset;
 			} else {
-				ins->depth = p_cam_transform.origin.distance_to(aabb_center);
+				ins->depth = p_cam_transform.origin.distance_to(center) - ins->sorting_offset;
 			}
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}

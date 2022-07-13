@@ -180,6 +180,24 @@ bool VisualInstance::get_layer_mask_bit(int p_layer) const {
 	return (layers & (1 << p_layer));
 }
 
+void VisualInstance::set_sorting_offset(float p_offset) {
+	sorting_offset = p_offset;
+	VisualServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+float VisualInstance::get_sorting_offset() {
+	return sorting_offset;
+}
+
+void VisualInstance::set_sorting_use_aabb_center(bool p_enabled) {
+	sorting_use_aabb_center = p_enabled;
+	VisualServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+bool VisualInstance::is_sorting_use_aabb_center() {
+	return sorting_use_aabb_center;
+}
+
 void VisualInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"), &VisualInstance::_get_visual_instance_rid);
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance::set_base);
@@ -190,8 +208,16 @@ void VisualInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enabled"), &VisualInstance::set_layer_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_bit", "layer"), &VisualInstance::get_layer_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
+	ClassDB::bind_method(D_METHOD("set_sorting_offset", "offset"), &VisualInstance::set_sorting_offset);
+	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance::get_sorting_offset);
+	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance::set_sorting_use_aabb_center);
+	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance::is_sorting_use_aabb_center);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
+
+	ADD_GROUP("Sorting", "sorting_");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance::set_base(const RID &p_base) {
@@ -207,6 +233,8 @@ VisualInstance::VisualInstance() {
 	instance = RID_PRIME(VisualServer::get_singleton()->instance_create());
 	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
+	sorting_offset = 0.0f;
+	sorting_use_aabb_center = true;
 	set_notify_transform(true);
 }
 
