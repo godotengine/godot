@@ -4717,7 +4717,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_create_dialog = memnew(ConfirmationDialog);
 	function_create_dialog->set_title(TTR("Create Function"));
 	function_create_dialog->add_child(function_vb);
-	function_create_dialog->get_ok_button()->set_text(TTR("Create"));
+	function_create_dialog->set_ok_button_text(TTR("Create"));
 	function_create_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualScriptEditor::_create_function));
 	add_child(function_create_dialog);
 
@@ -4761,7 +4761,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("connection_to_empty", callable_mp(this, &VisualScriptEditor::_graph_connect_to_empty));
 
 	edit_signal_dialog = memnew(AcceptDialog);
-	edit_signal_dialog->get_ok_button()->set_text(TTR("Close"));
+	edit_signal_dialog->set_ok_button_text(TTR("Close"));
 	add_child(edit_signal_dialog);
 
 	signal_editor = memnew(VisualScriptEditorSignalEdit);
@@ -4771,7 +4771,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_edit->edit(signal_editor);
 
 	edit_variable_dialog = memnew(AcceptDialog);
-	edit_variable_dialog->get_ok_button()->set_text(TTR("Close"));
+	edit_variable_dialog->set_ok_button_text(TTR("Close"));
 	add_child(edit_variable_dialog);
 
 	variable_editor = memnew(VisualScriptEditorVariableEdit);

@@ -270,7 +270,7 @@ void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
 void ShaderCreateDialog::_browse_path() {
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_browse->set_title(TTR("Open Shader / Choose Location"));
-	file_browse->get_ok_button()->set_text(TTR("Open"));
+	file_browse->set_ok_button_text(TTR("Open"));
 
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
@@ -469,20 +469,20 @@ void ShaderCreateDialog::_update_dialog() {
 	builtin_warning_label->set_visible(is_built_in);
 
 	if (is_built_in) {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		_msg_path_valid(true, TTR("Built-in shader (into scene file)."));
 	} else if (is_new_shader_created) {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will create a new shader file."));
 		}
 	} else if (load_enabled) {
-		get_ok_button()->set_text(TTR("Load"));
+		set_ok_button_text(TTR("Load"));
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will load an existing shader file."));
 		}
 	} else {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		_msg_path_valid(false, TTR("Shader file already exists."));
 
 		shader_ok = false;
@@ -638,7 +638,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);
 
-	get_ok_button()->set_text(TTR("Create"));
+	set_ok_button_text(TTR("Create"));
 	set_hide_on_ok(false);
 
 	set_title(TTR("Create Shader"));

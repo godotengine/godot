@@ -810,7 +810,7 @@ void ExportTemplateManager::_bind_methods() {
 ExportTemplateManager::ExportTemplateManager() {
 	set_title(TTR("Export Template Manager"));
 	set_hide_on_ok(false);
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").

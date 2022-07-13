@@ -1195,13 +1195,13 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
-	delete_confirm->get_ok_button()->set_text(TTR("Delete"));
+	delete_confirm->set_ok_button_text(TTR("Delete"));
 	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
 
-	get_cancel_button()->set_text(TTR("Close"));
-	get_ok_button()->set_text(TTR("Export PCK/ZIP..."));
+	set_cancel_button_text(TTR("Close"));
+	set_ok_button_text(TTR("Export PCK/ZIP..."));
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset

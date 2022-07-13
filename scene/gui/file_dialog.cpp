@@ -419,10 +419,10 @@ void FileDialog::deselect_all() {
 		switch (mode) {
 			case FILE_MODE_OPEN_FILE:
 			case FILE_MODE_OPEN_FILES:
-				get_ok_button()->set_text(RTR("Open"));
+				set_ok_button_text(RTR("Open"));
 				break;
 			case FILE_MODE_OPEN_DIR:
-				get_ok_button()->set_text(RTR("Select Current Folder"));
+				set_ok_button_text(RTR("Select Current Folder"));
 				break;
 			case FILE_MODE_OPEN_ANY:
 			case FILE_MODE_SAVE_FILE:
@@ -446,7 +446,7 @@ void FileDialog::_tree_selected() {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 	} else if (mode == FILE_MODE_OPEN_DIR) {
-		get_ok_button()->set_text(RTR("Select This Folder"));
+		set_ok_button_text(RTR("Select This Folder"));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -768,35 +768,35 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open File(s)"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(RTR("Select Current Folder"));
+			set_ok_button_text(RTR("Select Current Folder"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File or Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
-			get_ok_button()->set_text(RTR("Save"));
+			set_ok_button_text(RTR("Save"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Save a File"));
 			}

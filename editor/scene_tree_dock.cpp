@@ -3535,7 +3535,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
+	clear_inherit_confirm->set_ok_button_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);

@@ -1363,6 +1363,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	import_settings_data.instantiate();
 	import_settings_data->owner = this;
 
-	get_ok_button()->set_text(TTR("Reimport"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Reimport"));
+	set_cancel_button_text(TTR("Close"));
 }

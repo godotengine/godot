@@ -3781,7 +3781,7 @@ void EditorInspector::_show_add_meta_dialog() {
 			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
 		}
 		hbc->add_child(add_meta_type);
-		add_meta_dialog->get_ok_button()->set_text(TTR("Add"));
+		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
