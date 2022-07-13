@@ -1188,7 +1188,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			file_dialog->clear_filters();
 			for (const String &E : textfile_extensions) {
-				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
+				file_dialog->add_filter("*." + E, E.to_upper());
 			}
 			file_dialog->popup_file_dialog();
 			file_dialog->set_title(TTR("New Text File..."));
@@ -1203,11 +1203,11 @@ void ScriptEditor::_menu_option(int p_option) {
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 			file_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			for (const String &E : textfile_extensions) {
-				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
+				file_dialog->add_filter("*." + E, E.to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
