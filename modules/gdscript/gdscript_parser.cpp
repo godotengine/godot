@@ -1680,6 +1680,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					lambda_ended = true;
 					has_ended_lambda = true;
 				} else {
+					advance();
 					push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
 				}
 			}
