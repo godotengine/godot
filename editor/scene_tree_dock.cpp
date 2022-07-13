@@ -3534,7 +3534,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu_properties->connect("id_pressed", callable_mp(this, &SceneTreeDock::_property_selected));
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
-	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
+	clear_inherit_confirm->set_text(TTR("Clear inheritance? (NO UNDO)"));
 	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
