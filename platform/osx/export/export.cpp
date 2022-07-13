@@ -1582,8 +1582,10 @@ EditorExportPlatformOSX::~EditorExportPlatformOSX() {
 }
 
 void register_osx_exporter() {
+#ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/macos/force_builtin_codesign", false);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::BOOL, "export/macos/force_builtin_codesign", PROPERTY_HINT_NONE));
+#endif
 
 	Ref<EditorExportPlatformOSX> platform;
 	platform.instance();

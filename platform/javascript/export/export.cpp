@@ -1020,6 +1020,7 @@ EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 }
 
 void register_javascript_exporter() {
+#ifndef ANDROID_ENABLED
 	EDITOR_DEF("export/web/http_host", "localhost");
 	EDITOR_DEF("export/web/http_port", 8060);
 	EDITOR_DEF("export/web/use_ssl", false);
@@ -1028,6 +1029,7 @@ void register_javascript_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_key", PROPERTY_HINT_GLOBAL_FILE, "*.key"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/web/ssl_certificate", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
+#endif
 
 	Ref<EditorExportPlatformJavaScript> platform;
 	platform.instance();
