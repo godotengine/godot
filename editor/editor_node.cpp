@@ -4589,8 +4589,14 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 			names += name;
 		}
 
+		String config_key = "dock_" + itos(i + 1);
+
+		if (p_layout->has_section_key(p_section, config_key)) {
+			p_layout->erase_section_key(p_section, config_key);
+		}
+
 		if (!names.is_empty()) {
-			p_layout->set_value(p_section, "dock_" + itos(i + 1), names);
+			p_layout->set_value(p_section, config_key, names);
 		}
 	}
 
