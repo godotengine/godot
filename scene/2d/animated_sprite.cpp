@@ -239,14 +239,20 @@ Array SpriteFrames::_get_frames() const {
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (List<StringName>::Element *E = sorted_names.front(); E; E = E->next()) {
+		const Anim &anim = animations[E->get()];
 		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
+		d["name"] = E->get();
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -254,6 +260,7 @@ Array SpriteFrames::_get_animations() const {
 
 	return anims;
 }
+
 void SpriteFrames::_set_animations(const Array &p_animations) {
 	animations.clear();
 	for (int i = 0; i < p_animations.size(); i++) {
@@ -302,12 +309,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
 	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); // Compatibility with Godot 2.1.
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {
