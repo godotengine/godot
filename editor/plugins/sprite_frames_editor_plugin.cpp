@@ -756,11 +756,11 @@ void SpriteFramesEditor::_animation_name_edited() {
 }
 
 void SpriteFramesEditor::_animation_add() {
-	String name = "New Anim";
+	String name = "New Animation";
 	int counter = 0;
 	while (frames->has_animation(name)) {
 		counter++;
-		name = "New Anim " + itos(counter);
+		name = "New Animation " + itos(counter);
 	}
 
 	List<Node *> nodes;

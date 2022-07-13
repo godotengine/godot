@@ -304,7 +304,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 void AnimationPlayerEditor::_animation_new() {
 	int count = 1;
-	String base = TTR("New Anim");
+	String base = TTR("New Animation");
 	String current_library_name = "";
 	if (animation->has_selectable_items()) {
 		String current_animation_name = animation->get_item_text(animation->get_selected());
