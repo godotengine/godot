@@ -313,7 +313,6 @@ class DisplayServerWindows : public DisplayServer {
 	int key_event_pos;
 
 	bool old_invalid;
-	bool outside;
 	int old_x, old_y;
 	Point2i center;
 
@@ -387,6 +386,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		Size2 window_rect;
 		Point2 last_pos;
+		bool mouse_outside = true;
 
 		ObjectID instance_id;
 
