@@ -1313,10 +1313,10 @@ void RasterizerSceneGLES3::camera_effects_set_dof_blur(RID p_camera_effects, boo
 void RasterizerSceneGLES3::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
 }
 
-void RasterizerSceneGLES3::shadows_quality_set(RS::ShadowQuality p_quality) {
+void RasterizerSceneGLES3::positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 }
 
-void RasterizerSceneGLES3::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
+void RasterizerSceneGLES3::directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 }
 
 RID RasterizerSceneGLES3::light_instance_create(RID p_light) {

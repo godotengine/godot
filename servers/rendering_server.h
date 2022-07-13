@@ -491,8 +491,8 @@ public:
 		SHADOW_QUALITY_MAX
 	};
 
-	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
@@ -856,8 +856,8 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
-	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
+	virtual void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
+	virtual void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
 		VIEWPORT_MSAA_DISABLED,

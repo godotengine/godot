@@ -1454,8 +1454,8 @@ public:
 	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
-	virtual void shadows_quality_set(RS::ShadowQuality p_quality) override;
-	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) override;
+	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
+	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;

@@ -890,7 +890,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="directional_shadow_quality_set">
+		<method name="directional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
@@ -2519,6 +2519,12 @@
 				If [code]true[/code], particles use local coordinates. If [code]false[/code] they use global coordinates. Equivalent to [member GPUParticles3D.local_coords].
 			</description>
 		</method>
+		<method name="positional_soft_shadow_filter_set_quality">
+			<return type="void" />
+			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
+			<description>
+			</description>
+		</method>
 		<method name="reflection_probe_create">
 			<return type="RID" />
 			<description>
@@ -2751,12 +2757,6 @@
 			<description>
 				Sets a shader's default texture. Overwrites the texture given by name.
 				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
-			</description>
-		</method>
-		<method name="shadows_quality_set">
-			<return type="void" />
-			<argument index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
-			<description>
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">
@@ -3220,6 +3220,25 @@
 				Sets the viewport's parent to another viewport.
 			</description>
 		</method>
+		<method name="viewport_set_positional_shadow_atlas_quadrant_subdivision">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="quadrant" type="int" />
+			<argument index="2" name="subdivision" type="int" />
+			<description>
+				Sets the shadow atlas quadrant's subdivision.
+			</description>
+		</method>
+		<method name="viewport_set_positional_shadow_atlas_size">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="size" type="int" />
+			<argument index="2" name="use_16_bits" type="bool" default="false" />
+			<description>
+				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+				[b]Note:[/b] If this is set to [code]0[/code], no shadows will be visible at all (including directional shadows).
+			</description>
+		</method>
 		<method name="viewport_set_render_direct_to_screen">
 			<return type="void" />
 			<argument index="0" name="viewport" type="RID" />
@@ -3267,24 +3286,6 @@
 			<argument index="1" name="oversize" type="int" enum="RenderingServer.ViewportSDFOversize" />
 			<argument index="2" name="scale" type="int" enum="RenderingServer.ViewportSDFScale" />
 			<description>
-			</description>
-		</method>
-		<method name="viewport_set_shadow_atlas_quadrant_subdivision">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="quadrant" type="int" />
-			<argument index="2" name="subdivision" type="int" />
-			<description>
-				Sets the shadow atlas quadrant's subdivision.
-			</description>
-		</method>
-		<method name="viewport_set_shadow_atlas_size">
-			<return type="void" />
-			<argument index="0" name="viewport" type="RID" />
-			<argument index="1" name="size" type="int" />
-			<argument index="2" name="use_16_bits" type="bool" default="false" />
-			<description>
-				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="viewport_set_size">

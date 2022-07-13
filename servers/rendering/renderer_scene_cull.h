@@ -1150,8 +1150,8 @@ public:
 	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	PASS1(shadows_quality_set, RS::ShadowQuality)
-	PASS1(directional_shadow_quality_set, RS::ShadowQuality)
+	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
+	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
