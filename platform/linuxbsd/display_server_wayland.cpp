@@ -849,7 +849,14 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 			button_pressed = MouseButton::RIGHT;
 			break;
 
-		// TODO: Handle more buttons.
+		case BTN_EXTRA:
+			button_pressed = MouseButton::MB_XBUTTON1;
+			break;
+
+		case BTN_SIDE:
+			button_pressed = MouseButton::MB_XBUTTON2;
+			break;
+
 		default: {
 		}
 	}
@@ -948,7 +955,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
 			for (MouseButton test_button : { MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
 						 MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
-						 MouseButton::WHEEL_RIGHT }) {
+						 MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 }) {
 				MouseButton test_button_mask = mouse_button_to_mask(test_button);
 				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
 					Ref<InputEventMouseButton> mb;
