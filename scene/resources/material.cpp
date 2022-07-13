@@ -202,7 +202,98 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 
 void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (!shader.is_null()) {
-		shader->get_param_list(p_list);
+		List<PropertyInfo> list;
+		shader->get_param_list(&list, true);
+
+		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
+		{
+			HashMap<String, List<PropertyInfo>> none_subgroup;
+			none_subgroup.insert("<None>", List<PropertyInfo>());
+			groups.insert("<None>", none_subgroup);
+		}
+
+		String last_group = "<None>";
+		String last_subgroup = "<None>";
+
+		bool is_none_group_undefined = true;
+		bool is_none_group = true;
+
+		for (List<PropertyInfo>::Element *E = list.front(); E; E = E->next()) {
+			if (E->get().usage == PROPERTY_USAGE_GROUP) {
+				if (!E->get().name.is_empty()) {
+					Vector<String> vgroup = E->get().name.split("::");
+					last_group = vgroup[0];
+					if (vgroup.size() > 1) {
+						last_subgroup = vgroup[1];
+					} else {
+						last_subgroup = "<None>";
+					}
+					is_none_group = false;
+
+					if (!groups.has(last_group)) {
+						PropertyInfo info;
+						info.usage = PROPERTY_USAGE_GROUP;
+						info.name = last_group;
+
+						List<PropertyInfo> none_subgroup;
+						none_subgroup.push_back(info);
+
+						HashMap<String, List<PropertyInfo>> subgroup_map;
+						subgroup_map.insert("<None>", none_subgroup);
+
+						groups.insert(last_group, subgroup_map);
+					}
+
+					if (!groups[last_group].has(last_subgroup)) {
+						PropertyInfo info;
+						info.usage = PROPERTY_USAGE_SUBGROUP;
+						info.name = last_subgroup;
+
+						List<PropertyInfo> subgroup;
+						subgroup.push_back(info);
+
+						groups[last_group].insert(last_subgroup, subgroup);
+					}
+				} else {
+					last_group = "<None>";
+					last_subgroup = "<None>";
+					is_none_group = true;
+				}
+				continue; // Pass group.
+			}
+
+			if (is_none_group_undefined && is_none_group) {
+				is_none_group_undefined = false;
+
+				PropertyInfo info;
+				info.usage = PROPERTY_USAGE_GROUP;
+				info.name = "Shader Param";
+				groups["<None>"]["<None>"].push_back(info);
+			}
+
+			PropertyInfo info = E->get();
+			info.name = info.name;
+			groups[last_group][last_subgroup].push_back(info);
+		}
+
+		// Sort groups alphabetically.
+		List<UniformProp> props;
+		for (HashMap<String, HashMap<String, List<PropertyInfo>>>::Iterator group = groups.begin(); group; ++group) {
+			for (HashMap<String, List<PropertyInfo>>::Iterator subgroup = group->value.begin(); subgroup; ++subgroup) {
+				for (List<PropertyInfo>::Element *item = subgroup->value.front(); item; item = item->next()) {
+					if (subgroup->key == "<None>") {
+						props.push_back({ group->key, item->get() });
+					} else {
+						props.push_back({ group->key + "::" + subgroup->key, item->get() });
+					}
+				}
+			}
+		}
+		props.sort_custom<UniformPropComparator>();
+
+		for (List<UniformProp>::Element *E = props.front(); E; E = E->next()) {
+			p_list->push_back(E->get().info);
+		}
 	}
 }
 
