@@ -1643,18 +1643,6 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 				wls.popup_menu_stack.clear();
 			}
 
-			// TODO: Properly determine when to grab as this is kinda a hack.
-			if (wls.current_seat && wls.current_seat->pointer_data.button_time >= wls.current_seat->pointer_data.motion_time) {
-				// TODO: Investigate serial handling. Right now it only uses the last
-				// button serial, but on sway it doesn't really matter.
-
-				// Grab the popup. This blocks all new keyboard focus events.
-				xdg_popup_grab(wd.xdg_popup, wls.current_seat->wl_seat, wls.current_seat->pointer_data.button_serial);
-
-				// We must still focus the keyboard on the popup menu manually though.
-				wls.current_seat->keyboard_focused_window_id = p_id;
-			}
-
 			wls.popup_menu_stack.push_front(p_id);
 		}
 
