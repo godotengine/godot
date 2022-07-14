@@ -100,6 +100,9 @@ class GDScriptAnalyzer {
 	void const_fold_array(GDScriptParser::ArrayNode *p_array);
 	void const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
 
+	void parameter_fold_array(GDScriptParser::ArrayNode *p_array);
+	void parameter_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
+
 	// Helpers.
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
