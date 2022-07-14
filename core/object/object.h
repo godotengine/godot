@@ -358,6 +358,7 @@ private:                                                                        
 	friend class ::ClassDB;                                                                                                                      \
                                                                                                                                                  \
 public:                                                                                                                                          \
+	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
 	virtual String get_class() const override {                                                                                                  \
 		if (_get_extension()) {                                                                                                                  \
 			return _get_extension()->class_name.operator String();                                                                               \
@@ -667,6 +668,8 @@ public: // Should be protected, but bug in clang++.
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
+	static constexpr bool _class_is_enabled = true;
+
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
