@@ -3645,7 +3645,7 @@ void CanvasItemEditor::_draw_hover() {
 }
 
 void CanvasItemEditor::_draw_transform_message() {
-	if (drag_selection.is_empty() || !drag_selection.front()->get()) {
+	if (drag_type == DRAG_NONE || drag_selection.is_empty() || !drag_selection.front()->get()) {
 		return;
 	}
 	String transform_message;
