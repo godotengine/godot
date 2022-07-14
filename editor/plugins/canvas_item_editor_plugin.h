@@ -455,8 +455,8 @@ private:
 	void _update_cursor();
 
 	void _selection_changed();
-
 	void _focus_selection(int p_op);
+	void _reset_drag();
 
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
