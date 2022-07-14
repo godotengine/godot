@@ -1339,6 +1339,108 @@ void Image::crop(int p_width, int p_height) {
 	crop_from_point(0, 0, p_width, p_height);
 }
 
+void Image::rotate_90(ClockDirection p_direction) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+
+	int saved_width = height;
+	int saved_height = width;
+
+	if (width != height) {
+		int n = MAX(width, height);
+		resize(n, n, INTERPOLATE_NEAREST);
+	}
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	{
+		uint8_t *w = data.ptrw();
+		uint8_t src[16];
+		uint8_t dst[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		// Flip.
+
+		if (p_direction == CLOCKWISE) {
+			for (int y = 0; y < height / 2; y++) {
+				for (int x = 0; x < width; x++) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(x, height - y - 1, pixel_size, w, dst);
+
+					_put_pixelb(x, height - y - 1, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		} else {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width / 2; x++) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(width - x - 1, y, pixel_size, w, dst);
+
+					_put_pixelb(width - x - 1, y, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		}
+
+		// Transpose.
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (x < y) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(y, x, pixel_size, w, dst);
+
+					_put_pixelb(y, x, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		}
+	}
+
+	if (saved_width != saved_height) {
+		resize(saved_width, saved_height, INTERPOLATE_NEAREST);
+	} else if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
+void Image::rotate_180() {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	{
+		uint8_t *w = data.ptrw();
+		uint8_t src[16];
+		uint8_t dst[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		for (int y = 0; y < height / 2; y++) {
+			for (int x = 0; x < width; x++) {
+				_get_pixelb(x, y, pixel_size, w, src);
+				_get_pixelb(width - x - 1, height - y - 1, pixel_size, w, dst);
+
+				_put_pixelb(width - x - 1, height - y - 1, pixel_size, w, src);
+				_put_pixelb(x, y, pixel_size, w, dst);
+			}
+		}
+	}
+
+	if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
 void Image::flip_y() {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
 
@@ -3216,6 +3318,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress_from_channels, DEFVAL(0.7));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
+
+	ClassDB::bind_method(D_METHOD("rotate_90", "direction"), &Image::rotate_90);
+	ClassDB::bind_method(D_METHOD("rotate_180"), &Image::rotate_180);
 
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);

@@ -254,6 +254,9 @@ public:
 	void crop_from_point(int p_x, int p_y, int p_width, int p_height);
 	void crop(int p_width, int p_height);
 
+	void rotate_90(ClockDirection p_direction);
+	void rotate_180();
+
 	void flip_x();
 	void flip_y();
 
