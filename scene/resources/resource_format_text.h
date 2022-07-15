@@ -101,6 +101,7 @@ class ResourceLoaderText {
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	static Error _parse_only_ext_resource_value(VariantParser::Token &token, Variant &value, VariantParser::Stream *p_stream, int &line, String &r_err_str, VariantParser::ResourceParser *p_res_parser);
 
 	VariantParser::ResourceParser rp;
 

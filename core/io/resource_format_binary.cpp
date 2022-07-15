@@ -871,11 +871,42 @@ String ResourceLoaderBinary::get_attached_script_path(Ref<FileAccess> p_f) {
 		return "";
 	}
 	int main_resource_idx = internal_resources.size() - 1;
-	String path = internal_resources[main_resource_idx].path;
 
-	for (const ExtResource &E : external_resources) {
+	// TODO
+	/*for (const ExtResource &E : external_resources) {
 		if (E.type == Script::get_class_static())
 			return E.path;
+	}*/
+
+	uint64_t offset = internal_resources[main_resource_idx].offset;
+
+	f->seek(offset);
+
+	String t = get_unicode_string();
+
+	int pc = f->get_32();
+	for (int j = 0; j < pc; j++) {
+		StringName name = _get_string();
+
+		if (name == StringName()) {
+			error = ERR_FILE_CORRUPT;
+			ERR_FAIL_V("");
+		}
+
+		Variant value;
+		uint32_t type = f->get_32();
+		// Note that OBJECT_EXTERNAL_RESOURCE is old resource file format
+		if (name != StringName("script") || type != VARIANT_OBJECT) {
+			return "";
+		}
+
+		uint32_t objtype = f->get_32();
+		if (objtype != OBJECT_EXTERNAL_RESOURCE_INDEX) {
+			return "";
+		}
+
+		int erindex = f->get_32();
+		return external_resources[erindex].path;
 	}
 
 	return "";
