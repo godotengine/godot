@@ -872,12 +872,6 @@ String ResourceLoaderBinary::get_attached_script_path(Ref<FileAccess> p_f) {
 	}
 	int main_resource_idx = internal_resources.size() - 1;
 
-	// TODO
-	/*for (const ExtResource &E : external_resources) {
-		if (E.type == Script::get_class_static())
-			return E.path;
-	}*/
-
 	uint64_t offset = internal_resources[main_resource_idx].offset;
 
 	f->seek(offset);
