@@ -88,6 +88,14 @@ bool SceneTreeTimer::is_process_always() {
 	return process_always;
 }
 
+void SceneTreeTimer::set_process_in_physics(bool p_process_in_physics) {
+	process_in_physics = p_process_in_physics;
+}
+
+bool SceneTreeTimer::is_process_in_physics() {
+	return process_in_physics;
+}
+
 void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
 	ignore_time_scale = p_ignore;
 }
@@ -420,6 +428,8 @@ bool SceneTree::physics_process(double p_time) {
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 
+	process_timers(p_time, true); //go through timers
+
 	process_tweens(p_time, true);
 
 	flush_transform_notifications();
@@ -462,37 +472,7 @@ bool SceneTree::process(double p_time) {
 
 	_flush_delete_queue();
 
-	//go through timers
-
-	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
-
-	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
-		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		if (paused && !E->get()->is_process_always()) {
-			if (E == L) {
-				break; //break on last, so if new timers were added during list traversal, ignore them.
-			}
-			E = N;
-			continue;
-		}
-
-		double time_left = E->get()->get_time_left();
-		if (E->get()->is_ignore_time_scale()) {
-			time_left -= Engine::get_singleton()->get_process_step();
-		} else {
-			time_left -= p_time;
-		}
-		E->get()->set_time_left(time_left);
-
-		if (time_left <= 0) {
-			E->get()->emit_signal(SNAME("timeout"));
-			timers.erase(E);
-		}
-		if (E == L) {
-			break; //break on last, so if new timers were added during list traversal, ignore them.
-		}
-		E = N;
-	}
+	process_timers(p_time, false); //go through timers
 
 	process_tweens(p_time, false);
 
@@ -528,6 +508,38 @@ bool SceneTree::process(double p_time) {
 #endif // TOOLS_ENABLED
 
 	return _quit;
+}
+
+void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
+	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
+
+	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
+		List<Ref<SceneTreeTimer>>::Element *N = E->next();
+		if ((paused && !E->get()->is_process_always()) || (E->get()->is_process_in_physics() != p_physics_frame)) {
+			if (E == L) {
+				break; //break on last, so if new timers were added during list traversal, ignore them.
+			}
+			E = N;
+			continue;
+		}
+
+		double time_left = E->get()->get_time_left();
+		if (E->get()->is_ignore_time_scale()) {
+			time_left -= Engine::get_singleton()->get_process_step();
+		} else {
+			time_left -= p_delta;
+		}
+		E->get()->set_time_left(time_left);
+
+		if (time_left <= 0) {
+			E->get()->emit_signal(SNAME("timeout"));
+			timers.erase(E);
+		}
+		if (E == L) {
+			break; //break on last, so if new timers were added during list traversal, ignore them.
+		}
+		E = N;
+	}
 }
 
 void SceneTree::process_tweens(float p_delta, bool p_physics) {
@@ -1157,11 +1169,13 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always) {
+Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();
 	stt->set_process_always(p_process_always);
 	stt->set_time_left(p_delay_sec);
+	stt->set_process_in_physics(p_process_in_physics);
+	stt->set_ignore_time_scale(p_ignore_time_scale);
 	timers.push_back(stt);
 	return stt;
 }
@@ -1259,7 +1273,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
-	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always", "process_in_physics", "ignore_time_scale"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 
