@@ -45,6 +45,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {
 	Ref<AnimationNodeStateMachine> ansm = p_node;
@@ -620,7 +621,7 @@ void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 			Vector2 group_position = state_machine->get_node_position(E);
 			StringName group_name = E;
 
-			List<AnimationNode::ChildNode> nodes;
+			List<Ref<AnimationNode>> nodes;
 			group_sm->get_child_nodes(&nodes);
 
 			Vector<NodeUR> nodes_ur;
@@ -631,16 +632,16 @@ void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
 
 			// Move all child nodes to current state machine
 			for (int i = 0; i < nodes.size(); i++) {
-				if (!group_sm->can_edit_node(nodes[i].name)) {
+				if (!group_sm->can_edit_node(nodes[i]->node_name)) {
 					continue;
 				}
 
-				Vector2 node_position = group_sm->get_node_position(nodes[i].name);
+				Vector2 node_position = group_sm->get_node_position(nodes[i]->node_name);
 
 				NodeUR new_node;
-				new_node.name = nodes[i].name;
+				new_node.name = nodes[i]->node_name;
 				new_node.position = node_position;
-				new_node.node = nodes[i].node;
+				new_node.node = nodes[i];
 
 				nodes_ur.push_back(new_node);
 			}
@@ -1344,7 +1345,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
-		StringName fullpath = AnimationTreeEditor::get_singleton()->get_base_path() + String(tl.advance_condition_name);
+		StringName fullpath = String(SceneStringNames::get_singleton()->parameters_base_path) + String(tl.advance_condition_name);
 		if (tl.advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(fullpath))) {
 			tl.advance_condition_state = true;
 			tl.auto_advance = true;
@@ -1614,7 +1615,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 					break;
 				}
 
-				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + String(transition_lines[i].advance_condition_name)));
+				bool acstate = transition_lines[i].advance_condition_name != StringName() && bool(AnimationTreeEditor::get_singleton()->get_tree()->get(String(SceneStringNames::get_singleton()->parameters_base_path) + String(transition_lines[i].advance_condition_name)));
 
 				if (transition_lines[i].advance_condition_state != acstate) {
 					state_machine_draw->update();

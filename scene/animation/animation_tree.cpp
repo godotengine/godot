@@ -74,16 +74,13 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	return state->tree->property_map[path];
 }
 
-void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNode::get_child_nodes(List<Ref<AnimationNode>> *r_child_nodes) {
 	Dictionary cn;
 	if (GDVIRTUAL_CALL(_get_child_nodes, cn)) {
 		List<Variant> keys;
 		cn.get_key_list(&keys);
 		for (const Variant &E : keys) {
-			ChildNode child;
-			child.name = E;
-			child.node = cn[E];
-			r_child_nodes->push_back(child);
+			r_child_nodes->push_back(cn[E]);
 		}
 	}
 }
@@ -300,6 +297,11 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_seek_root, p_connections);
 }
 
+void AnimationNode::_tree_root_changed(AnimationRootNode *p_root) {
+	tree_root = p_root;
+	emit_signal("tree_root_changed", tree_root);
+}
+
 int AnimationNode::get_input_count() const {
 	return inputs.size();
 }
@@ -446,8 +448,8 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
-
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("tree_root_changed", PropertyInfo(Variant::OBJECT, "node")));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
@@ -469,6 +471,7 @@ void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	if (root.is_valid()) {
 		root->connect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
+		root->emit_signal("tree_root_changed", root);
 	}
 
 	properties_dirty = true;
@@ -1790,26 +1793,35 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
 	}
 
+	List<Ref<AnimationNode>> children;
+	node->get_child_nodes(&children);
+
+	for (const Ref<AnimationNode> &E : children) {
+		_update_properties_for_node(p_base_path + E->node_name + "/", E);
+	}
+
 	List<PropertyInfo> plist;
 	node->get_parameter_list(&plist);
 	for (PropertyInfo &pinfo : plist) {
 		StringName key = pinfo.name;
+		String path;
 
-		if (!property_map.has(p_base_path + key)) {
-			property_map[p_base_path + key] = node->get_parameter_default_value(key);
+		if (pinfo.usage == PROPERTY_USAGE_NONE || pinfo.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
+			path = p_base_path;
+		} else {
+			path = SceneStringNames::get_singleton()->parameters_base_path;
 		}
 
-		property_parent_map[p_base_path][key] = p_base_path + key;
+		if (!property_map.has(path + key)) {
+			property_map[path + key] = node->get_parameter_default_value(key);
+		}
 
-		pinfo.name = p_base_path + key;
-		properties.push_back(pinfo);
-	}
+		property_parent_map[path][key] = path + key;
+		pinfo.name = path + key;
 
-	List<AnimationNode::ChildNode> children;
-	node->get_child_nodes(&children);
-
-	for (const AnimationNode::ChildNode &E : children) {
-		_update_properties_for_node(p_base_path + E.name + "/", E.node);
+		if (!properties.find(pinfo)) {
+			properties.push_back(pinfo);
+		}
 	}
 }
 
@@ -1825,6 +1837,7 @@ void AnimationTree::_update_properties() {
 
 	if (root.is_valid()) {
 		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root);
+		properties.sort_custom<ListPropertyInfoComparator>();
 	}
 
 	properties_dirty = false;

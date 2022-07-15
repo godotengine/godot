@@ -180,7 +180,12 @@ AnimationNodeAnimation::AnimationNodeAnimation() {
 ////////////////////////////////////////////////////////
 
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::BOOL, active));
+	PropertyInfo pinfo = PropertyInfo(Variant::BOOL, String(node_name) + "/" + active);
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
+
 	r_list->push_back(PropertyInfo(Variant::BOOL, prev_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -254,7 +259,7 @@ bool AnimationNodeOneShot::has_filter() const {
 }
 
 double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_root) {
-	bool active = get_parameter(this->active);
+	bool active = tree_root->get_parameter(String(node_name) + "/" + this->active);
 	bool prev_active = get_parameter(this->prev_active);
 	double time = get_parameter(this->time);
 	double remaining = get_parameter(this->remaining);
@@ -269,7 +274,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 			time_to_restart -= p_time;
 			if (time_to_restart < 0) {
 				//restart
-				set_parameter(this->active, true);
+				tree_root->set_parameter(String(node_name) + "/" + this->active, true);
 				active = true;
 			}
 			set_parameter(this->time_to_restart, time_to_restart);
@@ -328,7 +333,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 		time += p_time;
 		remaining = os_rem;
 		if (remaining <= 0) {
-			set_parameter(this->active, false);
+			tree_root->set_parameter(String(node_name) + "/" + this->active, false);
 			set_parameter(this->prev_active, false);
 			if (autorestart) {
 				float restart_sec = autorestart_delay + Math::randf() * autorestart_random_delay;
@@ -399,7 +404,11 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + add_amount, PROPERTY_HINT_RANGE, "0,1,0.01");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -423,7 +432,7 @@ bool AnimationNodeAdd2::has_filter() const {
 }
 
 double AnimationNodeAdd2::process(double p_time, bool p_seek, bool p_seek_root) {
-	double amount = get_parameter(add_amount);
+	double amount = tree_root->get_parameter(String(node_name) + "/" + add_amount);
 	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, !sync);
 	blend_input(1, p_time, p_seek, p_seek_root, amount, FILTER_PASS, !sync);
 
@@ -445,7 +454,11 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -469,7 +482,7 @@ bool AnimationNodeAdd3::has_filter() const {
 }
 
 double AnimationNodeAdd3::process(double p_time, bool p_seek, bool p_seek_root) {
-	double amount = get_parameter(add_amount);
+	double amount = tree_root->get_parameter(String(node_name) + "/" + add_amount);
 	blend_input(0, p_time, p_seek, p_seek_root, MAX(0, -amount), FILTER_PASS, !sync);
 	double rem0 = blend_input(1, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, !sync);
 	blend_input(2, p_time, p_seek, p_seek_root, MAX(0, amount), FILTER_PASS, !sync);
@@ -493,7 +506,11 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -505,7 +522,7 @@ String AnimationNodeBlend2::get_caption() const {
 }
 
 double AnimationNodeBlend2::process(double p_time, bool p_seek, bool p_seek_root) {
-	double amount = get_parameter(blend_amount);
+	double amount = tree_root->get_parameter(String(node_name) + "/" + blend_amount);
 
 	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, 1.0 - amount, FILTER_BLEND, !sync);
 	double rem1 = blend_input(1, p_time, p_seek, p_seek_root, amount, FILTER_PASS, !sync);
@@ -540,7 +557,11 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 //////////////////////////////////////
 
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -560,7 +581,7 @@ bool AnimationNodeBlend3::is_using_sync() const {
 }
 
 double AnimationNodeBlend3::process(double p_time, bool p_seek, bool p_seek_root) {
-	double amount = get_parameter(blend_amount);
+	double amount = tree_root->get_parameter(String(node_name) + "/" + blend_amount);
 	double rem0 = blend_input(0, p_time, p_seek, p_seek_root, MAX(0, -amount), FILTER_IGNORE, !sync);
 	double rem1 = blend_input(1, p_time, p_seek, p_seek_root, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
 	double rem2 = blend_input(2, p_time, p_seek, p_seek_root, MAX(0, amount), FILTER_IGNORE, !sync);
@@ -585,7 +606,11 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
@@ -597,7 +622,8 @@ String AnimationNodeTimeScale::get_caption() const {
 }
 
 double AnimationNodeTimeScale::process(double p_time, bool p_seek, bool p_seek_root) {
-	double scale = get_parameter(this->scale);
+	double scale = tree_root->get_parameter(String(node_name) + "/" + this->scale);
+
 	if (p_seek) {
 		return blend_input(0, p_time, true, p_seek_root, 1.0, FILTER_IGNORE, false);
 	} else {
@@ -615,7 +641,11 @@ AnimationNodeTimeScale::AnimationNodeTimeScale() {
 ////////////////////////////////////
 
 void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
+	PropertyInfo pinfo = PropertyInfo(Variant::FLOAT, String(node_name) + "/" + seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater");
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
 }
 
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
@@ -627,12 +657,12 @@ String AnimationNodeTimeSeek::get_caption() const {
 }
 
 double AnimationNodeTimeSeek::process(double p_time, bool p_seek, bool p_seek_root) {
-	double seek_pos = get_parameter(this->seek_pos);
+	double seek_pos = tree_root->get_parameter(String(node_name) + "/" + this->seek_pos);
 	if (p_seek) {
 		return blend_input(0, p_time, true, p_seek_root, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
 		double ret = blend_input(0, seek_pos, true, true, 1.0, FILTER_IGNORE, false);
-		set_parameter(this->seek_pos, -1.0); //reset
+		tree_root->set_parameter(String(node_name) + "/" + this->seek_pos, -1.0); //reset
 		return ret;
 	} else {
 		return blend_input(0, p_time, false, p_seek_root, 1.0, FILTER_IGNORE, false);
@@ -657,7 +687,12 @@ void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) con
 		anims += inputs[i].name;
 	}
 
-	r_list->push_back(PropertyInfo(Variant::INT, current, PROPERTY_HINT_ENUM, anims));
+	PropertyInfo pinfo = PropertyInfo(Variant::INT, String(node_name) + "/" + current, PROPERTY_HINT_ENUM, anims);
+
+	if (r_list->find(pinfo) == nullptr) {
+		r_list->push_back(pinfo);
+	}
+
 	r_list->push_back(PropertyInfo(Variant::INT, prev_current, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::INT, prev, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -728,7 +763,7 @@ float AnimationNodeTransition::get_cross_fade_time() const {
 }
 
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_root) {
-	int current = get_parameter(this->current);
+	int current = tree_root->get_parameter(String(node_name) + "/" + this->current);
 	int prev = get_parameter(this->prev);
 	int prev_current = get_parameter(this->prev_current);
 
@@ -764,7 +799,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 		}
 
 		if (inputs[current].auto_advance && rem <= xfade) {
-			set_parameter(this->current, (current + 1) % enabled_inputs);
+			tree_root->set_parameter(String(node_name) + "/" + this->current, (current + 1) % enabled_inputs);
 		}
 
 	} else { // cross-fading from prev to current
@@ -854,14 +889,43 @@ AnimationNodeOutput::AnimationNodeOutput() {
 }
 
 ///////////////////////////////////////////////////////
+void AnimationNodeBlendTree::get_parameter_list(List<PropertyInfo> *r_list) const {
+	if (tree_root == nullptr) {
+		for (const KeyValue<StringName, Node> &E : nodes) {
+			Ref<AnimationNode> anode = E.value.node;
+
+			anode->get_parameter_list(r_list);
+		}
+
+		for (PropertyInfo &E : *r_list) {
+			if (E.usage == PROPERTY_USAGE_NONE || E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
+				r_list->erase(E);
+			}
+		}
+	}
+}
+
 void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
 	ERR_FAIL_COND(String(p_name).contains("/"));
 
+	Ref<AnimationRootNode> arnode = p_node;
+
+	if (arnode.is_valid()) {
+		if (tree_root == nullptr) {
+			arnode->tree_root = this;
+		} else {
+			arnode->tree_root = tree_root;
+		}
+	}
+
+	connect("tree_root_changed", callable_mp(p_node.ptr(), &AnimationNode::_tree_root_changed), varray(), CONNECT_REFERENCE_COUNTED);
+
 	Node n;
 	n.node = p_node;
+	n.node->node_name = p_name;
 	n.position = p_position;
 	n.connections.resize(n.node->get_input_count());
 	nodes[p_name] = n;
@@ -899,7 +963,7 @@ Vector2 AnimationNodeBlendTree::get_node_position(const StringName &p_node) cons
 	return nodes[p_node].position;
 }
 
-void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
+void AnimationNodeBlendTree::get_child_nodes(List<Ref<AnimationNode>> *r_child_nodes) {
 	Vector<StringName> ns;
 
 	for (const KeyValue<StringName, Node> &E : nodes) {
@@ -909,10 +973,7 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	ns.sort_custom<StringName::AlphCompare>();
 
 	for (int i = 0; i < ns.size(); i++) {
-		ChildNode cn;
-		cn.name = ns[i];
-		cn.node = nodes[cn.name].node;
-		r_child_nodes->push_back(cn);
+		r_child_nodes->push_back(nodes[ns[i]].node);
 	}
 }
 
@@ -959,6 +1020,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	nodes[p_name].node->disconnect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
 	nodes[p_new_name] = nodes[p_name];
+	nodes[p_new_name].node->node_name = p_new_name;
 	nodes.erase(p_name);
 
 	//rename connections

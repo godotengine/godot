@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "core/templates/vset.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
@@ -44,6 +45,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
@@ -163,12 +165,25 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 		List<PropertyInfo> pinfo;
 		agnode->get_parameter_list(&pinfo);
+		VSet<StringName> unique_names;
 		for (const PropertyInfo &F : pinfo) {
 			if (!(F.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
-			String base_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E) + "/" + F.name;
+
+			if (F.name.find("/") > 0 && !F.name.begins_with(String(E) + "/")) {
+				continue;
+			}
+
+			if (unique_names.has(F.name)) {
+				continue;
+			}
+			unique_names.insert(F.name);
+
+			String base_path = F.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE ? AnimationTreeEditor::get_singleton()->get_base_path() + E + "/" : String(SceneStringNames::get_singleton()->parameters_base_path);
+			base_path += F.name;
 			EditorProperty *prop = EditorInspector::instantiate_property_editor(AnimationTreeEditor::get_singleton()->get_tree(), F.type, base_path, F.hint, F.hint_string, F.usage);
+
 			if (prop) {
 				prop->set_object_and_property(AnimationTreeEditor::get_singleton()->get_tree(), base_path);
 				prop->update_property();
