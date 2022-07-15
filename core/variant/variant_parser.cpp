@@ -1376,8 +1376,8 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 	return _parse_tag(token, p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
 }
 
-Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
-	//assign..
+// Parses tags or assigns and takes in a custom function for handling value parsing
+Error VariantParser::parse_tag_assign_with_value_func_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag, ParseValueFunc p_parse_value_func) {
 	r_assign = "";
 	String what;
 
@@ -1439,13 +1439,17 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
-				Error err = parse_value(token, r_value, p_stream, line, r_err_str, p_res_parser);
+				Error err = p_parse_value_func(token, r_value, p_stream, line, r_err_str, p_res_parser);
 				return err;
 			}
 		} else if (c == '\n') {
 			line++;
 		}
 	}
+}
+
+Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
+	return parse_tag_assign_with_value_func_eof(p_stream, line, r_err_str, r_tag, r_assign, r_value, p_res_parser, p_simple_tag, parse_value);
 }
 
 Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser) {

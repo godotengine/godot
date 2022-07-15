@@ -1399,6 +1399,34 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	return ResourceUID::INVALID_ID;
 }
 
+Error ResourceLoaderText::_parse_only_ext_resource_value(VariantParser::Token &token, Variant &value, VariantParser::Stream *p_stream, int &line, String &r_err_str, VariantParser::ResourceParser *p_res_parser = nullptr) {
+	if (token.type != VariantParser::TK_IDENTIFIER || token.value != "ExtResource") {
+		return OK;
+	}
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_OPEN) {
+		r_err_str = "Expected '('";
+		return ERR_PARSE_ERROR;
+	}
+
+	// Extract ext_resource's id
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_NUMBER && token.type != VariantParser::TK_STRING) {
+		r_err_str = "Expected number (old style sub-resource index) or String (ext-resource ID)";
+		return ERR_PARSE_ERROR;
+	}
+	value = token.value;
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str = "Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
+}
+
 // Returns empty string if the attached script could not be fetched.
 String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 	// Opening itself is pattern is also seen in resource_format_binary.cpp.
@@ -1409,6 +1437,7 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 	stream.f = f;
 
 	ignore_resource_parsing = true;
+	Map<String, String> res_id_to_script_path;
 
 	while (next_tag.name == "ext_resource") {
 		if (!next_tag.fields.has("path")) {
@@ -1425,25 +1454,9 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 
 		String type = next_tag.fields["type"];
 
-		// Skip the tags until we find the "Script" tag
+		// Adds all script tags
 		if (type == "Script") {
-			String path = next_tag.fields["path"];
-			String id = next_tag.fields["id"];
-
-			if (path.is_relative_path()) {
-				// Path is relative to file being loaded, so convert to a resource path.
-				path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
-			}
-
-			if (remaps.has(path)) {
-				path = remaps[path];
-			}
-
-			// Removed the parsed resources from the total
-			resources_total -= resource_current;
-			resource_current = 0;
-
-			return path;
+			res_id_to_script_path[next_tag.fields["id"]] = next_tag.fields["path"];
 		}
 
 		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag);
@@ -1453,6 +1466,61 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 		}
 
 		resource_current++;
+	}
+
+	// Find resource tag to begin parsing properties
+	while (next_tag.name != "resource") {
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag);
+		if (error) {
+			return "";
+		}
+	}
+
+	resource_current++;
+
+	while (true) {
+		String assign;
+		Variant value;
+
+		error = VariantParser::parse_tag_assign_with_value_func_eof(&stream, lines, error_text, next_tag, assign, value, &rp, false, _parse_only_ext_resource_value);
+
+		if (error) {
+			if (error != ERR_FILE_EOF) {
+				_printerr();
+			}
+			return "";
+		}
+
+		if (!assign.is_empty()) {
+			if (assign == "script") {
+				// The value returned by our custom value parse function should be the id of the resource.
+				if (!res_id_to_script_path.has(value)) {
+					error = ERR_PARSE_ERROR;
+					error_text = "Expected script resource to exist within resource file!";
+					_printerr();
+					return "";
+				}
+				String path = res_id_to_script_path[value];
+
+				if (path.is_relative_path()) {
+					// Path is relative to file being loaded, so convert to a resource path.
+					path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+				}
+
+				if (remaps.has(path)) {
+					path = remaps[path];
+				}
+
+				return path;
+			}
+		} else if (!next_tag.name.is_empty()) {
+			error = ERR_FILE_CORRUPT;
+			error_text = "Extra tag found when parsing main resource file";
+			_printerr();
+			return "";
+		} else {
+			break;
+		}
 	}
 
 	return "";
