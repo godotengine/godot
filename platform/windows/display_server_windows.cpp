@@ -3342,10 +3342,6 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_ctrl_pressed(false);
 				}
 
-				if (k->get_unicode() < 32) {
-					k->set_unicode(0);
-				}
-
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
 				Input::get_singleton()->parse_input_event(k);
