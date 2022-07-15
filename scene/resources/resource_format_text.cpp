@@ -1455,7 +1455,7 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 	stream.f = f;
 
 	ignore_resource_parsing = true;
-	Map<String, String> res_id_to_script_path;
+	HashMap<String, String> res_id_to_script_path;
 
 	while (next_tag.name == "ext_resource") {
 		if (!next_tag.fields.has("path")) {
