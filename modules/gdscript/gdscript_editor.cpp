@@ -660,7 +660,13 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 }
 
 static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_function, int p_arg_idx) {
-	String arghint = p_function->get_datatype().to_string() + " " + p_function->identifier->name.operator String() + "(";
+	String arghint;
+
+	if (p_function->get_datatype().builtin_type == Variant::NIL) {
+		arghint = "void " + p_function->identifier->name.operator String() + "(";
+	} else {
+		arghint = p_function->get_datatype().to_string() + " " + p_function->identifier->name.operator String() + "(";
+	}
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		if (i > 0) {
