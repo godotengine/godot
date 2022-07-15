@@ -536,6 +536,9 @@ void GDScript::_update_doc() {
 	List<PropertyInfo> props;
 	_get_script_property_list(&props, false);
 	for (int i = 0; i < props.size(); i++) {
+		if (props[i].usage & PROPERTY_USAGE_CATEGORY || props[i].usage & PROPERTY_USAGE_GROUP || props[i].usage & PROPERTY_USAGE_SUBGROUP) {
+			continue;
+		}
 		ScriptMemberInfo scr_member_info;
 		scr_member_info.propinfo = props[i];
 		scr_member_info.propinfo.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
