@@ -431,10 +431,10 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
-	uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
+	BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
 	switch (autowrap_mode) {
 		case TextServer::AUTOWRAP_WORD_SMART:
-			autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
 			break;
 		case TextServer::AUTOWRAP_WORD:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
@@ -448,7 +448,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	// Clear cache.
 	l.text_buf->clear();
-	l.text_buf->set_flags(autowrap_flags | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+	l.text_buf->set_break_flags(autowrap_flags);
+	l.text_buf->set_justification_flags(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 

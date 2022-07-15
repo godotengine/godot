@@ -1372,13 +1372,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 			}
 			p_font_data->style_flags = 0;
 			if (fd->face->style_flags & FT_STYLE_FLAG_BOLD) {
-				p_font_data->style_flags |= FONT_BOLD;
+				p_font_data->style_flags.set_flag(FONT_BOLD);
 			}
 			if (fd->face->style_flags & FT_STYLE_FLAG_ITALIC) {
-				p_font_data->style_flags |= FONT_ITALIC;
+				p_font_data->style_flags.set_flag(FONT_ITALIC);
 			}
 			if (fd->face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) {
-				p_font_data->style_flags |= FONT_FIXED_WIDTH;
+				p_font_data->style_flags.set_flag(FONT_FIXED_WIDTH);
 			}
 
 			hb_face_t *hb_face = hb_font_get_face(fd->hb_handle);
@@ -1629,11 +1629,12 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GSUB, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
-						String lbl;
+						PackedInt32Array lbl;
 						unsigned int text_size = hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), nullptr, nullptr) + 1;
 						lbl.resize(text_size);
+						memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
-						ftr["label"] = lbl;
+						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
@@ -1651,11 +1652,12 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GPOS, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
-						String lbl;
+						PackedInt32Array lbl;
 						unsigned int text_size = hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), nullptr, nullptr) + 1;
 						lbl.resize(text_size);
+						memset((uint32_t *)lbl.ptrw(), 0, sizeof(uint32_t) * text_size);
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
-						ftr["label"] = lbl;
+						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
@@ -1842,7 +1844,7 @@ int64_t TextServerAdvanced::font_get_face_count(const RID &p_font_rid) const {
 	return face_count;
 }
 
-void TextServerAdvanced::font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) {
+void TextServerAdvanced::font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
 
@@ -1852,7 +1854,7 @@ void TextServerAdvanced::font_set_style(const RID &p_font_rid, int64_t /*FontSty
 	fd->style_flags = p_style;
 }
 
-int64_t /*FontStyle*/ TextServerAdvanced::font_get_style(const RID &p_font_rid) const {
+BitField<TextServer::FontStyle> TextServerAdvanced::font_get_style(const RID &p_font_rid) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V(!fd, 0);
 
@@ -3992,7 +3994,7 @@ RID TextServerAdvanced::shaped_text_get_parent(const RID &p_shaped) const {
 	return sd->parent;
 }
 
-double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double p_width, int64_t /*JustificationFlag*/ p_jst_flags) {
+double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0.0);
 
@@ -4008,7 +4010,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 	int start_pos = 0;
 	int end_pos = sd->glyphs.size() - 1;
 
-	if ((p_jst_flags & JUSTIFICATION_AFTER_LAST_TAB) == JUSTIFICATION_AFTER_LAST_TAB) {
+	if (p_jst_flags.has_flag(JUSTIFICATION_AFTER_LAST_TAB)) {
 		int start, end, delta;
 		if (sd->para_direction == DIRECTION_LTR) {
 			start = sd->glyphs.size() - 1;
@@ -4034,7 +4036,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 	}
 
 	double justification_width;
-	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) == JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+	if (p_jst_flags.has_flag(JUSTIFICATION_CONSTRAIN_ELLIPSIS)) {
 		if (sd->overrun_trim_data.trim_pos >= 0) {
 			if (sd->para_direction == DIRECTION_RTL) {
 				start_pos = sd->overrun_trim_data.trim_pos;
@@ -4049,7 +4051,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 		justification_width = sd->width;
 	}
 
-	if ((p_jst_flags & JUSTIFICATION_TRIM_EDGE_SPACES) == JUSTIFICATION_TRIM_EDGE_SPACES) {
+	if (p_jst_flags.has_flag(JUSTIFICATION_TRIM_EDGE_SPACES)) {
 		// Trim spaces.
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
@@ -4088,7 +4090,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 		}
 	}
 
-	if ((elongation_count > 0) && ((p_jst_flags & JUSTIFICATION_KASHIDA) == JUSTIFICATION_KASHIDA)) {
+	if ((elongation_count > 0) && p_jst_flags.has_flag(JUSTIFICATION_KASHIDA)) {
 		double delta_width_per_kashida = (p_width - justification_width) / elongation_count;
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
@@ -4109,7 +4111,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 			}
 		}
 	}
-	if ((space_count > 0) && ((p_jst_flags & JUSTIFICATION_WORD_BOUND) == JUSTIFICATION_WORD_BOUND)) {
+	if ((space_count > 0) && p_jst_flags.has_flag(JUSTIFICATION_WORD_BOUND)) {
 		double delta_width_per_space = (p_width - justification_width) / space_count;
 		double adv_remain = 0;
 		for (int i = start_pos; i <= end_pos; i++) {
@@ -4142,7 +4144,7 @@ double TextServerAdvanced::shaped_text_fit_to_width(const RID &p_shaped, double 
 		sd->fit_width_minimum_reached = true;
 	}
 
-	if ((p_jst_flags & JUSTIFICATION_CONSTRAIN_ELLIPSIS) != JUSTIFICATION_CONSTRAIN_ELLIPSIS) {
+	if (!p_jst_flags.has_flag(JUSTIFICATION_CONSTRAIN_ELLIPSIS)) {
 		sd->width = justification_width;
 	}
 
@@ -4205,7 +4207,7 @@ double TextServerAdvanced::shaped_text_tab_align(const RID &p_shaped, const Pack
 	return 0.0;
 }
 
-void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, int64_t p_trim_flags) {
+void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped_line);
 	ERR_FAIL_COND_MSG(!sd, "ShapedTextDataAdvanced invalid.");
 
@@ -4217,14 +4219,14 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 	sd->text_trimmed = false;
 	sd->overrun_trim_data.ellipsis_glyph_buf.clear();
 
-	bool add_ellipsis = (p_trim_flags & OVERRUN_ADD_ELLIPSIS) == OVERRUN_ADD_ELLIPSIS;
-	bool cut_per_word = (p_trim_flags & OVERRUN_TRIM_WORD_ONLY) == OVERRUN_TRIM_WORD_ONLY;
-	bool enforce_ellipsis = (p_trim_flags & OVERRUN_ENFORCE_ELLIPSIS) == OVERRUN_ENFORCE_ELLIPSIS;
-	bool justification_aware = (p_trim_flags & OVERRUN_JUSTIFICATION_AWARE) == OVERRUN_JUSTIFICATION_AWARE;
+	bool add_ellipsis = p_trim_flags.has_flag(OVERRUN_ADD_ELLIPSIS);
+	bool cut_per_word = p_trim_flags.has_flag(OVERRUN_TRIM_WORD_ONLY);
+	bool enforce_ellipsis = p_trim_flags.has_flag(OVERRUN_ENFORCE_ELLIPSIS);
+	bool justification_aware = p_trim_flags.has_flag(OVERRUN_JUSTIFICATION_AWARE);
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if (p_trim_flags.has_flag(OVERRUN_TRIM) || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;

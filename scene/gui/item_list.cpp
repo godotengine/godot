@@ -45,9 +45,9 @@ void ItemList::_shape(int p_idx) {
 	}
 	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {
-		item.text_buf->set_flags(TextServer::BREAK_NONE);
+		item.text_buf->set_break_flags(TextServer::BREAK_NONE);
 	}
 	item.text_buf->set_text_overrun_behavior(text_overrun_behavior);
 	item.text_buf->set_max_lines_visible(max_text_lines);
@@ -470,10 +470,10 @@ void ItemList::set_max_text_lines(int p_lines) {
 		max_text_lines = p_lines;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 				items.write[i].text_buf->set_max_lines_visible(p_lines);
 			} else {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_NONE);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
 			}
 		}
 		shape_changed = true;
@@ -511,9 +511,9 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 		icon_mode = p_mode;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 			} else {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_NONE);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
 			}
 		}
 		shape_changed = true;

@@ -44,9 +44,10 @@
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="max_lines" type="int" default="-1" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="flags" type="int" default="99" />
-			<argument index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<argument index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<argument index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<argument index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines using rules specified by [code]flags[/code] and draws it into a canvas item using the font, at a given position, with [code]modulate[/code] color, optionally clipping the width and aligning horizontally. [code]position[/code] specifies the baseline of the first line, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 				See also [method CanvasItem.draw_multiline_string].
@@ -63,9 +64,10 @@
 			<argument index="6" name="max_lines" type="int" default="-1" />
 			<argument index="7" name="size" type="int" default="1" />
 			<argument index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="9" name="flags" type="int" default="99" />
-			<argument index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<argument index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<argument index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<argument index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Breaks [code]text[/code] to the lines using rules specified by [code]flags[/code] and draws text outline into a canvas item using the font, at a given position, with [code]modulate[/code] color and [code]size[/code] outline size, optionally clipping the width and aligning horizontally. [code]position[/code] specifies the baseline of the first line, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 				See also [method CanvasItem.draw_multiline_string_outline].
@@ -80,7 +82,7 @@
 			<argument index="4" name="width" type="float" default="-1" />
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="7" name="flags" type="int" default="3" />
+			<argument index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<argument index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -98,7 +100,7 @@
 			<argument index="5" name="font_size" type="int" default="16" />
 			<argument index="6" name="size" type="int" default="1" />
 			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<argument index="8" name="flags" type="int" default="3" />
+			<argument index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<argument index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -160,7 +162,7 @@
 			</description>
 		</method>
 		<method name="get_font_style" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="TextServer.FontStyle" />
 			<description>
 				Returns font style flags, see [enum TextServer.FontStyle].
 			</description>
@@ -186,9 +188,10 @@
 			<argument index="2" name="width" type="float" default="-1" />
 			<argument index="3" name="font_size" type="int" default="16" />
 			<argument index="4" name="max_lines" type="int" default="-1" />
-			<argument index="5" name="flags" type="int" default="96" />
-			<argument index="6" name="direction" type="int" enum="TextServer.Direction" default="0" />
-			<argument index="7" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<argument index="5" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<argument index="6" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<argument index="7" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<argument index="8" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Returns the size of a bounding box of a string broken into the lines, taking kerning and advance into account.
 				See also [method draw_multiline_string].
@@ -219,7 +222,7 @@
 			<argument index="1" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
 			<argument index="2" name="width" type="float" default="-1" />
 			<argument index="3" name="font_size" type="int" default="16" />
-			<argument index="4" name="flags" type="int" default="3" />
+			<argument index="4" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<argument index="5" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="6" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>

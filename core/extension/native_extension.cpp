@@ -182,7 +182,7 @@ void NativeExtension::_register_extension_class_method(const GDNativeExtensionCl
 
 	ClassDB::bind_method_custom(class_name, method);
 }
-void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value) {
+void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, bool p_is_bitfield) {
 	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
@@ -190,7 +190,7 @@ void NativeExtension::_register_extension_class_integer_constant(const GDNativeE
 
 	//Extension *extension = &self->extension_classes[class_name];
 
-	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value);
+	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value, p_is_bitfield);
 }
 
 void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter) {
