@@ -35,6 +35,8 @@
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/rb_set.h"
+#include "core/variant/typed_array.h"
 
 class Input : public Object {
 	GDCLASS(Input, Object);
@@ -82,11 +84,11 @@ public:
 private:
 	MouseButton mouse_button_mask = MouseButton::NONE;
 
-	Set<Key> physical_keys_pressed;
-	Set<Key> keys_pressed;
-	Set<JoyButton> joy_buttons_pressed;
-	Map<JoyAxis, float> _joy_axis;
-	//Map<StringName,int> custom_action_press;
+	RBSet<Key> physical_keys_pressed;
+	RBSet<Key> keys_pressed;
+	RBSet<JoyButton> joy_buttons_pressed;
+	RBMap<JoyAxis, float> _joy_axis;
+	//RBMap<StringName,int> custom_action_press;
 	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
@@ -103,12 +105,12 @@ private:
 		float raw_strength;
 	};
 
-	Map<StringName, Action> action_state;
+	HashMap<StringName, Action> action_state;
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
 	bool use_input_buffering = false;
-	bool use_accumulated_input = false;
+	bool use_accumulated_input = true;
 
 	int mouse_from_touch_index = -1;
 
@@ -137,8 +139,8 @@ private:
 	};
 
 	VelocityTrack mouse_velocity_track;
-	Map<int, VelocityTrack> touch_velocity_track;
-	Map<int, Joypad> joy_names;
+	HashMap<int, VelocityTrack> touch_velocity_track;
+	HashMap<int, Joypad> joy_names;
 	int fallback_mapping = -1;
 
 	CursorShape default_shape = CURSOR_ARROW;
@@ -231,7 +233,7 @@ protected:
 		uint64_t timestamp;
 	};
 
-	Map<int, VibrationInfo> joy_vibration;
+	HashMap<int, VibrationInfo> joy_vibration;
 
 	static void _bind_methods();
 
@@ -258,7 +260,7 @@ public:
 
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
 	String get_joy_name(int p_idx);
-	Array get_connected_joypads();
+	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
@@ -325,6 +327,7 @@ public:
 	bool is_using_input_buffering();
 	void set_use_input_buffering(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
+	bool is_using_accumulated_input();
 
 	void release_pressed_events();
 

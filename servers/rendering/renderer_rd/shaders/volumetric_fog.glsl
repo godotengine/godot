@@ -186,12 +186,31 @@ void main() {
 
 	float sdf = -1.0;
 	if (params.shape == 0) {
-		//Ellipsoid
+		// Ellipsoid
 		// https://www.shadertoy.com/view/tdS3DG
 		float k0 = length(local_pos.xyz / params.extents);
 		float k1 = length(local_pos.xyz / (params.extents * params.extents));
 		sdf = k0 * (k0 - 1.0) / k1;
 	} else if (params.shape == 1) {
+		// Cone
+		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
+		// Compute the cone angle automatically to fit within the volume's extents.
+		float inv_height = 1.0 / max(0.001, params.extents.y);
+		float radius = 1.0 / max(0.001, (min(params.extents.x, params.extents.z) * 0.5));
+		float hypotenuse = sqrt(radius * radius + inv_height * inv_height);
+		float rsin = radius / hypotenuse;
+		float rcos = inv_height / hypotenuse;
+		vec2 c = vec2(rsin, rcos);
+
+		float q = length(local_pos.xz);
+		sdf = max(dot(c, vec2(q, local_pos.y - params.extents.y)), -params.extents.y - local_pos.y);
+	} else if (params.shape == 2) {
+		// Cylinder
+		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+		vec2 d = abs(vec2(length(local_pos.xz), local_pos.y)) - vec2(min(params.extents.x, params.extents.z), params.extents.y);
+		sdf = min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+	} else if (params.shape == 3) {
 		// Box
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 		vec3 q = abs(local_pos.xyz) - params.extents;
@@ -199,7 +218,7 @@ void main() {
 	}
 
 	float cull_mask = 1.0; //used to cull cells that do not contribute
-	if (params.shape <= 1) {
+	if (params.shape <= 3) {
 #ifndef SDF_USED
 		cull_mask = 1.0 - smoothstep(-0.1, 0.0, sdf);
 #endif

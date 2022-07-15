@@ -72,20 +72,20 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
 		return VK_FALSE;
 	}
-	/*
-	// This is a valid warning because its illegal in Vulkan, but in practice it should work according to VK_KHR_maintenance2
-	if (strstr(pCallbackData->pMessage, "VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
-		return VK_FALSE;
-	}
 
-	if (strstr(pCallbackData->pMessage, "VK_FORMAT_R4G4B4A4_UNORM_PACK16 with tiling VK_IMAGE_TILING_OPTIMAL does not support usage that includes VK_IMAGE_USAGE_STORAGE_BIT") != nullptr) {
-		return VK_FALSE;
-	}
-*/
 	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
 	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != nullptr) {
 		return VK_FALSE;
 	}
+
+#ifdef WINDOWS_ENABLED
+	// Some software installs Vulkan overlays in Windows registry and never cleans them up on uninstall.
+	// So we get spammy error level messages from the loader about those - make them verbose instead.
+	if (strstr(pCallbackData->pMessage, "loader_get_json: Failed to open JSON file") != nullptr) {
+		messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+	}
+#endif
+
 	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
 		return VK_FALSE;
 	}
@@ -1860,16 +1860,16 @@ Error VulkanContext::initialize() {
 	return OK;
 }
 
-void VulkanContext::set_setup_buffer(const VkCommandBuffer &pCommandBuffer) {
-	command_buffer_queue.write[0] = pCommandBuffer;
+void VulkanContext::set_setup_buffer(VkCommandBuffer p_command_buffer) {
+	command_buffer_queue.write[0] = p_command_buffer;
 }
 
-void VulkanContext::append_command_buffer(const VkCommandBuffer &pCommandBuffer) {
+void VulkanContext::append_command_buffer(VkCommandBuffer p_command_buffer) {
 	if (command_buffer_queue.size() <= command_buffer_count) {
 		command_buffer_queue.resize(command_buffer_count + 1);
 	}
 
-	command_buffer_queue.write[command_buffer_count] = pCommandBuffer;
+	command_buffer_queue.write[command_buffer_count] = p_command_buffer;
 	command_buffer_count++;
 }
 
@@ -1879,7 +1879,10 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 
 	//flush the pending setup buffer
 
-	if (p_flush_setup && command_buffer_queue[0]) {
+	bool setup_flushable = p_flush_setup && command_buffer_queue[0];
+	bool pending_flushable = p_flush_pending && command_buffer_count > 1;
+
+	if (setup_flushable) {
 		//use a fence to wait for everything done
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1889,33 +1892,33 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.pWaitSemaphores = nullptr;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = command_buffer_queue.ptr();
-		submit_info.signalSemaphoreCount = 0;
-		submit_info.pSignalSemaphores = nullptr;
+		submit_info.signalSemaphoreCount = pending_flushable ? 1 : 0;
+		submit_info.pSignalSemaphores = pending_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 		command_buffer_queue.write[0] = nullptr;
 		ERR_FAIL_COND(err);
-		vkDeviceWaitIdle(device);
 	}
 
-	if (p_flush_pending && command_buffer_count > 1) {
+	if (pending_flushable) {
 		//use a fence to wait for everything done
 
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.pNext = nullptr;
-		submit_info.pWaitDstStageMask = nullptr;
-		submit_info.waitSemaphoreCount = 0;
-		submit_info.pWaitSemaphores = nullptr;
+		VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		submit_info.pWaitDstStageMask = setup_flushable ? &wait_stage_mask : nullptr;
+		submit_info.waitSemaphoreCount = setup_flushable ? 1 : 0;
+		submit_info.pWaitSemaphores = setup_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
 		submit_info.commandBufferCount = command_buffer_count - 1;
 		submit_info.pCommandBuffers = command_buffer_queue.ptr() + 1;
 		submit_info.signalSemaphoreCount = 0;
 		submit_info.pSignalSemaphores = nullptr;
 		VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
-		ERR_FAIL_COND(err);
-		vkDeviceWaitIdle(device);
-
 		command_buffer_count = 1;
+		ERR_FAIL_COND(err);
 	}
+
+	vkDeviceWaitIdle(device);
 }
 
 Error VulkanContext::prepare_buffers() {

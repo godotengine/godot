@@ -636,16 +636,8 @@ DEFINE_NULL_INSTANCE (hb_font_funcs_t) =
 {
   HB_OBJECT_HEADER_STATIC,
 
-  {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
-    HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_FONT_FUNC_IMPLEMENT
-  },
-  {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
-    HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_FONT_FUNC_IMPLEMENT
-  },
+  nullptr,
+  nullptr,
   {
     {
 #define HB_FONT_FUNC_IMPLEMENT(name) hb_font_get_##name##_nil,
@@ -658,16 +650,8 @@ DEFINE_NULL_INSTANCE (hb_font_funcs_t) =
 static const hb_font_funcs_t _hb_font_funcs_default = {
   HB_OBJECT_HEADER_STATIC,
 
-  {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
-    HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_FONT_FUNC_IMPLEMENT
-  },
-  {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
-    HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
-#undef HB_FONT_FUNC_IMPLEMENT
-  },
+  nullptr,
+  nullptr,
   {
     {
 #define HB_FONT_FUNC_IMPLEMENT(name) hb_font_get_##name##_default,
@@ -679,7 +663,7 @@ static const hb_font_funcs_t _hb_font_funcs_default = {
 
 
 /**
- * hb_font_funcs_create: (Xconstructor)
+ * hb_font_funcs_create:
  *
  * Creates a new #hb_font_funcs_t structure of font functions.
  *
@@ -746,10 +730,16 @@ hb_font_funcs_destroy (hb_font_funcs_t *ffuncs)
 {
   if (!hb_object_destroy (ffuncs)) return;
 
-#define HB_FONT_FUNC_IMPLEMENT(name) if (ffuncs->destroy.name) \
-  ffuncs->destroy.name (ffuncs->user_data.name);
-  HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
+  if (ffuncs->destroy)
+  {
+#define HB_FONT_FUNC_IMPLEMENT(name) if (ffuncs->destroy->name) \
+    ffuncs->destroy->name (!ffuncs->user_data ? nullptr : ffuncs->user_data->name);
+    HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
+  }
+
+  hb_free (ffuncs->destroy);
+  hb_free (ffuncs->user_data);
 
   hb_free (ffuncs);
 }
@@ -841,24 +831,50 @@ hb_font_funcs_set_##name##_func (hb_font_funcs_t             *ffuncs,    \
 				 hb_destroy_func_t            destroy)   \
 {                                                                        \
   if (hb_object_is_immutable (ffuncs))                                   \
+    goto fail;                                                           \
+                                                                         \
+  if (!func)                                                             \
   {                                                                      \
     if (destroy)                                                         \
       destroy (user_data);                                               \
-    return;                                                              \
+    destroy = nullptr;                                                   \
+    user_data = nullptr;                                                 \
   }                                                                      \
 									 \
-  if (ffuncs->destroy.name)                                              \
-    ffuncs->destroy.name (ffuncs->user_data.name);                       \
+  if (ffuncs->destroy && ffuncs->destroy->name)                          \
+    ffuncs->destroy->name (!ffuncs->user_data ? nullptr : ffuncs->user_data->name); \
+                                                                         \
+  if (user_data && !ffuncs->user_data)                                   \
+  {                                                                      \
+    ffuncs->user_data = (decltype (ffuncs->user_data)) hb_calloc (1, sizeof (*ffuncs->user_data)); \
+    if (unlikely (!ffuncs->user_data))                                   \
+      goto fail;                                                         \
+  }                                                                      \
+  if (destroy && !ffuncs->destroy)                                       \
+  {                                                                      \
+    ffuncs->destroy = (decltype (ffuncs->destroy)) hb_calloc (1, sizeof (*ffuncs->destroy)); \
+    if (unlikely (!ffuncs->destroy))                                     \
+      goto fail;                                                         \
+  }                                                                      \
 									 \
   if (func) {                                                            \
     ffuncs->get.f.name = func;                                           \
-    ffuncs->user_data.name = user_data;                                  \
-    ffuncs->destroy.name = destroy;                                      \
+    if (ffuncs->user_data)                                               \
+      ffuncs->user_data->name = user_data;                               \
+    if (ffuncs->destroy)                                                 \
+      ffuncs->destroy->name = destroy;                                   \
   } else {                                                               \
     ffuncs->get.f.name = hb_font_get_##name##_default;                   \
-    ffuncs->user_data.name = nullptr;                                    \
-    ffuncs->destroy.name = nullptr;                                      \
+    if (ffuncs->user_data)                                               \
+      ffuncs->user_data->name = nullptr;                                 \
+    if (ffuncs->destroy)						 \
+      ffuncs->destroy->name = nullptr;                                   \
   }                                                                      \
+  return;                                                                \
+                                                                         \
+fail:                                                                    \
+  if (destroy)                                                           \
+    destroy (user_data);                                                 \
 }
 
 HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
@@ -1623,6 +1639,9 @@ DEFINE_NULL_INSTANCE (hb_font_t) =
 {
   HB_OBJECT_HEADER_STATIC,
 
+  0, /* serial */
+  0, /* serial_coords */
+
   nullptr, /* parent */
   const_cast<hb_face_t *> (&_hb_Null_hb_face_t),
 
@@ -1630,6 +1649,8 @@ DEFINE_NULL_INSTANCE (hb_font_t) =
   1000, /* y_scale */
   0., /* slant */
   0., /* slant_xy; */
+  1.f, /* x_multf */
+  1.f, /* y_multf */
   1<<16, /* x_mult */
   1<<16, /* y_mult */
 
@@ -1662,14 +1683,15 @@ _hb_font_create (hb_face_t *face)
   font->face = hb_face_reference (face);
   font->klass = hb_font_funcs_get_empty ();
   font->data.init0 (font);
-  font->x_scale = font->y_scale = hb_face_get_upem (face);
+  font->x_scale = font->y_scale = face->get_upem ();
+  font->x_multf = font->y_multf = 1.f;
   font->x_mult = font->y_mult = 1 << 16;
 
   return font;
 }
 
 /**
- * hb_font_create: (Xconstructor)
+ * hb_font_create:
  * @face: a face.
  *
  * Constructs a new font object from the specified face.
@@ -1715,6 +1737,8 @@ _hb_font_adopt_var_coords (hb_font_t *font,
   font->coords = coords;
   font->design_coords = design_coords;
   font->num_coords = coords_length;
+
+  font->mults_changed (); // Easiest to call this to drop cached data
 }
 
 /**
@@ -1744,7 +1768,6 @@ hb_font_create_sub_font (hb_font_t *parent)
   font->x_scale = parent->x_scale;
   font->y_scale = parent->y_scale;
   font->slant = parent->slant;
-  font->mults_changed ();
   font->x_ppem = parent->x_ppem;
   font->y_ppem = parent->y_ppem;
   font->ptem = parent->ptem;
@@ -1766,6 +1789,8 @@ hb_font_create_sub_font (hb_font_t *parent)
       hb_free (design_coords);
     }
   }
+
+  font->mults_changed ();
 
   return font;
 }
@@ -1852,6 +1877,9 @@ hb_font_set_user_data (hb_font_t          *font,
 		       hb_destroy_func_t   destroy /* May be NULL. */,
 		       hb_bool_t           replace)
 {
+  if (!hb_object_is_immutable (font))
+    font->serial++;
+
   return hb_object_set_user_data (font, key, data, destroy, replace);
 }
 
@@ -1911,6 +1939,45 @@ hb_font_is_immutable (hb_font_t *font)
 }
 
 /**
+ * hb_font_get_serial:
+ * @font: #hb_font_t to work upon
+ *
+ * Returns the internal serial number of the font. The serial
+ * number is increased every time a setting on the font is
+ * changed, using a setter function.
+ *
+ * Return value: serial number
+ *
+ * Since: 4.4.0.
+ **/
+unsigned int
+hb_font_get_serial (hb_font_t *font)
+{
+  return font->serial;
+}
+
+/**
+ * hb_font_changed:
+ * @font: #hb_font_t to work upon
+ *
+ * Notifies the @font that underlying font data has changed.
+ * This has the effect of increasing the serial as returned
+ * by hb_font_get_serial(), which invalidates internal caches.
+ *
+ * Since: 4.4.0.
+ **/
+void
+hb_font_changed (hb_font_t *font)
+{
+  if (hb_object_is_immutable (font))
+    return;
+
+  font->serial++;
+
+  font->mults_changed ();
+}
+
+/**
  * hb_font_set_parent:
  * @font: #hb_font_t to work upon
  * @parent: The parent font object to assign
@@ -1925,6 +1992,11 @@ hb_font_set_parent (hb_font_t *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  if (parent == font->parent)
+    return;
+
+  font->serial++;
 
   if (!parent)
     parent = hb_font_get_empty ();
@@ -1967,6 +2039,11 @@ hb_font_set_face (hb_font_t *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  if (face == font->face)
+    return;
+
+  font->serial++;
 
   if (unlikely (!face))
     face = hb_face_get_empty ();
@@ -2022,6 +2099,8 @@ hb_font_set_funcs (hb_font_t         *font,
     return;
   }
 
+  font->serial++;
+
   if (font->destroy)
     font->destroy (font->user_data);
 
@@ -2059,6 +2138,8 @@ hb_font_set_funcs_data (hb_font_t         *font,
     return;
   }
 
+  font->serial++;
+
   if (font->destroy)
     font->destroy (font->user_data);
 
@@ -2084,6 +2165,11 @@ hb_font_set_scale (hb_font_t *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  if (font->x_scale == x_scale && font->y_scale == y_scale)
+    return;
+
+  font->serial++;
 
   font->x_scale = x_scale;
   font->y_scale = y_scale;
@@ -2127,6 +2213,11 @@ hb_font_set_ppem (hb_font_t    *font,
   if (hb_object_is_immutable (font))
     return;
 
+  if (font->x_ppem == x_ppem && font->y_ppem == y_ppem)
+    return;
+
+  font->serial++;
+
   font->x_ppem = x_ppem;
   font->y_ppem = y_ppem;
 }
@@ -2168,6 +2259,11 @@ hb_font_set_ptem (hb_font_t *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  if (font->ptem == ptem)
+    return;
+
+  font->serial++;
 
   font->ptem = ptem;
 }
@@ -2216,6 +2312,11 @@ hb_font_set_synthetic_slant (hb_font_t *font, float slant)
   if (hb_object_is_immutable (font))
     return;
 
+  if (font->slant == slant)
+    return;
+
+  font->serial++;
+
   font->slant = slant;
   font->mults_changed ();
 }
@@ -2262,6 +2363,8 @@ hb_font_set_variations (hb_font_t            *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  font->serial_coords = ++font->serial;
 
   if (!variations_length)
   {
@@ -2322,6 +2425,8 @@ hb_font_set_var_coords_design (hb_font_t    *font,
   if (hb_object_is_immutable (font))
     return;
 
+  font->serial_coords = ++font->serial;
+
   int *normalized = coords_length ? (int *) hb_calloc (coords_length, sizeof (int)) : nullptr;
   float *design_coords = coords_length ? (float *) hb_calloc (coords_length, sizeof (float)) : nullptr;
 
@@ -2354,6 +2459,8 @@ hb_font_set_var_named_instance (hb_font_t *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  font->serial_coords = ++font->serial;
 
   unsigned int coords_length = hb_ot_var_named_instance_get_design_coords (font->face, instance_index, nullptr, nullptr);
 
@@ -2390,6 +2497,8 @@ hb_font_set_var_coords_normalized (hb_font_t    *font,
 {
   if (hb_object_is_immutable (font))
     return;
+
+  font->serial_coords = ++font->serial;
 
   int *copy = coords_length ? (int *) hb_calloc (coords_length, sizeof (coords[0])) : nullptr;
   int *unmapped = coords_length ? (int *) hb_calloc (coords_length, sizeof (coords[0])) : nullptr;
@@ -2596,12 +2705,14 @@ hb_font_funcs_set_glyph_func (hb_font_funcs_t          *ffuncs,
     return;
   }
 
+  /* Since we pass it to two destroying functions. */
+  trampoline_reference (&trampoline->closure);
+
   hb_font_funcs_set_nominal_glyph_func (ffuncs,
 					hb_font_get_nominal_glyph_trampoline,
 					trampoline,
 					trampoline_destroy);
 
-  trampoline_reference (&trampoline->closure);
   hb_font_funcs_set_variation_glyph_func (ffuncs,
 					  hb_font_get_variation_glyph_trampoline,
 					  trampoline,

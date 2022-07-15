@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2021 by
+ * Copyright (C) 2013-2022 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -367,7 +367,7 @@
     }
 
     /* transform transparency to alpha */
-    if ( png_get_valid(png, info, PNG_INFO_tRNS ) )
+    if ( png_get_valid( png, info, PNG_INFO_tRNS ) )
       png_set_tRNS_to_alpha( png );
 
     if ( bitdepth == 16 )
@@ -387,7 +387,7 @@
     png_set_filler( png, 0xFF, PNG_FILLER_AFTER );
 
     /* recheck header after setting EXPAND options */
-    png_read_update_info(png, info );
+    png_read_update_info( png, info );
     png_get_IHDR( png, info,
                   &imgWidth, &imgHeight,
                   &bitdepth, &color_type, &interlace,

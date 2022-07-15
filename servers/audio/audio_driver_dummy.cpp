@@ -33,22 +33,24 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
+AudioDriverDummy *AudioDriverDummy::singleton = nullptr;
+
 Error AudioDriverDummy::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 	samples_in = nullptr;
 
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
-	speaker_mode = SPEAKER_MODE_STEREO;
-	channels = 2;
+	if (mix_rate == -1) {
+		mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	}
 
-	int latency = GLOBAL_GET("audio/driver/output_latency");
-	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-
+	channels = get_channels();
 	samples_in = memnew_arr(int32_t, (size_t)buffer_frames * channels);
 
-	thread.start(AudioDriverDummy::thread_func, this);
+	if (use_threads) {
+		thread.start(AudioDriverDummy::thread_func, this);
+	}
 
 	return OK;
 };
@@ -93,11 +95,56 @@ void AudioDriverDummy::unlock() {
 	mutex.unlock();
 };
 
+void AudioDriverDummy::set_use_threads(bool p_use_threads) {
+	use_threads = p_use_threads;
+}
+
+void AudioDriverDummy::set_speaker_mode(SpeakerMode p_mode) {
+	speaker_mode = p_mode;
+}
+
+void AudioDriverDummy::set_mix_rate(int p_rate) {
+	mix_rate = p_rate;
+}
+
+uint32_t AudioDriverDummy::get_channels() const {
+	static const int channels_for_mode[4] = { 2, 4, 8, 16 };
+	return channels_for_mode[speaker_mode];
+}
+
+void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
+	ERR_FAIL_COND(!active); // If not active, should not mix.
+	ERR_FAIL_COND(use_threads == true); // If using threads, this will not work well.
+
+	uint32_t todo = p_frames;
+	while (todo) {
+		uint32_t to_mix = MIN(buffer_frames, todo);
+		lock();
+		audio_server_process(to_mix, samples_in);
+		unlock();
+
+		uint32_t total_samples = to_mix * channels;
+
+		for (uint32_t i = 0; i < total_samples; i++) {
+			p_buffer[i] = samples_in[i];
+		}
+
+		todo -= to_mix;
+		p_buffer += total_samples;
+	}
+}
+
 void AudioDriverDummy::finish() {
-	exit_thread = true;
-	thread.wait_to_finish();
+	if (use_threads) {
+		exit_thread = true;
+		thread.wait_to_finish();
+	}
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
 	};
-};
+}
+
+AudioDriverDummy::AudioDriverDummy() {
+	singleton = this;
+}

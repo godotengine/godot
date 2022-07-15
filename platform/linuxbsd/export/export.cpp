@@ -35,16 +35,11 @@
 void register_linuxbsd_exporter() {
 	Ref<EditorExportPlatformLinuxBSD> platform;
 	platform.instantiate();
-
-	Ref<Image> img = memnew(Image(_linuxbsd_logo));
-	Ref<ImageTexture> logo;
-	logo.instantiate();
-	logo->create_from_image(img);
-	platform->set_logo(logo);
+	platform->set_logo(ImageTexture::create_from_image(memnew(Image(_linuxbsd_logo))));
 	platform->set_name("Linux/X11");
 	platform->set_extension("x86_32");
 	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_os_name("LinuxBSD");
+	platform->set_os_name("Linux");
 	platform->set_chmod_flags(0755);
 
 	EditorExport::get_singleton()->add_export_platform(platform);

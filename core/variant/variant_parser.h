@@ -113,7 +113,7 @@ public:
 
 	struct Tag {
 		String name;
-		Map<String, Variant> fields;
+		HashMap<String, Variant> fields;
 	};
 
 private:

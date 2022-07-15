@@ -74,7 +74,7 @@ struct hb_serialize_context_t
     }
 
     object_t () = default;
-    
+
 #ifdef HB_EXPERIMENTAL_API
     object_t (const hb_object_t &o)
     {
@@ -90,6 +90,15 @@ struct hb_serialize_context_t
         virtual_links.push (o.virtual_links[i]);
     }
 #endif
+
+    friend void swap (object_t& a, object_t& b)
+    {
+      hb_swap (a.head, b.head);
+      hb_swap (a.tail, b.tail);
+      hb_swap (a.next, b.next);
+      hb_swap (a.real_links, b.real_links);
+      hb_swap (a.virtual_links, b.virtual_links);
+    }
 
     bool operator == (const object_t &o) const
     {
@@ -111,10 +120,10 @@ struct hb_serialize_context_t
     struct link_t
     {
       unsigned width: 3;
-      bool is_signed: 1;
+      unsigned is_signed: 1;
       unsigned whence: 2;
-      unsigned position: 28;
-      unsigned bias;
+      unsigned bias : 26;
+      unsigned position;
       objidx_t objidx;
 
       link_t () = default;
@@ -686,7 +695,7 @@ struct hb_serialize_context_t
     check_assign (off, offset, HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
   }
 
-  public: /* TODO Make private. */
+  public:
   char *start, *head, *tail, *end;
   unsigned int debug_depth;
   hb_serialize_error_t errors;
@@ -710,9 +719,7 @@ struct hb_serialize_context_t
   hb_vector_t<object_t *> packed;
 
   /* Map view of packed objects. */
-  hb_hashmap_t<const object_t *, objidx_t,
-	       const object_t *, objidx_t,
-	       nullptr, 0> packed_map;
+  hb_hashmap_t<const object_t *, objidx_t> packed_map;
 };
 
 #endif /* HB_SERIALIZE_HH */

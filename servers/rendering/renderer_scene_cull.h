@@ -42,7 +42,7 @@
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/storage/utilities.h"
 #include "servers/xr/xr_interface.h"
 
 class RendererSceneCull : public RendererScene {
@@ -324,7 +324,7 @@ public:
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
-		Map<RID, uint64_t> viewport_visibility_masks;
+		HashMap<RID, uint64_t> viewport_visibility_masks;
 
 		SelfList<Instance>::List instances;
 
@@ -426,7 +426,7 @@ public:
 			PropertyInfo info;
 		};
 
-		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		HashMap<StringName, InstanceShaderParameter> instance_shader_parameters;
 		bool instance_allocated_shader_parameters = false;
 		int32_t instance_allocated_shader_parameters_offset = -1;
 
@@ -443,7 +443,7 @@ public:
 		float visibility_range_end_margin = 0.0f;
 		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
-		Set<Instance *> visibility_dependencies;
+		HashSet<Instance *> visibility_dependencies;
 		uint32_t visibility_dependencies_depth = 0;
 		float transparency = 0.0f;
 		Scenario *scenario = nullptr;
@@ -470,32 +470,32 @@ public:
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check;
 
-		RendererStorage::DependencyTracker dependency_tracker;
+		DependencyTracker dependency_tracker;
 
-		static void dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 			switch (p_notification) {
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA:
-				case RendererStorage::DEPENDENCY_CHANGED_AABB: {
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case Dependency::DEPENDENCY_CHANGED_AABB: {
 					singleton->_instance_queue_update(instance, true, false);
 
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MATERIAL: {
+				case Dependency::DEPENDENCY_CHANGED_MATERIAL: {
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MESH:
-				case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
-				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
-				case RendererStorage::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_MESH:
+				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
+				case Dependency::DEPENDENCY_CHANGED_DECAL:
+				case Dependency::DEPENDENCY_CHANGED_LIGHT:
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_BONES: {
 					//ignored
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);
@@ -506,7 +506,7 @@ public:
 			}
 		}
 
-		static void dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_deleted(const RID &p_dependency, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 
 			if (p_dependency == instance->base) {
@@ -526,7 +526,7 @@ public:
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;
-			baked_light = false;
+			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
 			lightmap_slice_index = 0;
@@ -579,16 +579,16 @@ public:
 
 	struct InstanceGeometryData : public InstanceBaseData {
 		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
-		Set<Instance *> lights;
+		HashSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
 		uint32_t projector_count = 0;
 		uint32_t softshadow_count = 0;
 
-		Set<Instance *> decals;
-		Set<Instance *> reflection_probes;
-		Set<Instance *> voxel_gi_instances;
-		Set<Instance *> lightmap_captures;
+		HashSet<Instance *> decals;
+		HashSet<Instance *> reflection_probes;
+		HashSet<Instance *> voxel_gi_instances;
+		HashSet<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -599,7 +599,7 @@ public:
 	struct InstanceReflectionProbeData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		RID instance;
 		SelfList<InstanceReflectionProbeData> update_list;
@@ -616,7 +616,7 @@ public:
 		Instance *owner = nullptr;
 		RID instance;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		InstanceDecalData() {
 		}
@@ -654,7 +654,7 @@ public:
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		Instance *baked_light = nullptr;
 
@@ -673,10 +673,10 @@ public:
 	struct InstanceVoxelGIData : public InstanceBaseData {
 		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
-		Set<Instance *> dynamic_geometries;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> dynamic_geometries;
 
-		Set<Instance *> lights;
+		HashSet<Instance *> lights;
 
 		struct LightCache {
 			RS::LightType type;
@@ -713,8 +713,8 @@ public:
 
 	struct InstanceLightmapData : public InstanceBaseData {
 		RID instance;
-		Set<Instance *> geometries;
-		Set<Instance *> users;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> users;
 
 		InstanceLightmapData() {
 		}
@@ -779,7 +779,7 @@ public:
 		}
 	};
 
-	Set<Instance *> heightfield_particle_colliders_update_list;
+	HashSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
 	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
@@ -923,6 +923,9 @@ public:
 
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
+	const int TAA_JITTER_COUNT = 16;
+	LocalVector<Vector2> taa_jitter_array;
+
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
 
@@ -964,7 +967,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_parameters_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
@@ -1054,7 +1057,7 @@ public:
 	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
+	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
@@ -1147,15 +1150,15 @@ public:
 	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	PASS1(shadows_quality_set, RS::ShadowQuality)
-	PASS1(directional_shadow_quality_set, RS::ShadowQuality)
+	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
+	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
 	/* Render Buffers */
 
 	PASS0R(RID, render_buffers_create)
-	PASS12(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
+	PASS13(render_buffers_configure, RID, RID, int, int, int, int, float, float, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, bool, uint32_t)
 	PASS1(gi_set_use_half_resolution, bool)
 
 	/* Shadow Atlas */

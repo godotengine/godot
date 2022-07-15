@@ -101,7 +101,7 @@ bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) c
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
-			disabled_properties[p_class] = Set<StringName>();
+			disabled_properties[p_class] = HashSet<StringName>();
 		}
 
 		disabled_properties[p_class].insert(p_property);
@@ -166,24 +166,24 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Dictionary data;
 	data["type"] = "feature_profile";
 	Array dis_classes;
-	for (Set<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
-		dis_classes.push_back(String(E->get()));
+	for (const StringName &E : disabled_classes) {
+		dis_classes.push_back(String(E));
 	}
 	dis_classes.sort();
 	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
-	for (Set<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
-		dis_editors.push_back(String(E->get()));
+	for (const StringName &E : disabled_editors) {
+		dis_editors.push_back(String(E));
 	}
 	dis_editors.sort();
 	data["disabled_editors"] = dis_editors;
 
 	Array dis_props;
 
-	for (KeyValue<StringName, Set<StringName>> &E : disabled_properties) {
-		for (Set<StringName>::Element *F = E.value.front(); F; F = F->next()) {
-			dis_props.push_back(String(E.key) + ":" + String(F->get()));
+	for (KeyValue<StringName, HashSet<StringName>> &E : disabled_properties) {
+		for (const StringName &F : E.value) {
+			dis_props.push_back(String(E.key) + ":" + String(F));
 		}
 	}
 
@@ -556,9 +556,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		String class_description;
 
 		DocTools *dd = EditorHelp::get_doc_data();
-		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_name);
+		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
 		if (E) {
-			class_description = DTR(E->get().brief_description);
+			class_description = DTR(E->value.brief_description);
 		}
 
 		description_bit->set_text(class_description);
@@ -983,7 +983,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
-	new_profile_dialog->get_ok_button()->set_text(TTR("Create"));
+	new_profile_dialog->set_ok_button_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);
@@ -993,7 +993,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	import_profiles->add_filter("*.profile", TTR("Godot Feature Profile"));
 	import_profiles->connect("files_selected", callable_mp(this, &EditorFeatureProfileManager::_import_profiles));
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -1001,7 +1001,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	export_profile->add_filter("*.profile", TTR("Godot Feature Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorFeatureProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

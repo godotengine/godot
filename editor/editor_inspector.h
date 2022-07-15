@@ -50,7 +50,7 @@ public:
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
 	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
-	static bool can_property_revert(Object *p_object, const StringName &p_property);
+	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
 };
 
 class EditorProperty : public Container {
@@ -62,6 +62,7 @@ public:
 		MENU_PASTE_PROPERTY,
 		MENU_COPY_PROPERTY_PATH,
 		MENU_PIN_VALUE,
+		MENU_OPEN_DOCUMENTATION,
 	};
 
 private:
@@ -71,6 +72,7 @@ private:
 	Object *object = nullptr;
 	StringName property;
 	String property_path;
+	String doc_path;
 
 	int property_usage;
 
@@ -117,7 +119,7 @@ private:
 
 	mutable String tooltip_text;
 
-	Map<StringName, Variant> cache;
+	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
 	void _update_pin_flags();
@@ -131,6 +133,9 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	const Color *_get_property_colors();
 
+	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
+	virtual StringName _get_revert_property() const;
+
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
@@ -143,7 +148,9 @@ public:
 	bool is_read_only() const;
 
 	Object *get_edited_object();
-	StringName get_edited_property();
+	StringName get_edited_property() const;
+
+	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
 	void update_revert_and_pin_status();
@@ -205,11 +212,13 @@ public:
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 
+public:
 	friend class EditorInspector;
 	struct AddedEditor {
 		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
+		bool add_to_end = false;
 	};
 
 	List<AddedEditor> added_editors;
@@ -226,7 +235,7 @@ protected:
 
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -434,10 +443,10 @@ class EditorInspector : public ScrollContainer {
 
 	VBoxContainer *main_vbox = nullptr;
 
-	//map use to cache the instantiated editors
-	Map<StringName, List<EditorProperty *>> editor_property_map;
+	// Map used to cache the instantiated editors.
+	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	Set<StringName> pending;
+	HashSet<StringName> pending;
 
 	void _clear();
 	Object *object = nullptr;
@@ -468,11 +477,16 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
-	Map<StringName, String> class_descr_cache;
-	Set<StringName> restart_request_props;
+	struct PropertyDocInfo {
+		String description;
+		String path;
+	};
 
-	Map<ObjectID, int> scroll_cache;
+	HashMap<StringName, HashMap<StringName, PropertyDocInfo>> doc_info_cache;
+	HashMap<StringName, String> class_descr_cache;
+	HashSet<StringName> restart_request_props;
+
+	HashMap<ObjectID, int> scroll_cache;
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
@@ -496,7 +510,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _node_removed(Node *p_node);
 
-	Map<StringName, int> per_array_page;
+	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
 
 	void _changed_callback();
@@ -531,6 +545,7 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
+	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 

@@ -61,6 +61,16 @@
 				Returns the unsigned minimum angle to the given vector, in radians.
 			</description>
 		</method>
+		<method name="bezier_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<argument index="0" name="control_1" type="Vector3" />
+			<argument index="1" name="control_2" type="Vector3" />
+			<argument index="2" name="end" type="Vector3" />
+			<argument index="3" name="t" type="float" />
+			<description>
+				Returns the point at the given [code]t[/code] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by this vector and the given [code]control_1[/code], [code]control_2[/code], and [code]end[/code] points.
+			</description>
+		</method>
 		<method name="bounce" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="n" type="Vector3" />

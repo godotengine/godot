@@ -409,7 +409,7 @@
 			<return type="PackedFloat32Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedFloat32Array], where each block of 4 bytes has been converted to a 32-bit float (C++ [code]float[/code]).
-				The size of the new array will be [code]byte_array.size() / 4[/code].
+				The size of the input array must be a multiple of 4 (size of 32-bit float). The size of the new array will be [code]byte_array.size() / 4[/code].
 				If the original data can't be converted to 32-bit floats, the resulting data is undefined.
 			</description>
 		</method>
@@ -417,7 +417,7 @@
 			<return type="PackedFloat64Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedFloat64Array], where each block of 8 bytes has been converted to a 64-bit float (C++ [code]double[/code], Godot [float]).
-				The size of the new array will be [code]byte_array.size() / 8[/code].
+				The size of the input array must be a multiple of 8 (size of 64-bit double). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to 64-bit floats, the resulting data is undefined.
 			</description>
 		</method>
@@ -425,15 +425,15 @@
 			<return type="PackedInt32Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedInt32Array], where each block of 4 bytes has been converted to a signed 32-bit integer (C++ [code]int32_t[/code]).
-				The size of the new array will be [code]byte_array.size() / 4[/code].
+				The size of the input array must be a multiple of 4 (size of 32-bit integer). The size of the new array will be [code]byte_array.size() / 4[/code].
 				If the original data can't be converted to signed 32-bit integers, the resulting data is undefined.
 			</description>
 		</method>
 		<method name="to_int64_array" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<description>
-				Returns a copy of the data converted to a [PackedInt64Array], where each block of 4 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
-				The size of the new array will be [code]byte_array.size() / 8[/code].
+				Returns a copy of the data converted to a [PackedInt64Array], where each block of 8 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
+				The size of the input array must be a multiple of 8 (size of 64-bit integer). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
 			</description>
 		</method>

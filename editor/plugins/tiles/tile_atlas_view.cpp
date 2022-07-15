@@ -480,7 +480,7 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 
 			// Update the rect.
 			if (!alternative_tiles_rect_cache.has(tile_id)) {
-				alternative_tiles_rect_cache[tile_id] = Map<int, Rect2i>();
+				alternative_tiles_rect_cache[tile_id] = HashMap<int, Rect2i>();
 			}
 			alternative_tiles_rect_cache[tile_id][alternative_id] = current;
 
@@ -494,7 +494,7 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 }
 
 Vector3i TileAtlasView::get_alternative_tile_at_pos(const Vector2 p_pos) const {
-	for (const KeyValue<Vector2, Map<int, Rect2i>> &E_coords : alternative_tiles_rect_cache) {
+	for (const KeyValue<Vector2, HashMap<int, Rect2i>> &E_coords : alternative_tiles_rect_cache) {
 		for (const KeyValue<int, Rect2i> &E_alternative : E_coords.value) {
 			if (E_alternative.value.has_point(p_pos)) {
 				return Vector3i(E_coords.key.x, E_coords.key.y, E_alternative.key);

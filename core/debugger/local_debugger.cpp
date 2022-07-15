@@ -31,7 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
-#include "scene/main/scene_tree.h"
+#include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
@@ -241,15 +241,15 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 			if (line.get_slice_count(" ") <= 1) {
-				const Map<int, Set<StringName>> &breakpoints = script_debugger->get_breakpoints();
+				const HashMap<int, HashSet<StringName>> &breakpoints = script_debugger->get_breakpoints();
 				if (breakpoints.size() == 0) {
 					print_line("No Breakpoints.");
 					continue;
 				}
 
 				print_line("Breakpoint(s): " + itos(breakpoints.size()));
-				for (const KeyValue<int, Set<StringName>> &E : breakpoints) {
-					print_line("\t" + String(E.value.front()->get()) + ":" + itos(E.key));
+				for (const KeyValue<int, HashSet<StringName>> &E : breakpoints) {
+					print_line("\t" + String(*E.value.begin()) + ":" + itos(E.key));
 				}
 
 			} else {
@@ -273,7 +273,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(-1);
 			script_debugger->set_lines_left(-1);
 
-			SceneTree::get_singleton()->quit();
+			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+			if (main_loop->get_class() == "SceneTree") {
+				main_loop->call("quit");
+			}
 			break;
 		} else if (line.begins_with("delete")) {
 			if (line.get_slice_count(" ") <= 1) {

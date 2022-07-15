@@ -161,8 +161,9 @@ EditorAbout::EditorAbout() {
 
 	TabContainer *tc = memnew(TabContainer);
 	tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(400, 200) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tc->set_theme_type_variation("TabContainerOdd");
 	vbc->add_child(tc);
 
 	// Authors
@@ -196,6 +197,7 @@ EditorAbout::EditorAbout() {
 	// License
 
 	_license_text = memnew(RichTextLabel);
+	_license_text->set_threaded(true);
 	_license_text->set_name(TTR("License"));
 	_license_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_license_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -211,7 +213,7 @@ EditorAbout::EditorAbout() {
 
 	Label *tpl_label = memnew(Label);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	tpl_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	tpl_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
@@ -272,6 +274,7 @@ EditorAbout::EditorAbout() {
 	tpl_hbc->add_child(_tpl_tree);
 
 	_tpl_text = memnew(RichTextLabel);
+	_tpl_text->set_threaded(true);
 	_tpl_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	_tpl_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_hbc->add_child(_tpl_text);

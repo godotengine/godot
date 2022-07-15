@@ -31,11 +31,12 @@
 #ifndef SHADER_OPENGL_H
 #define SHADER_OPENGL_H
 
+#include "core/math/camera_matrix.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/variant.h"
 #include "servers/rendering_server.h"
@@ -83,7 +84,7 @@ private:
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString fragment_globals;
-		Map<StringName, CharString> code_sections;
+		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 
 		struct Specialization {
@@ -92,7 +93,7 @@ private:
 			GLuint frag_id;
 			LocalVector<GLint> uniform_location;
 			LocalVector<GLint> texture_uniform_locations;
-			Map<StringName, GLint> custom_uniform_locations;
+			HashMap<StringName, GLint> custom_uniform_locations;
 			bool build_queued = false;
 			bool ok = false;
 			Specialization() {
@@ -219,7 +220,10 @@ protected:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_COND_V(!version, -1);
 		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
-		return version->variants[p_variant].lookup_ptr(p_specialization)->uniform_location[p_which];
+		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		ERR_FAIL_COND_V(!spec, -1);
+		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
+		return spec->uniform_location[p_which];
 	}
 
 	virtual void _init() = 0;
@@ -227,7 +231,7 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const Map<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
 
 	bool version_is_valid(RID p_version);
 

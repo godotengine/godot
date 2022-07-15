@@ -40,6 +40,7 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
+#include "file_access_filesystem_jandroid.h"
 #include "net_socket_android.h"
 
 #include <dlfcn.h>
@@ -76,9 +77,7 @@ public:
 };
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
-	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
-	ERR_FAIL_COND(!godot_java);
-
+	ERR_FAIL_NULL(godot_java);
 	godot_java->alert(p_alert, p_title);
 }
 
@@ -95,7 +94,7 @@ void OS_Android::initialize_core() {
 	}
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
-	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
 
 #ifdef TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
@@ -106,9 +105,8 @@ void OS_Android::initialize_core() {
 		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	}
 #endif
-
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
-	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketAndroid::make_default();
 }
@@ -164,7 +162,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = p_path;
@@ -303,6 +301,33 @@ String OS_Android::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	return godot_io_java->get_system_dir(p_dir, p_shared_storage);
 }
 
+Error OS_Android::move_to_trash(const String &p_path) {
+	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+	if (da_ref.is_null()) {
+		return FAILED;
+	}
+
+	// Check if it's a directory
+	if (da_ref->dir_exists(p_path)) {
+		Error err = da_ref->change_dir(p_path);
+		if (err) {
+			return err;
+		}
+		// This is directory, let's erase its contents
+		err = da_ref->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+		// Remove the top directory
+		return da_ref->remove(p_path);
+	} else if (da_ref->file_exists(p_path)) {
+		// This is a file, let's remove it.
+		return da_ref->remove(p_path);
+	} else {
+		return FAILED;
+	}
+}
+
 void OS_Android::set_display_size(const Size2i &p_size) {
 	display_size = p_size;
 }
@@ -313,7 +338,7 @@ Size2i OS_Android::get_display_size() const {
 
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 #if defined(GLES3_ENABLED)
-	ERR_FAIL_COND(!p_gl_extensions);
+	ERR_FAIL_NULL(p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 #endif
 }

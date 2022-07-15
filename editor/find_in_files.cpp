@@ -99,7 +99,7 @@ void FindInFiles::set_folder(String folder) {
 	_root_dir = folder;
 }
 
-void FindInFiles::set_filter(const Set<String> &exts) {
+void FindInFiles::set_filter(const HashSet<String> &exts) {
 	_extension_filter = exts;
 }
 
@@ -443,9 +443,9 @@ String FindInFilesDialog::get_folder() const {
 	return text.strip_edges();
 }
 
-Set<String> FindInFilesDialog::get_filter() const {
+HashSet<String> FindInFilesDialog::get_filter() const {
 	// Could check the _filters_preferences but it might not have been generated yet.
-	Set<String> filters;
+	HashSet<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
 		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		if (cb->is_pressed()) {
@@ -566,7 +566,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		Label *find_label = memnew(Label);
-		find_label->set_text(TTR("Find: "));
+		find_label->set_text(TTR("Find:"));
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
@@ -614,7 +614,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_replace_container = memnew(HBoxContainer);
 
 		Label *replace_label = memnew(Label);
-		replace_label->set_text(TTR("Replace: "));
+		replace_label->set_text(TTR("Replace:"));
 		_replace_container->add_child(replace_label);
 
 		_replace_line_edit = memnew(LineEdit);
@@ -701,9 +701,9 @@ void FindInFilesPanel::_notification(int p_what) {
 
 void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
 	TreeItem *file_item;
-	Map<String, TreeItem *>::Element *E = _file_items.find(fpath);
+	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
 
-	if (E == nullptr) {
+	if (!E) {
 		file_item = _results_display->create_item();
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
@@ -715,7 +715,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 
 		_file_items[fpath] = file_item;
 	} else {
-		file_item = E->value();
+		file_item = E->value;
 	}
 
 	int text_index = _with_replace ? 1 : 0;
@@ -754,18 +754,18 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 		return;
 	}
 
-	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
 	if (!E) {
 		return;
 	}
-	Result r = E->value();
+	Result r = E->value;
 	String item_text = item->get_text(_with_replace ? 1 : 0);
 	Ref<Font> font = _results_display->get_theme_font(SNAME("font"));
 	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), font_size).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), font_size).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
@@ -818,12 +818,12 @@ void FindInFilesPanel::_on_cancel_button_clicked() {
 
 void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
-	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
 
-	if (E == nullptr) {
+	if (!E) {
 		return;
 	}
-	Result r = E->value();
+	Result r = E->value;
 
 	TreeItem *file_item = item->get_parent();
 	String fpath = file_item->get_metadata(0);
@@ -850,9 +850,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 				continue;
 			}
 
-			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
-			ERR_FAIL_COND(F == nullptr);
-			locations.push_back(F->value());
+			HashMap<TreeItem *, Result>::Iterator F = _result_items.find(item);
+			ERR_FAIL_COND(!F);
+			locations.push_back(F->value);
 		}
 
 		if (locations.size() != 0) {

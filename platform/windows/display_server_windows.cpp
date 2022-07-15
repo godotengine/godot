@@ -628,7 +628,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	WindowData &wd = windows[p_window];
 
 	while (wd.transient_children.size()) {
-		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
+		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
@@ -656,7 +656,9 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	gl_manager->window_make_current(p_window_id);
+	if (gl_manager) {
+		gl_manager->window_make_current(p_window_id);
+	}
 #endif
 }
 
@@ -1501,7 +1503,7 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		RBMap<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
@@ -2006,7 +2008,7 @@ void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float
 }
 
 void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, int idx) {
-	Map<int, Vector2>::Element *curr = touch_state.find(idx);
+	RBMap<int, Vector2>::Element *curr = touch_state.find(idx);
 	if (!curr) {
 		return;
 	}
@@ -2158,7 +2160,10 @@ void DisplayServerWindows::popup_close(WindowID p_window) {
 		WindowID win_id = E->get();
 		popup_list.erase(E);
 
-		_send_window_event(windows[win_id], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+		if (win_id != p_window) {
+			// Only request close on related windows, not this window.  We are already processing it.
+			_send_window_event(windows[win_id], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+		}
 		E = F;
 	}
 }
@@ -2173,6 +2178,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 			case WM_NCRBUTTONDOWN:
 			case WM_NCMBUTTONDOWN:
 			case WM_LBUTTONDOWN:
+			case WM_RBUTTONDOWN:
 			case WM_MBUTTONDOWN: {
 				MOUSEHOOKSTRUCT *ms = (MOUSEHOOKSTRUCT *)lParam;
 				Point2i pos = Point2i(ms->pt.x, ms->pt.y);
@@ -2195,6 +2201,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 				}
 				if (C) {
 					_send_window_event(windows[C->get()], DisplayServerWindows::WINDOW_EVENT_CLOSE_REQUEST);
+					return 1;
 				}
 			} break;
 		}
@@ -2375,7 +2382,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 		case WM_MOUSELEAVE: {
 			old_invalid = true;
-			outside = true;
+			windows[window_id].mouse_outside = true;
 
 			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
 
@@ -2485,6 +2492,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						windows[window_id].last_tilt = Vector2();
 					}
 
+					windows[window_id].last_pen_inverted = packet.pkStatus & TPS_INVERT;
+
 					POINT coords;
 					GetCursorPos(&coords);
 					ScreenToClient(windows[window_id].hWnd, &coords);
@@ -2503,6 +2512,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					mm->set_pressure(windows[window_id].last_pressure);
 					mm->set_tilt(windows[window_id].last_tilt);
+					mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
 					mm->set_button_mask(last_button_state);
 
@@ -2602,7 +2612,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (outside) {
+			if (windows[window_id].mouse_outside) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
@@ -2612,7 +2622,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				outside = false;
+				windows[window_id].mouse_outside = false;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2635,6 +2645,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if ((pen_info.penMask & PEN_MASK_TILT_X) && (pen_info.penMask & PEN_MASK_TILT_Y)) {
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
 			}
+			mm->set_pen_inverted(pen_info.penFlags & (PEN_FLAG_INVERTED | PEN_FLAG_ERASER));
 
 			mm->set_ctrl_pressed(GetKeyState(VK_CONTROL) < 0);
 			mm->set_shift_pressed(GetKeyState(VK_SHIFT) < 0);
@@ -2702,7 +2713,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 			}
 
-			if (outside) {
+			if (windows[window_id].mouse_outside) {
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
@@ -2712,7 +2723,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				CursorShape c = cursor_shape;
 				cursor_shape = CURSOR_MAX;
 				cursor_set_shape(c);
-				outside = false;
+				windows[window_id].mouse_outside = false;
 
 				// Once-off notification, must call again.
 				track_mouse_leave_event(hWnd);
@@ -2737,14 +2748,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				} else {
 					windows[window_id].last_tilt = Vector2();
 					windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+					windows[window_id].last_pen_inverted = false;
 				}
 			} else {
 				windows[window_id].last_tilt = Vector2();
 				windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				windows[window_id].last_pen_inverted = false;
 			}
 
 			mm->set_pressure(windows[window_id].last_pressure);
 			mm->set_tilt(windows[window_id].last_tilt);
+			mm->set_pen_inverted(windows[window_id].last_pen_inverted);
 
 			mm->set_button_mask(last_button_state);
 
@@ -3355,8 +3369,8 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 		if ((p_new_driver == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+			wd.wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 			wd.wtlc.lcPktMode = 0;
 			wd.wtlc.lcOutOrgX = 0;
 			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
@@ -3479,8 +3493,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if ((tablet_get_current_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+			wd.wtlc.lcPktData = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcMoveMask = PK_STATUS | PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 			wd.wtlc.lcPktMode = 0;
 			wd.wtlc.lcOutOrgX = 0;
 			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
@@ -3593,8 +3607,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	pressrc = 0;
 	old_invalid = true;
 	mouse_mode = MOUSE_MODE_VISIBLE;
-
-	outside = true;
 
 	rendering_driver = p_rendering_driver;
 

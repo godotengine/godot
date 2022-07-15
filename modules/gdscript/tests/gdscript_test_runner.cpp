@@ -363,7 +363,7 @@ void GDScriptTest::disable_stdout() {
 	OS::get_singleton()->set_stderr_enabled(false);
 }
 
-void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error) {
+void GDScriptTest::print_handler(void *p_this, const String &p_message, bool p_error, bool p_rich) {
 	TestResult *result = (TestResult *)p_this;
 	result->output += p_message + "\n";
 }
@@ -543,8 +543,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		return result;
 	}
 	// Test running.
-	const Map<StringName, GDScriptFunction *>::Element *test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
-	if (test_function_element == nullptr) {
+	const HashMap<StringName, GDScriptFunction *>::ConstIterator test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
+	if (!test_function_element) {
 		enable_stdout();
 		result.status = GDTEST_LOAD_ERROR;
 		result.output = "";

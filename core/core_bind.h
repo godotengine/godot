@@ -77,6 +77,8 @@ public:
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
+	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);
+	void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
@@ -107,8 +109,10 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const Ref<Resource> &p_resource, BitField<SaverFlags> p_flags);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
+	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
+	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
 	ResourceSaver() { singleton = this; }
 };
@@ -551,7 +555,6 @@ class Thread : public RefCounted {
 
 protected:
 	Variant ret;
-	Variant userdata;
 	SafeFlag running;
 	Callable target_callable;
 	::Thread thread;
@@ -566,7 +569,7 @@ public:
 		PRIORITY_MAX
 	};
 
-	Error start(const Callable &p_callable, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
+	Error start(const Callable &p_callable, Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_started() const;
 	bool is_alive() const;
@@ -604,7 +607,7 @@ public:
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int get_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	int64_t get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 
 	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -680,8 +683,8 @@ public:
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
-	Map<StringName, Callable> captures;
-	Map<StringName, Ref<EngineProfiler>> profilers;
+	HashMap<StringName, Callable> captures;
+	HashMap<StringName, Ref<EngineProfiler>> profilers;
 
 protected:
 	static void _bind_methods();
@@ -716,7 +719,7 @@ public:
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
-VARIANT_ENUM_CAST(core_bind::ResourceSaver::SaverFlags);
+VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);

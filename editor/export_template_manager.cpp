@@ -35,6 +35,7 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/os/keyboard.h"
+#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -50,7 +51,7 @@ void ExportTemplateManager::_update_template_status() {
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
 
-	Set<String> templates;
+	RBSet<String> templates;
 	da->list_dir_begin();
 	if (err == OK) {
 		String c = da->get_next();
@@ -97,7 +98,7 @@ void ExportTemplateManager::_update_template_status() {
 	installed_table->clear();
 	TreeItem *installed_root = installed_table->create_item();
 
-	for (Set<String>::Element *E = templates.back(); E; E = E->prev()) {
+	for (RBSet<String>::Element *E = templates.back(); E; E = E->prev()) {
 		String version_string = E->get();
 		if (version_string == current_version) {
 			continue;
@@ -592,7 +593,10 @@ void ExportTemplateManager::_mirror_options_button_cbk(int p_id) {
 	}
 }
 
-void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_column, int p_id) {
+void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
@@ -694,7 +698,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	ProgressDialog::get_singleton()->add_task("uncompress_src", TTR("Uncompressing Android Build Sources"), total_files);
 
-	Set<String> dirs_tested;
+	HashSet<String> dirs_tested;
 	int idx = 0;
 	while (ret == UNZ_OK) {
 		// Get file path.
@@ -806,7 +810,7 @@ void ExportTemplateManager::_bind_methods() {
 ExportTemplateManager::ExportTemplateManager() {
 	set_title(TTR("Export Template Manager"));
 	set_hide_on_ok(false);
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
@@ -974,7 +978,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_table->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	installed_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vb->add_child(installed_table);
-	installed_table->connect("button_pressed", callable_mp(this, &ExportTemplateManager::_installed_table_button_cbk));
+	installed_table->connect("button_clicked", callable_mp(this, &ExportTemplateManager::_installed_table_button_cbk));
 
 	// Dialogs.
 	uninstall_confirm = memnew(ConfirmationDialog);
@@ -986,7 +990,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	install_file_dialog->set_title(TTR("Select Template File"));
 	install_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	install_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
-	install_file_dialog->add_filter("*.tpz ; " + TTR("Godot Export Templates"));
+	install_file_dialog->add_filter("*.tpz", TTR("Godot Export Templates"));
 	install_file_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_install_file_selected), varray(false));
 	add_child(install_file_dialog);
 

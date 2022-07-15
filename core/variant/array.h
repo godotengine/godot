@@ -108,6 +108,8 @@ public:
 	Array filter(const Callable &p_callable) const;
 	Array map(const Callable &p_callable) const;
 	Variant reduce(const Callable &p_callable, const Variant &p_accum) const;
+	bool any(const Callable &p_callable) const;
+	bool all(const Callable &p_callable) const;
 
 	bool operator<(const Array &p_array) const;
 	bool operator<=(const Array &p_array) const;
@@ -125,6 +127,10 @@ public:
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
+
+	void set_read_only(bool p_enable);
+	bool is_read_only() const;
+
 	Array(const Array &p_from);
 	Array();
 	~Array();

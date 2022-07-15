@@ -691,12 +691,12 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		return default_builtin_with_overrides_cache;
 	}
 
-	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins();
+	const HashMap<String, List<Ref<InputEvent>>> &builtins = get_builtins();
 
 	// Get a list of all built in inputs which are valid overrides for the OS
 	// Key = builtin name (e.g. ui_accept)
 	// Value = override/feature names (e.g. macos, if it was defined as "ui_accept.macos" and the platform supports that feature)
-	Map<String, Vector<String>> builtins_with_overrides;
+	HashMap<String, Vector<String>> builtins_with_overrides;
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 		String fullname = E.key;
 

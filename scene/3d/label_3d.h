@@ -54,13 +54,6 @@ public:
 		ALPHA_CUT_OPAQUE_PREPASS
 	};
 
-	enum AutowrapMode {
-		AUTOWRAP_OFF,
-		AUTOWRAP_ARBITRARY,
-		AUTOWRAP_WORD,
-		AUTOWRAP_WORD_SMART
-	};
-
 private:
 	real_t pixel_size = 0.01;
 	bool flags[FLAG_MAX] = {};
@@ -83,7 +76,29 @@ private:
 		RID material;
 	};
 
-	Map<uint64_t, SurfaceData> surfaces;
+	struct SurfaceKey {
+		uint64_t texture_id;
+		int32_t priority;
+		int32_t outline_size;
+
+		bool operator==(const SurfaceKey &p_b) const {
+			return (texture_id == p_b.texture_id) && (priority == p_b.priority) && (outline_size == p_b.outline_size);
+		}
+
+		SurfaceKey(uint64_t p_texture_id, int p_priority, int p_outline_size) {
+			texture_id = p_texture_id;
+			priority = p_priority;
+			outline_size = p_outline_size;
+		}
+	};
+
+	struct SurfaceKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const SurfaceKey &p_a) {
+			return hash_murmur3_buffer(&p_a, sizeof(SurfaceKey));
+		}
+	};
+
+	HashMap<SurfaceKey, SurfaceData, SurfaceKeyHasher> surfaces;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
@@ -91,11 +106,12 @@ private:
 	String xl_text;
 	bool uppercase = false;
 
-	AutowrapMode autowrap_mode = AUTOWRAP_OFF;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	float width = 500.0;
 
 	int font_size = 16;
 	Ref<Font> font_override;
+	mutable Ref<Font> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
 	Point2 lbl_offset;
 	int outline_render_priority = -1;
@@ -106,7 +122,6 @@ private:
 
 	float line_spacing = 0.f;
 
-	Dictionary opentype_features;
 	String language;
 	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -134,9 +149,6 @@ protected:
 
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &property) const override;
 
 	void _im_update();
@@ -163,10 +175,6 @@ public:
 
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;
@@ -199,8 +207,8 @@ public:
 	void set_outline_modulate(const Color &p_color);
 	Color get_outline_modulate() const;
 
-	void set_autowrap_mode(AutowrapMode p_mode);
-	AutowrapMode get_autowrap_mode() const;
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -233,7 +241,6 @@ public:
 	~Label3D();
 };
 
-VARIANT_ENUM_CAST(Label3D::AutowrapMode);
 VARIANT_ENUM_CAST(Label3D::DrawFlags);
 VARIANT_ENUM_CAST(Label3D::AlphaCutMode);
 

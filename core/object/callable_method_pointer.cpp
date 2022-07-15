@@ -85,9 +85,9 @@ void CallableCustomMethodPointerBase::_setup(uint32_t *p_base_ptr, uint32_t p_pt
 	// Precompute hash.
 	for (uint32_t i = 0; i < comp_size; i++) {
 		if (i == 0) {
-			h = hash_djb2_one_32(comp_ptr[i]);
+			h = hash_murmur3_one_32(comp_ptr[i]);
 		} else {
-			h = hash_djb2_one_32(comp_ptr[i], h);
+			h = hash_murmur3_one_32(comp_ptr[i], h);
 		}
 	}
 }

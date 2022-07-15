@@ -1,0 +1,31 @@
+From de8fc816bc6698ab97316ed954e133e7e5098262 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlo=20Marcelo=20Arenas=20Bel=C3=B3n?= <carenas@gmail.com>
+Date: Thu, 21 Apr 2022 21:01:12 -0700
+Subject: [PATCH] macos: somehow allow building with a target below 11.0
+
+While building for macOS older than 11 in Apple Silicon makes no
+sense, some build systems lack the flexibility to set a target per
+architecture while aiming to support multi architecture binaries.
+
+Allow an option in those cases by using the slower runtime checks
+if the toolchain allows it.
+
+Fixes: PCRE2Project/pcre2#109
+---
+ sljit_src/sljitExecAllocator.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/sljit_src/sljitExecAllocator.c b/sljit_src/sljitExecAllocator.c
+index 92d940dd..6359848c 100644
+--- a/sljit_src/sljitExecAllocator.c
++++ b/sljit_src/sljitExecAllocator.c
+@@ -152,6 +152,9 @@ static SLJIT_INLINE void apple_update_wx_flags(sljit_s32 enable_exec)
+ {
+ #if MAC_OS_X_VERSION_MIN_REQUIRED >= 110000
+ 	pthread_jit_write_protect_np(enable_exec);
++#elif defined(__clang__)
++	if (__builtin_available(macOS 11.0, *))
++		pthread_jit_write_protect_np(enable_exec);
+ #else
+ #error "Must target Big Sur or newer"
+ #endif /* BigSur */

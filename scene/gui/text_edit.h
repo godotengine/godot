@@ -160,7 +160,6 @@ private:
 		int font_size = -1;
 		int font_height = 0;
 
-		Dictionary opentype_features;
 		String language;
 		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
 		bool draw_control_chars = false;
@@ -180,7 +179,6 @@ private:
 		int get_tab_size() const;
 		void set_font(const Ref<Font> &p_font);
 		void set_font_size(int p_font_size);
-		void set_font_features(const Dictionary &p_features);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
 
@@ -271,7 +269,6 @@ private:
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextDirection input_direction = TEXT_DIRECTION_LTR;
 
-	Dictionary opentype_features;
 	String language = "";
 
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -356,7 +353,7 @@ private:
 		Vector<int> last_visible_chars;
 	};
 
-	Map<int, LineDrawingCache> line_drawing_cache;
+	HashMap<int, LineDrawingCache> line_drawing_cache;
 
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
@@ -422,6 +419,7 @@ private:
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	Color font_selected_color = Color(1, 1, 1);
 	Color selection_color = Color(1, 1, 1);
@@ -455,6 +453,8 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
+	float content_height_cache = 0.0;
+	bool fit_content_height = false;
 	bool scroll_past_end_of_file_enabled = false;
 
 	// Smooth scrolling.
@@ -511,7 +511,6 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	Map<int, Dictionary> syntax_highlighting_cache;
 
 	Dictionary _get_line_syntax_highlighting(int p_line);
 
@@ -579,10 +578,6 @@ protected:
 
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
 	/* Internal API for CodeEdit, pending public API. */
 	// brace matching
 	bool highlight_matching_braces_enabled = false;
@@ -648,10 +643,6 @@ public:
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
 
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
-
 	void set_language(const String &p_language);
 	String get_language() const;
 
@@ -684,6 +675,7 @@ public:
 
 	void set_text(const String &p_text);
 	String get_text() const;
+
 	int get_line_count() const;
 
 	void set_placeholder(const String &p_text);
@@ -796,6 +788,9 @@ public:
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
+
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 
@@ -847,6 +842,9 @@ public:
 
 	void set_v_scroll_speed(float p_speed);
 	float get_v_scroll_speed() const;
+
+	void set_fit_content_height_enabled(const bool p_enabled);
+	bool is_fit_content_height_enabled() const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 

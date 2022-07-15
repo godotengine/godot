@@ -141,6 +141,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
+		VIEW_DISPLAY_MOTION_VECTORS,
 
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
@@ -251,6 +252,7 @@ private:
 	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
 	void cancel_transform();
+	void _update_shrink();
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
@@ -461,7 +463,7 @@ public:
 	RID sbox_instance_xray;
 	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
-	Map<int, Transform3D> subgizmos; // map ID -> initial transform
+	HashMap<int, Transform3D> subgizmos; // map ID -> initial transform
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;
@@ -674,7 +676,6 @@ private:
 	int camera_override_viewport_id;
 
 	void _init_indicators();
-	void _update_context_menu_stylebox();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
 	void _init_grid();

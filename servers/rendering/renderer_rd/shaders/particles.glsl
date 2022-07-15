@@ -228,6 +228,14 @@ bool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom
 	return true;
 }
 
+vec3 safe_normalize(vec3 direction) {
+	const float EPSILON = 0.001;
+	if (length(direction) < EPSILON) {
+		return vec3(0.0);
+	}
+	return normalize(direction);
+}
+
 #GLOBALS
 
 void main() {
@@ -431,7 +439,7 @@ void main() {
 
 			switch (FRAME.attractors[i].type) {
 				case ATTRACTOR_TYPE_SPHERE: {
-					dir = normalize(rel_vec);
+					dir = safe_normalize(rel_vec);
 					float d = length(local_pos) / FRAME.attractors[i].extents.x;
 					if (d > 1.0) {
 						continue;
@@ -439,7 +447,7 @@ void main() {
 					amount = max(0.0, 1.0 - d);
 				} break;
 				case ATTRACTOR_TYPE_BOX: {
-					dir = normalize(rel_vec);
+					dir = safe_normalize(rel_vec);
 
 					vec3 abs_pos = abs(local_pos / FRAME.attractors[i].extents);
 					float d = max(abs_pos.x, max(abs_pos.y, abs_pos.z));
@@ -455,13 +463,13 @@ void main() {
 						continue;
 					}
 					vec3 s = texture(sampler3D(sdf_vec_textures[FRAME.attractors[i].texture_index], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw_pos).xyz;
-					dir = mat3(FRAME.attractors[i].transform) * normalize(s); //revert direction
+					dir = mat3(FRAME.attractors[i].transform) * safe_normalize(s); //revert direction
 					amount = length(s);
 
 				} break;
 			}
 			amount = pow(amount, FRAME.attractors[i].attenuation);
-			dir = normalize(mix(dir, FRAME.attractors[i].transform[2].xyz, FRAME.attractors[i].directionality));
+			dir = safe_normalize(mix(dir, FRAME.attractors[i].transform[2].xyz, FRAME.attractors[i].directionality));
 			attractor_force -= amount * dir * FRAME.attractors[i].strength;
 		}
 

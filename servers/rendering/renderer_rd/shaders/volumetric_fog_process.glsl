@@ -53,7 +53,6 @@ layout(set = 0, binding = 7) uniform sampler linear_sampler;
 
 #ifdef MODE_DENSITY
 layout(rgba16f, set = 0, binding = 8) uniform restrict writeonly image3D density_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D fog_map; //unused
 #endif
 
 #ifdef MODE_FOG

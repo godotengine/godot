@@ -727,6 +727,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
+	call_deferred(SNAME("_repaint"));
 }
 
 bool TabContainer::is_tab_hidden(int p_tab) const {

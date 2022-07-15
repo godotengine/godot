@@ -33,7 +33,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
@@ -48,7 +48,7 @@ class RegExMatch : public RefCounted {
 
 	String subject;
 	Vector<Range> data;
-	Map<String, int> names;
+	HashMap<String, int> names;
 
 	friend class RegEx;
 

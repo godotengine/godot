@@ -930,6 +930,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	}
 
 	update_palette();
+	_update_cursor_instance();
 
 	set_process(true);
 
@@ -1220,7 +1221,7 @@ GridMapEditor::GridMapEditor() {
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter meshes"));
+	search_box->set_placeholder(TTR("Filter Meshes"));
 	hb->add_child(search_box);
 	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
@@ -1259,7 +1260,7 @@ GridMapEditor::GridMapEditor() {
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	info_message->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);

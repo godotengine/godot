@@ -122,13 +122,12 @@ DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
 // Example usage: `godot --test gdscript-parser`.
 
 typedef void (*TestFunc)();
-extern Map<String, TestFunc> *test_commands;
+extern HashMap<String, TestFunc> *test_commands;
 int register_test_command(String p_command, TestFunc p_function);
 
-#define REGISTER_TEST_COMMAND(m_command, m_function)                    \
-	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(_DOCTEST_ANON_VAR_)) = \
-			register_test_command(m_command, m_function);               \
-	DOCTEST_GLOBAL_NO_WARNINGS_END()
+#define REGISTER_TEST_COMMAND(m_command, m_function)                 \
+	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(DOCTEST_ANON_VAR_), \
+			register_test_command(m_command, m_function))
 
 // Utility macros to send an event actions to a given object
 // Requires Message Queue and InputMap to be setup.
@@ -197,7 +196,7 @@ int register_test_command(String p_command, TestFunc p_function);
 		MessageQueue::get_singleton()->flush();                                                           \
 	}
 
-// We toogle _print_error_enabled to prevent display server not supported warnings.
+// We toggle _print_error_enabled to prevent display server not supported warnings.
 #define SEND_GUI_MOUSE_MOTION_EVENT(m_object, m_local_pos, m_mask, m_modifers) \
 	{                                                                          \
 		bool errors_enabled = _print_error_enabled;                            \
@@ -233,8 +232,8 @@ class SignalWatcher : public Object {
 private:
 	inline static SignalWatcher *singleton;
 
-	/* Equal to: Map<String, Vector<Vector<Variant>>> */
-	Map<String, Array> _signals;
+	/* Equal to: RBMap<String, Vector<Vector<Variant>>> */
+	HashMap<String, Array> _signals;
 	void _add_signal_entry(const Array &p_args, const String &p_name) {
 		if (!_signals.has(p_name)) {
 			_signals[p_name] = Array();

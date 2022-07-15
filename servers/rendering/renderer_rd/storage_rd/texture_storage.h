@@ -33,8 +33,8 @@
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -124,7 +124,7 @@ public:
 	RID proxy_to;
 	Vector<RID> proxies;
 
-	Set<RID> lightmap_users;
+	HashSet<RID> lightmap_users;
 
 	RS::TextureDetectCallback detect_3d_callback = nullptr;
 	void *detect_3d_callback_ud = nullptr;
@@ -193,7 +193,7 @@ struct Decal {
 	float distance_fade_length = 1;
 	float normal_fade = 0.0;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct RenderTarget {
@@ -207,7 +207,7 @@ struct RenderTarget {
 	RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
 	Image::Format image_format = Image::FORMAT_L8;
 
-	bool flags[RendererTextureStorage::RENDER_TARGET_FLAG_MAX];
+	bool is_transparent = false;
 
 	bool sdf_enabled = false;
 
@@ -525,7 +525,8 @@ public:
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
 	virtual RID render_target_get_texture(RID p_render_target) override;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
-	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) override;
+	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
+	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
 	virtual bool render_target_was_used(RID p_render_target) override;
 	virtual void render_target_set_as_unused(RID p_render_target) override;
 

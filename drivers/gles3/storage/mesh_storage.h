@@ -37,6 +37,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include "platform_config.h"
 #ifndef OPENGL_INCLUDE_H
@@ -90,6 +91,7 @@ struct Mesh {
 		struct LOD {
 			float edge_length = 0.0;
 			uint32_t index_count = 0;
+			uint32_t index_buffer_size = 0;
 			GLuint index_buffer;
 		};
 
@@ -123,9 +125,9 @@ struct Mesh {
 	List<MeshInstance *> instances;
 
 	RID shadow_mesh;
-	Set<Mesh *> shadow_owners;
+	HashSet<Mesh *> shadow_owners;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* Mesh Instance */
@@ -178,7 +180,7 @@ struct MultiMesh {
 	bool dirty = false;
 	MultiMesh *dirty_list = nullptr;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct Skeleton {
@@ -193,7 +195,7 @@ struct Skeleton {
 
 	uint64_t version = 1;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 class MeshStorage : public RendererMeshStorage {
@@ -493,6 +495,26 @@ public:
 		return multimesh->instances;
 	}
 
+	_FORCE_INLINE_ GLuint multimesh_get_gl_buffer(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->buffer;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_stride(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->stride_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_color_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->color_offset_cache;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_custom_data_offset(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+		return multimesh->custom_data_offset_cache;
+	}
+
 	/* SKELETON API */
 
 	Skeleton *get_skeleton(RID p_rid) { return skeleton_owner.get_or_null(p_rid); };
@@ -510,7 +532,11 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override;
 
-	virtual void skeleton_update_dependency(RID p_base, RendererStorage::DependencyTracker *p_instance) override;
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
+
+	/* OCCLUDER */
+
+	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
 };
 
 } // namespace GLES3

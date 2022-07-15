@@ -499,11 +499,9 @@ void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
 	r_features->push_back("uwp");
 }
 
-void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
 EditorExportPlatformUWP::EditorExportPlatformUWP() {
-	Ref<Image> img = memnew(Image(_uwp_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_uwp_logo)));
 }

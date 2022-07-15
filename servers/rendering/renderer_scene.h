@@ -183,8 +183,8 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
-	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 
 	virtual RID shadow_atlas_create() = 0;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
@@ -194,7 +194,7 @@ public:
 
 	virtual RID render_buffers_create() = 0;
 
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding, uint32_t p_view_count) = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_fsr_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) = 0;
 
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;
 
@@ -211,7 +211,7 @@ public:
 		int info[RS::VIEWPORT_RENDER_INFO_TYPE_MAX][RS::VIEWPORT_RENDER_INFO_MAX] = {};
 	};
 
-	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info = nullptr) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;

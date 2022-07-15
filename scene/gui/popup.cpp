@@ -111,6 +111,11 @@ void Popup::_close_pressed() {
 	call_deferred(SNAME("hide"));
 }
 
+void Popup::_post_popup() {
+	Window::_post_popup();
+	popped_up = true;
+}
+
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }

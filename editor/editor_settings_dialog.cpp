@@ -327,7 +327,7 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 
 void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
-	Map<String, bool> collapsed;
+	HashMap<String, bool> collapsed;
 
 	if (shortcuts->get_root() && shortcuts->get_root()->get_first_child()) {
 		TreeItem *ti = shortcuts->get_root()->get_first_child();
@@ -359,7 +359,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	shortcuts->clear();
 
 	TreeItem *root = shortcuts->create_item();
-	Map<String, TreeItem *> sections;
+	HashMap<String, TreeItem *> sections;
 
 	// Set up section for Common/Built-in actions
 	TreeItem *common_section = shortcuts->create_item(root);
@@ -475,7 +475,10 @@ void EditorSettingsDialog::_update_shortcuts() {
 	}
 }
 
-void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx) {
+void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND_MSG(!ti, "Object passed is not a TreeItem");
 
@@ -680,6 +683,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
+	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
 	add_child(tabs);
 
@@ -694,7 +698,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
-	search_box->set_placeholder(TTR("Search"));
+	search_box->set_placeholder(TTR("Filter Settings"));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
 
@@ -736,7 +740,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tab_shortcuts->set_name(TTR("Shortcuts"));
 
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Search"));
+	shortcut_search_box->set_placeholder(TTR("Filter Shortcuts"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_shortcuts->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
@@ -748,7 +752,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTR("Name"));
 	shortcuts->set_column_title(1, TTR("Binding"));
-	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
+	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 
@@ -768,7 +772,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_changed));
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 }
 
 EditorSettingsDialog::~EditorSettingsDialog() {

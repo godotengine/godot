@@ -37,9 +37,9 @@
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/particles_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -224,9 +224,9 @@ struct Particles {
 	ParticleEmissionBuffer *emission_buffer = nullptr;
 	RID emission_storage_buffer;
 
-	Set<RID> collisions;
+	HashSet<RID> collisions;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 
 	double trail_length = 1.0;
 	bool trails_enabled = false;
@@ -254,7 +254,7 @@ struct ParticlesCollision {
 
 	RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct ParticlesCollisionInstance {
@@ -345,7 +345,7 @@ private:
 		RID version;
 		bool uses_collision = false;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
@@ -353,7 +353,7 @@ private:
 
 		String path;
 		String code;
-		Map<StringName, Map<int, RID>> default_texture_params;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		RID pipeline;
 
@@ -387,7 +387,7 @@ private:
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~ParticlesMaterialData();
 	};
 

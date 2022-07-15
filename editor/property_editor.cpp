@@ -105,15 +105,16 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 	switch (type) {
 		case Variant::INT: {
 			if (hint == PROPERTY_HINT_FLAGS) {
-				int val = v;
-
-				if (val & (1 << p_which)) {
-					val &= ~(1 << p_which);
+				int idx = menu->get_item_index(p_which);
+				uint32_t item_value = menu->get_item_metadata(idx);
+				uint32_t value = v;
+				// If the item wasn't previously checked it means it was pressed,
+				// otherwise it was unpressed.
+				if (!menu->is_item_checked(idx)) {
+					v = value | item_value;
 				} else {
-					val |= (1 << p_which);
+					v = value & ~item_value;
 				}
-
-				v = val;
 				emit_signal(SNAME("variant_changed"));
 			} else if (hint == PROPERTY_HINT_ENUM) {
 				v = menu->get_item_metadata(p_which);
@@ -137,14 +138,14 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						ResourceLoader::get_recognized_extensions_for_type(type.get_slice(",", i), &extensions);
 					}
 
-					Set<String> valid_extensions;
+					HashSet<String> valid_extensions;
 					for (const String &E : extensions) {
 						valid_extensions.insert(E);
 					}
 
 					file->clear_filters();
-					for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-						file->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+					for (const String &E : valid_extensions) {
+						file->add_filter("*." + E, E.to_upper());
 					}
 
 					file->popup_file_dialog();
@@ -486,15 +487,19 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				set_size(Size2(200, 150) * EDSCALE);
 			} else if (hint == PROPERTY_HINT_FLAGS) {
 				Vector<String> flags = hint_text.split(",");
+				uint32_t value = v;
 				for (int i = 0; i < flags.size(); i++) {
-					String flag = flags[i];
-					if (flag.is_empty()) {
-						continue;
+					uint32_t current_val;
+					Vector<String> text_split = flags[i].split(":");
+					if (text_split.size() != 1) {
+						current_val = text_split[1].to_int();
+					} else {
+						current_val = 1 << i;
 					}
-					menu->add_check_item(flag, i);
-					int f = v;
-					if (f & (1 << i)) {
-						menu->set_item_checked(menu->get_item_index(i), true);
+					menu->add_check_item(text_split[0], current_val);
+					menu->set_item_metadata(i, current_val);
+					if ((value & current_val) == current_val) {
+						menu->set_item_checked(menu->get_item_index(current_val), true);
 					}
 				}
 				menu->set_position(get_position());
@@ -826,11 +831,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				// get default color picker mode from editor settings
 				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-				if (default_color_mode == 1) {
-					color_picker->set_hsv_mode(true);
-				} else if (default_color_mode == 2) {
-					color_picker->set_raw_mode(true);
-				}
+				color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 
 				int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
 				color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
@@ -875,7 +876,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
 					String base = hint_text.get_slice(",", i);
 
-					Set<String> valid_inheritors;
+					HashSet<String> valid_inheritors;
 					valid_inheritors.insert(base);
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
@@ -890,8 +891,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						E = E->next();
 					}
 
-					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						const String &t = j->get();
+					for (const String &j : valid_inheritors) {
+						const String &t = j;
 
 						bool is_custom_resource = false;
 						Ref<Texture2D> icon;
@@ -1222,7 +1223,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 								filter = "*." + extensions[i];
 							}
 
-							file->add_filter(filter + " ; " + extensions[i].to_upper());
+							file->add_filter(filter, extensions[i].to_upper());
 						}
 					}
 					file->popup_file_dialog();
@@ -1306,7 +1307,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				ResourceLoader::get_recognized_extensions_for_type(type, &extensions);
 				file->clear_filters();
 				for (const String &E : extensions) {
-					file->add_filter("*." + E + " ; " + E.to_upper());
+					file->add_filter("*." + E, E.to_upper());
 				}
 
 				file->popup_file_dialog();
@@ -1469,7 +1470,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				v = value_editor[0]->get_text().to_int();
 				return;
 			} else {
-				v = expr->execute(Array(), nullptr, false);
+				v = expr->execute(Array(), nullptr, false, false);
 			}
 
 			if (v != prev_v) {
@@ -1645,7 +1646,7 @@ real_t CustomPropertyEditor::_parse_real_expression(String text) {
 	if (err != OK) {
 		out = value_editor[0]->get_text().to_float();
 	} else {
-		out = expr->execute(Array(), nullptr, false);
+		out = expr->execute(Array(), nullptr, false, true);
 	}
 	return out;
 }

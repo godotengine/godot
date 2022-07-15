@@ -43,6 +43,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/import_dock.h"
+#include "editor/scene_create_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/shader_create_dialog.h"
 #include "scene/gui/label.h"
@@ -744,7 +745,7 @@ void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file
 
 void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	// Register the previously selected items.
-	Set<String> cselection;
+	HashSet<String> cselection;
 	if (p_keep_selection) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
@@ -1183,7 +1184,7 @@ void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vect
 	}
 }
 
-void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const {
+void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const {
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_find_remaps(efsd->get_subdir(i), renames, to_remaps);
 	}
@@ -1199,7 +1200,7 @@ void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const Map<Str
 }
 
 void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_new_path,
-		Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames) {
+		HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames) {
 	// Ensure folder paths end with "/".
 	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
@@ -1323,7 +1324,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	}
 }
 
-void FileSystemDock::_update_resource_paths_after_move(const Map<String, String> &p_renames) const {
+void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames) const {
 	// Rename all resources loaded, be it subresources or actual resources.
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
@@ -1368,7 +1369,7 @@ void FileSystemDock::_update_resource_paths_after_move(const Map<String, String>
 	}
 }
 
-void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &p_renames) const {
+void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames) const {
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
@@ -1389,9 +1390,9 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 	}
 }
 
-void FileSystemDock::_update_project_settings_after_move(const Map<String, String> &p_renames) const {
+void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames) const {
 	// Find all project settings of type FILE and replace them if needed.
-	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
+	const HashMap<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
 	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
 		if (E.value.hint == PROPERTY_HINT_FILE) {
 			String old_path = GLOBAL_GET(E.key);
@@ -1420,7 +1421,7 @@ void FileSystemDock::_update_project_settings_after_move(const Map<String, Strin
 	ProjectSettings::get_singleton()->save();
 }
 
-void FileSystemDock::_update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const {
+void FileSystemDock::_update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const {
 	Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
 	Vector<String> new_favorites;
 
@@ -1438,7 +1439,7 @@ void FileSystemDock::_update_favorites_list_after_move(const Map<String, String>
 	EditorSettings::get_singleton()->set_favorites(new_favorites);
 }
 
-void FileSystemDock::_save_scenes_after_move(const Map<String, String> &p_renames) const {
+void FileSystemDock::_save_scenes_after_move(const HashMap<String, String> &p_renames) const {
 	Vector<String> remaps;
 	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
 	Vector<String> new_filenames;
@@ -1491,44 +1492,12 @@ void FileSystemDock::_make_dir_confirm() {
 }
 
 void FileSystemDock::_make_scene_confirm() {
-	String scene_name = make_scene_dialog_text->get_text().strip_edges();
-
-	if (scene_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	}
-
-	String directory = path;
-	if (!directory.ends_with("/")) {
-		directory = directory.get_base_dir();
-	}
-
-	String extension = scene_name.get_extension();
-	List<String> extensions;
-	Ref<PackedScene> sd = memnew(PackedScene);
-	ResourceSaver::get_recognized_extensions(sd, &extensions);
-
-	bool extension_correct = false;
-	for (const String &E : extensions) {
-		if (E == extension) {
-			extension_correct = true;
-			break;
-		}
-	}
-	if (!extension_correct) {
-		scene_name = scene_name.get_basename() + ".tscn";
-	}
-
-	scene_name = directory.plus_file(scene_name);
-
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da->file_exists(scene_name)) {
-		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		return;
-	}
+	const String scene_path = make_scene_dialog->get_scene_path();
 
 	int idx = EditorNode::get_singleton()->new_scene();
-	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_name);
+	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_path);
+	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
+	EditorNode::get_singleton()->save_scene_list({ scene_path });
 }
 
 void FileSystemDock::_file_removed(String p_file) {
@@ -1599,8 +1568,8 @@ void FileSystemDock::_rename_operation_confirm() {
 		return;
 	}
 
-	Map<String, String> file_renames;
-	Map<String, String> folder_renames;
+	HashMap<String, String> file_renames;
+	HashMap<String, String> folder_renames;
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = EditorNode::get_singleton()->get_current_tab();
@@ -1699,8 +1668,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 		}
 	}
 
-	Map<String, String> file_renames;
-	Map<String, String> folder_renames;
+	HashMap<String, String> file_renames;
+	HashMap<String, String> folder_renames;
 	bool is_moved = false;
 	for (int i = 0; i < to_move.size(); i++) {
 		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
@@ -2025,10 +1994,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_NEW_SCENE: {
-			make_scene_dialog_text->set_text("new scene");
-			make_scene_dialog_text->select_all();
-			make_scene_dialog->popup_centered(Size2(250, 80) * EDSCALE);
-			make_scene_dialog_text->grab_focus();
+			String directory = path;
+			if (!directory.ends_with("/")) {
+				directory = directory.get_base_dir();
+			}
+			make_scene_dialog->config(directory);
+			make_scene_dialog->popup_centered();
 		} break;
 
 		case FILE_NEW_SCRIPT: {
@@ -2614,7 +2585,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	}
 }
 
-void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
+void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	// Right click is pressed in the tree.
 	Vector<String> paths = _tree_get_selected(false);
 
@@ -2637,7 +2611,10 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	}
 }
 
-void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
+void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
 	// Right click is pressed in the empty space of the tree.
 	path = "res://";
 	tree_popup->clear();
@@ -3098,7 +3075,7 @@ FileSystemDock::FileSystemDock() {
 
 	tree_search_box = memnew(LineEdit);
 	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	tree_search_box->set_placeholder(TTR("Search files"));
+	tree_search_box->set_placeholder(TTR("Filter Files"));
 	tree_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
 
@@ -3128,8 +3105,8 @@ FileSystemDock::FileSystemDock() {
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
 	tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
-	tree->connect("item_rmb_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
-	tree->connect("empty_rmb", callable_mp(this, &FileSystemDock::_tree_rmb_empty));
+	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
+	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect("mouse_exited", callable_mp(this, &FileSystemDock::_tree_mouse_exited));
@@ -3143,7 +3120,7 @@ FileSystemDock::FileSystemDock() {
 
 	file_list_search_box = memnew(LineEdit);
 	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	file_list_search_box->set_placeholder(TTR("Search files"));
+	file_list_search_box->set_placeholder(TTR("Filter Files"));
 	file_list_search_box->connect("text_changed", callable_mp(this, &FileSystemDock::_search_changed), varray(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
 
@@ -3190,7 +3167,7 @@ FileSystemDock::FileSystemDock() {
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
-	move_dialog->get_ok_button()->set_text(TTR("Move"));
+	move_dialog->set_ok_button_text(TTR("Move"));
 	add_child(move_dialog);
 	move_dialog->connect("dir_selected", callable_mp(this, &FileSystemDock::_move_operation_confirm), make_binds(false));
 
@@ -3200,13 +3177,13 @@ FileSystemDock::FileSystemDock() {
 
 	rename_dialog_text = memnew(LineEdit);
 	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
-	rename_dialog->get_ok_button()->set_text(TTR("Rename"));
+	rename_dialog->set_ok_button_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	overwrite_dialog = memnew(ConfirmationDialog);
-	overwrite_dialog->get_ok_button()->set_text(TTR("Overwrite"));
+	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
 
@@ -3216,7 +3193,7 @@ FileSystemDock::FileSystemDock() {
 
 	duplicate_dialog_text = memnew(LineEdit);
 	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
-	duplicate_dialog->get_ok_button()->set_text(TTR("Duplicate"));
+	duplicate_dialog->set_ok_button_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
 	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
@@ -3232,15 +3209,8 @@ FileSystemDock::FileSystemDock() {
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
 	make_dir_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_dir_confirm));
 
-	make_scene_dialog = memnew(ConfirmationDialog);
-	make_scene_dialog->set_title(TTR("Create Scene"));
-	VBoxContainer *make_scene_dialog_vb = memnew(VBoxContainer);
-	make_scene_dialog->add_child(make_scene_dialog_vb);
-
-	make_scene_dialog_text = memnew(LineEdit);
-	make_scene_dialog_vb->add_margin_child(TTR("Name:"), make_scene_dialog_text);
+	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
-	make_scene_dialog->register_text_enter(make_scene_dialog_text);
 	make_scene_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_scene_confirm));
 
 	make_script_dialog = memnew(ScriptCreateDialog);

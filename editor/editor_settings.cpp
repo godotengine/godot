@@ -244,7 +244,7 @@ struct _EVCSort {
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	Set<_EVCSort> vclist;
+	RBSet<_EVCSort> vclist;
 
 	for (const KeyValue<String, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -268,25 +268,25 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (const _EVCSort &E : vclist) {
 		uint32_t pusage = PROPERTY_USAGE_NONE;
-		if (E->get().save || !optimize_save) {
+		if (E.save || !optimize_save) {
 			pusage |= PROPERTY_USAGE_STORAGE;
 		}
 
-		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
+		if (!E.name.begins_with("_") && !E.name.begins_with("projects/")) {
 			pusage |= PROPERTY_USAGE_EDITOR;
 		} else {
 			pusage |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
 		}
 
-		PropertyInfo pi(E->get().type, E->get().name);
+		PropertyInfo pi(E.type, E.name);
 		pi.usage = pusage;
-		if (hints.has(E->get().name)) {
-			pi = hints[E->get().name];
+		if (hints.has(E.name)) {
+			pi = hints[E.name];
 		}
 
-		if (E->get().restart_if_changed) {
+		if (E.restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
 
@@ -444,9 +444,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Inspector
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/show_low_level_opentype_features", false, "")
 
 	// Theme
-	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom")
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_ENUM, "interface/theme/preset", "Default", "Default,Breeze Dark,Godot 2,Gray,Light,Solarized (Dark),Solarized (Light),Custom")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/theme/icon_and_font_color", 0, "Auto,Dark,Light")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/base_color", Color(0.2, 0.23, 0.31), "")
 	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "interface/theme/accent_color", Color(0.41, 0.61, 0.91), "")
@@ -542,6 +543,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false);
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
+	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -609,9 +611,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Use a lower default FOV for the 3D camera compared to the
 	// Camera3D node as the 3D viewport doesn't span the whole screen.
 	// This means it's technically viewed from a further distance, which warrants a narrower FOV.
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_fov", 70.0, "1,179,0.1")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_fov", 70.0, "1,179,0.1,degrees")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_near", 0.05, "0.01,10,0.01,or_greater,suffix:m")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/default_z_far", 4000.0, "0.1,4000,0.1,or_greater,suffix:m")
 
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/invert_x_axis", false);
@@ -681,6 +683,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Visual editors
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/minimap_opacity", 0.85, "0.0,1.0,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/lines_curvature", 0.5, "0.0,1.0,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/visual_editors/visualshader/port_preview_size", 160, "100,400,0.01")
 
 	/* Run */
 
@@ -713,7 +717,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	// Profiler
-	_initial_set("debugger/profiler_frame_history_size", 600);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_history_size", 3600, "60,10000,1")
 
 	// HTTP Proxy
 	_initial_set("network/http_proxy/host", "");
@@ -721,6 +725,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Extra config */
 
+	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
 
 	if (p_extra_config.is_valid()) {
@@ -759,6 +764,7 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
 	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.87, 0.87, 0.87, 0.13));
 	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
+	_initial_set("text_editor/theme/highlighting/completion_scroll_hovered_color", Color(1, 1, 1, 0.4));
 	_initial_set("text_editor/theme/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/text_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/theme/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
@@ -1399,32 +1405,32 @@ void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_s
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
+	HashMap<String, Ref<Shortcut>>::ConstIterator E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
-	return E->get()->matches_event(p_event);
+	return E->value->matches_event(p_event);
 }
 
 Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
-	const Map<String, Ref<Shortcut>>::Element *SC = shortcuts.find(p_name);
+	HashMap<String, Ref<Shortcut>>::ConstIterator SC = shortcuts.find(p_name);
 	if (SC) {
-		return SC->get();
+		return SC->value;
 	}
 
 	// If no shortcut with the provided name is found in the list, check the built-in shortcuts.
 	// Use the first item in the action list for the shortcut event, since a shortcut can only have 1 linked event.
 
 	Ref<Shortcut> sc;
-	const Map<String, List<Ref<InputEvent>>>::Element *builtin_override = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_override = builtin_action_overrides.find(p_name);
 	if (builtin_override) {
 		sc.instantiate();
-		sc->set_events_list(&builtin_override->get());
+		sc->set_events_list(&builtin_override->value);
 		sc->set_name(InputMap::get_singleton()->get_builtin_display_name(p_name));
 	}
 
 	// If there was no override, check the default builtins to see if it has an InputEvent for the provided name.
 	if (sc.is_null()) {
-		const HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
+		HashMap<String, List<Ref<InputEvent>>>::ConstIterator builtin_default = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(p_name);
 		if (builtin_default) {
 			sc.instantiate();
 			sc->set_events_list(&builtin_default->value);
@@ -1606,11 +1612,11 @@ void EditorSettings::set_builtin_action_override(const String &p_name, const Arr
 }
 
 const Array EditorSettings::get_builtin_action_overrides(const String &p_name) const {
-	const Map<String, List<Ref<InputEvent>>>::Element *AO = builtin_action_overrides.find(p_name);
+	HashMap<String, List<Ref<InputEvent>>>::ConstIterator AO = builtin_action_overrides.find(p_name);
 	if (AO) {
 		Array event_array;
 
-		List<Ref<InputEvent>> events_list = AO->get();
+		List<Ref<InputEvent>> events_list = AO->value;
 		for (const Ref<InputEvent> &E : events_list) {
 			event_array.push_back(E);
 		}

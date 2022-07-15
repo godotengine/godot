@@ -177,6 +177,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		err_text = "Invalid call. Nonexistent " + p_where + ".";
 	} else if (p_err.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text = "Attempt to call " + p_where + " on a null instance.";
+	} else if (p_err.error == Callable::CallError::CALL_ERROR_METHOD_NOT_CONST) {
+		err_text = "Attempt to call " + p_where + " on a const instance.";
 	} else {
 		err_text = "Bug, call error: #" + itos(p_err.error);
 	}
@@ -311,6 +313,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_JUMP_IF,                            \
 		&&OPCODE_JUMP_IF_NOT,                        \
 		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
+		&&OPCODE_JUMP_IF_SHARED,                     \
 		&&OPCODE_RETURN,                             \
 		&&OPCODE_RETURN_TYPED_BUILTIN,               \
 		&&OPCODE_RETURN_TYPED_ARRAY,                 \
@@ -546,33 +549,32 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			memnew_placement(&stack[i], Variant);
 		}
 
-		memnew_placement(&stack[ADDR_STACK_NIL], Variant);
-
 		if (_instruction_args_size) {
 			instruction_args = (Variant **)&aptr[sizeof(Variant) * _stack_size];
 		} else {
 			instruction_args = nullptr;
 		}
 
-		if (p_instance) {
-			memnew_placement(&stack[ADDR_STACK_SELF], Variant(p_instance->owner));
-			script = p_instance->script.ptr();
-		} else {
-			memnew_placement(&stack[ADDR_STACK_SELF], Variant);
-			script = _script;
+		for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
+			type_init_function_table[E.value](&stack[E.key]);
 		}
 	}
+
 	if (_ptrcall_args_size) {
 		call_args_ptr = (const void **)alloca(_ptrcall_args_size * sizeof(void *));
 	} else {
 		call_args_ptr = nullptr;
 	}
 
-	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
-
-	for (const KeyValue<int, Variant::Type> &E : temporary_slots) {
-		type_init_function_table[E.value](&stack[E.key]);
+	if (p_instance) {
+		memnew_placement(&stack[ADDR_STACK_SELF], Variant(p_instance->owner));
+		script = p_instance->script.ptr();
+	} else {
+		memnew_placement(&stack[ADDR_STACK_SELF], Variant);
+		script = _script;
 	}
+	memnew_placement(&stack[ADDR_STACK_CLASS], Variant(script));
+	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
 	String err_text;
 
@@ -1030,11 +1032,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					if (src->has_method(*index)) {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
-					} else {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
-					}
+					err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -1895,7 +1893,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(ret, Variant::OBJECT);
 				Object **ret_opaque = VariantInternal::get_object(ret);
 				method->ptrcall(base_obj, argptrs, ret_opaque);
-				VariantInternal::object_assign(ret, *ret_opaque); // Set so ID is correct too.
+				VariantInternal::update_object_id(ret);
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -2104,7 +2102,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				const GDScript *gds = _script;
 
-				const Map<StringName, GDScriptFunction *>::Element *E = nullptr;
+				HashMap<StringName, GDScriptFunction *>::ConstIterator E;
 				while (gds->base.ptr()) {
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
@@ -2116,7 +2114,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 
 				if (E) {
-					*dst = E->get()->call(p_instance, (const Variant **)argptrs, argc, err);
+					*dst = E->value->call(p_instance, (const Variant **)argptrs, argc, err);
 				} else if (gds->native.ptr()) {
 					if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
 						MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
@@ -2171,8 +2169,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						// Is this even possible to be null at this point?
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-								static StringName completed = _scs_create("completed");
-								result = Signal(obj, completed);
+								result = Signal(obj, "completed");
 							}
 						}
 					}
@@ -2193,8 +2190,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->function = this;
 
 					gdfs->state.stack.resize(alloca_size);
-					//copy variant stack
-					for (int i = 0; i < _stack_size; i++) {
+
+					// First 3 stack addresses are special, so we just skip them here.
+					for (int i = 3; i < _stack_size; i++) {
 						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
 					}
 					gdfs->state.stack_size = _stack_size;
@@ -2359,6 +2357,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_JUMP_TO_DEF_ARGUMENT) {
 				CHECK_SPACE(2);
 				ip = _default_arg_ptr[defarg];
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_JUMP_IF_SHARED) {
+				CHECK_SPACE(3);
+
+				GET_INSTRUCTION_ARG(val, 0);
+
+				if (val->is_shared()) {
+					int to = _code_ptr[ip + 2];
+					GD_ERR_BREAK(to < 0 || to > _code_size);
+					ip = to;
+				} else {
+					ip += 3;
+				}
 			}
 			DISPATCH_OPCODE;
 
@@ -3433,9 +3446,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		}
 
-#endif
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
+#endif
 
 		OPCODE_OUT;
 	}
@@ -3451,26 +3464,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	// Check if this is the last time the function is resuming from await
-	// Will be true if never awaited as well
-	// When it's the last resume it will postpone the exit from stack,
-	// so the debugger knows which function triggered the resume of the next function (if any)
+	// Check if this is not the last time it was interrupted by `await` or if it's the first time executing.
+	// If that is the case then we exit the function as normal. Otherwise we postpone it until the last `await` is completed.
+	// This ensures the call stack can be properly shown when using `await`, showing what resumed the function.
 	if (!p_state || awaited) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
 		}
 #endif
 
-		if (_stack_size) {
-			//free stack
-			for (int i = 0; i < _stack_size; i++) {
-				stack[i].~Variant();
-			}
+		// Free stack, except reserved addresses.
+		for (int i = 3; i < _stack_size; i++) {
+			stack[i].~Variant();
 		}
-
 #ifdef DEBUG_ENABLED
 	}
 #endif
+
+	// Always free reserved addresses, since they are never copied.
+	for (int i = 0; i < 3; i++) {
+		stack[i].~Variant();
+	}
 
 	return retvalue;
 }

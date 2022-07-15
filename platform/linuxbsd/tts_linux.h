@@ -35,7 +35,7 @@
 #include "core/os/thread_safe.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
@@ -49,7 +49,7 @@ class TTS_Linux {
 	bool speaking = false;
 	bool paused = false;
 	int last_msg_id = -1;
-	Map<int, int> ids;
+	HashMap<int, int> ids;
 
 	Thread init_thread;
 

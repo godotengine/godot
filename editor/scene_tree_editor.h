@@ -73,9 +73,10 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
-	bool _add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected = false);
+	void _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
+	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
 	void _tree_changed();
 	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
@@ -99,7 +100,7 @@ class SceneTreeEditor : public Control {
 	void _renamed();
 	UndoRedo *undo_redo = nullptr;
 
-	Set<Node *> marked;
+	HashSet<Node *> marked;
 	bool marked_selectable = false;
 	bool marked_children_selectable = false;
 	bool display_foreign = false;
@@ -107,7 +108,7 @@ class SceneTreeEditor : public Control {
 	bool pending_test_update = false;
 	static void _bind_methods();
 
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _toggle_visible(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _update_selection(TreeItem *item);
@@ -122,7 +123,8 @@ class SceneTreeEditor : public Control {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _rmb_select(const Vector2 &p_pos);
+	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
+	void _rmb_select(const Vector2 &p_pos, MouseButton p_button = MouseButton::RIGHT);
 
 	void _warning_changed(Node *p_for_node);
 
@@ -140,7 +142,7 @@ public:
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);
 
-	void set_marked(const Set<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
+	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();
@@ -174,6 +176,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 
 	void _select();
 	void _cancel();
+	void _selected_changed();
 	void _filter_changed(const String &p_filter);
 	void _update_theme();
 

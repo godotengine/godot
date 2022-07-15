@@ -33,7 +33,7 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
@@ -48,7 +48,7 @@
 @interface TTS_OSX : NSObject <AVSpeechSynthesizerDelegate> {
 	// AVSpeechSynthesizer
 	bool speaking;
-	Map<id, int> ids;
+	HashMap<id, int> ids;
 
 	// NSSpeechSynthesizer
 	bool paused;

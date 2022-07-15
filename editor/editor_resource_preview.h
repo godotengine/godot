@@ -91,7 +91,7 @@ class EditorResourcePreview : public Node {
 
 	int order;
 
-	Map<String, Item> cache;
+	HashMap<String, Item> cache;
 
 	void _preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base);

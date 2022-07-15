@@ -68,7 +68,7 @@
 		<constant name="FUNC_FLOOR" value="17" enum="Function">
 			Finds the nearest integer less than or equal to the parameter.
 		</constant>
-		<constant name="FUNC_FRAC" value="18" enum="Function">
+		<constant name="FUNC_FRACT" value="18" enum="Function">
 			Computes the fractional part of the argument.
 		</constant>
 		<constant name="FUNC_INVERSE_SQRT" value="19" enum="Function">

@@ -57,7 +57,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
-			connect("item_rmb_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
 	}
 }
@@ -100,7 +100,11 @@ void EditorDebuggerTree::_scene_tree_folded(Object *p_obj) {
 	}
 }
 
-void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
+void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = get_item_at_position(p_position);
 	if (!item) {
 		return;
@@ -254,7 +258,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			file_dialog->popup_file_dialog();

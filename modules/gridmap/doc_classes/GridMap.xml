@@ -73,6 +73,13 @@
 				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -133,6 +140,14 @@
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<argument index="0" name="layer_number" type="int" />
+			<argument index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
 		<method name="world_to_map" qualifiers="const">
 			<return type="Vector3i" />
 			<argument index="0" name="world_position" type="Vector3" />
@@ -177,7 +192,7 @@
 			The assigned [MeshLibrary].
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
-			The navigation layers the GridMap generates its navigable regions in.
+			A bitmask determining all navigation layers the GridMap generated navigation regions belong to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 		</member>
 		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
 			Overrides the default friction and bounce physics properties for the whole [GridMap].

@@ -31,12 +31,14 @@
 #ifndef MATERIAL_STORAGE_RD_H
 #define MATERIAL_STORAGE_RD_H
 
+#include "core/math/camera_matrix.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -76,23 +78,23 @@ struct Shader {
 	ShaderData *data = nullptr;
 	String code;
 	ShaderType type;
-	Map<StringName, Map<int, RID>> default_texture_parameter;
-	Set<Material *> owners;
+	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
+	HashSet<Material *> owners;
 };
 
 /* Material structs */
 
 struct MaterialData {
-	void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-	void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+	void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
+	void update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 	virtual void set_render_priority(int p_priority) = 0;
 	virtual void set_next_pass(RID p_pass) = 0;
-	virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
+	virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 	virtual ~MaterialData();
 
 	//to be used internally by update_parameters, in the most common configuration of material parameters
-	bool update_parameters_uniform_set(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+	bool update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 	void free_parameters_uniform_set(RID p_uniform_set);
 
 private:
@@ -101,7 +103,7 @@ private:
 	List<RID>::Element *global_buffer_E = nullptr;
 	List<RID>::Element *global_texture_E = nullptr;
 	uint64_t global_textures_pass = 0;
-	Map<StringName, uint64_t> used_global_textures;
+	HashMap<StringName, uint64_t> used_global_textures;
 
 	//internally by update_parameters_uniform_set
 	Vector<uint8_t> ubo_data;
@@ -120,12 +122,12 @@ struct Material {
 	uint32_t shader_id = 0;
 	bool uniform_dirty = false;
 	bool texture_dirty = false;
-	Map<StringName, Variant> params;
+	HashMap<StringName, Variant> params;
 	int32_t priority = 0;
 	RID next_pass;
 	SelfList<Material> update_element;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 
 	Material() :
 			update_element(this) {}
@@ -137,7 +139,7 @@ struct GlobalVariables {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
-		Set<RID> texture_materials; // materials using this
+		HashSet<RID> texture_materials; // materials using this
 
 		RS::GlobalVariableType type;
 		Variant value;
@@ -232,6 +234,86 @@ public:
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
+	/* Helpers */
+
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.rows[0][0];
+		p_array[1] = p_mtx.basis.rows[1][0];
+		p_array[2] = p_mtx.basis.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.basis.rows[0][1];
+		p_array[5] = p_mtx.basis.rows[1][1];
+		p_array[6] = p_mtx.basis.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.basis.rows[0][2];
+		p_array[9] = p_mtx.basis.rows[1][2];
+		p_array[10] = p_mtx.basis.rows[2][2];
+		p_array[11] = 0;
+		p_array[12] = p_mtx.origin.x;
+		p_array[13] = p_mtx.origin.y;
+		p_array[14] = p_mtx.origin.z;
+		p_array[15] = 1;
+	}
+
+	static _FORCE_INLINE_ void store_basis_3x4(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.rows[0][0];
+		p_array[1] = p_mtx.rows[1][0];
+		p_array[2] = p_mtx.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.rows[0][1];
+		p_array[5] = p_mtx.rows[1][1];
+		p_array[6] = p_mtx.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.rows[0][2];
+		p_array[9] = p_mtx.rows[1][2];
+		p_array[10] = p_mtx.rows[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.rows[0][0];
+		p_array[1] = p_mtx.rows[1][0];
+		p_array[2] = p_mtx.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.rows[0][1];
+		p_array[5] = p_mtx.rows[1][1];
+		p_array[6] = p_mtx.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.rows[0][2];
+		p_array[9] = p_mtx.rows[1][2];
+		p_array[10] = p_mtx.rows[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform3D &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.rows[0][0];
+		p_array[1] = p_mtx.basis.rows[0][1];
+		p_array[2] = p_mtx.basis.rows[0][2];
+		p_array[3] = p_mtx.origin.x;
+		p_array[4] = p_mtx.basis.rows[1][0];
+		p_array[5] = p_mtx.basis.rows[1][1];
+		p_array[6] = p_mtx.basis.rows[1][2];
+		p_array[7] = p_mtx.origin.y;
+		p_array[8] = p_mtx.basis.rows[2][0];
+		p_array[9] = p_mtx.basis.rows[2][1];
+		p_array[10] = p_mtx.basis.rows[2][2];
+		p_array[11] = p_mtx.origin.z;
+	}
+
+	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+			}
+		}
+	}
+
+	static _FORCE_INLINE_ void store_soft_shadow_kernel(const float *p_kernel, float *p_array) {
+		for (int i = 0; i < 128; i++) {
+			p_array[i] = p_kernel[i];
+		}
+	}
+
 	/* Samplers */
 
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
@@ -317,7 +399,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
-	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) override;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override;
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 	MaterialDataRequestFunction material_get_data_request_function(ShaderType p_shader_type);

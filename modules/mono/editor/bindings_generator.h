@@ -45,12 +45,12 @@ class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value = 0;
+		int64_t value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
 
-		ConstantInterface(const String &p_name, const String &p_proxy_name, int p_value) {
+		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value) {
 			name = p_name;
 			proxy_name = p_proxy_name;
 			value = p_value;
@@ -60,6 +60,7 @@ class BindingsGenerator {
 	struct EnumInterface {
 		StringName cname;
 		List<ConstantInterface> constants;
+		bool is_flags = false;
 
 		_FORCE_INLINE_ bool operator==(const EnumInterface &p_ienum) const {
 			return p_ienum.cname == cname;
@@ -86,6 +87,8 @@ class BindingsGenerator {
 	struct TypeReference {
 		StringName cname;
 		bool is_enum = false;
+
+		List<TypeReference> generic_type_parameters;
 
 		TypeReference() {}
 
@@ -205,6 +208,8 @@ class BindingsGenerator {
 		 */
 		String name;
 		StringName cname;
+
+		int type_parameter_count;
 
 		/**
 		 * Identifier name of the base class.
@@ -535,22 +540,22 @@ class BindingsGenerator {
 
 	HashMap<StringName, TypeInterface> obj_types;
 
-	Map<StringName, TypeInterface> placeholder_types;
-	Map<StringName, TypeInterface> builtin_types;
-	Map<StringName, TypeInterface> enum_types;
+	HashMap<StringName, TypeInterface> placeholder_types;
+	HashMap<StringName, TypeInterface> builtin_types;
+	HashMap<StringName, TypeInterface> enum_types;
 
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
 
 	List<InternalCall> method_icalls;
-	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
+	HashMap<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	List<const InternalCall *> generated_icall_funcs;
 
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName>> blacklisted_methods;
+	HashMap<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 
@@ -678,6 +683,8 @@ class BindingsGenerator {
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
 	const TypeInterface *_get_type_or_placeholder(const TypeReference &p_typeref);
+
+	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);

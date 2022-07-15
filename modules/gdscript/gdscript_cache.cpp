@@ -157,7 +157,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	source_file.write[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)source_file.ptr())) {
+	if (source.parse_utf8((const char *)source_file.ptr()) != OK) {
 		ERR_FAIL_V_MSG("", "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 	return source;
@@ -223,13 +223,13 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->full_gdscript_cache[p_owner] = script.ptr();
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
-	Set<String> depends = singleton->dependencies[p_owner];
+	HashSet<String> depends = singleton->dependencies[p_owner];
 
 	Error err = OK;
-	for (const Set<String>::Element *E = depends.front(); E != nullptr; E = E->next()) {
+	for (const String &E : depends) {
 		Error this_err = OK;
 		// No need to save the script. We assume it's already referenced in the owner.
-		get_full_script(E->get(), this_err);
+		get_full_script(E, this_err);
 
 		if (this_err != OK) {
 			err = this_err;

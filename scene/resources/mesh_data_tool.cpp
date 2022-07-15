@@ -150,7 +150,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		vertices.write[i] = v;
 	}
 
-	Map<Point2i, int> edge_indices;
+	HashMap<Point2i, int> edge_indices;
 
 	for (int i = 0; i < icount; i += 3) {
 		Vertex *v[3] = { &vertices.write[r[i + 0]], &vertices.write[r[i + 1]], &vertices.write[r[i + 2]] };

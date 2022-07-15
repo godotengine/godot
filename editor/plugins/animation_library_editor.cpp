@@ -75,12 +75,16 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		add_library_validate->set_text(error);
 		add_library_dialog->get_ok_button()->set_disabled(true);
 	} else {
-		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
-		if (p_name == "") {
-			add_library_validate->set_text(TTR("Global library will be created."));
+		if (adding_animation) {
+			add_library_validate->set_text(TTR("Animation name is valid."));
 		} else {
-			add_library_validate->set_text(TTR("Library name is valid."));
+			if (p_name == "") {
+				add_library_validate->set_text(TTR("Global library will be created."));
+			} else {
+				add_library_validate->set_text(TTR("Library name is valid."));
+			}
 		}
+		add_library_validate->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
 		add_library_dialog->get_ok_button()->set_disabled(false);
 	}
 }
@@ -415,12 +419,12 @@ void AnimationLibraryEditor::_item_renamed() {
 	}
 }
 
-void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_button) {
+void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_item->get_parent() == tree->get_root()) {
 		// Library
 		StringName lib_name = p_item->get_metadata(0);
 		Ref<AnimationLibrary> al = player->call("get_animation_library", lib_name);
-		switch (p_button) {
+		switch (p_id) {
 			case LIB_BUTTON_ADD: {
 				add_library_dialog->set_title(TTR("Animation Name:"));
 				add_library_name->set_text("");
@@ -469,7 +473,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				int attempt = 1;
 				while (al->has_animation(name)) {
 					attempt++;
-					name = base_name + " " + itos(attempt);
+					name = base_name + " (" + itos(attempt) + ")";
 				}
 
 				UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
@@ -515,7 +519,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		Ref<AnimationLibrary> al = player->call("get_animation_library", lib_name);
 		Ref<Animation> anim = al->get_animation(anim_name);
 		ERR_FAIL_COND(!anim.is_valid());
-		switch (p_button) {
+		switch (p_id) {
 			case ANIM_BUTTON_COPY: {
 				if (anim->get_name() == "") {
 					anim->set_name(anim_name); // Keep the name around
@@ -673,7 +677,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
-	tree->connect("button_pressed", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
+	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
 
 	file_popup = memnew(PopupMenu);
 	add_child(file_popup);

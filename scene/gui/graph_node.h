@@ -54,12 +54,12 @@ private:
 		Color color_right = Color(1, 1, 1, 1);
 		Ref<Texture2D> custom_slot_left;
 		Ref<Texture2D> custom_slot_right;
+		bool draw_stylebox = true;
 	};
 
 	String title;
 	Ref<TextLine> title_buf;
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 
@@ -80,12 +80,13 @@ private:
 		Vector2 pos;
 		int type = 0;
 		Color color;
+		int height;
 	};
 
 	Vector<ConnCache> conn_input_cache;
 	Vector<ConnCache> conn_output_cache;
 
-	Map<int, Slot> slot_info;
+	HashMap<int, Slot> slot_info;
 
 	bool connpos_dirty = true;
 
@@ -115,7 +116,7 @@ protected:
 public:
 	bool has_point(const Point2 &p_point) const override;
 
-	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
+	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
 	void clear_slot(int p_idx);
 	void clear_all_slots();
 
@@ -137,15 +138,14 @@ public:
 	void set_slot_color_right(int p_idx, const Color &p_color_right);
 	Color get_slot_color_right(int p_idx) const;
 
+	bool is_slot_draw_stylebox(int p_idx) const;
+	void set_slot_draw_stylebox(int p_idx, bool p_enable);
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;
@@ -163,10 +163,13 @@ public:
 	bool is_close_button_visible() const;
 
 	int get_connection_input_count();
-	int get_connection_output_count();
+	int get_connection_input_height(int p_idx);
 	Vector2 get_connection_input_position(int p_idx);
 	int get_connection_input_type(int p_idx);
 	Color get_connection_input_color(int p_idx);
+
+	int get_connection_output_count();
+	int get_connection_output_height(int p_idx);
 	Vector2 get_connection_output_position(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
@@ -185,7 +188,9 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
-	bool is_resizing() const { return resizing; }
+	bool is_resizing() const {
+		return resizing;
+	}
 
 	GraphNode();
 };

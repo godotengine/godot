@@ -167,7 +167,7 @@ Error SceneReplicationInterface::_send_spawn(Node *p_node, MultiplayerSpawner *p
 	uint32_t nid = rep_state->ensure_net_id(oid);
 
 	// Prepare custom arg and scene_id
-	uint8_t scene_id = p_spawner->get_spawn_id(oid);
+	uint8_t scene_id = p_spawner->find_spawnable_scene_index_from_object(oid);
 	bool is_custom = scene_id == MultiplayerSpawner::INVALID_ID;
 	Variant spawn_arg = p_spawner->get_spawn_argument(oid);
 	int spawn_arg_size = 0;
@@ -316,7 +316,7 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 }
 
 void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
-	const Set<ObjectID> &known = rep_state->get_known_nodes(p_peer);
+	const HashSet<ObjectID> &known = rep_state->get_known_nodes(p_peer);
 	if (known.is_empty()) {
 		return;
 	}

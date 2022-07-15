@@ -196,6 +196,7 @@ bool DisplayServerX11::_refresh_device_info() {
 
 	xi.absolute_devices.clear();
 	xi.touch_devices.clear();
+	xi.pen_inverted_devices.clear();
 
 	int dev_count;
 	XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
@@ -205,7 +206,7 @@ bool DisplayServerX11::_refresh_device_info() {
 		if (!dev->enabled) {
 			continue;
 		}
-		if (!(dev->use == XIMasterPointer || dev->use == XIFloatingSlave)) {
+		if (!(dev->use == XISlavePointer || dev->use == XIFloatingSlave)) {
 			continue;
 		}
 
@@ -274,6 +275,7 @@ bool DisplayServerX11::_refresh_device_info() {
 		xi.pen_pressure_range[dev->deviceid] = Vector2(pressure_min, pressure_max);
 		xi.pen_tilt_x_range[dev->deviceid] = Vector2(tilt_x_min, tilt_x_max);
 		xi.pen_tilt_y_range[dev->deviceid] = Vector2(tilt_y_min, tilt_y_max);
+		xi.pen_inverted_devices[dev->deviceid] = (bool)strstr(dev->name, "eraser");
 	}
 
 	XIFreeDeviceInfo(info);
@@ -1255,7 +1257,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	DEBUG_LOG_X11("delete_sub_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	while (wd.transient_children.size()) {
-		window_set_transient(wd.transient_children.front()->get(), INVALID_WINDOW_ID);
+		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != INVALID_WINDOW_ID) {
@@ -1817,6 +1819,52 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 	return retval;
 }
 
+bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	// Using EWMH -- Extended Window Manager Hints
+	Atom property = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+	bool retval = false;
+
+	if (property == None) {
+		return retval;
+	}
+
+	int result = XGetWindowProperty(
+			x11_display,
+			wd.x11_window,
+			property,
+			0,
+			1024,
+			False,
+			XA_ATOM,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+
+	if (result == Success) {
+		Atom *atoms = (Atom *)data;
+		Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+		for (uint64_t i = 0; i < len; i++) {
+			if (atoms[i] == wm_fullscreen) {
+				retval = true;
+				break;
+			}
+		}
+		XFree(data);
+	}
+
+	return retval;
+}
+
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	return _window_maximize_check(p_window, "_NET_WM_ALLOWED_ACTIONS");
@@ -2360,10 +2408,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
+		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+			if (cursor_c->value[0] == p_cursor && cursor_c->value[1] == p_hotspot) {
 				cursor_set_shape(p_shape);
 				return;
 			}
@@ -3298,19 +3346,20 @@ void DisplayServerX11::popup_close(WindowID p_window) {
 	}
 }
 
-void DisplayServerX11::mouse_process_popups() {
+bool DisplayServerX11::mouse_process_popups() {
 	_THREAD_SAFE_METHOD_
 
 	if (popup_list.is_empty()) {
-		return;
+		return false;
 	}
 
 	uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
 	if (delta < 250) {
-		return;
+		return false;
 	}
 
 	int number_of_screens = XScreenCount(x11_display);
+	bool closed = false;
 	for (int i = 0; i < number_of_screens; i++) {
 		Window root, child;
 		int root_x, root_y, win_x, win_y;
@@ -3340,6 +3389,7 @@ void DisplayServerX11::mouse_process_popups() {
 					}
 					if (C) {
 						_send_window_event(windows[C->get()], DisplayServerX11::WINDOW_EVENT_CLOSE_REQUEST);
+						closed = true;
 					}
 				}
 			}
@@ -3347,6 +3397,7 @@ void DisplayServerX11::mouse_process_popups() {
 			last_mouse_monitor_pos = pos;
 		}
 	}
+	return closed;
 }
 
 void DisplayServerX11::process_events() {
@@ -3357,7 +3408,7 @@ void DisplayServerX11::process_events() {
 	++frame;
 #endif
 
-	mouse_process_popups();
+	bool ignore_events = mouse_process_popups();
 
 	if (app_focused) {
 		//verify that one of the windows has focus, else send focus out notification
@@ -3407,6 +3458,10 @@ void DisplayServerX11::process_events() {
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
 		XEvent &event = events[event_index];
+		if (ignore_events) {
+			XFreeEventData(x11_display, &event.xcookie);
+			continue;
+		}
 
 		WindowID window_id = MAIN_WINDOW_ID;
 
@@ -3431,7 +3486,7 @@ void DisplayServerX11::process_events() {
 					} break;
 					case XI_RawMotion: {
 						XIRawEvent *raw_event = (XIRawEvent *)event_data;
-						int device_id = raw_event->deviceid;
+						int device_id = raw_event->sourceid;
 
 						// Determine the axis used (called valuators in XInput for some forsaken reason)
 						//  Mask is a bitmask indicating which axes are involved.
@@ -3456,9 +3511,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_PRESSURE)) {
-							Map<int, Vector2>::Element *pen_pressure = xi.pen_pressure_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_pressure = xi.pen_pressure_range.find(device_id);
 							if (pen_pressure) {
-								Vector2 pen_pressure_range = pen_pressure->value();
+								Vector2 pen_pressure_range = pen_pressure->value;
 								if (pen_pressure_range != Vector2()) {
 									xi.pressure_supported = true;
 									xi.pressure = (*values - pen_pressure_range[0]) /
@@ -3470,9 +3525,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTX)) {
-							Map<int, Vector2>::Element *pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
 							if (pen_tilt_x) {
-								Vector2 pen_tilt_x_range = pen_tilt_x->value();
+								Vector2 pen_tilt_x_range = pen_tilt_x->value;
 								if (pen_tilt_x_range[0] != 0 && *values < 0) {
 									xi.tilt.x = *values / -pen_tilt_x_range[0];
 								} else if (pen_tilt_x_range[1] != 0) {
@@ -3484,9 +3539,9 @@ void DisplayServerX11::process_events() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTY)) {
-							Map<int, Vector2>::Element *pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
+							HashMap<int, Vector2>::Iterator pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
 							if (pen_tilt_y) {
-								Vector2 pen_tilt_y_range = pen_tilt_y->value();
+								Vector2 pen_tilt_y_range = pen_tilt_y->value;
 								if (pen_tilt_y_range[0] != 0 && *values < 0) {
 									xi.tilt.y = *values / -pen_tilt_y_range[0];
 								} else if (pen_tilt_y_range[1] != 0) {
@@ -3495,6 +3550,11 @@ void DisplayServerX11::process_events() {
 							}
 
 							values++;
+						}
+
+						HashMap<int, bool>::Iterator pen_inverted = xi.pen_inverted_devices.find(device_id);
+						if (pen_inverted) {
+							xi.pen_inverted = pen_inverted->value;
 						}
 
 						// https://bugs.freedesktop.org/show_bug.cgi?id=71609
@@ -3508,11 +3568,11 @@ void DisplayServerX11::process_events() {
 						xi.raw_pos.x = rel_x;
 						xi.raw_pos.y = rel_y;
 
-						Map<int, Vector2>::Element *abs_info = xi.absolute_devices.find(device_id);
+						HashMap<int, Vector2>::Iterator abs_info = xi.absolute_devices.find(device_id);
 
 						if (abs_info) {
 							// Absolute mode device
-							Vector2 mult = abs_info->value();
+							Vector2 mult = abs_info->value;
 
 							xi.relative_motion.x += (xi.raw_pos.x - xi.old_raw_pos.x) * mult.x;
 							xi.relative_motion.y += (xi.raw_pos.y - xi.old_raw_pos.y) * mult.y;
@@ -3557,21 +3617,21 @@ void DisplayServerX11::process_events() {
 					} break;
 
 					case XI_TouchUpdate: {
-						Map<int, Vector2>::Element *curr_pos_elem = xi.state.find(index);
+						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;
 						}
 
-						if (curr_pos_elem->value() != pos) {
+						if (curr_pos_elem->value != pos) {
 							Ref<InputEventScreenDrag> sd;
 							sd.instantiate();
 							sd->set_window_id(window_id);
 							sd->set_index(index);
 							sd->set_position(pos);
-							sd->set_relative(pos - curr_pos_elem->value());
+							sd->set_relative(pos - curr_pos_elem->value);
 							Input::get_singleton()->parse_input_event(sd);
 
-							curr_pos_elem->value() = pos;
+							curr_pos_elem->value = pos;
 						}
 					} break;
 #endif
@@ -3596,6 +3656,8 @@ void DisplayServerX11::process_events() {
 
 			case Expose: {
 				DEBUG_LOG_X11("[%u] Expose window=%lu (%u), count='%u' \n", frame, event.xexpose.window, window_id, event.xexpose.count);
+
+				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
 
 				Main::force_redraw();
 			} break;
@@ -3929,6 +3991,7 @@ void DisplayServerX11::process_events() {
 					mm->set_pressure(bool(mouse_get_button_state() & MouseButton::MASK_LEFT) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
+				mm->set_pen_inverted(xi.pen_inverted);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
 				mm->set_button_mask((MouseButton)mouse_get_button_state());
@@ -4112,13 +4175,17 @@ void DisplayServerX11::process_events() {
 
 void DisplayServerX11::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	gl_manager->release_current();
+	if (gl_manager) {
+		gl_manager->release_current();
+	}
 #endif
 }
 
 void DisplayServerX11::make_rendering_thread() {
 #if defined(GLES3_ENABLED)
-	gl_manager->make_current();
+	if (gl_manager) {
+		gl_manager->make_current();
+	}
 #endif
 }
 

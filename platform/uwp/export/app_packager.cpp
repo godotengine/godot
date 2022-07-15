@@ -91,7 +91,7 @@ void AppxPackager::make_content_types(const String &p_path) {
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 	tmp_file->store_string("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">");
 
-	Map<String, String> types;
+	HashMap<String, String> types;
 
 	for (int i = 0; i < file_metadata.size(); i++) {
 		String ext = file_metadata[i].name.get_extension().to_lower();

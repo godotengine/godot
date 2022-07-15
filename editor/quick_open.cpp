@@ -146,8 +146,8 @@ void EditorQuickOpen::_confirmed() {
 		return;
 	}
 	_cleanup();
-	emit_signal(SNAME("quick_open"));
 	hide();
+	emit_signal(SNAME("quick_open"));
 }
 
 void EditorQuickOpen::cancel_pressed() {
@@ -263,6 +263,6 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options->add_theme_constant_override("draw_guides", 1);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
-	get_ok_button()->set_text(TTR("Open"));
+	set_ok_button_text(TTR("Open"));
 	set_hide_on_ok(false);
 }

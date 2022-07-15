@@ -33,11 +33,18 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/object/object.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
 class GDScriptWarning {
 public:
+	enum WarnLevel {
+		IGNORE,
+		WARN,
+		ERROR
+	};
+
 	enum Code {
 		UNASSIGNED_VARIABLE, // Variable used but never assigned.
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc).
@@ -81,7 +88,10 @@ public:
 
 	String get_name() const;
 	String get_message() const;
+	static int get_default_value(Code p_code);
+	static PropertyInfo get_property_info(Code p_code);
 	static String get_name_from_code(Code p_code);
+	static String get_settings_path_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 };
 

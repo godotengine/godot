@@ -257,4 +257,162 @@
 			[b]Note:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
+	<annotations>
+		<annotation name="@export">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_category">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_color_no_alpha">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_dir">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_enum" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="names" type="String" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_exp_easing" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="hints" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_file" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="names" type="String" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_2d_navigation">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_2d_physics">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_2d_render">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_3d_navigation">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_3d_physics">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_flags_3d_render">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_global_dir">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_global_file" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_group">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_multiline">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_node_path" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="type" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_placeholder">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_range" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="min" type="float" />
+			<argument index="1" name="max" type="float" />
+			<argument index="2" name="step" type="float" default="1.0" />
+			<argument index="3" name="extra_hints" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@export_subgroup">
+			<return type="void" />
+			<argument index="0" name="name" type="String" />
+			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@icon">
+			<return type="void" />
+			<argument index="0" name="icon_path" type="String" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@onready">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@rpc" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="mode" type="String" default="&quot;&quot;" />
+			<argument index="1" name="sync" type="String" default="&quot;&quot;" />
+			<argument index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
+			<argument index="3" name="transfer_channel" type="int" default="0" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@tool">
+			<return type="void" />
+			<description>
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore" qualifiers="vararg">
+			<return type="void" />
+			<argument index="0" name="warning" type="String" />
+			<description>
+			</description>
+		</annotation>
+	</annotations>
 </class>

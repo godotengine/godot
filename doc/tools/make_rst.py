@@ -4,7 +4,9 @@
 
 import argparse
 import os
+import platform
 import re
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
@@ -34,6 +36,7 @@ BASE_STRINGS = [
     "Signals",
     "Enumerations",
     "Constants",
+    "Annotations",
     "Property Descriptions",
     "Constructor Descriptions",
     "Method Descriptions",
@@ -55,9 +58,11 @@ BASE_STRINGS = [
 ]
 strings_l10n = {}
 
+STYLES = {}
+
 
 def print_error(error, state):  # type: (str, State) -> None
-    print("ERROR: {}".format(error))
+    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
     state.num_errors += 1
 
 
@@ -118,16 +123,18 @@ class MethodDef:
 
 
 class ConstantDef:
-    def __init__(self, name, value, text):  # type: (str, str, Optional[str]) -> None
+    def __init__(self, name, value, text, bitfield):  # type: (str, str, Optional[str], Optional[bool]) -> None
         self.name = name
         self.value = value
         self.text = text
+        self.is_bitfield = bitfield
 
 
 class EnumDef:
-    def __init__(self, name):  # type: (str) -> None
+    def __init__(self, name, bitfield):  # type: (str, Optional[bool]) -> None
         self.name = name
         self.values = OrderedDict()  # type: OrderedDict[str, ConstantDef]
+        self.is_bitfield = bitfield
 
 
 class ThemeItemDef:
@@ -151,6 +158,7 @@ class ClassDef:
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.operators = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
+        self.annotations = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
@@ -301,7 +309,8 @@ class State:
                 constant_name = constant.attrib["name"]
                 value = constant.attrib["value"]
                 enum = constant.get("enum")
-                constant_def = ConstantDef(constant_name, value, constant.text)
+                is_bitfield = constant.get("is_bitfield") or False
+                constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
                 if enum is None:
                     if constant_name in class_def.constants:
                         print_error('{}.xml: Duplicate constant "{}".'.format(class_name, constant_name), self)
@@ -314,10 +323,31 @@ class State:
                         enum_def = class_def.enums[enum]
 
                     else:
-                        enum_def = EnumDef(enum)
+                        enum_def = EnumDef(enum, is_bitfield)
                         class_def.enums[enum] = enum_def
 
                     enum_def.values[constant_name] = constant_def
+
+        annotations = class_root.find("annotations")
+        if annotations is not None:
+            for annotation in annotations:
+                assert annotation.tag == "annotation"
+
+                annotation_name = annotation.attrib["name"]
+                qualifiers = annotation.get("qualifiers")
+
+                params = parse_arguments(annotation)
+
+                desc_element = annotation.find("description")
+                annotation_desc = None
+                if desc_element is not None:
+                    annotation_desc = desc_element.text
+
+                annotation_def = MethodDef(annotation_name, return_type, params, annotation_desc, qualifiers)
+                if annotation_name not in class_def.annotations:
+                    class_def.annotations[annotation_name] = []
+
+                class_def.annotations[annotation_name].append(annotation_def)
 
         signals = class_root.find("signals")
         if signals is not None:
@@ -399,10 +429,26 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 
 
 def main():  # type: () -> None
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://bugs.python.org/issue29059>
+    if platform.system().lower() == "windows":
+        from ctypes import windll, c_int, byref
+
+        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+        mode = c_int(0)
+        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+        mode = c_int(mode.value | 4)
+        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
+    parser.add_argument(
+        "--color",
+        action="store_true",
+        help="If passed, force colored output even if stdout is not a TTY (useful for continuous integration).",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -411,6 +457,13 @@ def main():  # type: () -> None
         help="If passed, no output will be generated and XML files are only checked for errors.",
     )
     args = parser.parse_args()
+
+    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    STYLES["red"] = "\x1b[91m" if should_color else ""
+    STYLES["green"] = "\x1b[92m" if should_color else ""
+    STYLES["bold"] = "\x1b[1m" if should_color else ""
+    STYLES["regular"] = "\x1b[22m" if should_color else ""
+    STYLES["reset"] = "\x1b[0m" if should_color else ""
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -464,17 +517,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("{}.xml: Parse error while reading the file: {}".format(cur_file, e), state)
+            print_error("{}: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error('{}.xml: "version" attribute missing from "doc".'.format(cur_file), state)
+            print_error('{}: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error('{}.xml: Duplicate class "{}".'.format(cur_file, name), state)
+            print_error('{}: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
@@ -499,16 +552,22 @@ def main():  # type: () -> None
         make_rst_class(class_def, state, args.dry_run, args.output)
 
     if state.num_errors == 0:
-        print("No errors found in the class reference XML.")
+        print("{}No errors found in the class reference XML.{}".format(STYLES["green"], STYLES["reset"]))
         if not args.dry_run:
             print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
         if state.num_errors >= 2:
             print(
-                "%d errors were found in the class reference XML. Please check the messages above." % state.num_errors
+                "{}{} errors were found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], state.num_errors, STYLES["reset"]
+                )
             )
         else:
-            print("1 error was found in the class reference XML. Please check the messages above.")
+            print(
+                "{}1 error was found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], STYLES["reset"]
+                )
+            )
         exit(1)
 
 
@@ -673,7 +732,11 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write(".. _class_{}_constant_{}:\n\n".format(class_name, value.name))
 
-            f.write("enum **{}**:\n\n".format(e.name))
+            if e.is_bitfield:
+                f.write("flags **{}**:\n\n".format(e.name))
+            else:
+                f.write("enum **{}**:\n\n".format(e.name))
+
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
@@ -698,6 +761,26 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write(" --- " + rstize_text(constant.text.strip(), state))
 
             f.write("\n\n")
+
+    if len(class_def.annotations) > 0:
+        f.write(make_heading("Annotations", "-"))
+        index = 0
+
+        for method_list in class_def.annotations.values():
+            for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write("----\n\n")
+
+                if i == 0:
+                    f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
+
+                ret_type, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {} {}\n\n".format(ret_type, signature))
+
+                if m.description is not None and m.description.strip() != "":
+                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+
+                index += 1
 
     # Property descriptions
     if any(not p.overrides for p in class_def.properties.values()) > 0:
@@ -880,9 +963,9 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
 
         if to_skip > indent_level:
             print_error(
-                "{}.xml: Four spaces should be used for indentation within ["
-                + code_type
-                + "].".format(state.current_class),
+                "{}.xml: Four spaces should be used for indentation within [{}].".format(
+                    state.current_class, code_type
+                ),
                 state,
             )
 
@@ -1031,6 +1114,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
                         if method_param not in class_def.signals:
                             print_error('{}.xml: Unresolved signal "{}".'.format(state.current_class, param), state)
                         ref_type = "_signal"
+
+                    elif cmd.startswith("annotation"):
+                        if method_param not in class_def.annotations:
+                            print_error('{}.xml: Unresolved annotation "{}".'.format(state.current_class, param), state)
+                        ref_type = "_annotation"
 
                     elif cmd.startswith("constant"):
                         found = False

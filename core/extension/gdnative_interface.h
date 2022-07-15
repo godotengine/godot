@@ -153,7 +153,7 @@ typedef enum {
 	GDNATIVE_CALL_ERROR_TOO_MANY_ARGUMENTS, /* expected is number of arguments */
 	GDNATIVE_CALL_ERROR_TOO_FEW_ARGUMENTS, /*  expected is number of arguments */
 	GDNATIVE_CALL_ERROR_INSTANCE_IS_NULL,
-
+	GDNATIVE_CALL_ERROR_METHOD_NOT_CONST, /* used for const call */
 } GDNativeCallErrorType;
 
 typedef struct {
@@ -252,13 +252,10 @@ typedef void *GDNativeExtensionClassLibraryPtr;
 typedef enum {
 	GDNATIVE_EXTENSION_METHOD_FLAG_NORMAL = 1,
 	GDNATIVE_EXTENSION_METHOD_FLAG_EDITOR = 2,
-	GDNATIVE_EXTENSION_METHOD_FLAG_NOSCRIPT = 4,
-	GDNATIVE_EXTENSION_METHOD_FLAG_CONST = 8,
-	GDNATIVE_EXTENSION_METHOD_FLAG_REVERSE = 16, /* used for events */
-	GDNATIVE_EXTENSION_METHOD_FLAG_VIRTUAL = 32,
-	GDNATIVE_EXTENSION_METHOD_FLAG_FROM_SCRIPT = 64,
-	GDNATIVE_EXTENSION_METHOD_FLAG_VARARG = 128,
-	GDNATIVE_EXTENSION_METHOD_FLAG_STATIC = 256,
+	GDNATIVE_EXTENSION_METHOD_FLAG_CONST = 4,
+	GDNATIVE_EXTENSION_METHOD_FLAG_VIRTUAL = 8,
+	GDNATIVE_EXTENSION_METHOD_FLAG_VARARG = 16,
+	GDNATIVE_EXTENSION_METHOD_FLAG_STATIC = 32,
 	GDNATIVE_EXTENSION_METHOD_FLAGS_DEFAULT = GDNATIVE_EXTENSION_METHOD_FLAG_NORMAL,
 } GDNativeExtensionClassMethodFlags;
 
@@ -413,6 +410,8 @@ typedef struct {
 	GDNativeBool (*variant_iter_init)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid);
 	GDNativeBool (*variant_iter_next)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeBool *r_valid);
 	void (*variant_iter_get)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_iter, GDNativeVariantPtr r_ret, GDNativeBool *r_valid);
+	GDNativeInt (*variant_hash)(const GDNativeVariantPtr p_self);
+	GDNativeInt (*variant_recursive_hash)(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count);
 	GDNativeBool (*variant_hash_compare)(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other);
 	GDNativeBool (*variant_booleanize)(const GDNativeVariantPtr p_self);
 	void (*variant_sub)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_dst);
@@ -538,7 +537,7 @@ typedef struct {
 
 	void (*classdb_register_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	void (*classdb_register_extension_class_method)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value);
+	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, bool p_is_bitfield);
 	void (*classdb_register_extension_class_property)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
 	void (*classdb_register_extension_class_property_group)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix);
 	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);

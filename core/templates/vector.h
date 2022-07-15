@@ -145,6 +145,9 @@ public:
 
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
+		if (is_empty()) {
+			return ret;
+		}
 		ret.resize(size() * sizeof(T));
 		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
 		return ret;

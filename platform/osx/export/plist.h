@@ -83,7 +83,7 @@ public:
 
 	CharString data_string;
 	Vector<Ref<PListNode>> data_array;
-	Map<String, Ref<PListNode>> data_dict;
+	HashMap<String, Ref<PListNode>> data_dict;
 	union {
 		int32_t data_int;
 		bool data_bool;

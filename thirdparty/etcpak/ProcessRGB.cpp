@@ -3216,9 +3216,9 @@ etcpak_force_inline static uint16x8_t ErrorProbe_EAC_NEON( uint8x8_t recVal, uin
     uint8x8_t srcValWide;
 #ifndef __aarch64__
     if( Index < 8 )
-        srcValWide = vdup_lane_u8( vget_low_u8( alphaBlock ), ClampConstant( Index, 0, 8 ) );
+        srcValWide = vdup_lane_u8( vget_low_u8( alphaBlock ), ClampConstant( Index, 0, 7 ) );
     else
-        srcValWide = vdup_lane_u8( vget_high_u8( alphaBlock ), ClampConstant( Index - 8, 0, 8 ) );
+        srcValWide = vdup_lane_u8( vget_high_u8( alphaBlock ), ClampConstant( Index - 8, 0, 7 ) );
 #else
     srcValWide = vdup_laneq_u8( alphaBlock, Index );
 #endif
@@ -3256,9 +3256,9 @@ etcpak_force_inline static int16x8_t WidenMultiplier_EAC_NEON( int16x8_t multipl
     constexpr int Lane = GetMulSel( Index );
 #ifndef __aarch64__
     if( Lane < 4 )
-        return vdupq_lane_s16( vget_low_s16( multipliers ), ClampConstant( Lane, 0, 4 ) );
+        return vdupq_lane_s16( vget_low_s16( multipliers ), ClampConstant( Lane, 0, 3 ) );
     else
-        return vdupq_lane_s16( vget_high_s16( multipliers ), ClampConstant( Lane - 4, 0, 4 ) );
+        return vdupq_lane_s16( vget_high_s16( multipliers ), ClampConstant( Lane - 4, 0, 3 ) );
 #else
     return vdupq_laneq_s16( multipliers, Lane );
 #endif

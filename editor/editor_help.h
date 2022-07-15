@@ -105,13 +105,14 @@ class EditorHelp : public VBoxContainer {
 	String edited_class;
 
 	Vector<Pair<String, int>> section_line;
-	Map<String, int> method_line;
-	Map<String, int> signal_line;
-	Map<String, int> property_line;
-	Map<String, int> theme_property_line;
-	Map<String, int> constant_line;
-	Map<String, int> enum_line;
-	Map<String, Map<String, int>> enum_values_line;
+	HashMap<String, int> method_line;
+	HashMap<String, int> signal_line;
+	HashMap<String, int> property_line;
+	HashMap<String, int> theme_property_line;
+	HashMap<String, int> constant_line;
+	HashMap<String, int> annotation_line;
+	HashMap<String, int> enum_line;
+	HashMap<String, HashMap<String, int>> enum_values_line;
 	int description_line = 0;
 
 	RichTextLabel *class_desc = nullptr;
@@ -140,6 +141,10 @@ class EditorHelp : public VBoxContainer {
 	Ref<Font> doc_title_font;
 	Ref<Font> doc_code_font;
 
+	int doc_title_font_size;
+
+	int scroll_to = -1;
+
 	void _update_theme();
 	void _help_callback(const String &p_topic);
 
@@ -152,6 +157,7 @@ class EditorHelp : public VBoxContainer {
 
 	void _add_bulletpoint();
 
+	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
 	void _class_desc_input(const Ref<InputEvent> &p_input);

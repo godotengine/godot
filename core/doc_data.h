@@ -32,7 +32,7 @@
 #define DOC_DATA_H
 
 #include "core/io/xml_parser.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 struct ScriptMemberInfo {
@@ -103,6 +103,7 @@ public:
 		String value;
 		bool is_value_valid = false;
 		String enumeration;
+		bool is_bitfield = false;
 		String description;
 		bool operator<(const ConstantDoc &p_const) const {
 			return name < p_const.name;
@@ -111,6 +112,7 @@ public:
 
 	struct EnumDoc {
 		String name = "@unnamed_enum";
+		bool is_bitfield = false;
 		String description;
 		Vector<DocData::ConstantDoc> values;
 	};
@@ -161,8 +163,9 @@ public:
 		Vector<MethodDoc> operators;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
-		Map<String, String> enums;
+		HashMap<String, String> enums;
 		Vector<PropertyDoc> properties;
+		Vector<MethodDoc> annotations;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_script_doc = false;
 		String script_path;

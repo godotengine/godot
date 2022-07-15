@@ -428,6 +428,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				case RemoteDebugger::MESSAGE_TYPE_LOG: {
 					msg_type = EditorLog::MSG_TYPE_STD;
 				} break;
+				case RemoteDebugger::MESSAGE_TYPE_LOG_RICH: {
+					msg_type = EditorLog::MSG_TYPE_STD_RICH;
+				} break;
 				case RemoteDebugger::MESSAGE_TYPE_ERROR: {
 					msg_type = EditorLog::MSG_TYPE_ERROR;
 				} break;
@@ -742,9 +745,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		bool parsed = false;
 		const String cap = p_msg.substr(0, colon_index);
-		Map<StringName, Callable>::Element *element = captures.find(cap);
+		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
 		if (element) {
-			Callable &c = element->value();
+			Callable &c = element->value;
 			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
 			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
 			const Variant *args[2] = { &cmd, &data };
@@ -1050,10 +1053,10 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 }
 
 int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
-	Map<String, int>::Element *E = res_path_cache.find(p_path);
+	HashMap<String, int>::Iterator E = res_path_cache.find(p_path);
 
 	if (E) {
-		return E->get();
+		return E->value;
 	}
 
 	last_path_id++;
@@ -1419,6 +1422,10 @@ bool ScriptEditorDebugger::is_skip_breakpoints() {
 void ScriptEditorDebugger::_error_activated() {
 	TreeItem *selected = error_tree->get_selected();
 
+	if (!selected) {
+		return;
+	}
+
 	TreeItem *ci = selected->get_first_child();
 	if (ci) {
 		selected->set_collapsed(!selected->is_collapsed());
@@ -1427,6 +1434,11 @@ void ScriptEditorDebugger::_error_activated() {
 
 void ScriptEditorDebugger::_error_selected() {
 	TreeItem *selected = error_tree->get_selected();
+
+	if (!selected) {
+		return;
+	}
+
 	Array meta = selected->get_metadata(0);
 	if (meta.size() == 0) {
 		return;
@@ -1465,6 +1477,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
+	emit_signal(SNAME("errors_cleared"));
 	update_tabs();
 
 	expand_all_button->set_disabled(true);
@@ -1472,7 +1485,11 @@ void ScriptEditorDebugger::_clear_errors_list() {
 	clear_button->set_disabled(true);
 }
 
-void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) {
+void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	breakpoints_menu->clear();
 	breakpoints_menu->set_size(Size2(1, 1));
 
@@ -1482,7 +1499,7 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) 
 		breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Breakpoint"), ACTION_DELETE_BREAKPOINT);
 		file = selected->get_parent()->get_text(0);
 	}
-	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in: ") + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
+	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
 	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
 
 	breakpoints_menu->set_position(breakpoints_tree->get_global_position() + p_pos);
@@ -1490,7 +1507,11 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos) 
 }
 
 // Right click on specific file(s) or folder(s).
-void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
+void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	item_menu->clear();
 	item_menu->reset_size();
 
@@ -1618,6 +1639,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
+	ADD_SIGNAL(MethodInfo("errors_cleared"));
 }
 
 void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
@@ -1676,7 +1698,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		reason->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+		reason->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 		reason->set_max_lines_visible(3);
 		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
@@ -1757,7 +1779,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		search = memnew(LineEdit);
 		search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search->set_placeholder(TTR("Filter stack variables"));
+		search->set_placeholder(TTR("Filter Stack Variables"));
 		search->set_clear_button_enabled(true);
 		tools_hb->add_child(search);
 
@@ -1780,7 +1802,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->set_allow_reselect(true);
 		breakpoints_tree->set_allow_rmb_select(true);
 		breakpoints_tree->set_hide_root(true);
-		breakpoints_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
+		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
 		breakpoints_tree->create_item();
 
 		parent_sc->add_child(breakpoints_tree);
@@ -1835,7 +1857,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
-		error_tree->connect("item_rmb_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
+		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);

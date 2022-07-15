@@ -138,8 +138,11 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
-		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+		} else {
+			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
+			property.hint_string = "0,0,1";
 		}
 		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
@@ -388,6 +391,7 @@ void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backward
 		}
 	}
 
+	is_over = false;
 	set_playing(true);
 }
 
@@ -496,7 +500,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }

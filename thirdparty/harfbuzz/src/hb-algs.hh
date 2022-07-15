@@ -59,7 +59,7 @@
 	  static inline constexpr T operator | (T l, T r) { return T ((unsigned) l | (unsigned) r); } \
 	  static inline constexpr T operator & (T l, T r) { return T ((unsigned) l & (unsigned) r); } \
 	  static inline constexpr T operator ^ (T l, T r) { return T ((unsigned) l ^ (unsigned) r); } \
-	  static inline constexpr T operator ~ (T r) { return T (~(unsigned int) r); } \
+	  static inline constexpr unsigned operator ~ (T r) { return (~(unsigned) r); } \
 	  static inline T& operator |= (T &l, T r) { l = l | r; return l; } \
 	  static inline T& operator &= (T& l, T r) { l = l & r; return l; } \
 	  static inline T& operator ^= (T& l, T r) { l = l ^ r; return l; } \
@@ -150,10 +150,26 @@ struct BEInt<Type, 4>
 			        uint8_t ((V >> 16) & 0xFF),
 			        uint8_t ((V >>  8) & 0xFF),
 			        uint8_t ((V      ) & 0xFF)} {}
-  constexpr operator Type () const { return (v[0] << 24)
-					  + (v[1] << 16)
-					  + (v[2] <<  8)
-					  + (v[3]      ); }
+
+  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
+  constexpr operator Type () const {
+#if ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
+    defined(__BYTE_ORDER) && \
+    (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
+    /* Spoon-feed the compiler a big-endian integer with alignment 1.
+     * https://github.com/harfbuzz/harfbuzz/pull/1398 */
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    return __builtin_bswap32 (((packed_uint32_t *) this)->v);
+#else /* __BYTE_ORDER == __BIG_ENDIAN */
+    return ((packed_uint32_t *) this)->v;
+#endif
+#else
+    return (v[0] << 24)
+	 + (v[1] << 16)
+	 + (v[2] <<  8)
+	 + (v[3]      );
+#endif
+  }
   private: uint8_t v[4];
 };
 
@@ -211,31 +227,26 @@ struct
 }
 HB_FUNCOBJ (hb_bool);
 
-template <typename T>
-static inline
-T hb_coerce (const T v) { return v; }
-template <typename T, typename V,
-	  hb_enable_if (!hb_is_same (hb_decay<T>, hb_decay<V>) && std::is_pointer<V>::value)>
-static inline
-T hb_coerce (const V v) { return *v; }
-
 struct
 {
   private:
 
   template <typename T> constexpr auto
-  impl (const T& v, hb_priority<2>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+
+  template <typename T> constexpr uint32_t
+  impl (const hb::shared_ptr<T>& v, hb_priority<1>) const
+  {
+    return v.get () ? v.get ()->hash () : 0;
+  }
+  template <typename T> constexpr uint32_t
+  impl (const hb::unique_ptr<T>& v, hb_priority<1>) const
+  {
+    return v.get () ? v.get ()->hash () : 0;
+  }
 
   template <typename T> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
-
-  template <typename T,
-	    hb_enable_if (std::is_integral<T>::value)> constexpr auto
-  impl (const T& v, hb_priority<0>) const HB_AUTO_RETURN
-  (
-    /* Knuth's multiplicative method: */
-    (uint32_t) v * 2654435761u
-  )
+  impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 
   public:
 
@@ -845,6 +856,11 @@ template <typename T> static inline bool
 hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3)
 {
   return hb_in_range (u, lo1, hi1) || hb_in_range (u, lo2, hi2) || hb_in_range (u, lo3, hi3);
+}
+template <typename T> static inline bool
+hb_in_ranges (T u, T lo1, T hi1, T lo2, T hi2, T lo3, T hi3, T lo4, T hi4)
+{
+  return hb_in_range (u, lo1, hi1) || hb_in_range (u, lo2, hi2) || hb_in_range (u, lo3, hi3) || hb_in_range (u, lo4, hi4);
 }
 
 

@@ -32,7 +32,6 @@
 #define RSSR_SCENE_SHADER_FC_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -42,8 +41,6 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	RendererStorageRD *storage = nullptr;
-
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
 		SHADER_VERSION_DEPTH_PASS_DP,
@@ -52,6 +49,8 @@ public:
 		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
 		SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
+		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
+		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
 		SHADER_VERSION_COLOR_PASS,
 		SHADER_VERSION_MAX
 	};
@@ -60,7 +59,8 @@ public:
 		SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 0,
 		SHADER_COLOR_PASS_FLAG_LIGHTMAP = 1 << 1,
 		SHADER_COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
-		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 3
+		SHADER_COLOR_PASS_FLAG_MOTION_VECTORS = 1 << 3,
+		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 4
 	};
 
 	enum PipelineVersion {
@@ -71,6 +71,8 @@ public:
 		PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL,
 		PIPELINE_VERSION_DEPTH_PASS_WITH_SDF,
 		PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
+		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
 		PIPELINE_VERSION_COLOR_PASS,
 		PIPELINE_VERSION_MAX
 	};
@@ -80,7 +82,8 @@ public:
 		PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
 		PIPELINE_COLOR_PASS_FLAG_LIGHTMAP = 1 << 2,
 		PIPELINE_COLOR_PASS_FLAG_MULTIVIEW = 1 << 3,
-		PIPELINE_COLOR_PASS_FLAG_COUNT = 1 << 4,
+		PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS = 1 << 4,
+		PIPELINE_COLOR_PASS_FLAG_COUNT = 1 << 5,
 	};
 
 	enum ShaderSpecializations {
@@ -138,14 +141,14 @@ public:
 
 		String path;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
 		String code;
-		Map<StringName, Map<int, RID>> default_texture_params;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		DepthDraw depth_draw;
 		DepthTest depth_test;
@@ -208,7 +211,7 @@ public:
 		uint8_t priority;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
 	};
 
@@ -239,11 +242,11 @@ public:
 	ShaderData *overdraw_material_shader_ptr = nullptr;
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
-	Set<uint32_t> valid_color_pass_pipelines;
+	HashSet<uint32_t> valid_color_pass_pipelines;
 	SceneShaderForwardClustered();
 	~SceneShaderForwardClustered();
 
-	void init(RendererStorageRD *p_storage, const String p_defines);
+	void init(const String p_defines);
 	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 

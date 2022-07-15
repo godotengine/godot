@@ -164,7 +164,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 
-	uint64_t hash = hash_djb2_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
+	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
 	List<StringName> class_list;
 	ClassDB::get_class_list(&class_list);
@@ -177,8 +177,8 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
-		hash = hash_djb2_one_64(t->name.hash(), hash);
-		hash = hash_djb2_one_64(t->inherits.hash(), hash);
+		hash = hash_murmur3_one_64(t->name.hash(), hash);
+		hash = hash_murmur3_one_64(t->inherits.hash(), hash);
 
 		{ //methods
 
@@ -200,27 +200,27 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				MethodBind *mb = t->method_map[F];
-				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
+				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
 
 				for (int i = 0; i < mb->get_argument_count(); i++) {
 					const PropertyInfo info = mb->get_argument_info(i);
-					hash = hash_djb2_one_64(info.type, hash);
-					hash = hash_djb2_one_64(info.name.hash(), hash);
-					hash = hash_djb2_one_64(info.hint, hash);
-					hash = hash_djb2_one_64(info.hint_string.hash(), hash);
+					hash = hash_murmur3_one_64(info.type, hash);
+					hash = hash_murmur3_one_64(info.name.hash(), hash);
+					hash = hash_murmur3_one_64(info.hint, hash);
+					hash = hash_murmur3_one_64(info.hint_string.hash(), hash);
 				}
 
-				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_default_argument_count(), hash);
 
 				for (int i = 0; i < mb->get_default_argument_count(); i++) {
 					//hash should not change, i hope for tis
 					Variant da = mb->get_default_argument(i);
-					hash = hash_djb2_one_64(da.hash(), hash);
+					hash = hash_murmur3_one_64(da.hash(), hash);
 				}
 
-				hash = hash_djb2_one_64(mb->get_hint_flags(), hash);
+				hash = hash_murmur3_one_64(mb->get_hint_flags(), hash);
 			}
 		}
 
@@ -228,15 +228,15 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
 				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(t->constant_map[F], hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->constant_map[F], hash);
 			}
 		}
 
@@ -252,9 +252,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				MethodInfo &mi = t->signal_map[F];
-				hash = hash_djb2_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (int i = 0; i < mi.arguments.size(); i++) {
-					hash = hash_djb2_one_64(mi.arguments[i].type, hash);
+					hash = hash_murmur3_one_64(mi.arguments[i].type, hash);
 				}
 			}
 		}
@@ -273,23 +273,23 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				PropertySetGet *psg = t->property_setget.getptr(F);
 				ERR_FAIL_COND_V(!psg, 0);
 
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(psg->setter.hash(), hash);
-				hash = hash_djb2_one_64(psg->getter.hash(), hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
+				hash = hash_murmur3_one_64(psg->getter.hash(), hash);
 			}
 		}
 
 		//property list
 		for (const PropertyInfo &F : t->property_list) {
-			hash = hash_djb2_one_64(F.name.hash(), hash);
-			hash = hash_djb2_one_64(F.type, hash);
-			hash = hash_djb2_one_64(F.hint, hash);
-			hash = hash_djb2_one_64(F.hint_string.hash(), hash);
-			hash = hash_djb2_one_64(F.usage, hash);
+			hash = hash_murmur3_one_64(F.name.hash(), hash);
+			hash = hash_murmur3_one_64(F.type, hash);
+			hash = hash_murmur3_one_64(F.hint, hash);
+			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
+			hash = hash_murmur3_one_64(F.usage, hash);
 		}
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 #else
 	return 0;
 #endif
@@ -536,7 +536,7 @@ MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_n
 	return nullptr;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant) {
+void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -555,13 +555,15 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 			enum_name = enum_name.get_slicec('.', 1);
 		}
 
-		List<StringName> *constants_list = type->enum_map.getptr(enum_name);
+		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
 
 		if (constants_list) {
-			constants_list->push_back(p_name);
+			constants_list->constants.push_back(p_name);
+			constants_list->is_bitfield = p_is_bitfield;
 		} else {
-			List<StringName> new_list;
-			new_list.push_back(p_name);
+			ClassInfo::EnumInfo new_list;
+			new_list.is_bitfield = p_is_bitfield;
+			new_list.constants.push_back(p_name);
 			type->enum_map[enum_name] = new_list;
 		}
 	}
@@ -583,7 +585,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 		}
 #else
 
-		for (const KeyValue<StringName, int> &E : type->constant_map) {
+		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
 			p_constants->push_back(E.key);
 		}
 
@@ -596,13 +598,13 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	}
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
+int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		int *constant = type->constant_map.getptr(p_name);
+		int64_t *constant = type->constant_map.getptr(p_name);
 		if (constant) {
 			if (p_success) {
 				*p_success = true;
@@ -645,8 +647,8 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
-			List<StringName> &constants_list = E.value;
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
+			List<StringName> &constants_list = E.value.constants;
 			const List<StringName>::Element *found = constants_list.find(p_name);
 			if (found) {
 				return E.key;
@@ -669,7 +671,7 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		for (KeyValue<StringName, List<StringName>> &E : type->enum_map) {
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
 			p_enums->push_back(E.key);
 		}
 
@@ -687,10 +689,10 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const List<StringName> *constants = type->enum_map.getptr(p_enum);
+		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
 
 		if (constants) {
-			for (const List<StringName>::Element *E = constants->front(); E; E = E->next()) {
+			for (const List<StringName>::Element *E = constants->constants.front(); E; E = E->next()) {
 				p_constants->push_back(E->get());
 			}
 		}
@@ -736,6 +738,25 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 
 	while (type) {
 		if (type->enum_map.has(p_name)) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
+bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
 			return true;
 		}
 		if (p_no_inheritance) {
@@ -1066,7 +1087,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int *c = check->constant_map.getptr(p_property); //constants count
+		const int64_t *c = check->constant_map.getptr(p_property); //constants count
 		if (c) {
 			r_value = *c;
 			return true;
@@ -1390,7 +1411,7 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 }
 
 HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
-Set<StringName> ClassDB::default_values_cached;
+HashSet<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 	if (!default_values_cached.has(p_class)) {
@@ -1492,7 +1513,7 @@ void ClassDB::unregister_extension_class(const StringName &p_class) {
 	classes.erase(p_class);
 }
 
-Map<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
+HashMap<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
 void ClassDB::register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size) {
 	NativeStruct ns;
 	ns.ccode = p_code;

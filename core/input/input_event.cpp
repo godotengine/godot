@@ -525,8 +525,8 @@ void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &InputEventMouse::get_global_position);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position"), "set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
 
 ///////////////////////////////////
@@ -741,6 +741,14 @@ float InputEventMouseMotion::get_pressure() const {
 	return pressure;
 }
 
+void InputEventMouseMotion::set_pen_inverted(bool p_inverted) {
+	pen_inverted = p_inverted;
+}
+
+bool InputEventMouseMotion::get_pen_inverted() const {
+	return pen_inverted;
+}
+
 void InputEventMouseMotion::set_relative(const Vector2 &p_relative) {
 	relative = p_relative;
 }
@@ -768,6 +776,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 
 	mm->set_position(p_xform.xform(get_position() + p_local_ofs));
 	mm->set_pressure(get_pressure());
+	mm->set_pen_inverted(get_pen_inverted());
 	mm->set_tilt(get_tilt());
 	mm->set_global_position(get_global_position());
 
@@ -805,9 +814,9 @@ String InputEventMouseMotion::to_string() {
 			break;
 	}
 
-	// Work around the fact vformat can only take 5 substitutions but 6 need to be passed.
-	String mask_and_position = vformat("button_mask=%s, position=(%s)", button_mask_string, String(get_position()));
-	return vformat("InputEventMouseMotion: %s, relative=(%s), velocity=(%s), pressure=%.2f, tilt=(%s)", mask_and_position, String(get_relative()), String(get_velocity()), get_pressure(), String(get_tilt()));
+	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
+	String mask_and_position_and_relative = vformat("button_mask=%s, position=(%s), relative=(%s)", button_mask_string, String(get_position()), String(get_relative()));
+	return vformat("InputEventMouseMotion: %s, velocity=(%s), pressure=%.2f, tilt=(%s), pen_inverted=(%d)", mask_and_position_and_relative, String(get_velocity()), get_pressure(), String(get_tilt()), get_pen_inverted());
 }
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
@@ -859,6 +868,9 @@ void InputEventMouseMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMouseMotion::set_pressure);
 	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMouseMotion::get_pressure);
 
+	ClassDB::bind_method(D_METHOD("set_pen_inverted", "pen_inverted"), &InputEventMouseMotion::set_pen_inverted);
+	ClassDB::bind_method(D_METHOD("get_pen_inverted"), &InputEventMouseMotion::get_pen_inverted);
+
 	ClassDB::bind_method(D_METHOD("set_relative", "relative"), &InputEventMouseMotion::set_relative);
 	ClassDB::bind_method(D_METHOD("get_relative"), &InputEventMouseMotion::get_relative);
 
@@ -867,8 +879,9 @@ void InputEventMouseMotion::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "tilt"), "set_tilt", "get_tilt");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pen_inverted"), "set_pen_inverted", "get_pen_inverted");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1167,7 +1180,7 @@ void InputEventScreenTouch::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("is_pressed"),&InputEventScreenTouch::is_pressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
 
@@ -1260,9 +1273,9 @@ void InputEventScreenDrag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventScreenDrag::get_velocity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative"), "set_relative", "get_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "relative", PROPERTY_HINT_NONE, "suffix:px"), "set_relative", "get_relative");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "suffix:px/s"), "set_velocity", "get_velocity");
 }
 
 ///////////////////////////////////
@@ -1362,7 +1375,7 @@ void InputEventGesture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 }
 
 Vector2 InputEventGesture::get_position() const {

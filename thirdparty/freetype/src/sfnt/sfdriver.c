@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -34,6 +34,10 @@
 #ifdef TT_CONFIG_OPTION_COLOR_LAYERS
 #include "ttcolr.h"
 #include "ttcpal.h"
+#endif
+
+#ifdef FT_CONFIG_OPTION_SVG
+#include "ttsvg.h"
 #endif
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -491,14 +495,12 @@
                   char_type_func  char_type,
                   FT_Bool         report_invalid_characters )
   {
-    FT_Error  error = FT_Err_Ok;
+    FT_Error  error;
 
     char*       result = NULL;
     FT_String*  r;
     FT_Char*    p;
     FT_UInt     len;
-
-    FT_UNUSED( error );
 
 
     if ( FT_QALLOC( result, entry->stringLength / 2 + 1 ) )
@@ -550,14 +552,12 @@
                     char_type_func  char_type,
                     FT_Bool         report_invalid_characters )
   {
-    FT_Error  error = FT_Err_Ok;
+    FT_Error  error;
 
     char*       result = NULL;
     FT_String*  r;
     FT_Char*    p;
     FT_UInt     len;
-
-    FT_UNUSED( error );
 
 
     if ( FT_QALLOC( result, entry->stringLength + 1 ) )
@@ -1214,6 +1214,12 @@
 #define PUT_COLOR_LAYERS( a )  NULL
 #endif
 
+#ifdef FT_CONFIG_OPTION_SVG
+#define PUT_SVG_SUPPORT( a )  a
+#else
+#define PUT_SVG_SUPPORT( a )  NULL
+#endif
+
 #define PUT_COLOR_LAYERS_V1( a )  PUT_COLOR_LAYERS( a )
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -1308,7 +1314,14 @@
     tt_face_get_metrics,    /* TT_Get_Metrics_Func     get_metrics     */
 
     tt_face_get_name,       /* TT_Get_Name_Func        get_name        */
-    sfnt_get_name_id        /* TT_Get_Name_ID_Func     get_name_id     */
+    sfnt_get_name_id,       /* TT_Get_Name_ID_Func     get_name_id     */
+
+    PUT_SVG_SUPPORT( tt_face_load_svg ),
+                            /* TT_Load_Table_Func      load_svg        */
+    PUT_SVG_SUPPORT( tt_face_free_svg ),
+                            /* TT_Free_Table_Func      free_svg        */
+    PUT_SVG_SUPPORT( tt_face_load_svg_doc )
+                            /* TT_Load_Svg_Doc_Func    load_svg_doc    */
   )
 
 

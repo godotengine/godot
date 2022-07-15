@@ -141,7 +141,6 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	trail_enabled = p_enabled;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
-	update_configuration_warnings();
 	update();
 
 	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
@@ -297,7 +296,7 @@ bool GPUParticles2D::get_interpolate() const {
 }
 
 TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+	TypedArray<String> warnings = Node2D::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose."));
@@ -605,24 +604,24 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:px"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,Reverse Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Trails", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_trail_length", "get_trail_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_length_secs", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_trail_length", "get_trail_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
 	ADD_GROUP("Process Material", "process_");

@@ -119,14 +119,14 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	if (frames_selected.size() == 0) {
 		split_sheet_dialog->get_ok_button()->set_disabled(true);
-		split_sheet_dialog->get_ok_button()->set_text(TTR("No Frames Selected"));
+		split_sheet_dialog->set_ok_button_text(TTR("No Frames Selected"));
 		return;
 	}
 
 	Color accent = get_theme_color("accent_color", "Editor");
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		const int idx = E->get();
+	for (const int &E : frames_selected) {
+		const int idx = E;
 		const int x = idx % frame_count.x;
 		const int y = idx / frame_count.x;
 		const Point2 pos = draw_offset + Point2(x, y) * (draw_frame_size + draw_sep);
@@ -140,7 +140,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	}
 
 	split_sheet_dialog->get_ok_button()->set_disabled(false);
-	split_sheet_dialog->get_ok_button()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
+	split_sheet_dialog->set_ok_button_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 }
 
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
@@ -248,8 +248,8 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	int fc = frames->get_frame_count(edited_anim);
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		int idx = E->get();
+	for (const int &E : frames_selected) {
+		int idx = E;
 		const Point2 frame_coords(idx % frame_count.x, idx / frame_count.x);
 
 		Ref<AtlasTexture> at;
@@ -449,7 +449,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 			dialog->set_title(TTR("Error!"));
 
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok_button()->set_text(TTR("Close"));
+			dialog->set_ok_button_text(TTR("Close"));
 			dialog->popup_centered();
 			return; ///beh should show an error i guess
 		}
@@ -516,7 +516,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_text(TTR("Resource clipboard is empty or not a texture!"));
 		dialog->set_title(TTR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok_button()->set_text(TTR("Close"));
+		dialog->set_ok_button_text(TTR("Close"));
 		dialog->popup_centered();
 		return; ///beh should show an error i guess
 	}

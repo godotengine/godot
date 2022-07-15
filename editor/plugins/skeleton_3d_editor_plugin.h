@@ -181,7 +181,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void _draw_handles();
 
 	void _joint_tree_selection_changed();
-	void _joint_tree_rmb_select(const Vector2 &p_pos);
+	void _joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _update_properties();
 
 	void _subgizmo_selection_change();

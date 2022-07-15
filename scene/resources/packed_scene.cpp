@@ -35,6 +35,7 @@
 #include "core/core_string_names.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/templates/local_vector.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
@@ -43,7 +44,7 @@
 #include "scene/property_utils.h"
 
 #define PACKED_SCENE_VERSION 2
-
+#define META_POINTER_PROPERTY_BASE "metadata/_editor_prop_ptr_"
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -53,7 +54,7 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	if (pinned.is_empty()) {
 		return Array();
 	}
-	Set<StringName> storable_properties;
+	HashSet<StringName> storable_properties;
 	p_node->get_storable_properties(storable_properties);
 	int i = 0;
 	do {
@@ -106,7 +107,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
-	Map<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
+	HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_scene;
+
+	LocalVector<DeferredNodePathProperties> deferred_node_paths;
 
 	for (int i = 0; i < nc; i++) {
 		const NodeData &n = nd[i];
@@ -230,8 +233,27 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 				for (int j = 0; j < nprop_count; j++) {
 					bool valid;
-					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
+
 					ERR_FAIL_INDEX_V(nprops[j].value, prop_count, nullptr);
+
+					if (nprops[j].name & FLAG_PATH_PROPERTY_IS_NODE) {
+						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
+						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
+						if (Engine::get_singleton()->is_editor_hint()) {
+							// If editor, just set the metadata and be it
+							node->set(META_POINTER_PROPERTY_BASE + String(snames[name_idx]), props[nprops[j].value]);
+						} else {
+							// Do an actual deferred sed of the property path.
+							DeferredNodePathProperties dnp;
+							dnp.path = props[nprops[j].value];
+							dnp.base = node;
+							dnp.property = snames[name_idx];
+							deferred_node_paths.push_back(dnp);
+						}
+						continue;
+					}
+
+					ERR_FAIL_INDEX_V(nprops[j].name, sname_count, nullptr);
 
 					if (snames[nprops[j].name] == CoreStringNames::get_singleton()->_script) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:
@@ -257,10 +279,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								if (res->is_local_to_scene()) {
-									Map<Ref<Resource>, Ref<Resource>>::Element *E = resources_local_to_scene.find(res);
+									HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
 
 									if (E) {
-										value = E->get();
+										value = E->value;
 									} else {
 										Node *base = i == 0 ? node : ret_nodes[0];
 
@@ -369,6 +391,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
+	for (uint32_t i = 0; i < deferred_node_paths.size(); i++) {
+		const DeferredNodePathProperties &dnp = deferred_node_paths[i];
+		Node *other = dnp.base->get_node_or_null(dnp.path);
+		dnp.base->set(dnp.property, other);
+	}
+
 	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
 		E.value->setup_local_to_scene();
 	}
@@ -430,7 +458,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	return ret_nodes[0];
 }
 
-static int _nm_get_string(const String &p_string, Map<StringName, int> &name_map) {
+static int _nm_get_string(const String &p_string, HashMap<StringName, int> &name_map) {
 	if (name_map.has(p_string)) {
 		return name_map[p_string];
 	}
@@ -450,7 +478,7 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int, Varia
 	return idx;
 }
 
-Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
+Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
@@ -532,6 +560,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
 			continue; // Ignore this property when packing.
 		}
+		if (E.name.begins_with(META_POINTER_PROPERTY_BASE)) {
+			continue; // do not save.
+		}
 
 		// If instance or inheriting, not saving if property requested so.
 		if (!states_stack.is_empty()) {
@@ -542,9 +573,16 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 		StringName name = E.name;
 		Variant value = p_node->get(name);
+		bool use_deferred_node_path_bit = false;
 
-		if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
-			// Was this missing resource overriden? If so do not save the old value.
+		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+			value = p_node->get(META_POINTER_PROPERTY_BASE + E.name);
+			if (value.get_type() != Variant::NODE_PATH) {
+				continue; //was never set, ignore.
+			}
+			use_deferred_node_path_bit = true;
+		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
+			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
@@ -562,6 +600,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		NodeData::Property prop;
 		prop.name = _nm_get_string(name, name_map);
 		prop.value = _vm_get_variant(value, variant_map);
+		if (use_deferred_node_path_bit) {
+			prop.name |= FLAG_PATH_PROPERTY_IS_NODE;
+		}
 		nd.properties.push_back(prop);
 	}
 
@@ -613,7 +654,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	if (states_stack.is_empty() && !is_editable_instance) {
 		//this node is not part of an instancing process, so save the type
 		if (missing_node != nullptr) {
-			// Its a missing node (type non existant on load).
+			// It's a missing node (type non existent on load).
 			nd.type = _nm_get_string(missing_node->get_original_class(), name_map);
 		} else {
 			nd.type = _nm_get_string(p_node->get_class(), name_map);
@@ -672,7 +713,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 	return OK;
 }
 
-Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, Map<Node *, int> &node_map, Map<Node *, int> &nodepath_map) {
+Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
 	if (p_node != p_owner && p_node->get_owner() && p_node->get_owner() != p_owner && !p_owner->is_editable_instance(p_node->get_owner())) {
 		return OK;
 	}
@@ -879,10 +920,10 @@ Error SceneState::pack(Node *p_scene) {
 
 	Node *scene = p_scene;
 
-	Map<StringName, int> name_map;
+	HashMap<StringName, int> name_map;
 	HashMap<Variant, int, VariantHasher, VariantComparator> variant_map;
-	Map<Node *, int> node_map;
-	Map<Node *, int> nodepath_map;
+	HashMap<Node *, int> node_map;
+	HashMap<Node *, int> nodepath_map;
 
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
@@ -1018,7 +1059,7 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 
 		const NodeData::Property *p = nodes[p_node].properties.ptr();
 		for (int i = 0; i < pc; i++) {
-			if (p_property == namep[p[i].name]) {
+			if (p_property == namep[p[i].name & FLAG_PROP_NAME_MASK]) {
 				found = true;
 				return variants[p[i].value];
 			}
@@ -1409,7 +1450,19 @@ int SceneState::get_node_property_count(int p_idx) const {
 StringName SceneState::get_node_property_name(int p_idx, int p_prop) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), StringName());
 	ERR_FAIL_INDEX_V(p_prop, nodes[p_idx].properties.size(), StringName());
-	return names[nodes[p_idx].properties[p_prop].name];
+	return names[nodes[p_idx].properties[p_prop].name & FLAG_PROP_NAME_MASK];
+}
+
+Vector<String> SceneState::get_node_deferred_nodepath_properties(int p_idx) const {
+	Vector<String> ret;
+	ERR_FAIL_INDEX_V(p_idx, nodes.size(), ret);
+	for (int i = 0; i < nodes[p_idx].properties.size(); i++) {
+		uint32_t idx = nodes[p_idx].properties[i].name;
+		if (idx & FLAG_PATH_PROPERTY_IS_NODE) {
+			ret.push_back(names[idx & FLAG_PROP_NAME_MASK]);
+		}
+	}
+	return ret;
 }
 
 Variant SceneState::get_node_property_value(int p_idx, int p_prop) const {
@@ -1555,13 +1608,16 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 	return nodes.size() - 1;
 }
 
-void SceneState::add_node_property(int p_node, int p_name, int p_value) {
+void SceneState::add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path) {
 	ERR_FAIL_INDEX(p_node, nodes.size());
 	ERR_FAIL_INDEX(p_name, names.size());
 	ERR_FAIL_INDEX(p_value, variants.size());
 
 	NodeData::Property prop;
 	prop.name = p_name;
+	if (p_deferred_node_path) {
+		prop.name |= FLAG_PATH_PROPERTY_IS_NODE;
+	}
 	prop.value = p_value;
 	nodes.write[p_node].properties.push_back(prop);
 }
@@ -1597,6 +1653,10 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
+}
+
+String SceneState::get_meta_pointer_property(const String &p_property) {
+	return META_POINTER_PROPERTY_BASE + p_property;
 }
 
 Vector<String> SceneState::_get_node_groups(int p_idx) const {

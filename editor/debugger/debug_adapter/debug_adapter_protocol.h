@@ -115,8 +115,8 @@ private:
 	int stackframe_id = 0;
 	int variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
-	Map<DAP::StackFrame, List<int>> stackframe_list;
-	Map<int, Array> variable_list;
+	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame> stackframe_list;
+	HashMap<int, Array> variable_list;
 
 public:
 	friend class DebugAdapterServer;

@@ -24,7 +24,7 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
-        ("VULKAN_SDK_PATH", "Path to the Vulkan SDK", ""),
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
@@ -36,7 +36,38 @@ def get_opts():
 
 
 def get_flags():
-    return []
+    return [
+        ("use_volk", False),
+    ]
+
+
+def get_mvk_sdk_path():
+    def int_or_zero(i):
+        try:
+            return int(i)
+        except:
+            return 0
+
+    def ver_parse(a):
+        return [int_or_zero(i) for i in a.split(".")]
+
+    dirname = os.path.expanduser("~/VulkanSDK")
+    files = os.listdir(dirname)
+
+    ver_file = "0.0.0.0"
+    ver_num = ver_parse(ver_file)
+
+    for file in files:
+        if os.path.isdir(os.path.join(dirname, file)):
+            ver_comp = ver_parse(file)
+            lib_name = os.path.join(
+                os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/libMoltenVK.a"
+            )
+            if os.path.isfile(lib_name) and ver_comp > ver_num:
+                ver_num = ver_comp
+                ver_file = file
+
+    return os.path.join(os.path.join(dirname, ver_file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/")
 
 
 def configure(env):
@@ -79,10 +110,12 @@ def configure(env):
 
     if env["arch"] == "arm64":
         print("Building for macOS 11.0+, platform arm64.")
+        env.Append(ASFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     else:
         print("Building for macOS 10.12+, platform x86_64.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
 
@@ -197,4 +230,22 @@ def configure(env):
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "QuartzCore", "-framework", "IOSurface"])
         if not env["use_volk"]:
-            env.Append(LINKFLAGS=["-L$VULKAN_SDK_PATH/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/", "-lMoltenVK"])
+            env.Append(LINKFLAGS=["-lMoltenVK"])
+            mvk_found = False
+            if env["vulkan_sdk_path"] != "":
+                mvk_path = os.path.join(
+                    os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
+                )
+                if os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
+                    mvk_found = True
+                    env.Append(LINKFLAGS=["-L" + mvk_path])
+            if not mvk_found:
+                mvk_path = get_mvk_sdk_path()
+                if os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
+                    mvk_found = True
+                    env.Append(LINKFLAGS=["-L" + mvk_path])
+            if not mvk_found:
+                print(
+                    "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
+                )
+                sys.exit(255)

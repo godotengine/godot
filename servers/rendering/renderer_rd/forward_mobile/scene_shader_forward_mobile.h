@@ -32,7 +32,6 @@
 #define RSSR_SCENE_SHADER_FM_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_mobile.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -40,7 +39,6 @@ namespace RendererSceneRenderImplementation {
 class SceneShaderForwardMobile {
 private:
 	static SceneShaderForwardMobile *singleton;
-	RendererStorageRD *storage = nullptr;
 
 public:
 	enum ShaderVersion {
@@ -104,14 +102,14 @@ public:
 
 		String path;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
 		String code;
-		Map<StringName, Map<int, RID>> default_texture_params;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		DepthDraw depth_draw;
 		DepthTest depth_test;
@@ -171,7 +169,7 @@ public:
 		uint8_t priority;
 		virtual void set_render_priority(int p_priority);
 		virtual void set_next_pass(RID p_pass);
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~MaterialData();
 	};
 
@@ -207,7 +205,7 @@ public:
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
 
-	void init(RendererStorageRD *p_storage, const String p_defines);
+	void init(const String p_defines);
 	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 

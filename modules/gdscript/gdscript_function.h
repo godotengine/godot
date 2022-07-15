@@ -304,6 +304,7 @@ public:
 		OPCODE_JUMP_IF,
 		OPCODE_JUMP_IF_NOT,
 		OPCODE_JUMP_TO_DEF_ARGUMENT,
+		OPCODE_JUMP_IF_SHARED,
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
@@ -495,7 +496,7 @@ private:
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 
-	Map<int, Variant::Type> temporary_slots;
+	HashMap<int, Variant::Type> temporary_slots;
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;

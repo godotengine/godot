@@ -153,7 +153,7 @@ public:
 
 	GDVIRTUAL0RC(Dictionary, _get_constants)
 
-	virtual void get_constants(Map<StringName, Variant> *p_constants) override {
+	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_REQUIRED_CALL(_get_constants, constants);
 		List<Variant> keys;
@@ -163,7 +163,7 @@ public:
 		}
 	}
 	GDVIRTUAL0RC(TypedArray<StringName>, _get_members)
-	virtual void get_members(Set<StringName> *p_members) override {
+	virtual void get_members(HashSet<StringName> *p_members) override {
 		TypedArray<StringName> members;
 		GDVIRTUAL_REQUIRED_CALL(_get_members, members);
 		for (int i = 0; i < members.size(); i++) {
@@ -282,7 +282,7 @@ public:
 	EXBIND0R(bool, is_using_templates)
 
 	GDVIRTUAL6RC(Dictionary, _validate, const String &, const String &, bool, bool, bool, bool)
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override {
+	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
 		Dictionary ret;
 		GDVIRTUAL_REQUIRED_CALL(_validate, p_script, p_path, r_functions != nullptr, r_errors != nullptr, r_warnings != nullptr, r_safe_lines != nullptr, ret);
 		if (!ret.has("valid")) {
@@ -580,6 +580,15 @@ public:
 			p_constants->push_back(Pair<String, Variant>(d["name"], d["value"]));
 		}
 	}
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_public_annotations)
+	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
+		TypedArray<Dictionary> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+			p_annotations->push_back(mi);
+		}
+	}
 
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
@@ -671,7 +680,7 @@ public:
 			uint32_t pcount;
 			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
 			for (uint32_t i = 0; i < pcount; i++) {
-				p_list->push_back(PropertyInfo(Variant::Type(pinfo[i].type), pinfo[i].class_name, PropertyHint(pinfo[i].hint), pinfo[i].hint_string, pinfo[i].usage, pinfo[i].class_name));
+				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
 			if (native_info->free_property_list_func) {
 				native_info->free_property_list_func(instance, pinfo);
@@ -716,9 +725,9 @@ public:
 				m.name = minfo[i].name;
 				m.flags = minfo[i].flags;
 				m.id = minfo[i].id;
-				m.return_val = PropertyInfo(Variant::Type(minfo[i].return_value.type), minfo[i].return_value.class_name, PropertyHint(minfo[i].return_value.hint), minfo[i].return_value.hint_string, minfo[i].return_value.usage, minfo[i].return_value.class_name);
+				m.return_val = PropertyInfo(minfo[i].return_value);
 				for (uint32_t j = 0; j < minfo[i].argument_count; j++) {
-					m.arguments.push_back(PropertyInfo(Variant::Type(minfo[i].arguments[j].type), minfo[i].arguments[j].class_name, PropertyHint(minfo[i].arguments[j].hint), minfo[i].arguments[j].hint_string, minfo[i].arguments[j].usage, minfo[i].arguments[j].class_name));
+					m.arguments.push_back(PropertyInfo(minfo[i].arguments[j]));
 				}
 				const Variant *def_values = (const Variant *)minfo[i].default_arguments;
 				for (uint32_t j = 0; j < minfo[i].default_argument_count; j++) {

@@ -34,15 +34,13 @@
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	RendererStorageRD *storage = nullptr;
-
 	enum {
 		BASE_UNIFORM_SET = 0,
 		MATERIAL_UNIFORM_SET = 1,
@@ -166,14 +164,14 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		PipelineVariants pipeline_variants;
 		String path;
 
-		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
 		String code;
-		Map<StringName, Map<int, RID>> default_texture_params;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		bool uses_screen_texture = false;
 		bool uses_sdf = false;
@@ -205,7 +203,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
-		virtual bool update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 		virtual ~CanvasMaterialData();
 	};
 
@@ -462,7 +460,7 @@ public:
 	void set_time(double p_time);
 	void update();
 	bool free(RID p_rid);
-	RendererCanvasRenderRD(RendererStorageRD *p_storage);
+	RendererCanvasRenderRD();
 	~RendererCanvasRenderRD();
 };
 

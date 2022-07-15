@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/io/stream_peer_ssl.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
@@ -164,14 +165,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
-
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
+						preview_images[i].button->set_icon(ImageTexture::create_from_image(thumbnail));
 
-						Ref<ImageTexture> tex;
-						tex.instantiate();
-						tex->create_from_image(thumbnail);
-
-						preview_images[i].button->set_icon(tex);
 						// Make it clearer that clicking it will open an external link
 						preview_images[i].button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 					} else {
@@ -290,12 +286,15 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	hbox->add_child(previews_vbox);
 	previews_vbox->add_theme_constant_override("separation", 15 * EDSCALE);
 	previews_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	previews_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	preview = memnew(TextureRect);
 	previews_vbox->add_child(preview);
 	preview->set_ignore_texture_size(true);
 	preview->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
+	preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	preview->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews_bg = memnew(PanelContainer);
 	previews_vbox->add_child(previews_bg);
@@ -308,8 +307,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok_button()->set_text(TTR("Download"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Download"));
+	set_cancel_button_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -620,6 +619,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 
+		case NOTIFICATION_RESIZED: {
+			_update_asset_items_columns();
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_repository_options();
 			setup_http_request(request);
@@ -782,9 +785,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 				} break;
 			}
 
-			Ref<ImageTexture> tex;
-			tex.instantiate();
-			tex->create_from_image(image);
+			Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
 			image_set = true;
@@ -1209,7 +1210,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_top_page);
 
 			asset_items = memnew(GridContainer);
-			asset_items->set_columns(2);
+			_update_asset_items_columns();
 			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
 			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
@@ -1292,14 +1293,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
 				if (download_item->can_install()) {
-					description->get_ok_button()->set_text(TTR("Install"));
+					description->set_ok_button_text(TTR("Install"));
 					description->get_ok_button()->set_disabled(false);
 				} else {
-					description->get_ok_button()->set_text(TTR("Downloading..."));
+					description->set_ok_button_text(TTR("Downloading..."));
 					description->get_ok_button()->set_disabled(true);
 				}
 			} else {
-				description->get_ok_button()->set_text(TTR("Download"));
+				description->set_ok_button_text(TTR("Download"));
 				description->get_ok_button()->set_disabled(false);
 			}
 
@@ -1375,6 +1376,15 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_tit
 	emit_signal(SNAME("install_asset"), p_zip_path, p_title);
 }
 
+void EditorAssetLibrary::_update_asset_items_columns() {
+	int new_columns = get_size().x / (450.0 * EDSCALE);
+	new_columns = MAX(1, new_columns);
+
+	if (new_columns != asset_items->get_columns()) {
+		asset_items->set_columns(new_columns);
+	}
+}
+
 void EditorAssetLibrary::disable_community_support() {
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
 }
@@ -1398,9 +1408,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	filter = memnew(LineEdit);
 	if (templates_only) {
-		filter->set_placeholder(TTR("Search templates, projects, and demos"));
+		filter->set_placeholder(TTR("Search Templates, Projects, and Demos"));
 	} else {
-		filter->set_placeholder(TTR("Search assets (excluding templates, projects, and demos)"));
+		filter->set_placeholder(TTR("Search Assets (Excluding Templates, Projects, and Demos)"));
 	}
 	filter->set_clear_button_enabled(true);
 	search_hb->add_child(filter);
@@ -1446,6 +1456,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	sort->set_clip_text(true);
 	sort->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1455,6 +1466,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	categories->set_clip_text(true);
 	categories->connect("item_selected", callable_mp(this, &EditorAssetLibrary::_rerun_search));
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1468,6 +1480,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(repository);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	repository->set_clip_text(true);
 
 	search_hb2->add_child(memnew(VSeparator));
 
@@ -1531,7 +1544,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
-	asset_items->set_columns(2);
+	_update_asset_items_columns();
 	asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
 	asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
 
@@ -1571,7 +1584,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open = memnew(EditorFileDialog);
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
+	asset_open->add_filter("*.zip", TTR("Assets ZIP File"));
 	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
@@ -1580,6 +1593,16 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 }
 
 ///////
+
+bool AssetLibraryEditorPlugin::is_available() {
+#ifdef JAVASCRIPT_ENABLED
+	// Asset Library can't work on Web editor for now as most assets are sourced
+	// directly from GitHub which does not set CORS.
+	return false;
+#else
+	return StreamPeerSSL::is_available();
+#endif
+}
 
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {

@@ -491,8 +491,8 @@ public:
 		SHADOW_QUALITY_MAX
 	};
 
-	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
@@ -724,8 +724,11 @@ public:
 
 	enum FogVolumeShape {
 		FOG_VOLUME_SHAPE_ELLIPSOID,
+		FOG_VOLUME_SHAPE_CONE,
+		FOG_VOLUME_SHAPE_CYLINDER,
 		FOG_VOLUME_SHAPE_BOX,
 		FOG_VOLUME_SHAPE_WORLD,
+		FOG_VOLUME_SHAPE_MAX,
 	};
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, FogVolumeShape p_shape) = 0;
@@ -853,8 +856,8 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
-	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
+	virtual void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
+	virtual void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
 		VIEWPORT_MSAA_DISABLED,
@@ -874,11 +877,13 @@ public:
 
 	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
 
+	virtual void viewport_set_use_taa(RID p_viewport, bool p_use_taa) = 0;
+
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
-	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
+	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
 
 	enum ViewportOcclusionCullingBuildQuality {
@@ -930,6 +935,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
+		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -937,6 +943,8 @@ public:
 	virtual void viewport_set_measure_render_time(RID p_viewport, bool p_enable) = 0;
 	virtual double viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
 	virtual double viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
+
+	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const = 0;
 
 	/* SKY API */
 
@@ -1468,7 +1476,7 @@ public:
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
 	virtual bool has_changed() const = 0;
-	virtual void init() = 0;
+	virtual void init();
 	virtual void finish() = 0;
 
 	/* STATUS INFORMATION */

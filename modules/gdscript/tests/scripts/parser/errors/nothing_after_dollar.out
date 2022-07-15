@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Expect node path as string or identifier after "$".
+Expected node path as string or identifier after "$".

@@ -33,6 +33,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/resource.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"
@@ -66,14 +67,14 @@ private:
 	String export_path;
 
 	String exporter;
-	Set<String> selected_files;
+	HashSet<String> selected_files;
 	bool runnable = false;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
 
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
+	HashMap<StringName, Variant> values;
 
 	String name;
 
@@ -170,6 +171,19 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
 
+	enum ExportMessageType {
+		EXPORT_MESSAGE_NONE,
+		EXPORT_MESSAGE_INFO,
+		EXPORT_MESSAGE_WARNING,
+		EXPORT_MESSAGE_ERROR,
+	};
+
+	struct ExportMessage {
+		ExportMessageType msg_type;
+		String category;
+		String text;
+	};
+
 private:
 	struct SavedData {
 		uint64_t ofs = 0;
@@ -196,19 +210,21 @@ private:
 	};
 
 	struct FeatureContainers {
-		Set<String> features;
+		HashSet<String> features;
 		Vector<String> features_pv;
 	};
 
-	void _export_find_resources(EditorFileSystemDirectory *p_dir, Set<String> &p_paths);
-	void _export_find_dependencies(const String &p_path, Set<String> &p_paths);
+	Vector<ExportMessage> messages;
+
+	void _export_find_resources(EditorFileSystemDirectory *p_dir, HashSet<String> &p_paths);
+	void _export_find_dependencies(const String &p_path, HashSet<String> &p_paths);
 
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
-	void _edit_filter_list(Set<String> &r_list, const String &p_filter, bool exclude);
+	void _edit_files_with_filter(Ref<DirAccess> &da, const Vector<String> &p_filters, HashSet<String> &r_list, bool exclude);
+	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
 
 	static Error _add_shared_object(void *p_userdata, const SharedObject &p_so);
 
@@ -240,9 +256,50 @@ public:
 
 	virtual Ref<EditorExportPreset> create_preset();
 
+	virtual void clear_messages() { messages.clear(); }
+	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
+		ExportMessage msg;
+		msg.category = p_category;
+		msg.text = p_message;
+		msg.msg_type = p_type;
+		messages.push_back(msg);
+		switch (p_type) {
+			case EXPORT_MESSAGE_INFO: {
+				print_line(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_WARNING: {
+				WARN_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			case EXPORT_MESSAGE_ERROR: {
+				ERR_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+			} break;
+			default:
+				break;
+		}
+	}
+
+	virtual int get_message_count() const {
+		return messages.size();
+	}
+
+	virtual ExportMessage get_message(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, messages.size(), ExportMessage());
+		return messages[p_index];
+	}
+
+	virtual ExportMessageType get_worst_message_type() const {
+		ExportMessageType worst_type = EXPORT_MESSAGE_NONE;
+		for (int i = 0; i < messages.size(); i++) {
+			worst_type = MAX(worst_type, messages[i].msg_type);
+		}
+		return worst_type;
+	}
+
+	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
+
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
 	virtual bool should_update_export_options() { return false; }
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true; }
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;
@@ -279,7 +336,7 @@ public:
 	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) = 0;
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) = 0;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) = 0;
 	virtual String get_debug_protocol() const { return "tcp://"; }
 
 	EditorExportPlatform();
@@ -349,8 +406,8 @@ protected:
 
 	void skip();
 
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
-	virtual void _export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
+	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 
 	static void _bind_methods();
 
@@ -454,12 +511,12 @@ public:
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features) override;
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
 
-	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) const {
+	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 		return Error::OK;
 	}
 };
@@ -468,7 +525,7 @@ class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
 	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
 
 public:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) override;
+	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override;
 	EditorExportTextSceneToBinaryPlugin();
 };
 

@@ -69,7 +69,7 @@ private:
 	bool _in_physics = false;
 
 	List<Singleton> singletons;
-	Map<StringName, Object *> singleton_ptrs;
+	HashMap<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
 	bool project_manager_hint = false;

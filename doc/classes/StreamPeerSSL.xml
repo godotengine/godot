@@ -44,6 +44,12 @@
 				Returns the status of the connection. See [enum Status] for values.
 			</description>
 		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="StreamPeer" />
+			<description>
+				Returns the underlying [StreamPeer] connection, used in [method accept_stream] or [method connect_to_stream].
+			</description>
+		</method>
 		<method name="poll">
 			<return type="void" />
 			<description>

@@ -655,43 +655,43 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 					} else {
 						ERR_PRINT("Parser bug (please report): tried to assign unset node without an identifier.");
 					}
-				} else {
-					if (member.variable->datatype_specifier != nullptr) {
-						datatype = specified_type;
+				}
 
-						if (member.variable->initializer != nullptr) {
-							if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true, member.variable->initializer)) {
-								// Try reverse test since it can be a masked subtype.
-								if (!is_type_compatible(member.variable->initializer->get_datatype(), datatype, true, member.variable->initializer)) {
-									push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
-								} else {
-									// TODO: Add warning.
-									mark_node_unsafe(member.variable->initializer);
-									member.variable->use_conversion_assign = true;
-								}
-							} else if (datatype.builtin_type == Variant::INT && member.variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
-#ifdef DEBUG_ENABLED
-								parser->push_warning(member.variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
-#endif
-							}
-							if (member.variable->initializer->get_datatype().is_variant()) {
-								// TODO: Warn unsafe assign.
+				if (member.variable->datatype_specifier != nullptr) {
+					datatype = specified_type;
+
+					if (member.variable->initializer != nullptr) {
+						if (!is_type_compatible(datatype, member.variable->initializer->get_datatype(), true, member.variable->initializer)) {
+							// Try reverse test since it can be a masked subtype.
+							if (!is_type_compatible(member.variable->initializer->get_datatype(), datatype, true, member.variable->initializer)) {
+								push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", member.variable->initializer->get_datatype().to_string(), datatype.to_string()), member.variable->initializer);
+							} else {
+								// TODO: Add warning.
 								mark_node_unsafe(member.variable->initializer);
 								member.variable->use_conversion_assign = true;
 							}
+						} else if (datatype.builtin_type == Variant::INT && member.variable->initializer->get_datatype().builtin_type == Variant::FLOAT) {
+#ifdef DEBUG_ENABLED
+							parser->push_warning(member.variable->initializer, GDScriptWarning::NARROWING_CONVERSION);
+#endif
 						}
-					} else if (member.variable->infer_datatype) {
-						if (member.variable->initializer == nullptr) {
-							push_error(vformat(R"(Cannot infer the type of "%s" variable because there's no default value.)", member.variable->identifier->name), member.variable->identifier);
-						} else if (!datatype.is_set() || datatype.has_no_type()) {
-							push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value doesn't have a set type.)", member.variable->identifier->name), member.variable->initializer);
-						} else if (datatype.is_variant()) {
-							push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value is Variant. Use explicit "Variant" type if this is intended.)", member.variable->identifier->name), member.variable->initializer);
-						} else if (datatype.builtin_type == Variant::NIL) {
-							push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value is "null".)", member.variable->identifier->name), member.variable->initializer);
+						if (member.variable->initializer->get_datatype().is_variant()) {
+							// TODO: Warn unsafe assign.
+							mark_node_unsafe(member.variable->initializer);
+							member.variable->use_conversion_assign = true;
 						}
-						datatype.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 					}
+				} else if (member.variable->infer_datatype) {
+					if (member.variable->initializer == nullptr) {
+						push_error(vformat(R"(Cannot infer the type of "%s" variable because there's no default value.)", member.variable->identifier->name), member.variable->identifier);
+					} else if (!datatype.is_set() || datatype.has_no_type()) {
+						push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value doesn't have a set type.)", member.variable->identifier->name), member.variable->initializer);
+					} else if (datatype.is_variant()) {
+						push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value is Variant. Use explicit "Variant" type if this is intended.)", member.variable->identifier->name), member.variable->initializer);
+					} else if (datatype.builtin_type == Variant::NIL) {
+						push_error(vformat(R"(Cannot infer the type of "%s" variable because the initial value is "null".)", member.variable->identifier->name), member.variable->initializer);
+					}
+					datatype.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 				}
 
 				datatype.is_constant = false;
@@ -860,6 +860,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 			case GDScriptParser::ClassNode::Member::CLASS:
 				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
 				break;
+			case GDScriptParser::ClassNode::Member::GROUP:
+				// No-op, but needed to silence warnings.
+				break;
 			case GDScriptParser::ClassNode::Member::UNDEFINED:
 				ERR_PRINT("Trying to resolve undefined member.");
 				break;
@@ -898,7 +901,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 			}
 
 #ifdef DEBUG_ENABLED
-			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -947,7 +950,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+			HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 			for (uint32_t ignored_warning : member.function->ignored_warnings) {
 				parser->ignored_warning_codes.insert(ignored_warning);
 			}
@@ -1160,8 +1163,16 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 		}
 	} else {
-		GDScriptParser::DataType return_type = resolve_datatype(p_function->return_type);
-		p_function->set_datatype(return_type);
+		if (p_function->return_type != nullptr) {
+			p_function->set_datatype(resolve_datatype(p_function->return_type));
+		} else {
+			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
+			// It's not "undetected" to not mix up with unknown functions.
+			GDScriptParser::DataType return_type;
+			return_type.type_source = GDScriptParser::DataType::INFERRED;
+			return_type.kind = GDScriptParser::DataType::VARIANT;
+			p_function->set_datatype(return_type);
+		}
 
 #ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
@@ -1231,7 +1242,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	GDScriptParser::DataType return_type = p_function->body->get_datatype();
 
-	if (p_function->get_datatype().has_no_type() && return_type.is_set()) {
+	if (!p_function->get_datatype().is_hard_type() && return_type.is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
 		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
@@ -1279,7 +1290,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		}
 
 #ifdef DEBUG_ENABLED
-		Set<uint32_t> previously_ignored = parser->ignored_warning_codes;
+		HashSet<uint32_t> previously_ignored = parser->ignored_warning_codes;
 		for (uint32_t ignored_warning : stmt->ignored_warnings) {
 			parser->ignored_warning_codes.insert(ignored_warning);
 		}
@@ -1514,10 +1525,22 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant) {
 	GDScriptParser::DataType type;
 
+	GDScriptParser::DataType explicit_type;
+	if (p_constant->datatype_specifier != nullptr) {
+		explicit_type = resolve_datatype(p_constant->datatype_specifier);
+		explicit_type.is_meta_type = false;
+	}
+
 	if (p_constant->initializer != nullptr) {
 		reduce_expression(p_constant->initializer);
 		if (p_constant->initializer->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer));
+			GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(p_constant->initializer);
+			const_fold_array(array);
+
+			// Can only infer typed array if it has elements.
+			if (array->elements.size() > 0 || (p_constant->datatype_specifier != nullptr && explicit_type.has_container_element_type())) {
+				update_array_literal_element_type(explicit_type, array);
+			}
 		} else if (p_constant->initializer->type == GDScriptParser::Node::DICTIONARY) {
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_constant->initializer));
 		}
@@ -1536,8 +1559,6 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	}
 
 	if (p_constant->datatype_specifier != nullptr) {
-		GDScriptParser::DataType explicit_type = resolve_datatype(p_constant->datatype_specifier);
-		explicit_type.is_meta_type = false;
 		if (!is_type_compatible(explicit_type, type)) {
 			push_error(vformat(R"(Assigned value for constant "%s" has type %s which is not compatible with defined type %s.)", p_constant->identifier->name, type.to_string(), explicit_type.to_string()), p_constant->initializer);
 #ifdef DEBUG_ENABLED
@@ -1639,8 +1660,8 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 			p_match_pattern->bind->set_datatype(result);
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind");
-			if (p_match_pattern->bind->usages == 0) {
-				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNASSIGNED_VARIABLE, p_match_pattern->bind->name);
+			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
+				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, p_match_pattern->bind->name);
 			}
 #endif
 			break;
@@ -2057,7 +2078,8 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 	p_await->set_datatype(awaiting_type);
 
 #ifdef DEBUG_ENABLED
-	if (!awaiting_type.is_coroutine && awaiting_type.builtin_type != Variant::SIGNAL) {
+	awaiting_type = p_await->to_await->get_datatype();
+	if (!(awaiting_type.has_no_type() || awaiting_type.is_coroutine || awaiting_type.builtin_type == Variant::SIGNAL)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif
@@ -2174,7 +2196,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await, bool p_is_root) {
 	bool all_is_constant = true;
-	Map<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
+	HashMap<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
 	for (int i = 0; i < p_call->arguments.size(); i++) {
 		reduce_expression(p_call->arguments[i]);
 		if (p_call->arguments[i]->type == GDScriptParser::Node::ARRAY) {
@@ -2259,6 +2281,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						push_error(vformat(R"(Too few arguments for %s constructor. Received %d but expected %d.)", Variant::get_type_name(builtin_type), p_call->arguments.size(), err.expected), p_call);
 						break;
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+					case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 						break; // Can't happen in a builtin constructor.
 					case Callable::CallError::CALL_OK:
 						p_call->is_constant = true;
@@ -2361,6 +2384,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
 						break;
+					case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
 					case Callable::CallError::CALL_OK:
@@ -2403,6 +2427,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 						push_error(vformat(R"*(Too few arguments for "%s()" call. Expected at least %d but received %d.)*", function_name, err.expected, p_call->arguments.size()), p_call);
 						break;
+					case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
 					case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 						break; // Can't happen in a builtin constructor.
 					case Callable::CallError::CALL_OK:
@@ -2881,7 +2906,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			return;
 		}
 		bool valid = false;
-		int int_constant = ClassDB::get_integer_constant(native, name, &valid);
+		int64_t int_constant = ClassDB::get_integer_constant(native, name, &valid);
 		if (valid) {
 			p_identifier->is_constant = true;
 			p_identifier->reduced_value = int_constant;

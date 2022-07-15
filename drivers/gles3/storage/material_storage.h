@@ -37,31 +37,19 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
-
-#include "drivers/gles3/shaders/copy.glsl.gen.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include "../shaders/canvas.glsl.gen.h"
+#include "../shaders/cubemap_filter.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
 namespace GLES3 {
 
 /* Shader Structs */
-
-struct Shaders {
-	CanvasShaderGLES3 canvas_shader;
-	SkyShaderGLES3 sky_shader;
-	SceneShaderGLES3 scene_shader;
-
-	ShaderCompiler compiler_canvas;
-	ShaderCompiler compiler_scene;
-	ShaderCompiler compiler_particles;
-	ShaderCompiler compiler_sky;
-};
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
@@ -86,24 +74,24 @@ struct Shader {
 	ShaderData *data = nullptr;
 	String code;
 	RS::ShaderMode mode;
-	Map<StringName, Map<int, RID>> default_texture_parameter;
-	Set<Material *> owners;
+	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
+	HashSet<Material *> owners;
 };
 
 /* Material structs */
 
 struct MaterialData {
-	void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-	void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, Map<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+	void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
+	void update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 	virtual void set_render_priority(int p_priority) = 0;
 	virtual void set_next_pass(RID p_pass) = 0;
-	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
 	virtual void bind_uniforms() = 0;
 	virtual ~MaterialData();
 
 	// Used internally by all Materials
-	void update_parameters_internal(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const Map<StringName, Map<int, RID>> &p_default_texture_params, uint32_t p_ubo_size);
+	void update_parameters_internal(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size);
 
 protected:
 	Vector<uint8_t> ubo_data;
@@ -116,7 +104,7 @@ private:
 	List<RID>::Element *global_buffer_E = nullptr;
 	List<RID>::Element *global_texture_E = nullptr;
 	uint64_t global_textures_pass = 0;
-	Map<StringName, uint64_t> used_global_textures;
+	HashMap<StringName, uint64_t> used_global_textures;
 
 	//internally by update_parameters_internal
 };
@@ -132,12 +120,12 @@ struct Material {
 	uint32_t shader_id = 0;
 	bool uniform_dirty = false;
 	bool texture_dirty = false;
-	Map<StringName, Variant> params;
+	HashMap<StringName, Variant> params;
 	int32_t priority = 0;
 	RID next_pass;
 	SelfList<Material> update_element;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 
 	Material() :
 			update_element(this) {}
@@ -157,17 +145,17 @@ struct CanvasShaderData : public ShaderData {
 
 	bool valid;
 	RID version;
-	//PipelineVariants pipeline_variants;
 	String path;
+	BlendMode blend_mode = BLEND_MODE_MIX;
 
-	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
 	uint32_t ubo_size;
 
 	String code;
-	Map<StringName, Map<int, RID>> default_texture_params;
+	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_screen_texture = false;
 	bool uses_sdf = false;
@@ -195,7 +183,7 @@ struct CanvasMaterialData : public MaterialData {
 
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_next_pass(RID p_pass) {}
-	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
 	virtual ~CanvasMaterialData();
 };
@@ -208,7 +196,7 @@ struct SkyShaderData : public ShaderData {
 	bool valid;
 	RID version;
 
-	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
@@ -216,7 +204,7 @@ struct SkyShaderData : public ShaderData {
 
 	String path;
 	String code;
-	Map<StringName, Map<int, RID>> default_texture_params;
+	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_time;
 	bool uses_position;
@@ -241,10 +229,11 @@ ShaderData *_create_sky_shader_func();
 
 struct SkyMaterialData : public MaterialData {
 	SkyShaderData *shader_data = nullptr;
+	bool uniform_set_updated = false;
 
 	virtual void set_render_priority(int p_priority) {}
 	virtual void set_next_pass(RID p_pass) {}
-	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
 	virtual ~SkyMaterialData();
 };
@@ -290,14 +279,14 @@ struct SceneShaderData : public ShaderData {
 
 	String path;
 
-	Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
 	uint32_t ubo_size;
 
 	String code;
-	Map<StringName, Map<int, RID>> default_texture_params;
+	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	BlendMode blend_mode;
 	AlphaAntiAliasing alpha_antialiasing_mode;
@@ -368,7 +357,7 @@ struct SceneMaterialData : public MaterialData {
 	uint8_t priority = 0;
 	virtual void set_render_priority(int p_priority);
 	virtual void set_next_pass(RID p_pass);
-	virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
 	virtual void bind_uniforms();
 	virtual ~SceneMaterialData();
 };
@@ -381,7 +370,7 @@ struct GlobalVariables {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
-		Set<RID> texture_materials; // materials using this
+		HashSet<RID> texture_materials; // materials using this
 
 		RS::GlobalVariableType type;
 		Variant value;
@@ -458,15 +447,65 @@ private:
 
 	SelfList<Material>::List material_update_list;
 
-	//static void _material_uniform_set_erased(void *p_material);
-
 public:
 	static MaterialStorage *get_singleton();
 
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
-	Shaders shaders;
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.rows[0][0];
+		p_array[1] = p_mtx.basis.rows[1][0];
+		p_array[2] = p_mtx.basis.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.basis.rows[0][1];
+		p_array[5] = p_mtx.basis.rows[1][1];
+		p_array[6] = p_mtx.basis.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.basis.rows[0][2];
+		p_array[9] = p_mtx.basis.rows[1][2];
+		p_array[10] = p_mtx.basis.rows[2][2];
+		p_array[11] = 0;
+		p_array[12] = p_mtx.origin.x;
+		p_array[13] = p_mtx.origin.y;
+		p_array[14] = p_mtx.origin.z;
+		p_array[15] = 1;
+	}
+
+	static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.rows[0][0];
+		p_array[1] = p_mtx.rows[1][0];
+		p_array[2] = p_mtx.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.rows[0][1];
+		p_array[5] = p_mtx.rows[1][1];
+		p_array[6] = p_mtx.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.rows[0][2];
+		p_array[9] = p_mtx.rows[1][2];
+		p_array[10] = p_mtx.rows[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+			}
+		}
+	}
+
+	struct Shaders {
+		CanvasShaderGLES3 canvas_shader;
+		SkyShaderGLES3 sky_shader;
+		SceneShaderGLES3 scene_shader;
+		CubemapFilterShaderGLES3 cubemap_filter_shader;
+
+		ShaderCompiler compiler_canvas;
+		ShaderCompiler compiler_scene;
+		ShaderCompiler compiler_particles;
+		ShaderCompiler compiler_sky;
+	} shaders;
 
 	/* GLOBAL VARIABLE API */
 
@@ -537,7 +576,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
-	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) override;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override;
 
 	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
 		Material *material = material_owner.get_or_null(p_material);

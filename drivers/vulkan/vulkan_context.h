@@ -34,7 +34,7 @@
 #include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -117,8 +117,8 @@ private:
 
 	// Present queue.
 	bool queues_initialized = false;
-	uint32_t graphics_queue_family_index = 0;
-	uint32_t present_queue_family_index = 0;
+	uint32_t graphics_queue_family_index = UINT32_MAX;
+	uint32_t present_queue_family_index = UINT32_MAX;
 	bool separate_present_queue = false;
 	VkQueue graphics_queue = VK_NULL_HANDLE;
 	VkQueue present_queue = VK_NULL_HANDLE;
@@ -161,7 +161,7 @@ private:
 
 	RID_Owner<LocalDevice, true> local_device_owner;
 
-	Map<DisplayServer::WindowID, Window> windows;
+	HashMap<DisplayServer::WindowID, Window> windows;
 	uint32_t swapchainImageCount = 0;
 
 	// Commands.
@@ -289,8 +289,8 @@ public:
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;
 
-	void set_setup_buffer(const VkCommandBuffer &pCommandBuffer);
-	void append_command_buffer(const VkCommandBuffer &pCommandBuffer);
+	void set_setup_buffer(VkCommandBuffer p_command_buffer);
+	void append_command_buffer(VkCommandBuffer p_command_buffer);
 	void resize_notify();
 	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
 	Error prepare_buffers();

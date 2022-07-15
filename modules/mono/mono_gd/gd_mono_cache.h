@@ -111,8 +111,11 @@ struct CachedData {
 	GDMonoField *field_ExportAttribute_hintString = nullptr;
 	GDMonoClass *class_SignalAttribute = nullptr;
 	GDMonoClass *class_ToolAttribute = nullptr;
-	GDMonoClass *class_AnyPeerAttribute = nullptr;
-	GDMonoClass *class_AuthorityAttribute = nullptr;
+	GDMonoClass *class_RPCAttribute = nullptr;
+	GDMonoProperty *property_RPCAttribute_Mode = nullptr;
+	GDMonoProperty *property_RPCAttribute_CallLocal = nullptr;
+	GDMonoProperty *property_RPCAttribute_TransferMode = nullptr;
+	GDMonoProperty *property_RPCAttribute_TransferChannel = nullptr;
 	GDMonoClass *class_GodotMethodAttribute = nullptr;
 	GDMonoField *field_GodotMethodAttribute_methodName = nullptr;
 	GDMonoClass *class_ScriptPathAttribute = nullptr;
@@ -147,6 +150,7 @@ struct CachedData {
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeHasFlagsAttribute;
 
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_GetGenericTypeDefinition;
 

@@ -95,7 +95,7 @@ public:
 		SCALING_3D_MODE_MAX
 	};
 
-	enum ShadowAtlasQuadrantSubdiv {
+	enum PositionalShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_4,
@@ -160,6 +160,7 @@ public:
 		DEBUG_DRAW_CLUSTER_DECALS,
 		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		DEBUG_DRAW_OCCLUDERS,
+		DEBUG_DRAW_MOTION_VECTORS,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -203,7 +204,7 @@ private:
 
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;
-	Set<CanvasLayer *> canvas_layers;
+	HashSet<CanvasLayer *> canvas_layers;
 
 	RID viewport;
 	RID current_canvas;
@@ -258,9 +259,9 @@ private:
 	bool local_input_handled = false;
 
 	// Collider to frame
-	Map<ObjectID, uint64_t> physics_2d_mouseover;
+	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	Map<Pair<ObjectID, int>, uint64_t, PairSort<ObjectID, int>> physics_2d_shape_mouseover;
+	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 
@@ -285,12 +286,13 @@ private:
 
 	DebugDraw debug_draw = DEBUG_DRAW_DISABLED;
 
-	int shadow_atlas_size = 2048;
-	bool shadow_atlas_16_bits = true;
-	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
+	int positional_shadow_atlas_size = 2048;
+	bool positional_shadow_atlas_16_bits = true;
+	PositionalShadowAtlasQuadrantSubdiv positional_shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
+	bool use_taa = false;
 
 	Scaling3DMode scaling_3d_mode = SCALING_3D_MODE_BILINEAR;
 	float scaling_3d_scale = 1.0;
@@ -301,7 +303,7 @@ private:
 	bool use_occlusion_culling = false;
 
 	Ref<ViewportTexture> default_texture;
-	Set<ViewportTexture *> viewport_textures;
+	HashSet<ViewportTexture *> viewport_textures;
 
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
@@ -381,7 +383,7 @@ private:
 
 	bool disable_input = false;
 
-	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	bool _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
 
 	void _gui_sort_roots();
@@ -500,20 +502,23 @@ public:
 
 	Ref<ViewportTexture> get_texture() const;
 
-	void set_shadow_atlas_size(int p_size);
-	int get_shadow_atlas_size() const;
+	void set_positional_shadow_atlas_size(int p_size);
+	int get_positional_shadow_atlas_size() const;
 
-	void set_shadow_atlas_16_bits(bool p_16_bits);
-	bool get_shadow_atlas_16_bits() const;
+	void set_positional_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_positional_shadow_atlas_16_bits() const;
 
-	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
-	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
+	void set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, PositionalShadowAtlasQuadrantSubdiv p_subdiv);
+	PositionalShadowAtlasQuadrantSubdiv get_positional_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
+
+	void set_use_taa(bool p_use_taa);
+	bool is_using_taa() const;
 
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;
@@ -615,7 +620,7 @@ public:
 	bool use_xr = false;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
-	Set<AudioListener3D *> audio_listener_3d_set;
+	HashSet<AudioListener3D *> audio_listener_3d_set;
 	bool is_audio_listener_3d_enabled = false;
 	RID internal_audio_listener_3d;
 	AudioListener3D *get_audio_listener_3d() const;
@@ -650,7 +655,7 @@ public:
 
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
-	Set<Camera3D *> camera_3d_set;
+	HashSet<Camera3D *> camera_3d_set;
 	Camera3D *get_camera_3d() const;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);
@@ -676,7 +681,7 @@ public:
 	Ref<World3D> get_world_3d() const;
 	Ref<World3D> find_world_3d() const;
 	void _own_world_3d_changed();
-	void set_use_own_world_3d(bool p_world_3d);
+	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
@@ -741,7 +746,7 @@ public:
 };
 VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
-VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
+VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);

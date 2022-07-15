@@ -43,9 +43,6 @@ class ResourceImporterDynamicFont : public ResourceImporter {
 	};
 
 public:
-	static bool _decode_range(const String &p_token, int32_t &r_pos);
-	static bool _decode_variation(const String &p_token, Dictionary &r_variations, Vector2i &r_size, String &r_name, Vector2i &r_spacing);
-
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -56,12 +53,12 @@ public:
 	virtual String get_preset_name(int p_idx) const override;
 
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 	bool has_advanced_options() const override;
 	void show_advanced_options(const String &p_path) override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	ResourceImporterDynamicFont();
 };

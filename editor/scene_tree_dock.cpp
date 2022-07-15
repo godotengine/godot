@@ -59,10 +59,7 @@
 #endif // MODULE_REGEX_ENABLED
 
 void SceneTreeDock::_nodes_drag_begin() {
-	if (restore_script_editor_on_drag) {
-		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
-		restore_script_editor_on_drag = false;
-	}
+	pending_click_select = nullptr;
 }
 
 void SceneTreeDock::_quick_open() {
@@ -74,8 +71,17 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		restore_script_editor_on_drag = false; //lost chance
+	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
+		if (mb->is_pressed() && scene_tree->get_rect().has_point(mb->get_position())) {
+			tree_clicked = true;
+		} else if (!mb->is_pressed()) {
+			tree_clicked = false;
+		}
+
+		if (!mb->is_pressed() && pending_click_select) {
+			_push_item(pending_click_select);
+			pending_click_select = nullptr;
+		}
 	}
 }
 
@@ -460,7 +466,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			selection.sort_custom<Node::Comparator>();
 
 			for (Node *node : selection) {
-				Map<const Node *, Node *> duplimap;
+				HashMap<const Node *, Node *> duplimap;
 				Node *dup = node->duplicate_from_editor(duplimap);
 
 				ERR_CONTINUE(!dup);
@@ -658,7 +664,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				List<Node *> owned;
 				node->get_owned_by(node->get_owner(), &owned);
 
-				Map<const Node *, Node *> duplimap;
+				HashMap<const Node *, Node *> duplimap;
 				Node *dup = node->duplicate_from_editor(duplimap);
 
 				ERR_CONTINUE(!dup);
@@ -717,7 +723,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			List<Node *> nodes = editor_selection->get_selected_node_list();
-			Set<Node *> nodeset;
+			HashSet<Node *> nodeset;
 			for (Node *E : nodes) {
 				nodeset.insert(E);
 			}
@@ -904,7 +910,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			new_scene_from_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				new_scene_from_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			String existing;
@@ -1369,8 +1375,14 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 }
 
 void SceneTreeDock::_push_item(Object *p_object) {
-	if (!Input::get_singleton()->is_key_pressed(Key::ALT)) {
-		EditorNode::get_singleton()->push_item(p_object);
+	EditorNode::get_singleton()->push_item(p_object);
+}
+
+void SceneTreeDock::_handle_select(Node *p_node) {
+	if (tree_clicked) {
+		pending_click_select = p_node;
+	} else {
+		_push_item(p_node);
 	}
 }
 
@@ -1380,12 +1392,7 @@ void SceneTreeDock::_node_selected() {
 	if (!node) {
 		return;
 	}
-
-	if (ScriptEditor::get_singleton()->is_visible_in_tree()) {
-		restore_script_editor_on_drag = true;
-	}
-
-	_push_item(node);
+	_handle_select(node);
 }
 
 void SceneTreeDock::_node_renamed() {
@@ -1402,7 +1409,7 @@ void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	}
 }
 
-void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, Map<Node *, NodePath> *p_renames) {
+void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames) {
 	base_path.push_back(p_node->get_name());
 	if (new_base_path.size()) {
 		new_base_path.push_back(p_node->get_name());
@@ -1420,7 +1427,7 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 	}
 }
 
-void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, Map<Node *, NodePath> *p_renames) {
+void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames) {
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
 	while (n) {
@@ -1443,24 +1450,24 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, Map<Node
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
 
-bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, Map<Node *, NodePath> *p_renames) const {
+bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const {
 	Node *target_node = p_root_node->get_node_or_null(r_node_path);
 	ERR_FAIL_NULL_V_MSG(target_node, false, "Found invalid node path '" + String(r_node_path) + "' on node '" + String(scene_root->get_path_to(p_root_node)) + "'");
 
 	// Try to find the target node in modified node paths.
-	Map<Node *, NodePath>::Element *found_node_path = p_renames->find(target_node);
+	HashMap<Node *, NodePath>::Iterator found_node_path = p_renames->find(target_node);
 	if (found_node_path) {
-		Map<Node *, NodePath>::Element *found_root_path = p_renames->find(p_root_node);
-		NodePath root_path_new = found_root_path ? found_root_path->get() : p_root_node->get_path();
-		r_node_path = root_path_new.rel_path_to(found_node_path->get());
+		HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(p_root_node);
+		NodePath root_path_new = found_root_path ? found_root_path->value : p_root_node->get_path();
+		r_node_path = root_path_new.rel_path_to(found_node_path->value);
 
 		return true;
 	}
 
 	// Update the path if the base node has changed and has not been deleted.
-	Map<Node *, NodePath>::Element *found_root_path = p_renames->find(p_root_node);
+	HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(p_root_node);
 	if (found_root_path) {
-		NodePath root_path_new = found_root_path->get();
+		NodePath root_path_new = found_root_path->value;
 		if (!root_path_new.is_empty()) {
 			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).plus_file(r_node_path));
 			old_abs_path.simplify();
@@ -1473,7 +1480,7 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	return false;
 }
 
-bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, Map<Node *, NodePath> *p_renames) const {
+bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames) const {
 	switch (r_variant.get_type()) {
 		case Variant::NODE_PATH: {
 			NodePath node_path = r_variant;
@@ -1528,8 +1535,8 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_renames, Map<Ref<Animation>, Set<int>> *r_rem_anims) {
-	Map<Ref<Animation>, Set<int>> rem_anims;
+void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims) {
+	HashMap<Ref<Animation>, HashSet<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
 	}
@@ -1543,8 +1550,8 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 	}
 
 	// No renaming if base node is deleted.
-	Map<Node *, NodePath>::Element *found_base_path = p_renames->find(p_base);
-	if (found_base_path && found_base_path->get().is_empty()) {
+	HashMap<Node *, NodePath>::Iterator found_base_path = p_renames->find(p_base);
+	if (found_base_path && found_base_path->value.is_empty()) {
 		return;
 	}
 
@@ -1575,20 +1582,20 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 		Node *root = ap->get_node(ap->get_root());
 
 		if (root) {
-			Map<Node *, NodePath>::Element *found_root_path = p_renames->find(root);
-			NodePath new_root_path = found_root_path ? found_root_path->get() : root->get_path();
+			HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(root);
+			NodePath new_root_path = found_root_path ? found_root_path->value : root->get_path();
 			if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
 				for (const StringName &E : anims) {
 					Ref<Animation> anim = ap->get_animation(E);
 					if (!r_rem_anims->has(anim)) {
-						r_rem_anims->insert(anim, Set<int>());
-						Set<int> &ran = r_rem_anims->find(anim)->get();
+						r_rem_anims->insert(anim, HashSet<int>());
+						HashSet<int> &ran = r_rem_anims->find(anim)->value;
 						for (int i = 0; i < anim->get_track_count(); i++) {
 							ran.insert(i);
 						}
 					}
 
-					Set<int> &ran = r_rem_anims->find(anim)->get();
+					HashSet<int> &ran = r_rem_anims->find(anim)->value;
 
 					if (anim.is_null()) {
 						continue;
@@ -1605,17 +1612,17 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 							continue; //channel was removed
 						}
 
-						Map<Node *, NodePath>::Element *found_path = p_renames->find(n);
+						HashMap<Node *, NodePath>::Iterator found_path = p_renames->find(n);
 						if (found_path) {
-							if (found_path->get() == NodePath()) {
+							if (found_path->value == NodePath()) {
 								//will be erased
 
 								int idx = 0;
-								Set<int>::Element *EI = ran.front();
+								HashSet<int>::Iterator EI = ran.begin();
 								ERR_FAIL_COND(!EI); //bug
-								while (EI->get() != i) {
+								while (*EI != i) {
 									idx++;
-									EI = EI->next();
+									++EI;
 									ERR_FAIL_COND(!EI); //another bug
 								}
 
@@ -1631,7 +1638,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 
 							} else {
 								//will be renamed
-								NodePath rel_path = new_root_path.rel_path_to(found_path->get());
+								NodePath rel_path = new_root_path.rel_path_to(found_path->value);
 
 								NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false);
 								if (new_path == track_np) {
@@ -1653,7 +1660,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, Map<Node *, NodePath> *p_
 }
 
 void SceneTreeDock::_node_prerenamed(Node *p_node, const String &p_new_name) {
-	Map<Node *, NodePath> path_renames;
+	HashMap<Node *, NodePath> path_renames;
 
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
@@ -1774,7 +1781,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 	editor_data->get_undo_redo().create_action(TTR("Reparent Node"));
 
-	Map<Node *, NodePath> path_renames;
+	HashMap<Node *, NodePath> path_renames;
 	Vector<StringName> former_names;
 
 	int inc = 0;
@@ -1811,9 +1818,9 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		// Name was modified, fix the path renames.
 		if (old_name.casecmp_to(new_name) != 0) {
 			// Fix the to name to have the new name.
-			Map<Node *, NodePath>::Element *found_path = path_renames.find(node);
+			HashMap<Node *, NodePath>::Iterator found_path = path_renames.find(node);
 			if (found_path) {
-				NodePath old_new_name = found_path->get();
+				NodePath old_new_name = found_path->value;
 
 				Vector<StringName> unfixed_new_names = old_new_name.get_names();
 				Vector<StringName> fixed_new_names;
@@ -2058,7 +2065,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	} else {
 		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
-		Map<Node *, NodePath> path_renames;
+		HashMap<Node *, NodePath> path_renames;
 
 		//delete from animation
 		for (Node *n : remove_list) {
@@ -2148,7 +2155,7 @@ void SceneTreeDock::_selection_changed() {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		_push_item(editor_selection->get_selection().front()->key());
+		_handle_select(editor_selection->get_selection().begin()->key);
 	} else if (selection_size == 0) {
 		_push_item(nullptr);
 	}
@@ -2407,12 +2414,12 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 
 	Node *base = selection.front()->get();
 
-	Map<const Node *, Node *> duplimap;
+	HashMap<const Node *, Node *> duplimap;
 	Node *copy = base->duplicate_from_editor(duplimap);
 
 	if (copy) {
-		for (int i = 0; i < copy->get_child_count(); i++) {
-			_set_node_owner_recursive(copy->get_child(i), copy);
+		for (int i = 0; i < copy->get_child_count(false); i++) {
+			_set_node_owner_recursive(copy->get_child(i, false), copy);
 		}
 
 		Ref<PackedScene> sdata = memnew(PackedScene);
@@ -2449,8 +2456,8 @@ void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner) {
 		p_node->set_owner(p_owner);
 	}
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_set_node_owner_recursive(p_node->get_child(i), p_owner);
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		_set_node_owner_recursive(p_node->get_child(i, false), p_owner);
 	}
 }
 
@@ -2648,7 +2655,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		}
 		int index = menu_subresources->get_item_count();
 		menu_subresources->add_icon_item(icon, E.name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
-		menu_subresources->set_item_h_offset(index, p_depth * 10 * EDSCALE);
+		menu_subresources->set_item_horizontal_offset(index, p_depth * 10 * EDSCALE);
 		subresources.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
@@ -3038,14 +3045,14 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	ur.create_action(TTR("Paste Node(s)"));
 	ur.add_do_method(editor_selection, "clear");
 
-	Map<Ref<Resource>, Ref<Resource>> resource_remap;
+	HashMap<Ref<Resource>, Ref<Resource>> resource_remap;
 	String target_scene;
 	if (edited_scene) {
 		target_scene = edited_scene->get_scene_file_path();
 	}
 	if (target_scene != clipboard_source_scene) {
 		if (!clipboard_resource_remap.has(target_scene)) {
-			Map<Ref<Resource>, Ref<Resource>> remap;
+			HashMap<Ref<Resource>, Ref<Resource>> remap;
 			for (Node *E : node_clipboard) {
 				_create_remap_for_node(E, remap);
 			}
@@ -3055,7 +3062,7 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	}
 
 	for (Node *node : node_clipboard) {
-		Map<const Node *, Node *> duplimap;
+		HashMap<const Node *, Node *> duplimap;
 
 		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
 		ERR_CONTINUE(!dup);
@@ -3241,7 +3248,7 @@ void SceneTreeDock::_clear_clipboard() {
 	clipboard_resource_remap.clear();
 }
 
-void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
+void SceneTreeDock::_create_remap_for_node(Node *p_node, HashMap<Ref<Resource>, Ref<Resource>> &r_remap) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -3280,7 +3287,7 @@ void SceneTreeDock::_create_remap_for_node(Node *p_node, Map<Ref<Resource>, Ref<
 	}
 }
 
-void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, Map<Ref<Resource>, Ref<Resource>> &r_remap) {
+void SceneTreeDock::_create_remap_for_resource(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &r_remap) {
 	r_remap[p_resource] = p_resource->duplicate();
 
 	List<PropertyInfo> props;
@@ -3382,7 +3389,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	vbc->add_child(filter_hbc);
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_placeholder(TTR("Filter nodes"));
+	filter->set_placeholder(TTR("Filter Nodes"));
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
@@ -3528,7 +3535,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
+	clear_inherit_confirm->set_ok_button_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);

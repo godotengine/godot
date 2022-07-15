@@ -57,10 +57,10 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		set_title(vformat(TTR("Change %s Type"), base_type));
-		get_ok_button()->set_text(TTR("Change"));
+		set_ok_button_text(TTR("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 	}
 
 	_load_favorites_and_history();
@@ -138,8 +138,8 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true; // Wrong inheritance.
 		}
 
-		for (Set<StringName>::Element *E = type_blacklist.front(); E; E = E->next()) {
-			if (ClassDB::is_parent_class(p_type, E->get())) {
+		for (const StringName &E : type_blacklist) {
+			if (ClassDB::is_parent_class(p_type, E)) {
 				return true; // Parent type is blacklisted.
 			}
 		}
@@ -472,6 +472,13 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.has(p_type));
 	get_ok_button()->set_disabled(false);
+}
+
+void CreateDialog::select_base() {
+	if (search_options_types.is_empty()) {
+		_update_search();
+	}
+	select_type(base_type, false);
 }
 
 String CreateDialog::get_selected_type() {

@@ -545,7 +545,7 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 	if (import_support_queries.size() == 0) {
 		return false;
 	}
-	Map<String, int> import_support_test;
+	HashMap<String, int> import_support_test;
 	Vector<bool> import_support_tested;
 	import_support_tested.resize(import_support_queries.size());
 	for (int i = 0; i < import_support_queries.size(); i++) {
@@ -563,9 +563,9 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 	}
 
 	for (int i = 0; i < reimports.size(); i++) {
-		Map<String, int>::Element *E = import_support_test.find(reimports[i].get_extension());
+		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension());
 		if (E) {
-			import_support_tested.write[E->get()] = true;
+			import_support_tested.write[E->value] = true;
 		}
 	}
 
@@ -1528,8 +1528,8 @@ void EditorFileSystem::_save_late_updated_files() {
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
-	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
-		f->store_line(E->get());
+	for (const String &E : late_update_files) {
+		f->store_line(E);
 	}
 }
 
@@ -1708,15 +1708,15 @@ void EditorFileSystem::update_file(const String &p_file) {
 	_try_emit_filesystem_changed();
 }
 
-Set<String> EditorFileSystem::get_valid_extensions() const {
+HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
 }
 
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
 	String importer_name;
 
-	Map<String, Map<StringName, Variant>> source_file_options;
-	Map<String, String> base_paths;
+	HashMap<String, HashMap<StringName, Variant>> source_file_options;
+	HashMap<String, String> base_paths;
 	for (int i = 0; i < p_files.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
@@ -1731,7 +1731,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
 
-		source_file_options[p_files[i]] = Map<StringName, Variant>();
+		source_file_options[p_files[i]] = HashMap<StringName, Variant>();
 		importer_name = file_importer_name;
 
 		if (importer_name == "keep") {
@@ -1771,7 +1771,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	Error err = importer->import_group_file(p_group_file, source_file_options, base_paths);
 
 	//all went well, overwrite config files with proper remaps and md5s
-	for (const KeyValue<String, Map<StringName, Variant>> &E : source_file_options) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : source_file_options) {
 		const String &file = E.key;
 		String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(file);
 		Vector<String> dest_paths;
@@ -1864,9 +1864,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 		//to reload properly
-		if (ResourceCache::has(file)) {
-			Resource *r = ResourceCache::get(file);
+		Ref<Resource> r = ResourceCache::get_ref(file);
 
+		if (r.is_valid()) {
 			if (!r->get_import_path().is_empty()) {
 				String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(file);
 				r->set_import_path(dst_path);
@@ -1880,7 +1880,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
+void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -1888,7 +1888,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	//try to obtain existing params
 
-	Map<StringName, Variant> params;
+	HashMap<StringName, Variant> params;
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
@@ -2106,9 +2106,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 
 	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
 	//to reload properly
-	if (ResourceCache::has(p_file)) {
-		Resource *r = ResourceCache::get(p_file);
-
+	Ref<Resource> r = ResourceCache::get_ref(p_file);
+	if (r.is_valid()) {
 		if (!r->get_import_path().is_empty()) {
 			String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_file);
 			r->set_import_path(dst_path);
@@ -2119,7 +2118,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const Map<StringName
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
-void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport) {
+void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport) {
 	int fc = efd->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = efd->files.ptr();
 	for (int i = 0; i < fc; i++) {
@@ -2136,7 +2135,7 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, Map<Str
 	}
 }
 
-void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params) {
+void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params) {
 	_reimport_file(p_file, &p_custom_params, p_importer);
 }
 
@@ -2151,7 +2150,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	Vector<ImportFile> reimport_files;
 
-	Set<String> groups_to_reimport;
+	HashSet<String> groups_to_reimport;
 
 	for (int i = 0; i < p_files.size(); i++) {
 		String file = p_files[i];
@@ -2237,7 +2236,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	//reimport groups
 
 	if (groups_to_reimport.size()) {
-		Map<String, Vector<String>> group_files;
+		HashMap<String, Vector<String>> group_files;
 		_find_group_files(filesystem, group_files, groups_to_reimport);
 		for (const KeyValue<String, Vector<String>> &E : group_files) {
 			Error err = _reimport_group(E.key, E.value);
@@ -2362,7 +2361,7 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 	}
 }
 
-static void _scan_extensions_dir(EditorFileSystemDirectory *d, Set<String> &extensions) {
+static void _scan_extensions_dir(EditorFileSystemDirectory *d, HashSet<String> &extensions) {
 	int fc = d->get_file_count();
 	for (int i = 0; i < fc; i++) {
 		if (d->get_file_type(i) == SNAME("NativeExtension")) {
@@ -2376,7 +2375,7 @@ static void _scan_extensions_dir(EditorFileSystemDirectory *d, Set<String> &exte
 }
 bool EditorFileSystem::_scan_extensions() {
 	EditorFileSystemDirectory *d = get_filesystem();
-	Set<String> extensions;
+	HashSet<String> extensions;
 
 	_scan_extensions_dir(d, extensions);
 
@@ -2444,6 +2443,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filesystem_path", "path"), &EditorFileSystem::get_filesystem_path);
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
 	ClassDB::bind_method(D_METHOD("update_script_classes"), &EditorFileSystem::update_script_classes);
+	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("script_classes_loaded"));

@@ -59,7 +59,7 @@ void TexturePreview::_notification(int p_what) {
 }
 
 void TexturePreview::_update_metadata_label_text() {
-	Ref<Texture2D> texture = texture_display->get_texture();
+	const Ref<Texture2D> texture = texture_display->get_texture();
 
 	String format;
 	if (Object::cast_to<ImageTexture>(*texture)) {
@@ -70,7 +70,49 @@ void TexturePreview::_update_metadata_label_text() {
 		format = texture->get_class();
 	}
 
-	metadata_label->set_text(vformat(String::utf8("%s×%s %s"), itos(texture->get_width()), itos(texture->get_height()), format));
+	const Ref<Image> image = texture->get_image();
+	if (image.is_valid()) {
+		const int mipmaps = image->get_mipmap_count();
+		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
+		uint64_t memory = uint64_t(image->get_width()) * uint64_t(image->get_height()) * uint64_t(Image::get_format_pixel_size(image->get_format()));
+		// Handle VRAM-compressed formats that are stored with 4 bpp.
+		memory >>= Image::get_format_pixel_rshift(image->get_format());
+
+		float mipmaps_multiplier = 1.0;
+		float mipmap_increase = 0.25;
+		for (int i = 0; i < mipmaps; i++) {
+			// Each mip adds 25% memory usage of the previous one.
+			// With a complete mipmap chain, memory usage increases by ~33%.
+			mipmaps_multiplier += mipmap_increase;
+			mipmap_increase *= 0.25;
+		}
+		memory *= mipmaps_multiplier;
+
+		if (mipmaps >= 1) {
+			metadata_label->set_text(
+					vformat(String::utf8("%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
+							texture->get_width(),
+							texture->get_height(),
+							format,
+							mipmaps,
+							String::humanize_size(memory)));
+		} else {
+			// "No Mipmaps" is easier to distinguish than "0 Mipmaps",
+			// especially since 0, 6, and 8 look quite close with the default code font.
+			metadata_label->set_text(
+					vformat(String::utf8("%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
+							texture->get_width(),
+							texture->get_height(),
+							format,
+							String::humanize_size(memory)));
+		}
+	} else {
+		metadata_label->set_text(
+				vformat(String::utf8("%d×%d %s"),
+						texture->get_width(),
+						texture->get_height(),
+						format));
+	}
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
@@ -97,11 +139,9 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->add_theme_color_override("font_color", Color::named("white"));
 		metadata_label->add_theme_color_override("font_color_shadow", Color::named("black"));
 
-		metadata_label->add_theme_font_size_override("font_size", 16 * EDSCALE);
+		metadata_label->add_theme_font_size_override("font_size", 14 * EDSCALE);
 		metadata_label->add_theme_color_override("font_outline_color", Color::named("black"));
-		metadata_label->add_theme_constant_override("outline_size", 2 * EDSCALE);
-
-		metadata_label->add_theme_constant_override("shadow_outline_size", 1);
+		metadata_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
 		metadata_label->set_h_size_flags(Control::SIZE_SHRINK_END);
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 

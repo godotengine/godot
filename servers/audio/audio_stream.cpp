@@ -135,9 +135,10 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale * playback_speed_scale) / double(target_rate)) * double(FP_LEN));
 
-	int mixed_frames_total = p_frames;
+	int mixed_frames_total = -1;
 
-	for (int i = 0; i < p_frames; i++) {
+	int i;
+	for (i = 0; i < p_frames; i++) {
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
 		//standard cubic interpolation (great quality/performance ratio)
 		//this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
@@ -147,7 +148,7 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		AudioFrame y2 = internal_buffer[idx - 1];
 		AudioFrame y3 = internal_buffer[idx - 0];
 
-		if (idx <= internal_buffer_end && idx >= internal_buffer_end && mixed_frames_total == p_frames) {
+		if (idx >= internal_buffer_end && mixed_frames_total == -1) {
 			// The internal buffer ends somewhere in this range, and we haven't yet recorded the number of good frames we have.
 			mixed_frames_total = i;
 		}
@@ -167,23 +168,19 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 			internal_buffer[1] = internal_buffer[INTERNAL_BUFFER_LEN + 1];
 			internal_buffer[2] = internal_buffer[INTERNAL_BUFFER_LEN + 2];
 			internal_buffer[3] = internal_buffer[INTERNAL_BUFFER_LEN + 3];
-			if (is_playing()) {
-				int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
-				if (mixed_frames != INTERNAL_BUFFER_LEN) {
-					// internal_buffer[mixed_frames] is the first frame of silence.
-					internal_buffer_end = mixed_frames;
-				} else {
-					// The internal buffer does not contain the first frame of silence.
-					internal_buffer_end = -1;
-				}
+			int mixed_frames = _mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
+			if (mixed_frames != INTERNAL_BUFFER_LEN) {
+				// internal_buffer[mixed_frames] is the first frame of silence.
+				internal_buffer_end = mixed_frames;
 			} else {
-				//fill with silence, not playing
-				for (int j = 0; j < INTERNAL_BUFFER_LEN; ++j) {
-					internal_buffer[j + 4] = AudioFrame(0, 0);
-				}
+				// The internal buffer does not contain the first frame of silence.
+				internal_buffer_end = -1;
 			}
 			mix_offset -= (INTERNAL_BUFFER_LEN << FP_BITS);
 		}
+	}
+	if (mixed_frames_total == -1 && i == p_frames) {
+		mixed_frames_total = p_frames;
 	}
 	return mixed_frames_total;
 }
@@ -387,9 +384,11 @@ void AudioStreamRandomizer::add_stream(int p_index) {
 	notify_property_list_changed();
 }
 
+// p_index_to is relative to the array prior to the removal of from.
+// Example: [0, 1, 2, 3], move(1, 3) => [0, 2, 1, 3]
 void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
-	ERR_FAIL_COND(p_index_from < 0);
-	ERR_FAIL_COND(p_index_from >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index_from, audio_stream_pool.size());
+	// p_index_to == audio_stream_pool.size() is valid (move to end).
 	ERR_FAIL_COND(p_index_to < 0);
 	ERR_FAIL_COND(p_index_to > audio_stream_pool.size());
 	audio_stream_pool.insert(p_index_to, audio_stream_pool[p_index_from]);
@@ -403,36 +402,31 @@ void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
 }
 
 void AudioStreamRandomizer::remove_stream(int p_index) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.remove_at(p_index);
 	emit_signal(SNAME("changed"));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::set_stream(int p_index, Ref<AudioStream> p_stream) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].stream = p_stream;
 	emit_signal(SNAME("changed"));
 }
 
 Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
-	ERR_FAIL_COND_V(p_index < 0, nullptr);
-	ERR_FAIL_COND_V(p_index >= audio_stream_pool.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, audio_stream_pool.size(), nullptr);
 	return audio_stream_pool[p_index].stream;
 }
 
 void AudioStreamRandomizer::set_stream_probability_weight(int p_index, float p_weight) {
-	ERR_FAIL_COND(p_index < 0);
-	ERR_FAIL_COND(p_index >= audio_stream_pool.size());
+	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].weight = p_weight;
 	emit_signal(SNAME("changed"));
 }
 
 float AudioStreamRandomizer::get_stream_probability_weight(int p_index) const {
-	ERR_FAIL_COND_V(p_index < 0, 0);
-	ERR_FAIL_COND_V(p_index >= audio_stream_pool.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, audio_stream_pool.size(), 0);
 	return audio_stream_pool[p_index].weight;
 }
 
@@ -702,7 +696,7 @@ void AudioStreamRandomizer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0"), "set_random_volume_offset_db", "get_random_volume_offset_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
 
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM_NO_REPEATS);
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM);

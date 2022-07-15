@@ -51,10 +51,10 @@ class DependencyEditor : public AcceptDialog {
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates);
 
 	void _searched(const String &p_path);
-	void _load_pressed(Object *p_item, int p_cell, int p_button);
+	void _load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button);
 	void _fix_all();
 	void _update_list();
 
@@ -98,7 +98,7 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	Label *text = nullptr;
 	Tree *owners = nullptr;
 
-	Map<String, String> all_remove_files;
+	HashMap<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
 	Vector<String> files_to_delete;
 
@@ -166,7 +166,7 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	List<String> paths;
 	void _find_to_delete(TreeItem *p_item, List<String> &paths);
 	void _delete_confirm();
-	void _button_pressed(Object *p_item, int p_column, int p_id);
+	void _button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void refresh();
 	static void _bind_methods();

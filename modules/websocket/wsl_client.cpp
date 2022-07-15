@@ -113,7 +113,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1", false, "Invalid protocol. Got: '" + req[0] + "', expected 'HTTP/1.1'.");
 	ERR_FAIL_COND_V_MSG(req[1] != "101", false, "Invalid status code. Got: '" + req[1] + "', expected '101'.");
 
-	Map<String, String> headers;
+	HashMap<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
 		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i] + ".");

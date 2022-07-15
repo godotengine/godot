@@ -1,10 +1,15 @@
 // Gradle build config for Godot Engine's Android port.
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
 
 dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
     implementation project(":lib")
+
+    implementation "androidx.window:window:1.0.0"
 }
 
 android {
@@ -18,8 +23,7 @@ android {
         versionCode getGodotLibraryVersionCode()
         versionName getGodotLibraryVersionName()
         minSdkVersion versions.minSdk
-        //noinspection ExpiredTargetSdkVersion - Restrict to version 29 until https://github.com/godotengine/godot/pull/51815 is submitted
-        targetSdkVersion 29 // versions.targetSdk
+        targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
     }
@@ -27,6 +31,10 @@ android {
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
     }
 
     buildTypes {

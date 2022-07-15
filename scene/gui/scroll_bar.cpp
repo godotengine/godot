@@ -622,7 +622,7 @@ void ScrollBar::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("scrolling"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096"), "set_custom_step", "get_custom_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_custom_step", "get_custom_step");
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {

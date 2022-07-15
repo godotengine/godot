@@ -40,29 +40,6 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
-	<methods>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
-	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" enum="HorizontalAlignment" default="1">
 			Text alignment policy for the button's text, use one of the [enum @GlobalScope.HorizontalAlignment] constants.
@@ -91,6 +68,9 @@
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
 	</members>
 	<theme_items>

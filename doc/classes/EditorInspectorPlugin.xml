@@ -77,6 +77,7 @@
 			<return type="void" />
 			<argument index="0" name="property" type="String" />
 			<argument index="1" name="editor" type="Control" />
+			<argument index="2" name="add_to_end" type="bool" default="false" />
 			<description>
 				Adds a property editor for an individual property. The [code]editor[/code] control must extend [EditorProperty].
 			</description>

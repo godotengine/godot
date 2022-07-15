@@ -41,7 +41,6 @@
 #include "core/os/keyboard.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-
 #include "modules/modules_enabled.gen.h" // For mono.
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
@@ -205,6 +204,11 @@ void ProjectSettings::set_as_basic(const String &p_name, bool p_basic) {
 	props[p_name].basic = p_basic;
 }
 
+void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
+	props[p_name].internal = p_internal;
+}
+
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 #ifdef DEBUG_METHODS_ENABLED
@@ -331,7 +335,7 @@ struct _VCSort {
 void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -344,7 +348,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.name = E.key;
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
-		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload")) {
+		if (v->internal || vc.name.begins_with("input/") || vc.name.begins_with("importer_defaults/") || vc.name.begins_with("import/") || vc.name.begins_with("autoload/") || vc.name.begins_with("editor_plugins/") || vc.name.begins_with("shader_globals/")) {
 			vc.flags = PROPERTY_USAGE_STORAGE;
 		} else {
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
@@ -360,8 +364,8 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-		String prop_info_name = E->get().name;
+	for (const _VCSort &E : vclist) {
+		String prop_info_name = E.name;
 		int dot = prop_info_name.find(".");
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
@@ -369,11 +373,11 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		if (custom_prop_info.has(prop_info_name)) {
 			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E->get().name;
-			pi.usage = E->get().flags;
+			pi.name = E.name;
+			pi.usage = E.flags;
 			p_list->push_back(pi);
 		} else {
-			p_list->push_back(PropertyInfo(E->get().type, E->get().name, PROPERTY_HINT_NONE, "", E->get().flags));
+			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
 		}
 	}
 }
@@ -764,7 +768,7 @@ Error ProjectSettings::save() {
 	return error;
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
@@ -800,19 +804,20 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		for (String &key : E->get()) {
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+	for (const KeyValue<String, List<String>> &E : props) {
+		for (const String &key : E.value) {
+			String k = key;
+			if (!E.key.is_empty()) {
+				k = E.key + "/" + k;
 			}
 			Variant value;
-			if (p_custom.has(key)) {
-				value = p_custom[key];
+			if (p_custom.has(k)) {
+				value = p_custom[k];
 			} else {
-				value = get(key);
+				value = get(k);
 			}
 
-			file->store_pascal_string(key);
+			file->store_pascal_string(k);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
@@ -831,7 +836,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -852,18 +857,18 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	}
 	file->store_string("\n");
 
-	for (const Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
-		if (E != props.front()) {
+	for (const KeyValue<String, List<String>> &E : props) {
+		if (E.key != props.begin()->key) {
 			file->store_string("\n");
 		}
 
-		if (!E->key().is_empty()) {
-			file->store_string("[" + E->key() + "]\n\n");
+		if (!E.key.is_empty()) {
+			file->store_string("[" + E.key + "]\n\n");
 		}
-		for (const String &F : E->get()) {
+		for (const String &F : E.value) {
 			String key = F;
-			if (!E->key().is_empty()) {
-				key = E->key() + "/" + key;
+			if (!E.key.is_empty()) {
+				key = E.key + "/" + key;
 			}
 			Variant value;
 			if (p_custom.has(key)) {
@@ -889,7 +894,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
-	PackedStringArray project_features = has_setting("application/config/features") ? (PackedStringArray)get_setting("application/config/features") : PackedStringArray();
+	PackedStringArray project_features = get_setting("application/config/features");
 	// If there is no feature list currently present, force one to generate.
 	if (project_features.is_empty()) {
 		project_features = ProjectSettings::get_required_features();
@@ -917,7 +922,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	project_features = _trim_to_supported_features(project_features);
 	set_setting("application/config/features", project_features);
 
-	Set<_VCSort> vclist;
+	RBSet<_VCSort> vclist;
 
 	if (p_merge_with_current) {
 		for (const KeyValue<StringName, VariantContainer> &G : props) {
@@ -946,21 +951,21 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 	for (const KeyValue<String, Variant> &E : p_custom) {
 		// Lookup global prop to store in the same order
-		Map<StringName, VariantContainer>::Element *global_prop = props.find(E.key);
+		RBMap<StringName, VariantContainer>::Iterator global_prop = props.find(E.key);
 
 		_VCSort vc;
 		vc.name = E.key;
-		vc.order = global_prop ? global_prop->get().order : 0xFFFFFFF;
+		vc.order = global_prop ? global_prop->value.order : 0xFFFFFFF;
 		vc.type = E.value.get_type();
 		vc.flags = PROPERTY_USAGE_STORAGE;
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String>> props;
+	RBMap<String, List<String>> props;
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
-		String category = E->get().name;
-		String name = E->get().name;
+	for (const _VCSort &E : vclist) {
+		String category = E.name;
+		String name = E.name;
 
 		int div = category.find("/");
 
@@ -993,7 +998,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -1005,6 +1010,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 	ProjectSettings::get_singleton()->set_as_basic(p_var, p_basic);
 	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
 	ProjectSettings::get_singleton()->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
+	ProjectSettings::get_singleton()->set_as_internal(p_var, p_internal);
 	return ret;
 }
 
@@ -1051,7 +1057,7 @@ void ProjectSettings::set_custom_property_info(const String &p_prop, const Prope
 	custom_prop_info[p_prop].name = p_prop;
 }
 
-const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
+const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
 	return custom_prop_info;
 }
 
@@ -1150,7 +1156,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
-			GLOBAL_DEF(action_name, action);
+			GLOBAL_DEF_INTERNAL(action_name, action);
 			input_presets.push_back(action_name);
 		}
 	}
@@ -1193,6 +1199,10 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
+	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 1.0f);
+	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
+	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 1.0f);
+	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
 
 	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
@@ -1234,6 +1244,11 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+
+	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
+	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 }
 
 ProjectSettings::~ProjectSettings() {

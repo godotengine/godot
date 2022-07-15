@@ -481,7 +481,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	if (p_save) {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 		file_browse->set_title(TTR("Open Script / Choose Location"));
-		file_browse->get_ok_button()->set_text(TTR("Open"));
+		file_browse->set_ok_button_text(TTR("Open"));
 	} else {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 		file_browse->set_title(TTR("Open Script"));
@@ -528,7 +528,7 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->set_base_type(base_type);
 	select_class->popup_create(true);
 	select_class->set_title(vformat(TTR("Inherit %s"), base_type));
-	select_class->get_ok_button()->set_text(TTR("Inherit"));
+	select_class->set_ok_button_text(TTR("Inherit"));
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
@@ -750,7 +750,7 @@ void ScriptCreateDialog::_update_dialog() {
 	parent_browse_button->set_disabled(!is_new_file || !can_inherit_from_file);
 	template_inactive_message = "";
 	String button_text = is_new_file ? TTR("Create") : TTR("Load");
-	get_ok_button()->set_text(button_text);
+	set_ok_button_text(button_text);
 
 	if (is_new_file) {
 		if (is_built_in) {
@@ -940,7 +940,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	script_name_warning_label = memnew(Label);
@@ -948,12 +948,12 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			TTR("Warning: Having the script name be the same as a built-in type is usually not desired."));
 	vb->add_child(script_name_warning_label);
 	script_name_warning_label->add_theme_color_override("font_color", Color(1, 0.85, 0.4));
-	script_name_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	script_name_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	script_name_warning_label->hide();
 
 	template_info_label = memnew(Label);
 	vb->add_child(template_info_label);
-	template_info_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	template_info_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
@@ -1088,9 +1088,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_browse->connect("file_selected", callable_mp(this, &ScriptCreateDialog::_file_selected));
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_browse);
-	get_ok_button()->set_text(TTR("Create"));
+	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);

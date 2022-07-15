@@ -92,12 +92,14 @@ public:
 
 	Point2 get_global_position() const;
 	real_t get_global_rotation() const;
+	real_t get_global_skew() const;
 	Size2 get_global_scale() const;
 
 	void set_transform(const Transform2D &p_transform);
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
-	void set_global_rotation(real_t p_radians);
+	void set_global_rotation(const real_t p_radians);
+	void set_global_skew(const real_t p_radians);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z_index(int p_z);

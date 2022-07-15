@@ -56,8 +56,14 @@ class GridMap : public Node3D {
 		};
 		uint64_t key = 0;
 
+		static uint32_t hash(const IndexKey &p_key) {
+			return hash_one_uint64(p_key.key);
+		}
 		_FORCE_INLINE_ bool operator<(const IndexKey &p_key) const {
 			return key < p_key.key;
+		}
+		_FORCE_INLINE_ bool operator==(const IndexKey &p_key) const {
+			return key == p_key.key;
 		}
 
 		_FORCE_INLINE_ operator Vector3i() const {
@@ -92,6 +98,7 @@ class GridMap : public Node3D {
 		struct NavMesh {
 			RID region;
 			Transform3D xform;
+			RID navmesh_debug_instance;
 		};
 
 		struct MultimeshInstance {
@@ -107,13 +114,13 @@ class GridMap : public Node3D {
 		};
 
 		Vector<MultimeshInstance> multimesh_instances;
-		Set<IndexKey> cells;
+		HashSet<IndexKey> cells;
 		RID collision_debug;
 		RID collision_debug_instance;
 
 		bool dirty = false;
 		RID static_body;
-		Map<IndexKey, NavMesh> navmesh_ids;
+		HashMap<IndexKey, NavMesh> navmesh_ids;
 	};
 
 	union OctantKey {
@@ -126,8 +133,11 @@ class GridMap : public Node3D {
 
 		uint64_t key = 0;
 
-		_FORCE_INLINE_ bool operator<(const OctantKey &p_key) const {
-			return key < p_key.key;
+		static uint32_t hash(const OctantKey &p_key) {
+			return hash_one_uint64(p_key.key);
+		}
+		_FORCE_INLINE_ bool operator==(const OctantKey &p_key) const {
+			return key == p_key.key;
 		}
 
 		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
@@ -154,8 +164,8 @@ class GridMap : public Node3D {
 
 	Ref<MeshLibrary> mesh_library;
 
-	Map<OctantKey, Octant *> octant_map;
-	Map<IndexKey, Cell> cell_map;
+	HashMap<OctantKey, Octant *, OctantKey> octant_map;
+	HashMap<IndexKey, Cell, IndexKey> cell_map;
 
 	void _recreate_octant_data();
 
@@ -228,8 +238,11 @@ public:
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
-	void set_navigation_layers(uint32_t p_layers);
-	uint32_t get_navigation_layers();
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

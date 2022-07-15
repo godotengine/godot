@@ -134,6 +134,34 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 #endif
 }
 
+static void recursively_disassemble_functions(const Ref<GDScript> script, const Vector<String> &p_lines) {
+	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
+		const GDScriptFunction *func = E.value;
+
+		String signature = "Disassembling " + func->get_name().operator String() + "(";
+		for (int i = 0; i < func->get_argument_count(); i++) {
+			if (i > 0) {
+				signature += ", ";
+			}
+			signature += func->get_argument_name(i);
+		}
+		print_line(signature + ")");
+#ifdef TOOLS_ENABLED
+		func->disassemble(p_lines);
+#endif
+		print_line("");
+		print_line("");
+	}
+
+	for (const KeyValue<StringName, Ref<GDScript>> &F : script->get_subclasses()) {
+		const Ref<GDScript> inner_script = F.value;
+		print_line("");
+		print_line(vformat("Inner Class: %s", inner_script->get_script_class_name()));
+		print_line("");
+		recursively_disassemble_functions(inner_script, p_lines);
+	}
+}
+
 static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
 	Error err = parser.parse(p_code, p_script_path, false);
@@ -172,23 +200,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		return;
 	}
 
-	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
-		const GDScriptFunction *func = E.value;
-
-		String signature = "Disassembling " + func->get_name().operator String() + "(";
-		for (int i = 0; i < func->get_argument_count(); i++) {
-			if (i > 0) {
-				signature += ", ";
-			}
-			signature += func->get_argument_name(i);
-		}
-		print_line(signature + ")");
-#ifdef TOOLS_ENABLED
-		func->disassemble(p_lines);
-#endif
-		print_line("");
-		print_line("");
-	}
+	recursively_disassemble_functions(script, p_lines);
 }
 
 void test(TestType p_type) {

@@ -18,7 +18,7 @@
     <Compile Include="Core\Attributes\DisableGodotGeneratorsAttribute.cs" />
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
     <Compile Include="Core\Attributes\GodotMethodAttribute.cs" />
-    <Compile Include="Core\Attributes\RPCAttributes.cs" />
+    <Compile Include="Core\Attributes\RPCAttribute.cs" />
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />

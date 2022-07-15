@@ -79,10 +79,10 @@ struct biased_subrs_t
   unsigned int get_count () const { return subrs ? subrs->count : 0; }
   unsigned int get_bias () const  { return bias; }
 
-  byte_str_t operator [] (unsigned int index) const
+  hb_ubytes_t operator [] (unsigned int index) const
   {
     if (unlikely (!subrs || index >= subrs->count))
-      return Null (byte_str_t);
+      return hb_ubytes_t ();
     else
       return (*subrs)[index];
   }
@@ -112,10 +112,9 @@ struct point_t
 template <typename ARG, typename SUBRS>
 struct cs_interp_env_t : interp_env_t<ARG>
 {
-  void init (const byte_str_t &str, const SUBRS *globalSubrs_, const SUBRS *localSubrs_)
+  cs_interp_env_t (const hb_ubytes_t &str, const SUBRS *globalSubrs_, const SUBRS *localSubrs_) :
+    interp_env_t<ARG> (str)
   {
-    interp_env_t<ARG>::init (str);
-
     context.init (str, CSType_CharString);
     seen_moveto = true;
     seen_hintmask = false;
@@ -123,15 +122,11 @@ struct cs_interp_env_t : interp_env_t<ARG>
     vstem_count = 0;
     hintmask_size = 0;
     pt.set_int (0, 0);
-    callStack.init ();
     globalSubrs.init (globalSubrs_);
     localSubrs.init (localSubrs_);
   }
-  void fini ()
+  ~cs_interp_env_t ()
   {
-    interp_env_t<ARG>::fini ();
-
-    callStack.fini ();
     globalSubrs.fini ();
     localSubrs.fini ();
   }
@@ -880,6 +875,8 @@ struct path_procs_t
 template <typename ENV, typename OPSET, typename PARAM>
 struct cs_interpreter_t : interpreter_t<ENV>
 {
+  cs_interpreter_t (ENV& env_) : interpreter_t<ENV> (env_) {}
+
   bool interpret (PARAM& param)
   {
     SUPER::env.set_endchar (false);

@@ -65,7 +65,7 @@ void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
 	ClassDB::bind_method(D_METHOD("get_time_left"), &SceneTreeTimer::get_time_left);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left"), "set_time_left", "get_time_left");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "suffix:s"), "set_time_left", "get_time_left");
 
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
@@ -129,32 +129,32 @@ void SceneTree::node_renamed(Node *p_node) {
 }
 
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		E = group_map.insert(p_group, Group());
 	}
 
-	ERR_FAIL_COND_V_MSG(E->get().nodes.has(p_node), &E->get(), "Already in group: " + p_group + ".");
-	E->get().nodes.push_back(p_node);
-	//E->get().last_tree_version=0;
-	E->get().changed = true;
-	return &E->get();
+	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
+	E->value.nodes.push_back(p_node);
+	//E->value.last_tree_version=0;
+	E->value.changed = true;
+	return &E->value;
 }
 
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
-	E->get().nodes.erase(p_node);
-	if (E->get().nodes.is_empty()) {
-		group_map.erase(E);
+	E->value.nodes.erase(p_node);
+	if (E->value.nodes.is_empty()) {
+		group_map.remove(E);
 	}
 }
 
 void SceneTree::make_group_changed(const StringName &p_group) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (E) {
-		E->get().changed = true;
+		E->value.changed = true;
 	}
 }
 
@@ -173,17 +173,17 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = true;
 
 	while (unique_group_calls.size()) {
-		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
+		HashMap<UGCall, Vector<Variant>, UGCall>::Iterator E = unique_group_calls.begin();
 
-		const Variant **argptrs = (const Variant **)alloca(E->get().size() * sizeof(Variant *));
+		const Variant **argptrs = (const Variant **)alloca(E->value.size() * sizeof(Variant *));
 
-		for (int i = 0; i < E->get().size(); i++) {
-			argptrs[i] = &E->get()[i];
+		for (int i = 0; i < E->value.size(); i++) {
+			argptrs[i] = &E->value[i];
 		}
 
-		call_group_flagsp(GROUP_CALL_DEFAULT, E->key().group, E->key().call, argptrs, E->get().size());
+		call_group_flagsp(GROUP_CALL_DEFAULT, E->key.group, E->key.call, argptrs, E->value.size());
 
-		unique_group_calls.erase(E);
+		unique_group_calls.remove(E);
 	}
 
 	ugc_locked = false;
@@ -211,11 +211,11 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 }
 
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -284,11 +284,11 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 }
 
 void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -335,11 +335,11 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 }
 
 void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -386,7 +386,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 }
 
 void SceneTree::notify_group(const StringName &p_group, int p_notification) {
-	notify_group_flags(0, p_group, p_notification);
+	notify_group_flags(GROUP_CALL_DEFAULT, p_group, p_notification);
 }
 
 void SceneTree::set_group(const StringName &p_group, const String &p_name, const Variant &p_value) {
@@ -412,9 +412,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
-	_notify_group_pause(SNAME("physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("_physics_process_internal"), Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
-	_notify_group_pause(SNAME("physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
+	_notify_group_pause(SNAME("_physics_process"), Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -449,8 +449,8 @@ bool SceneTree::process(double p_time) {
 
 	flush_transform_notifications();
 
-	_notify_group_pause(SNAME("process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause(SNAME("process"), Node::NOTIFICATION_PROCESS);
+	_notify_group_pause(SNAME("_process_internal"), Node::NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause(SNAME("_process"), Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
@@ -627,8 +627,16 @@ void SceneTree::_notification(int p_notification) {
 	}
 }
 
+bool SceneTree::is_auto_accept_quit() const {
+	return accept_quit;
+}
+
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 	accept_quit = p_enable;
+}
+
+bool SceneTree::is_quit_on_go_back() const {
+	return quit_on_go_back;
 }
 
 void SceneTree::set_quit_on_go_back(bool p_enable) {
@@ -649,6 +657,14 @@ void SceneTree::set_debug_collisions_hint(bool p_enabled) {
 
 bool SceneTree::is_debugging_collisions_hint() const {
 	return debug_collisions_hint;
+}
+
+void SceneTree::set_debug_paths_hint(bool p_enabled) {
+	debug_paths_hint = p_enabled;
+}
+
+bool SceneTree::is_debugging_paths_hint() const {
+	return debug_paths_hint;
 }
 
 void SceneTree::set_debug_navigation_hint(bool p_enabled) {
@@ -676,6 +692,22 @@ Color SceneTree::get_debug_collision_contact_color() const {
 	return debug_collision_contact_color;
 }
 
+void SceneTree::set_debug_paths_color(const Color &p_color) {
+	debug_paths_color = p_color;
+}
+
+Color SceneTree::get_debug_paths_color() const {
+	return debug_paths_color;
+}
+
+void SceneTree::set_debug_paths_width(float p_width) {
+	debug_paths_width = p_width;
+}
+
+float SceneTree::get_debug_paths_width() const {
+	return debug_paths_width;
+}
+
 void SceneTree::set_debug_navigation_color(const Color &p_color) {
 	debug_navigation_color = p_color;
 }
@@ -690,6 +722,23 @@ void SceneTree::set_debug_navigation_disabled_color(const Color &p_color) {
 
 Color SceneTree::get_debug_navigation_disabled_color() const {
 	return debug_navigation_disabled_color;
+}
+
+Ref<Material> SceneTree::get_debug_paths_material() {
+	if (debug_paths_material.is_valid()) {
+		return debug_paths_material;
+	}
+
+	Ref<StandardMaterial3D> _debug_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	_debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	_debug_material->set_albedo(get_debug_paths_color());
+
+	debug_paths_material = _debug_material;
+
+	return debug_paths_material;
 }
 
 Ref<Material> SceneTree::get_debug_navigation_material() {
@@ -818,11 +867,11 @@ bool SceneTree::is_paused() const {
 }
 
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -862,11 +911,11 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 }
 
 void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
-	Group &g = E->get();
+	Group &g = E->value;
 	if (g.nodes.is_empty()) {
 		return;
 	}
@@ -952,20 +1001,20 @@ int64_t SceneTree::get_frame() const {
 
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	Array ret;
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return ret;
 	}
 
-	_update_group_order(E->get()); //update order just in case
-	int nc = E->get().nodes.size();
+	_update_group_order(E->value); //update order just in case
+	int nc = E->value.nodes.size();
 	if (nc == 0) {
 		return ret;
 	}
 
 	ret.resize(nc);
 
-	Node **ptr = E->get().nodes.ptrw();
+	Node **ptr = E->value.nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 		ret[i] = ptr[i];
 	}
@@ -978,32 +1027,32 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 }
 
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return nullptr; // No group.
 	}
 
-	_update_group_order(E->get()); // Update order just in case.
+	_update_group_order(E->value); // Update order just in case.
 
-	if (E->get().nodes.is_empty()) {
+	if (E->value.nodes.is_empty()) {
 		return nullptr;
 	}
 
-	return E->get().nodes[0];
+	return E->value.nodes[0];
 }
 
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
-	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return;
 	}
 
-	_update_group_order(E->get()); //update order just in case
-	int nc = E->get().nodes.size();
+	_update_group_order(E->value); //update order just in case
+	int nc = E->value.nodes.size();
 	if (nc == 0) {
 		return;
 	}
-	Node **ptr = E->get().nodes.ptrw();
+	Node **ptr = E->value.nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 		p_list->push_back(ptr[i]);
 	}
@@ -1192,11 +1241,15 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
 
+	ClassDB::bind_method(D_METHOD("is_auto_accept_quit"), &SceneTree::is_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);
+	ClassDB::bind_method(D_METHOD("is_quit_on_go_back"), &SceneTree::is_quit_on_go_back);
 	ClassDB::bind_method(D_METHOD("set_quit_on_go_back", "enabled"), &SceneTree::set_quit_on_go_back);
 
 	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint", "enable"), &SceneTree::set_debug_collisions_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"), &SceneTree::is_debugging_collisions_hint);
+	ClassDB::bind_method(D_METHOD("set_debug_paths_hint", "enable"), &SceneTree::set_debug_paths_hint);
+	ClassDB::bind_method(D_METHOD("is_debugging_paths_hint"), &SceneTree::is_debugging_paths_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
 
@@ -1255,7 +1308,10 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_paths_hint"), "set_debug_paths_hint", "is_debugging_paths_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_edited_scene_root", "get_edited_scene_root");
@@ -1332,6 +1388,8 @@ SceneTree::SceneTree() {
 	}
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
+	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
+	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
 	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
@@ -1361,13 +1419,16 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	const int msaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/msaa", 0);
+	const int msaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/msaa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	const int ssaa_mode = GLOBAL_DEF("rendering/anti_aliasing/quality/screen_space_aa", 0);
+	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/screen_space_aa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+
+	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
+	root->set_use_taa(use_taa);
 
 	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
@@ -1385,25 +1446,25 @@ SceneTree::SceneTree() {
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
-	int shadowmap_size = GLOBAL_DEF("rendering/shadows/shadow_atlas/size", 4096);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/shadow_atlas/size.mobile", 2048);
-	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/shadow_atlas/16_bits", true);
-	int atlas_q0 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_0_subdiv", 2);
-	int atlas_q1 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_1_subdiv", 2);
-	int atlas_q2 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_2_subdiv", 3);
-	int atlas_q3 = GLOBAL_DEF("rendering/shadows/shadow_atlas/quadrant_3_subdiv", 4);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	int shadowmap_size = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_size", 4096);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_size", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_size.mobile", 2048);
+	bool shadowmap_16_bits = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_16_bits", true);
+	int atlas_q0 = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_quadrant_0_subdiv", 2);
+	int atlas_q1 = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_quadrant_1_subdiv", 2);
+	int atlas_q2 = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_quadrant_2_subdiv", 3);
+	int atlas_q3 = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_quadrant_3_subdiv", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
 
-	root->set_shadow_atlas_size(shadowmap_size);
-	root->set_shadow_atlas_16_bits(shadowmap_16_bits);
-	root->set_shadow_atlas_quadrant_subdiv(0, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
-	root->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
-	root->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
-	root->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+	root->set_positional_shadow_atlas_size(shadowmap_size);
+	root->set_positional_shadow_atlas_16_bits(shadowmap_16_bits);
+	root->set_positional_shadow_atlas_quadrant_subdiv(0, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q0));
+	root->set_positional_shadow_atlas_quadrant_subdiv(1, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q1));
+	root->set_positional_shadow_atlas_quadrant_subdiv(2, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q2));
+	root->set_positional_shadow_atlas_quadrant_subdiv(3, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q3));
 
 	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_DEF("rendering/2d/sdf/oversize", 1)));
 	root->set_sdf_oversize(sdf_oversize);

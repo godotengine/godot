@@ -58,7 +58,7 @@ public:
 	virtual String get_base_extension() const { return "res"; }
 
 private:
-	Set<ObjectID> owners;
+	HashSet<ObjectID> owners;
 
 	friend class ResBase;
 	friend class ResourceCache;
@@ -117,8 +117,8 @@ public:
 	String get_scene_unique_id() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
-	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
-	void configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache);
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache);
+	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
@@ -173,7 +173,7 @@ public:
 class ResourceCache {
 	friend class Resource;
 	friend class ResourceLoader; //need the lock
-	static RWLock lock;
+	static Mutex lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED
 	static HashMap<String, HashMap<String, String>> resource_path_cache; // Each tscn has a set of resource paths and IDs.
@@ -186,7 +186,7 @@ class ResourceCache {
 public:
 	static void reload_externals();
 	static bool has(const String &p_path);
-	static Resource *get(const String &p_path);
+	static Ref<Resource> get_ref(const String &p_path);
 	static void dump(const char *p_file = nullptr, bool p_short = false);
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();

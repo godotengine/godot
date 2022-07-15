@@ -22,7 +22,7 @@
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" overrides="RigidDynamicBody3D" default="40.0" />
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">
-			The steering angle for the vehicle. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
+			The steering angle for the vehicle, in radians. Setting this to a non-zero value will result in the vehicle turning when it's moving. Wheels that have [member VehicleWheel3D.use_as_steering] set to [code]true[/code] will automatically be rotated.
 		</member>
 	</members>
 </class>

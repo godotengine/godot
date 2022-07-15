@@ -124,7 +124,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int> &F : t->constant_map) {
+			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
 				snames.push_back(F.key);
 			}
 

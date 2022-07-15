@@ -1939,8 +1939,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY);
 	BIND_ENUM_CONSTANT(LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY);
 
-	ClassDB::bind_method(D_METHOD("shadows_quality_set", "quality"), &RenderingServer::shadows_quality_set);
-	ClassDB::bind_method(D_METHOD("directional_shadow_quality_set", "quality"), &RenderingServer::directional_shadow_quality_set);
+	ClassDB::bind_method(D_METHOD("positional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::positional_soft_shadow_filter_set_quality);
+	ClassDB::bind_method(D_METHOD("directional_soft_shadow_filter_set_quality", "quality"), &RenderingServer::directional_soft_shadow_filter_set_quality);
 	ClassDB::bind_method(D_METHOD("directional_shadow_atlas_set_size", "size", "is_16bits"), &RenderingServer::directional_shadow_atlas_set_size);
 
 	BIND_ENUM_CONSTANT(SHADOW_QUALITY_HARD);
@@ -2140,8 +2140,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fog_volume_set_material", "fog_volume", "material"), &RenderingServer::fog_volume_set_material);
 
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_ELLIPSOID);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CONE);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_CYLINDER);
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_WORLD);
+	BIND_ENUM_CONSTANT(FOG_VOLUME_SHAPE_MAX);
 
 	/* VISIBILITY NOTIFIER */
 
@@ -2204,10 +2207,11 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("viewport_set_sdf_oversize_and_scale", "viewport", "oversize", "scale"), &RenderingServer::viewport_set_sdf_oversize_and_scale);
 
-	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size", "use_16_bits"), &RenderingServer::viewport_set_shadow_atlas_size, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
+	ClassDB::bind_method(D_METHOD("viewport_set_positional_shadow_atlas_size", "viewport", "size", "use_16_bits"), &RenderingServer::viewport_set_positional_shadow_atlas_size, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("viewport_set_positional_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_positional_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
 	ClassDB::bind_method(D_METHOD("viewport_set_screen_space_aa", "viewport", "mode"), &RenderingServer::viewport_set_screen_space_aa);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_taa", "viewport", "enable"), &RenderingServer::viewport_set_use_taa);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
 	ClassDB::bind_method(D_METHOD("viewport_set_use_occlusion_culling", "viewport", "enable"), &RenderingServer::viewport_set_use_occlusion_culling);
 	ClassDB::bind_method(D_METHOD("viewport_set_occlusion_rays_per_thread", "rays_per_thread"), &RenderingServer::viewport_set_occlusion_rays_per_thread);
@@ -2294,6 +2298,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
 
 	/* SKY API */
 
@@ -2818,7 +2823,9 @@ RenderingServer::RenderingServer() {
 
 	thread_pool = memnew(RendererThreadPool);
 	singleton = this;
+}
 
+void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_bptc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
@@ -2834,14 +2841,14 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/shadows/directional_shadow/size.mobile", 2048);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_filter_quality", 2);
+	GLOBAL_DEF("rendering/shadows/directional_shadow/soft_shadow_filter_quality.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/directional_shadow/soft_shadow_filter_quality", PropertyInfo(Variant::INT, "rendering/shadows/directional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 	GLOBAL_DEF("rendering/shadows/directional_shadow/16_bits", true);
 
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality", 2);
-	GLOBAL_DEF("rendering/shadows/shadows/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/shadows/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+	GLOBAL_DEF("rendering/shadows/positional_shadow/soft_shadow_filter_quality", 2);
+	GLOBAL_DEF("rendering/shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/soft_shadow_filter_quality", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
@@ -2927,10 +2934,10 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/amount", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/screen_space_roughness_limiter/limit", PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"));
 
-	GLOBAL_DEF_RST("rendering/scaling_3d/mode", 0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/scale", 1.0);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_sharpness", 0.2f);
-	GLOBAL_DEF_RST("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
+	GLOBAL_DEF("rendering/scaling_3d/mode", 0);
+	GLOBAL_DEF("rendering/scaling_3d/scale", 1.0);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_sharpness", 0.2f);
+	GLOBAL_DEF("rendering/scaling_3d/fsr_mipmap_bias", 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/scaling_3d/mode",
 			PropertyInfo(Variant::INT,
 					"rendering/scaling_3d/mode",
@@ -3006,8 +3013,8 @@ RenderingServer::RenderingServer() {
 	// OpenGL limits
 	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_elements", 65536);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,65536,1"));
-	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_lights", 256);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "16,4096,1"));
+	GLOBAL_DEF_RST("rendering/limits/opengl/max_renderable_lights", 32);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_renderable_lights", PROPERTY_HINT_RANGE, "2,256,1"));
 	GLOBAL_DEF_RST("rendering/limits/opengl/max_lights_per_object", 8);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/opengl/max_lights_per_object", PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"));
 

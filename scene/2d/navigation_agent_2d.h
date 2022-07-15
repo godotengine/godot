@@ -41,9 +41,13 @@ class NavigationAgent2D : public Node {
 	Node2D *agent_parent = nullptr;
 
 	RID agent;
+	RID map_before_pause;
+	RID map_override;
 
-	uint32_t navigable_layers = 1;
+	bool avoidance_enabled = false;
+	uint32_t navigation_layers = 1;
 
+	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
 	real_t radius = 0.0;
 	real_t neighbor_dist = 0.0;
@@ -77,8 +81,24 @@ public:
 		return agent;
 	}
 
-	void set_navigable_layers(uint32_t p_layers);
-	uint32_t get_navigable_layers() const;
+	void set_avoidance_enabled(bool p_enabled);
+	bool get_avoidance_enabled() const;
+
+	void set_agent_parent(Node *p_agent_parent);
+
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const;
+
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
+
+	void set_path_desired_distance(real_t p_dd);
+	real_t get_path_desired_distance() const {
+		return path_desired_distance;
+	}
 
 	void set_target_desired_distance(real_t p_dd);
 	real_t get_target_desired_distance() const {

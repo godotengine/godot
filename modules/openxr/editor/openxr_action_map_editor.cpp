@@ -344,6 +344,7 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs = memnew(TabContainer);
 	tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
+	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &OpenXRActionMapEditor::_on_tabs_tab_changed));
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
 	add_child(tabs);

@@ -145,7 +145,7 @@ bool is_csharp_keyword(const String &p_name) {
 			p_name == "do" || p_name == "double" || p_name == "else" || p_name == "enum" ||
 			p_name == "event" || p_name == "explicit" || p_name == "extern" || p_name == "false" ||
 			p_name == "finally" || p_name == "fixed" || p_name == "float" || p_name == "for" ||
-			p_name == "forech" || p_name == "goto" || p_name == "if" || p_name == "implicit" ||
+			p_name == "foreach" || p_name == "goto" || p_name == "if" || p_name == "implicit" ||
 			p_name == "in" || p_name == "int" || p_name == "interface" || p_name == "internal" ||
 			p_name == "is" || p_name == "lock" || p_name == "long" || p_name == "namespace" ||
 			p_name == "new" || p_name == "null" || p_name == "object" || p_name == "operator" ||
@@ -178,7 +178,7 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	w[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)w)) {
+	if (source.parse_utf8((const char *)w) != OK) {
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 

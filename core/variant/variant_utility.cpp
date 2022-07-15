@@ -231,6 +231,10 @@ struct VariantUtilityFunctions {
 		return Math::cubic_interpolate(from, to, pre, post, weight);
 	}
 
+	static inline double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+		return Math::bezier_interpolate(p_start, p_control_1, p_control_2, p_end, p_t);
+	}
+
 	static inline double lerp_angle(double from, double to, double weight) {
 		return Math::lerp_angle(from, to, weight);
 	}
@@ -265,6 +269,52 @@ struct VariantUtilityFunctions {
 
 	static inline double db2linear(double db) {
 		return Math::db2linear(db);
+	}
+
+	static inline Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
+		Variant::Type x_type = p_x.get_type();
+		if (x_type != Variant::INT && x_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type min_type = p_min.get_type();
+		if (min_type != Variant::INT && min_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type max_type = p_max.get_type();
+		if (max_type != Variant::INT && max_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant value;
+
+		switch (x_type) {
+			case Variant::INT: {
+				if (x_type != min_type || x_type != max_type) {
+					value = wrapf((double)p_x, (double)p_min, (double)p_max);
+				} else {
+					value = wrapi((int)p_x, (int)p_min, (int)p_max);
+				}
+			} break;
+			case Variant::FLOAT: {
+				value = wrapf((double)p_x, (double)p_min, (double)p_max);
+			} break;
+			default:
+				break;
+		}
+
+		r_error.error = Callable::CallError::CALL_OK;
+		return value;
 	}
 
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
@@ -507,6 +557,22 @@ struct VariantUtilityFunctions {
 		}
 
 		print_line(s);
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		String s;
+		for (int i = 0; i < p_arg_count; i++) {
+			String os = p_args[i]->operator String();
+
+			if (i == 0) {
+				s = os;
+			} else {
+				s += os;
+			}
+		}
+
+		print_line_rich(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -1204,6 +1270,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1216,6 +1283,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
 
+	FUNCBINDVR3(wrap, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1254,6 +1322,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
@@ -1423,17 +1492,17 @@ uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	ERR_FAIL_COND_V(!bfi, 0);
 
-	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
-	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
+	hash = hash_murmur3_one_32(bfi->returns_value, hash);
 	if (bfi->returns_value) {
-		hash = hash_djb2_one_32(bfi->return_type, hash);
+		hash = hash_murmur3_one_32(bfi->return_type, hash);
 	}
-	hash = hash_djb2_one_32(bfi->argcount, hash);
+	hash = hash_murmur3_one_32(bfi->argcount, hash);
 	for (int i = 0; i < bfi->argcount; i++) {
-		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+		hash = hash_murmur3_one_32(bfi->get_arg_type(i), hash);
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {

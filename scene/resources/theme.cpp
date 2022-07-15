@@ -129,42 +129,42 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	// Icons.
-	for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 		for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Styles.
-	for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 		for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Fonts.
-	for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
 		}
 	}
 
 	// Font sizes.
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : font_size_map) {
+	for (const KeyValue<StringName, ThemeFontSizeMap> &E : font_size_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
+			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"));
 		}
 	}
 
 	// Colors.
-	for (const KeyValue<StringName, HashMap<StringName, Color>> &E : color_map) {
+	for (const KeyValue<StringName, ThemeColorMap> &E : color_map) {
 		for (const KeyValue<StringName, Color> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/colors/" + F.key));
+			list.push_back(PropertyInfo(Variant::COLOR, String() + E.key + "/colors/" + F.key));
 		}
 	}
 
 	// Constants.
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : constant_map) {
+	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
 		}
@@ -172,7 +172,15 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Sort and store properties.
 	list.sort();
+	String prev_type;
 	for (const PropertyInfo &E : list) {
+		// Add groups for types so that their names are left unchanged in the inspector.
+		String current_type = E.name.get_slice("/", 0);
+		if (prev_type != current_type) {
+			p_list->push_back(PropertyInfo(Variant::NIL, current_type, PROPERTY_HINT_NONE, current_type + "/", PROPERTY_USAGE_GROUP));
+			prev_type = current_type;
+		}
+
 		p_list->push_back(E);
 	}
 }
@@ -399,7 +407,7 @@ void Theme::add_icon_type(const StringName &p_theme_type) {
 	if (icon_map.has(p_theme_type)) {
 		return;
 	}
-	icon_map[p_theme_type] = HashMap<StringName, Ref<Texture2D>>();
+	icon_map[p_theme_type] = ThemeIconMap();
 }
 
 void Theme::remove_icon_type(const StringName &p_theme_type) {
@@ -424,7 +432,7 @@ void Theme::remove_icon_type(const StringName &p_theme_type) {
 void Theme::get_icon_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -509,7 +517,7 @@ void Theme::add_stylebox_type(const StringName &p_theme_type) {
 	if (style_map.has(p_theme_type)) {
 		return;
 	}
-	style_map[p_theme_type] = HashMap<StringName, Ref<StyleBox>>();
+	style_map[p_theme_type] = ThemeStyleMap();
 }
 
 void Theme::remove_stylebox_type(const StringName &p_theme_type) {
@@ -534,7 +542,7 @@ void Theme::remove_stylebox_type(const StringName &p_theme_type) {
 void Theme::get_stylebox_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -621,7 +629,7 @@ void Theme::add_font_type(const StringName &p_theme_type) {
 	if (font_map.has(p_theme_type)) {
 		return;
 	}
-	font_map[p_theme_type] = HashMap<StringName, Ref<Font>>();
+	font_map[p_theme_type] = ThemeFontMap();
 }
 
 void Theme::remove_font_type(const StringName &p_theme_type) {
@@ -646,7 +654,7 @@ void Theme::remove_font_type(const StringName &p_theme_type) {
 void Theme::get_font_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -720,7 +728,7 @@ void Theme::add_font_size_type(const StringName &p_theme_type) {
 	if (font_size_map.has(p_theme_type)) {
 		return;
 	}
-	font_size_map[p_theme_type] = HashMap<StringName, int>();
+	font_size_map[p_theme_type] = ThemeFontSizeMap();
 }
 
 void Theme::remove_font_size_type(const StringName &p_theme_type) {
@@ -734,7 +742,7 @@ void Theme::remove_font_size_type(const StringName &p_theme_type) {
 void Theme::get_font_size_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : font_size_map) {
+	for (const KeyValue<StringName, ThemeFontSizeMap> &E : font_size_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -806,7 +814,7 @@ void Theme::add_color_type(const StringName &p_theme_type) {
 	if (color_map.has(p_theme_type)) {
 		return;
 	}
-	color_map[p_theme_type] = HashMap<StringName, Color>();
+	color_map[p_theme_type] = ThemeColorMap();
 }
 
 void Theme::remove_color_type(const StringName &p_theme_type) {
@@ -820,7 +828,7 @@ void Theme::remove_color_type(const StringName &p_theme_type) {
 void Theme::get_color_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, Color>> &E : color_map) {
+	for (const KeyValue<StringName, ThemeColorMap> &E : color_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -892,7 +900,7 @@ void Theme::add_constant_type(const StringName &p_theme_type) {
 	if (constant_map.has(p_theme_type)) {
 		return;
 	}
-	constant_map[p_theme_type] = HashMap<StringName, int>();
+	constant_map[p_theme_type] = ThemeConstantMap();
 }
 
 void Theme::remove_constant_type(const StringName &p_theme_type) {
@@ -906,7 +914,7 @@ void Theme::remove_constant_type(const StringName &p_theme_type) {
 void Theme::get_constant_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	for (const KeyValue<StringName, HashMap<StringName, int>> &E : constant_map) {
+	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
 		p_list->push_back(E.key);
 	}
 }
@@ -1264,12 +1272,44 @@ void Theme::remove_type(const StringName &p_theme_type) {
 void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	get_icon_type_list(p_list);
-	get_stylebox_type_list(p_list);
-	get_font_type_list(p_list);
-	get_font_size_type_list(p_list);
-	get_color_type_list(p_list);
-	get_constant_type_list(p_list);
+	// This Set guarantees uniqueness.
+	// Because each map can have the same type defined, but for this method
+	// we only want one occurrence of each type.
+	HashSet<StringName> types;
+
+	// Icons.
+	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
+		types.insert(E.key);
+	}
+
+	// Styles.
+	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
+		types.insert(E.key);
+	}
+
+	// Fonts.
+	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
+		types.insert(E.key);
+	}
+
+	// Font sizes.
+	for (const KeyValue<StringName, ThemeFontSizeMap> &E : font_size_map) {
+		types.insert(E.key);
+	}
+
+	// Colors.
+	for (const KeyValue<StringName, ThemeColorMap> &E : color_map) {
+		types.insert(E.key);
+	}
+
+	// Constants.
+	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
+		types.insert(E.key);
+	}
+
+	for (const StringName &E : types) {
+		p_list->push_back(E);
+	}
 }
 
 void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
@@ -1580,7 +1620,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Colors.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Color>> &E : p_other->color_map) {
+		for (const KeyValue<StringName, ThemeColorMap> &E : p_other->color_map) {
 			for (const KeyValue<StringName, Color> &F : E.value) {
 				set_color(F.key, E.key, F.value);
 			}
@@ -1589,7 +1629,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Constants.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, int>> &E : p_other->constant_map) {
+		for (const KeyValue<StringName, ThemeConstantMap> &E : p_other->constant_map) {
 			for (const KeyValue<StringName, int> &F : E.value) {
 				set_constant(F.key, E.key, F.value);
 			}
@@ -1598,7 +1638,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Fonts.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : p_other->font_map) {
+		for (const KeyValue<StringName, ThemeFontMap> &E : p_other->font_map) {
 			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
 				set_font(F.key, E.key, F.value);
 			}
@@ -1607,7 +1647,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Font sizes.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, int>> &E : p_other->font_size_map) {
+		for (const KeyValue<StringName, ThemeFontSizeMap> &E : p_other->font_size_map) {
 			for (const KeyValue<StringName, int> &F : E.value) {
 				set_font_size(F.key, E.key, F.value);
 			}
@@ -1616,7 +1656,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Icons.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : p_other->icon_map) {
+		for (const KeyValue<StringName, ThemeIconMap> &E : p_other->icon_map) {
 			for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
 				set_icon(F.key, E.key, F.value);
 			}
@@ -1625,7 +1665,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 
 	// Styleboxes.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : p_other->style_map) {
+		for (const KeyValue<StringName, ThemeStyleMap> &E : p_other->style_map) {
 			for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
 				set_stylebox(F.key, E.key, F.value);
 			}
@@ -1645,7 +1685,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 void Theme::clear() {
 	// These items need disconnecting.
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<Texture2D>>> &E : icon_map) {
+		for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 			for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<Texture2D> icon = F.value;
@@ -1656,7 +1696,7 @@ void Theme::clear() {
 	}
 
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<StyleBox>>> &E : style_map) {
+		for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 			for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<StyleBox> style = F.value;
@@ -1667,7 +1707,7 @@ void Theme::clear() {
 	}
 
 	{
-		for (const KeyValue<StringName, HashMap<StringName, Ref<Font>>> &E : font_map) {
+		for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 			for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
 				if (F.value.is_valid()) {
 					Ref<Font> font = F.value;
@@ -1778,7 +1818,7 @@ void Theme::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater"), "set_default_font_size", "get_default_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);
 	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT);

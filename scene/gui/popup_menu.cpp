@@ -243,6 +243,29 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	}
 }
 
+void PopupMenu::_parent_focused() {
+	if (is_embedded()) {
+		Point2 mouse_pos_adjusted;
+		Window *window_parent = Object::cast_to<Window>(get_parent()->get_viewport());
+		while (window_parent) {
+			if (!window_parent->is_embedded()) {
+				mouse_pos_adjusted += window_parent->get_position();
+				break;
+			}
+
+			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+		}
+
+		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
+		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
+		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
+			Popup::_parent_focused();
+		} else {
+			grab_focus();
+		}
+	}
+}
+
 void PopupMenu::_submenu_timeout() {
 	if (mouse_over == submenu_over) {
 		_activate_submenu(mouse_over);
@@ -737,11 +760,11 @@ void PopupMenu::_shape_item(int p_item) {
 		} else {
 			items.write[p_item].text_buf->set_direction((TextServer::Direction)items[p_item].text_direction);
 		}
-		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].opentype_features, !items[p_item].language.is_empty() ? items[p_item].language : TranslationServer::get_singleton()->get_tool_locale());
+		items.write[p_item].text_buf->add_string(items.write[p_item].xl_text, font, font_size, items[p_item].language);
 
 		items.write[p_item].accel_text_buf->clear();
 		items.write[p_item].accel_text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		items.write[p_item].accel_text_buf->add_string(_get_accel_text(items.write[p_item]), font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		items.write[p_item].accel_text_buf->add_string(_get_accel_text(items.write[p_item]), font, font_size);
 		items.write[p_item].dirty = false;
 	}
 }
@@ -1044,29 +1067,6 @@ void PopupMenu::set_item_text_direction(int p_item, Control::TextDirection p_tex
 	}
 }
 
-void PopupMenu::clear_item_opentype_features(int p_item) {
-	if (p_item < 0) {
-		p_item += get_item_count();
-	}
-	ERR_FAIL_INDEX(p_item, items.size());
-	items.write[p_item].opentype_features.clear();
-	items.write[p_item].dirty = true;
-	control->update();
-}
-
-void PopupMenu::set_item_opentype_feature(int p_item, const String &p_name, int p_value) {
-	if (p_item < 0) {
-		p_item += get_item_count();
-	}
-	ERR_FAIL_INDEX(p_item, items.size());
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!items[p_item].opentype_features.has(tag) || (int)items[p_item].opentype_features[tag] != p_value) {
-		items.write[p_item].opentype_features[tag] = p_value;
-		items.write[p_item].dirty = true;
-		control->update();
-	}
-}
-
 void PopupMenu::set_item_language(int p_item, const String &p_language) {
 	if (p_item < 0) {
 		p_item += get_item_count();
@@ -1172,15 +1172,6 @@ Control::TextDirection PopupMenu::get_item_text_direction(int p_item) const {
 	return items[p_item].text_direction;
 }
 
-int PopupMenu::get_item_opentype_feature(int p_item, const String &p_name) const {
-	ERR_FAIL_INDEX_V(p_item, items.size(), -1);
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!items[p_item].opentype_features.has(tag)) {
-		return -1;
-	}
-	return items[p_item].opentype_features[tag];
-}
-
 String PopupMenu::get_item_language(int p_item) const {
 	ERR_FAIL_INDEX_V(p_item, items.size(), "");
 	return items[p_item].language;
@@ -1251,6 +1242,11 @@ Ref<Shortcut> PopupMenu::get_item_shortcut(int p_idx) const {
 	return items[p_idx].shortcut;
 }
 
+int PopupMenu::get_item_horizontal_offset(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
+	return items[p_idx].h_ofs;
+}
+
 int PopupMenu::get_item_state(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), -1);
 	return items[p_idx].state;
@@ -1316,7 +1312,7 @@ void PopupMenu::set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bo
 	control->update();
 }
 
-void PopupMenu::set_item_h_offset(int p_idx, int p_offset) {
+void PopupMenu::set_item_horizontal_offset(int p_idx, int p_offset) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
 	}
@@ -1825,7 +1821,6 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "index", "text"), &PopupMenu::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_text_direction", "index", "direction"), &PopupMenu::set_item_text_direction);
-	ClassDB::bind_method(D_METHOD("set_item_opentype_feature", "index", "tag", "value"), &PopupMenu::set_item_opentype_feature);
 	ClassDB::bind_method(D_METHOD("set_item_language", "index", "language"), &PopupMenu::set_item_language);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "index", "icon"), &PopupMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "index", "checked"), &PopupMenu::set_item_checked);
@@ -1839,6 +1834,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_as_radio_checkable", "index", "enable"), &PopupMenu::set_item_as_radio_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "index", "tooltip"), &PopupMenu::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "index", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_item_horizontal_offset", "index", "offset"), &PopupMenu::set_item_horizontal_offset);
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
 
@@ -1847,8 +1843,6 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_item_text", "index"), &PopupMenu::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_text_direction", "index"), &PopupMenu::get_item_text_direction);
-	ClassDB::bind_method(D_METHOD("get_item_opentype_feature", "index", "tag"), &PopupMenu::get_item_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_item_opentype_features", "index"), &PopupMenu::clear_item_opentype_features);
 	ClassDB::bind_method(D_METHOD("get_item_language", "index"), &PopupMenu::get_item_language);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "index"), &PopupMenu::get_item_icon);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "index"), &PopupMenu::is_item_checked);
@@ -1864,6 +1858,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_shortcut_disabled", "index"), &PopupMenu::is_item_shortcut_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "index"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
+	ClassDB::bind_method(D_METHOD("get_item_horizontal_offset", "index"), &PopupMenu::get_item_horizontal_offset);
 
 	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
 	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
@@ -1895,7 +1890,7 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");

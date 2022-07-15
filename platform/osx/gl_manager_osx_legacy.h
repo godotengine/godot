@@ -57,7 +57,7 @@ private:
 		NSOpenGLContext *context = nullptr;
 	};
 
-	Map<DisplayServer::WindowID, GLWindow> windows;
+	RBMap<DisplayServer::WindowID, GLWindow> windows;
 
 	NSOpenGLContext *shared_context = nullptr;
 	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;

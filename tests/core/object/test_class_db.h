@@ -46,7 +46,7 @@ struct TypeReference {
 
 struct ConstantData {
 	String name;
-	int value = 0;
+	int64_t value = 0;
 };
 
 struct EnumData {
@@ -519,7 +519,7 @@ void add_exposed_classes(Context &r_context) {
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(class_name, &property_list, true);
 
-		Map<StringName, StringName> accessor_methods;
+		HashMap<StringName, StringName> accessor_methods;
 
 		for (const PropertyInfo &property : property_list) {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY || (property.type == Variant::NIL && property.usage & PROPERTY_USAGE_ARRAY)) {
@@ -597,7 +597,7 @@ void add_exposed_classes(Context &r_context) {
 						(exposed_class.name != r_context.names_cache.object_class || String(method.name) != "free"),
 						warn_msg.utf8().get_data());
 
-			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+			} else if (return_info.type == Variant::INT && return_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 				method.return_type.name = return_info.class_name;
 				method.return_type.is_enum = true;
 			} else if (return_info.class_name != StringName()) {
@@ -626,7 +626,7 @@ void add_exposed_classes(Context &r_context) {
 				ArgumentData arg;
 				arg.name = orig_arg_name;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
@@ -694,7 +694,7 @@ void add_exposed_classes(Context &r_context) {
 				ArgumentData arg;
 				arg.name = orig_arg_name;
 
-				if (arg_info.type == Variant::INT && arg_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+				if (arg_info.type == Variant::INT && arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 					arg.type.name = arg_info.class_name;
 					arg.type.is_enum = true;
 				} else if (arg_info.class_name != StringName()) {
@@ -732,18 +732,18 @@ void add_exposed_classes(Context &r_context) {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(class_name, &constants, true);
 
-		const HashMap<StringName, List<StringName>> &enum_map = class_info->enum_map;
+		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
 
-		for (const KeyValue<StringName, List<StringName>> &K : enum_map) {
+		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &K : enum_map) {
 			EnumData enum_;
 			enum_.name = K.key;
 
-			for (const StringName &E : K.value) {
+			for (const StringName &E : K.value.constants) {
 				const StringName &constant_name = E;
 				TEST_FAIL_COND(String(constant_name).find("::") != -1,
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				int *value = class_info->constant_map.getptr(constant_name);
+				int64_t *value = class_info->constant_map.getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
@@ -765,7 +765,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.find("::") != -1,
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int *value = class_info->constant_map.getptr(StringName(E));
+			int64_t *value = class_info->constant_map.getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;

@@ -739,7 +739,11 @@ void EditorAudioBus::_delete_effect_pressed(int p_option) {
 	ur->commit_action();
 }
 
-void EditorAudioBus::_effect_rmb(const Vector2 &p_pos) {
+void EditorAudioBus::_effect_rmb(const Vector2 &p_pos, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = effects->get_selected();
 	if (!item) {
 		return;
@@ -897,7 +901,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	effects->set_drag_forwarding(this);
-	effects->connect("item_rmb_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
+	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
@@ -1211,7 +1215,7 @@ void EditorAudioBuses::_load_default_layout() {
 	}
 
 	edited_path = layout_path;
-	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
+	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_update_buses();
 	EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1227,7 +1231,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		}
 
 		edited_path = p_string;
-		file->set_text(String(TTR("Layout")) + ": " + p_string.get_file());
+		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_update_buses();
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1248,7 +1252,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		}
 
 		edited_path = p_string;
-		file->set_text(String(TTR("Layout")) + ": " + p_string.get_file());
+		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_update_buses();
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
 		call_deferred(SNAME("_select_layout"));
@@ -1268,7 +1272,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	file = memnew(Label);
 	String layout_path = ProjectSettings::get_singleton()->get("audio/buses/default_bus_layout");
-	file->set_text(String(TTR("Layout")) + ": " + layout_path.get_file());
+	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
 	file->set_clip_text(true);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
@@ -1328,7 +1332,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (const String &E : ext) {
-		file_dialog->add_filter(vformat("*.%s; %s", E, TTR("Audio Bus Layout")));
+		file_dialog->add_filter("*." + E, TTR("Audio Bus Layout"));
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
@@ -1390,7 +1394,7 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", font_size).x);
+			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}

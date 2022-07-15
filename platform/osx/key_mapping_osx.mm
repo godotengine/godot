@@ -130,7 +130,7 @@ static const Key _osx_to_godot_table[128] = {
 	/* 3d */ Key::ALT,
 	/* 3e */ Key::CTRL,
 	/* 3f */ Key::UNKNOWN, /* Function */
-	/* 40 */ Key::UNKNOWN, /* F17 */
+	/* 40 */ Key::F17,
 	/* 41 */ Key::KP_PERIOD,
 	/* 42 */ Key::UNKNOWN,
 	/* 43 */ Key::KP_MULTIPLY,
@@ -145,8 +145,8 @@ static const Key _osx_to_godot_table[128] = {
 	/* 4c */ Key::KP_ENTER,
 	/* 4d */ Key::UNKNOWN,
 	/* 4e */ Key::KP_SUBTRACT,
-	/* 4f */ Key::UNKNOWN, /* F18 */
-	/* 50 */ Key::UNKNOWN, /* F19 */
+	/* 4f */ Key::F18,
+	/* 50 */ Key::F19,
 	/* 51 */ Key::EQUAL, /* KeypadEqual */
 	/* 52 */ Key::KP_0,
 	/* 53 */ Key::KP_1,
@@ -156,7 +156,7 @@ static const Key _osx_to_godot_table[128] = {
 	/* 57 */ Key::KP_5,
 	/* 58 */ Key::KP_6,
 	/* 59 */ Key::KP_7,
-	/* 5a */ Key::UNKNOWN, /* F20 */
+	/* 5a */ Key::F20,
 	/* 5b */ Key::KP_8,
 	/* 5c */ Key::KP_9,
 	/* 5d */ Key::YEN, /* JIS Yen */
@@ -366,7 +366,26 @@ static const _KeyCodeText _native_keycodes[] = {
 		{Key::F13                           ,NSF13FunctionKey},
 		{Key::F14                           ,NSF14FunctionKey},
 		{Key::F15                           ,NSF15FunctionKey},
-		{Key::F16                           ,NSF16FunctionKey}, //* ... NSF35FunctionKey */
+		{Key::F16                           ,NSF16FunctionKey},
+		{Key::F17                           ,NSF17FunctionKey},
+		{Key::F18                           ,NSF18FunctionKey},
+		{Key::F19                           ,NSF19FunctionKey},
+		{Key::F20                           ,NSF20FunctionKey},
+		{Key::F21                           ,NSF21FunctionKey},
+		{Key::F22                           ,NSF22FunctionKey},
+		{Key::F23                           ,NSF23FunctionKey},
+		{Key::F24                           ,NSF24FunctionKey},
+		{Key::F25                           ,NSF25FunctionKey},
+		{Key::F26                           ,NSF26FunctionKey},
+		{Key::F27                           ,NSF27FunctionKey},
+		{Key::F28                           ,NSF28FunctionKey},
+		{Key::F29                           ,NSF29FunctionKey},
+		{Key::F30                           ,NSF30FunctionKey},
+		{Key::F31                           ,NSF31FunctionKey},
+		{Key::F32                           ,NSF32FunctionKey},
+		{Key::F33                           ,NSF33FunctionKey},
+		{Key::F34                           ,NSF34FunctionKey},
+		{Key::F35                           ,NSF35FunctionKey},
 		{Key::MENU                          ,NSMenuFunctionKey},
 		{Key::HELP                          ,NSHelpFunctionKey},
 		{Key::STOP                          ,NSStopFunctionKey},

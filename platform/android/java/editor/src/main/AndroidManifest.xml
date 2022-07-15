@@ -14,8 +14,12 @@
         android:glEsVersion="0x00020000"
         android:required="true" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -34,6 +38,9 @@
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:process=":GodotProjectManager">
 
+            <layout android:defaultHeight="@dimen/editor_default_window_height"
+                android:defaultWidth="@dimen/editor_default_window_width" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -46,7 +53,10 @@
             android:process=":GodotEditor"
             android:launchMode="singleTask"
             android:screenOrientation="userLandscape"
+            android:exported="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <layout android:defaultHeight="@dimen/editor_default_window_height"
+                android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
 
         <activity
@@ -55,8 +65,11 @@
             android:label="@string/godot_project_name_string"
             android:process=":GodotGame"
             android:launchMode="singleTask"
+            android:exported="false"
             android:screenOrientation="userLandscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <layout android:defaultHeight="@dimen/editor_default_window_height"
+                android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
 
     </application>

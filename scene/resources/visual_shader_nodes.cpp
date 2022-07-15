@@ -700,7 +700,7 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_DATA:
 				break;
 			case TYPE_COLOR:
-				u += " : hint_albedo";
+				u += " : source_color";
 				break;
 			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
@@ -1463,7 +1463,7 @@ String VisualShaderNodeCubemap::generate_global(Shader::Mode p_mode, VisualShade
 			case TYPE_DATA:
 				break;
 			case TYPE_COLOR:
-				u += " : hint_albedo";
+				u += " : source_color";
 				break;
 			case TYPE_NORMAL_MAP:
 				u += " : hint_normal";
@@ -2462,7 +2462,7 @@ void VisualShaderNodeFloatFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeFloatFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeFloatFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Sin,Cos,Tan,ASin,ACos,ATan,SinH,CosH,TanH,Log,Exp,Sqrt,Abs,Sign,Floor,Round,Ceil,Frac,Saturate,Negate,ACosH,ASinH,ATanH,Degrees,Exp2,InverseSqrt,Log2,Radians,Reciprocal,RoundEven,Trunc,OneMinus"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Sin,Cos,Tan,ASin,ACos,ATan,SinH,CosH,TanH,Log,Exp,Sqrt,Abs,Sign,Floor,Round,Ceil,Fract,Saturate,Negate,ACosH,ASinH,ATanH,Degrees,Exp2,InverseSqrt,Log2,Radians,Reciprocal,RoundEven,Trunc,OneMinus"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_SIN);
 	BIND_ENUM_CONSTANT(FUNC_COS);
@@ -2481,7 +2481,7 @@ void VisualShaderNodeFloatFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(FUNC_FLOOR);
 	BIND_ENUM_CONSTANT(FUNC_ROUND);
 	BIND_ENUM_CONSTANT(FUNC_CEIL);
-	BIND_ENUM_CONSTANT(FUNC_FRAC);
+	BIND_ENUM_CONSTANT(FUNC_FRACT);
 	BIND_ENUM_CONSTANT(FUNC_SATURATE);
 	BIND_ENUM_CONSTANT(FUNC_NEGATE);
 	BIND_ENUM_CONSTANT(FUNC_ACOSH);
@@ -2713,7 +2713,7 @@ void VisualShaderNodeVectorFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeVectorFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeVectorFunc::get_function);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Normalize,Saturate,Negate,Reciprocal,Abs,ACos,ACosH,ASin,ASinH,ATan,ATanH,Ceil,Cos,CosH,Degrees,Exp,Exp2,Floor,Frac,InverseSqrt,Log,Log2,Radians,Round,RoundEven,Sign,Sin,SinH,Sqrt,Tan,TanH,Trunc,OneMinus"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Normalize,Saturate,Negate,Reciprocal,Abs,ACos,ACosH,ASin,ASinH,ATan,ATanH,Ceil,Cos,CosH,Degrees,Exp,Exp2,Floor,Fract,InverseSqrt,Log,Log2,Radians,Round,RoundEven,Sign,Sin,SinH,Sqrt,Tan,TanH,Trunc,OneMinus"), "set_function", "get_function");
 
 	BIND_ENUM_CONSTANT(FUNC_NORMALIZE);
 	BIND_ENUM_CONSTANT(FUNC_SATURATE);
@@ -2733,7 +2733,7 @@ void VisualShaderNodeVectorFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(FUNC_EXP);
 	BIND_ENUM_CONSTANT(FUNC_EXP2);
 	BIND_ENUM_CONSTANT(FUNC_FLOOR);
-	BIND_ENUM_CONSTANT(FUNC_FRAC);
+	BIND_ENUM_CONSTANT(FUNC_FRACT);
 	BIND_ENUM_CONSTANT(FUNC_INVERSE_SQRT);
 	BIND_ENUM_CONSTANT(FUNC_LOG);
 	BIND_ENUM_CONSTANT(FUNC_LOG2);
@@ -5113,7 +5113,7 @@ Color VisualShaderNodeColorUniform::get_default_value() const {
 }
 
 String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform vec4 " + get_uniform_name() + " : hint_color";
+	String code = _get_qual_str() + "uniform vec4 " + get_uniform_name() + " : source_color";
 	if (default_value_enabled) {
 		code += vformat(" = vec4(%.6f, %.6f, %.6f, %.6f)", default_value.r, default_value.g, default_value.b, default_value.a);
 	}
@@ -5567,6 +5567,110 @@ Vector<StringName> VisualShaderNodeTransformUniform::get_editable_properties() c
 VisualShaderNodeTransformUniform::VisualShaderNodeTransformUniform() {
 }
 
+//////////////
+
+String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_type, VisualShaderNodeTextureUniform::ColorDefault p_color_default, VisualShaderNodeTextureUniform::TextureFilter p_texture_filter, VisualShaderNodeTextureUniform::TextureRepeat p_texture_repeat) {
+	String code;
+	bool has_colon = false;
+
+	// type
+	{
+		String type_code;
+
+		switch (p_texture_type) {
+			case VisualShaderNodeTextureUniform::TYPE_DATA:
+				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
+					type_code = "hint_default_black";
+				}
+				break;
+			case VisualShaderNodeTextureUniform::TYPE_COLOR:
+				type_code = "source_color";
+				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
+					type_code += ", hint_default_black";
+				}
+				break;
+			case VisualShaderNodeTextureUniform::TYPE_NORMAL_MAP:
+				type_code = "hint_normal";
+				break;
+			case VisualShaderNodeTextureUniform::TYPE_ANISOTROPY:
+				type_code = "hint_anisotropy";
+				break;
+			default:
+				break;
+		}
+
+		if (!type_code.is_empty()) {
+			code += " : " + type_code;
+			has_colon = true;
+		}
+	}
+
+	// filter
+	{
+		String filter_code;
+
+		switch (p_texture_filter) {
+			case VisualShaderNodeTextureUniform::FILTER_NEAREST:
+				filter_code = "filter_nearest";
+				break;
+			case VisualShaderNodeTextureUniform::FILTER_LINEAR:
+				filter_code = "filter_linear";
+				break;
+			case VisualShaderNodeTextureUniform::FILTER_NEAREST_MIPMAP:
+				filter_code = "filter_nearest_mipmap";
+				break;
+			case VisualShaderNodeTextureUniform::FILTER_LINEAR_MIPMAP:
+				filter_code = "filter_linear_mipmap";
+				break;
+			case VisualShaderNodeTextureUniform::FILTER_NEAREST_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_nearest_mipmap_anisotropic";
+				break;
+			case VisualShaderNodeTextureUniform::FILTER_LINEAR_MIPMAP_ANISOTROPIC:
+				filter_code = "filter_linear_mipmap_anisotropic";
+				break;
+			default:
+				break;
+		}
+
+		if (!filter_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+				has_colon = true;
+			} else {
+				code += ", ";
+			}
+			code += filter_code;
+		}
+	}
+
+	// repeat
+	{
+		String repeat_code;
+
+		switch (p_texture_repeat) {
+			case VisualShaderNodeTextureUniform::REPEAT_ENABLED:
+				repeat_code = "repeat_enable";
+				break;
+			case VisualShaderNodeTextureUniform::REPEAT_DISABLED:
+				repeat_code = "repeat_disable";
+				break;
+			default:
+				break;
+		}
+
+		if (!repeat_code.is_empty()) {
+			if (!has_colon) {
+				code += " : ";
+			} else {
+				code += ", ";
+			}
+			code += repeat_code;
+		}
+	}
+
+	return code;
+}
+
 ////////////// Texture Uniform
 
 String VisualShaderNodeTextureUniform::get_caption() const {
@@ -5608,105 +5712,8 @@ String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	bool has_colon = false;
 	String code = _get_qual_str() + "uniform sampler2D " + get_uniform_name();
-
-	// type
-	{
-		String type_code;
-
-		switch (texture_type) {
-			case TYPE_DATA:
-				if (color_default == COLOR_DEFAULT_BLACK) {
-					type_code = "hint_black";
-				}
-				break;
-			case TYPE_COLOR:
-				if (color_default == COLOR_DEFAULT_BLACK) {
-					type_code = "hint_black_albedo";
-				} else {
-					type_code = "hint_albedo";
-				}
-				break;
-			case TYPE_NORMAL_MAP:
-				type_code = "hint_normal";
-				break;
-			case TYPE_ANISOTROPY:
-				type_code = "hint_anisotropy";
-				break;
-			default:
-				break;
-		}
-
-		if (!type_code.is_empty()) {
-			code += " : " + type_code;
-			has_colon = true;
-		}
-	}
-
-	// filter
-	{
-		String filter_code;
-
-		switch (texture_filter) {
-			case FILTER_NEAREST:
-				filter_code = "filter_nearest";
-				break;
-			case FILTER_LINEAR:
-				filter_code = "filter_linear";
-				break;
-			case FILTER_NEAREST_MIPMAP:
-				filter_code = "filter_nearest_mipmap";
-				break;
-			case FILTER_LINEAR_MIPMAP:
-				filter_code = "filter_linear_mipmap";
-				break;
-			case FILTER_NEAREST_MIPMAP_ANISOTROPIC:
-				filter_code = "filter_nearest_mipmap_anisotropic";
-				break;
-			case FILTER_LINEAR_MIPMAP_ANISOTROPIC:
-				filter_code = "filter_linear_mipmap_anisotropic";
-				break;
-			default:
-				break;
-		}
-
-		if (!filter_code.is_empty()) {
-			if (!has_colon) {
-				code += " : ";
-				has_colon = true;
-			} else {
-				code += ", ";
-			}
-			code += filter_code;
-		}
-	}
-
-	// repeat
-	{
-		String repeat_code;
-
-		switch (texture_repeat) {
-			case REPEAT_ENABLED:
-				repeat_code = "repeat_enable";
-				break;
-			case REPEAT_DISABLED:
-				repeat_code = "repeat_disable";
-				break;
-			default:
-				break;
-		}
-
-		if (!repeat_code.is_empty()) {
-			if (!has_colon) {
-				code += " : ";
-			} else {
-				code += ", ";
-			}
-			code += repeat_code;
-		}
-	}
-
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
 	code += ";\n";
 	return code;
 }
@@ -5782,8 +5789,8 @@ bool VisualShaderNodeTextureUniform::is_show_prop_names() const {
 	return true;
 }
 
-Map<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
-	Map<StringName, String> names;
+HashMap<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
 	names.insert("texture_type", RTR("Type"));
 	names.insert("color_default", RTR("Default Color"));
 	names.insert("texture_filter", RTR("Filter"));
@@ -5986,33 +5993,8 @@ String VisualShaderNodeTexture2DArrayUniform::get_output_port_name(int p_port) c
 
 String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform sampler2DArray " + get_uniform_name();
-
-	switch (texture_type) {
-		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black;\n";
-			} else {
-				code += ";\n";
-			}
-			break;
-		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black_albedo;\n";
-			} else {
-				code += " : hint_albedo;\n";
-			}
-			break;
-		case TYPE_NORMAL_MAP:
-			code += " : hint_normal;\n";
-			break;
-		case TYPE_ANISOTROPY:
-			code += " : hint_anisotropy;\n";
-			break;
-		default:
-			code += ";\n";
-			break;
-	}
-
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
+	code += ";\n";
 	return code;
 }
 
@@ -6035,33 +6017,8 @@ String VisualShaderNodeTexture3DUniform::get_output_port_name(int p_port) const 
 
 String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform sampler3D " + get_uniform_name();
-
-	switch (texture_type) {
-		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black;\n";
-			} else {
-				code += ";\n";
-			}
-			break;
-		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black_albedo;\n";
-			} else {
-				code += " : hint_albedo;\n";
-			}
-			break;
-		case TYPE_NORMAL_MAP:
-			code += " : hint_normal;\n";
-			break;
-		case TYPE_ANISOTROPY:
-			code += " : hint_anisotropy;\n";
-			break;
-		default:
-			code += ";\n";
-			break;
-	}
-
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
+	code += ";\n";
 	return code;
 }
 
@@ -6084,33 +6041,8 @@ String VisualShaderNodeCubemapUniform::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform samplerCube " + get_uniform_name();
-
-	switch (texture_type) {
-		case TYPE_DATA:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black;\n";
-			} else {
-				code += ";\n";
-			}
-			break;
-		case TYPE_COLOR:
-			if (color_default == COLOR_DEFAULT_BLACK) {
-				code += " : hint_black_albedo;\n";
-			} else {
-				code += " : hint_albedo;\n";
-			}
-			break;
-		case TYPE_NORMAL_MAP:
-			code += " : hint_normal;\n";
-			break;
-		case TYPE_ANISOTROPY:
-			code += " : hint_anisotropy;\n";
-			break;
-		default:
-			code += ";\n";
-			break;
-	}
-
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
+	code += ";\n";
 	return code;
 }
 

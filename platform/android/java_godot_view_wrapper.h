@@ -57,4 +57,4 @@ public:
 	~GodotJavaViewWrapper();
 };
 
-#endif //GODOT_JAVA_GODOT_VIEW_WRAPPER_H
+#endif // GODOT_JAVA_GODOT_VIEW_WRAPPER_H

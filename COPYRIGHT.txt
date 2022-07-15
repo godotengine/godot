@@ -73,6 +73,11 @@ Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
 
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
 Files: ./scene/animation/easing_equations.h
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
@@ -112,6 +117,24 @@ Copyright: 2007, Starbreeze Studios
  2007-2022, Juan Linietsky, Ariel Manzur.
  2014-2022, Godot Engine contributors.
 License: Expat and Zlib
+
+Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Comment: Intel ASSAO and related files
+Copyright: 2016, Intel Corporation
+License: Expat
+
+Files: ./servers/rendering/renderer_rd/shaders/taa_resolve.glsl
+Comment: Temporal Anti-Aliasing resolve implementation
+Copyright: 2016, Panos Karabelas
+License: Expat
 
 Files: ./thirdparty/amd-fsr/
 Comment: AMD FidelityFX Super Resolution
@@ -156,7 +179,7 @@ License: Expat
 
 Files: ./thirdparty/etcpak/
 Comment: etcpak
-Copyright: 2013-2021, Bartosz Taudul
+Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
 Files: ./thirdparty/fonts/DroidSans*.woff2
@@ -176,7 +199,7 @@ License: OFL-1.1
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2021, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2022, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glslang/
@@ -303,6 +326,12 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
+Files: ./thirdparty/misc/ok_color.h
+ ./thirdparty/misc/ok_color_shader.h
+Comment: OK Lab color space
+Copyright: 2021, Björn Ottosson
+License: Expat
+
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
 Copyright: 2020, Jordan Peck and contributors
@@ -365,8 +394,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2021, University of Cambridge
- 2009-2021, Zoltan Herczeg
+Copyright: 1997-2022, University of Cambridge
+ 2009-2022, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/

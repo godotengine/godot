@@ -184,7 +184,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 		};
 	};
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
 
 	print_verbose("XR: Removed interface" + p_interface->get_name());
 
@@ -211,7 +211,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, nullptr);
+	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
 
 	return interfaces[idx];
 };

@@ -154,7 +154,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		print_line(gen_code.defines[i]);
 	}
 
-	Map<String, String>::Element *el = gen_code.code.front();
+	RBMap<String, String>::Element *el = gen_code.code.front();
 	while (el) {
 		print_line("\n**code " + el->key() + ":\n" + el->value());
 
@@ -235,10 +235,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		}
 	}
 
-	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular
+	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular, attachment 2: Motion Vectors
 	RD::PipelineColorBlendState blend_state_color_blend;
-	blend_state_color_blend.attachments = { blend_attachment, RD::PipelineColorBlendState::Attachment() };
-	RD::PipelineColorBlendState blend_state_color_opaque = RD::PipelineColorBlendState::create_disabled(2);
+	blend_state_color_blend.attachments = { blend_attachment, RD::PipelineColorBlendState::Attachment(), RD::PipelineColorBlendState::Attachment() };
+	RD::PipelineColorBlendState blend_state_color_opaque = RD::PipelineColorBlendState::create_disabled(3);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness_giprobe = RD::PipelineColorBlendState::create_disabled(2);
 
@@ -282,6 +282,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 					SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 					SHADER_VERSION_DEPTH_PASS_WITH_SDF,
 					SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
+					SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
 					SHADER_VERSION_COLOR_PASS,
 				};
 
@@ -326,6 +328,10 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 							}
 						}
 
+						if (l & PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS) {
+							shader_flags |= SHADER_COLOR_PASS_FLAG_MOTION_VECTORS;
+						}
+
 						if (l & PIPELINE_COLOR_PASS_FLAG_LIGHTMAP) {
 							shader_flags |= SHADER_COLOR_PASS_FLAG_LIGHTMAP;
 						}
@@ -345,9 +351,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 					if (k == PIPELINE_VERSION_DEPTH_PASS || k == PIPELINE_VERSION_DEPTH_PASS_DP || k == PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW) {
 						//none, leave empty
-					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW) {
 						blend_state = blend_state_depth_normal_roughness;
-					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI) {
+					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI || k == PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW) {
 						blend_state = blend_state_depth_normal_roughness_giprobe;
 					} else if (k == PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
@@ -376,14 +382,14 @@ void SceneShaderForwardClustered::ShaderData::set_default_texture_param(const St
 		}
 	} else {
 		if (!default_texture_params.has(p_name)) {
-			default_texture_params[p_name] = Map<int, RID>();
+			default_texture_params[p_name] = HashMap<int, RID>();
 		}
 		default_texture_params[p_name][p_index] = p_texture;
 	}
 }
 
 void SceneShaderForwardClustered::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
-	Map<int, StringName> order;
+	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
@@ -477,7 +483,7 @@ void SceneShaderForwardClustered::MaterialData::set_next_pass(RID p_pass) {
 	next_pass = p_pass;
 }
 
-bool SceneShaderForwardClustered::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool SceneShaderForwardClustered::MaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
 
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, shader_singleton->shader.version_get_shader(shader_data->version, 0), RenderForwardClustered::MATERIAL_UNIFORM_SET, RD::BARRIER_MASK_RASTER);
@@ -514,24 +520,26 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	material_storage->material_free(default_material);
 }
 
-void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines) {
+void SceneShaderForwardClustered::init(const String p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	storage = p_storage;
 
 	{
 		Vector<String> shader_versions;
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_DEPTH_PASS_DP
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS
-		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_GIPROBE
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_SDF\n"); // SHADER_VERSION_DEPTH_PASS_WITH_SDF
 		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW
+		shader_versions.push_back("\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_NORMAL_ROUGHNESS\n#define MODE_RENDER_VOXEL_GI\n"); // SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW
 
 		Vector<String> color_pass_flags = {
 			"\n#define MODE_SEPARATE_SPECULAR\n", // SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR
 			"\n#define USE_LIGHTMAP\n", // SHADER_COLOR_PASS_FLAG_LIGHTMAP
 			"\n#define USE_MULTIVIEW\n", // SHADER_COLOR_PASS_FLAG_MULTIVIEW
+			"\n#define MOTION_VECTORS\n", // SHADER_COLOR_PASS_FLAG_MOTION_VECTORS
 		};
 
 		for (int i = 0; i < SHADER_COLOR_PASS_FLAG_COUNT; i++) {
@@ -548,6 +556,8 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW, false);
+			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW, false);
 			// TODO Add a way to enable/disable color pass flags
 		}
 	}
@@ -557,17 +567,29 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_TRANSPARENT | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
 
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
-	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR | PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
 
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP);
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_LIGHTMAP | PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
 
 	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW);
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MULTIVIEW | PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
+
+	valid_color_pass_pipelines.insert(PIPELINE_COLOR_PASS_FLAG_MOTION_VECTORS);
 
 	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_shader_funcs);
 	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_3D, _create_material_funcs);
@@ -604,7 +626,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 
 		//builtins
 
-		actions.renames["TIME"] = "scene_data.time";
+		actions.renames["TIME"] = "global_time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
@@ -743,7 +765,7 @@ void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const Strin
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 10;
+		actions.base_varying_index = 11;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;

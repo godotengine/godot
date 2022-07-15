@@ -154,10 +154,10 @@ public:
 	void set_skin_weight_count(SkinWeightCount p_weights);
 	SkinWeightCount get_skin_weight_count() const;
 
-	void set_custom_format(int p_index, CustomFormat p_format);
-	CustomFormat get_custom_format(int p_index) const;
+	void set_custom_format(int p_channel_index, CustomFormat p_format);
+	CustomFormat get_custom_format(int p_channel_index) const;
 
-	Mesh::PrimitiveType get_primitive() const;
+	Mesh::PrimitiveType get_primitive_type() const;
 
 	void begin(Mesh::PrimitiveType p_primitive);
 
@@ -166,7 +166,7 @@ public:
 	void set_tangent(const Plane &p_tangent);
 	void set_uv(const Vector2 &p_uv);
 	void set_uv2(const Vector2 &p_uv2);
-	void set_custom(int p_index, const Color &p_custom);
+	void set_custom(int p_channel_index, const Color &p_custom);
 	void set_bones(const Vector<int> &p_bones);
 	void set_weights(const Vector<float> &p_weights);
 	void set_smooth_group(uint32_t p_group);
@@ -183,7 +183,7 @@ public:
 	void generate_tangents();
 
 	void optimize_indices_for_cache();
-	float get_max_axis_length() const;
+	AABB get_aabb() const;
 	Vector<int> generate_lod(float p_threshold, int p_target_index_count = 3);
 
 	void set_material(const Ref<Material> &p_material);
@@ -199,7 +199,7 @@ public:
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_compress_flags = 0);
 
 	SurfaceTool();
 };

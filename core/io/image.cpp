@@ -81,9 +81,15 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 };
 
 SavePNGFunc Image::save_png_func = nullptr;
+SaveJPGFunc Image::save_jpg_func = nullptr;
 SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
+SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
+SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
+
+SaveWebPFunc Image::save_webp_func = nullptr;
+SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
 	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
@@ -1944,12 +1950,15 @@ Vector<uint8_t> Image::get_data() const {
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + "pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + "pixels.");
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
+			"Too many pixels for Image. Maximum is " + itos(MAX_WIDTH) + "x" + itos(MAX_HEIGHT) + " = " + itos(MAX_PIXELS) + "pixels.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -1967,17 +1976,34 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + " pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + " pixels.");
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
+			"Too many pixels for Image. Maximum is " + itos(MAX_WIDTH) + "x" + itos(MAX_HEIGHT) + " = " + itos(MAX_PIXELS) + "pixels .");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
-	ERR_FAIL_COND_MSG(p_data.size() != size, "Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
+	if (unlikely(p_data.size() != size)) {
+		String description_mipmaps;
+		if (p_use_mipmaps) {
+			const int num_mipmaps = get_image_required_mipmaps(p_width, p_height, p_format);
+			if (num_mipmaps != 1) {
+				description_mipmaps = vformat("with %d mipmaps", num_mipmaps);
+			} else {
+				description_mipmaps = "with 1 mipmap";
+			}
+		} else {
+			description_mipmaps = "without mipmaps";
+		}
+		const String description = vformat("%dx%dx%d (%s)", p_width, p_height, get_format_pixel_size(p_format), description_mipmaps);
+		ERR_FAIL_MSG(vformat("Expected Image data size of %s = %d bytes, got %d bytes instead.", description, size, p_data.size()));
+	}
 
 	height = p_height;
 	width = p_width;
@@ -2258,12 +2284,35 @@ Error Image::load(const String &p_path) {
 	return ImageLoader::load_image(p_path, this);
 }
 
+Ref<Image> Image::load_from_file(const String &p_path) {
+#ifdef DEBUG_ENABLED
+	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
+		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+	}
+#endif
+	Ref<Image> image;
+	image.instantiate();
+	Error err = ImageLoader::load_image(p_path, image);
+	if (err != OK) {
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Failed to load image. Error %d", err));
+	}
+	return image;
+}
+
 Error Image::save_png(const String &p_path) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
 	return save_png_func(p_path, Ref<Image>((Image *)this));
+}
+
+Error Image::save_jpg(const String &p_path, float p_quality) const {
+	if (save_jpg_func == nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+
+	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality);
 }
 
 Vector<uint8_t> Image::save_png_to_buffer() const {
@@ -2274,12 +2323,45 @@ Vector<uint8_t> Image::save_png_to_buffer() const {
 	return save_png_buffer_func(Ref<Image>((Image *)this));
 }
 
+Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
+	if (save_jpg_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+
+	return save_jpg_buffer_func(Ref<Image>((Image *)this), p_quality);
+}
+
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {
 	if (save_exr_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
 	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+}
+
+Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
+	if (save_exr_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale);
+}
+
+Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality) const {
+	if (save_webp_func == nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+	ERR_FAIL_COND_V_MSG(p_lossy && !(0.0f <= p_quality && p_quality <= 1.0f), ERR_INVALID_PARAMETER, "The WebP lossy quality was set to " + rtos(p_quality) + ", which is not valid. WebP lossy quality must be between 0.0 and 1.0 (inclusive).");
+
+	return save_webp_func(p_path, Ref<Image>((Image *)this), p_lossy, p_quality);
+}
+
+Vector<uint8_t> Image::save_webp_to_buffer(const bool p_lossy, const float p_quality) const {
+	if (save_webp_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+	ERR_FAIL_COND_V_MSG(p_lossy && !(0.0f <= p_quality && p_quality <= 1.0f), Vector<uint8_t>(), "The WebP lossy quality was set to " + rtos(p_quality) + ", which is not valid. WebP lossy quality must be between 0.0 and 1.0 (inclusive).");
+
+	return save_webp_buffer_func(Ref<Image>((Image *)this), p_lossy, p_quality);
 }
 
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
@@ -3116,9 +3198,15 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
+	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
+	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::save_webp, DEFVAL(false), DEFVAL(0.75f));
+	ClassDB::bind_method(D_METHOD("save_webp_to_buffer", "lossy", "quality"), &Image::save_webp_to_buffer, DEFVAL(false), DEFVAL(0.75f));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);

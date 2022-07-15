@@ -31,10 +31,10 @@
 #ifndef CLUSTER_BUILDER_RD_H
 #define CLUSTER_BUILDER_RD_H
 
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_render.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_store.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 class ClusterBuilderSharedDataRD {
 	friend class ClusterBuilderRD;
@@ -261,7 +261,7 @@ public:
 			e.type = ELEMENT_TYPE_OMNI_LIGHT;
 			e.original_index = cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT];
 
-			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 			cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT]++;
 
@@ -309,7 +309,7 @@ public:
 			e.type = ELEMENT_TYPE_SPOT_LIGHT;
 			e.original_index = cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]; //use omni since they share index
 
-			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 			cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]++;
 		}
@@ -356,7 +356,7 @@ public:
 		e.type = (p_box_type == BOX_TYPE_DECAL) ? ELEMENT_TYPE_DECAL : ELEMENT_TYPE_REFLECTION_PROBE;
 		e.original_index = cluster_count_by_type[e.type];
 
-		RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+		RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 		cluster_count_by_type[e.type]++;
 		render_element_count++;

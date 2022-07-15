@@ -289,7 +289,7 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
 }
 
-void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
+void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
 	int fidx = -1;
 
 	for (int i = 0; i < p_node->functions.size(); i++) {
@@ -303,8 +303,8 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 	Vector<StringName> uses_functions;
 
-	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
-		uses_functions.push_back(E->get());
+	for (const StringName &E : p_node->functions[fidx].uses_function) {
+		uses_functions.push_back(E);
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
@@ -571,6 +571,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					texture.name = uniform_name;
 					texture.hint = uniform.hint;
 					texture.type = uniform.type;
+					texture.use_color = uniform.use_color;
 					texture.filter = uniform.filter;
 					texture.repeat = uniform.repeat;
 					texture.global = uniform.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -735,7 +736,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
-			Map<StringName, String> function_code;
+			HashMap<StringName, String> function_code;
 
 			//code for functions
 			for (int i = 0; i < pnode->functions.size(); i++) {
@@ -748,7 +749,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			//place functions in actual code
 
-			Set<StringName> added_funcs_per_stage[STAGE_MAX];
+			HashSet<StringName> added_funcs_per_stage[STAGE_MAX];
 
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
