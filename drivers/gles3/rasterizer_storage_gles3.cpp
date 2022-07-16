@@ -5277,6 +5277,8 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton, int 
 	if (!skeleton->update_list.in_list()) {
 		skeleton_update_list.add(&skeleton->update_list);
 	}
+
+	skeleton->revision++;
 }
 Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
@@ -5308,6 +5310,12 @@ void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;
+}
+
+uint32_t RasterizerStorageGLES3::skeleton_get_revision(RID p_skeleton) const {
+	const Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND_V(!skeleton, 0);
+	return skeleton->revision;
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {

@@ -448,6 +448,7 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
+	virtual uint32_t skeleton_get_revision(RID p_skeleton) const = 0;
 
 	/* Light API */
 
@@ -947,18 +948,23 @@ public:
 		};
 
 		Transform2D xform;
-		bool clip;
-		bool visible;
-		bool behind;
-		bool update_when_visible;
-		//VS::MaterialBlendMode blend_mode;
-		int light_mask;
+		bool clip : 1;
+		bool visible : 1;
+		bool behind : 1;
+		bool update_when_visible : 1;
+		bool distance_field : 1;
+		bool light_masked : 1;
+		mutable bool custom_rect : 1;
+		mutable bool rect_dirty : 1;
+
 		Vector<Command *> commands;
-		mutable bool custom_rect;
-		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		RID material;
 		RID skeleton;
+
+		//VS::MaterialBlendMode blend_mode;
+		int32_t light_mask;
+		mutable uint32_t skeleton_revision;
 
 		Item *next;
 
@@ -975,14 +981,28 @@ public:
 		Item *final_clip_owner;
 		Item *material_owner;
 		ViewportRender *vp_render;
-		bool distance_field;
-		bool light_masked;
 
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible)) {
+			if (custom_rect) {
 				return rect;
+			}
+			if (!rect_dirty && !update_when_visible) {
+				if (skeleton == RID()) {
+					return rect;
+				} else {
+					// special case for skeletons
+					uint32_t rev = RasterizerStorage::base_singleton->skeleton_get_revision(skeleton);
+					if (rev == skeleton_revision) {
+						// no change to the skeleton since we last calculated the bounding rect
+						return rect;
+					} else {
+						// We need to recalculate.
+						// Mark as done for next time.
+						skeleton_revision = rev;
+					}
+				}
 			}
 
 			//must update rect
@@ -1171,6 +1191,7 @@ public:
 		}
 		Item() {
 			light_mask = 1;
+			skeleton_revision = 0;
 			vp_render = nullptr;
 			next = nullptr;
 			final_clip_owner = nullptr;

@@ -3731,6 +3731,7 @@ void RasterizerStorageGLES2::skeleton_bone_set_transform_2d(RID p_skeleton, int 
 	if (!skeleton->update_list.in_list()) {
 		skeleton_update_list.add(&skeleton->update_list);
 	}
+	skeleton->revision++;
 }
 
 Transform2D RasterizerStorageGLES2::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
@@ -3761,6 +3762,12 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	ERR_FAIL_COND(!skeleton);
 
 	skeleton->base_transform_2d = p_base_transform;
+}
+
+uint32_t RasterizerStorageGLES2::skeleton_get_revision(RID p_skeleton) const {
+	const Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND_V(!skeleton, 0);
+	return skeleton->revision;
 }
 
 void RasterizerStorageGLES2::update_dirty_blend_shapes() {

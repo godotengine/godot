@@ -483,6 +483,7 @@ public:
 	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {}
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const { return Transform2D(); }
+	uint32_t skeleton_get_revision(RID p_skeleton) const { return 0; }
 
 	/* Light API */
 
