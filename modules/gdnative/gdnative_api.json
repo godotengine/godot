@@ -137,6 +137,14 @@
               "arguments": [
                 ["godot_pool_color_array *", "p_self"]
               ]
+            },
+            {
+              "name": "godot_string_join",
+              "return_type": "godot_string",
+              "arguments": [
+                ["const godot_string *", "p_self"],
+                ["const godot_array *", "p_parts"]
+              ]
             }
           ]
         },
