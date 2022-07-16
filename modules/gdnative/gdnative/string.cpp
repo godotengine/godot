@@ -846,6 +846,23 @@ godot_array GDAPI godot_string_split_spaces(const godot_string *p_self) {
 	return result;
 }
 
+godot_string GDAPI godot_string_join(const godot_string *p_self, const godot_array *p_parts) {
+	const String *self = (const String *)p_self;
+
+	const Array *parts_proxy = (const Array *)p_parts;
+	Vector<String> parts;
+	parts.resize(parts_proxy->size());
+	for (int i = 0; i < parts_proxy->size(); i++) {
+		parts.write[i] = (*parts_proxy)[i];
+	}
+
+	godot_string str;
+	String *s = (String *)&str;
+	memnew_placement(s, String);
+	*s = self->join(parts);
+	return str;
+}
+
 godot_int GDAPI godot_string_get_slice_count(const godot_string *p_self, godot_string p_splitter) {
 	const String *self = (const String *)p_self;
 	String *splitter = (String *)&p_splitter;
