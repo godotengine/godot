@@ -87,6 +87,58 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 	return _is_parent_class(p_class, p_inherits);
 }
 
+String ClassDB::get_class_category(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+	String string_class = String(p_class);
+	if (string_class.begins_with("Editor") || string_class == "EngineDebugger" || string_class == "EngineProfiler" || string_class == "MissingNode") {
+		return "Editor";
+	} else if (string_class.begins_with("Animation") || string_class.contains("Tween")) {
+		return "Animation";
+	} else if (is_parent_class(p_class, SNAME("Node2D")) || string_class.contains("2D") || string_class.begins_with("Tile")) {
+		if (string_class.contains("Skeleton")) {
+			return "2D/Skeleton";
+		} else if (is_parent_class(p_class, SNAME("PhysicsBody2D")) || is_parent_class(p_class, SNAME("CollisionObject2D")) || is_parent_class(p_class, SNAME("Shape2D")) || string_class.contains("Collision") || string_class.contains("Physics")) {
+			return "2D/Physics";
+		} else if (is_parent_class(p_class, SNAME("Node2D"))) {
+			return "2D/Nodes";
+		} else if (is_parent_class(p_class, SNAME("Resource"))) {
+			return "2D/Resources";
+		}
+		return "2D";
+	} else if (is_parent_class(p_class, SNAME("Node3D")) || string_class.contains("3D") || is_parent_class(p_class, SNAME("PrimitiveMesh")) || string_class.contains("Sky") || string_class.begins_with("XR")) {
+		if (string_class.contains("Skeleton")) {
+			return "3D/Skeleton";
+		} else if (is_parent_class(p_class, SNAME("PhysicsBody3D")) || is_parent_class(p_class, SNAME("CollisionObject3D")) || is_parent_class(p_class, SNAME("Shape3D")) || string_class.contains("Collision") || string_class.contains("Physics")) {
+			return "3D/Physics";
+		} else if (is_parent_class(p_class, SNAME("Node3D"))) {
+			return "3D/Nodes";
+		} else if (is_parent_class(p_class, SNAME("Resource"))) {
+			return "3D/Resources";
+		}
+		return "3D";
+	} else if (is_parent_class(p_class, SNAME("Control")) || is_parent_class(p_class, SNAME("StyleBox")) || string_class.begins_with("Font") || is_parent_class(p_class, SNAME("Viewport")) || (!string_class.contains("Texture") && string_class.contains("Text"))) {
+		if (is_parent_class(p_class, SNAME("BaseButton"))) {
+			return "UI/Buttons";
+		} else if (is_parent_class(p_class, SNAME("Container"))) {
+			return "UI/Containers";
+		}
+		return "UI";
+	} else if (string_class.begins_with("Audio")) {
+		return "Audio";
+	} else if (string_class.begins_with("Input")) {
+		return "Input";
+	} else if (string_class.begins_with("HTTP") || string_class.begins_with("Multiplayer") || string_class.begins_with("Packet") || string_class.begins_with("Stream") || string_class == "DTLSServer" || string_class == "IP" || string_class == "TCPServer" || string_class == "UDPServer") {
+		return "Network";
+	} else if (string_class.begins_with("RD") || string_class.begins_with("Render")) {
+		return "Rendering";
+	} else if (string_class.begins_with("VisualShader")) {
+		return "VisualShader";
+	} else if (is_parent_class(p_class, SNAME("Resource"))) {
+		return "Other/Resources";
+	}
+	return "Other";
+}
+
 void ClassDB::get_class_list(List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
@@ -1559,5 +1611,3 @@ void ClassDB::cleanup() {
 	compat_classes.clear();
 	native_structs.clear();
 }
-
-//

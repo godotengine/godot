@@ -229,6 +229,7 @@ public:
 	static StringName get_parent_class_nocheck(const StringName &p_class);
 	static StringName get_parent_class(const StringName &p_class);
 	static StringName get_compatibility_remapped_class(const StringName &p_class);
+	static String get_class_category(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class, const StringName &p_inherits);
 	static bool can_instantiate(const StringName &p_class);

@@ -493,22 +493,12 @@ def main():  # type: () -> None
         if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
-        if os.path.basename(path) == "modules":
-            for subdir, dirs, _ in os.walk(path):
-                if "doc_classes" in dirs:
-                    doc_dir = os.path.join(subdir, "doc_classes")
+        for subdir, dirs, _ in os.walk(path):
+            for dir in dirs:
+                if "classes" in dir or "classes" in subdir:
+                    doc_dir = os.path.join(subdir, dir)
                     class_file_names = (f for f in os.listdir(doc_dir) if f.endswith(".xml"))
                     file_list += (os.path.join(doc_dir, f) for f in class_file_names)
-
-        elif os.path.isdir(path):
-            file_list += (os.path.join(path, f) for f in os.listdir(path) if f.endswith(".xml"))
-
-        elif os.path.isfile(path):
-            if not path.endswith(".xml"):
-                print('Got non-.xml file "{}" in input, skipping.'.format(path))
-                continue
-
-            file_list.append(path)
 
     classes = {}  # type: Dict[str, ET.Element]
     state = State()

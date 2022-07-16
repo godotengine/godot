@@ -360,6 +360,7 @@ void DocTools::generate(bool p_basic_types) {
 		DocData::ClassDoc &c = class_list[cname];
 		c.name = cname;
 		c.inherits = ClassDB::get_parent_class(name);
+		c.category = ClassDB::get_class_category(name);
 
 		List<PropertyInfo> properties;
 		List<PropertyInfo> own_properties;
@@ -1092,7 +1093,11 @@ Error DocTools::load_classes(const String &p_dir) {
 	String path;
 	path = da->get_next();
 	while (!path.is_empty()) {
-		if (!da->current_is_dir() && path.ends_with("xml")) {
+		if (path == "." || path == "..") {
+			// Nothing to do in this case, skip.
+		} else if (da->current_is_dir()) {
+			load_classes(p_dir.plus_file(path));
+		} else if (path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
 			if (err2) {
@@ -1122,7 +1127,11 @@ Error DocTools::erase_classes(const String &p_dir) {
 	String path;
 	path = da->get_next();
 	while (!path.is_empty()) {
-		if (!da->current_is_dir() && path.ends_with("xml")) {
+		if (path == "." || path == "..") {
+			// Nothing to do in this case, skip.
+		} else if (da->current_is_dir()) {
+			erase_classes(p_dir.plus_file(path));
+		} else if (path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
 		path = da->get_next();
@@ -1400,6 +1409,16 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 			save_path = p_class_path[c.name];
 		} else {
 			save_path = p_default_path;
+			if (c.category.is_empty()) {
+				if (c.name.ends_with("Array")) {
+					c.category = "Primitive/Arrays";
+				} else {
+					c.category = "Primitive";
+				}
+			}
+			save_path = save_path.plus_file(c.category);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
+			da->make_dir_recursive(save_path);
 		}
 
 		Error err;
