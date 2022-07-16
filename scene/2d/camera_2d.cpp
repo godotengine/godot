@@ -437,7 +437,7 @@ void Camera2D::clear_current() {
 void Camera2D::set_limit(Margin p_margin, int p_limit) {
 	ERR_FAIL_INDEX((int)p_margin, 4);
 	limit[p_margin] = p_limit;
-	update();
+	_update_scroll();
 }
 
 int Camera2D::get_limit(Margin p_margin) const {
