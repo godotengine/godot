@@ -53,6 +53,7 @@ public:
 private:
 	StringName profile_bone_name;
 	bool selected = false;
+	bool require = false;
 
 	TextureRect *circle;
 
@@ -65,7 +66,9 @@ public:
 	StringName get_profile_bone_name() const;
 	void set_state(BoneMapState p_state);
 
-	BoneMapperButton(const StringName p_profile_bone_name, bool p_selected);
+	bool is_require() const;
+
+	BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected);
 	~BoneMapperButton();
 };
 
