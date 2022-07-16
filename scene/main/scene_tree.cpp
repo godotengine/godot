@@ -2168,8 +2168,8 @@ SceneTree::SceneTree() {
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
 	tree_version = 1;
-	physics_process_time = 1;
-	idle_process_time = 1;
+	physics_process_time = 0.f;
+	idle_process_time = 0.f;
 
 	root = nullptr;
 	input_handled = false;
