@@ -57,6 +57,8 @@ public:
 	void set_grid_scale(Vector2 p_new);
 	Vector2 get_grid_scale() const;
 
+	Vector3 get_grid_point(int p_ix, int p_iy) const;
+
 	virtual Vector<Vector3> get_debug_mesh_lines();
 	virtual real_t get_enclosing_radius() const;
 

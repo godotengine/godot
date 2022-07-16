@@ -198,6 +198,16 @@ void HeightMapShape::set_grid_scale(Vector2 p_new) {
 Vector2 HeightMapShape::get_grid_scale() const {
 	return grid_scale;
 }
+
+Vector3 HeightMapShape::get_grid_point(int p_ix, int p_iy) const {
+	PoolRealArray::Read r = map_data.read();
+
+	return Vector3(
+		(p_ix - (map_width - 1) * 0.5) * grid_scale.x,
+		r[p_ix + p_iy * map_width],
+		(p_iy - (map_depth - 1) * 0.5) * grid_scale.y);
+}
+
 void HeightMapShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape::get_map_width);
@@ -207,6 +217,7 @@ void HeightMapShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape::get_map_data);
 	ClassDB::bind_method(D_METHOD("set_grid_scale", "grid_scale"), &HeightMapShape::set_grid_scale);
 	ClassDB::bind_method(D_METHOD("get_grid_scale"), &HeightMapShape::get_grid_scale);
+	ClassDB::bind_method(D_METHOD("get_grid_point", "x", "y"), &HeightMapShape::get_grid_point);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
