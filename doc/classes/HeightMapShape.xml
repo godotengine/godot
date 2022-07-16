@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_grid_point">
+			<argument index="0" name="x" type="int" />
+			<argument index="1" name="y" type="int" />
+			<return type="Vector3" />
+			<description>
+				Returns the vertice position in the heightmap, with [code]x[/code] being the x index in the map data and [code]y[/code] being the y index in the map data. The returned [code]y[/code] axis of the vector is the height in the map data, and both [code]x[/code] and [code]z[/code] axes are scaled by [member grid_scale]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="map_data" type="PoolRealArray" setter="set_map_data" getter="get_map_data" default="PoolRealArray( 0, 0, 0, 0 )">
