@@ -224,6 +224,7 @@ HeightMapShape::HeightMapShape() :
 	w[1] = 0.0;
 	w[2] = 0.0;
 	w[3] = 0.0;
+	grid_scale = Vector2(1.0, 1.0);
 	min_height = 0.0;
 	max_height = 0.0;
 
