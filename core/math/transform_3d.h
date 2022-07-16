@@ -56,9 +56,9 @@ struct _NO_DISCARD_ Transform3D {
 	void scale(const Vector3 &p_scale);
 	Transform3D scaled(const Vector3 &p_scale) const;
 	void scale_basis(const Vector3 &p_scale);
-	void translate(real_t p_tx, real_t p_ty, real_t p_tz);
-	void translate(const Vector3 &p_translation);
-	Transform3D translated(const Vector3 &p_translation) const;
+	void translate_local(real_t p_tx, real_t p_ty, real_t p_tz);
+	void translate_local(const Vector3 &p_translation);
+	Transform3D translated_local(const Vector3 &p_translation) const;
 
 	const Basis &get_basis() const { return basis; }
 	void set_basis(const Basis &p_basis) { basis = p_basis; }

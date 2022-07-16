@@ -237,7 +237,7 @@ void ShapeCast2D::_notification(int p_what) {
 			if (target_position != Vector2()) {
 				Transform2D xf;
 				xf.rotate(target_position.angle());
-				xf.translate(Vector2(target_position.length(), 0));
+				xf.translate_local(Vector2(target_position.length(), 0));
 
 				draw_line(Vector2(), target_position, draw_col, 2);
 

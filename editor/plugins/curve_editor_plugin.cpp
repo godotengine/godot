@@ -542,11 +542,11 @@ void CurveEditor::update_view_transform() {
 	const Vector2 scale = view_size / world_rect.size;
 
 	Transform2D world_trans;
-	world_trans.translate(-world_rect.position - Vector2(0, world_rect.size.y));
+	world_trans.translate_local(-world_rect.position - Vector2(0, world_rect.size.y));
 	world_trans.scale(Vector2(scale.x, -scale.y));
 
 	Transform2D view_trans;
-	view_trans.translate(view_margin);
+	view_trans.translate_local(view_margin);
 
 	_world_to_view = view_trans * world_trans;
 }

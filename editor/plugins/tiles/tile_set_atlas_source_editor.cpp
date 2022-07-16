@@ -1822,7 +1822,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-			xform.translate(position);
+			xform.translate_local(position);
 
 			if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, 0 })) {
 				continue;
@@ -1845,7 +1845,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, 0);
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;
@@ -1989,7 +1989,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, alternative_tile })) {
 					continue;
@@ -2013,7 +2013,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;

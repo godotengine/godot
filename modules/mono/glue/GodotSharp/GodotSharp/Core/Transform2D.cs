@@ -347,7 +347,7 @@ namespace Godot
         /// </summary>
         /// <param name="offset">The offset to translate by.</param>
         /// <returns>The translated matrix.</returns>
-        public Transform2D Translated(Vector2 offset)
+        public Transform2D TranslatedLocal(Vector2 offset)
         {
             Transform2D copy = this;
             copy.origin += copy.BasisXform(offset);
