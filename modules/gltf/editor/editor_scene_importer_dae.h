@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_import_collada.h                                              */
+/*  editor_scene_importer_dae.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_IMPORT_COLLADA_H
-#define EDITOR_IMPORT_COLLADA_H
+#ifndef EDITOR_SCENE_IMPORTER_DAE_H
+#define EDITOR_SCENE_IMPORTER_DAE_H
+
+#ifdef TOOLS_ENABLED
 
 #include "editor/import/resource_importer_scene.h"
 
-class EditorSceneFormatImporterCollada : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterCollada, EditorSceneFormatImporter);
+class Animation;
+class Node;
+
+class EditorSceneFormatImporterDAE : public EditorSceneFormatImporter {
+	GDCLASS(EditorSceneFormatImporterDAE, EditorSceneFormatImporter);
 
 public:
 	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) override;
-
-	EditorSceneFormatImporterCollada();
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+			List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual void get_import_options(const String &p_path,
+			List<ResourceImporter::ImportOption> *r_options) override;
+	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+			const HashMap<StringName, Variant> &p_options) override;
 };
 
-#endif
+#endif // TOOLS_ENABLED
+
+#endif // EDITOR_SCENE_IMPORTER_DAE_H

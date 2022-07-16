@@ -53,6 +53,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
+#include "editor/editor_scene_importer_dae.h"
 #include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
 #include "editor/editor_settings.h"
@@ -98,6 +99,26 @@ static void _editor_init() {
 			ResourceImporterScene::add_importer(importer);
 		}
 	}
+
+	// Collada importer.
+
+	bool dae_enabled = GLOBAL_GET("filesystem/import/dae/enabled");
+	// Defined here because EditorSettings doesn't exist in `register_gltf_types` yet.
+	String collada2gltf_path = EDITOR_DEF_RST("filesystem/import/dae/collada2gltf_path", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,
+			"filesystem/import/dae/collada2gltf_path", PROPERTY_HINT_GLOBAL_FILE));
+	if (dae_enabled) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (collada2gltf_path.is_empty()) {
+			WARN_PRINT("DAE file import is enabled, but no COLLADA2GLTF path is configured. DAE files will not be imported.");
+		} else if (!da->file_exists(collada2gltf_path)) {
+			WARN_PRINT("DAE file import is enabled, but the COLLADA2GLTF path doesn't point to a valid COLLADA2GLTF executable. DAE files will not be imported.");
+		} else {
+			Ref<EditorSceneFormatImporterDAE> importer;
+			importer.instantiate();
+			ResourceImporterScene::add_importer(importer);
+		}
+	}
 }
 #endif // TOOLS_ENABLED
 
@@ -133,8 +154,10 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		// Project settings defined here so doctool finds them.
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled", true);
 		GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
+		GLOBAL_DEF_RST("filesystem/import/dae/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
+		GDREGISTER_CLASS(EditorSceneFormatImporterDAE);
 
 		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);

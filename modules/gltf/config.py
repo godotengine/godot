@@ -10,6 +10,7 @@ def get_doc_classes():
     return [
         "EditorSceneFormatImporterBlend",
         "EditorSceneFormatImporterFBX",
+        "EditorSceneFormatImporterDAE",
         "EditorSceneFormatImporterGLTF",
         "GLTFAccessor",
         "GLTFAnimation",
