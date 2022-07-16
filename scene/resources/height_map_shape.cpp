@@ -34,6 +34,7 @@
 
 Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 	Vector<Vector3> points;
+	Vector3 s(grid_scale.x, 1.0, grid_scale.y);
 
 	if ((map_width != 0) && (map_depth != 0)) {
 		// This will be slow for large maps...
@@ -57,18 +58,18 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 				height.y = r[r_offset++];
 
 				if (w != map_width - 1) {
-					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
+					points.write[w_offset++] = height * s;
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z) * s;
 				}
 
 				if (d != map_depth - 1) {
-					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points.write[w_offset++] = height * s;
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0) * s;
 				}
 
 				if ((w != map_width - 1) && (d != map_depth - 1)) {
-					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z) * s;
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0) * s;
 				}
 
 				height.x += 1.0;
