@@ -179,6 +179,8 @@ godot_array GDAPI godot_string_split_ints_mk(const godot_string *p_self, const g
 godot_array GDAPI godot_string_split_ints_mk_allows_empty(const godot_string *p_self, const godot_array *p_splitters);
 godot_array GDAPI godot_string_split_spaces(const godot_string *p_self);
 
+godot_string GDAPI godot_string_join(const godot_string *p_self, const godot_array *p_parts);
+
 wchar_t GDAPI godot_string_char_lowercase(wchar_t p_char);
 wchar_t GDAPI godot_string_char_uppercase(wchar_t p_char);
 godot_string GDAPI godot_string_to_lower(const godot_string *p_self);
