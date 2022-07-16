@@ -29,7 +29,7 @@
               "name": "godot_pool_byte_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_byte_array *", "p_self"],
+                ["const godot_pool_byte_array *", "p_self"],
                 ["const uint8_t", "p_data"]
               ]
             },
@@ -44,7 +44,7 @@
               "name": "godot_pool_int_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_int_array *", "p_self"],
+                ["const godot_pool_int_array *", "p_self"],
                 ["const godot_int", "p_data"]
               ]
             },
@@ -59,7 +59,7 @@
               "name": "godot_pool_real_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_real_array *", "p_self"],
+                ["const godot_pool_real_array *", "p_self"],
                 ["const godot_real", "p_data"]
               ]
             },
@@ -74,7 +74,7 @@
               "name": "godot_pool_string_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_string_array *", "p_self"],
+                ["const godot_pool_string_array *", "p_self"],
                 ["const godot_string *", "p_data"]
               ]
             },
@@ -82,7 +82,7 @@
               "name": "godot_pool_string_array_join",
               "return_type": "godot_string",
               "arguments": [
-                ["godot_pool_string_array *", "p_self"],
+                ["const godot_pool_string_array *", "p_self"],
                 ["const godot_string *", "p_delimiter"]
               ]
             },
@@ -97,7 +97,7 @@
               "name": "godot_pool_vector2_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_vector2_array *", "p_self"],
+                ["const godot_pool_vector2_array *", "p_self"],
                 ["const godot_vector2 *", "p_data"]
               ]
             },
@@ -112,7 +112,7 @@
               "name": "godot_pool_vector3_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_vector3_array *", "p_self"],
+                ["const godot_pool_vector3_array *", "p_self"],
                 ["const godot_vector3 *", "p_data"]
               ]
             },
@@ -127,7 +127,7 @@
               "name": "godot_pool_color_array_has",
               "return_type": "godot_bool",
               "arguments": [
-                ["godot_pool_color_array *", "p_self"],
+                ["const godot_pool_color_array *", "p_self"],
                 ["const godot_color *", "p_data"]
               ]
             },
