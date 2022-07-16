@@ -209,6 +209,7 @@ public:
 	virtual void selected_notify() override;
 
 	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
+	VisualShaderEditor *get_visual_shader_editor(const Ref<Shader> &p_for_shader);
 
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;

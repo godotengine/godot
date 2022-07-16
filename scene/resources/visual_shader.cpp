@@ -30,6 +30,7 @@
 
 #include "visual_shader.h"
 
+#include "core/templates/rb_map.h"
 #include "core/templates/vmap.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
@@ -3189,18 +3190,18 @@ VisualShaderNodeInput::VisualShaderNodeInput() {
 
 ////////////// UniformRef
 
-List<VisualShaderNodeUniformRef::Uniform> uniforms;
+RBMap<RID, List<VisualShaderNodeUniformRef::Uniform>> uniforms;
 
-void VisualShaderNodeUniformRef::add_uniform(const String &p_name, UniformType p_type) {
-	uniforms.push_back({ p_name, p_type });
+void VisualShaderNodeUniformRef::add_uniform(RID p_shader_rid, const String &p_name, UniformType p_type) {
+	uniforms[p_shader_rid].push_back({ p_name, p_type });
 }
 
-void VisualShaderNodeUniformRef::clear_uniforms() {
-	uniforms.clear();
+void VisualShaderNodeUniformRef::clear_uniforms(RID p_shader_rid) {
+	uniforms[p_shader_rid].clear();
 }
 
-bool VisualShaderNodeUniformRef::has_uniform(const String &p_name) {
-	for (const VisualShaderNodeUniformRef::Uniform &E : uniforms) {
+bool VisualShaderNodeUniformRef::has_uniform(RID p_shader_rid, const String &p_name) {
+	for (const VisualShaderNodeUniformRef::Uniform &E : uniforms[p_shader_rid]) {
 		if (E.name == p_name) {
 			return true;
 		}
@@ -3313,14 +3314,24 @@ String VisualShaderNodeUniformRef::get_output_port_name(int p_port) const {
 	return "";
 }
 
+void VisualShaderNodeUniformRef::set_shader_rid(const RID &p_shader_rid) {
+	shader_rid = p_shader_rid;
+}
+
 void VisualShaderNodeUniformRef::set_uniform_name(const String &p_name) {
 	uniform_name = p_name;
+	if (shader_rid.is_valid()) {
+		update_uniform_type();
+	}
+	emit_changed();
+}
+
+void VisualShaderNodeUniformRef::update_uniform_type() {
 	if (uniform_name != "[None]") {
 		uniform_type = get_uniform_type_by_name(uniform_name);
 	} else {
 		uniform_type = UniformType::UNIFORM_TYPE_FLOAT;
 	}
-	emit_changed();
 }
 
 String VisualShaderNodeUniformRef::get_uniform_name() const {
@@ -3328,35 +3339,45 @@ String VisualShaderNodeUniformRef::get_uniform_name() const {
 }
 
 int VisualShaderNodeUniformRef::get_uniforms_count() const {
-	return uniforms.size();
+	ERR_FAIL_COND_V(!shader_rid.is_valid(), 0);
+
+	return uniforms[shader_rid].size();
 }
 
 String VisualShaderNodeUniformRef::get_uniform_name_by_index(int p_idx) const {
-	if (p_idx >= 0 && p_idx < uniforms.size()) {
-		return uniforms[p_idx].name;
+	ERR_FAIL_COND_V(!shader_rid.is_valid(), String());
+
+	if (p_idx >= 0 && p_idx < uniforms[shader_rid].size()) {
+		return uniforms[shader_rid][p_idx].name;
 	}
 	return "";
 }
 
 VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_type_by_name(const String &p_name) const {
-	for (int i = 0; i < uniforms.size(); i++) {
-		if (uniforms[i].name == p_name) {
-			return uniforms[i].type;
+	ERR_FAIL_COND_V(!shader_rid.is_valid(), UNIFORM_TYPE_FLOAT);
+
+	for (int i = 0; i < uniforms[shader_rid].size(); i++) {
+		if (uniforms[shader_rid][i].name == p_name) {
+			return uniforms[shader_rid][i].type;
 		}
 	}
 	return UniformType::UNIFORM_TYPE_FLOAT;
 }
 
 VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_type_by_index(int p_idx) const {
-	if (p_idx >= 0 && p_idx < uniforms.size()) {
-		return uniforms[p_idx].type;
+	ERR_FAIL_COND_V(!shader_rid.is_valid(), UNIFORM_TYPE_FLOAT);
+
+	if (p_idx >= 0 && p_idx < uniforms[shader_rid].size()) {
+		return uniforms[shader_rid][p_idx].type;
 	}
 	return UniformType::UNIFORM_TYPE_FLOAT;
 }
 
 VisualShaderNodeUniformRef::PortType VisualShaderNodeUniformRef::get_port_type_by_index(int p_idx) const {
-	if (p_idx >= 0 && p_idx < uniforms.size()) {
-		switch (uniforms[p_idx].type) {
+	ERR_FAIL_COND_V(!shader_rid.is_valid(), PORT_TYPE_SCALAR);
+
+	if (p_idx >= 0 && p_idx < uniforms[shader_rid].size()) {
+		switch (uniforms[shader_rid][p_idx].type) {
 			case UniformType::UNIFORM_TYPE_FLOAT:
 				return PORT_TYPE_SCALAR;
 			case UniformType::UNIFORM_TYPE_INT:
