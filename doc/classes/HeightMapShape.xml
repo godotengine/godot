@@ -20,6 +20,9 @@
 		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
 			Number of vertices in the width of the height map. Changing this will resize the [member map_data].
 		</member>
+		<member name="grid_scale" type="Vector2" setter="set_grid_scale" getter="get_grid_scale" default="Vector2( 1, 1 )">
+			The vertices of the height map will be scaled by this scale.
+		</member>
 	</members>
 	<constants>
 	</constants>

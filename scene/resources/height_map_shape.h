@@ -39,6 +39,7 @@ class HeightMapShape : public Shape {
 	int map_width;
 	int map_depth;
 	PoolRealArray map_data;
+	Vector2 grid_scale;
 	float min_height;
 	float max_height;
 
@@ -53,6 +54,8 @@ public:
 	int get_map_depth() const;
 	void set_map_data(PoolRealArray p_new);
 	PoolRealArray get_map_data() const;
+	void set_grid_scale(Vector2 p_new);
+	Vector2 get_grid_scale() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines();
 	virtual real_t get_enclosing_radius() const;

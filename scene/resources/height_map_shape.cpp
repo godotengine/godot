@@ -82,7 +82,7 @@ Vector<Vector3> HeightMapShape::get_debug_mesh_lines() {
 }
 
 real_t HeightMapShape::get_enclosing_radius() const {
-	return Vector3(real_t(map_width), max_height - min_height, real_t(map_depth)).length();
+	return Vector3(real_t(map_width) * grid_scale.x, max_height - min_height, real_t(map_depth) * grid_scale.y).length();
 }
 
 void HeightMapShape::_update_shape() {
@@ -92,6 +92,7 @@ void HeightMapShape::_update_shape() {
 	d["heights"] = map_data;
 	d["min_height"] = min_height;
 	d["max_height"] = max_height;
+	d["grid_scale"] = grid_scale;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
 	Shape::_update_shape();
 }
@@ -184,6 +185,19 @@ PoolRealArray HeightMapShape::get_map_data() const {
 	return map_data;
 }
 
+void HeightMapShape::set_grid_scale(Vector2 p_new) {
+	if (grid_scale != p_new) {
+		grid_scale = p_new;
+
+		_update_shape();
+		notify_change_to_owners();
+		_change_notify("grid_scale");
+	}
+}
+
+Vector2 HeightMapShape::get_grid_scale() const {
+	return grid_scale;
+}
 void HeightMapShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape::get_map_width);
@@ -191,10 +205,13 @@ void HeightMapShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_depth"), &HeightMapShape::get_map_depth);
 	ClassDB::bind_method(D_METHOD("set_map_data", "data"), &HeightMapShape::set_map_data);
 	ClassDB::bind_method(D_METHOD("get_map_data"), &HeightMapShape::get_map_data);
+	ClassDB::bind_method(D_METHOD("set_grid_scale", "grid_scale"), &HeightMapShape::set_grid_scale);
+	ClassDB::bind_method(D_METHOD("get_grid_scale"), &HeightMapShape::get_grid_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_REAL_ARRAY, "map_data"), "set_map_data", "get_map_data");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "grid_scale"), "set_grid_scale", "get_grid_scale");
 }
 
 HeightMapShape::HeightMapShape() :
