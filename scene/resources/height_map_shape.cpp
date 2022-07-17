@@ -201,6 +201,10 @@ Vector2 HeightMapShape::get_grid_scale() const {
 }
 
 Vector3 HeightMapShape::get_grid_point(int p_ix, int p_iy) const {
+	// Assert invalid point indexes
+	ERR_FAIL_COND_V(p_ix < 0 || p_ix >= map_width, Vector3());
+	ERR_FAIL_COND_V(p_iy < 0 || p_iy >= map_depth, Vector3());
+
 	PoolRealArray::Read r = map_data.read();
 
 	return Vector3(
