@@ -1105,8 +1105,8 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 // Editor data and config directories
 // EditorPaths::create() is responsible for the creation of these directories.
 
-String EditorSettings::get_templates_dir() const {
-	return EditorPaths::get_singleton()->get_data_dir().plus_file("templates");
+String EditorSettings::get_export_templates_dir() const {
+	return EditorPaths::get_singleton()->get_data_dir().plus_file("export_templates");
 }
 
 String EditorSettings::get_project_settings_dir() const {
