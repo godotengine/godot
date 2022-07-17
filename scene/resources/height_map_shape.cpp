@@ -208,9 +208,9 @@ Vector3 HeightMapShape::get_grid_point(int p_ix, int p_iy) const {
 	PoolRealArray::Read r = map_data.read();
 
 	return Vector3(
-		(p_ix - (map_width - 1) * 0.5) * grid_scale.x,
-		r[p_ix + p_iy * map_width],
-		(p_iy - (map_depth - 1) * 0.5) * grid_scale.y);
+			(p_ix - (map_width - 1) * 0.5) * grid_scale.x,
+			r[p_ix + p_iy * map_width],
+			(p_iy - (map_depth - 1) * 0.5) * grid_scale.y);
 }
 
 void HeightMapShape::_bind_methods() {
