@@ -1099,7 +1099,7 @@ bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event, bool p_exa
 		return false;
 	}
 
-	return p_event->is_action(action);
+	return p_event->is_action(action, p_exact_match);
 }
 
 bool InputEventAction::is_action(const StringName &p_action) const {
