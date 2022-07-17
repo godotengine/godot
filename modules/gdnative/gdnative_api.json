@@ -26,6 +26,15 @@
           "next": null,
           "api": [
             {
+              "name": "godot_dictionary_merge",
+              "return_type": "void",
+              "arguments": [
+                ["godot_dictionary *", "p_self"],
+                ["const godot_dictionary *", "p_dictionary"],
+                ["const godot_bool", "p_overwrite"]
+              ]
+            },
+            {
               "name": "godot_pool_byte_array_has",
               "return_type": "godot_bool",
               "arguments": [

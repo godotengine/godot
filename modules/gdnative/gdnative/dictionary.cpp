@@ -186,6 +186,14 @@ godot_variant GDAPI godot_dictionary_get_with_default(const godot_dictionary *p_
 	return raw_dest;
 }
 
+// GDNative core 1.3
+
+void GDAPI godot_dictionary_merge(godot_dictionary *p_self, const godot_dictionary *p_dictionary, const godot_bool p_overwrite) {
+	Dictionary *self = (Dictionary *)p_self;
+	const Dictionary *dictionary = (const Dictionary *)p_dictionary;
+	self->merge(*dictionary, p_overwrite);
+}
+
 #ifdef __cplusplus
 }
 #endif
