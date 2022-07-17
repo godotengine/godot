@@ -733,7 +733,7 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(bool p_wip_destructive) {
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
-	create_resource->get_ok_button()->set_text(TTR("Create"));
+	create_resource->set_ok_button_text(TTR("Create"));
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {

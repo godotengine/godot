@@ -1301,6 +1301,12 @@ private:
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
+	List<Node *> nodes_in_progress;
+	void complete_extents(Node *p_node);
+	void update_extents(Node *p_node);
+	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
+	void reset_extents(Node *p_node, Node *p_from);
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
@@ -1308,13 +1314,8 @@ private:
 		node->next = list;
 		list = node;
 
-		// TODO: Properly set positions for all nodes.
-		node->start_line = previous.start_line;
-		node->end_line = previous.end_line;
-		node->start_column = previous.start_column;
-		node->end_column = previous.end_column;
-		node->leftmost_column = previous.leftmost_column;
-		node->rightmost_column = previous.rightmost_column;
+		reset_extents(node, previous);
+		nodes_in_progress.push_back(node);
 
 		return node;
 	}
@@ -1359,7 +1360,7 @@ private:
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
-	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, int p_optional_arguments = 0, bool p_is_vararg = false);
+	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target);

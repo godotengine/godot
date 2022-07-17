@@ -1032,11 +1032,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					if (src->has_method(*index)) {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?";
-					} else {
-						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
-					}
+					err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
 					OPCODE_BREAK;
 				}
 				*dst = ret;

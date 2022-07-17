@@ -50,6 +50,14 @@ bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
 	return true;
 }
 
+void BoneMap::_get_property_list(List<PropertyInfo> *p_list) const {
+	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
+	while (E) {
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, "bone_map/" + E->key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		++E;
+	}
+}
+
 Ref<SkeletonProfile> BoneMap::get_profile() const {
 	return profile;
 }
@@ -153,6 +161,7 @@ void BoneMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_profile_bone_name", "skeleton_bone_name"), &BoneMap::find_profile_bone_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
+	ADD_ARRAY("bonemap", "bonemap");
 
 	ADD_SIGNAL(MethodInfo("bone_map_updated"));
 	ADD_SIGNAL(MethodInfo("profile_updated"));

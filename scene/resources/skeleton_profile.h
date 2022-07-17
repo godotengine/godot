@@ -36,6 +36,13 @@
 class SkeletonProfile : public Resource {
 	GDCLASS(SkeletonProfile, Resource);
 
+public:
+	enum TailDirection {
+		TAIL_DIRECTION_AVERAGE_CHILDREN,
+		TAIL_DIRECTION_SPECIFIC_CHILD,
+		TAIL_DIRECTION_END
+	};
+
 protected:
 	// Note: SkeletonProfileHumanoid which extends SkeletonProfile exists to unify standard bone names.
 	// That is what is_read_only is for, so don't make it public.
@@ -48,8 +55,13 @@ protected:
 
 	struct SkeletonProfileBone {
 		StringName bone_name;
+		StringName bone_parent;
+		TailDirection tail_direction = TAIL_DIRECTION_AVERAGE_CHILDREN;
+		StringName bone_tail;
+		Transform3D reference_pose;
 		Vector2 handle_offset;
 		StringName group;
+		bool require = false;
 	};
 
 	Vector<SkeletonProfileGroup> groups;
@@ -74,14 +86,31 @@ public:
 	int get_bone_size();
 	void set_bone_size(int p_size);
 
+	int find_bone(const StringName p_bone_name) const;
+
 	StringName get_bone_name(int p_bone_idx) const;
 	void set_bone_name(int p_bone_idx, const StringName p_bone_name);
+
+	StringName get_bone_parent(int p_bone_idx) const;
+	void set_bone_parent(int p_bone_idx, const StringName p_bone_parent);
+
+	TailDirection get_tail_direction(int p_bone_idx) const;
+	void set_tail_direction(int p_bone_idx, const TailDirection p_tail_direction);
+
+	StringName get_bone_tail(int p_bone_idx) const;
+	void set_bone_tail(int p_bone_idx, const StringName p_bone_tail);
+
+	Transform3D get_reference_pose(int p_bone_idx) const;
+	void set_reference_pose(int p_bone_idx, const Transform3D p_reference_pose);
 
 	Vector2 get_handle_offset(int p_bone_idx) const;
 	void set_handle_offset(int p_bone_idx, const Vector2 p_handle_offset);
 
 	StringName get_group(int p_bone_idx) const;
 	void set_group(int p_bone_idx, const StringName p_group);
+
+	bool is_require(int p_bone_idx) const;
+	void set_require(int p_bone_idx, const bool p_require);
 
 	bool has_bone(StringName p_bone_name);
 
@@ -96,5 +125,7 @@ public:
 	SkeletonProfileHumanoid();
 	~SkeletonProfileHumanoid();
 };
+
+VARIANT_ENUM_CAST(SkeletonProfile::TailDirection);
 
 #endif // SKELETON_PROFILE_H

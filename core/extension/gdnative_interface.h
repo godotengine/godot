@@ -252,13 +252,10 @@ typedef void *GDNativeExtensionClassLibraryPtr;
 typedef enum {
 	GDNATIVE_EXTENSION_METHOD_FLAG_NORMAL = 1,
 	GDNATIVE_EXTENSION_METHOD_FLAG_EDITOR = 2,
-	GDNATIVE_EXTENSION_METHOD_FLAG_NOSCRIPT = 4,
-	GDNATIVE_EXTENSION_METHOD_FLAG_CONST = 8,
-	GDNATIVE_EXTENSION_METHOD_FLAG_REVERSE = 16, /* used for events */
-	GDNATIVE_EXTENSION_METHOD_FLAG_VIRTUAL = 32,
-	GDNATIVE_EXTENSION_METHOD_FLAG_FROM_SCRIPT = 64,
-	GDNATIVE_EXTENSION_METHOD_FLAG_VARARG = 128,
-	GDNATIVE_EXTENSION_METHOD_FLAG_STATIC = 256,
+	GDNATIVE_EXTENSION_METHOD_FLAG_CONST = 4,
+	GDNATIVE_EXTENSION_METHOD_FLAG_VIRTUAL = 8,
+	GDNATIVE_EXTENSION_METHOD_FLAG_VARARG = 16,
+	GDNATIVE_EXTENSION_METHOD_FLAG_STATIC = 32,
 	GDNATIVE_EXTENSION_METHOD_FLAGS_DEFAULT = GDNATIVE_EXTENSION_METHOD_FLAG_NORMAL,
 } GDNativeExtensionClassMethodFlags;
 
@@ -540,7 +537,7 @@ typedef struct {
 
 	void (*classdb_register_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	void (*classdb_register_extension_class_method)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value);
+	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
 	void (*classdb_register_extension_class_property)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
 	void (*classdb_register_extension_class_property_group)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix);
 	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);

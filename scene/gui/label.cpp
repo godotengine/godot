@@ -121,10 +121,10 @@ void Label::_shape() {
 		}
 		lines_rid.clear();
 
-		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
 			case TextServer::AUTOWRAP_WORD_SMART:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
 				break;
 			case TextServer::AUTOWRAP_WORD:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
@@ -158,23 +158,23 @@ void Label::_shape() {
 	}
 
 	if (lines_dirty) {
-		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIM;
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		switch (overrun_behavior) {
 			case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-				overrun_flags |= TextServer::OVERRUN_TRIM;
-				overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
-				overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+				overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 				break;
 			case TextServer::OVERRUN_TRIM_ELLIPSIS:
-				overrun_flags |= TextServer::OVERRUN_TRIM;
-				overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 				break;
 			case TextServer::OVERRUN_TRIM_WORD:
-				overrun_flags |= TextServer::OVERRUN_TRIM;
-				overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
 				break;
 			case TextServer::OVERRUN_TRIM_CHAR:
-				overrun_flags |= TextServer::OVERRUN_TRIM;
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 				break;
 			case TextServer::OVERRUN_NO_TRIMMING:
 				break;
@@ -186,7 +186,7 @@ void Label::_shape() {
 			int visible_lines = get_visible_line_count();
 			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
 			if (lines_hidden) {
-				overrun_flags |= TextServer::OVERRUN_ENFORCE_ELLIPSIS;
+				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				for (int i = 0; i < lines_rid.size(); i++) {
@@ -204,7 +204,7 @@ void Label::_shape() {
 			for (int i = 0; i < lines_rid.size(); i++) {
 				if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], width);
-					overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					TS->shaped_text_fit_to_width(lines_rid[i], width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {

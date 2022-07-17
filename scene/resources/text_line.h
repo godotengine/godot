@@ -45,7 +45,7 @@ private:
 	bool dirty = true;
 
 	float width = -1.0;
-	uint16_t flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	BitField<TextServer::JustificationFlag> flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
@@ -84,8 +84,8 @@ public:
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
-	void set_flags(uint16_t p_flags);
-	uint16_t get_flags() const;
+	void set_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_flags() const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;

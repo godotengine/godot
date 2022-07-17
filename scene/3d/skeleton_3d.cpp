@@ -639,6 +639,7 @@ void Skeleton3D::remove_bone_child(int p_bone, int p_child) {
 }
 
 Vector<int> Skeleton3D::get_parentless_bones() {
+	_update_process_order();
 	return parentless_bones;
 }
 
@@ -765,8 +766,6 @@ void Skeleton3D::_make_dirty() {
 }
 
 void Skeleton3D::localize_rests() {
-	_update_process_order();
-
 	Vector<int> bones_to_process = get_parentless_bones();
 	while (bones_to_process.size() > 0) {
 		int current_bone_idx = bones_to_process[0];
@@ -958,7 +957,6 @@ Ref<Skin> Skeleton3D::create_skin_from_rest_transforms() {
 
 	skin.instantiate();
 	skin->set_bind_count(bones.size());
-	_update_process_order(); // Just in case.
 
 	// Pose changed, rebuild cache of inverses.
 	const Bone *bonesptr = bones.ptr();

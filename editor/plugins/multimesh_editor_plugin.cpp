@@ -347,7 +347,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_value(128);
 	vbc->add_margin_child(TTR("Amount:"), populate_amount);
 
-	populate_dialog->get_ok_button()->set_text(TTR("Populate"));
+	populate_dialog->set_ok_button_text(TTR("Populate"));
 
 	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);

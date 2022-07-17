@@ -452,10 +452,10 @@ void Label3D::_shape() {
 		}
 		lines_rid.clear();
 
-		uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
 			case TextServer::AUTOWRAP_WORD_SMART:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
 				break;
 			case TextServer::AUTOWRAP_WORD:
 				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;

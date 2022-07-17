@@ -671,7 +671,7 @@ ImportDock::ImportDock() {
 	advanced->connect("pressed", callable_mp(this, &ImportDock::_advanced_options));
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->get_ok_button()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
+	reimport_confirm->set_ok_button_text(TTR("Save Scenes, Re-Import, and Restart"));
 	content->add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 

@@ -189,7 +189,7 @@ class TextServerFallback : public TextServerExtension {
 		double embolden = 0.0;
 		Transform2D transform;
 
-		uint32_t style_flags = 0;
+		BitField<TextServer::FontStyle> style_flags = 0;
 		String font_name;
 		String style_name;
 
@@ -368,8 +368,8 @@ public:
 
 	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 
-	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
-	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;
+	virtual void font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) override;
+	virtual BitField<FontStyle> font_get_style(const RID &p_font_rid) const override;
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
@@ -545,7 +545,7 @@ public:
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const override;
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const override;
 
-	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, int64_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
+	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
 	virtual double shaped_text_tab_align(const RID &p_shaped, const PackedFloat32Array &p_tab_stops) override;
 
 	virtual bool shaped_text_shape(const RID &p_shaped) override;
@@ -557,7 +557,7 @@ public:
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const override;
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
 
-	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, int64_t p_trim_flags) override;
+	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const override;
 

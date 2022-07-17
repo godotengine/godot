@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeTransition" inherits="AnimationNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeTransition" inherits="AnimationNodeSync" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A generic animation transition node for [AnimationTree].
 	</brief_description>
@@ -40,6 +40,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="from_start" type="bool" setter="set_from_start" getter="is_from_start" default="true">
+			If [code]true[/code], the destination animation is played back from the beginning when switched.
+		</member>
 		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
 			The number of available input ports for this node.
 		</member>

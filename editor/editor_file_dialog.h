@@ -212,7 +212,7 @@ protected:
 public:
 	void popup_file_dialog();
 	void clear_filters();
-	void add_filter(const String &p_filter);
+	void add_filter(const String &p_filter, const String &p_description = "");
 
 	void set_enable_multiple_selection(bool p_enable);
 	Vector<String> get_selected_files() const;

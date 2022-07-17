@@ -494,8 +494,8 @@ ConnectDialog::ConnectDialog() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 	error->set_title(TTR("Cannot connect signal"));
-	error->get_ok_button()->set_text(TTR("Close"));
-	get_ok_button()->set_text(TTR("Connect"));
+	error->set_ok_button_text(TTR("Close"));
+	set_ok_button_text(TTR("Connect"));
 }
 
 ConnectDialog::~ConnectDialog() {

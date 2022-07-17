@@ -419,10 +419,10 @@ void FileDialog::deselect_all() {
 		switch (mode) {
 			case FILE_MODE_OPEN_FILE:
 			case FILE_MODE_OPEN_FILES:
-				get_ok_button()->set_text(RTR("Open"));
+				set_ok_button_text(RTR("Open"));
 				break;
 			case FILE_MODE_OPEN_DIR:
-				get_ok_button()->set_text(RTR("Select Current Folder"));
+				set_ok_button_text(RTR("Select Current Folder"));
 				break;
 			case FILE_MODE_OPEN_ANY:
 			case FILE_MODE_SAVE_FILE:
@@ -446,7 +446,7 @@ void FileDialog::_tree_selected() {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 	} else if (mode == FILE_MODE_OPEN_DIR) {
-		get_ok_button()->set_text(RTR("Select This Folder"));
+		set_ok_button_text(RTR("Select This Folder"));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -673,9 +673,13 @@ void FileDialog::clear_filters() {
 	invalidate();
 }
 
-void FileDialog::add_filter(const String &p_filter) {
+void FileDialog::add_filter(const String &p_filter, const String &p_description) {
 	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
-	filters.push_back(p_filter);
+	if (p_description.is_empty()) {
+		filters.push_back(p_filter);
+	} else {
+		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	}
 	update_filters();
 	invalidate();
 }
@@ -764,35 +768,35 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open File(s)"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(RTR("Select Current Folder"));
+			set_ok_button_text(RTR("Select Current Folder"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
-			get_ok_button()->set_text(RTR("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File or Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
-			get_ok_button()->set_text(RTR("Save"));
+			set_ok_button_text(RTR("Save"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Save a File"));
 			}
@@ -919,7 +923,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter"), &FileDialog::add_filter);
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::add_filter, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &FileDialog::set_filters);
 	ClassDB::bind_method(D_METHOD("get_filters"), &FileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &FileDialog::get_current_dir);

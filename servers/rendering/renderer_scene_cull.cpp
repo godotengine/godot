@@ -470,7 +470,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
 			p_instance->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_instance->base);
 
 		} else {
-			RSG::mesh_storage->mesh_free(p_instance->mesh_instance);
+			RSG::mesh_storage->mesh_instance_free(p_instance->mesh_instance);
 			p_instance->mesh_instance = RID();
 		}
 

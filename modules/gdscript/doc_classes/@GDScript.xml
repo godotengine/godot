@@ -285,16 +285,15 @@
 			<description>
 			</description>
 		</annotation>
-		<annotation name="@export_exp_easing">
+		<annotation name="@export_exp_easing" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="hint1" type="String" default="null" />
-			<argument index="1" name="hint2" type="String" default="null" />
+			<argument index="0" name="hints" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_file" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="filter" type="String" default="null" />
+			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -341,14 +340,14 @@
 		</annotation>
 		<annotation name="@export_global_file" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="filter" type="String" default="null" />
+			<argument index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_group">
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
-			<argument index="1" name="prefix" type="String" default="null" />
+			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -359,7 +358,7 @@
 		</annotation>
 		<annotation name="@export_node_path" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="type" type="String" default="null" />
+			<argument index="0" name="type" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -368,21 +367,19 @@
 			<description>
 			</description>
 		</annotation>
-		<annotation name="@export_range">
+		<annotation name="@export_range" qualifiers="vararg">
 			<return type="void" />
 			<argument index="0" name="min" type="float" />
 			<argument index="1" name="max" type="float" />
-			<argument index="2" name="step" type="float" default="null" />
-			<argument index="3" name="slider1" type="String" default="null" />
-			<argument index="4" name="slider2" type="String" default="null" />
-			<argument index="5" name="slider3" type="String" default="null" />
+			<argument index="2" name="step" type="float" default="1.0" />
+			<argument index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
 		<annotation name="@export_subgroup">
 			<return type="void" />
 			<argument index="0" name="name" type="String" />
-			<argument index="1" name="prefix" type="String" default="null" />
+			<argument index="1" name="prefix" type="String" default="&quot;&quot;" />
 			<description>
 			</description>
 		</annotation>
@@ -399,10 +396,10 @@
 		</annotation>
 		<annotation name="@rpc" qualifiers="vararg">
 			<return type="void" />
-			<argument index="0" name="mode" type="String" default="null" />
-			<argument index="1" name="sync" type="String" default="null" />
-			<argument index="2" name="transfer_mode" type="String" default="null" />
-			<argument index="3" name="transfer_channel" type="int" default="null" />
+			<argument index="0" name="mode" type="String" default="&quot;&quot;" />
+			<argument index="1" name="sync" type="String" default="&quot;&quot;" />
+			<argument index="2" name="transfer_mode" type="String" default="&quot;&quot;" />
+			<argument index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 			</description>
 		</annotation>

@@ -346,7 +346,7 @@
 			</description>
 		</method>
 		<method name="font_get_style" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="TextServer.FontStyle" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns font style flags, see [enum TextServer.FontStyle].
@@ -782,7 +782,7 @@
 		<method name="font_set_style" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
-			<argument index="1" name="style" type="int" />
+			<argument index="1" name="style" type="int" enum="TextServer.FontStyle" />
 			<description>
 				Sets the font style flags, see [enum TextServer.FontStyle].
 			</description>
@@ -1074,7 +1074,7 @@
 			<return type="float" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
-			<argument index="2" name="jst_flags" type="int" />
+			<argument index="2" name="jst_flags" type="int" enum="TextServer.JustificationFlag" />
 			<description>
 				Adjusts text with to fit to specified width, returns new text width.
 			</description>
@@ -1183,7 +1183,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
 			<argument index="2" name="start" type="int" />
-			<argument index="3" name="break_flags" type="int" />
+			<argument index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
@@ -1195,7 +1195,7 @@
 			<argument index="1" name="width" type="PackedFloat32Array" />
 			<argument index="2" name="start" type="int" />
 			<argument index="3" name="once" type="bool" />
-			<argument index="4" name="break_flags" type="int" />
+			<argument index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
@@ -1308,7 +1308,7 @@
 		<method name="shaped_text_get_word_breaks" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="grapheme_flags" type="int" />
+			<argument index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" />
 			<description>
 				Breaks text into words and returns array of character ranges.
 				[b]Note:[/b] If this method is not implemented in the plugin, the default implementation will be used.
@@ -1352,7 +1352,7 @@
 			<return type="void" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
-			<argument index="2" name="trim_flags" type="int" />
+			<argument index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" />
 			<description>
 				Trims text if it exceeds the given width.
 			</description>

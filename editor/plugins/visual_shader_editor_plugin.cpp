@@ -4911,7 +4911,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->set_title(TTR("Create Shader Node"));
 	members_dialog->set_exclusive(false);
 	members_dialog->add_child(members_vb);
-	members_dialog->get_ok_button()->set_text(TTR("Create"));
+	members_dialog->set_ok_button_text(TTR("Create"));
 	members_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok_button()->set_disabled(true);
 	members_dialog->connect("cancelled", callable_mp(this, &VisualShaderEditor::_member_cancel));
@@ -4922,7 +4922,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		add_varying_dialog = memnew(ConfirmationDialog);
 		add_varying_dialog->set_title(TTR("Create Shader Varying"));
 		add_varying_dialog->set_exclusive(false);
-		add_varying_dialog->get_ok_button()->set_text(TTR("Create"));
+		add_varying_dialog->set_ok_button_text(TTR("Create"));
 		add_varying_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_varying_create));
 		add_varying_dialog->get_ok_button()->set_disabled(true);
 		add_child(add_varying_dialog);
@@ -4966,7 +4966,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		remove_varying_dialog = memnew(ConfirmationDialog);
 		remove_varying_dialog->set_title(TTR("Delete Shader Varying"));
 		remove_varying_dialog->set_exclusive(false);
-		remove_varying_dialog->get_ok_button()->set_text(TTR("Delete"));
+		remove_varying_dialog->set_ok_button_text(TTR("Delete"));
 		remove_varying_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_varying_deleted));
 		add_child(remove_varying_dialog);
 

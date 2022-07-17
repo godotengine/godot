@@ -314,6 +314,8 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 	max_value->set_value(blend_space->get_max_space());
 	min_value->set_value(blend_space->get_min_space());
 
+	sync->set_pressed(blend_space->is_using_sync());
+
 	label_value->set_text(blend_space->get_value_label());
 
 	snap_value->set_value(blend_space->get_snap());
@@ -329,13 +331,15 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	}
 
 	updating = true;
-	undo_redo->create_action(TTR("Change BlendSpace1D Limits"));
+	undo_redo->create_action(TTR("Change BlendSpace1D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", max_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", min_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_snap", snap_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_sync", sync->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -649,6 +653,12 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	snap_value->set_min(0.01);
 	snap_value->set_step(0.01);
 	snap_value->set_max(1000);
+
+	top_hb->add_child(memnew(VSeparator));
+	top_hb->add_child(memnew(Label(TTR("Sync:"))));
+	sync = memnew(CheckBox);
+	top_hb->add_child(sync);
+	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);

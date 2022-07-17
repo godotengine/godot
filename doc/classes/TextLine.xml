@@ -148,8 +148,8 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="3">
-			Line Alignment rules. For more info see [TextServer].
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" default="3">
+			Line alignment rules. For more info see [TextServer].
 		</member>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
 			Text orientation.

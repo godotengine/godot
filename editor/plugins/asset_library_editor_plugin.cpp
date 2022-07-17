@@ -307,8 +307,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok_button()->set_text(TTR("Download"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Download"));
+	set_cancel_button_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1293,14 +1293,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
 				if (download_item->can_install()) {
-					description->get_ok_button()->set_text(TTR("Install"));
+					description->set_ok_button_text(TTR("Install"));
 					description->get_ok_button()->set_disabled(false);
 				} else {
-					description->get_ok_button()->set_text(TTR("Downloading..."));
+					description->set_ok_button_text(TTR("Downloading..."));
 					description->get_ok_button()->set_disabled(true);
 				}
 			} else {
-				description->get_ok_button()->set_text(TTR("Download"));
+				description->set_ok_button_text(TTR("Download"));
 				description->get_ok_button()->set_disabled(false);
 			}
 
@@ -1584,7 +1584,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open = memnew(EditorFileDialog);
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
+	asset_open->add_filter("*.zip", TTR("Assets ZIP File"));
 	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));

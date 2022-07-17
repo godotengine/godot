@@ -461,7 +461,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Multiplies each component of the <see cref="Vector2i"/>
+        /// Divides each component of the <see cref="Vector2i"/>
         /// by the given <see langword="int"/>.
         /// </summary>
         /// <param name="vec">The dividend vector.</param>
