@@ -482,6 +482,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				ERR_CONTINUE(!dup);
 
+				// Preserve ownership relations ready for pasting.
+				List<Node *> owned;
+				node->get_owned_by(node->get_owner(), &owned);
+
+				for (Node *F : owned) {
+					if (!duplimap.has(F) || F == node) {
+						continue;
+					}
+					Node *d = duplimap[F];
+					// Only use this as a marker that ownership needs to be assigned when pasting.
+					// The actual owner doesn't matter.
+					d->set_owner(dup);
+				}
+
 				node_clipboard.push_back(dup);
 			}
 
@@ -3239,7 +3253,8 @@ List<Node *> SceneTreeDock::paste_nodes() {
 
 		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
 			Node *d = E2.value;
-			if (d != dup) {
+			// When copying, all nodes that should have an owner assigned here were given node as an owner.
+			if (d != dup && E2.key->get_owner() == node) {
 				ur->add_do_method(d, "set_owner", owner);
 			}
 		}
