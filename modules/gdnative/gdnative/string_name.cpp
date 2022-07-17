@@ -72,13 +72,13 @@ const void GDAPI *godot_string_name_get_data_unique_pointer(const godot_string_n
 godot_bool GDAPI godot_string_name_operator_equal(const godot_string_name *p_self, const godot_string_name *p_other) {
 	const StringName *self = (const StringName *)p_self;
 	const StringName *other = (const StringName *)p_other;
-	return self == other;
+	return *self == *other;
 }
 
 godot_bool GDAPI godot_string_name_operator_less(const godot_string_name *p_self, const godot_string_name *p_other) {
 	const StringName *self = (const StringName *)p_self;
 	const StringName *other = (const StringName *)p_other;
-	return self < other;
+	return *self < *other;
 }
 
 void GDAPI godot_string_name_destroy(godot_string_name *p_self) {
