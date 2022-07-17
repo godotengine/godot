@@ -88,7 +88,7 @@ layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 layout(set = 1, binding = 0) uniform sampler2DArray source_depth;
 layout(location = 1) out float depth;
 #endif /* MODE_TWO_SOURCES */
-#else
+#else /* MULTIVIEW */
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #ifdef MODE_TWO_SOURCES
 layout(set = 1, binding = 0) uniform sampler2D source_color2;
@@ -139,7 +139,7 @@ void main() {
 		//uv.y = 1.0 - uv.y;
 		uv = 1.0 - uv;
 	}
-#endif
+#endif /* MODE_PANORAMA_TO_DP */
 
 #ifdef MULTIVIEW
 	vec4 color = textureLod(source_color, uv, 0.0);
@@ -148,12 +148,13 @@ void main() {
 	depth = textureLod(source_depth, uv, 0.0).r;
 #endif /* MODE_TWO_SOURCES */
 
-#else
+#else /* MULTIVIEW */
 	vec4 color = textureLod(source_color, uv, 0.0);
 #ifdef MODE_TWO_SOURCES
 	color += textureLod(source_color2, uv, 0.0);
 #endif /* MODE_TWO_SOURCES */
 #endif /* MULTIVIEW */
+
 	if (params.force_luminance) {
 		color.rgb = vec3(max(max(color.r, color.g), color.b));
 	}
@@ -163,5 +164,6 @@ void main() {
 	if (params.srgb) {
 		color.rgb = linear_to_srgb(color.rgb);
 	}
+
 	frag_color = color;
 }

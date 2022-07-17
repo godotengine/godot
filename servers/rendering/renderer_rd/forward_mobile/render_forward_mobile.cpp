@@ -87,10 +87,11 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) {
 	clear();
 
 	msaa = p_msaa;
+	vrs = p_vrs_texture;
 
 	Size2i target_size = RD::get_singleton()->texture_size(p_target_buffer);
 
@@ -108,6 +109,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		Vector<RID> fb;
 		fb.push_back(p_color_buffer); // 0 - color buffer
 		fb.push_back(depth); // 1 - depth buffer
+		if (vrs.is_valid()) {
+			fb.push_back(vrs); // 2 - vrs texture
+		}
 
 		// Now define our subpasses
 		Vector<RD::FramebufferPass> passes;
@@ -116,6 +120,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		// re-using the same attachments
 		pass.color_attachments.push_back(0);
 		pass.depth_attachment = 1;
+		if (vrs.is_valid()) {
+			pass.vrs_attachment = 2;
+		}
 
 		// - opaque pass
 		passes.push_back(pass);
@@ -131,12 +138,13 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 
 		if (!is_scaled) {
 			// - add blit to 2D pass
-			fb.push_back(p_target_buffer); // 2 - target buffer
+			int target_buffer_id = fb.size();
+			fb.push_back(p_target_buffer); // 2/3 - target buffer
 
 			RD::FramebufferPass blit_pass;
-			blit_pass.color_attachments.push_back(2);
+			blit_pass.color_attachments.push_back(target_buffer_id);
 			blit_pass.input_attachments.push_back(0);
-			passes.push_back(blit_pass);
+			passes.push_back(blit_pass); // this doesn't need VRS
 
 			color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
 		} else {
@@ -179,6 +187,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			Vector<RID> fb;
 			fb.push_back(color_msaa); // 0 - msaa color buffer
 			fb.push_back(depth_msaa); // 1 - msaa depth buffer
+			if (vrs.is_valid()) {
+				fb.push_back(vrs); // 2 - vrs texture
+			}
 
 			// Now define our subpasses
 			Vector<RD::FramebufferPass> passes;
@@ -187,18 +198,22 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			// re-using the same attachments
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
+			if (vrs.is_valid()) {
+				pass.vrs_attachment = 2;
+			}
 
 			// - opaque pass
 			passes.push_back(pass);
 
 			// - add sky pass
-			fb.push_back(color); // 2 - color buffer
+			int color_buffer_id = fb.size();
+			fb.push_back(color); // color buffer
 			passes.push_back(pass); // without resolve for our 3 + 4 subpass config
 			{
 				// but with resolve for our 2 subpass config
 				Vector<RD::FramebufferPass> two_passes;
 				two_passes.push_back(pass); // opaque subpass without resolve
-				pass.resolve_attachments.push_back(2);
+				pass.resolve_attachments.push_back(color_buffer_id);
 				two_passes.push_back(pass); // sky subpass with resolve
 
 				color_fbs[FB_CONFIG_TWO_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, two_passes, RenderingDevice::INVALID_ID, view_count);
@@ -217,10 +232,11 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 
 			if (!is_scaled) {
 				// - add blit to 2D pass
-				fb.push_back(p_target_buffer); // 3 - target buffer
+				int target_buffer_id = fb.size();
+				fb.push_back(p_target_buffer); // target buffer
 				RD::FramebufferPass blit_pass;
-				blit_pass.color_attachments.push_back(3);
-				blit_pass.input_attachments.push_back(2);
+				blit_pass.color_attachments.push_back(target_buffer_id);
+				blit_pass.input_attachments.push_back(color_buffer_id);
 				passes.push_back(blit_pass);
 
 				color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
@@ -675,8 +691,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
 	}
 
-	RID null_rids[2];
-	_pre_opaque_render(p_render_data, false, false, false, null_rids, RID());
+	RID nullrids[RendererSceneRender::MAX_RENDER_VIEWS];
+	_pre_opaque_render(p_render_data, false, false, false, nullrids, RID(), nullrids);
 
 	uint32_t spec_constant_base_flags = 0;
 

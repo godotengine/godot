@@ -52,6 +52,7 @@ enum DefaultRDTexture {
 	DEFAULT_RD_TEXTURE_3D_BLACK,
 	DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 	DEFAULT_RD_TEXTURE_2D_UINT,
+	DEFAULT_RD_TEXTURE_VRS,
 	DEFAULT_RD_TEXTURE_MAX
 };
 
@@ -228,6 +229,10 @@ struct RenderTarget {
 	RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
 	RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
 	Size2i process_size;
+
+	// VRS
+	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
+	RID vrs_texture;
 
 	//texture generated for this owner (nor RD).
 	RID texture;
@@ -548,6 +553,12 @@ public:
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override;
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override;
 	bool render_target_is_sdf_enabled(RID p_render_target) const;
+
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override;
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
+
+	RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const;
+	RID render_target_get_vrs_texture(RID p_render_target) const;
 
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);

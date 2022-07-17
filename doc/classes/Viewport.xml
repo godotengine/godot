@@ -286,6 +286,12 @@
 		<member name="use_xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
 			If [code]true[/code], the viewport will use the primary XR interface to render XR output. When applicable this can result in a stereoscopic image and the resulting render being output to a headset.
 		</member>
+		<member name="vrs_mode" type="int" setter="set_vrs_mode" getter="get_vrs_mode" enum="Viewport.VRSMode" default="0">
+			The Variable Rate Shading (VRS) mode that is used for this viewport. Note, if hardware does not support VRS this property is ignored.
+		</member>
+		<member name="vrs_texture" type="Texture2D" setter="set_vrs_texture" getter="get_vrs_texture">
+			Texture to use when [member vrs_mode] is set to [constant Viewport.VRS_TEXTURE].
+		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
 		</member>
@@ -491,6 +497,18 @@
 		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
 		</constant>
 		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
+		</constant>
+		<constant name="VRS_DISABLED" value="0" enum="VRSMode">
+			VRS is disabled.
+		</constant>
+		<constant name="VRS_TEXTURE" value="1" enum="VRSMode">
+			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+		</constant>
+		<constant name="VRS_XR" value="2" enum="VRSMode">
+			VRS texture is supplied by the primary [XRInterface].
+		</constant>
+		<constant name="VRS_MAX" value="3" enum="VRSMode">
+			Represents the size of the [enum VRSMode] enum.
 		</constant>
 	</constants>
 </class>

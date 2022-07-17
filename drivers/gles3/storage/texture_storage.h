@@ -546,6 +546,16 @@ public:
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
 	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override{};
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override{};
+
+	void bind_framebuffer(GLuint framebuffer) {
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	}
+
+	void bind_framebuffer_system() {
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	}
 
 	String get_framebuffer_error(GLenum p_status);
 };

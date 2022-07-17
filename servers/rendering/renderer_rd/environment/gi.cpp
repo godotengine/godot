@@ -109,6 +109,7 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 			Vector<Vector<uint8_t>> s;
 			s.push_back(p_distance_field);
 			voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView(), s);
+			RD::get_singleton()->set_resource_name(voxel_gi->sdf_texture, "VoxelGI SDF Texture");
 		}
 #if 0
 			{
@@ -122,6 +123,7 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UNORM);
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UINT);
 				voxel_gi->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				RD::get_singleton()->set_resource_name(voxel_gi->sdf_texture, "VoxelGI SDF Texture");
 			}
 			RID shared_tex;
 			{
@@ -402,29 +404,38 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		RD::TextureFormat tf_render = tf_sdf;
 		tf_render.format = RD::DATA_FORMAT_R16_UINT;
 		render_albedo = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_albedo, "VoxelGI Render Albedo");
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
 		render_emission = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_emission, "VoxelGI Render Emission");
 		render_emission_aniso = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_emission_aniso, "VoxelGI Render Emission Aniso");
 
 		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
 
 		for (int i = 0; i < 8; i++) {
 			render_occlusion[i] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+			RD::get_singleton()->set_resource_name(render_occlusion[i], String("VoxelGI Render Occlusion ") + itos(i));
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
 		render_geom_facing = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_geom_facing, "VoxelGI Render Geometry Facing");
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
 		render_sdf[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_sdf[0], "VoxelGI Render SDF 0");
 		render_sdf[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_sdf[1], "VoxelGI Render SDF 1");
 
 		tf_render.width /= 2;
 		tf_render.height /= 2;
 		tf_render.depth /= 2;
 
 		render_sdf_half[0] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_sdf_half[0], "VoxelGI Render SDF Half 0");
 		render_sdf_half[1] = RD::get_singleton()->texture_create(tf_render, RD::TextureView());
+		RD::get_singleton()->set_resource_name(render_sdf_half[1], "VoxelGI Render SDF Half 1");
 	}
 
 	RD::TextureFormat tf_occlusion = tf_sdf;
@@ -465,7 +476,9 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 	tf_probe_average.texture_type = RD::TEXTURE_TYPE_2D;
 
 	lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
+	RD::get_singleton()->set_resource_name(lightprobe_history_scroll, "VoxelGI LightProbe History Scroll");
 	lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
+	RD::get_singleton()->set_resource_name(lightprobe_average_scroll, "VoxelGI LightProbe Average Scroll");
 
 	{
 		//octahedral lightprobes
@@ -479,6 +492,7 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		//lightprobe texture is an octahedral texture
 
 		lightprobe_data = RD::get_singleton()->texture_create(tf_octprobes, RD::TextureView());
+		RD::get_singleton()->set_resource_name(lightprobe_data, "VoxelGI LightProbe Data");
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 		lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, lightprobe_data);
@@ -492,11 +506,13 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		tf_ambient.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 		//lightprobe texture is an octahedral texture
 		ambient_texture = RD::get_singleton()->texture_create(tf_ambient, RD::TextureView());
+		RD::get_singleton()->set_resource_name(ambient_texture, "VoxelGI Ambient Texture");
 	}
 
 	cascades_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES);
 
 	occlusion_data = RD::get_singleton()->texture_create(tf_occlusion, RD::TextureView());
+	RD::get_singleton()->set_resource_name(occlusion_data, "VoxelGI Occlusion Data");
 	{
 		RD::TextureView tv;
 		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
@@ -509,11 +525,15 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		/* 3D Textures */
 
 		cascade.sdf_tex = RD::get_singleton()->texture_create(tf_sdf, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.sdf_tex, "VoxelGI Cascade SDF Texture");
 
 		cascade.light_data = RD::get_singleton()->texture_create(tf_light, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.light_data, "VoxelGI Cascade Light Data");
 
 		cascade.light_aniso_0_tex = RD::get_singleton()->texture_create(tf_aniso0, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.light_aniso_0_tex, "VoxelGI Cascade Light Aniso 0 Texture");
 		cascade.light_aniso_1_tex = RD::get_singleton()->texture_create(tf_aniso1, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.light_aniso_1_tex, "VoxelGI Cascade Light Aniso 1 Texture");
 
 		{
 			RD::TextureView tv;
@@ -540,9 +560,11 @@ void GI::SDFGI::create(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world
 		/* Probe History */
 
 		cascade.lightprobe_history_tex = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_history_tex, "VoxelGI Cascade LightProbe History Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_history_tex, Color(0, 0, 0, 0), 0, 1, 0, tf_probe_history.array_layers); //needs to be cleared for average to work
 
 		cascade.lightprobe_average_tex = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
+		RD::get_singleton()->set_resource_name(cascade.lightprobe_average_tex, "VoxelGI Cascade LightProbe Average Texture");
 		RD::get_singleton()->texture_clear(cascade.lightprobe_average_tex, Color(0, 0, 0, 0), 0, 1, 0, 1); //needs to be cleared for average to work
 
 		/* Buffers */
@@ -2444,6 +2466,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 
 			texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(texture, "VoxelGI Instance Texture");
 
 			RD::get_singleton()->texture_clear(texture, Color(0, 0, 0, 0), 0, levels.size(), 0, 1);
 
@@ -2573,6 +2596,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 					}
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+					RD::get_singleton()->set_resource_name(dmap.texture, "VoxelGI Instance DMap Texture");
 
 					if (dynamic_maps.size() == 0) {
 						// Render depth for first one.
@@ -2580,6 +2604,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						RD::get_singleton()->set_resource_name(dmap.fb_depth, "VoxelGI Instance DMap FB Depth");
 					}
 
 					//just use depth as-is
@@ -2587,13 +2612,17 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
 					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+					RD::get_singleton()->set_resource_name(dmap.depth, "VoxelGI Instance DMap Depth");
 
 					if (dynamic_maps.size() == 0) {
 						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						RD::get_singleton()->set_resource_name(dmap.albedo, "VoxelGI Instance DMap Albedo");
 						dmap.normal = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						RD::get_singleton()->set_resource_name(dmap.normal, "VoxelGI Instance DMap Normal");
 						dmap.orm = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						RD::get_singleton()->set_resource_name(dmap.orm, "VoxelGI Instance DMap ORM");
 
 						Vector<RID> fb;
 						fb.push_back(dmap.albedo);
@@ -3342,37 +3371,40 @@ void GI::init(RendererSceneSkyRD *p_sky) {
 		//calculate tables
 		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 		Vector<String> gi_modes;
+
 		gi_modes.push_back("\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_VOXEL_GI
 		gi_modes.push_back("\n#define USE_SDFGI\n"); // MODE_SDFGI
 		gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_COMBINED
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_HALF_RES_VOXEL_GI
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n"); // MODE_HALF_RES_SDFGI
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n"); // MODE_HALF_RES_COMBINED
-
-		gi_modes.push_back("\n#define USE_VOXEL_GI_INSTANCES\n#define USE_MULTIVIEW\n"); // MODE_VOXEL_GI_MULTIVIEW
-		gi_modes.push_back("\n#define USE_SDFGI\n#define USE_MULTIVIEW\n"); // MODE_SDFGI_MULTIVIEW
-		gi_modes.push_back("\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n#define USE_MULTIVIEW\n"); // MODE_COMBINED_MULTIVIEW
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_VOXEL_GI_INSTANCES\n#define USE_MULTIVIEW\n"); // MODE_HALF_RES_VOXEL_GI_MULTIVIEW
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n#define USE_MULTIVIEW\n"); // MODE_HALF_RES_SDFGI_MULTIVIEW
-		gi_modes.push_back("\n#define MODE_HALF_RES\n#define USE_SDFGI\n\n#define USE_VOXEL_GI_INSTANCES\n#define USE_MULTIVIEW\n"); // MODE_HALF_RES_COMBINED_MULTIVIEW
 
 		shader.initialize(gi_modes, defines);
+		shader_version = shader.version_create();
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
-			shader.set_variant_enabled(MODE_VOXEL_GI_MULTIVIEW, false);
-			shader.set_variant_enabled(MODE_SDFGI_MULTIVIEW, false);
-			shader.set_variant_enabled(MODE_COMBINED_MULTIVIEW, false);
-			shader.set_variant_enabled(MODE_HALF_RES_VOXEL_GI_MULTIVIEW, false);
-			shader.set_variant_enabled(MODE_HALF_RES_SDFGI_MULTIVIEW, false);
-			shader.set_variant_enabled(MODE_HALF_RES_COMBINED_MULTIVIEW, false);
+		Vector<RD::PipelineSpecializationConstant> specialization_constants;
+
+		{
+			RD::PipelineSpecializationConstant sc;
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 0; // SHADER_SPECIALIZATION_HALF_RES
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 1; // SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 2; // SHADER_SPECIALIZATION_USE_VRS
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
 		}
 
-		shader_version = shader.version_create();
-		for (int i = 0; i < MODE_MAX; i++) {
-			if (shader.is_variant_enabled(i)) {
-				pipelines[i] = RD::get_singleton()->compute_pipeline_create(shader.version_get_shader(shader_version, i));
-			} else {
-				pipelines[i] = RID();
+		for (int v = 0; v < SHADER_SPECIALIZATION_VARIATIONS; v++) {
+			specialization_constants.ptrw()[0].bool_value = (v & SHADER_SPECIALIZATION_HALF_RES) ? true : false;
+			specialization_constants.ptrw()[1].bool_value = (v & SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX) ? true : false;
+			specialization_constants.ptrw()[2].bool_value = (v & SHADER_SPECIALIZATION_USE_VRS) ? true : false;
+			for (int i = 0; i < MODE_MAX; i++) {
+				pipelines[v][i] = RD::get_singleton()->compute_pipeline_create(shader.version_get_shader(shader_version, i), specialization_constants);
 			}
 		}
 
@@ -3564,25 +3596,17 @@ void GI::RenderBuffersGI::free() {
 	}
 
 	if (ambient_buffer.is_valid()) {
-		if (view_count == 1) {
-			// Only one view? then these are copies of our main buffers.
-			ambient_view[0] = RID();
-			reflection_view[0] = RID();
-		} else {
-			// Multiple views? free our slices.
-			for (uint32_t v = 0; v < view_count; v++) {
-				RD::get_singleton()->free(ambient_view[v]);
-				RD::get_singleton()->free(reflection_view[v]);
-				ambient_view[v] = RID();
-				reflection_view[v] = RID();
-			}
-		}
-
-		// Now we can free our buffers.
 		RD::get_singleton()->free(ambient_buffer);
 		RD::get_singleton()->free(reflection_buffer);
 		ambient_buffer = RID();
 		reflection_buffer = RID();
+
+		// these are automatically freed when we free the textures, so just reset..
+		for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
+			ambient_slice[v] = RID();
+			reflection_slice[v] = RID();
+		}
+
 		view_count = 0;
 	}
 
@@ -3592,7 +3616,7 @@ void GI::RenderBuffersGI::free() {
 	}
 }
 
-void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
+void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3606,14 +3630,13 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 	if (rb->rbgi.ambient_buffer.is_null() || rb->rbgi.using_half_size_gi != half_resolution || rb->rbgi.view_count != p_view_count) {
 		// Free our old buffer if applicable
 		if (rb->rbgi.ambient_buffer.is_valid()) {
-			if (rb->rbgi.view_count > 1) {
-				for (uint32_t v = 0; v < rb->rbgi.view_count; v++) {
-					RD::get_singleton()->free(rb->rbgi.ambient_view[v]);
-					RD::get_singleton()->free(rb->rbgi.reflection_view[v]);
-				}
-			}
 			RD::get_singleton()->free(rb->rbgi.ambient_buffer);
 			RD::get_singleton()->free(rb->rbgi.reflection_buffer);
+
+			for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
+				rb->rbgi.ambient_slice[v] = RID();
+				rb->rbgi.reflection_slice[v] = RID();
+			}
 		}
 
 		// Remember the view count we're using
@@ -3637,18 +3660,19 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 		}
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		rb->rbgi.ambient_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		RD::get_singleton()->set_resource_name(rb->rbgi.ambient_buffer, "GI Ambient Buffer");
 		rb->rbgi.reflection_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		RD::get_singleton()->set_resource_name(rb->rbgi.reflection_buffer, "GI Reflection Buffer");
 		rb->rbgi.using_half_size_gi = half_resolution;
 
 		if (p_view_count == 1) {
-			// Just one view? Copy our buffers
-			rb->rbgi.ambient_view[0] = rb->rbgi.ambient_buffer;
-			rb->rbgi.reflection_view[0] = rb->rbgi.reflection_buffer;
+			// Just copy, we don't need to create slices
+			rb->rbgi.ambient_slice[0] = rb->rbgi.ambient_buffer;
+			rb->rbgi.reflection_slice[0] = rb->rbgi.reflection_buffer;
 		} else {
-			// More then one view? Create slices for each view
 			for (uint32_t v = 0; v < p_view_count; v++) {
-				rb->rbgi.ambient_view[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->rbgi.ambient_buffer, v, 0);
-				rb->rbgi.reflection_view[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->rbgi.reflection_buffer, v, 0);
+				rb->rbgi.ambient_slice[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->rbgi.ambient_buffer, v, 0);
+				rb->rbgi.reflection_slice[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->rbgi.reflection_buffer, v, 0);
 			}
 		}
 	}
@@ -3681,29 +3705,45 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 	// Now compute the contents of our buffers.
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 
+	// Render each eye seperately.
+	// We need to look into whether we can make our compute shader use Multiview but not sure that works or makes a difference..
+
+	// setup our push constant
+
+	PushConstant push_constant;
+
+	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
+	push_constant.high_quality_vct = voxel_gi_quality == RS::VOXEL_GI_QUALITY_HIGH;
+
+	// these should be the same for all views
+	push_constant.orthogonal = p_projections[0].is_orthogonal();
+	push_constant.z_near = p_projections[0].get_z_near();
+	push_constant.z_far = p_projections[0].get_z_far();
+
+	// these are only used if we have 1 view, else we use the projections in our scene data
+	push_constant.proj_info[0] = -2.0f / (rb->internal_width * p_projections[0].matrix[0][0]);
+	push_constant.proj_info[1] = -2.0f / (rb->internal_height * p_projections[0].matrix[1][1]);
+	push_constant.proj_info[2] = (1.0f - p_projections[0].matrix[0][2]) / p_projections[0].matrix[0][0];
+	push_constant.proj_info[3] = (1.0f + p_projections[0].matrix[1][2]) / p_projections[0].matrix[1][1];
+
+	bool use_sdfgi = rb->sdfgi != nullptr;
+	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
+
+	uint32_t pipeline_specialization = 0;
+	if (rb->rbgi.using_half_size_gi) {
+		pipeline_specialization |= SHADER_SPECIALIZATION_HALF_RES;
+	}
+	if (p_view_count > 1) {
+		pipeline_specialization |= SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX;
+	}
+	if (p_vrs_slices[0].is_valid()) {
+		pipeline_specialization |= SHADER_SPECIALIZATION_USE_VRS;
+	}
+
+	Mode mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_VOXEL_GI);
+
 	for (uint32_t v = 0; v < p_view_count; v++) {
-		// Render each eye seperately.
-		// We need to look into whether we can make our compute shader use Multiview but not sure that works or makes a difference..
-
-		// setup our push constant
-
-		PushConstant push_constant;
-
 		push_constant.view_index = v;
-		push_constant.orthogonal = p_projections[v].is_orthogonal();
-		push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
-		push_constant.high_quality_vct = voxel_gi_quality == RS::VOXEL_GI_QUALITY_HIGH;
-
-		push_constant.z_near = p_projections[v].get_z_near();
-		push_constant.z_far = p_projections[v].get_z_far();
-
-		push_constant.proj_info[0] = -2.0f / (rb->internal_width * p_projections[v].matrix[0][0]);
-		push_constant.proj_info[1] = -2.0f / (rb->internal_height * p_projections[v].matrix[1][1]);
-		push_constant.proj_info[2] = (1.0f - p_projections[v].matrix[0][2]) / p_projections[v].matrix[0][0];
-		push_constant.proj_info[3] = (1.0f + p_projections[v].matrix[1][2]) / p_projections[v].matrix[1][1];
-
-		bool use_sdfgi = rb->sdfgi != nullptr;
-		bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;
 
 		// setup our uniform set
 		if (rb->rbgi.uniform_set[v].is_null() || !RD::get_singleton()->uniform_set_is_valid(rb->rbgi.uniform_set[v])) {
@@ -3790,7 +3830,7 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 9;
-				u.append_id(rb->rbgi.ambient_view[v]);
+				u.append_id(rb->rbgi.ambient_slice[v]);
 				uniforms.push_back(u);
 			}
 
@@ -3798,7 +3838,7 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 10;
-				u.append_id(rb->rbgi.reflection_view[v]);
+				u.append_id(rb->rbgi.reflection_slice[v]);
 				uniforms.push_back(u);
 			}
 
@@ -3824,7 +3864,7 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 13;
-				u.append_id(p_normal_roughness_views[v]);
+				u.append_id(p_normal_roughness_slices[v]);
 				uniforms.push_back(u);
 			}
 			{
@@ -3865,27 +3905,19 @@ void GI::process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_v
 				u.append_id(rb->rbgi.scene_data_ubo);
 				uniforms.push_back(u);
 			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 19;
+				RID buffer = p_vrs_slices[v].is_valid() ? p_vrs_slices[v] : texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_VRS);
+				u.append_id(buffer);
+				uniforms.push_back(u);
+			}
 
 			rb->rbgi.uniform_set[v] = RD::get_singleton()->uniform_set_create(uniforms, shader.version_get_shader(shader_version, 0), 0);
 		}
 
-		Mode mode;
-
-		if (p_view_count > 1) {
-			if (rb->rbgi.using_half_size_gi) {
-				mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_HALF_RES_COMBINED_MULTIVIEW : (use_sdfgi ? MODE_HALF_RES_SDFGI_MULTIVIEW : MODE_HALF_RES_VOXEL_GI_MULTIVIEW);
-			} else {
-				mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED_MULTIVIEW : (use_sdfgi ? MODE_SDFGI_MULTIVIEW : MODE_VOXEL_GI_MULTIVIEW);
-			}
-		} else {
-			if (rb->rbgi.using_half_size_gi) {
-				mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_HALF_RES_COMBINED : (use_sdfgi ? MODE_HALF_RES_SDFGI : MODE_HALF_RES_VOXEL_GI);
-			} else {
-				mode = (use_sdfgi && use_voxel_gi_instances) ? MODE_COMBINED : (use_sdfgi ? MODE_SDFGI : MODE_VOXEL_GI);
-			}
-		}
-
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[mode]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipelines[pipeline_specialization][mode]);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->rbgi.uniform_set[v], 0);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 
