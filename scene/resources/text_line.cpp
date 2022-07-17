@@ -74,7 +74,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextLine::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextLine::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justify,Word Justify,Trim Edge Spaces After Justify,Justify Only After Last Tab"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justication,Trim Edge Spaces After Justication,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
@@ -106,24 +106,24 @@ void TextLine::_shape() {
 			TS->shaped_text_tab_align(rid, tab_stops);
 		}
 
-		uint16_t overrun_flags = TextServer::OVERRUN_NO_TRIM;
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 			switch (overrun_behavior) {
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
-					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 					break;
 				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_ADD_ELLIPSIS;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
 					break;
 				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
-					overrun_flags |= TextServer::OVERRUN_TRIM_WORD_ONLY;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
 					break;
 				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags |= TextServer::OVERRUN_TRIM;
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					break;
 				case TextServer::OVERRUN_NO_TRIMMING:
 					break;
@@ -131,7 +131,7 @@ void TextLine::_shape() {
 
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				TS->shaped_text_fit_to_width(rid, width, flags);
-				overrun_flags |= TextServer::OVERRUN_JUSTIFICATION_AWARE;
+				overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			} else {
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
@@ -241,14 +241,14 @@ void TextLine::tab_align(const Vector<float> &p_tab_stops) {
 	dirty = true;
 }
 
-void TextLine::set_flags(uint16_t p_flags) {
+void TextLine::set_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	if (flags != p_flags) {
 		flags = p_flags;
 		dirty = true;
 	}
 }
 
-uint16_t TextLine::get_flags() const {
+BitField<TextServer::JustificationFlag> TextLine::get_flags() const {
 	return flags;
 }
 

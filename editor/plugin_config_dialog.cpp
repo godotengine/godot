@@ -200,7 +200,7 @@ void PluginConfigDialog::config(const String &p_config_path) {
 	_on_required_text_changed("");
 
 	get_ok_button()->set_disabled(!_edit_mode);
-	get_ok_button()->set_text(_edit_mode ? TTR("Update") : TTR("Create"));
+	set_ok_button_text(_edit_mode ? TTR("Update") : TTR("Create"));
 }
 
 void PluginConfigDialog::_bind_methods() {

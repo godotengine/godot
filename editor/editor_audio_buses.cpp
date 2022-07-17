@@ -1332,7 +1332,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (const String &E : ext) {
-		file_dialog->add_filter(vformat("*.%s; %s", E, TTR("Audio Bus Layout")));
+		file_dialog->add_filter("*." + E, TTR("Audio Bus Layout"));
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));

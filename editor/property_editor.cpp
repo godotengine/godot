@@ -145,7 +145,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					file->clear_filters();
 					for (const String &E : valid_extensions) {
-						file->add_filter("*." + E + " ; " + E.to_upper());
+						file->add_filter("*." + E, E.to_upper());
 					}
 
 					file->popup_file_dialog();
@@ -1223,7 +1223,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 								filter = "*." + extensions[i];
 							}
 
-							file->add_filter(filter + " ; " + extensions[i].to_upper());
+							file->add_filter(filter, extensions[i].to_upper());
 						}
 					}
 					file->popup_file_dialog();
@@ -1307,7 +1307,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				ResourceLoader::get_recognized_extensions_for_type(type, &extensions);
 				file->clear_filters();
 				for (const String &E : extensions) {
-					file->add_filter("*." + E + " ; " + E.to_upper());
+					file->add_filter("*." + E, E.to_upper());
 				}
 
 				file->popup_file_dialog();

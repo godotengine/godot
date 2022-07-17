@@ -362,8 +362,8 @@ private:
 		if (mode == MODE_IMPORT) {
 			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter(vformat("project.godot ; %s %s", VERSION_NAME, TTR("Project")));
-			fdialog->add_filter("*.zip ; " + TTR("ZIP File"));
+			fdialog->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
+			fdialog->add_filter("*.zip", TTR("ZIP File"));
 		} else {
 			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		}
@@ -681,7 +681,7 @@ public:
 			install_browse->hide();
 
 			set_title(TTR("Rename Project"));
-			get_ok_button()->set_text(TTR("Rename"));
+			set_ok_button_text(TTR("Rename"));
 			name_container->show();
 			status_rect->hide();
 			msg->hide();
@@ -735,7 +735,7 @@ public:
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
-				get_ok_button()->set_text(TTR("Import & Edit"));
+				set_ok_button_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
@@ -744,7 +744,7 @@ public:
 
 			} else if (mode == MODE_NEW) {
 				set_title(TTR("Create New Project"));
-				get_ok_button()->set_text(TTR("Create & Edit"));
+				set_ok_button_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
@@ -754,7 +754,7 @@ public:
 
 			} else if (mode == MODE_INSTALL) {
 				set_title(TTR("Install Project:") + " " + zip_title);
-				get_ok_button()->set_text(TTR("Install & Edit"));
+				set_ok_button_text(TTR("Install & Edit"));
 				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
@@ -2801,9 +2801,9 @@ ProjectManager::ProjectManager() {
 	{
 		// Dialogs
 		language_restart_ask = memnew(ConfirmationDialog);
-		language_restart_ask->get_ok_button()->set_text(TTR("Restart Now"));
+		language_restart_ask->set_ok_button_text(TTR("Restart Now"));
 		language_restart_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_restart_confirm));
-		language_restart_ask->get_cancel_button()->set_text(TTR("Continue"));
+		language_restart_ask->set_cancel_button_text(TTR("Continue"));
 		add_child(language_restart_ask);
 
 		scan_dir = memnew(EditorFileDialog);
@@ -2816,12 +2816,12 @@ ProjectManager::ProjectManager() {
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
-		erase_missing_ask->get_ok_button()->set_text(TTR("Remove All"));
+		erase_missing_ask->set_ok_button_text(TTR("Remove All"));
 		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
 
 		erase_ask = memnew(ConfirmationDialog);
-		erase_ask->get_ok_button()->set_text(TTR("Remove"));
+		erase_ask->set_ok_button_text(TTR("Remove"));
 		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
 		add_child(erase_ask);
 
@@ -2836,17 +2836,17 @@ ProjectManager::ProjectManager() {
 		erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
-		multi_open_ask->get_ok_button()->set_text(TTR("Edit"));
+		multi_open_ask->set_ok_button_text(TTR("Edit"));
 		multi_open_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
-		multi_run_ask->get_ok_button()->set_text(TTR("Run"));
+		multi_run_ask->set_ok_button_text(TTR("Run"));
 		multi_run_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
 
 		multi_scan_ask = memnew(ConfirmationDialog);
-		multi_scan_ask->get_ok_button()->set_text(TTR("Scan"));
+		multi_scan_ask->set_ok_button_text(TTR("Scan"));
 		add_child(multi_scan_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
@@ -2868,7 +2868,7 @@ ProjectManager::ProjectManager() {
 		if (asset_library) {
 			open_templates = memnew(ConfirmationDialog);
 			open_templates->set_text(TTR("You currently don't have any projects.\nWould you like to explore official example projects in the Asset Library?"));
-			open_templates->get_ok_button()->set_text(TTR("Open Asset Library"));
+			open_templates->set_ok_button_text(TTR("Open Asset Library"));
 			open_templates->connect("confirmed", callable_mp(this, &ProjectManager::_open_asset_library));
 			add_child(open_templates);
 		}

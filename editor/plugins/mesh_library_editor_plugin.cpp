@@ -263,7 +263,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
 	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+		file->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 	add_child(file);
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
@@ -288,7 +288,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
-	cd_update->get_ok_button()->set_text(TTR("Apply without Transforms"));
+	cd_update->set_ok_button_text(TTR("Apply without Transforms"));
 	cd_update->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(false));
 	cd_update->add_button(TTR("Apply with Transforms"))->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm), varray(true));
 }

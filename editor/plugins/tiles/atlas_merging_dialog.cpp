@@ -256,7 +256,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	set_hide_on_ok(false);
 
 	// Ok buttons
-	get_ok_button()->set_text(TTR("Merge (Keep original Atlases)"));
+	set_ok_button_text(TTR("Merge (Keep original Atlases)"));
 	get_ok_button()->set_disabled(true);
 	merge_button = add_button(TTR("Merge"), true, "merge");
 	merge_button->set_disabled(true);

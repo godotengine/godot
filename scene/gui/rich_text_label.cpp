@@ -149,7 +149,12 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 					return it;
 				}
 			} break;
-			case ITEM_NEWLINE:
+			case ITEM_NEWLINE: {
+				offset += 1;
+				if (offset == p_position) {
+					return it;
+				}
+			} break;
 			case ITEM_IMAGE:
 			case ITEM_TABLE: {
 				offset += 1;
@@ -426,10 +431,10 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
-	uint16_t autowrap_flags = TextServer::BREAK_MANDATORY;
+	BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
 	switch (autowrap_mode) {
 		case TextServer::AUTOWRAP_WORD_SMART:
-			autowrap_flags = TextServer::BREAK_WORD_BOUND_ADAPTIVE | TextServer::BREAK_MANDATORY;
+			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
 			break;
 		case TextServer::AUTOWRAP_WORD:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
@@ -443,7 +448,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 
 	// Clear cache.
 	l.text_buf->clear();
-	l.text_buf->set_flags(autowrap_flags | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+	l.text_buf->set_break_flags(autowrap_flags);
+	l.text_buf->set_justification_flags(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
@@ -1344,6 +1350,8 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool p_table) {
 	Vector2 off;
 
+	bool line_clicked = false;
+	float text_rect_begin = 0.0;
 	int char_pos = -1;
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
@@ -1469,7 +1477,11 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 		}
 
 		if (p_click.y >= rect.position.y && p_click.y <= rect.position.y + rect.size.y) {
-			char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+			if ((!rtl && p_click.x >= rect.position.x) || (rtl && p_click.x <= rect.position.x + rect.size.x)) {
+				char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+			}
+			line_clicked = true;
+			text_rect_begin = rtl ? rect.position.x + rect.size.x : rect.position.x;
 		}
 
 		// If table hit was detected, and line hit is in the table bounds use table hit.
@@ -1496,23 +1508,38 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 	}
 
 	// Text line hit.
-	if (char_pos >= 0) {
+	if (line_clicked) {
 		// Find item.
 		if (r_click_item != nullptr) {
 			Item *it = p_frame->lines[p_line].from;
 			Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
-			if (char_pos == p_frame->lines[p_line].char_count) {
-				// Selection after the end of line, select last item.
-				if (it_to != nullptr) {
-					*r_click_item = _get_prev_item(it_to);
-				} else {
-					for (Item *i = it; i; i = _get_next_item(i)) {
-						*r_click_item = i;
-					}
-				}
-			} else {
-				// Selection in the line.
+			if (char_pos >= 0) {
 				*r_click_item = _get_item_at_pos(it, it_to, char_pos);
+			} else {
+				int stop = text_rect_begin;
+				*r_click_item = _find_indentable(it);
+				while (*r_click_item) {
+					Ref<Font> font = _find_font(*r_click_item);
+					if (!font.is_valid()) {
+						font = get_theme_font(SNAME("normal_font"));
+					}
+					int font_size = _find_font_size(*r_click_item);
+					if (font_size == -1) {
+						font_size = get_theme_font_size(SNAME("normal_font_size"));
+					}
+					if (rtl) {
+						stop += tab_size * font->get_char_size(' ', font_size).width;
+						if (stop > p_click.x) {
+							break;
+						}
+					} else {
+						stop -= tab_size * font->get_char_size(' ', font_size).width;
+						if (stop < p_click.x) {
+							break;
+						}
+					}
+					*r_click_item = _find_indentable((*r_click_item)->parent);
+				}
 			}
 		}
 
@@ -2067,6 +2094,19 @@ void RichTextLabel::_find_frame(Item *p_item, ItemFrame **r_frame, int *r_line) 
 
 		item = item->parent;
 	}
+}
+
+RichTextLabel::Item *RichTextLabel::_find_indentable(Item *p_item) {
+	Item *indentable = p_item;
+
+	while (indentable) {
+		if (indentable->type == ITEM_INDENT || indentable->type == ITEM_LIST) {
+			return indentable;
+		}
+		indentable = indentable->parent;
+	}
+
+	return indentable;
 }
 
 Ref<Font> RichTextLabel::_find_font(Item *p_item) {

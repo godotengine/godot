@@ -519,7 +519,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
-	outline_dialog->get_ok_button()->set_text(TTR("Create"));
+	outline_dialog->set_ok_button_text(TTR("Create"));
 
 	VBoxContainer *outline_dialog_vbc = memnew(VBoxContainer);
 	outline_dialog->add_child(outline_dialog_vbc);

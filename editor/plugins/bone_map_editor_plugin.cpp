@@ -32,6 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
+#include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/scene_import_settings.h"
 
 void BoneMapperButton::fetch_textures() {
@@ -71,6 +72,10 @@ void BoneMapperButton::set_state(BoneMapState p_state) {
 	}
 }
 
+bool BoneMapperButton::is_require() const {
+	return require;
+}
+
 void BoneMapperButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -79,8 +84,9 @@ void BoneMapperButton::_notification(int p_what) {
 	}
 }
 
-BoneMapperButton::BoneMapperButton(const StringName p_profile_bone_name, bool p_selected) {
+BoneMapperButton::BoneMapperButton(const StringName p_profile_bone_name, bool p_require, bool p_selected) {
 	profile_bone_name = p_profile_bone_name;
+	require = p_require;
 	selected = p_selected;
 }
 
@@ -89,7 +95,7 @@ BoneMapperButton::~BoneMapperButton() {
 
 void BoneMapperItem::create_editor() {
 	skeleton_bone_selector = memnew(EditorPropertyTextEnum);
-	skeleton_bone_selector->setup(skeleton_bone_names);
+	skeleton_bone_selector->setup(skeleton_bone_names, false, true);
 	skeleton_bone_selector->set_label(profile_bone_name);
 	skeleton_bone_selector->set_selectable(false);
 	skeleton_bone_selector->set_object_and_property(bone_map.ptr(), "bone_map/" + String(profile_bone_name));
@@ -251,7 +257,7 @@ void BoneMapper::recreate_editor() {
 
 	for (int i = 0; i < len; i++) {
 		if (profile->get_group(i) == profile->get_group_name(current_group_idx)) {
-			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), current_bone_idx == i));
+			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), profile->is_require(i), current_bone_idx == i));
 			mb->connect("pressed", callable_mp(this, &BoneMapper::set_current_bone_idx), varray(i), CONNECT_DEFERRED);
 			mb->set_h_grow_direction(GROW_DIRECTION_BOTH);
 			mb->set_v_grow_direction(GROW_DIRECTION_BOTH);
@@ -284,8 +290,6 @@ void BoneMapper::recreate_items() {
 	Ref<SkeletonProfile> profile = bone_map->get_profile();
 	if (profile.is_valid()) {
 		PackedStringArray skeleton_bone_names;
-		skeleton_bone_names.push_back(String());
-
 		int len = skeleton->get_bone_count();
 		for (int i = 0; i < len; i++) {
 			skeleton_bone_names.push_back(skeleton->get_bone_name(i));
@@ -314,7 +318,11 @@ void BoneMapper::_update_state() {
 				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_ERROR);
 			}
 		} else {
-			bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_UNSET);
+			if (bone_mapper_buttons[i]->is_require()) {
+				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_ERROR);
+			} else {
+				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_UNSET);
+			}
 		}
 	}
 }
@@ -396,9 +404,12 @@ void BoneMapEditor::_notification(int p_what) {
 			create_editors();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			if (!bone_mapper) {
+				return;
+			}
 			remove_child(bone_mapper);
 			bone_mapper->queue_delete();
-		}
+		} break;
 	}
 }
 
@@ -436,4 +447,8 @@ BoneMapEditorPlugin::BoneMapEditorPlugin() {
 	Ref<PostImportPluginSkeletonRenamer> post_import_plugin_renamer;
 	post_import_plugin_renamer.instantiate();
 	add_scene_post_import_plugin(post_import_plugin_renamer);
+
+	Ref<PostImportPluginSkeletonRestFixer> post_import_plugin_rest_fixer;
+	post_import_plugin_rest_fixer.instantiate();
+	add_scene_post_import_plugin(post_import_plugin_rest_fixer);
 }

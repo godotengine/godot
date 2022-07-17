@@ -1718,6 +1718,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	List<String> tag_stack;
 	bool code_tag = false;
+	bool codeblock_tag = false;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -1729,7 +1730,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		if (brk_pos > pos) {
 			String text = bbcode.substr(pos, brk_pos - pos);
-			if (!code_tag) {
+			if (!code_tag && !codeblock_tag) {
 				text = text.replace("\n", "\n\n");
 			}
 			p_rt->add_text(text);
@@ -1743,7 +1744,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		if (brk_end == -1) {
 			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
-			if (!code_tag) {
+			if (!code_tag && !codeblock_tag) {
 				text = text.replace("\n", "\n\n");
 			}
 			p_rt->add_text(text);
@@ -1767,12 +1768,20 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			if (tag != "/img") {
 				p_rt->pop();
 				if (code_tag) {
+					// Pop both color and background color.
+					p_rt->pop();
+					p_rt->pop();
+				} else if (codeblock_tag) {
+					// Pop color, cell and table.
+					p_rt->pop();
+					p_rt->pop();
 					p_rt->pop();
 				}
 			}
 			code_tag = false;
+			codeblock_tag = false;
 
-		} else if (code_tag) {
+		} else if (code_tag || codeblock_tag) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
@@ -1781,10 +1790,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
+			// Use monospace font with translucent colored background color to make clickable references
+			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
+			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
 			p_rt->push_meta("@" + link_tag + " " + link_target);
 			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
+			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1792,10 +1805,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		} else if (doc->class_list.has(tag)) {
 			// Class reference tag such as [Node2D] or [SceneTree].
+			// Use monospace font with translucent colored background color to make clickable references
+			// easier to distinguish from inline code and other text.
 			p_rt->push_font(doc_code_font);
 			p_rt->push_color(link_color);
+			p_rt->push_bgcolor(code_color * Color(1, 1, 1, 0.15));
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
+			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
 			p_rt->pop();
@@ -1811,16 +1828,30 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->push_font(doc_italic_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag == "code" || tag == "codeblock") {
-			// Use monospace font.
+		} else if (tag == "code") {
+			// Use monospace font with translucent background color to make code easier to distinguish from other text.
 			p_rt->push_font(doc_code_font);
+			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
 			p_rt->push_color(code_color);
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "codeblock") {
+			// Use monospace font with translucent background color to make code easier to distinguish from other text.
+			// Use a single-column table with cell row background color instead of `[bgcolor]`.
+			// This makes the background color highlight cover the entire block, rather than individual lines.
+			p_rt->push_font(doc_code_font);
+			p_rt->push_table(1);
+			p_rt->push_cell();
+			p_rt->set_cell_row_background_color(Color(0.5, 0.5, 0.5, 0.15), Color(0.5, 0.5, 0.5, 0.15));
+			p_rt->push_color(code_color);
+			codeblock_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
-			// Use keyboard font with custom color.
+			// Use keyboard font with custom color and background color.
 			p_rt->push_font(doc_kbd_font);
+			p_rt->push_bgcolor(Color(0.5, 0.5, 0.5, 0.15));
 			p_rt->push_color(kbd_color);
 			code_tag = true; // Though not strictly a code tag, logic is similar.
 			pos = brk_end + 1;

@@ -989,7 +989,7 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 }
 
 TextureRegionEditor::TextureRegionEditor() {
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 	node_sprite_2d = nullptr;

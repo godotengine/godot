@@ -289,6 +289,7 @@ public:
 	_FORCE_INLINE_ void clear_flag(T p_flag) { return value &= ~p_flag; }
 	_FORCE_INLINE_ BitField(uint32_t p_value) { value = p_value; }
 	_FORCE_INLINE_ operator uint32_t() const { return value; }
+	_FORCE_INLINE_ operator Variant() const { return value; }
 };
 
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \

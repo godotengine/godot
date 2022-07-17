@@ -356,7 +356,7 @@
 			</description>
 		</method>
 		<method name="font_get_style" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="TextServer.FontStyle" />
 			<argument index="0" name="font_rid" type="RID" />
 			<description>
 				Returns font style flags, see [enum FontStyle].
@@ -786,7 +786,7 @@
 		<method name="font_set_style">
 			<return type="void" />
 			<argument index="0" name="font_rid" type="RID" />
-			<argument index="1" name="style" type="int" />
+			<argument index="1" name="style" type="int" enum="TextServer.FontStyle" />
 			<description>
 				Sets the font style flags, see [enum FontStyle].
 			</description>
@@ -1077,7 +1077,7 @@
 			<return type="float" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
-			<argument index="2" name="jst_flags" type="int" default="3" />
+			<argument index="2" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<description>
 				Adjusts text with to fit to specified width, returns new text width.
 			</description>
@@ -1184,7 +1184,7 @@
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" />
 			<argument index="2" name="start" type="int" default="0" />
-			<argument index="3" name="break_flags" type="int" default="96" />
+			<argument index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 			</description>
@@ -1195,7 +1195,7 @@
 			<argument index="1" name="width" type="PackedFloat32Array" />
 			<argument index="2" name="start" type="int" default="0" />
 			<argument index="3" name="once" type="bool" default="true" />
-			<argument index="4" name="break_flags" type="int" default="96" />
+			<argument index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
@@ -1306,7 +1306,7 @@
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<argument index="0" name="shaped" type="RID" />
-			<argument index="1" name="grapheme_flags" type="int" default="264" />
+			<argument index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" default="264" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [code]grapheme_flags[/code] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
@@ -1346,7 +1346,7 @@
 			<return type="void" />
 			<argument index="0" name="shaped" type="RID" />
 			<argument index="1" name="width" type="float" default="0" />
-			<argument index="2" name="overrun_trim_flags" type="int" default="0" />
+			<argument index="2" name="overrun_trim_flags" type="int" enum="TextServer.TextOverrunFlag" default="0" />
 			<description>
 				Trims text if it exceeds the given width.
 			</description>
@@ -1522,22 +1522,22 @@
 			Left to right text is written vertically from top to bottom.
 			Right to left text is written vertically from bottom to top.
 		</constant>
-		<constant name="JUSTIFICATION_NONE" value="0" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_NONE" value="0" enum="JustificationFlag" is_bitfield="true">
 			Do not justify text.
 		</constant>
-		<constant name="JUSTIFICATION_KASHIDA" value="1" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_KASHIDA" value="1" enum="JustificationFlag" is_bitfield="true">
 			Justify text by adding and removing kashidas.
 		</constant>
-		<constant name="JUSTIFICATION_WORD_BOUND" value="2" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_WORD_BOUND" value="2" enum="JustificationFlag" is_bitfield="true">
 			Justify text by changing width of the spaces between the words.
 		</constant>
-		<constant name="JUSTIFICATION_TRIM_EDGE_SPACES" value="4" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_TRIM_EDGE_SPACES" value="4" enum="JustificationFlag" is_bitfield="true">
 			Remove trailing and leading spaces from the justified text.
 		</constant>
-		<constant name="JUSTIFICATION_AFTER_LAST_TAB" value="8" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_AFTER_LAST_TAB" value="8" enum="JustificationFlag" is_bitfield="true">
 			Only apply justification to the part of the text after the last tab.
 		</constant>
-		<constant name="JUSTIFICATION_CONSTRAIN_ELLIPSIS" value="16" enum="JustificationFlag">
+		<constant name="JUSTIFICATION_CONSTRAIN_ELLIPSIS" value="16" enum="JustificationFlag" is_bitfield="true">
 			Apply justification to the trimmed line with ellipsis.
 		</constant>
 		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
@@ -1552,20 +1552,19 @@
 		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
 			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
 		</constant>
-		<constant name="BREAK_NONE" value="0" enum="LineBreakFlag">
+		<constant name="BREAK_NONE" value="0" enum="LineBreakFlag" is_bitfield="true">
 			Do not break the line.
 		</constant>
-		<constant name="BREAK_MANDATORY" value="32" enum="LineBreakFlag">
+		<constant name="BREAK_MANDATORY" value="1" enum="LineBreakFlag" is_bitfield="true">
 			Break the line at the line mandatory break characters (e.g. [code]"\n"[/code]).
 		</constant>
-		<constant name="BREAK_WORD_BOUND" value="64" enum="LineBreakFlag">
+		<constant name="BREAK_WORD_BOUND" value="2" enum="LineBreakFlag" is_bitfield="true">
 			Break the line between the words.
 		</constant>
-		<constant name="BREAK_GRAPHEME_BOUND" value="128" enum="LineBreakFlag">
+		<constant name="BREAK_GRAPHEME_BOUND" value="4" enum="LineBreakFlag" is_bitfield="true">
 			Break the line between any unconnected graphemes.
 		</constant>
-		<constant name="BREAK_WORD_BOUND_ADAPTIVE" value="320" enum="LineBreakFlag">
-			Break the line between the words, or any unconnected graphemes if line is too short to fit the whole word.
+		<constant name="BREAK_ADAPTIVE" value="8" enum="LineBreakFlag" is_bitfield="true">
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.
@@ -1597,54 +1596,54 @@
 		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
 			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
 		</constant>
-		<constant name="OVERRUN_NO_TRIM" value="0" enum="TextOverrunFlag">
+		<constant name="OVERRUN_NO_TRIM" value="0" enum="TextOverrunFlag" is_bitfield="true">
 			No trimming is performed.
 		</constant>
-		<constant name="OVERRUN_TRIM" value="1" enum="TextOverrunFlag">
+		<constant name="OVERRUN_TRIM" value="1" enum="TextOverrunFlag" is_bitfield="true">
 			Trims the text when it exceeds the given width.
 		</constant>
-		<constant name="OVERRUN_TRIM_WORD_ONLY" value="2" enum="TextOverrunFlag">
+		<constant name="OVERRUN_TRIM_WORD_ONLY" value="2" enum="TextOverrunFlag" is_bitfield="true">
 			Trims the text per word instead of per grapheme.
 		</constant>
-		<constant name="OVERRUN_ADD_ELLIPSIS" value="4" enum="TextOverrunFlag">
+		<constant name="OVERRUN_ADD_ELLIPSIS" value="4" enum="TextOverrunFlag" is_bitfield="true">
 			Determines whether an ellipsis should be added at the end of the text.
 		</constant>
-		<constant name="OVERRUN_ENFORCE_ELLIPSIS" value="8" enum="TextOverrunFlag">
+		<constant name="OVERRUN_ENFORCE_ELLIPSIS" value="8" enum="TextOverrunFlag" is_bitfield="true">
 			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
 		</constant>
-		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag">
+		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
 		</constant>
-		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.
 		</constant>
-		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is part of right-to-left or bottom-to-top run.
 		</constant>
-		<constant name="GRAPHEME_IS_VIRTUAL" value="4" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_VIRTUAL" value="4" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is not part of source text, it was added by justification process.
 		</constant>
-		<constant name="GRAPHEME_IS_SPACE" value="8" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_SPACE" value="8" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is whitespace.
 		</constant>
-		<constant name="GRAPHEME_IS_BREAK_HARD" value="16" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_BREAK_HARD" value="16" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is mandatory break point (e.g. [code]"\n"[/code]).
 		</constant>
-		<constant name="GRAPHEME_IS_BREAK_SOFT" value="32" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_BREAK_SOFT" value="32" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is optional break point (e.g. space).
 		</constant>
-		<constant name="GRAPHEME_IS_TAB" value="64" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_TAB" value="64" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is the tabulation character.
 		</constant>
-		<constant name="GRAPHEME_IS_ELONGATION" value="128" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_ELONGATION" value="128" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is kashida.
 		</constant>
-		<constant name="GRAPHEME_IS_PUNCTUATION" value="256" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_PUNCTUATION" value="256" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is punctuation character.
 		</constant>
-		<constant name="GRAPHEME_IS_UNDERSCORE" value="512" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_UNDERSCORE" value="512" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is underscore character.
 		</constant>
-		<constant name="GRAPHEME_IS_CONNECTED" value="1024" enum="GraphemeFlag">
+		<constant name="GRAPHEME_IS_CONNECTED" value="1024" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is connected to the previous grapheme. Breaking line before this grapheme is not safe.
 		</constant>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
@@ -1737,13 +1736,15 @@
 		<constant name="SPACING_BOTTOM" value="3" enum="SpacingType">
 			Spacing at the bottom of the line.
 		</constant>
-		<constant name="FONT_BOLD" value="1" enum="FontStyle">
+		<constant name="SPACING_MAX" value="4" enum="SpacingType">
+		</constant>
+		<constant name="FONT_BOLD" value="1" enum="FontStyle" is_bitfield="true">
 			Font is bold.
 		</constant>
-		<constant name="FONT_ITALIC" value="2" enum="FontStyle">
+		<constant name="FONT_ITALIC" value="2" enum="FontStyle" is_bitfield="true">
 			Font is italic or oblique.
 		</constant>
-		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle">
+		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle" is_bitfield="true">
 			Font have fixed-width characters.
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">

@@ -38,14 +38,14 @@ class Slider : public Range {
 
 	struct Grab {
 		int pos = 0;
-		float uvalue = 0.0;
+		double uvalue = 0.0;
 		bool active = false;
 	} grab;
 
 	int ticks = 0;
 	bool mouse_inside = false;
 	Orientation orientation;
-	float custom_step = -1.0;
+	double custom_step = -1.0;
 	bool editable = true;
 	bool scrollable = true;
 
@@ -58,8 +58,8 @@ protected:
 public:
 	virtual Size2 get_minimum_size() const override;
 
-	void set_custom_step(float p_custom_step);
-	float get_custom_step() const;
+	void set_custom_step(double p_custom_step);
+	double get_custom_step() const;
 
 	void set_ticks(int p_count);
 	int get_ticks() const;

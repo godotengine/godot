@@ -227,10 +227,10 @@ void EditorFileDialog::update_dir() {
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(TTR("Select Current Folder"));
+			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 		case FILE_MODE_OPEN_ANY:
 		case FILE_MODE_SAVE_FILE:
@@ -507,7 +507,7 @@ void EditorFileDialog::_item_selected(int p_item) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	} else if (mode == FILE_MODE_OPEN_DIR) {
-		get_ok_button()->set_text(TTR("Select This Folder"));
+		set_ok_button_text(TTR("Select This Folder"));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -540,13 +540,13 @@ void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton 
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			get_ok_button()->set_disabled(!item_list->is_anything_selected());
 			break;
 
 		case FILE_MODE_OPEN_DIR:
 			get_ok_button()->set_disabled(false);
-			get_ok_button()->set_text(TTR("Select Current Folder"));
+			set_ok_button_text(TTR("Select Current Folder"));
 			break;
 
 		case FILE_MODE_OPEN_ANY:
@@ -976,8 +976,12 @@ void EditorFileDialog::clear_filters() {
 	invalidate();
 }
 
-void EditorFileDialog::add_filter(const String &p_filter) {
-	filters.push_back(p_filter);
+void EditorFileDialog::add_filter(const String &p_filter, const String &p_description) {
+	if (p_description.is_empty()) {
+		filters.push_back(p_filter);
+	} else {
+		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	}
 	update_filters();
 	invalidate();
 }
@@ -1033,27 +1037,27 @@ void EditorFileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a File"));
 			can_create_dir = false;
 			break;
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open File(s)"));
 			can_create_dir = false;
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a Directory"));
 			can_create_dir = true;
 			break;
 		case FILE_MODE_OPEN_ANY:
-			get_ok_button()->set_text(TTR("Open"));
+			set_ok_button_text(TTR("Open"));
 			set_title(TTR("Open a File or Directory"));
 			can_create_dir = true;
 			break;
 		case FILE_MODE_SAVE_FILE:
-			get_ok_button()->set_text(TTR("Save"));
+			set_ok_button_text(TTR("Save"));
 			set_title(TTR("Save a File"));
 			can_create_dir = true;
 			break;
@@ -1481,7 +1485,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &EditorFileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter"), &EditorFileDialog::add_filter);
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &EditorFileDialog::add_filter, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);

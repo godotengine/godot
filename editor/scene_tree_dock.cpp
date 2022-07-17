@@ -910,7 +910,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			new_scene_from_dialog->clear_filters();
 			for (int i = 0; i < extensions.size(); i++) {
-				new_scene_from_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+				new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
 			String existing;
@@ -3535,7 +3535,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
+	clear_inherit_confirm->set_ok_button_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);

@@ -57,18 +57,18 @@
 				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
+		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
+			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
+			<argument index="0" name="quadrant" type="int" />
+			<description>
+				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int" />
 			<argument index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<argument index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
-			</description>
-		</method>
-		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
-			<argument index="0" name="quadrant" type="int" />
-			<description>
-				Returns the [enum ShadowAtlasQuadrantSubdiv] of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
@@ -158,10 +158,10 @@
 				Stops the input from propagating further down the [SceneTree].
 			</description>
 		</method>
-		<method name="set_shadow_atlas_quadrant_subdiv">
+		<method name="set_positional_shadow_atlas_quadrant_subdiv">
 			<return type="void" />
 			<argument index="0" name="quadrant" type="int" />
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv" />
+			<argument index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
@@ -232,6 +232,24 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
+		<member name="positional_shadow_atlas_16_bits" type="bool" setter="set_positional_shadow_atlas_16_bits" getter="get_positional_shadow_atlas_16_bits" default="true">
+		</member>
+		<member name="positional_shadow_atlas_quad_0" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of the first quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_1" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="2">
+			The subdivision amount of the second quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_2" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="3">
+			The subdivision amount of the third quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_quad_3" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="4">
+			The subdivision amount of the fourth quadrant on the shadow atlas.
+		</member>
+		<member name="positional_shadow_atlas_size" type="int" setter="set_positional_shadow_atlas_size" getter="get_positional_shadow_atlas_size" default="2048">
+			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+			[b]Note:[/b] If this is set to [code]0[/code], no shadows will be visible at all (including directional shadows).
+		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
 			Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/mode] project setting.
@@ -247,24 +265,6 @@
 		<member name="sdf_oversize" type="int" setter="set_sdf_oversize" getter="get_sdf_oversize" enum="Viewport.SDFOversize" default="1">
 		</member>
 		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
-		</member>
-		<member name="shadow_atlas_16_bits" type="bool" setter="set_shadow_atlas_16_bits" getter="get_shadow_atlas_16_bits" default="true">
-		</member>
-		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the first quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_1" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
-			The subdivision amount of the second quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_2" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="3">
-			The subdivision amount of the third quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_quad_3" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="4">
-			The subdivision amount of the fourth quadrant on the shadow atlas.
-		</member>
-		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="2048">
-			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-			[b]Note:[/b] If this is set to 0, shadows won't be visible.
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
 		</member>
@@ -307,29 +307,29 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will not be used.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will only be used by one shadow map.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split in 4 and used by up to 4 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split 16 ways and used by up to 16 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="ShadowAtlasQuadrantSubdiv">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="PositionalShadowAtlasQuadrantSubdiv">
 			This quadrant will be split 64 ways and used by up to 64 shadow maps.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="ShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="PositionalShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="PositionalShadowAtlasQuadrantSubdiv">
+			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
-			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="PositionalShadowAtlasQuadrantSubdiv">
+			Represents the size of the [enum PositionalShadowAtlasQuadrantSubdiv] enum.
 		</constant>
 		<constant name="SCALING_3D_MODE_BILINEAR" value="0" enum="Scaling3DMode">
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.

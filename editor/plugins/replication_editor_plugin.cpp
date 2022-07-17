@@ -171,7 +171,7 @@ ReplicationEditor::ReplicationEditor() {
 	add_child(delete_dialog);
 
 	error_dialog = memnew(AcceptDialog);
-	error_dialog->get_ok_button()->set_text(TTR("Close"));
+	error_dialog->set_ok_button_text(TTR("Close"));
 	error_dialog->set_title(TTR("Error!"));
 	add_child(error_dialog);
 
