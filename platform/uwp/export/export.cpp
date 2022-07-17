@@ -1073,7 +1073,7 @@ public:
 		}
 	}
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 		String err;
 		bool valid = false;
 
@@ -1111,6 +1111,17 @@ public:
 
 		valid = dvalid || rvalid;
 		r_missing_templates = !valid;
+
+		if (!err.empty()) {
+			r_error = err;
+		}
+
+		return valid;
+	}
+
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
+		String err;
+		bool valid = true;
 
 		// Validate the rest of the configuration.
 
