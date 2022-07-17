@@ -102,6 +102,10 @@ godot_bool GDAPI godot_dictionary_erase_with_return(godot_dictionary *p_self, co
 
 godot_variant GDAPI godot_dictionary_get_with_default(const godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_default);
 
+// GDNative core 1.3
+
+void GDAPI godot_dictionary_merge(godot_dictionary *p_self, const godot_dictionary *p_dictionary, const godot_bool p_overwrite);
+
 #ifdef __cplusplus
 }
 #endif
