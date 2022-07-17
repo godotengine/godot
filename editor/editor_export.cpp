@@ -1884,8 +1884,8 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	// Look for export templates (first official, and if defined custom templates).
 
 	bool use64 = p_preset->get("binary_format/64_bits");
-	bool dvalid = exists_export_template(get_template_file_name("debug", use64 ? "64" : "32"), &err);
-	bool rvalid = exists_export_template(get_template_file_name("release", use64 ? "64" : "32"), &err);
+	bool dvalid = exists_export_template(get_template_file_name("debug", use64 ? "x86_64" : "x86_32"), &err);
+	bool rvalid = exists_export_template(get_template_file_name("release", use64 ? "x86_64" : "x86_32"), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
