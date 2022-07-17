@@ -1147,8 +1147,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	bool skip_global = input.is_valid() && for_preview;
 
 	if (!skip_global) {
-		global_code += vsnode->generate_global(get_mode(), type, node);
-
+		Ref<VisualShaderNodeUniform> uniform = vsnode;
+		if (!uniform.is_valid() || !uniform->is_global_code_generated()) {
+			global_code += vsnode->generate_global(get_mode(), type, node);
+		}
 		String class_name = vsnode->get_class_name();
 		if (class_name == "VisualShaderNodeCustom") {
 			class_name = vsnode->get_script_instance()->get_script()->get_path();
@@ -2107,6 +2109,9 @@ VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_
 String VisualShaderNodeUniformRef::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	switch (uniform_type) {
 		case UniformType::UNIFORM_TYPE_SCALAR:
+			if (uniform_name == "[None]") {
+				return "\t" + p_output_vars[0] + " = 0.0f;\n";
+			}
 			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 		case UniformType::UNIFORM_TYPE_BOOLEAN:
 			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
