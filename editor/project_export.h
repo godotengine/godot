@@ -33,10 +33,10 @@
 
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
-#include "editor/editor_export.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_properties.h"
+#include "editor/export/editor_export.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
