@@ -3422,7 +3422,16 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				p_tutorials.append(Pair<String, String>(title, link));
 				break;
 			case DONE:
-				return;
+				break;
+		}
+	}
+	if (current_class->members.size() > 0) {
+		const ClassNode::Member &m = current_class->members[0];
+		int first_member_line = m.get_line();
+		if (first_member_line == line) {
+			p_brief = "";
+			p_desc = "";
+			p_tutorials.clear();
 		}
 	}
 }
