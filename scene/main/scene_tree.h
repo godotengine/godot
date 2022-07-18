@@ -90,8 +90,8 @@ private:
 	Window *root = nullptr;
 
 	uint64_t tree_version = 1;
-	double physics_process_time = 1.0;
-	double process_time = 1.0;
+	double physics_process_time = 0.0;
+	double process_time = 0.0;
 	bool accept_quit = true;
 	bool quit_on_go_back = true;
 
