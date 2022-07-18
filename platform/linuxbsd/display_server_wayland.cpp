@@ -500,7 +500,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		// scope, we push a default `ScreenData` in `wls->screens` and get the
 		// address of this new element.
 		ScreenData *sd = &wls->screens.push_back({})->get();
-		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 3);
+		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
 		sd->wl_output_name = name;
 
 		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
@@ -514,7 +514,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		// new element.
 		SeatState *ss = &wls->seats.push_back({})->get();
 		ss->wls = wls;
-		ss->wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 7);
+		ss->wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 5);
 		ss->wl_seat_name = name;
 
 		wl_seat_add_listener(ss->wl_seat, &wl_seat_listener, ss);
@@ -663,6 +663,7 @@ void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_o
 }
 
 void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
+	// TODO: "Atomic" output property change handling?
 }
 
 void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
