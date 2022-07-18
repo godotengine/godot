@@ -27,6 +27,23 @@ modules_enabled = env.CommandNoCache(
 )
 
 
+def generate_module_names(target, source, env):
+    with open(target[0].path, "w") as f:
+        f.write('#include "core/string/ustring.h"\n\n')
+        f.write("static const String module_names[] = {\n")
+        for module in env.module_list:
+            f.write('\t"' + module + '",\n')
+        f.write("};\n")
+
+# Header with a String array of module names.
+env.Depends("module_names.gen.h", Value(env.module_list))
+env.CommandNoCache(
+    "module_names.gen.h",
+    Value(env.module_list),
+    env.Run(generate_module_names),
+)
+
+
 def register_module_types_builder(target, source, env):
     modules = source[0].read()
     mod_inc = "\n".join([f'#include "{p}/register_types.h"' for p in modules.values()])
