@@ -435,6 +435,10 @@ msgid "Pressure"
 msgstr ""
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr ""
 
@@ -20231,7 +20235,7 @@ msgstr ""
 msgid "Rotation Degrees"
 msgstr ""
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr ""
 
@@ -22043,6 +22047,10 @@ msgid ""
 "Size changes to SoftBody will be overridden by the physics engine when "
 "running.\n"
 "Change the size in children collision shapes instead."
+msgstr ""
+
+#: scene/3d/spatial.cpp
+msgid "Global Translation"
 msgstr ""
 
 #: scene/3d/spatial.cpp

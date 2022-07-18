@@ -477,6 +477,10 @@ msgid "Pressure"
 msgstr "압력"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr "상대적"
 
@@ -21542,7 +21546,7 @@ msgstr "진행"
 msgid "Rotation Degrees"
 msgstr "%s도로 회전."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "상수"
@@ -23664,6 +23668,11 @@ msgid ""
 msgstr ""
 "실행 중에 SoftBody의 크기 변경은 물리 엔진에 의해 오버라이드됩니다.\n"
 "대신 자식 콜리전 모양의 크기를 변경하세요."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "전역 변형 유지"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
