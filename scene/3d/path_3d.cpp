@@ -397,6 +397,7 @@ void PathFollow3D::_bind_methods() {
 }
 
 void PathFollow3D::set_offset(real_t p_offset) {
+	ERR_FAIL_COND(!isfinite(p_offset));
 	prev_offset = offset;
 	offset = p_offset;
 
