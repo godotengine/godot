@@ -111,6 +111,7 @@ public:
 			if (tmp >= p_value) {
 				return tmp; // already greater, or equal
 			}
+
 			if (value.compare_exchange_weak(tmp, p_value, std::memory_order_acq_rel)) {
 				return p_value;
 			}
