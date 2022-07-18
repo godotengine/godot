@@ -494,6 +494,10 @@ msgid "Pressure"
 msgstr "Поставке"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "Залепи релативно"
@@ -23499,7 +23503,7 @@ msgstr "Путуј"
 msgid "Rotation Degrees"
 msgstr "Ротација за %s степени."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Константан"
@@ -25646,6 +25650,11 @@ msgid ""
 msgstr ""
 "Промене величине МекогТела ће бити преписане од стране фитичког мотора током "
 "рада."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Сачувај Глобалну Трансформу"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
