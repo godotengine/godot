@@ -157,7 +157,7 @@ private:
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
-	void _refresh_commit_list(int p_index);
+	void _refresh_commit_list();
 	void _refresh_remote_list();
 	void _display_diff(int p_idx);
 	void _move_all(Object *p_tree);
@@ -186,6 +186,7 @@ private:
 	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
+	void _set_commit_list_size(int p_index);
 
 	friend class EditorVCSInterface;
 
