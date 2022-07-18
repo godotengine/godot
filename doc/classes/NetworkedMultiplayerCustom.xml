@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NetworkedMultiplayerCustom" inherits="NetworkedMultiplayerPeer" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [NetworkedMultiplayerPeer] implementation that can be controlled from a script.
+	</brief_description>
+	<description>
+		A [NetworkedMultiplayerPeer] implementation that can be used as a [member MultiplayerAPI.network_peer] and controlled from a script.
+		Its purpose is to allow adding a new backend for the high-Level multiplayer API without needing to use GDNative.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="deliver_packet">
+			<return type="void" />
+			<argument index="0" name="buffer" type="PoolByteArray" />
+			<argument index="1" name="from_peer_id" type="int" />
+			<description>
+				Deliver a packet to the local [MultiplayerAPI].
+				When your script receives a packet from other peers over the network (originating from the [signal packet_generated] signal on the sending peer), passing it to this method will deliver it locally.
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="void" />
+			<argument index="0" name="self_peer_id" type="int" />
+			<description>
+				Initialize the peer with the given [code]peer_id[/code] (must be between 1 and 2147483647).
+			</description>
+		</method>
+		<method name="set_connection_status">
+			<return type="void" />
+			<argument index="0" name="connection_status" type="int" enum="NetworkedMultiplayerPeer.ConnectionStatus" />
+			<description>
+				Set the state of the connection. See [enum NetworkedMultiplayerPeer.ConnectionStatus].
+			</description>
+		</method>
+		<method name="set_max_packet_size">
+			<return type="void" />
+			<argument index="0" name="max_packet_size" type="int" />
+			<description>
+				Set the max packet size that this peer can handle.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="packet_generated">
+			<argument index="0" name="peer_id" type="int" />
+			<argument index="1" name="buffer" type="PoolByteArray" />
+			<argument index="2" name="transfer_mode" type="int" />
+			<description>
+				Emitted when the local [MultiplayerAPI] generates a packet.
+				Your script should take this packet and send it to the requested peer over the network (which should call [method deliver_packet] with the data when it's received).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

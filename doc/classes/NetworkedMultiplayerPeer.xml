@@ -46,10 +46,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="true">
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
 			If [code]true[/code], this [NetworkedMultiplayerPeer] refuses new connections.
 		</member>
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" enum="NetworkedMultiplayerPeer.TransferMode" default="0">
+		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" enum="NetworkedMultiplayerPeer.TransferMode" default="2">
 			The manner in which to send packets to the [code]target_peer[/code]. See [enum TransferMode].
 		</member>
 	</members>
