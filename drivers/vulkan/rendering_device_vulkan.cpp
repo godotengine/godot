@@ -36,6 +36,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/hashfuncs.h"
+#include "core/version.h"
 #include "drivers/vulkan/vulkan_context.h"
 
 #include "thirdparty/misc/smolv.h"
@@ -4556,7 +4557,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 #define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
-	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
+	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION) + "-" + String(VERSION_NUMBER) + "-" + String(VERSION_HASH);
 }
 
 struct RenderingDeviceVulkanShaderBinaryDataBinding {
@@ -5056,7 +5057,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'V' || binptr[2] != 'B' || binptr[3] != 'D', RID());
 
 	uint32_t bin_version = decode_uint32(binptr + 4);
-	ERR_FAIL_COND_V(bin_version > SHADER_BINARY_VERSION, RID());
+	ERR_FAIL_COND_V(bin_version != SHADER_BINARY_VERSION, RID());
 
 	uint32_t bin_data_size = decode_uint32(binptr + 8);
 
