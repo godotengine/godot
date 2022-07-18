@@ -35,6 +35,8 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The [CheckButton] text's font color when it's pressed.
 		</theme_item>
+		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		</theme_item>
 		<theme_item name="check_v_adjust" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the toggle icons (in pixels).
 		</theme_item>
@@ -43,6 +45,10 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
+		</theme_item>
+		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+		</theme_item>
+		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			The [Font] to use for the [CheckButton] text.

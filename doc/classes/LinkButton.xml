@@ -56,8 +56,16 @@
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [LinkButton] is being pressed.
 		</theme_item>
+		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
+		</theme_item>
+		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+		</theme_item>
+		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
+		</theme_item>
+		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
 		</theme_item>
 		<theme_item name="underline_spacing" data_type="constant" type="int" default="2">
 			The vertical space between the baseline of text and the underline.

@@ -343,9 +343,21 @@ void Button::_notification(int p_what) {
 			}
 
 			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
+			Color font_shadow_color = get_theme_color(SNAME("font_shadow_color"));
+			Point2 shadow_ofs(get_theme_constant(SNAME("shadow_offset_x")), get_theme_constant(SNAME("shadow_offset_y")));
+
 			int outline_size = get_theme_constant(SNAME("outline_size"));
-			if (outline_size > 0 && font_outline_color.a > 0) {
-				text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
+			int shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
+			if ((outline_size > 0 && font_outline_color.a != 0) || (font_shadow_color.a != 0)) {
+				if (font_shadow_color.a > 0) {
+					text_buf->draw(ci, text_ofs + shadow_ofs, font_shadow_color);
+				}
+				if (font_shadow_color.a > 0 && shadow_outline_size > 0) {
+					text_buf->draw_outline(ci, text_ofs + shadow_ofs, shadow_outline_size, font_shadow_color);
+				}
+				if (font_outline_color.a != 0.0 && outline_size > 0) {
+					text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
+				}
 			}
 			text_buf->draw(ci, text_ofs, color);
 		} break;

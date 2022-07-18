@@ -158,7 +158,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_font("font", "Button", Ref<Font>());
 	theme->set_font_size("font_size", "Button", -1);
+	theme->set_constant("shadow_offset_x", "Button", 1 * scale);
+	theme->set_constant("shadow_offset_y", "Button", 1 * scale);
 	theme->set_constant("outline_size", "Button", 0 * scale);
+	theme->set_constant("shadow_outline_size", "Button", 1 * scale);
 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_pressed_color", "Button", control_font_pressed_color);
@@ -166,6 +169,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_focus_color", "Button", control_font_focus_color);
 	theme->set_color("font_hover_pressed_color", "Button", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Button", control_font_disabled_color);
+	theme->set_color("font_shadow_color", "Button", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "Button", Color(1, 1, 1));
 
 	theme->set_color("icon_normal_color", "Button", Color(1, 1, 1, 1));
@@ -188,9 +192,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_pressed_color", "LinkButton", control_font_pressed_color);
 	theme->set_color("font_hover_color", "LinkButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "LinkButton", control_font_focus_color);
+	theme->set_color("font_shadow_color", "LinkButton", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "LinkButton", Color(1, 1, 1));
 
+	theme->set_constant("shadow_offset_x", "LinkButton", 1 * scale);
+	theme->set_constant("shadow_offset_y", "LinkButton", 1 * scale);
 	theme->set_constant("outline_size", "LinkButton", 0);
+	theme->set_constant("shadow_outline_size", "LinkButton", 1 * scale);
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
 	// OptionButton
@@ -226,11 +234,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "OptionButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
+	theme->set_color("font_shadow_color", "OptionButton", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
 
+	theme->set_constant("shadow_offset_x", "OptionButton", 1 * scale);
+	theme->set_constant("shadow_offset_y", "OptionButton", 1 * scale);
 	theme->set_constant("h_separation", "OptionButton", 2 * scale);
 	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
 	theme->set_constant("outline_size", "OptionButton", 0);
+	theme->set_constant("shadow_outline_size", "OptionButton", 1 * scale);
 
 	// MenuButton
 
@@ -248,9 +260,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_color", "MenuButton", control_font_hover_color);
 	theme->set_color("font_focus_color", "MenuButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
+	theme->set_color("font_shadow_color", "MenuButton", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "MenuButton", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "MenuButton", 3 * scale);
+	theme->set_constant("shadow_offset_x", "MenuButton", 1 * scale);
+	theme->set_constant("shadow_offset_y", "MenuButton", 1 * scale);
+	theme->set_constant("shadow_outline_size", "MenuButton", 1 * scale);
 	theme->set_constant("outline_size", "MenuButton", 0);
 
 	// CheckBox
@@ -291,11 +307,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_pressed_color", "CheckBox", control_font_pressed_color);
 	theme->set_color("font_focus_color", "CheckBox", control_font_focus_color);
 	theme->set_color("font_disabled_color", "CheckBox", control_font_disabled_color);
+	theme->set_color("font_shadow_color", "CheckBox", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckBox", 4 * scale);
 	theme->set_constant("check_v_adjust", "CheckBox", 0 * scale);
+	theme->set_constant("shadow_offset_x", "CheckBox", 1 * scale);
+	theme->set_constant("shadow_offset_y", "CheckBox", 1 * scale);
 	theme->set_constant("outline_size", "CheckBox", 0);
+	theme->set_constant("shadow_outline_size", "CheckBox", 1 * scale);
 
 	// CheckButton
 
@@ -331,11 +351,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hover_pressed_color", "CheckButton", control_font_pressed_color);
 	theme->set_color("font_focus_color", "CheckButton", control_font_focus_color);
 	theme->set_color("font_disabled_color", "CheckButton", control_font_disabled_color);
+	theme->set_color("font_shadow_color", "CheckButton", Color(0, 0, 0, 0));
 	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckButton", 4 * scale);
 	theme->set_constant("check_v_adjust", "CheckButton", 0 * scale);
+	theme->set_constant("shadow_offset_x", "CheckButton", 1 * scale);
+	theme->set_constant("shadow_offset_y", "CheckButton", 1 * scale);
 	theme->set_constant("outline_size", "CheckButton", 0);
+	theme->set_constant("shadow_outline_size", "LinkButton", 1 * scale);
 
 	// Label
 
