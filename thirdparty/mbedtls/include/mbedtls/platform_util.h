@@ -67,7 +67,7 @@ extern "C" {
  * \brief       User supplied callback function for parameter validation failure.
  *              See #MBEDTLS_CHECK_PARAMS for context.
  *
- *              This function will be called unless an alternative treatement
+ *              This function will be called unless an alternative treatment
  *              is defined through the #MBEDTLS_PARAM_FAILED macro.
  *
  *              This function can return, and the operation will be aborted, or
@@ -198,7 +198,7 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
  *
  * This macro has an empty expansion. It exists for documentation purposes:
  * a #MBEDTLS_CHECK_RETURN_OPTIONAL annotation indicates that the function
- * has been analyzed for return-check usefuless, whereas the lack of
+ * has been analyzed for return-check usefulness, whereas the lack of
  * an annotation indicates that the function has not been analyzed and its
  * return-check usefulness is unknown.
  */
