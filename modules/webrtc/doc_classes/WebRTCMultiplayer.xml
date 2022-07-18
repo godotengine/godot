@@ -65,10 +65,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" overrides="NetworkedMultiplayerPeer" default="false" />
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" overrides="NetworkedMultiplayerPeer" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
-	</members>
 	<constants>
 	</constants>
 </class>
