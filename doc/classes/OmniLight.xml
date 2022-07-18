@@ -23,7 +23,8 @@
 			See [enum ShadowDetail].
 		</member>
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight.ShadowMode" default="1">
-			See [enum ShadowMode].
+			The shadow rendering mode to use for this [OmniLight]. See [enum ShadowMode].
+			[b]Note:[/b] In GLES2, [constant SHADOW_CUBE] is only supported on GPUs that feature support for depth cubemaps. Old GPUs such as the Radeon HD 4000 series don't support cubemap shadows and will fall back to dual paraboloid shadows as a result.
 		</member>
 	</members>
 	<constants>
@@ -31,7 +32,7 @@
 			Shadows are rendered to a dual-paraboloid texture. Faster than [constant SHADOW_CUBE], but lower-quality.
 		</constant>
 		<constant name="SHADOW_CUBE" value="1" enum="ShadowMode">
-			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality.
+			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality. Only supported on GPUs that feature support for depth cubemaps.
 		</constant>
 		<constant name="SHADOW_DETAIL_VERTICAL" value="0" enum="ShadowDetail">
 			Use more detail vertically when computing the shadow.
