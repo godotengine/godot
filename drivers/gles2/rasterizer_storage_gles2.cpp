@@ -6393,6 +6393,9 @@ void RasterizerStorageGLES2::initialize() {
 
 	//picky requirements for these
 	config.support_shadow_cubemaps = config.support_depth_texture && config.support_write_depth && config.support_depth_cubemaps;
+	if (!config.support_shadow_cubemaps) {
+		print_verbose("OmniLight cubemap shadows are not supported by this GPU. Falling back to dual paraboloid shadows for all omni lights (faster but less precise).");
+	}
 
 	frame.count = 0;
 	frame.delta = 0;
