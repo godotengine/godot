@@ -183,8 +183,6 @@ if env["builtin_bullet"]:
         "BulletSoftBody/BulletReducedDeformableBody/btReducedDeformableBodySolver.cpp",
         "BulletSoftBody/BulletReducedDeformableBody/btReducedDeformableContactConstraint.cpp",
         "BulletSoftBody/poly34.cpp",
-        # clew
-        "clew/clew.c",
         # LinearMath
         "LinearMath/btAlignedAllocator.cpp",
         "LinearMath/btConvexHull.cpp",
@@ -206,7 +204,7 @@ if env["builtin_bullet"]:
 
     env_bullet.Prepend(CPPPATH=[thirdparty_dir])
 
-    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
+    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE", "BT_USE_INVERSE_DYNAMICS_WITH_BULLET2"])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
