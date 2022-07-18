@@ -328,15 +328,15 @@ Files extracted from upstream source:
 
 ## mbedtls
 
-- Upstream: https://tls.mbed.org/
-- Version: 2.16.12 (cf4667126010c665341f9e50ef691b7ef8294188, 2021)
+- Upstream: https://github.com/Mbed-TLS/mbedtls
+- Version: 2.18.1 (dd79db10014d85b26d11fe57218431f2e5ede6f2, 2022)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
-- `LICENSE` and `apache-2.0.txt` files.
+- The `LICENSE` file.
 - Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
