@@ -522,6 +522,10 @@ msgid "Pressure"
 msgstr "Presionado"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr "Relativo"
 
@@ -21650,7 +21654,7 @@ msgstr "Viaje"
 msgid "Rotation Degrees"
 msgstr "Grados de Rotación"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Constante Global"
@@ -23768,6 +23772,11 @@ msgstr ""
 "Los cambios de tamaño de SoftBody serán anulados por el motor de física "
 "cuando esté ejecutándose.\n"
 "En su lugar, cambia el tamaño en las formas de colisión de los hijos."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Mantener transformación global"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

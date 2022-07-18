@@ -547,6 +547,10 @@ msgid "Pressure"
 msgstr "Voorinstellingen"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "Relatief kleven"
@@ -22069,7 +22073,7 @@ msgstr "Verplaats"
 msgid "Rotation Degrees"
 msgstr "Roteren %s graden."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Constante"
@@ -24182,6 +24186,11 @@ msgid ""
 msgstr ""
 "De grootte van een SoftBody wordt overschreven wanneer het spel start.\n"
 "Verander in plaats daarvan de grootte van de onderliggende botsingsvormen."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Houd Globale Transformatie"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

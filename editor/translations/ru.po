@@ -117,13 +117,14 @@
 # FuzzMix <fmwolfiechad@gmail.com>, 2022.
 # Jasuse <jasusemaele@gmail.com>, 2022.
 # Vadim Mitroshkin <Vadim7540@yandex.ru>, 2022.
+# Maksim Marchukov <mar.maksim63@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-03 00:44+0000\n"
-"Last-Translator: Vadim Mitroshkin <Vadim7540@yandex.ru>\n"
+"PO-Revision-Date: 2022-07-17 07:14+0000\n"
+"Last-Translator: Maksim Marchukov <mar.maksim63@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -132,7 +133,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -506,7 +507,7 @@ msgstr "Command"
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Physical"
-msgstr " (Физическая)"
+msgstr "(Физическая)"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -557,6 +558,10 @@ msgstr "Наклон"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Давление"
+
+#: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -21425,7 +21430,7 @@ msgstr "Переместится"
 msgid "Rotation Degrees"
 msgstr "Градусы вращения"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Глобальный поворот"
 
@@ -23529,6 +23534,11 @@ msgstr ""
 "работы.\n"
 "Вместо этого измените размер его дочерних форм столкновений(collision "
 "shapes)."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Глобальное преобразование"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

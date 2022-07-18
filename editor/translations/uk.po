@@ -467,6 +467,11 @@ msgid "Pressure"
 msgstr "Тиск"
 
 #: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "Інвертувати"
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr "Відносний"
 
@@ -21149,7 +21154,7 @@ msgstr "Подорож"
 msgid "Rotation Degrees"
 msgstr "Грудуси обертання"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Загальна стала"
 
@@ -23107,6 +23112,11 @@ msgid ""
 msgstr ""
 "Зміни розмірів SoftBody буде перевизначено фізичним рушієм під час роботи.\n"
 "Замість цієї зміни, вам варто змінити розміри дочірніх форм зіткнення."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Зберегти загальне перетворення"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

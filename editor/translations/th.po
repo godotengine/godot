@@ -501,6 +501,10 @@ msgid "Pressure"
 msgstr "พรีเซ็ต"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "จำกัดโดยใช้ตำแหน่งปัจจุบัน"
@@ -21830,7 +21834,7 @@ msgstr "การเคลื่อนที่"
 msgid "Rotation Degrees"
 msgstr "หมุน %s องศา"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "คงที่"
@@ -23916,6 +23920,11 @@ msgid ""
 msgstr ""
 "การเปลี่ยนแปลงขนาดของ SoftBody จะถูกแทนที่โดยเอ็นจิ้นฟิสิกส์เมื่อทำงาน\n"
 "เปลี่ยนขนาดของขอบเขตการชนลูกแทน"
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "เก็บ Global Transform"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

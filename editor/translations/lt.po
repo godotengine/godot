@@ -476,6 +476,10 @@ msgid "Pressure"
 msgstr "Atstatyti Priartinimą"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr ""
 
@@ -21259,7 +21263,7 @@ msgstr ""
 msgid "Rotation Degrees"
 msgstr ""
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Konstanta"
@@ -23221,6 +23225,11 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Animacija: Pakeisti Transformaciją"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

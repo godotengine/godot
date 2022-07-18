@@ -87,7 +87,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-30 16:42+0000\n"
+"PO-Revision-Date: 2022-07-09 21:11+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -466,9 +466,8 @@ msgid "Command"
 msgstr "Befehl"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (physisch)"
+msgstr "Physisch"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -519,6 +518,11 @@ msgstr "Neigung"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Druck"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "Umkehren"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -5560,9 +5564,8 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "Extramaustasten blättern durch Verlauf"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "GridMap-Auswahl"
+msgstr "Auswahl ziehen und fallen lassen"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -18449,9 +18452,8 @@ msgid "The package must have at least one '.' separator."
 msgstr "Das Paket muss mindestens einen Punkt-Unterteiler ‚.‘ haben."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Custom Build"
-msgstr "Einen Build verwenden"
+msgstr "Eigener Build"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
@@ -18743,66 +18745,69 @@ msgstr ""
 "„Use Custom Build“ muss aktiviert werden um die Plugins nutzen zu können."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
 msgstr ""
-"„Hand Tracking“ ist nur gültig wenn „Xr Mode“ als „Occulus Mobile VrApi“ "
-"oder „OpenXR“ gesetzt wurde."
+"„Hand Tracking“ ist nur gültig wenn „XR Mode“ als „Oculus Mobile VrApi“ oder "
+"„OpenXR“ gesetzt wurde."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr ""
-"„Passthrough“ ist nur gültig wenn „Xr Mode“ als „OpenXR“ gesetzt wurde."
+"„Passthrough“ ist nur gültig wenn „XR Mode“ als „OpenXR“ gesetzt wurde."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "„Export AAB“ ist nur gültig wenn „Use Custom Build“ aktiviert ist."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
-"Das „Min Sdk“ zu ändern ist nur möglich wenn „Use Custom Build“ aktiviert "
-"ist."
+"Das „Min SDK“ zu überschreiben ist nur möglich wenn „Use Custom Build“ "
+"aktiviert ist."
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
+"„Min SDK“ sollte eine gültige Ganzzahl sein, war aber „%s“, was ungültig ist."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
 msgstr ""
+"„Min SDK“ kann nicht niedriger als %d sein, der Version, die die Godot-"
+"Bibliothek benötigt."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
 msgstr ""
-"Das „Target Sdk“ zu ändern ist nur möglich wenn „Use Custom Build“ aktiviert "
+"„Target SDK“ kann nur überschrieben werden wenn „Use Custom Build“ aktiviert "
 "ist."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
+"„Taret SDK“ sollte eine gültige Ganzzahl sein, war aber „%s“, was ungültig "
+"ist."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
 msgstr ""
+"„Target SDK“ %d ist höher als die Standardversion %d. Diese Kombination "
+"könnte funktionieren, wurde aber nicht getestet und könnte gegebenenfalls "
+"instabil sein."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr ""
-"Die Version des „Target Sdk“ muss größer gleich der des „Min Sdk“ sein."
+"Die „Target SDK“-Version muss größer gleich der „Min SDK“-Version sein."
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
@@ -21093,9 +21098,8 @@ msgstr ""
 "map_get_path()‘ zu verwenden."
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Pathfinding"
-msgstr "Zuordnung"
+msgstr "Pfadfinden"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Path Desired Distance"
@@ -21110,9 +21114,8 @@ msgid "Path Max Distance"
 msgstr "Max Pfad-Distanz"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Avoidance"
-msgstr "Erweitert"
+msgstr "Vermeiden"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Avoidance Enabled"
@@ -21177,7 +21180,7 @@ msgstr "Reisekosten"
 msgid "Rotation Degrees"
 msgstr "Rotationswinkel"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Globale Rotation"
 
@@ -23106,6 +23109,11 @@ msgstr ""
 "geändert werden."
 
 #: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Globales Transform"
+
+#: scene/3d/spatial.cpp
 msgid "Matrix"
 msgstr "Matrix"
 
@@ -24213,9 +24221,8 @@ msgid "Fold Gutter"
 msgstr "Einklappenspalte"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Drag And Drop Selection Enabled"
-msgstr "Textauswahl möglich"
+msgstr "Ziehen-und-Fallenlassen-Auswahl aktiviert"
 
 #: scene/gui/text_edit.cpp
 msgid "Hiding Enabled"
@@ -24592,6 +24599,11 @@ msgid ""
 "Effects.\n"
 "HDR will be disabled for this Viewport."
 msgstr ""
+"In diesem Ansichtsfenster ist HDR aktiv, jedoch wurde dessen Nutzung auf 2D "
+"oder 2D-No-Sampling eingestellt.\n"
+"HDR wird nur in Ansichtsfenstern deren Nutzung auf 3D oder 3D-No-Effects "
+"eingestellt sind unterstützt.\n"
+"HDR wird für dieses Ansichtsfenster deaktiviert."
 
 #: scene/main/viewport.cpp
 msgid "ARVR"

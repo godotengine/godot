@@ -487,6 +487,11 @@ msgid "Pressure"
 msgstr "圧力"
 
 #: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "反転"
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr "相対的"
 
@@ -21573,7 +21578,7 @@ msgstr "トラベル"
 msgid "Rotation Degrees"
 msgstr "%s 度回転。"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "コンスタント"
@@ -23709,6 +23714,11 @@ msgstr ""
 "SoftBodyへのサイズ変更は、実行時に物理エンジンによってオーバーライドされま"
 "す。\n"
 "代わりに、子の衝突シェイプのサイズを変更してください。"
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "グローバル トランスフォームを保持"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

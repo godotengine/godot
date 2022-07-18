@@ -127,7 +127,7 @@
 # Mário Victor Ribeiro Silva <mariovictorrs@gmail.com>, 2021.
 # jak3z <jose_renato06@outlook.com>, 2021.
 # Henrique Darko <henridark00@gmail.com>, 2021.
-# Cearaj <pmoraisleal@gmail.com>, 2021.
+# Cearaj <pmoraisleal@gmail.com>, 2021, 2022.
 # Alefy San <alefyferreiradeoliveira@outlook.com>, 2021.
 # Joel Gomes da Silva <joelgomes1994@hotmail.com>, 2021, 2022.
 # Orangotango De tanga <luizinho0045@gmail.com>, 2021.
@@ -141,13 +141,14 @@
 # José Miranda Neto <dodimi95@gmail.com>, 2022.
 # lucas rossy brasil coelho <lucasrossy270@gmail.com>, 2022.
 # Kaycke <kaycke@ymail.com>, 2022.
+# Ednaldo Pereira Confia <filat51823@storypo.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-06-29 10:04+0000\n"
-"Last-Translator: Douglas Leão <djlsplays@gmail.com>\n"
+"PO-Revision-Date: 2022-07-16 06:20+0000\n"
+"Last-Translator: Cearaj <pmoraisleal@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -155,7 +156,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -524,9 +525,8 @@ msgid "Command"
 msgstr "Comando"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (Físico)"
+msgstr "Físico"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -577,6 +577,11 @@ msgstr "Inclinar"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Pressão"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "Inverter"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -715,7 +720,6 @@ msgstr "Nome do Diretório de Usuário Personalizado"
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
 msgstr "Exibição"
 
@@ -739,14 +743,12 @@ msgid "Always On Top"
 msgstr "Sempre no topo"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
 msgstr "Largura de teste"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Teste de altura"
+msgstr "Altura de teste"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -781,9 +783,8 @@ msgid "Script Templates Search Path"
 msgstr "Caminho de Pesquisa de Modelos de Script"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Carregamento Automático na Inicialização"
+msgstr "Carregamento Automático do Controle de Versão na Inicialização"
 
 #: core/project_settings.cpp
 msgid "Version Control Plugin Name"
@@ -1091,9 +1092,8 @@ msgstr "Encaixe inteligente"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "Usar Encaixe de Pixel"
+msgstr "Usar Encaixe de Pixels da GPU"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -1313,7 +1313,6 @@ msgid "Animation"
 msgstr "Animação"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Easing"
 msgstr "Facilitar Entrada-Saída"
 
@@ -1450,14 +1449,13 @@ msgid "Type:"
 msgstr "Tipo:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Template de exportação inválido:"
+msgstr "(Inválido, tipo esperado: %s)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Easing:"
-msgstr "Facilitar Entrada-Saída"
+msgstr "Facilitar Entrada-Saída:"
 
 #: editor/animation_track_editor.cpp
 msgid "In-Handle:"
@@ -1473,9 +1471,8 @@ msgid "Stream:"
 msgstr "Transmissão:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Início(s):"
+msgstr "Início (s):"
 
 #: editor/animation_track_editor.cpp
 msgid "End (s):"
@@ -1571,9 +1568,8 @@ msgid "Editors"
 msgstr "Editores"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Confirm Insert Track"
-msgstr "Inserir Trilha e Chave na Anim"
+msgstr "Confirmar Inserção de Trilha"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -2667,9 +2663,8 @@ msgid "There is no '%s' file."
 msgstr "Não existe o arquivo '%s'."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Layout"
+msgstr "Layout:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2718,9 +2713,8 @@ msgid "Create a new Bus Layout."
 msgstr "Criar um novo Layout de Canais."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Abrir Layout de Canais de Áudio"
+msgstr "Layout de Canais de Áudio"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2900,14 +2894,12 @@ msgid "Packing"
 msgstr "Empacotando"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Salvar Como"
+msgstr "Salvar PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Não foi possível criar a pasta."
+msgstr "Não foi possível criar arquivo \"%s\"."
 
 #: editor/editor_export.cpp
 msgid "Failed to export project files."
@@ -2918,9 +2910,8 @@ msgid "Can't open file to read from path \"%s\"."
 msgstr "Não é possível abrir arquivo para leitura a partir do caminho \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Salvar Como"
+msgstr "Salvar ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -3005,9 +2996,8 @@ msgid "Embed PCK"
 msgstr "Incorporar PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
-msgstr "Região da Textura"
+msgstr "Formato da Textura"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
@@ -3028,7 +3018,7 @@ msgstr "ETC2"
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "No BPTC Fallbacks"
-msgstr "Forçar Fallbacks do Shader"
+msgstr "Sem Fallbacks do BPTC"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -3040,12 +3030,11 @@ msgstr "Modelo customizado de depuração não encontrado."
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "Template customizado de release não encontrado."
+msgstr "Modelo customizado de lançamento não encontrado."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Gerenciar Templates"
+msgstr "Preparar Modelo"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "The given export path doesn't exist."
@@ -3061,9 +3050,8 @@ msgstr "Falha ao copiar o modelo de exportação."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Preenchimento"
+msgstr "Incorporação de PCK"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3278,9 +3266,8 @@ msgid "Manage Editor Feature Profiles"
 msgstr "Gerenciar perfis de recurso do editor"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Default Feature Profile"
-msgstr "Perfil de funcionalidade do Godot"
+msgstr "Perfil de funcionalidade Padrão"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -3688,7 +3675,7 @@ msgstr "Propriedade:"
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 #, fuzzy
 msgid "Label"
-msgstr "Valor"
+msgstr "Etiqueta"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -4072,18 +4059,16 @@ msgid "Quick Open Script..."
 msgstr "Abrir Script Rapidamente..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Reload"
-msgstr "Salvar e Reiniciar"
+msgstr "Salvar & Recarregar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to '%s' before reloading?"
-msgstr "Salvar alterações em '%s' antes de fechar?"
+msgstr "Salvar alterações em '%s' antes de recarregar?"
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr "Salvar e Fechar"
+msgstr "Salvar & Fechar"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
@@ -4198,9 +4183,8 @@ msgid "Open Project Manager?"
 msgstr "Abrir Gerenciador de Projetos?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to the following scene(s) before reloading?"
-msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de sair?"
+msgstr "Salvar alterações na(s) seguinte(s) cena(s) antes de recarregar?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -4406,9 +4390,8 @@ msgid "Scene Tabs"
 msgstr "Abas de Cena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Always Show Close Button"
-msgstr "Sempre Mostrar Grade"
+msgstr "Sempre mostrar o botão de fechar."
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Resize If Many Tabs"
@@ -4423,9 +4406,8 @@ msgid "Output"
 msgstr "Saída"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Clear Output On Play"
-msgstr "Limpar Saída"
+msgstr "Sempre limpar saída ao jogar"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Open Output On Play"
@@ -4440,19 +4422,16 @@ msgid "Save On Focus Loss"
 msgstr "Salvar em caso de perda de foco"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Each Scene On Quit"
-msgstr "Salvar Ramo como Cena"
+msgstr "Salvar cada cena ao sair"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Quit Confirmation"
-msgstr "Visualizar Informações"
+msgstr "Confirmação de saída"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Show Update Spinner"
-msgstr "Ocultar Spinner de Atualização"
+msgstr "Mostrar Spinner de Atualização"
 
 #: editor/editor_node.cpp
 msgid "Update Continuously"
@@ -4479,18 +4458,16 @@ msgid "Inspector"
 msgstr "Inspetor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Default Property Name Style"
-msgstr "Caminho Padrão do Projeto"
+msgstr "Estilo de Nome de Propriedade Padrão"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
 msgstr "Passo de ponto flutuante padrão"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
-#, fuzzy
 msgid "Disable Folding"
-msgstr "Botão Desativado"
+msgstr "Desativar Dobragem"
 
 #: editor/editor_node.cpp
 msgid "Auto Unfold Foreign Scenes"
@@ -4502,21 +4479,19 @@ msgstr "Edição Horizontal do Vector2"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector Types Editing"
-msgstr ""
+msgstr "Edição Horizontal de Tipos de Vetor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Resources In Current Inspector"
-msgstr "Abrir no inspetor"
+msgstr "Abrir Recursos no Inspetor Atual"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Resources To Open In New Inspector"
-msgstr "Abrir no inspetor"
+msgstr "Recursos para abrir em Novo Inspetor"
 
 #: editor/editor_node.cpp
 msgid "Default Color Picker Mode"
-msgstr ""
+msgstr "Modo de Seletor de Cores Padrão"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
@@ -21730,7 +21705,7 @@ msgstr "Viagem"
 msgid "Rotation Degrees"
 msgstr "Graus de Rotação"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Rotação Global"
 
@@ -23806,6 +23781,11 @@ msgstr ""
 "As alterações de tamanho no SoftBody serão substituídas pelo mecanismo de "
 "física durante a execução.\n"
 "Altere o tamanho em formas de colisão de crianças."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Manter Transformação Global"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

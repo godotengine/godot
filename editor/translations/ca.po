@@ -22,7 +22,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-26 16:15+0000\n"
+"PO-Revision-Date: 2022-07-09 21:11+0000\n"
 "Last-Translator: Roger VC <rogervilarasau@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -67,7 +67,7 @@ msgstr "Mode de Baix Us del Processador"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Mode d'ús del processador baix en repòs (µseg)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
@@ -136,8 +136,9 @@ msgid "Size"
 msgstr "Mida"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Endian Swap"
-msgstr ""
+msgstr "Intercanvi d'endian"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
@@ -161,9 +162,8 @@ msgid "Time Scale"
 msgstr "Escala de Temps"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Physics Jitter Fix"
-msgstr "Fotograma de Física %"
+msgstr "Correcció de fluctuacions de física"
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
@@ -246,25 +246,23 @@ msgstr "Connexió"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Llegeix la mida del fragment"
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
 msgstr "ID de l'Objecte"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Activa l'Efecte Paper Ceba"
+msgstr "Permet la descodificació d'objectes"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
 msgstr "Rebutja les noves connexions de xarxa"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Network Peer"
-msgstr "Perfilador de Xarxa"
+msgstr "Parell de xarxa"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
 msgid "Root Node"
@@ -275,13 +273,12 @@ msgid "Refuse New Connections"
 msgstr "Rebutjar Noves Connexions"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "Tipus de Transformació"
+msgstr "Mode de transferència"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
-msgstr ""
+msgstr "Mida màxima de la memòria intermèdia de codificació"
 
 #: core/io/packet_peer.cpp
 msgid "Input Buffer Max Size"
@@ -297,7 +294,7 @@ msgstr ""
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
-msgstr ""
+msgstr "Endian gran"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
@@ -373,14 +370,12 @@ msgid "Max Size (KB)"
 msgstr "Mida màxima (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Mode de moviment"
+msgstr "Mode ratolí"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Elimina l'Entrada"
+msgstr "Utilitza l'entrada acumulada"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -388,9 +383,8 @@ msgid "Device"
 msgstr "Dispositiu"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Tot"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
@@ -410,9 +404,8 @@ msgid "Command"
 msgstr "Comunitat"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr "Fotograma de Física %"
+msgstr "Físic"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -421,9 +414,8 @@ msgid "Pressed"
 msgstr "Premut"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Explora"
+msgstr "Codi d'escaneig"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -466,6 +458,10 @@ msgstr ""
 #, fuzzy
 msgid "Pressure"
 msgstr "Configuracions prestablertes"
+
+#: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -799,7 +795,7 @@ msgstr "Renderitzat"
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Qualitat"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
@@ -808,8 +804,9 @@ msgid "Filters"
 msgstr "Filtres"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
+#, fuzzy
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Intensitat d'agudització"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -834,9 +831,8 @@ msgid "Profiler"
 msgstr "Perfilador"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "Reanomena Funció"
+msgstr "Funcions màximes"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
 msgid "Compression"
@@ -848,39 +844,39 @@ msgstr "Formats"
 
 #: core/project_settings.cpp
 msgid "Zstd"
-msgstr ""
+msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
-msgstr ""
+msgstr "Coincidència de llarga distància"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Nivell de compressió"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
-msgstr ""
+msgstr "Mida del registre de la finestra"
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Mòduls"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 msgid "Connect Timeout Seconds"
@@ -892,11 +888,11 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Memòria intermèdia màxima (potència de 2)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
 msgid "Certificates"
@@ -909,9 +905,8 @@ msgid "Resource"
 msgstr "Recurs"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Tanca l'Escena"
+msgstr "Local a l'escena"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -980,7 +975,7 @@ msgstr ""
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Mida de la memòria intermèdia de l'índex del polígon de llenç (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -992,7 +987,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1002,14 +997,13 @@ msgstr "Ajustament Intel·ligent"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "Utilitzar ajustament amb els Píxels"
+msgstr "Utilitza l'ajust de píxels de la GPU"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "Mida de la memòria intermèdia immediata (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1020,28 +1014,27 @@ msgstr "Precalcular Lightmaps"
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "Utilitza el mostreig bicúbic"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Elements renderitzables màxims"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Llums màximes renderitzables"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Max Renderable Reflections"
-msgstr "Centra la Selecció"
+msgstr "Reflexions màximes renderitzables"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Llums màximes per objecte"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "Dispersió subsuperficial"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1057,9 +1050,8 @@ msgid "Scale"
 msgstr "Escala"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Follow Surface"
-msgstr "Omple la Superfície"
+msgstr "Segueix la superfície"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
@@ -1067,11 +1059,11 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Voxel Cone Tracing"
-msgstr ""
+msgstr "Traçat del con Voxel"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Alta qualitat"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1149,9 +1141,8 @@ msgstr "Canviar crida d'animació"
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Frame"
-msgstr "% del Fotograma"
+msgstr "Fotograma"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1162,9 +1153,8 @@ msgstr "Temps"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "Localització"
+msgstr "Ubicació"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -1184,7 +1174,7 @@ msgstr "Quantitat d'arguments"
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Args"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1348,9 +1338,8 @@ msgid "Position:"
 msgstr "Posició:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Pas de la Rotació:"
+msgstr "Rotació:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1373,7 +1362,7 @@ msgstr "(No vàlid, tipus esperat: %s)"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Easing:"
-msgstr "Esmorteeix Entrada-Sortida"
+msgstr "Alleugeriment:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1391,19 +1380,16 @@ msgid "Stream:"
 msgstr "Element de ràdio"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Reinici (s):"
+msgstr "Inici (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "Fosa d'entrada (s):"
+msgstr "Final (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "Animacions:"
+msgstr "Clip d'animació:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -1492,9 +1478,8 @@ msgid "Editors"
 msgstr "Editors"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Confirm Insert Track"
-msgstr "Insereix una Pista i una Clau"
+msgstr "Confirmeu la inserció de pista"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -1773,9 +1758,8 @@ msgid "Go to Previous Step"
 msgstr "Anar al Pas Anterior"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Apply Reset"
-msgstr "Resetejar"
+msgstr "Aplica reinicialització"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -2236,7 +2220,7 @@ msgstr "Obre"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Propietaris de: %s (Total: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2430,10 +2414,10 @@ msgid "Licenses"
 msgstr "Llicències"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
-"S'ha produit un error en obrir el fitxer comprimit, no té el format ZIP."
+"S'ha produït un error en obrir el fitxer de recursos per a \"%s\" (no en "
+"format ZIP)."
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (already exists)"
@@ -2456,9 +2440,8 @@ msgid "Uncompressing Assets"
 msgstr "Descomprimint Recursos"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
+msgstr "Els fitxers següents no s'han pogut extraure del recurs \"%s\":"
 
 #: editor/editor_asset_installer.cpp
 msgid "(and %s more files)"
@@ -2478,9 +2461,8 @@ msgid "Install"
 msgstr "Instal·la"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "Instal·lador de paquets"
+msgstr "Instal·lador de recursos"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -2650,9 +2632,8 @@ msgid "Create a new Bus Layout."
 msgstr "Crea un nou Disseny de Bus."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Obre un Disseny de Bus d'Àudio"
+msgstr "Disseny del bus d'àudio"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -22126,7 +22107,7 @@ msgstr "Viatge"
 msgid "Rotation Degrees"
 msgstr "Rotació de %s graus."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Constant"
@@ -24238,6 +24219,11 @@ msgstr ""
 "El motor de físiques sobreescriurà els canvis en la mida dels nodes "
 "RigidBody(Caràcter o Rígid). \n"
 "Modifica la mida de les Formes de Col. lisió Filles."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Manté la Transformació Global"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
