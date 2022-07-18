@@ -2004,8 +2004,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		return false;
 	}
 
-	// Check autoloads.
-	if (ProjectSettings::get_singleton()->has_autoload(p_identifier)) {
+	// Check global variables (including autoloads).
+	if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(p_identifier)) {
 		r_type = _type_from_variant(GDScriptLanguage::get_singleton()->get_named_globals_map()[p_identifier]);
 		return true;
 	}
