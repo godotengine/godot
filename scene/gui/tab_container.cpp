@@ -312,7 +312,7 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar) {
+		if (!control || control->is_set_as_top_level() || control == tab_bar || control == child_removing) {
 			continue;
 		}
 
@@ -549,7 +549,12 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	tab_bar->remove_tab(get_tab_idx_from_control(c));
+	int idx = get_tab_idx_from_control(c);
+
+	// Before this, the tab control has not changed; after this, the tab control has changed.
+	child_removing = p_child;
+	tab_bar->remove_tab(idx);
+	child_removing = nullptr;
 
 	_update_margins();
 	if (get_tab_count() == 0) {

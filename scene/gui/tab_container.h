@@ -46,6 +46,7 @@ class TabContainer : public Container {
 	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
+	Node *child_removing = nullptr;
 
 	int _get_top_margin() const;
 	Vector<Control *> _get_tab_controls() const;
