@@ -9975,7 +9975,13 @@ msgid "If [code]true[/code], audio plays when added to scene tree."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
-msgid "Bus on which this audio is playing."
+msgid ""
+"Bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml
@@ -10140,7 +10146,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
-msgid "The bus on which this audio is playing."
+msgid ""
+"The bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
@@ -28420,13 +28432,14 @@ msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
-"If set to a value greater than [code]0.0[/code], the HTTP request will time "
-"out after [code]timeout[/code] seconds have passed and the request is not "
-"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
-"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
-"application from getting stuck if the request fails to get a response in a "
-"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
-"the download from failing if it takes too much time."
+"If set to a value greater than [code]0.0[/code] before the request starts, "
+"the HTTP request will time out after [code]timeout[/code] seconds have "
+"passed and the request is not [i]completed[/i] yet. For small HTTP requests "
+"such as REST API usage, set [member timeout] to a value between [code]10.0[/"
+"code] and [code]30.0[/code] to prevent the application from getting stuck if "
+"the request fails to get a response in a timely manner. For file downloads, "
+"leave this to [code]0.0[/code] to prevent the download from failing if it "
+"takes too much time."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
@@ -29840,9 +29853,9 @@ msgid ""
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
 "actual input.\n"
-"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
-"compatibility reasons. It is however recommended to enable it for games "
-"which don't require very reactive input, as this will decrease CPU usage."
+"[b]Note:[/b] Input accumulation is [i]enabled[/i] by default. It is "
+"recommended to keep it enabled for games which don't require very reactive "
+"input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -30416,10 +30429,13 @@ msgstr ""
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
-"rendered, allowing for precise input reporting, at the expense of CPU usage. "
-"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
-"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] The behavior of this event is affected by the value of [member "
+"Input.use_accumulated_input]. When set to [code]true[/code] (default), mouse/"
+"pen motion events received from the OS will be merged to emit an accumulated "
+"event only once per frame rendered at most. When set to [code]false[/code], "
+"the events will be emitted as received, which means that they can be emitted "
+"multiple times per frame rendered, allowing for precise input reporting at "
+"the expense of CPU usage.\n"
 "[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
@@ -30428,6 +30444,12 @@ msgstr ""
 
 #: doc/classes/InputEventMouseMotion.xml
 msgid "Mouse and input coordinates"
+msgstr ""
+
+#: doc/classes/InputEventMouseMotion.xml
+msgid ""
+"Returns [code]true[/code] when using the eraser end of a stylus pen.\n"
+"[b]Note:[/b] This property is implemented on Linux, macOS and Windows."
 msgstr ""
 
 #: doc/classes/InputEventMouseMotion.xml
@@ -45299,6 +45321,13 @@ msgstr ""
 msgid "Changes the byte at the given index."
 msgstr ""
 
+#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
+#: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
+#: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
+#: doc/classes/PoolVector3Array.xml
+msgid "Sorts the elements of the array in ascending order."
+msgstr ""
+
 #: doc/classes/PoolByteArray.xml
 msgid ""
 "Returns the slice of the [PoolByteArray] between indices (inclusive) as a "
@@ -54223,7 +54252,8 @@ msgid ""
 "SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A "
 "[SceneTreeTween] might become invalid when it has finished tweening, is "
 "killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid "
-"[SceneTreeTween]s can't have [Tweener]s appended."
+"[SceneTreeTween]s can't have [Tweener]s appended. You can however still use "
+"[method interpolate_value]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -54263,15 +54293,16 @@ msgstr ""
 msgid ""
 "Sets the number of times the tweening sequence will be repeated, i.e. "
 "[code]set_loops(2)[/code] will run the animation twice.\n"
-"Calling this method without arguments will make the [Tween] run infinitely, "
-"until either it is killed with [method kill], the [Tween]'s bound node is "
-"freed, or all the animated objects have been freed (which makes further "
-"animation impossible).\n"
+"Calling this method without arguments will make the [SceneTreeTween] run "
+"infinitely, until either it is killed with [method kill], the "
+"[SceneTreeTween]'s bound node is freed, or all the animated objects have "
+"been freed (which makes further animation impossible).\n"
 "[b]Warning:[/b] Make sure to always add some duration/delay when using "
 "infinite loops. To prevent the game freezing, 0-duration looped animations "
 "(e.g. a single [CallbackTweener] with no delay) are stopped after a small "
-"number of loops, which may produce unexpected results. If a [Tween]'s "
-"lifetime depends on some node, always use [method bind_node]."
+"number of loops, which may produce unexpected results. If a "
+"[SceneTreeTween]'s lifetime depends on some node, always use [method "
+"bind_node]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -55747,7 +55778,26 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
+msgid ""
+"Rotation part of the global transformation in radians, specified in terms of "
+"YXZ-Euler angles in the format (X angle, Y angle, Z angle).\n"
+"[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a "
+"vector. The three Euler angles, which are the three independent parameters "
+"of the Euler-angle parametrization of the rotation matrix, are stored in a "
+"[Vector3] data structure not because the rotation is a vector, but only "
+"because [Vector3] exists as a convenient data-structure to store 3 floating-"
+"point numbers. Therefore, applying affine operations on the rotation "
+"\"vector\" is not meaningful."
+msgstr ""
+
+#: doc/classes/Spatial.xml
 msgid "World space (global) [Transform] of this node."
+msgstr ""
+
+#: doc/classes/Spatial.xml
+msgid ""
+"Global position of this node. This is equivalent to [code]global_transform."
+"origin[/code]."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -65768,11 +65818,11 @@ msgstr ""
 #: doc/classes/VehicleBody.xml
 msgid ""
 "Accelerates the vehicle by applying an engine force. The vehicle is only "
-"speed up if the wheels that have [member VehicleWheel.use_as_traction] set "
-"to [code]true[/code] and are in contact with a surface. The [member "
-"RigidBody.mass] of the vehicle has an effect on the acceleration of the "
-"vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 "
-"range for acceleration.\n"
+"sped up if the wheels that have [member VehicleWheel.use_as_traction] set to "
+"[code]true[/code] and are in contact with a surface. The [member RigidBody."
+"mass] of the vehicle has an effect on the acceleration of the vehicle. For a "
+"vehicle with a mass set to 1000, try a value in the 25 - 50 range for "
+"acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "
 "you will need to add logic for this if you wish to simulate gears.\n"
 "A negative value will result in the vehicle reversing."
@@ -65852,8 +65902,8 @@ msgstr ""
 
 #: doc/classes/VehicleWheel.xml
 msgid ""
-"Accelerates the wheel by applying an engine force. The wheel is only speed "
-"up if it is in contact with a surface. The [member RigidBody.mass] of the "
+"Accelerates the wheel by applying an engine force. The wheel is only sped up "
+"if it is in contact with a surface. The [member RigidBody.mass] of the "
 "vehicle has an effect on the acceleration of the vehicle. For a vehicle with "
 "a mass set to 1000, try a value in the 25 - 50 range for acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "

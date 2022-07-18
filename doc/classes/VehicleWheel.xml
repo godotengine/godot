@@ -48,7 +48,7 @@
 			The damping applied to the spring when relaxing. This value should be between 0.0 (no damping) and 1.0. This value should always be slightly higher than the [member damping_compression] property. For a [member damping_compression] value of 0.3, try a relaxation value of 0.5.
 		</member>
 		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" default="0.0">
-			Accelerates the wheel by applying an engine force. The wheel is only speed up if it is in contact with a surface. The [member RigidBody.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
+			Accelerates the wheel by applying an engine force. The wheel is only sped up if it is in contact with a surface. The [member RigidBody.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
 			[b]Note:[/b] The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.
 			A negative value will result in the wheel reversing.
 		</member>
