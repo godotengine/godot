@@ -399,7 +399,21 @@ godot_string GDAPI godot_string_num_int64(int64_t p_num, godot_int p_base) {
 
 godot_string GDAPI godot_string_num_int64_capitalized(int64_t p_num, godot_int p_base, godot_bool p_capitalize_hex) {
 	godot_string result;
-	memnew_placement(&result, String(String::num_int64(p_num, p_base, true)));
+	memnew_placement(&result, String(String::num_int64(p_num, p_base, p_capitalize_hex)));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_num_uint64(uint64_t p_num, godot_int p_base) {
+	godot_string result;
+	memnew_placement(&result, String(String::num_uint64(p_num, p_base)));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_num_uint64_capitalized(uint64_t p_num, godot_int p_base, godot_bool p_capitalize_hex) {
+	godot_string result;
+	memnew_placement(&result, String(String::num_uint64(p_num, p_base, p_capitalize_hex)));
 
 	return result;
 }

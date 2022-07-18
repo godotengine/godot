@@ -129,6 +129,8 @@ godot_string GDAPI godot_string_md5(const uint8_t *p_md5);
 godot_string GDAPI godot_string_num(double p_num);
 godot_string GDAPI godot_string_num_int64(int64_t p_num, godot_int p_base);
 godot_string GDAPI godot_string_num_int64_capitalized(int64_t p_num, godot_int p_base, godot_bool p_capitalize_hex);
+godot_string GDAPI godot_string_num_uint64(uint64_t p_num, godot_int p_base);
+godot_string GDAPI godot_string_num_uint64_capitalized(uint64_t p_num, godot_int p_base, godot_bool p_capitalize_hex);
 godot_string GDAPI godot_string_num_real(double p_num);
 godot_string GDAPI godot_string_num_scientific(double p_num);
 godot_string GDAPI godot_string_num_with_decimals(double p_num, godot_int p_decimals);
