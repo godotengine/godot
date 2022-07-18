@@ -81,6 +81,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="compute_list_dispatch_indirect">
+			<return type="void" />
+			<argument index="0" name="compute_list" type="int" />
+			<argument index="1" name="buffer" type="RID" />
+			<argument index="2" name="offset" type="int" />
+			<description>
+				Indirectly executes the compute shader pipeline using existing queue of descriptors.
+				[code]buffer[/code] must be a storage buffer containing some dispatch commands created with optional argument [code]contains_commands[/code] enabled.
+				[code]offset[/code] indicates the starting byte of dispatch commands, read until the end of the buffer.
+				[b]Note:[/b] [code]buffer[/code] does not need to compose entirely of dispatch commands. Compute dispatch expects that only starting byte [code]offset[/code] until end of buffer contains dispatch commands. Anything before can be any other useful data.
+				For layout of dispatch command structure, please consult the current rendering driver's documentation.
+				For example, a project using Vulkan expects buffers to be filled with [code]VkDispatchIndirectCommand[/code] struct after offset byte.
+			</description>
+		</method>
 		<method name="compute_list_end">
 			<return type="void" />
 			<argument index="0" name="post_barrier" type="int" default="7" />
@@ -209,9 +223,30 @@
 			<return type="void" />
 			<argument index="0" name="draw_list" type="int" />
 			<argument index="1" name="use_indices" type="bool" />
-			<argument index="2" name="instances" type="int" />
+			<argument index="2" name="instances" type="int" default="1" />
 			<argument index="3" name="procedural_vertex_count" type="int" default="0" />
 			<description>
+			</description>
+		</method>
+		<method name="draw_list_draw_indirect">
+			<return type="void" />
+			<argument index="0" name="draw_list" type="int" />
+			<argument index="1" name="buffer" type="RID" />
+			<argument index="2" name="use_indices" type="bool" />
+			<argument index="3" name="offset" type="int" />
+			<argument index="4" name="draw_count" type="int" default="1" />
+			<argument index="5" name="stride" type="int" default="0" />
+			<description>
+				Indirectly draws using the current pipeline using existing queue of descriptors.
+				[code]buffer[/code] must be a storage buffer containing draw commands created with optional argument [code]contains_commands[/code] enabled.
+				[code]use_indices[/code] toggles whether to draw with an index buffer or not.
+				[code]offset[/code] indicates the starting byte of dispatch commands, read until the end of the buffer.
+				[code]draw_count[/code] indicates number of draws to be done.
+				[code]stride[/code] indicates the number of bytes corresponding to a single draw count. Not used if draw count is less than or equal to one.
+				[b]Note:[/b] index (if used) and vertex buffer does not need to be filled at creation but a step filling these buffers, compute shader or transferred from CPU, must be executed before these draw commands are rendered.
+				For layout of draw command structure, please consult the current rendering driver's documentation.
+				For example, a project using Vulkan expects buffers to be filled with [code]VkDrawIndirectCommand[/code] struct after offset byte for non-indexed draw calls using [code]vkCmdDrawIndirect[/code].
+				A good guide for Vulkan indirect draw process can be found at https://vkguide.dev/docs/gpudriven/draw_indirect/
 			</description>
 		</method>
 		<method name="draw_list_enable_scissor">
@@ -490,8 +525,11 @@
 			<return type="RID" />
 			<argument index="0" name="size_bytes" type="int" />
 			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<argument index="2" name="usage" type="int" default="0" />
+			<argument index="2" name="contains_commands" type="bool" default="false" />
 			<description>
+				A shader storage buffer object for use in GLSL shaders that can contain numerous data structures.
+				[code]contains_commands[/code] must be set to [code]true[/code] to allow this buffer to contain draw or dispatch command structures for indirect draw or compute shader execution.
+				[b]Note:[/b] even if [code]contains_commands[/code] is [code]true[/code], storage buffers can contain data other than commands. Just ensure the offset when executing indirect calls are valid.
 			</description>
 		</method>
 		<method name="submit">
@@ -1248,8 +1286,6 @@
 		<constant name="INDEX_BUFFER_FORMAT_UINT16" value="0" enum="IndexBufferFormat">
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
-		</constant>
-		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 		</constant>

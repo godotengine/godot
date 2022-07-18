@@ -5522,7 +5522,7 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 	return uniform_buffer_owner.make_rid(buffer);
 }
 
-RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, uint32_t p_usage) {
+RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, bool p_contains_commands) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr && p_data.size(), RID(),
 			"Creating buffers with data is forbidden during creation of a draw list");
@@ -5533,7 +5533,8 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 
 	Buffer buffer;
 	uint32_t flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-	if (p_usage & STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT) {
+	if (p_contains_commands) {
+		// For both indirect drawing and dispatching.
 		flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 	}
 	Error err = _buffer_allocate(&buffer, p_size_bytes, flags, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
@@ -5543,7 +5544,14 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
 		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		uint32_t stage_flags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		uint32_t access_flags = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		if (p_contains_commands) {
+			// Enable these flags if this buffer is transferring data from the CPU that might be used in indirect drawing immediately after.
+			stage_flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+			access_flags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		}
+		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, stage_flags, VK_ACCESS_TRANSFER_WRITE_BIT, access_flags, false);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -7616,6 +7624,7 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 	dl->state.index_array = p_index_array;
 #ifdef DEBUG_ENABLED
 	dl->validation.index_array_max_index = index_array->max_index;
+	dl->validation.index_buffer_binded = true; // For use in verifying indirect indexed draw calls.
 #endif
 	dl->validation.index_array_size = index_array->indices;
 	dl->validation.index_array_offset = index_array->offset;
@@ -7759,6 +7768,84 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 #endif
 
 		vkCmdDraw(dl->command_buffer, to_draw, p_instances, 0, 0);
+	}
+}
+
+void RenderingDeviceVulkan::draw_list_draw_indirect(DrawListID p_list, RID p_buffer, bool p_use_indices, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+	
+	ERR_FAIL_COND_MSG(!dl->validation.pipeline_active,
+			"No render pipeline was set before attempting to draw.");
+	if (dl->validation.pipeline_vertex_format != INVALID_ID) {
+		//pipeline uses vertices, validate format
+		ERR_FAIL_COND_MSG(dl->validation.vertex_format == INVALID_ID,
+				"No vertex array was bound, and render pipeline expects vertices.");
+		//make sure format is right
+		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != dl->validation.vertex_format,
+				"The vertex format used to create the pipeline does not match the vertex format bound.");
+	}
+
+	if (dl->validation.pipeline_push_constant_size > 0) {
+		//using push constants, check that they were supplied
+		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_supplied,
+				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
+	}
+
+#endif
+
+	//Bind descriptor sets
+
+	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+		if (dl->state.sets[i].pipeline_expected_format == 0) {
+			continue; //nothing expected by this pipeline
+		}
+#ifdef DEBUG_ENABLED
+		if (dl->state.sets[i].pipeline_expected_format != dl->state.sets[i].uniform_set_format) {
+			if (dl->state.sets[i].uniform_set_format == 0) {
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+			} else if (uniform_set_owner.owns(dl->state.sets[i].uniform_set)) {
+				UniformSet *us = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+			} else {
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+			}
+		}
+#endif
+		if (!dl->state.sets[i].bound) {
+			//All good, see if this requires re-binding
+			vkCmdBindDescriptorSets(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, dl->state.pipeline_layout, i, 1, &dl->state.sets[i].descriptor_set, 0, nullptr);
+			dl->state.sets[i].bound = true;
+		}
+	}
+
+	// Obtain buffers containing draw commands
+	Buffer *draw = storage_buffer_owner.get_or_null(p_buffer);
+	ERR_FAIL_COND(!draw);
+	ERR_FAIL_COND_MSG(!(draw->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to contain indirect drawing commands.");
+
+	uint32_t sizeof_command = p_use_indices ? sizeof(VkDrawIndexedIndirectCommand) : sizeof(VkDrawIndirectCommand);
+
+	ERR_FAIL_COND_MSG(p_offset + sizeof_command > draw->size, "Offset parameter results in insufficient space for a single valid draw command remaining in the buffer.");
+	ERR_FAIL_COND_MSG(p_draw_count > 1 && p_stride < sizeof_command, "Insufficient space in buffer for each draw stride to contain at least one draw command.");
+
+	if (p_use_indices) {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_MSG(!dl->validation.index_buffer_binded, "Indirect draw command requested indices but no index buffer was set.");
+
+		ERR_FAIL_COND_MSG(dl->validation.pipeline_uses_restart_indices != dl->validation.index_buffer_uses_restart_indices,
+				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");
+#endif
+		vkCmdDrawIndexedIndirect(dl->command_buffer, draw->buffer, p_offset, p_draw_count, p_stride);
+	} else {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != INVALID_ID,
+					"Executing indirect draw command but the pipeline lacks a vertex array.");
+#endif
+
+		vkCmdDrawIndirect(dl->command_buffer, draw->buffer, p_offset, p_draw_count, p_stride);
 	}
 }
 
@@ -7986,8 +8073,8 @@ void RenderingDeviceVulkan::draw_list_end(uint32_t p_post_barrier) {
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 	}
 	if (p_post_barrier & BARRIER_MASK_RASTER) {
-		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT /*| VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT*/;
-		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT /*| VK_ACCESS_INDIRECT_COMMAND_READ_BIT*/;
+		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 	}
 	if (p_post_barrier & BARRIER_MASK_TRANSFER) {
 		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -8411,9 +8498,10 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 	Buffer *buffer = storage_buffer_owner.get_or_null(p_buffer);
 	ERR_FAIL_COND(!buffer);
 
-	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to do indirect dispatch.");
+	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to contain indirect dispatch commands.");
 
-	ERR_FAIL_COND_MSG(p_offset + 12 > buffer->size, "Offset provided (+12) is past the end of buffer.");
+	ERR_FAIL_COND_MSG(p_offset + sizeof(VkDispatchIndirectCommand) > buffer->size, 
+		"Offset parameter results in insufficient space for a single valid dispatch command remaining in the buffer.");
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
