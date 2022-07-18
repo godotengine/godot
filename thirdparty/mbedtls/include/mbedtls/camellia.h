@@ -273,7 +273,7 @@ int mbedtls_camellia_crypt_cfb128( mbedtls_camellia_context *ctx,
  *             encrypted: for example, with 96-bit random nonces, you should
  *             not encrypt more than 2**32 messages with the same key.
  *
- *             Note that for both stategies, sizes are measured in blocks and
+ *             Note that for both strategies, sizes are measured in blocks and
  *             that a CAMELLIA block is \c 16 Bytes.
  *
  * \warning    Upon return, \p stream_block contains sensitive data. Its

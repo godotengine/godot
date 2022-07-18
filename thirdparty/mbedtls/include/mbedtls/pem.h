@@ -54,7 +54,7 @@
 #define MBEDTLS_ERR_PEM_FEATURE_UNAVAILABLE               -0x1400
 /** Bad input parameters to function. */
 #define MBEDTLS_ERR_PEM_BAD_INPUT_DATA                    -0x1480
-/* \} name */
+/** \} name PEM Error codes */
 
 #ifdef __cplusplus
 extern "C" {
