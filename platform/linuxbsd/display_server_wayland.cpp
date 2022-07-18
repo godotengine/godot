@@ -59,7 +59,6 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 			wl_display_dispatch_pending(wls->display);
 		}
 
-		errno = 0;
 		if (wl_display_flush(wls->display) == -1) {
 			if (errno != EAGAIN) {
 				print_error(vformat("Error %d while flushing the Wayland display.", errno));
