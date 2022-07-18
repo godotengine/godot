@@ -489,6 +489,12 @@ int mbedtls_ct_hmac( mbedtls_md_context_t *ctx,
     MD_CHK( mbedtls_md_update( ctx, add_data, add_data_len ) );
     MD_CHK( mbedtls_md_update( ctx, data, min_data_len ) );
 
+    /* Fill the hash buffer in advance with something that is
+     * not a valid hash (barring an attack on the hash and
+     * deliberately-crafted input), in case the caller doesn't
+     * check the return status properly. */
+    memset( output, '!', hash_size );
+
     /* For each possible length, compute the hash up to that point */
     for( offset = min_data_len; offset <= max_data_len; offset++ )
     {
@@ -533,6 +539,13 @@ cleanup:
  * about whether the assignment was made or not.
  * (Leaking information about the respective sizes of X and Y is ok however.)
  */
+#if defined(_MSC_VER) && defined(_M_ARM64) && (_MSC_FULL_VER < 193131103)
+/*
+ * MSVC miscompiles this function if it's inlined prior to Visual Studio 2022 version 17.1. See:
+ * https://developercommunity.visualstudio.com/t/c-compiler-miscompiles-part-of-mbedtls-library-on/1646989
+ */
+__declspec(noinline)
+#endif
 int mbedtls_mpi_safe_cond_assign( mbedtls_mpi *X,
                                   const mbedtls_mpi *Y,
                                   unsigned char assign )
@@ -562,7 +575,7 @@ cleanup:
 /*
  * Conditionally swap X and Y, without leaking information
  * about whether the swap was made or not.
- * Here it is not ok to simply swap the pointers, which whould lead to
+ * Here it is not ok to simply swap the pointers, which would lead to
  * different memory access patterns when X and Y are used afterwards.
  */
 int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X,

@@ -299,7 +299,7 @@ static int x509_write_time( unsigned char **p, unsigned char *start,
     /*
      * write MBEDTLS_ASN1_UTC_TIME if year < 2050 (2 bytes shorter)
      */
-    if( t[0] == '2' && t[1] == '0' && t[2] < '5' )
+    if( t[0] < '2' || ( t[0] == '2' && t[1] == '0' && t[2] < '5' ) )
     {
         MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start,
                                              (const unsigned char *) t + 2,

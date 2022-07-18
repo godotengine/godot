@@ -56,15 +56,15 @@ struct _hr_time
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <signal.h>
+/* time.h should be included independently of MBEDTLS_HAVE_TIME. If the
+ * platform matches the ifdefs above, it will be used. */
 #include <time.h>
-
+#include <sys/time.h>
 struct _hr_time
 {
     struct timeval start;
 };
-
 #endif /* _WIN32 && !EFIX64 && !EFI32 */
 
 #if !defined(HAVE_HARDCLOCK) && defined(MBEDTLS_HAVE_ASM) &&  \
@@ -364,7 +364,6 @@ int mbedtls_timing_get_delay( void *data )
     return( 0 );
 }
 
-#endif /* !MBEDTLS_TIMING_ALT */
 
 #if defined(MBEDTLS_SELF_TEST)
 
@@ -526,5 +525,5 @@ hard_test_done:
 }
 
 #endif /* MBEDTLS_SELF_TEST */
-
+#endif /* !MBEDTLS_TIMING_ALT */
 #endif /* MBEDTLS_TIMING_C */

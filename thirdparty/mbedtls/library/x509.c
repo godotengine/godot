@@ -741,7 +741,7 @@ int mbedtls_x509_get_ext( unsigned char **p, const unsigned char *end,
 int mbedtls_x509_dn_gets( char *buf, size_t size, const mbedtls_x509_name *dn )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    size_t i, n;
+    size_t i, j, n;
     unsigned char c, merge = 0;
     const mbedtls_x509_name *name;
     const char *short_name = NULL;
@@ -775,17 +775,24 @@ int mbedtls_x509_dn_gets( char *buf, size_t size, const mbedtls_x509_name *dn )
             ret = mbedtls_snprintf( p, n, "\?\?=" );
         MBEDTLS_X509_SAFE_SNPRINTF;
 
-        for( i = 0; i < name->val.len; i++ )
+        for( i = 0, j = 0; i < name->val.len; i++, j++ )
         {
-            if( i >= sizeof( s ) - 1 )
-                break;
+            if( j >= sizeof( s ) - 1 )
+                return( MBEDTLS_ERR_X509_BUFFER_TOO_SMALL );
 
             c = name->val.p[i];
+            // Special characters requiring escaping, RFC 1779
+            if( c && strchr( ",=+<>#;\"\\", c ) )
+            {
+                if( j + 1 >= sizeof( s ) - 1 )
+                    return( MBEDTLS_ERR_X509_BUFFER_TOO_SMALL );
+                s[j++] = '\\';
+            }
             if( c < 32 || c >= 127 )
-                 s[i] = '?';
-            else s[i] = c;
+                 s[j] = '?';
+            else s[j] = c;
         }
-        s[i] = '\0';
+        s[j] = '\0';
         ret = mbedtls_snprintf( p, n, "%s", s );
         MBEDTLS_X509_SAFE_SNPRINTF;
 

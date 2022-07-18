@@ -51,7 +51,7 @@
  *  the function's behavior is entirely undefined.
  *  In addition to state integrity, all MPS structures have a more refined
  *  notion of abstract state that the API operates on. For example, all layers
- *  have a notion of 'abtract read state' which indicates if incoming data has
+ *  have a notion of 'abstract read state' which indicates if incoming data has
  *  been passed to the user, e.g. through mps_l2_read_start() for Layer 2
  *  or mps_l3_read() in Layer 3. After such a call, it doesn't make sense to
  *  call these reading functions again until the incoming data has been

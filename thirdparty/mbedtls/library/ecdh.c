@@ -399,7 +399,7 @@ static int ecdh_read_params_internal( mbedtls_ecdh_context_mbed *ctx,
 }
 
 /*
- * Read the ServerKeyExhange parameters (RFC 4492)
+ * Read the ServerKeyExchange parameters (RFC 4492)
  *      struct {
  *          ECParameters    curve_params;
  *          ECPoint         public;
