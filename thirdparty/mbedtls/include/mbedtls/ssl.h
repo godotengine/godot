@@ -349,7 +349,7 @@
 #define MBEDTLS_SSL_TLS1_3_PADDING_GRANULARITY 1
 #endif
 
-/* \} name SECTION: Module settings */
+/** \} name SECTION: Module settings */
 
 /*
  * Length of the verify data for secure renegotiation
@@ -1152,7 +1152,7 @@ struct mbedtls_ssl_config
 #endif
 
 #if defined(MBEDTLS_SSL_DTLS_HELLO_VERIFY) && defined(MBEDTLS_SSL_SRV_C)
-    /** Callback to create & write a cookie for ClientHello veirifcation    */
+    /** Callback to create & write a cookie for ClientHello verification    */
     int (*f_cookie_write)( void *, unsigned char **, unsigned char *,
                            const unsigned char *, size_t );
     /** Callback to verify validity of a ClientHello cookie                 */
@@ -1405,7 +1405,7 @@ struct mbedtls_ssl_context
     unsigned char *compress_buf;        /*!<  zlib data buffer        */
 #endif /* MBEDTLS_ZLIB_SUPPORT */
 #if defined(MBEDTLS_SSL_CBC_RECORD_SPLITTING)
-    signed char split_done;     /*!< current record already splitted? */
+    signed char split_done;     /*!< current record already split? */
 #endif /* MBEDTLS_SSL_CBC_RECORD_SPLITTING */
 
     /*
@@ -1688,7 +1688,7 @@ void mbedtls_ssl_conf_dbg( mbedtls_ssl_config *conf,
  *
  * \note           The two most common use cases are:
  *                 - non-blocking I/O, f_recv != NULL, f_recv_timeout == NULL
- *                 - blocking I/O, f_recv == NULL, f_recv_timout != NULL
+ *                 - blocking I/O, f_recv == NULL, f_recv_timeout != NULL
  *
  * \note           For DTLS, you need to provide either a non-NULL
  *                 f_recv_timeout callback, or a f_recv that doesn't block.
@@ -1846,7 +1846,7 @@ int mbedtls_ssl_get_peer_cid( mbedtls_ssl_context *ssl,
 #endif /* MBEDTLS_SSL_DTLS_CONNECTION_ID */
 
 /**
- * \brief          Set the Maximum Tranport Unit (MTU).
+ * \brief          Set the Maximum Transport Unit (MTU).
  *                 Special value: 0 means unset (no limit).
  *                 This represents the maximum size of a datagram payload
  *                 handled by the transport layer (usually UDP) as determined
@@ -2387,7 +2387,7 @@ void mbedtls_ssl_conf_dtls_anti_replay( mbedtls_ssl_config *conf, char mode );
  *                 ones going through the authentication-decryption phase.
  *
  * \note           This is a security trade-off related to the fact that it's
- *                 often relatively easy for an active attacker ot inject UDP
+ *                 often relatively easy for an active attacker to inject UDP
  *                 datagrams. On one hand, setting a low limit here makes it
  *                 easier for such an attacker to forcibly terminated a
  *                 connection. On the other hand, a high limit or no limit
@@ -2498,7 +2498,7 @@ void mbedtls_ssl_conf_handshake_timeout( mbedtls_ssl_config *conf, uint32_t min,
  *                 successfully cached, return 1 otherwise.
  *
  * \param conf           SSL configuration
- * \param p_cache        parmater (context) for both callbacks
+ * \param p_cache        parameter (context) for both callbacks
  * \param f_get_cache    session get callback
  * \param f_set_cache    session set callback
  */
@@ -2529,7 +2529,7 @@ int mbedtls_ssl_set_session( mbedtls_ssl_context *ssl, const mbedtls_ssl_session
 /**
  * \brief          Load serialized session data into a session structure.
  *                 On client, this can be used for loading saved sessions
- *                 before resuming them with mbedstls_ssl_set_session().
+ *                 before resuming them with mbedtls_ssl_set_session().
  *                 On server, this can be used for alternative implementations
  *                 of session cache or session tickets.
  *
@@ -2793,7 +2793,7 @@ void mbedtls_ssl_conf_ca_cb( mbedtls_ssl_config *conf,
  *
  * \note           On client, only the first call has any effect. That is,
  *                 only one client certificate can be provisioned. The
- *                 server's preferences in its CertficateRequest message will
+ *                 server's preferences in its CertificateRequest message will
  *                 be ignored and our only cert will be sent regardless of
  *                 whether it matches those preferences - the server can then
  *                 decide what it wants to do with it.
@@ -3241,7 +3241,7 @@ int mbedtls_ssl_set_hs_ecjpake_password( mbedtls_ssl_context *ssl,
  * \param protos   Pointer to a NULL-terminated list of supported protocols,
  *                 in decreasing preference order. The pointer to the list is
  *                 recorded by the library for later reference as required, so
- *                 the lifetime of the table must be atleast as long as the
+ *                 the lifetime of the table must be at least as long as the
  *                 lifetime of the SSL configuration structure.
  *
  * \return         0 on success, or MBEDTLS_ERR_SSL_BAD_INPUT_DATA.
@@ -3255,7 +3255,7 @@ int mbedtls_ssl_conf_alpn_protocols( mbedtls_ssl_config *conf, const char **prot
  *
  * \param ssl      SSL context
  *
- * \return         Protcol name, or NULL if no protocol was negotiated.
+ * \return         Protocol name, or NULL if no protocol was negotiated.
  */
 const char *mbedtls_ssl_get_alpn_protocol( const mbedtls_ssl_context *ssl );
 #endif /* MBEDTLS_SSL_ALPN */
@@ -3338,7 +3338,7 @@ int mbedtls_ssl_dtls_srtp_set_mki_value( mbedtls_ssl_context *ssl,
                                          unsigned char *mki_value,
                                          uint16_t mki_len );
 /**
- * \brief                  Get the negotiated DTLS-SRTP informations:
+ * \brief                  Get the negotiated DTLS-SRTP information:
  *                         Protection profile and MKI value.
  *
  * \warning                This function must be called after the handshake is
@@ -3346,7 +3346,7 @@ int mbedtls_ssl_dtls_srtp_set_mki_value( mbedtls_ssl_context *ssl,
  *                         not be trusted or acted upon before the handshake completes.
  *
  * \param ssl              The SSL context to query.
- * \param dtls_srtp_info   The negotiated DTLS-SRTP informations:
+ * \param dtls_srtp_info   The negotiated DTLS-SRTP information:
  *                         - Protection profile in use.
  *                         A direct mapping of the iana defined value for protection
  *                         profile on an uint16_t.
@@ -3508,7 +3508,7 @@ void mbedtls_ssl_conf_cert_req_ca_list( mbedtls_ssl_config *conf,
  *                 \c mbedtls_ssl_get_record_expansion().
  *
  * \note           For DTLS, it is also possible to set a limit for the total
- *                 size of daragrams passed to the transport layer, including
+ *                 size of datagrams passed to the transport layer, including
  *                 record overhead, see \c mbedtls_ssl_set_mtu().
  *
  * \param conf     SSL configuration
@@ -3568,7 +3568,7 @@ void mbedtls_ssl_conf_session_tickets( mbedtls_ssl_config *conf, int use_tickets
  *                 initiated by peer
  *                 (Default: MBEDTLS_SSL_RENEGOTIATION_DISABLED)
  *
- * \warning        It is recommended to always disable renegotation unless you
+ * \warning        It is recommended to always disable renegotiation unless you
  *                 know you need it and you know what you're doing. In the
  *                 past, there have been several issues associated with
  *                 renegotiation or a poor understanding of its properties.
@@ -3631,7 +3631,7 @@ void mbedtls_ssl_conf_legacy_renegotiation( mbedtls_ssl_config *conf, int allow_
  *                 scenario.
  *
  * \note           With DTLS and server-initiated renegotiation, the
- *                 HelloRequest is retransmited every time mbedtls_ssl_read() times
+ *                 HelloRequest is retransmitted every time mbedtls_ssl_read() times
  *                 out or receives Application Data, until:
  *                 - max_records records have beens seen, if it is >= 0, or
  *                 - the number of retransmits that would happen during an
@@ -4263,7 +4263,7 @@ void mbedtls_ssl_free( mbedtls_ssl_context *ssl );
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL if \p buf is too small.
  * \return         #MBEDTLS_ERR_SSL_ALLOC_FAILED if memory allocation failed
- *                 while reseting the context.
+ *                 while resetting the context.
  * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if a handshake is in
  *                 progress, or there is pending data for reading or sending,
  *                 or the connection does not use DTLS 1.2 with an AEAD
@@ -4357,7 +4357,7 @@ int mbedtls_ssl_context_load( mbedtls_ssl_context *ssl,
 void mbedtls_ssl_config_init( mbedtls_ssl_config *conf );
 
 /**
- * \brief          Load reasonnable default SSL configuration values.
+ * \brief          Load reasonable default SSL configuration values.
  *                 (You need to call mbedtls_ssl_config_init() first.)
  *
  * \param conf     SSL configuration context
