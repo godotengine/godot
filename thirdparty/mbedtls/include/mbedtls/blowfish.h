@@ -185,7 +185,7 @@ int mbedtls_blowfish_crypt_cbc( mbedtls_blowfish_context *ctx,
  *                 #MBEDTLS_BLOWFISH_ENCRYPT for encryption, or
  *                 #MBEDTLS_BLOWFISH_DECRYPT for decryption.
  * \param length   The length of the input data in Bytes.
- * \param iv_off   The offset in the initialiation vector.
+ * \param iv_off   The offset in the initialization vector.
  *                 The value pointed to must be smaller than \c 8 Bytes.
  *                 It is updated by this function to support the aforementioned
  *                 streaming usage.
@@ -246,7 +246,7 @@ int mbedtls_blowfish_crypt_cfb64( mbedtls_blowfish_context *ctx,
  *             The recommended way to ensure uniqueness is to use a message
  *             counter.
  *
- *             Note that for both stategies, sizes are measured in blocks and
+ *             Note that for both strategies, sizes are measured in blocks and
  *             that a Blowfish block is 8 bytes.
  *
  * \warning    Upon return, \p stream_block contains sensitive data. Its

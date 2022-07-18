@@ -101,7 +101,7 @@ void mbedtls_ssl_ticket_init( mbedtls_ssl_ticket_context *ctx );
  *                  supported. Usually that means a 256-bit key.
  *
  * \note            The lifetime of the keys is twice the lifetime of tickets.
- *                  It is recommended to pick a reasonnable lifetime so as not
+ *                  It is recommended to pick a reasonable lifetime so as not
  *                  to negate the benefits of forward secrecy.
  *
  * \return          0 if successful,

@@ -217,32 +217,6 @@ typedef struct
 typedef void mbedtls_pk_restart_ctx;
 #endif /* MBEDTLS_ECDSA_C && MBEDTLS_ECP_RESTARTABLE */
 
-#if defined(MBEDTLS_RSA_C)
-/**
- * Quick access to an RSA context inside a PK context.
- *
- * \warning You must make sure the PK context actually holds an RSA context
- * before using this function!
- */
-static inline mbedtls_rsa_context *mbedtls_pk_rsa( const mbedtls_pk_context pk )
-{
-    return( (mbedtls_rsa_context *) (pk).pk_ctx );
-}
-#endif /* MBEDTLS_RSA_C */
-
-#if defined(MBEDTLS_ECP_C)
-/**
- * Quick access to an EC context inside a PK context.
- *
- * \warning You must make sure the PK context actually holds an EC context
- * before using this function!
- */
-static inline mbedtls_ecp_keypair *mbedtls_pk_ec( const mbedtls_pk_context pk )
-{
-    return( (mbedtls_ecp_keypair *) (pk).pk_ctx );
-}
-#endif /* MBEDTLS_ECP_C */
-
 #if defined(MBEDTLS_PK_RSA_ALT_SUPPORT)
 /**
  * \brief           Types for RSA-alt abstraction
@@ -655,6 +629,55 @@ const char * mbedtls_pk_get_name( const mbedtls_pk_context *ctx );
  * \return          #MBEDTLS_PK_NONE for a context that has not been set up.
  */
 mbedtls_pk_type_t mbedtls_pk_get_type( const mbedtls_pk_context *ctx );
+
+#if defined(MBEDTLS_RSA_C)
+/**
+ * Quick access to an RSA context inside a PK context.
+ *
+ * \warning This function can only be used when the type of the context, as
+ * returned by mbedtls_pk_get_type(), is #MBEDTLS_PK_RSA.
+ * Ensuring that is the caller's responsibility.
+ * Alternatively, you can check whether this function returns NULL.
+ *
+ * \return The internal RSA context held by the PK context, or NULL.
+ */
+static inline mbedtls_rsa_context *mbedtls_pk_rsa( const mbedtls_pk_context pk )
+{
+    switch( mbedtls_pk_get_type( &pk ) )
+    {
+        case MBEDTLS_PK_RSA:
+            return( (mbedtls_rsa_context *) (pk).pk_ctx );
+        default:
+            return( NULL );
+    }
+}
+#endif /* MBEDTLS_RSA_C */
+
+#if defined(MBEDTLS_ECP_C)
+/**
+ * Quick access to an EC context inside a PK context.
+ *
+ * \warning This function can only be used when the type of the context, as
+ * returned by mbedtls_pk_get_type(), is #MBEDTLS_PK_ECKEY,
+ * #MBEDTLS_PK_ECKEY_DH, or #MBEDTLS_PK_ECDSA.
+ * Ensuring that is the caller's responsibility.
+ * Alternatively, you can check whether this function returns NULL.
+ *
+ * \return The internal EC context held by the PK context, or NULL.
+ */
+static inline mbedtls_ecp_keypair *mbedtls_pk_ec( const mbedtls_pk_context pk )
+{
+    switch( mbedtls_pk_get_type( &pk ) )
+    {
+        case MBEDTLS_PK_ECKEY:
+        case MBEDTLS_PK_ECKEY_DH:
+        case MBEDTLS_PK_ECDSA:
+            return( (mbedtls_ecp_keypair *) (pk).pk_ctx );
+        default:
+            return( NULL );
+    }
+}
+#endif /* MBEDTLS_ECP_C */
 
 #if defined(MBEDTLS_PK_PARSE_C)
 /** \ingroup pk_module */

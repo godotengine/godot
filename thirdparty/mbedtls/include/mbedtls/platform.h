@@ -70,7 +70,9 @@ extern "C" {
 #if !defined(MBEDTLS_PLATFORM_NO_STD_FUNCTIONS)
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(MBEDTLS_HAVE_TIME)
 #include <time.h>
+#endif
 #if !defined(MBEDTLS_PLATFORM_STD_SNPRINTF)
 #if defined(MBEDTLS_PLATFORM_HAS_NON_CONFORMING_SNPRINTF)
 #define MBEDTLS_PLATFORM_STD_SNPRINTF   mbedtls_platform_win32_snprintf /**< The default \c snprintf function to use.  */
@@ -127,7 +129,7 @@ extern "C" {
 #endif /* MBEDTLS_PLATFORM_NO_STD_FUNCTIONS */
 
 
-/* \} name SECTION: Module settings */
+/** \} name SECTION: Module settings */
 
 /*
  * The function pointers for calloc and free.

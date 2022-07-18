@@ -75,7 +75,7 @@
 #define MBEDTLS_ENTROPY_MAX_GATHER      128     /**< Maximum amount requested from entropy sources */
 #endif
 
-/* \} name SECTION: Module settings */
+/** \} name SECTION: Module settings */
 
 #if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
 #define MBEDTLS_ENTROPY_BLOCK_SIZE      64      /**< Block size of entropy accumulator (SHA-512) */

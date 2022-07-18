@@ -564,7 +564,7 @@ int mbedtls_aes_crypt_ofb( mbedtls_aes_context *ctx,
  *             for example, with 96-bit random nonces, you should not encrypt
  *             more than 2**32 messages with the same key.
  *
- *             Note that for both stategies, sizes are measured in blocks and
+ *             Note that for both strategies, sizes are measured in blocks and
  *             that an AES block is 16 bytes.
  *
  * \warning    Upon return, \p stream_block contains sensitive data. Its

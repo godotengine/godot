@@ -139,7 +139,7 @@ extern "C" {
  *          discarded.
  *          (Default value: 0 = No debug )
  *
- * \param threshold     theshold level of messages to filter on. Messages at a
+ * \param threshold     threshold level of messages to filter on. Messages at a
  *                      higher level will be discarded.
  *                          - Debug levels
  *                              - 0 No debug

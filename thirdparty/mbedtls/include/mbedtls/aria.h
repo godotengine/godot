@@ -44,7 +44,7 @@
 #define MBEDTLS_ARIA_DECRYPT     0 /**< ARIA decryption. */
 
 #define MBEDTLS_ARIA_BLOCKSIZE   16 /**< ARIA block size in bytes. */
-#define MBEDTLS_ARIA_MAX_ROUNDS  16 /**< Maxiumum number of rounds in ARIA. */
+#define MBEDTLS_ARIA_MAX_ROUNDS  16 /**< Maximum number of rounds in ARIA. */
 #define MBEDTLS_ARIA_MAX_KEYSIZE 32 /**< Maximum size of an ARIA key in bytes. */
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
@@ -321,7 +321,7 @@ int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
  *             for example, with 96-bit random nonces, you should not encrypt
  *             more than 2**32 messages with the same key.
  *
- *             Note that for both stategies, sizes are measured in blocks and
+ *             Note that for both strategies, sizes are measured in blocks and
  *             that an ARIA block is 16 bytes.
  *
  * \warning    Upon return, \p stream_block contains sensitive data. Its
