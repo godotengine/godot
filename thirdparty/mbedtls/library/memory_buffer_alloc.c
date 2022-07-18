@@ -555,8 +555,8 @@ static void *buffer_alloc_calloc_mutexed( size_t n, size_t size )
 
 static void buffer_alloc_free_mutexed( void *ptr )
 {
-    /* We have to good option here, but corrupting the heap seems
-     * worse than loosing memory. */
+    /* We have no good option here, but corrupting the heap seems
+     * worse than losing memory. */
     if( mbedtls_mutex_lock( &heap.mutex ) )
         return;
     buffer_alloc_free( ptr );
