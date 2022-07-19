@@ -7841,8 +7841,7 @@ void RenderingDeviceVulkan::draw_list_draw_indirect(DrawListID p_list, RID p_buf
 		vkCmdDrawIndexedIndirect(dl->command_buffer, draw->buffer, p_offset, p_draw_count, p_stride);
 	} else {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != INVALID_ID,
-					"Executing indirect draw command but the pipeline lacks a vertex array.");
+		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format != INVALID_ID, "Executing indirect draw command but the pipeline lacks a vertex array.");
 #endif
 
 		vkCmdDrawIndirect(dl->command_buffer, draw->buffer, p_offset, p_draw_count, p_stride);
@@ -8500,8 +8499,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 
 	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to contain indirect dispatch commands.");
 
-	ERR_FAIL_COND_MSG(p_offset + sizeof(VkDispatchIndirectCommand) > buffer->size,
-		"Offset parameter results in insufficient space for a single valid dispatch command remaining in the buffer.");
+	ERR_FAIL_COND_MSG(p_offset + sizeof(VkDispatchIndirectCommand) > buffer->size, "Offset parameter results in insufficient space for a single valid dispatch command remaining in the buffer.");
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!cl->validation.active, "Submitted Compute Lists can no longer be modified.");
