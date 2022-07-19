@@ -52,43 +52,50 @@ enum BasisDecompressFormat {
 #ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
 	Vector<uint8_t> budata;
-
 	{
+		basisu::basis_compressor_params params;
 		Ref<Image> image = p_image->duplicate();
-
-		// unfortunately, basis universal does not support compressing supplied mipmaps,
-		// so for the time being, only compressing individual images will have to do.
-
-		if (image->has_mipmaps()) {
-			image->clear_mipmaps();
-		}
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
 		}
-
-		basisu::image buimg(image->get_width(), image->get_height());
-
+		Ref<Image> image_single = image->duplicate();
 		{
-			Vector<uint8_t> vec = image->get_data();
+			if (image_single->has_mipmaps()) {
+				image_single->clear_mipmaps();
+			}
+			basisu::image buimg(image_single->get_width(), image_single->get_height());
+			Vector<uint8_t> vec = image_single->get_data();
 			const uint8_t *r = vec.ptr();
-
 			memcpy(buimg.get_ptr(), r, vec.size());
+			params.m_source_images.push_back(buimg);
 		}
+		basisu::vector<basisu::image> source_images;
+		for (int32_t mipmap_i = 1; mipmap_i < image->get_mipmap_count(); mipmap_i++) {
+			Ref<Image> mip = image->get_image_from_mipmap(mipmap_i);
+			basisu::image buimg(mip->get_width(), mip->get_height());
+			Vector<uint8_t> vec = mip->get_data();
+			const uint8_t *r = vec.ptr();
+			memcpy(buimg.get_ptr(), r, vec.size());
+			source_images.push_back(buimg);
+		}
+		params.m_source_mipmap_images.push_back(source_images);
 
-		basisu::basis_compressor_params params;
 		params.m_uastc = true;
-		params.m_max_endpoint_clusters = 512;
-		params.m_max_selector_clusters = 512;
+		params.m_quality_level = basisu::BASISU_QUALITY_MIN;
+
+		params.m_pack_uastc_flags &= ~basisu::cPackUASTCLevelMask;
+
+		static const uint32_t s_level_flags[basisu::TOTAL_PACK_UASTC_LEVELS] = { basisu::cPackUASTCLevelFastest, basisu::cPackUASTCLevelFaster, basisu::cPackUASTCLevelDefault, basisu::cPackUASTCLevelSlower, basisu::cPackUASTCLevelVerySlow };
+		params.m_pack_uastc_flags |= s_level_flags[0];
+		params.m_rdo_uastc = 0.0f;
+		params.m_rdo_uastc_quality_scalar = 0.0f;
+		params.m_rdo_uastc_dict_size = 1024;
+
+		params.m_mip_fast = true;
 		params.m_multithreading = true;
-		//params.m_quality_level = 0;
-		//params.m_disable_hierarchical_endpoint_codebooks = true;
-		//params.m_no_selector_rdo = true;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
-
-		params.m_mip_gen = false; //sorry, please some day support provided mipmaps.
-		params.m_source_images.push_back(buimg);
 
 		BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_RG;
 		params.m_check_for_alpha = false;
@@ -222,12 +229,16 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 	ERR_FAIL_COND_V(!tr.validate_header(ptr, size), image);
 
-	basist::basisu_image_info info;
-	tr.get_image_info(ptr, size, info, 0);
+	basist::basisu_file_info info;
+	tr.get_file_info(ptr, size, info);
+	basist::basisu_image_info image_info;
+	tr.get_image_info(ptr, size, image_info, 0);
 
 	int block_size = basist::basis_get_bytes_per_block_or_pixel(format);
 	Vector<uint8_t> gpudata;
-	gpudata.resize(info.m_total_blocks * block_size);
+	ERR_FAIL_INDEX_V(0, info.m_image_mipmap_levels.size(), Ref<Image>());
+	uint32_t total_mip_levels = info.m_image_mipmap_levels[0];
+	gpudata.resize(Image::get_image_data_size(image_info.m_width, image_info.m_height, imgfmt, total_mip_levels > 1));
 
 	{
 		uint8_t *w = gpudata.ptrw();
@@ -238,11 +249,11 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 		int ofs = 0;
 		tr.start_transcoding(ptr, size);
-		for (uint32_t i = 0; i < info.m_total_levels; i++) {
+		for (uint32_t i = 0; i < total_mip_levels; i++) {
 			basist::basisu_image_level_info level;
 			tr.get_image_level_info(ptr, size, level, 0, i);
 
-			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks - i, format);
+			bool ret = tr.transcode_image_level(ptr, size, 0, i, dst + ofs, level.m_total_blocks, format);
 			if (!ret) {
 				printf("failed! on level %u\n", i);
 				break;
@@ -250,10 +261,9 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 
 			ofs += level.m_total_blocks * block_size;
 		};
-	};
-
-	image.instantiate();
-	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
+		image.instantiate();
+		image->create(image_info.m_width, image_info.m_height, total_mip_levels > 1, imgfmt, gpudata);
+	}
 
 	return image;
 }
