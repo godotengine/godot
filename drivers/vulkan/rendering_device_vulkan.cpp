@@ -8500,7 +8500,7 @@ void RenderingDeviceVulkan::compute_list_dispatch_indirect(ComputeListID p_list,
 
 	ERR_FAIL_COND_MSG(!(buffer->usage & VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT), "Buffer provided was not created to contain indirect dispatch commands.");
 
-ERR_FAIL_COND_MSG(p_offset + sizeof(VkDispatchIndirectCommand) > buffer->size, 
+	ERR_FAIL_COND_MSG(p_offset + sizeof(VkDispatchIndirectCommand) > buffer->size,
 		"Offset parameter results in insufficient space for a single valid dispatch command remaining in the buffer.");
 
 #ifdef DEBUG_ENABLED
