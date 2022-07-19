@@ -1171,6 +1171,17 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					return false; // Drag.
 				}
 
+				// Finish ongoing erasing.
+				if (tool == TOOL_ERASING || tool == TOOL_RECTANGLE_ERASE || tool == TOOL_LINE_ERASE) {
+					_finish_undo();
+
+					if (tool == TOOL_RECTANGLE_ERASE || tool == TOOL_LINE_ERASE) {
+						CanvasItemEditor::get_singleton()->update_viewport();
+					}
+
+					tool = TOOL_NONE;
+				}
+
 				if (tool == TOOL_NONE) {
 					if (mb->get_shift()) {
 						if (mb->get_command()) {
