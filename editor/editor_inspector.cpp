@@ -569,7 +569,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorProperty::_unhandled_key_input(const Ref<InputEvent> &p_event) {
-	if (!selected) {
+	if (!selected || !is_visible_in_tree()) {
 		return;
 	}
 
