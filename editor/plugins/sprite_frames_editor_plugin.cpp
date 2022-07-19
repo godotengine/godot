@@ -1169,7 +1169,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_search_box = memnew(LineEdit);
 	hbc_animlist->add_child(anim_search_box);
 	anim_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	anim_search_box->set_placeholder(TTR("Filter animations"));
+	anim_search_box->set_placeholder(TTR("Filter Animations"));
 	anim_search_box->set_clear_button_enabled(true);
 	anim_search_box->connect("text_changed", callable_mp(this, &SpriteFramesEditor::_animation_search_text_changed));
 
