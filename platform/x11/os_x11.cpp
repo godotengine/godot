@@ -1228,8 +1228,8 @@ void OS_X11::set_current_screen(int p_screen) {
 		XMoveResizeWindow(x11_display, x11_window, position.x, position.y, size.x, size.y);
 	} else {
 		if (p_screen != get_current_screen()) {
-			Point2i position = get_screen_position(p_screen);
-			XMoveWindow(x11_display, x11_window, position.x, position.y);
+			Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
+			set_window_position(ofs + get_screen_position(p_screen));
 		}
 	}
 }

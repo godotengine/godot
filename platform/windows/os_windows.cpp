@@ -1940,8 +1940,19 @@ int OS_Windows::get_current_screen() const {
 }
 
 void OS_Windows::set_current_screen(int p_screen) {
-	Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
-	set_window_position(ofs + get_screen_position(p_screen));
+	if (video_mode.fullscreen) {
+		int cs = get_current_screen();
+		if (cs == p_screen) {
+			return;
+		}
+		Point2 pos = get_screen_position(p_screen);
+		Size2 size = get_screen_size(p_screen);
+
+		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+	} else {
+		Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
+		set_window_position(ofs + get_screen_position(p_screen));
+	}
 }
 
 static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
