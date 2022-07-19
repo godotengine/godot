@@ -345,7 +345,7 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || control == child_removing) {
+		if (!control || control->is_set_as_top_level() || control == tab_bar) {
 			continue;
 		}
 
@@ -582,12 +582,12 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	int idx = get_tab_idx_from_control(c);
+	bool is_current_tab = p_child == get_current_tab_control();
 
-	// Before this, the tab control has not changed; after this, the tab control has changed.
-	child_removing = p_child;
-	tab_bar->remove_tab(idx);
-	child_removing = nullptr;
+	// Stop the `TabBar` from firing the `tab_changed` signal, as the child hasn't been removed yet. Call it deferred below instead.
+	tab_bar->set_block_signals(true);
+	tab_bar->remove_tab(get_tab_idx_from_control(c));
+	tab_bar->set_block_signals(false);
 
 	_update_margins();
 	if (get_tab_count() == 0) {
@@ -600,6 +600,8 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	// TabBar won't emit the "tab_changed" signal when not inside the tree.
 	if (!is_inside_tree()) {
 		call_deferred("_repaint");
+	} else if (tab_bar->get_tab_count() > 0 && is_current_tab) {
+		tab_bar->call_deferred(SNAME("emit_signal"), SNAME("tab_changed"), tab_bar->get_current_tab());
 	}
 }
 
