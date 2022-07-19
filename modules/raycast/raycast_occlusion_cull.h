@@ -32,7 +32,7 @@
 #define OCCLUSION_CULL_RAYCASTER_H
 
 #include "core/io/image.h"
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
@@ -76,7 +76,7 @@ public:
 		virtual void clear() override;
 		virtual void resize(const Size2i &p_size) override;
 		void sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal);
-		void update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
+		void update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
 
 		~RaycastHZBuffer();
 	};
@@ -183,7 +183,7 @@ public:
 	virtual HZBuffer *buffer_get_ptr(RID p_buffer) override;
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) override;
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) override;
-	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) override;
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) override;
 	virtual RID buffer_get_debug_texture(RID p_buffer) override;
 
 	virtual void set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) override;

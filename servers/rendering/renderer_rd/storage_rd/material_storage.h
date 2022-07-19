@@ -31,7 +31,7 @@
 #ifndef MATERIAL_STORAGE_RD_H
 #define MATERIAL_STORAGE_RD_H
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -302,7 +302,7 @@ public:
 		p_array[11] = p_mtx.origin.z;
 	}
 
-	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				p_array[i * 4 + j] = p_mtx.matrix[i][j];

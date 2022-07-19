@@ -488,7 +488,7 @@ public:
 		p_array[11] = 0;
 	}
 
-	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				p_array[i * 4 + j] = p_mtx.matrix[i][j];

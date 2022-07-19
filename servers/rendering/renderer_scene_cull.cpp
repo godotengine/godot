@@ -1993,7 +1993,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, p_instance->lightmap_sh.ptr());
 }
 
-void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
+void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform3D light_transform = p_instance->transform;
@@ -2045,7 +2045,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		RENDER_TIMESTAMP("Cull DirectionalLight3D, Split " + itos(i));
 
 		// setup a camera matrix for that range!
-		CameraMatrix camera_matrix;
+		Projection camera_matrix;
 
 		real_t aspect = p_cam_projection.get_aspect();
 
@@ -2185,7 +2185,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		z_max = z_vec.dot(center) + radius + pancake_size;
 
 		{
-			CameraMatrix ortho_camera;
+			Projection ortho_camera;
 			real_t half_x = (x_max_cam - x_min_cam) * 0.5;
 			real_t half_y = (y_max_cam - y_min_cam) * 0.5;
 
@@ -2210,7 +2210,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	}
 }
 
-bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold) {
+bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform3D light_transform = p_instance->transform;
@@ -2283,7 +2283,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					RSG::mesh_storage->update_mesh_instances();
 
-					scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i, 0);
+					scene_render->light_instance_set_shadow_transform(light->instance, Projection(), light_transform, radius, 0, i, 0);
 					shadow_data.light = light->instance;
 					shadow_data.pass = i;
 				}
@@ -2294,7 +2294,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
-				CameraMatrix cm;
+				Projection cm;
 				cm.set_perspective(90, 1, radius * 0.005f, radius);
 
 				for (int i = 0; i < 6; i++) {
@@ -2366,7 +2366,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				//restore the regular DP matrix
-				//scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0, 0);
+				//scene_render->light_instance_set_shadow_transform(light->instance, Projection(), light_transform, radius, 0, 0, 0);
 			}
 
 		} break;
@@ -2380,7 +2380,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 			real_t angle = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 
-			CameraMatrix cm;
+			Projection cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.005f * radius, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
@@ -2450,7 +2450,7 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 	if (p_xr_interface.is_null()) {
 		// Normal camera
 		Transform3D transform = camera->transform;
-		CameraMatrix projection;
+		Projection projection;
 		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
 
@@ -2489,7 +2489,7 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
-		CameraMatrix projections[RendererSceneRender::MAX_RENDER_VIEWS];
+		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		uint32_t view_count = p_xr_interface->get_view_count();
 		ERR_FAIL_COND_MSG(view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
@@ -3243,7 +3243,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		render_sdfgi_data[i].instances.clear();
 	}
 
-	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
+	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
 }
 
 RID RendererSceneCull::_render_get_environment(RID p_camera, RID p_scenario) {
@@ -3280,7 +3280,7 @@ void RendererSceneCull::render_empty_scene(RID p_render_buffers, RID p_scenario,
 	RENDER_TIMESTAMP("Render Empty 3D Scene");
 
 	RendererSceneRender::CameraData camera_data;
-	camera_data.set_camera(Transform3D(), CameraMatrix(), true, false);
+	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
 	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RendererSceneRender::GeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
@@ -3329,7 +3329,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		max_distance = MAX(max_distance, distance);
 
 		//render cubemap side
-		CameraMatrix cm;
+		Projection cm;
 		cm.set_perspective(90, 1, 0.01, max_distance);
 
 		Transform3D local_view;

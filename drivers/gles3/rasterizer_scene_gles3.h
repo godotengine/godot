@@ -33,7 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -96,13 +96,13 @@ struct RenderDataGLES3 {
 
 	Transform3D cam_transform = Transform3D();
 	Transform3D inv_cam_transform = Transform3D();
-	CameraMatrix cam_projection = CameraMatrix();
+	Projection cam_projection = Projection();
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
 	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+	Projection view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	float z_near = 0.0;
 	float z_far = 0.0;
@@ -729,12 +729,12 @@ protected:
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
-	void _setup_sky(Environment *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
+	void _setup_sky(Environment *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
-	void _update_sky_radiance(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform);
+	void _update_sky_radiance(Environment *p_env, const Projection &p_projection, const Transform3D &p_transform);
 	void _filter_sky_radiance(Sky *p_sky, int p_base_layer);
-	void _draw_sky(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform);
+	void _draw_sky(Environment *p_env, const Projection &p_projection, const Transform3D &p_transform);
 	void _free_sky_data(Sky *p_sky);
 
 public:
@@ -860,7 +860,7 @@ public:
 	RID light_instance_create(RID p_light) override;
 	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
 	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
+	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	void light_instance_mark_visible(RID p_light_instance) override;
 
 	_FORCE_INLINE_ RS::LightType light_instance_get_type(RID p_light_instance) {
@@ -904,7 +904,7 @@ public:
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
 	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
-	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
 
 	void set_scene_pass(uint64_t p_pass) override {

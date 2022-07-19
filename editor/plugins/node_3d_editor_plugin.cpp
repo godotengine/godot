@@ -33,8 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
-#include "core/math/camera_matrix.h"
 #include "core/math/math_funcs.h"
+#include "core/math/projection.h"
 #include "core/os/keyboard.h"
 #include "core/templates/sort_array.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -642,7 +642,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 }
 
 Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
-	CameraMatrix cm;
+	Projection cm;
 	if (orthogonal) {
 		cm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
 	} else {
@@ -6639,7 +6639,7 @@ void Node3DEditor::_finish_grid() {
 }
 
 void Node3DEditor::update_grid() {
-	const Camera3D::Projection current_projection = viewports[0]->camera->get_projection();
+	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
 	if (current_projection != grid_camera_last_update_perspective) {
 		grid_init_draw = false; // redraw

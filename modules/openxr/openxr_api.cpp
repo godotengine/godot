@@ -1180,7 +1180,7 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 	return true;
 }
 
-bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, CameraMatrix &p_camera_matrix) {
+bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix) {
 	ERR_FAIL_COND_V(!running, false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 

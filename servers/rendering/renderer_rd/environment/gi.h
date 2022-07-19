@@ -472,7 +472,7 @@ public:
 		Transform3D transform;
 
 		void update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
-		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+		void debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 	};
 
 	mutable RID_Owner<VoxelGIInstance> voxel_gi_instance_owner;
@@ -623,8 +623,8 @@ public:
 		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds) const;
 		void update_cascades();
 
-		void debug_draw(uint32_t p_view_count, const CameraMatrix *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
-		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const CameraMatrix *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
+		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
 
 		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render);
 		void render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render);
@@ -775,13 +775,13 @@ public:
 	SDFGI *create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render);
-	void process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
+	void process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
 
 	RID voxel_gi_instance_create(RID p_base);
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);
 	bool voxel_gi_needs_update(RID p_probe) const;
 	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render);
-	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 };
 
 } // namespace RendererRD

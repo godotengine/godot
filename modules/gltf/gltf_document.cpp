@@ -5214,7 +5214,7 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 	Ref<GLTFCamera> c;
 	c.instantiate();
 
-	if (p_camera->get_projection() == Camera3D::Projection::PROJECTION_PERSPECTIVE) {
+	if (p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE) {
 		c->set_perspective(true);
 	}
 	c->set_fov_size(p_camera->get_fov());
