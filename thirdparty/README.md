@@ -25,7 +25,8 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- `src/*` minus `Bullet3*` and `clew` folders, and CMakeLists.txt and premake4.lua files
+- `src/*` minus `Bullet3*`, `BulletInverseDynamics` and `clew` folders,
+  and CMakeLists.txt and premake4.lua files
 - `LICENSE.txt`, and `VERSION` as `VERSION.txt`
 
 Includes some patches in the `patches` folder which have been sent upstream.
