@@ -55,6 +55,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_handle_binary_image">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_images">
 			<return type="Texture2D[]" />
 			<description>
@@ -152,6 +157,12 @@
 		<method name="set_cameras">
 			<return type="void" />
 			<param index="0" name="cameras" type="GLTFCamera[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_handle_binary_image">
+			<return type="void" />
+			<param index="0" name="method" type="int" />
 			<description>
 			</description>
 		</method>

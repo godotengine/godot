@@ -33,6 +33,7 @@
 #include "extensions/gltf_spec_gloss.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
@@ -3090,9 +3091,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		const uint8_t *data_ptr = nullptr;
 		int data_size = 0;
 
+		String image_name;
+
 		if (d.has("uri")) {
 			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = d["uri"];
+			image_name = uri;
 
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				// Validate data MIME types and throw a warning if it's one we don't know/support.
@@ -3128,6 +3132,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				String extension = uri.get_extension().to_lower();
 				if (texture.is_valid()) {
 					p_state->images.push_back(texture);
+					p_state->source_images.push_back(texture->get_image());
 					continue;
 				} else if (mimetype == "image/png" || mimetype == "image/jpeg" || extension == "png" || extension == "jpg" || extension == "jpeg") {
 					// Fallback to loading as byte array.
@@ -3153,6 +3158,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
+			image_name = itos(bvi);
 
 			ERR_FAIL_INDEX_V(bvi, p_state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
 
@@ -3197,9 +3203,70 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		if (img.is_null()) {
 			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
 			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		}
-		p_state->images.push_back(ImageTexture::create_from_image(img));
+		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
+			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
+			continue;
+		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
+			String extracted_image_name = image_name.get_file().get_basename().validate_filename();
+			img->set_name(extracted_image_name);
+			if (p_state->base_path.is_empty()) {
+				p_state->images.push_back(Ref<Texture2D>());
+				p_state->source_images.push_back(Ref<Image>());
+			} else if (img->get_name().is_empty()) {
+				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", i));
+				p_state->images.push_back(Ref<Texture2D>());
+				p_state->source_images.push_back(Ref<Image>());
+			} else {
+				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
+				Ref<ConfigFile> config;
+				config.instantiate();
+				if (FileAccess::exists(file_path + ".import")) {
+					config->load(file_path + ".import");
+				}
+				config->set_value("remap", "importer", "texture");
+				config->set_value("remap", "type", "Texture2D");
+				if (!config->has_section_key("params", "compress/mode")) {
+					config->set_value("remap", "compress/mode", 2); //user may want another compression, so leave it bes
+				}
+				if (!config->has_section_key("params", "mipmaps/generate")) {
+					config->set_value("params", "mipmaps/generate", true);
+				}
+				Error err = OK;
+				err = config->save(file_path + ".import");
+				ERR_FAIL_COND_V(err != OK, err);
+				img->save_png(file_path);
+				ERR_FAIL_COND_V(err != OK, err);
+				ResourceLoader::import(file_path);
+				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
+				if (saved_image.is_valid()) {
+					p_state->images.push_back(saved_image);
+					p_state->source_images.push_back(img);
+				} else {
+					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", i, img->get_name()));
+					// Placeholder to keep count.
+					p_state->images.push_back(Ref<Texture2D>());
+					p_state->source_images.push_back(Ref<Image>());
+				}
+			}
+			continue;
+		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+			Ref<PortableCompressedTexture2D> tex;
+			tex.instantiate();
+			tex->set_name(img->get_name());
+			tex->set_keep_compressed_buffer(true);
+			p_state->source_images.push_back(img);
+			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
+			p_state->images.push_back(tex);
+			p_state->source_images.push_back(img);
+			continue;
+		}
+
+		p_state->images.push_back(Ref<Texture2D>());
+		p_state->source_images.push_back(Ref<Image>());
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));
@@ -3269,12 +3336,24 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 	return gltf_texture_i;
 }
 
-Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
+Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
-
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
-
+	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+		Ref<PortableCompressedTexture2D> portable_texture;
+		portable_texture.instantiate();
+		portable_texture->set_keep_compressed_buffer(true);
+		Ref<Image> new_img = p_state->source_images[p_texture]->duplicate();
+		ERR_FAIL_COND_V(new_img.is_null(), Ref<Texture2D>());
+		new_img->generate_mipmaps();
+		if (p_texture_types) {
+			portable_texture->create_from_image(new_img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL, true);
+		} else {
+			portable_texture->create_from_image(new_img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL, false);
+		}
+		p_state->images.write[image] = portable_texture;
+	}
 	return p_state->images[image];
 }
 
@@ -3685,7 +3764,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 						material->set_texture_filter(diffuse_sampler->get_filter_mode());
 						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, diffuse_sampler->get_wrap_mode());
 					}
-					Ref<Texture2D> diffuse_texture = _get_texture(p_state, diffuse_texture_dict["index"]);
+					Ref<Texture2D> diffuse_texture = _get_texture(p_state, diffuse_texture_dict["index"], TEXTURE_TYPE_GENERIC);
 					if (diffuse_texture.is_valid()) {
 						spec_gloss->diffuse_img = diffuse_texture->get_image();
 						material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
@@ -3713,7 +3792,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (sgm.has("specularGlossinessTexture")) {
 				const Dictionary &spec_gloss_texture = sgm["specularGlossinessTexture"];
 				if (spec_gloss_texture.has("index")) {
-					const Ref<Texture2D> orig_texture = _get_texture(p_state, spec_gloss_texture["index"]);
+					const Ref<Texture2D> orig_texture = _get_texture(p_state, spec_gloss_texture["index"], TEXTURE_TYPE_GENERIC);
 					if (orig_texture.is_valid()) {
 						spec_gloss->spec_gloss_img = orig_texture->get_image();
 					}
@@ -3736,7 +3815,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
 					material->set_texture_filter(bct_sampler->get_filter_mode());
 					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"]));
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -3759,7 +3838,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("metallicRoughnessTexture")) {
 				const Dictionary &bct = mr["metallicRoughnessTexture"];
 				if (bct.has("index")) {
-					const Ref<Texture2D> t = _get_texture(p_state, bct["index"]);
+					const Ref<Texture2D> t = _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC);
 					material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, t);
 					material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 					material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, t);
@@ -3777,7 +3856,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
 			}
 			if (bct.has("scale")) {
@@ -3787,7 +3866,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("occlusionTexture")) {
 			const Dictionary &bct = d["occlusionTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
 				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
 			}
@@ -3805,7 +3884,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("emissiveTexture")) {
 			const Dictionary &bct = d["emissiveTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
 			}

@@ -1002,6 +1002,12 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="validate_filename" qualifiers="const">
+			<return type="String" />
+			<description>
+				Replace all characters that are not allowed in [method is_valid_filename] with underscores.
+			</description>
+		</method>
 		<method name="validate_node_name" qualifiers="const">
 			<return type="String" />
 			<description>

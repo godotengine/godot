@@ -322,15 +322,11 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
-
-			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
-				Vector<uint8_t> data = Image::basis_universal_packer(p_image->get_image_from_mipmap(i), p_channels);
-				int data_len = data.size();
-				f->store_32(data_len);
-
-				const uint8_t *r = data.ptr();
-				f->store_buffer(r, data_len);
-			}
+			Vector<uint8_t> data = Image::basis_universal_packer(p_image, p_channels);
+			int data_len = data.size();
+			f->store_32(data_len);
+			const uint8_t *r = data.ptr();
+			f->store_buffer(r, data_len);
 		} break;
 	}
 }
@@ -387,7 +383,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 
 	Ref<Image> image = p_image->duplicate();
 
-	if (((p_compress_mode == COMPRESS_BASIS_UNIVERSAL) || (p_compress_mode == COMPRESS_VRAM_COMPRESSED && p_force_po2_for_compressed)) && p_mipmaps) {
+	if (p_force_po2_for_compressed && p_mipmaps && ((p_compress_mode == COMPRESS_BASIS_UNIVERSAL) || (p_compress_mode == COMPRESS_VRAM_COMPRESSED))) {
 		image->resize_to_po2();
 	}
 
