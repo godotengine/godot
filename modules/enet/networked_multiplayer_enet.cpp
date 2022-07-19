@@ -454,9 +454,8 @@ bool NetworkedMultiplayerENet::is_server() const {
 }
 
 void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
-	if (!active) {
-		return;
-	}
+
+	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
 

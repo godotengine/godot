@@ -48,7 +48,12 @@ private:
 public:
 	_ALWAYS_INLINE_ void post() const {
 		std::lock_guard<decltype(mutex_)> lock(mutex_);
-		++count_;
+		if(count_ > 0 ){
+			++count_;
+		}else{
+			count_ = 1;
+		}
+		
 		condition_.notify_one();
 	}
 
@@ -67,6 +72,11 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	_ALWAYS_INLINE_ bool clear() const {
+		count_ = (unsigned long)0;
+		return true;
 	}
 
 	_ALWAYS_INLINE_ int get() const {

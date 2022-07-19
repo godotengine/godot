@@ -82,14 +82,11 @@
 
 #include "cipher.h"
 
-/** Bad input parameters to the function. */
-#define MBEDTLS_ERR_CCM_BAD_INPUT       -0x000D
-/** Authenticated decryption failed. */
-#define MBEDTLS_ERR_CCM_AUTH_FAILED     -0x000F
+#define MBEDTLS_ERR_CCM_BAD_INPUT       -0x000D /**< Bad input parameters to the function. */
+#define MBEDTLS_ERR_CCM_AUTH_FAILED     -0x000F /**< Authenticated decryption failed. */
 
 /* MBEDTLS_ERR_CCM_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** CCM hardware accelerator failed. */
-#define MBEDTLS_ERR_CCM_HW_ACCEL_FAILED -0x0011
+#define MBEDTLS_ERR_CCM_HW_ACCEL_FAILED -0x0011 /**< CCM hardware accelerator failed. */
 
 #ifdef __cplusplus
 extern "C" {

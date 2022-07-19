@@ -2730,7 +2730,6 @@ void CSharpScript::_clear() {
 
 	tool = false;
 	valid = false;
-	reload_invalidated = true;
 
 	base = NULL;
 	native = NULL;
@@ -2844,7 +2843,6 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 
 	p_script->valid = true;
 	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
-	p_script->reload_invalidated = false;
 
 	if (!p_script->tool) {
 		GDMonoClass *nesting_class = p_script->script_class->get_nesting_class();
@@ -3155,12 +3153,14 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
-	if (!reload_invalidated) {
-		return OK;
+
+	bool has_instances;
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
+		has_instances = instances.size();
 	}
-	// In the case of C#, reload doesn't really do any script reloading.
-	// That's done separately via domain reloading.
-	reload_invalidated = false;
+
+	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
 	GD_MONO_SCOPE_THREAD_ATTACH;
 

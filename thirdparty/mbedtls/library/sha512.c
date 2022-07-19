@@ -527,7 +527,8 @@ void mbedtls_sha512( const unsigned char *input,
 static const unsigned char sha512_test_buf[3][113] =
 {
     { "abc" },
-    { "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu" },
+    { "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
+      "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu" },
     { "" }
 };
 

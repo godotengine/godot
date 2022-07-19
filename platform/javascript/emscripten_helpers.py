@@ -24,10 +24,7 @@ def get_build_version():
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch
-    status = version.status
-    if os.getenv("GODOT_VERSION_STATUS") != None:
-        status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s.%s" % (status, name)
+    v += ".%s.%s" % (version.status, name)
     return v
 
 

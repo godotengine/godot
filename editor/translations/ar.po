@@ -3945,15 +3945,15 @@ msgstr "جاري البحث..."
 
 #: editor/find_in_files.cpp
 msgid "%d match in %d file."
-msgstr "%d تطابق في %d الملف."
+msgstr "d% تطابق في d% الملف."
 
 #: editor/find_in_files.cpp
 msgid "%d matches in %d file."
-msgstr "%d تطابقات في %d الملف."
+msgstr "d% تطابقات في d% الملف."
 
 #: editor/find_in_files.cpp
 msgid "%d matches in %d files."
-msgstr "%d تطابقات في %d الملف."
+msgstr "d% تطابقات في d% الملف."
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"

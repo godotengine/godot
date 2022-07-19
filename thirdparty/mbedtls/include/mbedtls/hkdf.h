@@ -64,8 +64,7 @@
  *  \name HKDF Error codes
  *  \{
  */
-/** Bad input parameters to function. */
-#define MBEDTLS_ERR_HKDF_BAD_INPUT_DATA  -0x5F80
+#define MBEDTLS_ERR_HKDF_BAD_INPUT_DATA  -0x5F80  /**< Bad input parameters to function. */
 /* \} name */
 
 #ifdef __cplusplus

@@ -335,7 +335,6 @@ int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
 			}
 		}
 	}
-
 	return p_length;
 }
 

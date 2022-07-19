@@ -88,6 +88,7 @@ class FileAccessNetwork : public FileAccess {
 	Semaphore sem;
 	Semaphore page_sem;
 	Mutex buffer_mutex;
+	
 	bool opened;
 	size_t total_size;
 	mutable size_t pos;

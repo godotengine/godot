@@ -32,6 +32,7 @@
 
 #include "core/project_settings.h"
 #include "servers/audio_server.h"
+#include "core/os/file_access_www.h"
 
 VideoDecoderServer *VideoDecoderServer::instance = NULL;
 
@@ -44,14 +45,16 @@ extern "C" {
 godot_int GDAPI godot_videodecoder_file_read(void *ptr, uint8_t *buf, int buf_size) {
 	// ptr is a FileAccess
 	FileAccess *file = reinterpret_cast<FileAccess *>(ptr);
-
 	// if file exists
 	if (file) {
+		
 		long bytes_read = file->get_buffer(buf, buf_size);
 		// No bytes to read => EOF
 		if (bytes_read == 0) {
+		
 			return 0;
 		}
+
 		return bytes_read;
 	}
 	return -1;
@@ -60,7 +63,7 @@ godot_int GDAPI godot_videodecoder_file_read(void *ptr, uint8_t *buf, int buf_si
 int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 	// file
 	FileAccess *file = reinterpret_cast<FileAccess *>(ptr);
-
+	
 	if (file) {
 		size_t len = file->get_len();
 		switch (whence) {
@@ -114,7 +117,14 @@ void GDAPI godot_videodecoder_register_decoder(const godot_videodecoder_interfac
 
 bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 	ERR_FAIL_COND_V(interface == NULL, false);
-	file = FileAccess::open(p_file, FileAccess::READ);
+	if(p_file.begins_with("http")){
+		FileAccessWww *files = memnew(FileAccessWww);
+		files->_open(p_file, FileAccess::READ);
+		file = reinterpret_cast<FileAccess *>(files);
+	} else {
+		file = FileAccess::open(p_file, FileAccess::READ);
+	}
+
 	bool file_opened = interface->open_file(data_struct, file);
 
 	if (file_opened) {

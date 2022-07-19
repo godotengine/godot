@@ -36,7 +36,6 @@ name is available.
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
     Angad Kambli (angad-k)
-    Anilforextra (AnilBK)
     Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
     Anutrix
@@ -49,7 +48,6 @@ name is available.
     Bhuvan Vemula (Bhu1-V)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
-    Brian Semrau (briansemrau)
     Bruno Lourenço (MadEqua)
     bruvzg
     Cameron Reikes (creikey)
@@ -78,7 +76,6 @@ name is available.
     Eric Rybicki (ericrybick)
     Erik Selecký (rxlecky)
     est31
-    Eveline Jarosz (Marqin)
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
     fabriceci
@@ -102,6 +99,7 @@ name is available.
     Hiroshi Ogawa (hi-ogawa)
     homer666
     hoontee
+    Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
@@ -109,12 +107,11 @@ name is available.
     Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
     J08nY
-    Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
     James Buck (jbuck3)
-    Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
+    jmb462
     Joan Fons Sanchez (JFonS)
     Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
@@ -122,9 +119,7 @@ name is available.
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Julien Nguyen (Blackiris)
-    Jummit
     Justo Delgado (mrcdk)
-    karroffel
     Kelly Thomas (KellyThomas)
     kleonc
     Kongfa Waroros (gongpha)
@@ -135,14 +130,14 @@ name is available.
     Liz Haas (27thLiz)
     Lucien Menassol (Kanabenki)
     Lyuma
+    m4nu3lf
     Maganty Rushyendra (mrushyendra)
-    Manuele Finocchiaro (m4nu3lf)
     Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
     Marcin Zawiejski (dragmz)
     Marcus Brummer (mbrlabs)
-    Marcus Elg (MCrafterzz)
+    Marcus (MCrafterzz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)
@@ -182,7 +177,6 @@ name is available.
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     raphael10241024
-    Raul Santos (raulsntos)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
@@ -198,13 +192,13 @@ name is available.
     Sergey Minakov (naithar)
     sersoong
     Shiqing (kawa-yoiko)
-    Silc 'Tokage' Renew (TokageItLab)
     Simon Wenner (swenner)
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
+    Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)
     Timo (toger5)
     Tomasz Chabora (KoBeWi)
@@ -214,7 +208,6 @@ name is available.
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
     Wilhem Barbier (nounoursheureux)
-    William Deurwaarder (williamd67)
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)

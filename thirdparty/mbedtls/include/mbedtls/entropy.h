@@ -75,16 +75,11 @@
 #include "havege.h"
 #endif
 
-/** Critical entropy source failure. */
-#define MBEDTLS_ERR_ENTROPY_SOURCE_FAILED                 -0x003C
-/** No more sources can be added. */
-#define MBEDTLS_ERR_ENTROPY_MAX_SOURCES                   -0x003E
-/** No sources have been added to poll. */
-#define MBEDTLS_ERR_ENTROPY_NO_SOURCES_DEFINED            -0x0040
-/** No strong sources have been added to poll. */
-#define MBEDTLS_ERR_ENTROPY_NO_STRONG_SOURCE              -0x003D
-/** Read/write error in file. */
-#define MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR                 -0x003F
+#define MBEDTLS_ERR_ENTROPY_SOURCE_FAILED                 -0x003C  /**< Critical entropy source failure. */
+#define MBEDTLS_ERR_ENTROPY_MAX_SOURCES                   -0x003E  /**< No more sources can be added. */
+#define MBEDTLS_ERR_ENTROPY_NO_SOURCES_DEFINED            -0x0040  /**< No sources have been added to poll. */
+#define MBEDTLS_ERR_ENTROPY_NO_STRONG_SOURCE              -0x003D  /**< No strong sources have been added to poll. */
+#define MBEDTLS_ERR_ENTROPY_FILE_IO_ERROR                 -0x003F  /**< Read/write error in file. */
 
 /**
  * \name SECTION: Module settings
@@ -157,7 +152,7 @@ typedef struct mbedtls_entropy_context
                               * -1 after free. */
 #if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
     mbedtls_sha512_context  accumulator;
-#elif defined(MBEDTLS_ENTROPY_SHA256_ACCUMULATOR)
+#else
     mbedtls_sha256_context  accumulator;
 #endif
     int             source_count; /* Number of entries used in source. */

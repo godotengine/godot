@@ -40,7 +40,7 @@ while IFS= read -rd '' f; do
     done
 done
 
-git diff --color > patch.patch
+git diff > patch.patch
 
 # If no patch has been generated all is OK, clean up, and exit.
 if [ ! -s patch.patch ] ; then

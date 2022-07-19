@@ -61,10 +61,8 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_SHA512_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** SHA-512 hardware accelerator failed */
-#define MBEDTLS_ERR_SHA512_HW_ACCEL_FAILED                -0x0039
-/** SHA-512 input data was malformed. */
-#define MBEDTLS_ERR_SHA512_BAD_INPUT_DATA                 -0x0075
+#define MBEDTLS_ERR_SHA512_HW_ACCEL_FAILED                -0x0039  /**< SHA-512 hardware accelerator failed */
+#define MBEDTLS_ERR_SHA512_BAD_INPUT_DATA                 -0x0075  /**< SHA-512 input data was malformed. */
 
 #ifdef __cplusplus
 extern "C" {

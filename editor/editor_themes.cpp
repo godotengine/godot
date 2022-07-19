@@ -156,7 +156,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#3d64dd"); // 2d
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#1a3eac"); // 2d dark
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#2fa139"); // control
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffdd65", "#ca8a04"); // node warning
 
 		// rainbow
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
@@ -230,6 +229,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("StatusError");
 		exceptions.insert("StatusSuccess");
 		exceptions.insert("StatusWarning");
+		exceptions.insert("NodeWarning");
 		exceptions.insert("OverbrightIndicator");
 	}
 
@@ -380,7 +380,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_color = mono_color.linear_interpolate(base_color, 0.25);
 	const Color font_color_hl = mono_color.linear_interpolate(base_color, 0.15);
 	const Color font_color_disabled = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
-	const Color font_color_readonly = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_color_selection = accent_color * Color(1, 1, 1, 0.4);
 	const Color color_disabled = mono_color.inverted().linear_interpolate(base_color, 0.7);
 	const Color color_disabled_bg = mono_color.inverted().linear_interpolate(base_color, 0.9);
@@ -940,7 +939,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("read_only", "LineEdit", font_color_disabled);
 	theme->set_color("font_color", "LineEdit", font_color);
 	theme->set_color("font_color_selected", "LineEdit", mono_color);
-	theme->set_color("font_color_uneditable", "LineEdit", font_color_readonly);
 	theme->set_color("cursor_color", "LineEdit", font_color);
 	theme->set_color("selection_color", "LineEdit", font_color_selection);
 	theme->set_color("clear_button_color", "LineEdit", font_color);
@@ -956,7 +954,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("folded", "TextEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("fold", "TextEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_color("font_color", "TextEdit", font_color);
-	theme->set_color("font_color_readonly", "TextEdit", font_color_readonly);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
 

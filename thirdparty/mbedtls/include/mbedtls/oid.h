@@ -72,10 +72,8 @@
 #include "x509.h"
 #endif
 
-/** OID is not found. */
-#define MBEDTLS_ERR_OID_NOT_FOUND                         -0x002E
-/** output buffer is too small */
-#define MBEDTLS_ERR_OID_BUF_TOO_SMALL                     -0x000B
+#define MBEDTLS_ERR_OID_NOT_FOUND                         -0x002E  /**< OID is not found. */
+#define MBEDTLS_ERR_OID_BUF_TOO_SMALL                     -0x000B  /**< output buffer is too small */
 
 /*
  * Top level OID tuples

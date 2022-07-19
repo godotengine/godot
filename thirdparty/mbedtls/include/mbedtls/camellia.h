@@ -66,16 +66,13 @@
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 #define MBEDTLS_ERR_CAMELLIA_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( -0x0024 )
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-/** Bad input data. */
-#define MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA -0x0024
+#define MBEDTLS_ERR_CAMELLIA_BAD_INPUT_DATA -0x0024 /**< Bad input data. */
 
-/** Invalid data input length. */
-#define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH -0x0026
+#define MBEDTLS_ERR_CAMELLIA_INVALID_INPUT_LENGTH -0x0026 /**< Invalid data input length. */
 
 /* MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED is deprecated and should not be used.
  */
-/** Camellia hardware accelerator failed. */
-#define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027
+#define MBEDTLS_ERR_CAMELLIA_HW_ACCEL_FAILED              -0x0027  /**< Camellia hardware accelerator failed. */
 
 #ifdef __cplusplus
 extern "C" {

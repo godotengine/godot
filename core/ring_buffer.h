@@ -33,11 +33,15 @@
 
 #include "core/vector.h"
 
+#include "core/print_string.h"
+
+#include <stdio.h>
+
 template <typename T>
 class RingBuffer {
 
 	Vector<T> data;
-	int read_pos;
+
 	int write_pos;
 	int size_mask;
 
@@ -47,7 +51,8 @@ class RingBuffer {
 		p_var = p_var & size_mask;
 		return ret;
 	};
-
+public:
+	int read_pos;
 public:
 	T read() {
 		ERR_FAIL_COND_V(space_left() < 1, T());
@@ -55,11 +60,13 @@ public:
 	};
 
 	int read(T *p_buf, int p_size, bool p_advance = true) {
+		
 		int left = data_left();
 		p_size = MIN(left, p_size);
 		int pos = read_pos;
 		int to_read = p_size;
 		int dst = 0;
+		printf("ring buffer read p_size:%d ,ring buffer read pos:%d\n",p_size,pos);
 		while (to_read) {
 			int end = pos + to_read;
 			end = MIN(end, size());
@@ -155,6 +162,8 @@ public:
 		int pos = write_pos;
 		int to_write = p_size;
 		int src = 0;
+
+		printf("ring buffer write p_size:%d ,ring buffer write pos:%d\n",p_size,pos);
 		while (to_write) {
 
 			int end = pos + to_write;

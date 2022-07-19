@@ -39,13 +39,5 @@ module.exports = {
 		// Closure compiler (exported properties)
 		"quote-props": ["error", "consistent"],
 		"dot-notation": "off",
-		// No comma dangle for functions (it's madness, and ES2017)
-		"comma-dangle": ["error", {
-			"arrays": "always-multiline",
-			"objects": "always-multiline",
-			"imports": "always-multiline",
-			"exports": "always-multiline",
-			"functions": "never"
-		}],
 	}
 };

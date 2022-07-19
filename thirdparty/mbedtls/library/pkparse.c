@@ -1408,11 +1408,8 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
     }
 #endif /* MBEDTLS_PKCS12_C || MBEDTLS_PKCS5_C */
 
-    ret = pk_parse_key_pkcs8_unencrypted_der( pk, key, keylen );
-    if( ret == 0 )
-    {
+    if( ( ret = pk_parse_key_pkcs8_unencrypted_der( pk, key, keylen ) ) == 0 )
         return( 0 );
-    }
 
     mbedtls_pk_free( pk );
     mbedtls_pk_init( pk );

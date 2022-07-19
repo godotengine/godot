@@ -1137,15 +1137,14 @@ void InputDefault::parse_mapping(String p_mapping) {
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
 		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
-				vformat("Invalid device mapping entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
+				String(entry[idx] + "\nInvalid device mapping entry: " + entry[idx]));
 
 		if (output == "platform" || output == "hint")
 			continue;
 
 		JoyAxisRange output_range = FULL_AXIS;
 		if (output[0] == '+' || output[0] == '-') {
-			ERR_CONTINUE_MSG(output.length() < 2,
-					vformat("Invalid output entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
+			ERR_CONTINUE_MSG(output.length() < 2, String(entry[idx] + "\nInvalid output: " + entry[idx]));
 			if (output[0] == '+')
 				output_range = POSITIVE_HALF_AXIS;
 			else if (output[0] == '-')
@@ -1170,9 +1169,9 @@ void InputDefault::parse_mapping(String p_mapping) {
 		JoystickList output_button = _get_output_button(output);
 		JoystickList output_axis = _get_output_axis(output);
 		ERR_CONTINUE_MSG(output_button == JOY_INVALID_OPTION && output_axis == JOY_INVALID_OPTION,
-				vformat("Unrecognised output string \"%s\" in mapping:\n%s", output, p_mapping));
+				String(entry[idx] + "\nUnrecognised output string: " + output));
 		ERR_CONTINUE_MSG(output_button != JOY_INVALID_OPTION && output_axis != JOY_INVALID_OPTION,
-				vformat("Output string \"%s\" matched both button and axis in mapping:\n%s", output, p_mapping));
+				String("BUG: Output string matched both button and axis: " + output));
 
 		JoyBinding binding;
 		if (output_button != JOY_INVALID_OPTION) {
@@ -1197,13 +1196,13 @@ void InputDefault::parse_mapping(String p_mapping) {
 				break;
 			case 'h':
 				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
-						vformat("Invalid had input \"%s\" in mapping:\n%s", input, p_mapping));
+						String(entry[idx] + "\nInvalid hat input: " + input));
 				binding.inputType = TYPE_HAT;
 				binding.input.hat.hat = input.substr(1, 1).to_int();
 				binding.input.hat.hat_mask = static_cast<HatMask>(input.right(3).to_int());
 				break;
 			default:
-				ERR_CONTINUE_MSG(true, vformat("Unrecognized input string \"%s\" in mapping:\n%s", input, p_mapping));
+				ERR_CONTINUE_MSG(true, String(entry[idx] + "\nUnrecognised input string: " + input));
 		}
 
 		mapping.bindings.push_back(binding);

@@ -1,5 +1,5 @@
 /* gzread.c -- zlib functions for reading gzip files
- * Copyright (C) 2004-2017 Mark Adler
+ * Copyright (C) 2004, 2005, 2010, 2011, 2012, 2013, 2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -314,9 +314,9 @@ local z_size_t gz_read(state, buf, len)
     got = 0;
     do {
         /* set n to the maximum amount of len that fits in an unsigned int */
-        n = (unsigned)-1;
+        n = -1;
         if (n > len)
-            n = (unsigned)len;
+            n = len;
 
         /* first just try copying data from the output buffer */
         if (state->x.have) {
@@ -397,7 +397,7 @@ int ZEXPORT gzread(file, buf, len)
     }
 
     /* read len or fewer bytes to buf */
-    len = (unsigned)gz_read(state, buf, len);
+    len = gz_read(state, buf, len);
 
     /* check for an error */
     if (len == 0 && state->err != Z_OK && state->err != Z_BUF_ERROR)
@@ -447,6 +447,7 @@ z_size_t ZEXPORT gzfread(buf, size, nitems, file)
 int ZEXPORT gzgetc(file)
     gzFile file;
 {
+    int ret;
     unsigned char buf[1];
     gz_statep state;
 
@@ -468,7 +469,8 @@ int ZEXPORT gzgetc(file)
     }
 
     /* nothing there -- try gz_read() */
-    return gz_read(state, buf, 1) < 1 ? -1 : buf[0];
+    ret = gz_read(state, buf, 1);
+    return ret < 1 ? -1 : buf[0];
 }
 
 int ZEXPORT gzgetc_(file)

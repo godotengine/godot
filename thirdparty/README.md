@@ -259,7 +259,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.12 (cf4667126010c665341f9e50ef691b7ef8294188, 2021)
+- Version: 2.16.11 (aa1d4e097342af799ba80dfb13640efef498227c, 2021)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -267,11 +267,11 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`.
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`.
 - `LICENSE` and `apache-2.0.txt` files.
-- Applied the patch in `patches/1453.diff` (upstream PR:
+- Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
-- Applied the patch in `patches/padlock.diff`. This disables VIA padlock
-  support which defines a symbol `unsupported` which clashes with a
-  pre-defined symbol.
+- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
+  VIA padlock support which defines a symbol `unsupported` which clashes with
+  a pre-defined symbol.
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
@@ -299,17 +299,17 @@ https://github.com/miniupnp/miniupnp/commit/3a08dd4b89af2e9effa22a136bac86f2f306
 
 ## minizip
 
-- Upstream: https://www.zlib.net
-- Version: 1.2.12 (zlib contrib, 2022)
+- Upstream: http://www.zlib.net
+- Version: 1.2.11 (zlib contrib, 2017)
 - License: zlib
 
 Files extracted from the upstream source:
 
-- contrib/minizip/{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}
+- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
 
 Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the `patches` folder.
+comments and a patch is provided in the minizip/ folder.
 
 
 ## misc
@@ -374,7 +374,7 @@ Collection of single-file libraries used in Godot components.
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
-- Version: git (ccdb1995134d340a93fb20e3a3d323ccb3838dd0, 2021)
+- Version: git (3e403ec72a9145cbbcc6c63d94a4caf079aafec2, 2020)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -542,8 +542,8 @@ Files extracted from upstream source:
 
 ## zlib
 
-- Upstream: https://www.zlib.net
-- Version: 1.2.12 (2022)
+- Upstream: http://www.zlib.net
+- Version: 1.2.11 (2017)
 - License: zlib
 
 Files extracted from upstream source:

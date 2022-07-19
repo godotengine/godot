@@ -68,10 +68,8 @@
 /* for shared error codes */
 #include "poly1305.h"
 
-/** The requested operation is not permitted in the current state. */
-#define MBEDTLS_ERR_CHACHAPOLY_BAD_STATE            -0x0054
-/** Authenticated decryption failed: data was not authentic. */
-#define MBEDTLS_ERR_CHACHAPOLY_AUTH_FAILED          -0x0056
+#define MBEDTLS_ERR_CHACHAPOLY_BAD_STATE            -0x0054 /**< The requested operation is not permitted in the current state. */
+#define MBEDTLS_ERR_CHACHAPOLY_AUTH_FAILED          -0x0056 /**< Authenticated decryption failed: data was not authentic. */
 
 #ifdef __cplusplus
 extern "C" {

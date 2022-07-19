@@ -85,7 +85,7 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 			status = STATUS_CANT_CONNECT;
 			return err;
 		}
-
+		
 		status = STATUS_CONNECTING;
 	} else {
 		// Host contains hostname and needs to be resolved to IP

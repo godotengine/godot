@@ -75,7 +75,6 @@ class CSharpScript : public Script {
 
 	bool tool;
 	bool valid;
-	bool reload_invalidated;
 
 	bool builtin;
 

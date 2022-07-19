@@ -316,17 +316,7 @@
 		<method name="get_extension">
 			<return type="String" />
 			<description>
-				Returns the extension without the leading period character ([code].[/code]) if the string is a valid file name or path. If the string does not contain an extension, returns an empty string instead.
-				[codeblock]
-				print("/path/to/file.txt".get_extension())  # "txt"
-				print("file.txt".get_extension())  # "txt"
-				print("file.sample.txt".get_extension())  # "txt"
-				print(".txt".get_extension())  # "txt"
-				print("file.txt.".get_extension())  # "" (empty string)
-				print("file.txt..".get_extension())  # "" (empty string)
-				print("txt".get_extension())  # "" (empty string)
-				print("".get_extension())  # "" (empty string)
-				[/codeblock]
+				If the string is a valid file path, returns the extension.
 			</description>
 		</method>
 		<method name="get_file">

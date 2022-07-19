@@ -162,7 +162,7 @@ void CanvasItemMaterial::_queue_shader_change() {
 
 	material_mutex.lock();
 
-	if (is_initialized && !element.in_list()) {
+	if (!element.in_list()) {
 		dirty_materials->add(&element);
 	}
 
@@ -313,7 +313,6 @@ CanvasItemMaterial::CanvasItemMaterial() :
 
 	current_key.key = 0;
 	current_key.invalid_key = 1;
-	is_initialized = true;
 	_queue_shader_change();
 }
 

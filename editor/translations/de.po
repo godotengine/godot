@@ -5435,7 +5435,7 @@ msgstr "%d CanvasItems verschieben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "CanvasItem „%s“ zu (%d, %d) verschieben"
+msgstr "CanvasItem „%s“ zu (%d, d%) verschieben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""

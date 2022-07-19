@@ -64,8 +64,7 @@
 #include <stdint.h>
 
 /* MBEDTLS_ERR_MD4_HW_ACCEL_FAILED is deprecated and should not be used. */
-/** MD4 hardware accelerator failed */
-#define MBEDTLS_ERR_MD4_HW_ACCEL_FAILED                   -0x002D
+#define MBEDTLS_ERR_MD4_HW_ACCEL_FAILED                   -0x002D  /**< MD4 hardware accelerator failed */
 
 #ifdef __cplusplus
 extern "C" {
