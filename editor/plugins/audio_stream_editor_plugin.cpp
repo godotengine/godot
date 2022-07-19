@@ -213,7 +213,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
-	vbox->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_MINSIZE, 0);
+	vbox->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_MINSIZE, 0);
 	add_child(vbox);
 
 	_preview = memnew(ColorRect);
@@ -222,7 +222,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
-	_indicator->set_anchors_and_offsets_preset(PRESET_WIDE);
+	_indicator->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	_indicator->connect("draw", callable_mp(this, &AudioStreamEditor::_draw_indicator));
 	_indicator->connect("gui_input", callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
