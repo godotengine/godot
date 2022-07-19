@@ -396,6 +396,87 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	cell_map[key] = c;
 }
 
+void GridMap::set_cell_item_data(const Vector3i& p_position, int p_item, int p_rot){
+	//This function will complete its work in one thread
+	//Therefore, it is safer than the original when multithreading
+	//However, it cannot automatically update the map
+	//And the update function is encapsulated in 'update'
+	if (baked_meshes.size() && !recreating_octants) {
+		//if you set a cell item, baked meshes go good bye
+		clear_baked_meshes();
+		_recreate_octant_data();
+	}
+
+	ERR_FAIL_INDEX(ABS(p_position.x), 1 << 20);
+	ERR_FAIL_INDEX(ABS(p_position.y), 1 << 20);
+	ERR_FAIL_INDEX(ABS(p_position.z), 1 << 20);
+
+	IndexKey key;
+	key.x = p_position.x;
+	key.y = p_position.y;
+	key.z = p_position.z;
+
+	OctantKey ok;
+	ok.x = p_position.x / octant_size;
+	ok.y = p_position.y / octant_size;
+	ok.z = p_position.z / octant_size;
+
+	if (p_item < 0) {
+		//erase
+		if (cell_map.has(key)) {
+			OctantKey octantkey = ok;
+
+			ERR_FAIL_COND(!octant_map.has(octantkey));
+			Octant& g = *octant_map[octantkey];
+			g.cells.erase(key);
+			g.dirty = true;
+			cell_map.erase(key);
+		}
+		return;
+	}
+
+	OctantKey octantkey = ok;
+
+	if (!octant_map.has(octantkey)) {
+		//create octant because it does not exist
+		Octant* g = memnew(Octant);
+		g->dirty = true;
+		g->static_body = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(g->static_body, PhysicsServer3D::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
+		PhysicsServer3D::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
+		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
+		if (physics_material.is_valid()) {
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+		}
+		SceneTree* st = SceneTree::get_singleton();
+
+		if (st && st->is_debugging_collisions_hint()) {
+			g->collision_debug = RenderingServer::get_singleton()->mesh_create();
+			g->collision_debug_instance = RenderingServer::get_singleton()->instance_create();
+			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
+		}
+
+		octant_map[octantkey] = g;
+
+		if (is_inside_world()) {
+			_octant_enter_world(octantkey);
+			_octant_transform(octantkey);
+		}
+	}
+
+	Octant& g = *octant_map[octantkey];
+	g.cells.insert(key);
+	g.dirty = true;
+
+	Cell c;
+	c.item = p_item;
+	c.rot = p_rot;
+
+	cell_map[key] = c;
+}
+
 int GridMap::get_cell_item(const Vector3i &p_position) const {
 	ERR_FAIL_INDEX_V(ABS(p_position.x), 1 << 20, INVALID_CELL_ITEM);
 	ERR_FAIL_INDEX_V(ABS(p_position.y), 1 << 20, INVALID_CELL_ITEM);
@@ -850,6 +931,14 @@ void GridMap::_clear_internal() {
 	cell_map.clear();
 }
 
+void GridMap::update(){
+	//Users can call it to update the map
+	//Then the update function will be called in the main thread
+	//Therefore, in a multithreaded environment, you should ensure
+	//that other threads have stopped the work of the relevant gridmap
+	_queue_octants_dirty();
+}
+
 void GridMap::clear() {
 	_clear_internal();
 	clear_baked_meshes();
@@ -879,6 +968,10 @@ void GridMap::_update_octants_callback() {
 
 	_update_visibility();
 	awaiting_update = false;
+	//This signal will be sent when the update ends.
+	//In a multithreaded environment, you can use this signal
+	//to achieve orderly map data setting and update operations
+	emit_signal(SNAME("update_finished"));
 }
 
 void GridMap::_bind_methods() {
@@ -919,6 +1012,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_octant_size"), &GridMap::get_octant_size);
 
 	ClassDB::bind_method(D_METHOD("set_cell_item", "position", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell_item_data", "position", "item", "orientation"), &GridMap::set_cell_item_data, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_cell_item", "position"), &GridMap::get_cell_item);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "position"), &GridMap::get_cell_item_orientation);
 
@@ -935,6 +1029,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_center_z", "enable"), &GridMap::set_center_z);
 	ClassDB::bind_method(D_METHOD("get_center_z"), &GridMap::get_center_z);
 
+	ClassDB::bind_method(D_METHOD("update"), &GridMap::update);
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
@@ -966,6 +1061,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("update_finished"));
 }
 
 void GridMap::set_cell_scale(float p_scale) {
