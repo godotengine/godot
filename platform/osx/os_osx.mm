@@ -2536,8 +2536,24 @@ void OS_OSX::set_current_screen(int p_screen) {
 		return;
 	}
 
+	if (get_current_screen() == p_screen) {
+		return;
+	}
+
+	bool was_fullscreen = false;
+	if (zoomed) {
+		// Temporary exit fullscreen mode to move window.
+		[window_object toggleFullScreen:nil];
+		was_fullscreen = true;
+	}
+
 	Vector2 wpos = get_window_position() - get_screen_position(get_current_screen());
 	set_window_position(wpos + get_screen_position(p_screen));
+
+	if (was_fullscreen) {
+		// Re-enter fullscreen mode.
+		[window_object toggleFullScreen:nil];
+	}
 };
 
 Point2 OS_OSX::get_native_screen_position(int p_screen) const {
