@@ -7776,7 +7776,7 @@ void RenderingDeviceVulkan::draw_list_draw_indirect(DrawListID p_list, RID p_buf
 	ERR_FAIL_COND(!dl);
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
-	
+
 	ERR_FAIL_COND_MSG(!dl->validation.pipeline_active,
 			"No render pipeline was set before attempting to draw.");
 	if (dl->validation.pipeline_vertex_format != INVALID_ID) {
