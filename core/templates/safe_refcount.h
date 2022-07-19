@@ -161,6 +161,33 @@ public:
 	}
 };
 
+class RelaxedFlag {
+	std::atomic_bool flag;
+
+	static_assert(std::atomic_bool::is_always_lock_free);
+
+public:
+	_ALWAYS_INLINE_ bool is_set() const {
+		return flag.load(std::memory_order_relaxed);
+	}
+
+	_ALWAYS_INLINE_ void set() {
+		flag.store(true, std::memory_order_relaxed);
+	}
+
+	_ALWAYS_INLINE_ void clear() {
+		flag.store(false, std::memory_order_relaxed);
+	}
+
+	_ALWAYS_INLINE_ void set_to(bool p_value) {
+		flag.store(p_value, std::memory_order_relaxed);
+	}
+
+	_ALWAYS_INLINE_ explicit RelaxedFlag(bool p_value = false) {
+		set_to(p_value);
+	}
+};
+
 class SafeRefCount {
 	SafeNumeric<uint32_t> count;
 
