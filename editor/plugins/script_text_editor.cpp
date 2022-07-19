@@ -1420,7 +1420,9 @@ Control *ScriptTextEditor::get_edit_menu() {
 }
 
 void ScriptTextEditor::clear_edit_menu() {
-	memdelete(edit_hb);
+	if (editor_enabled) {
+		memdelete(edit_hb);
+	}
 }
 
 void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
