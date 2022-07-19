@@ -446,7 +446,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	return OK;
 }
 
-void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods, bool &r_method_descrpitons) {
+void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods) {
 	Ref<Font> font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
 	class_desc->pop(); // title font size
 	class_desc->pop(); // title font
@@ -494,10 +494,6 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods,
 				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
-			}
-
-			if (!m[i].description.strip_edges().is_empty() || m[i].errors_returned.size() > 0) {
-				r_method_descrpitons = true;
 			}
 
 			_add_method(m[i], true);
@@ -717,11 +713,15 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	bool has_description = false;
+
 	class_desc->add_newline();
 	class_desc->add_newline();
 
 	// Brief description
 	if (!cd.brief_description.strip_edges().is_empty()) {
+		has_description = true;
+
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_bold_font);
 		class_desc->push_indent(1);
@@ -736,6 +736,8 @@ void EditorHelp::_update_doc() {
 
 	// Class description
 	if (!cd.description.strip_edges().is_empty()) {
+		has_description = true;
+
 		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
 		description_line = class_desc->get_paragraph_count() - 2;
 		class_desc->push_color(title_color);
@@ -756,6 +758,22 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+	if (!has_description) {
+		class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+		class_desc->add_text(" ");
+		class_desc->push_color(comment_color);
+
+		if (cd.is_script_doc) {
+			class_desc->append_text(TTR("There is currently no description for this class."));
+		} else {
+			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+		}
+
+		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -796,7 +814,6 @@ void EditorHelp::_update_doc() {
 
 	// Properties overview
 	HashSet<String> skip_methods;
-	bool property_descr = false;
 
 	bool has_properties = cd.properties.size() != 0;
 	if (cd.is_script_doc) {
@@ -874,7 +891,6 @@ void EditorHelp::_update_doc() {
 
 			if (describe) {
 				class_desc->pop();
-				property_descr = true;
 			}
 
 			class_desc->pop();
@@ -959,9 +975,6 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Methods overview
-	bool constructor_descriptions = false;
-	bool method_descriptions = false;
-	bool operator_descriptions = false;
 	bool sort_methods = EDITOR_GET("text_editor/help/sort_functions_alphabetically");
 
 	Vector<DocData::MethodDoc> methods;
@@ -989,19 +1002,20 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Constructors"));
-		_update_method_list(cd.constructors, constructor_descriptions);
+		_update_method_list(cd.constructors);
 	}
 
 	if (!methods.is_empty()) {
 		if (sort_methods) {
 			methods.sort();
 		}
+
 		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Methods"));
-		_update_method_list(methods, method_descriptions);
+		_update_method_list(methods);
 	}
 
 	if (!cd.operators.is_empty()) {
@@ -1014,7 +1028,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_title_font);
 		class_desc->push_font_size(doc_title_font_size);
 		class_desc->add_text(TTR("Operators"));
-		_update_method_list(cd.operators, operator_descriptions);
+		_update_method_list(cd.operators);
 	}
 
 	// Theme properties
@@ -1507,7 +1521,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (property_descr) {
+	if (has_properties) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1682,7 +1696,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Constructor descriptions
-	if (constructor_descriptions) {
+	if (!cd.constructors.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Constructor Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1692,7 +1706,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Method descriptions
-	if (method_descriptions) {
+	if (!methods.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1702,7 +1716,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Operator descriptions
-	if (operator_descriptions) {
+	if (!cd.operators.is_empty()) {
 		section_line.push_back(Pair<String, int>(TTR("Operator Descriptions"), class_desc->get_paragraph_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
@@ -1710,6 +1724,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(TTR("Operator Descriptions"));
 		_update_method_descriptions(cd, cd.operators, "operator");
 	}
+
+	// Free the scroll.
 	scroll_locked = false;
 }
 
