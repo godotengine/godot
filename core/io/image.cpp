@@ -2478,15 +2478,15 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const V
 	create(p_width, p_height, p_mipmaps, p_format, p_data);
 }
 
-Rect2 Image::get_used_rect() const {
+Rect2i Image::get_used_rect() const {
 	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGB565) {
-		return Rect2(Point2(), Size2(width, height));
+		return Rect2i(0, 0, width, height);
 	}
 
 	int len = data.size();
 
 	if (len == 0) {
-		return Rect2();
+		return Rect2i();
 	}
 
 	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
@@ -2512,15 +2512,15 @@ Rect2 Image::get_used_rect() const {
 	}
 
 	if (maxx == -1) {
-		return Rect2();
+		return Rect2i();
 	} else {
-		return Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1);
+		return Rect2i(minx, miny, maxx - minx + 1, maxy - miny + 1);
 	}
 }
 
-Ref<Image> Image::get_rect(const Rect2 &p_area) const {
+Ref<Image> Image::get_rect(const Rect2i &p_area) const {
 	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
+	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2i(0, 0));
 	return img;
 }
 
@@ -2557,7 +2557,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 	r_clipped_dest_rect.size.y = r_clipped_src_rect.size.y;
 }
 
-void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2599,7 +2599,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
-void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2649,7 +2649,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 }
 
-void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2684,7 +2684,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	}
 }
 
-void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2756,7 +2756,7 @@ void Image::fill(const Color &p_color) {
 	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
 }
 
-void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());

@@ -300,8 +300,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void ImageTexture::set_size_override(const Size2 &p_size) {
-	Size2 s = p_size;
+void ImageTexture::set_size_override(const Size2i &p_size) {
+	Size2i s = p_size;
 	if (s.x != 0) {
 		w = s.x;
 	}
