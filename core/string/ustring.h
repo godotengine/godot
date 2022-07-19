@@ -433,6 +433,7 @@ public:
 	static const String invalid_node_name_characters;
 	String validate_node_name() const;
 	String validate_identifier() const;
+	String validate_filename() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_int() const;
