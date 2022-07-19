@@ -1489,8 +1489,8 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
 		if (p_screen != window_get_current_screen(p_window)) {
-			Point2i position = screen_get_position(p_screen);
-			XMoveWindow(x11_display, wd.x11_window, position.x, position.y);
+			Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+			window_set_position(ofs + screen_get_position(p_screen), p_window);
 		}
 	}
 }

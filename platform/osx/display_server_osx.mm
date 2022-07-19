@@ -2008,6 +2008,10 @@ void DisplayServerOSX::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
+
 	bool was_fullscreen = false;
 	if (wd.fullscreen) {
 		// Temporary exit fullscreen mode to move window.
