@@ -158,10 +158,7 @@ if env["builtin_bullet"]:
         "BulletDynamics/MLCPSolvers/btMLCPSolver.cpp",
         "BulletDynamics/MLCPSolvers/btLemkeAlgorithm.cpp",
         # BulletInverseDynamics
-        "BulletInverseDynamics/IDMath.cpp",
-        "BulletInverseDynamics/MultiBodyTree.cpp",
-        "BulletInverseDynamics/details/MultiBodyTreeInitCache.cpp",
-        "BulletInverseDynamics/details/MultiBodyTreeImpl.cpp",
+        # -- Unused for now so not included.
         # BulletSoftBody
         "BulletSoftBody/btSoftBody.cpp",
         "BulletSoftBody/btSoftBodyConcaveCollisionAlgorithm.cpp",
@@ -204,7 +201,7 @@ if env["builtin_bullet"]:
 
     env_bullet.Prepend(CPPPATH=[thirdparty_dir])
 
-    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE", "BT_USE_INVERSE_DYNAMICS_WITH_BULLET2"])
+    env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
