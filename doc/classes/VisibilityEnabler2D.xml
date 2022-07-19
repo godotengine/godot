@@ -47,6 +47,9 @@
 		<member name="process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="false">
 			If [code]true[/code], the parent's [method Node._process] will be stopped.
 		</member>
+		<member name="visibility_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
+			If [code]true[/code] and the parent is a [CanvasItem], the parent will be hidden.
+		</member>
 	</members>
 	<constants>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0" enum="Enabler">
@@ -67,7 +70,9 @@
 		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5" enum="Enabler">
 			This enabler will stop [AnimatedSprite] nodes animations.
 		</constant>
-		<constant name="ENABLER_MAX" value="6" enum="Enabler">
+		<constant name="ENABLER_PARENT_VISIBILITY" value="6" enum="Enabler">
+		</constant>
+		<constant name="ENABLER_MAX" value="7" enum="Enabler">
 			Represents the size of the [enum Enabler] enum.
 		</constant>
 	</constants>

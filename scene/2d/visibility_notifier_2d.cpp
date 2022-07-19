@@ -153,6 +153,13 @@ void VisibilityEnabler2D::_screen_enter() {
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 		get_parent()->set_process(true);
 	}
+	if (enabler[ENABLER_PARENT_VISIBILITY] && get_parent()) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+
+		if (ci) {
+			ci->set_visible(true);
+		}
+	}
 
 	visible = true;
 }
@@ -167,6 +174,13 @@ void VisibilityEnabler2D::_screen_exit() {
 	}
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 		get_parent()->set_process(false);
+	}
+	if (enabler[ENABLER_PARENT_VISIBILITY] && get_parent()) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+
+		if (ci) {
+			ci->set_visible(false);
+		}
 	}
 
 	visible = false;
@@ -247,6 +261,14 @@ void VisibilityEnabler2D::_notification(int p_what) {
 		if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
 			get_parent()->connect(SceneStringNames::get_singleton()->ready,
 					get_parent(), "set_process", varray(false), CONNECT_REFERENCE_COUNTED);
+		}
+		if (enabler[ENABLER_PARENT_VISIBILITY] && get_parent()) {
+			CanvasItem *ci = Object::cast_to<CanvasItem>(get_parent());
+
+			if (ci) {
+				ci->connect(SceneStringNames::get_singleton()->ready,
+						ci, "set_visible", varray(false), CONNECT_REFERENCE_COUNTED);
+			}
 		}
 	}
 
@@ -336,6 +358,7 @@ void VisibilityEnabler2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "pause_animated_sprites"), "set_enabler", "is_enabler_enabled", ENABLER_PAUSE_ANIMATED_SPRITES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PROCESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "physics_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PHYSICS_PROCESS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "visibility_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_VISIBILITY);
 
 	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
 	BIND_ENUM_CONSTANT(ENABLER_FREEZE_BODIES);
@@ -343,6 +366,7 @@ void VisibilityEnabler2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENABLER_PARENT_PROCESS);
 	BIND_ENUM_CONSTANT(ENABLER_PARENT_PHYSICS_PROCESS);
 	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_VISIBILITY);
 	BIND_ENUM_CONSTANT(ENABLER_MAX);
 }
 
