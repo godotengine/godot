@@ -867,14 +867,13 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 #endif
 */
 	real_t angle, x, y, z; // variables for result
-	real_t epsilon = 0.01; // margin to allow for rounding errors
-	real_t epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
+	real_t angle_epsilon = 0.1; // margin to distinguish between 0 and 180 degrees
 
-	if ((Math::abs(elements[1][0] - elements[0][1]) < epsilon) && (Math::abs(elements[2][0] - elements[0][2]) < epsilon) && (Math::abs(elements[2][1] - elements[1][2]) < epsilon)) {
+	if ((Math::abs(elements[1][0] - elements[0][1]) < CMP_EPSILON) && (Math::abs(elements[2][0] - elements[0][2]) < CMP_EPSILON) && (Math::abs(elements[2][1] - elements[1][2]) < CMP_EPSILON)) {
 		// singularity found
 		// first check for identity matrix which must have +1 for all terms
 		//  in leading diagonaland zero in other terms
-		if ((Math::abs(elements[1][0] + elements[0][1]) < epsilon2) && (Math::abs(elements[2][0] + elements[0][2]) < epsilon2) && (Math::abs(elements[2][1] + elements[1][2]) < epsilon2) && (Math::abs(elements[0][0] + elements[1][1] + elements[2][2] - 3) < epsilon2)) {
+		if ((Math::abs(elements[1][0] + elements[0][1]) < angle_epsilon) && (Math::abs(elements[2][0] + elements[0][2]) < angle_epsilon) && (Math::abs(elements[2][1] + elements[1][2]) < angle_epsilon) && (Math::abs(elements[0][0] + elements[1][1] + elements[2][2] - 3) < angle_epsilon)) {
 			// this singularity is identity matrix so angle = 0
 			r_axis = Vector3(0, 1, 0);
 			r_angle = 0;
@@ -889,7 +888,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		real_t xz = (elements[2][0] + elements[0][2]) / 4;
 		real_t yz = (elements[2][1] + elements[1][2]) / 4;
 		if ((xx > yy) && (xx > zz)) { // elements[0][0] is the largest diagonal term
-			if (xx < epsilon) {
+			if (xx < CMP_EPSILON) {
 				x = 0;
 				y = Math_SQRT12;
 				z = Math_SQRT12;
@@ -899,7 +898,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				z = xz / x;
 			}
 		} else if (yy > zz) { // elements[1][1] is the largest diagonal term
-			if (yy < epsilon) {
+			if (yy < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = 0;
 				z = Math_SQRT12;
@@ -909,7 +908,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 				z = yz / y;
 			}
 		} else { // elements[2][2] is the largest diagonal term so base result on this
-			if (zz < epsilon) {
+			if (zz < CMP_EPSILON) {
 				x = Math_SQRT12;
 				y = Math_SQRT12;
 				z = 0;
