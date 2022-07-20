@@ -1215,7 +1215,7 @@ void Viewport::_gui_show_tooltip() {
 		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
 
-	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);

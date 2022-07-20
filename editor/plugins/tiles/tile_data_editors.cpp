@@ -803,13 +803,13 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	add_child(root);
 
 	panel = memnew(Panel);
-	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	root->add_child(panel);
 
 	base_control = memnew(Control);
 	base_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	base_control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_control->connect("draw", callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
 	base_control->connect("gui_input", callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
 	base_control->set_clip_contents(true);

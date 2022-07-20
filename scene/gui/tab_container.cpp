@@ -233,7 +233,7 @@ void TabContainer::_repaint() {
 
 		if (i == current) {
 			c->show();
-			c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 			if (tabs_visible) {
 				c->set_offset(SIDE_TOP, _get_top_margin());
