@@ -127,14 +127,12 @@
 		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
 			Enable or disable certificate verification when [member use_dtls] is [code]true[/code].
 		</member>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" overrides="NetworkedMultiplayerPeer" default="false" />
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
 			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
 		</member>
 		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="-1">
 			Set the default channel to be used to transfer data. By default, this value is [code]-1[/code] which means that ENet will only use 2 channels: one for reliable packets, and one for unreliable packets. The channel [code]0[/code] is reserved and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data. See [member channel_count] for more information about ENet channels.
 		</member>
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" overrides="NetworkedMultiplayerPeer" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
 		<member name="use_dtls" type="bool" setter="set_dtls_enabled" getter="is_dtls_enabled" default="false">
 			When enabled, the client or server created by this peer, will use [PacketPeerDTLS] instead of raw UDP sockets for communicating with the remote peer. This will make the communication encrypted with DTLS at the cost of higher resource usage and potentially larger packet size.
 			[b]Note:[/b] When creating a DTLS server, make sure you setup the key/certificate pair via [method set_dtls_key] and [method set_dtls_certificate]. For DTLS clients, have a look at the [member dtls_verify] option, and configure the certificate accordingly via [method set_dtls_certificate].
