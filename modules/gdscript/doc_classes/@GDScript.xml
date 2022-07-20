@@ -716,7 +716,12 @@
 		<method name="print_debug" qualifiers="vararg">
 			<return type="void" />
 			<description>
-				Like [method print], but prints only when used in debug mode.
+				Like [method print], but includes the current stack frame when running with the debugger turned on.
+				Output in the console would look something like this:
+				[codeblock]
+				Test print
+				   At: res://test.gd:15:_process()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="print_stack">
