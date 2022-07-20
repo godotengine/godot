@@ -473,6 +473,11 @@ msgstr "Preset"
 
 #: core/os/input_event.cpp
 #, fuzzy
+msgid "Pen Inverted"
+msgstr "Invertir"
+
+#: core/os/input_event.cpp
+#, fuzzy
 msgid "Relative"
 msgstr "Ajuste Relativo"
 
@@ -21890,7 +21895,7 @@ msgstr "Viaje"
 msgid "Rotation Degrees"
 msgstr "Rotando %s grados."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Constante Global"
@@ -23993,6 +23998,11 @@ msgstr ""
 "Los cambios de tamaño a un SoftBody serán sobrescritos por el motor de "
 "física al ejecutar.\n"
 "En su lugar, cambiá el tamaño de los collision shapes hijos."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Mantener Transformación Global"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

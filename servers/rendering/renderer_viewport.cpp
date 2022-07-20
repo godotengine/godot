@@ -1207,6 +1207,22 @@ RID RendererViewport::viewport_find_from_screen_attachment(DisplayServer::Window
 	return RID();
 }
 
+void RendererViewport::viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	RSG::texture_storage->render_target_set_vrs_mode(viewport->render_target, p_mode);
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_vrs_texture(RID p_viewport, RID p_texture) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	RSG::texture_storage->render_target_set_vrs_texture(viewport->render_target, p_texture);
+	_configure_3d_render_buffers(viewport);
+}
+
 bool RendererViewport::free(RID p_rid) {
 	if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);

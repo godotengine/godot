@@ -246,7 +246,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	preview_bg = memnew(ColorRect);
-	preview_bg->set_anchors_and_offsets_preset(PRESET_WIDE);
+	preview_bg->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 

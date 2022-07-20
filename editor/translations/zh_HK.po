@@ -479,6 +479,10 @@ msgid "Pressure"
 msgstr "重設縮放比例"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 msgid "Relative"
 msgstr ""
 
@@ -21926,7 +21930,7 @@ msgstr ""
 msgid "Rotation Degrees"
 msgstr ""
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "常數"
@@ -23917,6 +23921,11 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "翻譯"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

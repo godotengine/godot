@@ -399,6 +399,24 @@ if selected_platform in platform_list:
 
     env = env_base.Clone()
 
+    # Default num_jobs to local cpu count if not user specified.
+    # SCons has a peculiarity where user-specified options won't be overridden
+    # by SetOption, so we can rely on this to know if we should use our default.
+    initial_num_jobs = env.GetOption("num_jobs")
+    altered_num_jobs = initial_num_jobs + 1
+    env.SetOption("num_jobs", altered_num_jobs)
+    if env.GetOption("num_jobs") == altered_num_jobs:
+        cpu_count = os.cpu_count()
+        if cpu_count is None:
+            print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        else:
+            safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
+            print(
+                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
+                % (cpu_count, safer_cpu_count)
+            )
+            env.SetOption("num_jobs", safer_cpu_count)
+
     if env["compiledb"]:
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
         from SCons import __version__ as scons_raw_version

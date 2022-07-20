@@ -42,8 +42,13 @@
 #include "scene/gui/tree.h"
 #include "scene/resources/visual_shader.h"
 
+class VisualShaderEditor;
+
 class VisualShaderNodePlugin : public RefCounted {
 	GDCLASS(VisualShaderNodePlugin, RefCounted);
+
+protected:
+	VisualShaderEditor *vseditor = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -51,6 +56,7 @@ protected:
 	GDVIRTUAL2RC(Object *, _create_editor, Ref<Resource>, Ref<VisualShaderNode>)
 
 public:
+	void set_editor(VisualShaderEditor *p_editor);
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
@@ -58,6 +64,8 @@ class VisualShaderGraphPlugin : public RefCounted {
 	GDCLASS(VisualShaderGraphPlugin, RefCounted);
 
 private:
+	VisualShaderEditor *editor = nullptr;
+
 	struct InputPort {
 		Button *default_input_button = nullptr;
 	};
@@ -91,6 +99,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
 	void set_connections(const List<VisualShader::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
@@ -324,8 +333,6 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_preview();
 	String _get_description(int p_idx);
 
-	static VisualShaderEditor *singleton;
-
 	struct DragOp {
 		VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 		int node = 0;
@@ -403,9 +410,9 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _duplicate_nodes();
 
-	Vector2 selection_center;
-	List<CopyItem> copy_items_buffer;
-	List<VisualShader::Connection> copy_connections_buffer;
+	static Vector2 selection_center;
+	static List<CopyItem> copy_items_buffer;
+	static List<VisualShader::Connection> copy_connections_buffer;
 
 	void _clear_copy_buffer();
 	void _copy_nodes(bool p_cut);
@@ -482,7 +489,6 @@ public:
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 	void remove_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
 
-	static VisualShaderEditor *get_singleton() { return singleton; }
 	VisualShaderGraphPlugin *get_graph_plugin() { return graph_plugin.ptr(); }
 
 	void clear_custom_types();

@@ -1909,7 +1909,7 @@ void PopupMenu::popup(const Rect2 &p_bounds) {
 PopupMenu::PopupMenu() {
 	// Margin Container
 	margin_container = memnew(MarginContainer);
-	margin_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	margin_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	add_child(margin_container, false, INTERNAL_MODE_FRONT);
 	margin_container->connect("draw", callable_mp(this, &PopupMenu::_draw_background));
 
@@ -1921,7 +1921,7 @@ PopupMenu::PopupMenu() {
 	// The control which will display the items
 	control = memnew(Control);
 	control->set_clip_contents(false);
-	control->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);

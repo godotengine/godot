@@ -2017,7 +2017,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_tree->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
 
 	edit_items_message = memnew(Label);
-	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	edit_items_message->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	edit_items_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	edit_items_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

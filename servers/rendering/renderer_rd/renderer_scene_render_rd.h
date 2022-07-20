@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
+#include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
@@ -104,11 +105,12 @@ protected:
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
+	RendererRD::VRS *vrs = nullptr;
 	double time = 0.0;
 	double time_step = 0.0;
 
 	struct RenderBufferData {
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) = 0;
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) = 0;
 		virtual ~RenderBufferData() {}
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
@@ -149,7 +151,7 @@ protected:
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID *p_normal_roughness_views, RID p_voxel_gi_buffer);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices);
 
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
@@ -492,6 +494,8 @@ private:
 		RID depth_texture; //main depth texture
 		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
 		RID upscale_texture; //used when upscaling internal_texture (This uses the same resource as internal_texture if there is no upscaling)
+		RID vrs_texture; // texture for vrs.
+		RID vrs_fb; // framebuffer to write to our vrs texture
 
 		// Access to the layers for each of our views (specifically needed for applying post effects on stereoscopic images)
 		struct View {
@@ -1503,6 +1507,7 @@ public:
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
+	virtual bool is_vrs_supported() const;
 	virtual bool is_dynamic_gi_supported() const;
 	virtual bool is_clustered_enabled() const;
 	virtual bool is_volumetric_supported() const;

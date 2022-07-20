@@ -242,7 +242,7 @@ ReplicationEditor::ReplicationEditor() {
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(drop_label);
-	drop_label->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	drop_label->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	tree->set_drag_forwarding(this);
 }

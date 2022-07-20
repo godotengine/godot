@@ -4981,7 +4981,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	bottom_split = memnew(VSplitContainer);
 	add_child(bottom_split);
@@ -5006,7 +5006,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	SubViewportContainer *scene_tree = memnew(SubViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
 	scene_tree->set_stretch(true);
-	scene_tree->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	scene_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	scene_tree->add_child(EditorNode::get_singleton()->get_scene_root());
 
 	controls_vb = memnew(VBoxContainer);
@@ -5036,7 +5036,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport = memnew(CanvasItemEditorViewport(this));
 	viewport_scrollable->add_child(viewport);
 	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
-	viewport->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	viewport->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	viewport->set_clip_contents(true);
 	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
@@ -5425,7 +5425,7 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	canvas_item_editor = memnew(CanvasItemEditor);
 	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	EditorNode::get_singleton()->get_main_control()->add_child(canvas_item_editor);
-	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	canvas_item_editor->hide();
 }
 

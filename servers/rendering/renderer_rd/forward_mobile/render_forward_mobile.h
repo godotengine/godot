@@ -131,12 +131,14 @@ protected:
 		RID depth_msaa;
 		// RID normal_roughness_buffer_msaa;
 
+		RID vrs;
+
 		RID color_fbs[FB_CONFIG_MAX];
 		int width, height;
 		uint32_t view_count;
 
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
 
 		~RenderBufferDataForwardMobile();
 	};

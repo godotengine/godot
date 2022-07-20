@@ -493,6 +493,10 @@ msgid "Pressure"
 msgstr "Antaŭagordo"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "Kapti relative"
@@ -21632,7 +21636,7 @@ msgstr "Vojaĝa"
 msgid "Rotation Degrees"
 msgstr "Rotacia paŝo:"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Konstanto"
@@ -23652,6 +23656,11 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Transformo"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

@@ -44,7 +44,7 @@
 		</method>
 		<method name="set_size_override">
 			<return type="void" />
-			<argument index="0" name="size" type="Vector2" />
+			<argument index="0" name="size" type="Vector2i" />
 			<description>
 				Resizes the texture to the specified dimensions.
 			</description>

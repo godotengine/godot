@@ -2376,7 +2376,7 @@ GraphEdit::GraphEdit() {
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
-	top_layer->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	top_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
 	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));

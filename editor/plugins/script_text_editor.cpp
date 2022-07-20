@@ -1420,7 +1420,9 @@ Control *ScriptTextEditor::get_edit_menu() {
 }
 
 void ScriptTextEditor::clear_edit_menu() {
-	memdelete(edit_hb);
+	if (editor_enabled) {
+		memdelete(edit_hb);
+	}
 }
 
 void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
@@ -1821,7 +1823,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
-	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
@@ -1958,7 +1960,7 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->add_theme_constant_override("separation", 2);
-	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 

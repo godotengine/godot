@@ -50,6 +50,7 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_camera_transform);
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
+	GDVIRTUAL_BIND(_get_vrs_texture);
 
 	GDVIRTUAL_BIND(_process);
 	GDVIRTUAL_BIND(_pre_render);
@@ -271,6 +272,15 @@ CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, doub
 	}
 
 	return CameraMatrix();
+}
+
+RID XRInterfaceExtension::get_vrs_texture() {
+	RID vrs_texture;
+	if (GDVIRTUAL_CALL(_get_vrs_texture, vrs_texture)) {
+		return vrs_texture;
+	} else {
+		return XRInterface::get_vrs_texture();
+	}
 }
 
 void XRInterfaceExtension::add_blit(RID p_render_target, Rect2 p_src_rect, Rect2i p_dst_rect, bool p_use_layer, uint32_t p_layer, bool p_apply_lens_distortion, Vector2 p_eye_center, double p_k1, double p_k2, double p_upscale, double p_aspect_ratio) {

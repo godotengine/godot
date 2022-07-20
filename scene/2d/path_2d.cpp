@@ -304,6 +304,7 @@ void PathFollow2D::_bind_methods() {
 }
 
 void PathFollow2D::set_offset(real_t p_offset) {
+	ERR_FAIL_COND(!isfinite(p_offset));
 	offset = p_offset;
 	if (path) {
 		if (path->get_curve().is_valid()) {

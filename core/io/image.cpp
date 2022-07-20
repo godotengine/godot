@@ -1339,6 +1339,108 @@ void Image::crop(int p_width, int p_height) {
 	crop_from_point(0, 0, p_width, p_height);
 }
 
+void Image::rotate_90(ClockDirection p_direction) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+
+	int saved_width = height;
+	int saved_height = width;
+
+	if (width != height) {
+		int n = MAX(width, height);
+		resize(n, n, INTERPOLATE_NEAREST);
+	}
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	{
+		uint8_t *w = data.ptrw();
+		uint8_t src[16];
+		uint8_t dst[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		// Flip.
+
+		if (p_direction == CLOCKWISE) {
+			for (int y = 0; y < height / 2; y++) {
+				for (int x = 0; x < width; x++) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(x, height - y - 1, pixel_size, w, dst);
+
+					_put_pixelb(x, height - y - 1, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		} else {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width / 2; x++) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(width - x - 1, y, pixel_size, w, dst);
+
+					_put_pixelb(width - x - 1, y, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		}
+
+		// Transpose.
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (x < y) {
+					_get_pixelb(x, y, pixel_size, w, src);
+					_get_pixelb(y, x, pixel_size, w, dst);
+
+					_put_pixelb(y, x, pixel_size, w, src);
+					_put_pixelb(x, y, pixel_size, w, dst);
+				}
+			}
+		}
+	}
+
+	if (saved_width != saved_height) {
+		resize(saved_width, saved_height, INTERPOLATE_NEAREST);
+	} else if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
+void Image::rotate_180() {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	{
+		uint8_t *w = data.ptrw();
+		uint8_t src[16];
+		uint8_t dst[16];
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		for (int y = 0; y < height / 2; y++) {
+			for (int x = 0; x < width; x++) {
+				_get_pixelb(x, y, pixel_size, w, src);
+				_get_pixelb(width - x - 1, height - y - 1, pixel_size, w, dst);
+
+				_put_pixelb(width - x - 1, height - y - 1, pixel_size, w, src);
+				_put_pixelb(x, y, pixel_size, w, dst);
+			}
+		}
+	}
+
+	if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
 void Image::flip_y() {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
 
@@ -2478,15 +2580,15 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const V
 	create(p_width, p_height, p_mipmaps, p_format, p_data);
 }
 
-Rect2 Image::get_used_rect() const {
+Rect2i Image::get_used_rect() const {
 	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGB565) {
-		return Rect2(Point2(), Size2(width, height));
+		return Rect2i(0, 0, width, height);
 	}
 
 	int len = data.size();
 
 	if (len == 0) {
-		return Rect2();
+		return Rect2i();
 	}
 
 	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
@@ -2512,15 +2614,15 @@ Rect2 Image::get_used_rect() const {
 	}
 
 	if (maxx == -1) {
-		return Rect2();
+		return Rect2i();
 	} else {
-		return Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1);
+		return Rect2i(minx, miny, maxx - minx + 1, maxy - miny + 1);
 	}
 }
 
-Ref<Image> Image::get_rect(const Rect2 &p_area) const {
+Ref<Image> Image::get_rect(const Rect2i &p_area) const {
 	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
+	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2i(0, 0));
 	return img;
 }
 
@@ -2557,7 +2659,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 	r_clipped_dest_rect.size.y = r_clipped_src_rect.size.y;
 }
 
-void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2599,7 +2701,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
-void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2649,7 +2751,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 }
 
-void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2684,7 +2786,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	}
 }
 
-void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2756,7 +2858,7 @@ void Image::fill(const Color &p_color) {
 	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
 }
 
-void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
+void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
@@ -3216,6 +3318,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress_from_channels, DEFVAL(0.7));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
+
+	ClassDB::bind_method(D_METHOD("rotate_90", "direction"), &Image::rotate_90);
+	ClassDB::bind_method(D_METHOD("rotate_180"), &Image::rotate_180);
 
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);

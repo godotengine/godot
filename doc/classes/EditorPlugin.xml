@@ -296,6 +296,28 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
+				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_base_control] and made visible inside [method _make_visible].
+				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
+				[codeblock]
+				var plugin_control
+
+				func _enter_tree():
+				    plugin_control = preload("my_plugin_control.tscn").instantiate()
+				    get_editor_interface().get_editor_main_control().add_child(plugin_control)
+				    plugin_control.hide()
+
+				func _has_main_screen():
+				    return true
+
+				func _make_visible(visible):
+				    plugin_control.visible = visible
+
+				func _get_plugin_name():
+				    return "My Super Cool Plugin 3000"
+
+				func _get_plugin_icon():
+				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_make_visible" qualifiers="virtual">

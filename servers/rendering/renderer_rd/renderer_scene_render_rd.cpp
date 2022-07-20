@@ -1827,6 +1827,16 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->sss_texture = RID();
 	}
 
+	if (rb->vrs_fb.is_valid()) {
+		RD::get_singleton()->free(rb->vrs_fb);
+		rb->vrs_fb = RID();
+	}
+
+	if (rb->vrs_texture.is_valid()) {
+		RD::get_singleton()->free(rb->vrs_texture);
+		rb->vrs_texture = RID();
+	}
+
 	for (int i = 0; i < 2; i++) {
 		for (int l = 0; l < rb->blur[i].layers.size(); l++) {
 			for (int m = 0; m < rb->blur[i].layers[l].mipmaps.size(); m++) {
@@ -3151,8 +3161,13 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		}
 	}
 
+	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(rb->render_target);
+	if (is_vrs_supported() && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
+		vrs->create_vrs_texture(p_internal_width, p_internal_height, p_view_count, rb->vrs_texture, rb->vrs_fb);
+	}
+
 	RID target_texture = texture_storage->render_target_get_rd_texture(rb->render_target);
-	rb->data->configure(rb->internal_texture, rb->depth_texture, target_texture, p_internal_width, p_internal_height, p_msaa, p_use_taa, p_view_count);
+	rb->data->configure(rb->internal_texture, rb->depth_texture, target_texture, p_internal_width, p_internal_height, p_msaa, p_use_taa, p_view_count, rb->vrs_texture);
 
 	if (is_clustered_enabled()) {
 		rb->cluster_builder->setup(Size2i(p_internal_width, p_internal_height), max_cluster_elements, rb->depth_texture, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED), rb->internal_texture);
@@ -4929,7 +4944,7 @@ void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, boo
 	}
 }
 
-void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, RID *p_normal_roughness_views, RID p_voxel_gi_buffer) {
+void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
@@ -5004,7 +5019,7 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 
 	//start GI
 	if (render_gi) {
-		gi.process_gi(p_render_data->render_buffers, p_normal_roughness_views, p_voxel_gi_buffer, p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->view_eye_offset, p_render_data->cam_transform, *p_render_data->voxel_gi_instances, this);
+		gi.process_gi(p_render_data->render_buffers, p_normal_roughness_slices, p_voxel_gi_buffer, p_vrs_slices, p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->view_eye_offset, p_render_data->cam_transform, *p_render_data->voxel_gi_instances, this);
 	}
 
 	//Do shadow rendering (in parallel with GI)
@@ -5045,13 +5060,13 @@ void RendererSceneRenderRD::_pre_opaque_render(RenderDataRD *p_render_data, bool
 		}
 
 		if (p_use_ssao) {
-			// TODO make these proper stereo and thus use p_normal_roughness_views correctly
-			_process_ssao(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_views[0], p_render_data->cam_projection);
+			// TODO make these proper stereo
+			_process_ssao(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_slices[0], p_render_data->cam_projection);
 		}
 
 		if (p_use_ssil) {
-			// TODO make these proper stereo and thus use p_normal_roughness_views correctly
-			_process_ssil(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_views[0], p_render_data->cam_projection, p_render_data->cam_transform);
+			// TODO make these proper stereo
+			_process_ssil(p_render_data->render_buffers, p_render_data->environment, p_normal_roughness_slices[0], p_render_data->cam_projection, p_render_data->cam_transform);
 		}
 	}
 
@@ -5238,6 +5253,11 @@ void RendererSceneRenderRD::render_scene(RID p_render_buffers, const CameraData 
 		render_data.cluster_buffer = current_cluster_builder->get_cluster_buffer();
 		render_data.cluster_size = current_cluster_builder->get_cluster_size();
 		render_data.cluster_max_elements = current_cluster_builder->get_max_cluster_elements();
+	}
+
+	if (rb != nullptr && rb->vrs_fb.is_valid()) {
+		// vrs_fb will only be valid if vrs is enabled
+		vrs->update_vrs_texture(rb->vrs_fb, rb->render_target);
 	}
 
 	_render_scene(&render_data, clear_color);
@@ -5736,6 +5756,10 @@ int RendererSceneRenderRD::get_max_directional_lights() const {
 	return cluster.max_directional_lights;
 }
 
+bool RendererSceneRenderRD::is_vrs_supported() const {
+	return RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS);
+}
+
 bool RendererSceneRenderRD::is_dynamic_gi_supported() const {
 	// usable by default (unless low end = true)
 	return true;
@@ -5975,6 +5999,7 @@ void fog() {
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
 	tone_mapper = memnew(RendererRD::ToneMapper);
+	vrs = memnew(RendererRD::VRS);
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -5988,6 +6013,9 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 	if (tone_mapper) {
 		memdelete(tone_mapper);
+	}
+	if (vrs) {
+		memdelete(vrs);
 	}
 
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {

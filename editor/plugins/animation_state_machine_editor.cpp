@@ -1969,7 +1969,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
-	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_WIDE);
+	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
 
 	v_scroll = memnew(VScrollBar);
@@ -2022,7 +2022,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
-	name_edit->set_anchors_and_offsets_preset(PRESET_WIDE);
+	name_edit->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	name_edit->connect("text_submitted", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

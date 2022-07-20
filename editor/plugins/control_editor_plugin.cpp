@@ -479,7 +479,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_preset(Control::LayoutPreset
 				case PRESET_BOTTOM_WIDE:
 				case PRESET_VCENTER_WIDE:
 				case PRESET_HCENTER_WIDE:
-				case PRESET_WIDE:
+				case PRESET_FULL_RECT:
 					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
 					break;
 			}
@@ -689,8 +689,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE: {
 			_set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_AND_OFFSETS_PRESET_WIDE: {
-			_set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+		case ANCHORS_AND_OFFSETS_PRESET_FULL_RECT: {
+			_set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		} break;
 		case ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO: {
 			_set_anchors_and_offsets_to_keep_ratio();
@@ -741,8 +741,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_PRESET_HCENTER_WIDE: {
 			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_PRESET_WIDE: {
-			_set_anchors_preset(Control::PRESET_WIDE);
+		case ANCHORS_PRESET_FULL_RECT: {
+			_set_anchors_preset(Control::PRESET_FULL_RECT);
 		} break;
 
 		case CONTAINERS_H_PRESET_FILL: {
@@ -840,7 +840,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE);
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE);
 			p->add_separator();
-			p->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_WIDE);
+			p->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_FULL_RECT);
 			p->add_icon_item(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")), TTR("Keep Current Ratio"), ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO);
 			p->set_item_tooltip(19, TTR("Adjust anchors and offsets to match the current rect size."));
 
@@ -867,7 +867,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_PRESET_VCENTER_WIDE);
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_PRESET_HCENTER_WIDE);
 			anchors_popup->add_separator();
-			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
+			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_FULL_RECT);
 
 			anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
 
