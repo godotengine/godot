@@ -4016,6 +4016,8 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	render_pass_create_info.pSubpasses = &subpass;
 	render_pass_create_info.dependencyCount = 0;
 	render_pass_create_info.pDependencies = nullptr;
+	render_pass_create_info.correlatedViewMaskCount = 0;
+	render_pass_create_info.pCorrelatedViewMasks = nullptr;
 
 	VkRenderPass render_pass;
 	VkResult res = context->vkCreateRenderPass2KHR(device, &render_pass_create_info, nullptr, &render_pass);
