@@ -46,6 +46,7 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite.h"
 #include "scene/2d/touch_screen_button.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/viewport_container.h"
@@ -4401,7 +4402,7 @@ void CanvasItemEditor::_update_context_menu_stylebox() {
 	context_menu_stylebox->set_border_color(accent_color);
 	context_menu_stylebox->set_border_width(MARGIN_BOTTOM, Math::round(2 * EDSCALE));
 	context_menu_stylebox->set_default_margin(MARGIN_BOTTOM, 0);
-	context_menu_container->add_style_override("panel", context_menu_stylebox);
+	context_menu_panel->add_style_override("panel", context_menu_stylebox);
 }
 
 void CanvasItemEditor::_update_scrollbars() {
@@ -5737,11 +5738,11 @@ void CanvasItemEditor::remove_control_from_info_overlay(Control *p_control) {
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	ERR_FAIL_COND(!p_control);
 
-	hbc_context_menu->add_child(p_control);
+	context_menu_hbox->add_child(p_control);
 }
 
 void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
-	hbc_context_menu->remove_child(p_control);
+	context_menu_hbox->remove_child(p_control);
 }
 
 void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
@@ -5868,9 +5869,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor->call_deferred("connect", "play_pressed", this, "_update_override_camera_button", make_binds(true));
 	editor->call_deferred("connect", "stop_pressed", this, "_update_override_camera_button", make_binds(false));
 
-	hb = memnew(HBoxContainer);
-	add_child(hb);
-	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	// A fluid container for all toolbars.
+	HFlowContainer *main_flow = memnew(HFlowContainer);
+	add_child(main_flow);
+
+	// Main toolbars.
+	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
+	main_menu_hbox->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	main_flow->add_child(main_menu_hbox);
 
 	bottom_split = memnew(VSplitContainer);
 	add_child(bottom_split);
@@ -5968,82 +5974,82 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	updating_scroll = false;
 
 	select_button = memnew(ToolButton);
-	hb->add_child(select_button);
+	main_menu_hbox->add_child(select_button);
 	select_button->set_toggle_mode(true);
 	select_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
 	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("RMB: Add node at position clicked."));
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	move_button = memnew(ToolButton);
-	hb->add_child(move_button);
+	main_menu_hbox->add_child(move_button);
 	move_button->set_toggle_mode(true);
 	move_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
 	move_button->set_tooltip(TTR("Move Mode"));
 
 	rotate_button = memnew(ToolButton);
-	hb->add_child(rotate_button);
+	main_menu_hbox->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
 	rotate_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), KEY_E));
 	rotate_button->set_tooltip(TTR("Rotate Mode"));
 
 	scale_button = memnew(ToolButton);
-	hb->add_child(scale_button);
+	main_menu_hbox->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
 	scale_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
 	scale_button->set_tooltip(TTR("Shift: Scale proportionally."));
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	list_select_button = memnew(ToolButton);
-	hb->add_child(list_select_button);
+	main_menu_hbox->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
 	list_select_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
 
 	pivot_button = memnew(ToolButton);
-	hb->add_child(pivot_button);
+	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_EDIT_PIVOT));
 	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot."));
 
 	pan_button = memnew(ToolButton);
-	hb->add_child(pan_button);
+	main_menu_hbox->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
 	pan_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
 	ruler_button = memnew(ToolButton);
-	hb->add_child(ruler_button);
+	main_menu_hbox->add_child(ruler_button);
 	ruler_button->set_toggle_mode(true);
 	ruler_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTR("Ruler Mode"), KEY_R));
 	ruler_button->set_tooltip(TTR("Ruler Mode"));
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	smart_snap_button = memnew(ToolButton);
-	hb->add_child(smart_snap_button);
+	main_menu_hbox->add_child(smart_snap_button);
 	smart_snap_button->set_toggle_mode(true);
 	smart_snap_button->connect("toggled", this, "_button_toggle_smart_snap");
 	smart_snap_button->set_tooltip(TTR("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTR("Use Smart Snap"), KEY_MASK_SHIFT | KEY_S));
 
 	grid_snap_button = memnew(ToolButton);
-	hb->add_child(grid_snap_button);
+	main_menu_hbox->add_child(grid_snap_button);
 	grid_snap_button->set_toggle_mode(true);
 	grid_snap_button->connect("toggled", this, "_button_toggle_grid_snap");
 	grid_snap_button->set_tooltip(TTR("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTR("Use Grid Snap"), KEY_MASK_SHIFT | KEY_G));
 
 	snap_config_menu = memnew(MenuButton);
-	hb->add_child(snap_config_menu);
+	main_menu_hbox->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
 	snap_config_menu->set_tooltip(TTR("Snapping Options"));
 	snap_config_menu->set_switch_on_hover(true);
@@ -6072,37 +6078,37 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_other_nodes", TTR("Snap to Other Nodes")), SNAP_USE_OTHER_NODES);
 	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_guides", TTR("Snap to Guides")), SNAP_USE_GUIDES);
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	lock_button = memnew(ToolButton);
-	hb->add_child(lock_button);
+	main_menu_hbox->add_child(lock_button);
 
 	lock_button->connect("pressed", this, "_popup_callback", varray(LOCK_SELECTED));
 	lock_button->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
 	lock_button->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KEY_MASK_CMD | KEY_L));
 
 	unlock_button = memnew(ToolButton);
-	hb->add_child(unlock_button);
+	main_menu_hbox->add_child(unlock_button);
 	unlock_button->connect("pressed", this, "_popup_callback", varray(UNLOCK_SELECTED));
 	unlock_button->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 	unlock_button->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_L));
 
 	group_button = memnew(ToolButton);
-	hb->add_child(group_button);
+	main_menu_hbox->add_child(group_button);
 	group_button->connect("pressed", this, "_popup_callback", varray(GROUP_SELECTED));
 	group_button->set_tooltip(TTR("Makes sure the object's children are not selectable."));
 	group_button->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KEY_MASK_CMD | KEY_G));
 
 	ungroup_button = memnew(ToolButton);
-	hb->add_child(ungroup_button);
+	main_menu_hbox->add_child(ungroup_button);
 	ungroup_button->connect("pressed", this, "_popup_callback", varray(UNGROUP_SELECTED));
 	ungroup_button->set_tooltip(TTR("Restores the object's children's ability to be selected."));
 	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G));
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	skeleton_menu = memnew(MenuButton);
-	hb->add_child(skeleton_menu);
+	main_menu_hbox->add_child(skeleton_menu);
 	skeleton_menu->set_tooltip(TTR("Skeleton Options"));
 	skeleton_menu->set_switch_on_hover(true);
 
@@ -6117,21 +6123,21 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Custom Bones")), SKELETON_CLEAR_BONES);
 	p->connect("id_pressed", this, "_popup_callback");
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	override_camera_button = memnew(ToolButton);
-	hb->add_child(override_camera_button);
+	main_menu_hbox->add_child(override_camera_button);
 	override_camera_button->connect("toggled", this, "_button_override_camera");
 	override_camera_button->set_toggle_mode(true);
 	override_camera_button->set_disabled(true);
 	_update_override_camera_button(false);
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
 	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
-	hb->add_child(view_menu);
+	main_menu_hbox->add_child(view_menu);
 	view_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
 	view_menu->set_switch_on_hover(true);
 
@@ -6164,20 +6170,20 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_P), PREVIEW_CANVAS_SCALE);
 
-	hb->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
-	context_menu_container = memnew(PanelContainer);
-	hbc_context_menu = memnew(HBoxContainer);
-	context_menu_container->add_child(hbc_context_menu);
+	context_menu_panel = memnew(PanelContainer);
+	context_menu_hbox = memnew(HBoxContainer);
+	context_menu_panel->add_child(context_menu_hbox);
 	// Use a custom stylebox to make contextual menu items stand out from the rest.
 	// This helps with editor usability as contextual menu items change when selecting nodes,
 	// even though it may not be immediately obvious at first.
-	hb->add_child(context_menu_container);
+	main_flow->add_child(context_menu_panel);
 	_update_context_menu_stylebox();
 
 	presets_menu = memnew(MenuButton);
 	presets_menu->set_text(TTR("Layout"));
-	hbc_context_menu->add_child(presets_menu);
+	context_menu_hbox->add_child(presets_menu);
 	presets_menu->hide();
 	presets_menu->set_switch_on_hover(true);
 
@@ -6190,13 +6196,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	anchors_popup->connect("id_pressed", this, "_popup_callback");
 
 	anchor_mode_button = memnew(ToolButton);
-	hbc_context_menu->add_child(anchor_mode_button);
+	context_menu_hbox->add_child(anchor_mode_button);
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->hide();
 	anchor_mode_button->connect("toggled", this, "_button_toggle_anchor_mode");
 
 	animation_hb = memnew(HBoxContainer);
-	hbc_context_menu->add_child(animation_hb);
+	context_menu_hbox->add_child(animation_hb);
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 

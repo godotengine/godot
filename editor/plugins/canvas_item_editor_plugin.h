@@ -238,11 +238,10 @@ private:
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
-	HBoxContainer *hb;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container;
-	HBoxContainer *hbc_context_menu;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
@@ -583,8 +582,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-	HBoxContainer *get_panel_hb() { return hb; }
 
 	struct compare_items_x {
 		bool operator()(const CanvasItem *a, const CanvasItem *b) const {
