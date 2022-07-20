@@ -15,45 +15,9 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if x11_error:
+    pkgconf_error = os.system("pkg-config --version > /dev/null")
+    if pkgconf_error:
         print("Error: pkg-config not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null")
-    if x11_error:
-        print("Error: X11 libraries not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xcursor library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xinerama library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xext --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xext library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null")
-    if x11_error:
-        print("Error: XrandR library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null")
-    if x11_error:
-        print("Error: XRender library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xi library not found. Aborting.")
         return False
 
     return True
@@ -219,13 +183,14 @@ def configure(env):
 
     ## Dependencies
 
-    env.ParseConfig("pkg-config x11 --cflags --libs")
-    env.ParseConfig("pkg-config xcursor --cflags --libs")
-    env.ParseConfig("pkg-config xinerama --cflags --libs")
-    env.ParseConfig("pkg-config xext --cflags --libs")
-    env.ParseConfig("pkg-config xrandr --cflags --libs")
-    env.ParseConfig("pkg-config xrender --cflags --libs")
-    env.ParseConfig("pkg-config xi --cflags --libs")
+    if env["x11"]:
+        env.ParseConfig("pkg-config x11 --cflags --libs")
+        env.ParseConfig("pkg-config xcursor --cflags --libs")
+        env.ParseConfig("pkg-config xinerama --cflags --libs")
+        env.ParseConfig("pkg-config xext --cflags --libs")
+        env.ParseConfig("pkg-config xrandr --cflags --libs")
+        env.ParseConfig("pkg-config xrender --cflags --libs")
+        env.ParseConfig("pkg-config xi --cflags --libs")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -381,8 +346,9 @@ def configure(env):
             # No pkgconfig file so far, hardcode expected lib name.
             env.Append(LIBS=["glslang", "SPIRV"])
 
-    env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    env.ParseConfig("pkg-config gl --cflags --libs")
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        env.ParseConfig("pkg-config gl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 
