@@ -70,9 +70,17 @@ void ThemeItemImportTree::_update_items_tree() {
 	for (const StringName &E : types) {
 		String type_name = (String)E;
 
+		Ref<Texture2D> type_icon;
+		if (E == "") {
+			type_icon = get_theme_icon(SNAME("NodeDisabled"), SNAME("EditorIcons"));
+		} else {
+			type_icon = EditorNode::get_singleton()->get_class_icon(E, "NodeDisabled");
+		}
+
 		TreeItem *type_node = import_items_tree->create_item(root);
 		type_node->set_meta("_can_be_imported", false);
 		type_node->set_collapsed(true);
+		type_node->set_icon(0, type_icon);
 		type_node->set_text(0, type_name);
 		type_node->set_cell_mode(IMPORT_ITEM, TreeItem::CELL_MODE_CHECK);
 		type_node->set_checked(IMPORT_ITEM, false);
@@ -214,7 +222,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (color_amount > 0) {
 		Array arr;
 		arr.push_back(color_amount);
-		select_colors_label->set_text(TTRN("One color", "{num} colors", color_amount).format(arr, "{num}"));
+		select_colors_label->set_text(TTRN("1 color", "{num} colors", color_amount).format(arr, "{num}"));
 		select_all_colors_button->set_visible(true);
 		select_full_colors_button->set_visible(true);
 		deselect_all_colors_button->set_visible(true);
@@ -228,7 +236,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (constant_amount > 0) {
 		Array arr;
 		arr.push_back(constant_amount);
-		select_constants_label->set_text(TTRN("One constant", "{num} constants", constant_amount).format(arr, "{num}"));
+		select_constants_label->set_text(TTRN("1 constant", "{num} constants", constant_amount).format(arr, "{num}"));
 		select_all_constants_button->set_visible(true);
 		select_full_constants_button->set_visible(true);
 		deselect_all_constants_button->set_visible(true);
@@ -242,7 +250,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (font_amount > 0) {
 		Array arr;
 		arr.push_back(font_amount);
-		select_fonts_label->set_text(TTRN("One font", "{num} fonts", font_amount).format(arr, "{num}"));
+		select_fonts_label->set_text(TTRN("1 font", "{num} fonts", font_amount).format(arr, "{num}"));
 		select_all_fonts_button->set_visible(true);
 		select_full_fonts_button->set_visible(true);
 		deselect_all_fonts_button->set_visible(true);
@@ -256,7 +264,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (font_size_amount > 0) {
 		Array arr;
 		arr.push_back(font_size_amount);
-		select_font_sizes_label->set_text(TTRN("One font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
+		select_font_sizes_label->set_text(TTRN("1 font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
 		select_all_font_sizes_button->set_visible(true);
 		select_full_font_sizes_button->set_visible(true);
 		deselect_all_font_sizes_button->set_visible(true);
@@ -270,7 +278,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (icon_amount > 0) {
 		Array arr;
 		arr.push_back(icon_amount);
-		select_icons_label->set_text(TTRN("One icon", "{num} icons", icon_amount).format(arr, "{num}"));
+		select_icons_label->set_text(TTRN("1 icon", "{num} icons", icon_amount).format(arr, "{num}"));
 		select_all_icons_button->set_visible(true);
 		select_full_icons_button->set_visible(true);
 		deselect_all_icons_button->set_visible(true);
@@ -286,7 +294,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (stylebox_amount > 0) {
 		Array arr;
 		arr.push_back(stylebox_amount);
-		select_styleboxes_label->set_text(TTRN("One stylebox", "{num} styleboxes", stylebox_amount).format(arr, "{num}"));
+		select_styleboxes_label->set_text(TTRN("1 stylebox", "{num} styleboxes", stylebox_amount).format(arr, "{num}"));
 		select_all_styleboxes_button->set_visible(true);
 		select_full_styleboxes_button->set_visible(true);
 		deselect_all_styleboxes_button->set_visible(true);
@@ -1170,6 +1178,8 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_add_selected_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_import_selected));
 }
 
+///////////////////////
+
 void ThemeItemEditorDialog::ok_pressed() {
 	if (import_default_theme_items->has_selected_items() || import_editor_theme_items->has_selected_items() || import_other_theme_items->has_selected_items()) {
 		confirm_closing_dialog->set_text(TTR("Import Items tab has some items selected. Selection will be lost upon closing this window.\nClose anyway?"));
@@ -1867,6 +1877,8 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_remove_custom->set_icon(get_theme_icon(SNAME("ThemeRemoveCustomItems"), SNAME("EditorIcons")));
 			edit_items_remove_all->set_icon(get_theme_icon(SNAME("ThemeRemoveAllItems"), SNAME("EditorIcons")));
 
+			edit_add_type_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+
 			import_another_theme_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 		} break;
 	}
@@ -1924,8 +1936,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_add_type_value->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_add_type_value->connect("text_submitted", callable_mp(this, &ThemeItemEditorDialog::_add_theme_type));
 	edit_add_type_hb->add_child(edit_add_type_value);
-	Button *edit_add_type_button = memnew(Button);
-	edit_add_type_button->set_text(TTR("Add"));
+	edit_add_type_button = memnew(Button);
 	edit_add_type_hb->add_child(edit_add_type_button);
 	edit_add_type_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_add_theme_type), varray(""));
 
@@ -2099,6 +2110,8 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	confirm_closing_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
 }
 
+///////////////////////
+
 void ThemeTypeDialog::_dialog_about_to_show() {
 	add_type_filter->set_text("");
 	add_type_filter->grab_focus();
@@ -2236,6 +2249,8 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_confirmation->connect("confirmed", callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
 	add_child(add_type_confirmation);
 }
+
+///////////////////////
 
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	VBoxContainer *items_tab = memnew(VBoxContainer);
@@ -3454,6 +3469,8 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_child(update_debounce_timer);
 }
 
+///////////////////////
+
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 	if (theme == p_theme) {
 		return;
@@ -3671,6 +3688,8 @@ ThemeEditor::ThemeEditor() {
 	main_hs->add_child(theme_type_editor);
 	theme_type_editor->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 }
+
+///////////////////////
 
 void ThemeEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<Theme>(p_node)) {
