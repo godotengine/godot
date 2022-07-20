@@ -154,9 +154,7 @@ struct PropertyInfo {
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
 
-#ifdef TOOLS_ENABLED
-	Vector<String> linked_properties;
-#endif
+	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
 
 	_FORCE_INLINE_ PropertyInfo added_usage(uint32_t p_fl) const {
 		PropertyInfo pi = *this;
