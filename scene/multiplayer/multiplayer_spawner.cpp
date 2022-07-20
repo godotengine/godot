@@ -71,7 +71,7 @@ bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::INT, "_spawnable_scene_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Scenes,scenes/"));
+	p_list->push_back(PropertyInfo(Variant::INT, "_spawnable_scene_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Auto Spawn List,scenes/"));
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &exts);
 	String ext_hint;
@@ -144,10 +144,6 @@ void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spawn_limit", "limit"), &MultiplayerSpawner::set_spawn_limit);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spawn_limit", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"), "set_spawn_limit", "get_spawn_limit");
 
-	ClassDB::bind_method(D_METHOD("set_auto_spawning", "enabled"), &MultiplayerSpawner::set_auto_spawning);
-	ClassDB::bind_method(D_METHOD("is_auto_spawning"), &MultiplayerSpawner::is_auto_spawning);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_spawn"), "set_auto_spawning", "is_auto_spawning");
-
 	GDVIRTUAL_BIND(_spawn_custom, "data");
 
 	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::INT, "scene_id"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -169,7 +165,7 @@ void MultiplayerSpawner::_update_spawn_node() {
 	Node *node = spawn_path.is_empty() && is_inside_tree() ? nullptr : get_node_or_null(spawn_path);
 	if (node) {
 		spawn_node = node->get_instance_id();
-		if (auto_spawn) {
+		if (get_spawnable_scene_count() && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom)) {
 			node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
 	} else {
@@ -219,15 +215,6 @@ void MultiplayerSpawner::_node_added(Node *p_node) {
 	const String name = p_node->get_name();
 	ERR_FAIL_COND_MSG(name.validate_node_name() != name, vformat("Unable to auto-spawn node with reserved name: %s. Make sure to add your replicated scenes via 'add_child(node, true)' to produce valid names.", name));
 	_track(p_node, Variant(), id);
-}
-
-void MultiplayerSpawner::set_auto_spawning(bool p_enabled) {
-	auto_spawn = p_enabled;
-	_update_spawn_node();
-}
-
-bool MultiplayerSpawner::is_auto_spawning() const {
-	return auto_spawn;
 }
 
 NodePath MultiplayerSpawner::get_spawn_path() const {
