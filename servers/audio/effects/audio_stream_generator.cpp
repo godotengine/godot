@@ -46,7 +46,7 @@ float AudioStreamGenerator::get_buffer_length() const {
 	return buffer_len;
 }
 
-Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
+Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instantiate();
 	playback->generator = this;
@@ -194,6 +194,10 @@ float AudioStreamGeneratorPlayback::get_playback_position() const {
 
 void AudioStreamGeneratorPlayback::seek(float p_time) {
 	//no seek possible
+}
+
+void AudioStreamGeneratorPlayback::tag_used_streams() {
+	generator->tag_used(0);
 }
 
 void AudioStreamGeneratorPlayback::_bind_methods() {

@@ -88,6 +88,7 @@ class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
+class AudioStreamImportSettings;
 class ScriptCreateDialog;
 class SubViewport;
 class TabBar;
@@ -468,6 +469,7 @@ private:
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
+	AudioStreamImportSettings *audio_stream_import_settings = nullptr;
 
 	String import_reload_fn;
 
