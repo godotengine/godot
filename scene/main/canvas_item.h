@@ -364,7 +364,7 @@ public:
 	virtual int get_width() const override;
 	virtual int get_height() const override;
 
-	virtual bool is_pixel_opaque(int p_x, int p_y) const override;
+	virtual bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 	virtual bool has_alpha() const override;
 
 	virtual Ref<Image> get_image() const override;

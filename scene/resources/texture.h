@@ -59,7 +59,7 @@ protected:
 
 	GDVIRTUAL0RC(int, _get_width)
 	GDVIRTUAL0RC(int, _get_height)
-	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
+	GDVIRTUAL3RC(bool, _is_pixel_opaque, int, int, float)
 	GDVIRTUAL0RC(bool, _has_alpha)
 
 	GDVIRTUAL4C(_draw, RID, Point2, Color, bool)
@@ -71,7 +71,7 @@ public:
 	virtual int get_height() const;
 	virtual Size2 get_size() const;
 
-	virtual bool is_pixel_opaque(int p_x, int p_y) const;
+	virtual bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const;
 
 	virtual bool has_alpha() const;
 
@@ -128,7 +128,7 @@ public:
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 
 	void set_size_override(const Size2i &p_size);
 
@@ -191,7 +191,7 @@ public:
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 
@@ -278,7 +278,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 
 	virtual bool has_alpha() const override;
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 
 	virtual Ref<Image> get_image() const override;
 
@@ -330,7 +330,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
 
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 
 	virtual Ref<Image> get_image() const override;
 
@@ -371,7 +371,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
 
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold) const override;
 
 	MeshTexture();
 };
@@ -974,7 +974,7 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	bool is_pixel_opaque(int p_x, int p_y) const override;
+	bool is_pixel_opaque(int p_x, int p_y, float p_threshold = 0.1) const override;
 
 	AnimatedTexture();
 	~AnimatedTexture();

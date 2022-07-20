@@ -1268,9 +1268,9 @@ int CanvasTexture::get_height() const {
 	}
 }
 
-bool CanvasTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool CanvasTexture::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	if (diffuse_texture.is_valid()) {
-		return diffuse_texture->is_pixel_opaque(p_x, p_y);
+		return diffuse_texture->is_pixel_opaque(p_x, p_y, p_threshold);
 	} else {
 		return false;
 	}

@@ -58,9 +58,9 @@ Size2 Texture2D::get_size() const {
 	return Size2(get_width(), get_height());
 }
 
-bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
+bool Texture2D::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	bool ret;
-	if (GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret)) {
+	if (GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, p_threshold, ret)) {
 		return ret;
 	}
 
@@ -116,7 +116,7 @@ void Texture2D::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_width);
 	GDVIRTUAL_BIND(_get_height);
-	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
+	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y", "threshold");
 	GDVIRTUAL_BIND(_has_alpha);
 
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
@@ -267,7 +267,7 @@ void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool ImageTexture::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
@@ -277,7 +277,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 				img = decom;
 			}
 			alpha_cache.instantiate();
-			alpha_cache->create_from_image_alpha(img);
+			alpha_cache->create_from_image_alpha(img, p_threshold);
 		}
 	}
 
@@ -533,7 +533,7 @@ void PortableCompressedTexture2D::draw_rect_region(RID p_canvas_item, const Rect
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
+bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
@@ -543,7 +543,7 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 				img = decom;
 			}
 			alpha_cache.instantiate();
-			alpha_cache->create_from_image_alpha(img);
+			alpha_cache->create_from_image_alpha(img, p_threshold);
 		}
 	}
 
@@ -988,7 +988,7 @@ Ref<Image> CompressedTexture2D::get_image() const {
 	}
 }
 
-bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
+bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
@@ -999,7 +999,7 @@ bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 			}
 
 			alpha_cache.instantiate();
-			alpha_cache->create_from_image_alpha(img);
+			alpha_cache->create_from_image_alpha(img, p_threshold);
 		}
 	}
 
@@ -1636,7 +1636,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	return true;
 }
 
-bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool AtlasTexture::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	if (!atlas.is_valid()) {
 		return true;
 	}
@@ -1652,7 +1652,7 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 		return false;
 	}
 
-	return atlas->is_pixel_opaque(x, y);
+	return atlas->is_pixel_opaque(x, y, p_threshold);
 }
 
 Ref<Image> AtlasTexture::get_image() const {
@@ -1770,7 +1770,7 @@ bool MeshTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, 
 	return true;
 }
 
-bool MeshTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool MeshTexture::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	return true;
 }
 
@@ -2786,11 +2786,11 @@ Ref<Image> AnimatedTexture::get_image() const {
 	return frames[current_frame].texture->get_image();
 }
 
-bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y, float p_threshold) const {
 	RWLockRead r(rw_lock);
 
 	if (frames[current_frame].texture.is_valid()) {
-		return frames[current_frame].texture->is_pixel_opaque(p_x, p_y);
+		return frames[current_frame].texture->is_pixel_opaque(p_x, p_y, p_threshold);
 	}
 	return true;
 }

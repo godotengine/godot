@@ -2185,7 +2185,7 @@ void TileSetAtlasSourceEditor::_auto_create_tiles() {
 					bool is_opaque = false;
 					for (int region_x = region.get_position().x; region_x < region.get_end().x; region_x++) {
 						for (int region_y = region.get_position().y; region_y < region.get_end().y; region_y++) {
-							if (texture->is_pixel_opaque(region_x, region_y)) {
+							if (texture->is_pixel_opaque(region_x, region_y, 0.0)) {
 								is_opaque = true;
 								break;
 							}
@@ -2239,7 +2239,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 			bool is_opaque = false;
 			for (int region_x = region.get_position().x; region_x < region.get_end().x; region_x++) {
 				for (int region_y = region.get_position().y; region_y < region.get_end().y; region_y++) {
-					if (texture->is_pixel_opaque(region_x, region_y)) {
+					if (texture->is_pixel_opaque(region_x, region_y, 0.0)) {
 						is_opaque = true;
 						break;
 					}
