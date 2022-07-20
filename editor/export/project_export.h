@@ -31,28 +31,22 @@
 #ifndef PROJECT_EXPORT_H
 #define PROJECT_EXPORT_H
 
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_properties.h"
-#include "editor/export/editor_export.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/label.h"
-#include "scene/gui/link_button.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/tree.h"
-#include "scene/main/timer.h"
 
+class CheckBox;
+class CheckButton;
+class EditorExportPreset;
 class EditorFileDialog;
+class EditorFileSystemDirectory;
+class EditorInspector;
+class EditorPropertyPath;
+class ItemList;
+class MenuButton;
+class OptionButton;
+class RichTextLabel;
+class TabContainer;
+class Tree;
+class TreeItem;
 
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);

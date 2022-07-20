@@ -30,18 +30,17 @@
 
 #include "export_template_manager.h"
 
-#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
-#include "core/os/keyboard.h"
-#include "core/templates/rb_set.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
-#include "progress_dialog.h"
-#include "scene/gui/link_button.h"
+#include "editor/progress_dialog.h"
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/tree.h"
+#include "scene/main/http_request.h"
 
 void ExportTemplateManager::_update_template_status() {
 	// Fetch installed templates from the file system.

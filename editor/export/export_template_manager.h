@@ -31,15 +31,15 @@
 #ifndef EXPORT_TEMPLATE_MANAGER_H
 #define EXPORT_TEMPLATE_MANAGER_H
 
-#include "editor/editor_settings.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/progress_bar.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/main/http_request.h"
 
 class ExportTemplateVersion;
+class FileDialog;
+class HTTPRequest;
+class MenuButton;
+class OptionButton;
+class ProgressBar;
+class Tree;
 
 class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);
