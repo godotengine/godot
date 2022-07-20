@@ -342,6 +342,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
+	void _revert_discard_tab(int p_idx);
 	void _close_docs_tab();
 	void _close_other_tabs();
 	void _close_all_tabs();

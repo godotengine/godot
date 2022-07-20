@@ -831,8 +831,35 @@ void ScriptEditor::_close_current_tab(bool p_save) {
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
+	_revert_discard_tab(tab_container->get_current_tab());
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
+}
+
+void ScriptEditor::_revert_discard_tab(int p_idx) {
+	if (p_idx < 0 || p_idx >= tab_container->get_tab_count()) {
+		return;
+	}
+
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(p_idx));
+	if (!se) {
+		return;
+	}
+
+	Ref<Script> script = se->get_edited_resource();
+	if (script == nullptr || script->is_built_in()) {
+		return;
+	}
+
+	Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	if (!rel_script.is_valid()) {
+		return;
+	}
+
+	script->set_source_code(rel_script->get_source_code());
+	script->set_last_modified_time(rel_script->get_last_modified_time());
+	script->reload(true);
+	se->reload_text();
 }
 
 void ScriptEditor::_close_docs_tab() {
