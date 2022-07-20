@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorResourceTooltipPlugin" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A plugin that advanced tooltip for its handled resource type.
+	</brief_description>
+	<description>
+		Resource tooltip plugins are used by [FileSystemDock] to generate customized tooltips for specific resources. E.g. tooltip for a [Texture2D] displays a bigger preview and the texture's dimensions.
+		A plugin must be first registered with [method FileSystemDock.add_resource_tooltip_plugin]. When the user hovers a resource in filesystem dock which is handled by the plugin, [method _make_tooltip_for_path] is called to create the tooltip. It works similarly to [method Control._make_custom_tooltip].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_handles" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Return [code]true[/code] if the plugin is going to handle the given [Resource] [param type].
+			</description>
+		</method>
+		<method name="_make_tooltip_for_path" qualifiers="virtual const">
+			<return type="Object" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="metadata" type="Dictionary" />
+			<description>
+				Create and return a tooltip that will be displayed when the user hovers resource under given [param path] in filesystem dock. For best results, use [method make_default_tooltip] as a base. 
+				The [param metadata] dictionary is provided by preview generator (see method EditorResourcePreviewGenerator._generate]).
+				[b]Note:[/b] It's unadvised to use [method ResourceLoader.load], especially with heavy resources like models or textures, because it will make the editor unresponsive when creating the tooltip. You can use [method request_thumbnail] if you want to display a preview in your tooltip.
+			</description>
+		</method>
+		<method name="make_default_tooltip" qualifiers="static">
+			<return type="VBoxContainer" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a default file tooltip. The tooltip includes file name, file size and [Resource] type if available.
+			</description>
+		</method>
+		<method name="request_thumbnail" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="control" type="TextureRect" />
+			<description>
+				Requests a thumbnail for the given [TextureRect]. The thumbnail is created asynchronously by [EditorResourcePreview] and automatically set when available.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -65,6 +65,7 @@
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -129,6 +130,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
+	GDREGISTER_ABSTRACT_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
 	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
 	GDREGISTER_CLASS(EditorFileSystemDirectory);

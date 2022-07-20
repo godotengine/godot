@@ -50,6 +50,15 @@ class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
 class DirectoryCreateDialog;
+class EditorResourceTooltipPlugin;
+
+class FileSystemTree : public Tree {
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
+
+class FileSystemList : public ItemList {
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
 
 class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
@@ -189,13 +198,15 @@ private:
 
 	bool updating_tree = false;
 	int tree_update_id;
-	Tree *tree = nullptr;
-	ItemList *files = nullptr;
+	FileSystemTree *tree = nullptr;
+	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;
 	PackedInt32Array list_items_selected_on_drag_begin;
+
+	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
@@ -350,6 +361,10 @@ public:
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
 	Tree *get_tree_control() { return tree; }
+
+	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
+	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
+	Control *create_tooltip_for_path(const String &p_path) const;
 
 	FileSystemDock();
 	~FileSystemDock();

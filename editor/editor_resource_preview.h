@@ -116,7 +116,7 @@ public:
 	// p_preview will be null if there was an error
 	void queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
 	void queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata);
-	Variant get_preview_metadata(const String &p_path, const String &p_meta) const;
+	const Dictionary get_preview_metadata(const String &p_path) const;
 
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
