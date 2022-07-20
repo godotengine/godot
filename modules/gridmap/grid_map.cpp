@@ -396,11 +396,10 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	cell_map[key] = c;
 }
 
-void GridMap::set_cell_item_data(const Vector3i& p_position, int p_item, int p_rot){
-	//This function will complete its work in one thread
-	//Therefore, it is safer than the original when multithreading
-	//However, it cannot automatically update the map
-	//And the update function is encapsulated in 'update'
+void GridMap::set_cell_item_thread_safe(const Vector3i& p_position, int p_item, int p_rot){
+	// This function is safer than "set_cell_item"
+	// But it cannot automatically update the map 
+	// And you should call the "update" method if you want to update the map
 	if (baked_meshes.size() && !recreating_octants) {
 		//if you set a cell item, baked meshes go good bye
 		clear_baked_meshes();
@@ -932,10 +931,7 @@ void GridMap::_clear_internal() {
 }
 
 void GridMap::update(){
-	//Users can call it to update the map
-	//Then the update function will be called in the main thread
-	//Therefore, in a multithreaded environment, you should ensure
-	//that other threads have stopped the work of the relevant gridmap
+	// Update gridmap later in the main thread
 	_queue_octants_dirty();
 }
 
@@ -968,9 +964,6 @@ void GridMap::_update_octants_callback() {
 
 	_update_visibility();
 	awaiting_update = false;
-	//This signal will be sent when the update ends.
-	//In a multithreaded environment, you can use this signal
-	//to achieve orderly map data setting and update operations
 	emit_signal(SNAME("update_finished"));
 }
 
@@ -1012,7 +1005,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_octant_size"), &GridMap::get_octant_size);
 
 	ClassDB::bind_method(D_METHOD("set_cell_item", "position", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("set_cell_item_data", "position", "item", "orientation"), &GridMap::set_cell_item_data, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell_item_thread_safe", "position", "item", "orientation"), &GridMap::set_cell_item_thread_safe, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_cell_item", "position"), &GridMap::get_cell_item);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "position"), &GridMap::get_cell_item_orientation);
 
