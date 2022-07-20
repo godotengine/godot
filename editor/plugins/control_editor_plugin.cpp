@@ -173,7 +173,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 
 	Vector<String> split_after;
 	split_after.append("Custom");
-	split_after.append("PresetWide");
+	split_after.append("PresetFullRect");
 	split_after.append("PresetBottomLeft");
 	split_after.append("PresetCenter");
 
@@ -181,24 +181,18 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		String humanized_name = text_split[0];
-		if (humanized_name.begins_with("Preset")) {
-			if (humanized_name == "PresetWide") {
-				humanized_name = "Full Rect";
-			} else {
-				humanized_name = humanized_name.trim_prefix("Preset");
-				humanized_name = humanized_name.capitalize();
-			}
-
-			String icon_name = text_split[0].trim_prefix("Preset");
-			icon_name = "ControlAlign" + icon_name;
+		String option_name = text_split[0];
+		if (option_name.begins_with("Preset")) {
+			String preset_name = option_name.trim_prefix("Preset");
+			String humanized_name = preset_name.capitalize();
+			String icon_name = "ControlAlign" + preset_name;
 			options->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(icon_name, "EditorIcons"), humanized_name);
 		} else {
-			options->add_item(humanized_name);
+			options->add_item(option_name);
 		}
 
 		options->set_item_metadata(j, current_val);
-		if (split_after.has(text_split[0])) {
+		if (split_after.has(option_name)) {
 			options->add_separator();
 			j++;
 		}
