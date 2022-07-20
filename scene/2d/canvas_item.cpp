@@ -530,16 +530,16 @@ void CanvasItem::_enter_canvas() {
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 
-		group = "root_canvas" + itos(canvas.get_id());
+		canvas_group = "root_canvas" + itos(canvas.get_id());
 
-		add_to_group(group);
+		add_to_group(canvas_group);
 		if (canvas_layer) {
 			canvas_layer->reset_sort_index();
 		} else {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -558,7 +558,10 @@ void CanvasItem::_exit_canvas() {
 	notification(NOTIFICATION_EXIT_CANVAS, true); //reverse the notification
 	VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, RID());
 	canvas_layer = nullptr;
-	group = "";
+	if (canvas_group != "") {
+		remove_from_group(canvas_group);
+		canvas_group = "";
+	}
 }
 
 void CanvasItem::_notification(int p_what) {
@@ -584,8 +587,8 @@ void CanvasItem::_notification(int p_what) {
 				break;
 			}
 
-			if (group != "") {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+			if (canvas_group != "") {
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, canvas_group, "_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
