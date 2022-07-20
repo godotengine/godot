@@ -375,8 +375,8 @@ class AnimationTrackEditor : public VBoxContainer {
 			reset = p_reset_anim ? p_reset_anim->get_track_count() : 0;
 		}
 	};
-	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
-	void _insert_track(bool p_create_reset, bool p_create_beziers);
+	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_reset_wanted, Ref<Animation> p_reset_anim, bool p_create_beziers);
+	void _insert_track(bool p_reset_wanted, bool p_create_beziers);
 
 	void _root_removed();
 

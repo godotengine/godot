@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-06-30 16:42+0000\n"
+"PO-Revision-Date: 2022-07-09 21:12+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -467,9 +467,8 @@ msgid "Command"
 msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " （物理）"
+msgstr "物理"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -520,6 +519,11 @@ msgstr "倾斜"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "压力"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "翻转"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -5436,9 +5440,8 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "使用专门鼠标按键查看历史"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "GridMap 选择"
+msgstr "拖放选中内容"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -5672,7 +5675,7 @@ msgstr "网格细分级别下限"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Bias"
-msgstr "网格细分级别偏倚"
+msgstr "网格细分级别偏置"
 
 #: editor/editor_settings.cpp
 msgid "Grid XZ Plane"
@@ -14180,7 +14183,7 @@ msgid ""
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
-"无法运行项目：未定义主场景。 \n"
+"无法运行项目：未定义主场景。\n"
 "请编辑项目并在 “项目设置” 的 “Application” 类别下设置主场景。"
 
 #: editor/project_manager.cpp
@@ -18075,9 +18078,8 @@ msgid "The package must have at least one '.' separator."
 msgstr "包必须至少有一个 “.” 分隔符。"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Custom Build"
-msgstr "使用自定义构建"
+msgstr "自定义构建"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
@@ -18354,51 +18356,52 @@ msgstr "必须启用 “使用自定义构建” 才能使用插件。"
 msgid ""
 "\"Hand Tracking\" is only valid when \"XR Mode\" is \"Oculus Mobile VrApi\" "
 "or \"OpenXR\"."
-msgstr ""
-"“Hand Tracking”只有在当“XR Mode”是“Oculus Mobile VrApi”或“OpenXR”时才有效。"
+msgstr "“手势跟踪”只有在当“XR 模式”是“Oculus Mobile VrApi”或“OpenXR”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr "“Passthrough”只有在当“XR Mode”是“OpenXR”时才有效。"
+msgstr "“穿透”只有在当“XR Mode”是“OpenXR”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "“Export AAB”只有在当启用“Use Custom Build”时才有效。"
+msgstr "“Export AAB”只有在当启用“使用自定义构建”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr "修改“Min SDK”只有在当启用“Use Custom Build”时才有效。"
+msgstr "修改“最小 SDK”只有在当启用“使用自定义构建”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
+msgstr "“最小 SDK”应当为有效的整数，但获得了无效的“%s”。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
-msgstr ""
+msgstr "“最小 SDK”不能低于 %d，这是 Godot 库所需要的版本。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr "修改“Target SDK”只有在当启用“Use Custom Build”时才有效。"
+msgstr "修改“目标 SDK”只有在当启用“使用自定义构建”时才有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
+msgstr "“目标 SDK”应当为有效的整数，但获得了无效的“%s”。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
 msgstr ""
+"“目标 SDK”%d 比默认版本 %d 要高。这样做也许可行，但并没有经过测试，可能不稳"
+"定。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
-msgstr "“Target SDK”版本必须大于等于“Min SDK”版本。"
+msgstr "“目标 SDK”版本必须大于等于“最小 SDK”版本。"
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
@@ -19725,8 +19728,8 @@ msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
 msgstr ""
-"必须在编辑器设置中配置 rcedit 工具（Export > Windows > Rcedit）才能修改图标或"
-"应用信息数据。"
+"必须在编辑器设置中配置 rcedit 工具（导出 > Windows > Rcedit）才能修改图标或应"
+"用信息数据。"
 
 #: platform/windows/export/export.cpp
 msgid "Invalid icon path:"
@@ -20429,7 +20432,7 @@ msgstr "节点 B"
 #: scene/3d/light.cpp scene/3d/physics_body.cpp scene/3d/physics_joint.cpp
 #: scene/resources/environment.cpp
 msgid "Bias"
-msgstr "偏倚"
+msgstr "偏置"
 
 #: scene/2d/joints_2d.cpp
 msgid "Disable Collision"
@@ -20606,9 +20609,8 @@ msgstr ""
 "移除。请用“Navigation2DServer.map_get_path()”替代。"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Pathfinding"
-msgstr "绑定"
+msgstr "寻路"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Path Desired Distance"
@@ -20623,9 +20625,8 @@ msgid "Path Max Distance"
 msgstr "路径最大距离"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Avoidance"
-msgstr "高级"
+msgstr "避障"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Avoidance Enabled"
@@ -20686,7 +20687,7 @@ msgstr "移动消耗"
 msgid "Rotation Degrees"
 msgstr "旋转角度"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "全局旋转"
 
@@ -21590,7 +21591,7 @@ msgstr "动态范围"
 
 #: scene/3d/gi_probe.cpp scene/3d/light.cpp
 msgid "Normal Bias"
-msgstr "法线偏倚"
+msgstr "法线偏置"
 
 #: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/primitive_meshes.cpp
@@ -21701,7 +21702,7 @@ msgstr "混合拆分"
 
 #: scene/3d/light.cpp
 msgid "Bias Split Scale"
-msgstr "偏倚拆分缩放"
+msgstr "偏置拆分缩放"
 
 #: scene/3d/light.cpp
 msgid "Depth Range"
@@ -21935,7 +21936,7 @@ msgstr "角度下限"
 
 #: scene/3d/physics_body.cpp
 msgid "Angular Limit Bias"
-msgstr "角度限制偏倚"
+msgstr "角度限制偏置"
 
 #: scene/3d/physics_body.cpp
 msgid "Angular Limit Softness"
@@ -22559,6 +22560,11 @@ msgid ""
 msgstr ""
 "对 SoftBody 尺寸的修改，将会在运行时被物理引擎所覆盖。\n"
 "建议修改子节点的碰撞体形状尺寸。"
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "全局变换"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
@@ -23651,9 +23657,8 @@ msgid "Fold Gutter"
 msgstr "折叠栏"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Drag And Drop Selection Enabled"
-msgstr "启用选择"
+msgstr "启用拖放选中内容"
 
 #: scene/gui/text_edit.cpp
 msgid "Hiding Enabled"
@@ -24024,6 +24029,9 @@ msgid ""
 "Effects.\n"
 "HDR will be disabled for this Viewport."
 msgstr ""
+"这个 Viewport 启用了 HDR，但其 Usage 为 2D 或 2D No-Sampling。\n"
+"HDR 仅在 Usage 为 3D 或 3D No-Effects 的 Viewport 中支持。\n"
+"这个 Viewport 将禁用 HDR。"
 
 #: scene/main/viewport.cpp
 msgid "ARVR"
@@ -25662,7 +25670,7 @@ msgstr "A"
 
 #: scene/resources/shape_2d.cpp
 msgid "Custom Solver Bias"
-msgstr "自定义求解器偏倚"
+msgstr "自定义求解器偏置"
 
 #: scene/resources/skin.cpp
 msgid "Bind Count"

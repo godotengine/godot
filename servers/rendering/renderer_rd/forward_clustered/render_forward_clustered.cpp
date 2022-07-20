@@ -171,29 +171,24 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_voxelgi() 
 }
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
+	// note, slices are freed automatically when the parent texture is freed so we just clear them.
+	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
+		color_views[v] = RID();
+		depth_views[v] = RID();
+		color_msaa_views[v] = RID();
+		depth_msaa_views[v] = RID();
+		normal_roughness_views[v] = RID();
+		normal_roughness_msaa_views[v] = RID();
+		voxelgi_views[v] = RID();
+		voxelgi_msaa_views[v] = RID();
+		vrs_views[v] = RID();
+	}
+
 	if (voxelgi_buffer != RID()) {
 		RD::get_singleton()->free(voxelgi_buffer);
 		voxelgi_buffer = RID();
 
-		if (view_count == 1) {
-			voxelgi_views[0] = RID();
-		} else {
-			for (uint32_t v = 0; v < view_count; v++) {
-				RD::get_singleton()->free(voxelgi_views[v]);
-				voxelgi_views[v] = RID();
-			}
-		}
-
 		if (voxelgi_buffer_msaa.is_valid()) {
-			if (view_count == 1) {
-				voxelgi_msaa_views[0] = RID();
-			} else {
-				for (uint32_t v = 0; v < view_count; v++) {
-					RD::get_singleton()->free(voxelgi_msaa_views[v]);
-					voxelgi_msaa_views[v] = RID();
-				}
-			}
-
 			RD::get_singleton()->free(voxelgi_buffer_msaa);
 			voxelgi_buffer_msaa = RID();
 		}
@@ -202,35 +197,11 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	}
 
 	if (color_msaa.is_valid()) {
-		if (view_count == 1) {
-			color_views[0] = RID();
-			color_msaa_views[0] = RID();
-		} else {
-			for (uint32_t v = 0; v < view_count; v++) {
-				RD::get_singleton()->free(color_views[v]);
-				RD::get_singleton()->free(color_msaa_views[v]);
-				color_views[v] = RID();
-				color_msaa_views[v] = RID();
-			}
-		}
-
 		RD::get_singleton()->free(color_msaa);
 		color_msaa = RID();
 	}
 
 	if (depth_msaa.is_valid()) {
-		if (view_count == 1) {
-			depth_views[0] = RID();
-			depth_msaa_views[0] = RID();
-		} else {
-			for (uint32_t v = 0; v < view_count; v++) {
-				RD::get_singleton()->free(depth_views[v]);
-				RD::get_singleton()->free(depth_msaa_views[v]);
-				depth_views[v] = RID();
-				depth_msaa_views[v] = RID();
-			}
-		}
-
 		RD::get_singleton()->free(depth_msaa);
 		depth_msaa = RID();
 	}
@@ -245,33 +216,17 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	}
 
 	color = RID();
+	color_only_fb = RID();
 	depth = RID();
 	depth_fb = RID();
 
 	color_framebuffers.clear(); // Color pass framebuffers are freed automatically by their dependency relations
 
 	if (normal_roughness_buffer.is_valid()) {
-		if (view_count == 1) {
-			normal_roughness_views[0] = RID();
-		} else {
-			for (uint32_t v = 0; v < view_count; v++) {
-				RD::get_singleton()->free(normal_roughness_views[v]);
-				normal_roughness_views[v] = RID();
-			}
-		}
-
 		RD::get_singleton()->free(normal_roughness_buffer);
 		normal_roughness_buffer = RID();
 
 		if (normal_roughness_buffer_msaa.is_valid()) {
-			if (view_count == 1) {
-				normal_roughness_msaa_views[0] = RID();
-			} else {
-				for (uint32_t v = 0; v < view_count; v++) {
-					RD::get_singleton()->free(normal_roughness_msaa_views[v]);
-					normal_roughness_msaa_views[v] = RID();
-				}
-			}
 			RD::get_singleton()->free(normal_roughness_buffer_msaa);
 			normal_roughness_buffer_msaa = RID();
 		}
@@ -294,11 +249,12 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	}
 }
 
-void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
+void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) {
 	clear();
 
 	msaa = p_msaa;
 	use_taa = p_use_taa;
+	vrs = p_vrs_texture;
 
 	width = p_width;
 	height = p_height;
@@ -307,11 +263,26 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 	color = p_color_buffer;
 	depth = p_depth_buffer;
 
+	if (vrs.is_valid()) {
+		if (view_count == 1) {
+			// just reuse
+			vrs_views[0] = vrs;
+		} else {
+			// create slices
+			for (uint32_t v = 0; v < view_count; v++) {
+				vrs_views[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), vrs, v, 0);
+			}
+		}
+	}
+
 	if (p_msaa == RS::VIEWPORT_MSAA_DISABLED) {
 		{
 			Vector<RID> fb;
 			fb.push_back(p_color_buffer);
 			fb.push_back(depth);
+			if (vrs.is_valid()) {
+				fb.push_back(vrs);
+			}
 
 			color_only_fb = RD::get_singleton()->framebuffer_create(fb, RenderingDevice::INVALID_ID, view_count);
 		}
@@ -371,6 +342,9 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RID p_c
 			Vector<RID> fb;
 			fb.push_back(color_msaa);
 			fb.push_back(depth_msaa);
+			if (vrs.is_valid()) {
+				fb.push_back(vrs);
+			}
 
 			color_only_fb = RD::get_singleton()->framebuffer_create(fb, RenderingDevice::INVALID_ID, view_count);
 		}
@@ -408,6 +382,10 @@ RID RenderForwardClustered::RenderBufferDataForwardClustered::get_color_pass_fb(
 	}
 
 	fb.push_back(use_msaa ? depth_msaa : depth);
+
+	if (vrs.is_valid()) {
+		fb.push_back(vrs);
+	}
 
 	int v_count = (p_color_pass_flags & COLOR_PASS_FLAG_MULTIVIEW) ? view_count : 1;
 	RID framebuffer = RD::get_singleton()->framebuffer_create(fb, RD::INVALID_ID, v_count);
@@ -1673,8 +1651,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		continue_depth = !finish_depth;
 	}
 
-	RID null_rids[2];
-	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_sdfgi || using_voxelgi, render_buffer ? render_buffer->normal_roughness_views : null_rids, render_buffer ? render_buffer->voxelgi_buffer : RID());
+	RID nullrids[RendererSceneRender::MAX_RENDER_VIEWS];
+	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_sdfgi || using_voxelgi, render_buffer ? render_buffer->normal_roughness_views : nullrids, render_buffer ? render_buffer->voxelgi_buffer : RID(), render_buffer ? render_buffer->vrs_views : nullrids);
 
 	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
 

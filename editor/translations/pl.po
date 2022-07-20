@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-05 23:51+0000\n"
+"PO-Revision-Date: 2022-07-10 14:38+0000\n"
 "Last-Translator: Dawid Skubij <davidsd@tlen.pl>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -270,7 +270,7 @@ msgstr "Sieć"
 
 #: core/io/file_access_network.cpp
 msgid "Remote FS"
-msgstr "Zdalny  System Plików"
+msgstr "Zdalny System Plików"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
@@ -450,9 +450,8 @@ msgid "Command"
 msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (fizyczny)"
+msgstr "Fizyczny"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -503,6 +502,10 @@ msgstr "Pochylenie"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Ciśnienie"
+
+#: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -5505,7 +5508,7 @@ msgstr "Miniatura..."
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr ""
+msgstr "Doki"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -7123,7 +7126,7 @@ msgstr ""
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -7441,7 +7444,7 @@ msgstr ""
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
 msgid "Normal Map"
-msgstr ""
+msgstr "Mapa normalnych"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -9851,7 +9854,7 @@ msgstr "Utwórz obrys"
 #: scene/resources/multimesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/texture.cpp
 msgid "Mesh"
-msgstr "Siatka"
+msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -17095,9 +17098,8 @@ msgstr "GDNative"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 #: modules/gdscript/gdscript.cpp
-#, fuzzy
 msgid "GDScript"
-msgstr "Skrypt"
+msgstr "GDScript"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
@@ -19304,9 +19306,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Nieprawidłowa nazwa pliku! APK Androida wymaga rozszerzenia *.apk."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Nieobsługiwany format eksportu!\n"
+msgstr "Nieobsługiwany format eksportu!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19336,9 +19337,8 @@ msgstr ""
 "projektu"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Nie udało się eksportować plików projektu do projektu gradle\n"
+msgstr "Nie udało się eksportować plików projektu do projektu gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -20267,9 +20267,8 @@ msgid "ZIP Creation"
 msgstr "Projekt"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Nie udało się eksportować plików projektu do projektu gradle\n"
+msgstr "Nie udało się otworzyć pliku do odczytu ze ścieżki \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -21255,26 +21254,23 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp scene/main/timer.cpp
-#, fuzzy
 msgid "One Shot"
-msgstr "Jednorazowy Węzeł"
+msgstr "Wyemituj raz"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Preprocess"
-msgstr "Przetwarzanie końcowe"
+msgstr "Przetwarzanie wstępne"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 msgid "Explosiveness"
-msgstr ""
+msgstr "Wybuchowość"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Randomness"
-msgstr "Losowy restart (s):"
+msgstr "Losowość"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21849,7 +21845,7 @@ msgstr "Przejdź"
 msgid "Rotation Degrees"
 msgstr "Obracanie o %s stopni."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Stała globalna"
@@ -21963,9 +21959,8 @@ msgstr ""
 "\"Particles Animation\"."
 
 #: scene/2d/particles_2d.cpp
-#, fuzzy
 msgid "Visibility Rect"
-msgstr "Tryb priorytetów"
+msgstr "Prostokąt widoczności"
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid "Process Material"
@@ -24000,6 +23995,11 @@ msgstr ""
 "Zamiast tego, zmień rozmiary kształtów kolizji w węzłach podrzędnych."
 
 #: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Zachowaj globalną transformację"
+
+#: scene/3d/spatial.cpp
 msgid "Matrix"
 msgstr ""
 
@@ -24916,7 +24916,7 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
-msgstr ""
+msgstr "Karetka"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"

@@ -157,10 +157,10 @@ public:
 				const Point &pointP3 = points[p3];
 
 				float x = (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset);
-				float r = Math::cubic_interpolate(pointP0.color.r, pointFirst.color.r, pointSecond.color.r, pointP3.color.r, x);
-				float g = Math::cubic_interpolate(pointP0.color.g, pointFirst.color.g, pointSecond.color.g, pointP3.color.g, x);
-				float b = Math::cubic_interpolate(pointP0.color.b, pointFirst.color.b, pointSecond.color.b, pointP3.color.b, x);
-				float a = Math::cubic_interpolate(pointP0.color.a, pointFirst.color.a, pointSecond.color.a, pointP3.color.a, x);
+				float r = Math::cubic_interpolate(pointFirst.color.r, pointSecond.color.r, pointP0.color.r, pointP3.color.r, x);
+				float g = Math::cubic_interpolate(pointFirst.color.g, pointSecond.color.g, pointP0.color.g, pointP3.color.g, x);
+				float b = Math::cubic_interpolate(pointFirst.color.b, pointSecond.color.b, pointP0.color.b, pointP3.color.b, x);
+				float a = Math::cubic_interpolate(pointFirst.color.a, pointSecond.color.a, pointP0.color.a, pointP3.color.a, x);
 
 				return Color(r, g, b, a);
 			} break;

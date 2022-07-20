@@ -100,11 +100,11 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 	{
 		Vector<String> copy_modes;
-		copy_modes.push_back("\n");
-		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n");
-		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n");
-		copy_modes.push_back("\n#define MULTIVIEW\n");
-		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n");
+		copy_modes.push_back("\n"); // COPY_TO_FB_COPY
+		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n"); // COPY_TO_FB_COPY_PANORAMA_TO_DP
+		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_COPY2
+		copy_modes.push_back("\n#define MULTIVIEW\n"); // COPY_TO_FB_MULTIVIEW
+		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_MULTIVIEW_WITH_DEPTH
 
 		copy_to_fb.shader.initialize(copy_modes);
 

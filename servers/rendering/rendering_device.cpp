@@ -64,12 +64,12 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 
 	ERR_FAIL_COND_V(!compile_to_spirv_function, Vector<uint8_t>());
 
-	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, &device_capabilities);
+	return compile_to_spirv_function(p_stage, p_source_code, p_language, r_error, this);
 }
 
 String RenderingDevice::shader_get_spirv_cache_key() const {
 	if (get_spirv_cache_key_function) {
-		return get_spirv_cache_key_function(&device_capabilities);
+		return get_spirv_cache_key_function(this);
 	}
 	return String();
 }
@@ -279,6 +279,7 @@ static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constan
 	}
 	return ret;
 }
+
 RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {

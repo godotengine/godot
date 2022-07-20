@@ -561,6 +561,7 @@ public:
 	};
 
 private:
+	RID shader_rid;
 	String uniform_name = "[None]";
 	UniformType uniform_type = UniformType::UNIFORM_TYPE_FLOAT;
 
@@ -568,9 +569,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static void add_uniform(const String &p_name, UniformType p_type);
-	static void clear_uniforms();
-	static bool has_uniform(const String &p_name);
+	static void add_uniform(RID p_shader_rid, const String &p_name, UniformType p_type);
+	static void clear_uniforms(RID p_shader_rid);
+	static bool has_uniform(RID p_shader_rid, const String &p_name);
 
 public:
 	virtual String get_caption() const override;
@@ -583,8 +584,12 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	void set_shader_rid(const RID &p_shader);
+
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
+
+	void update_uniform_type();
 
 	void _set_uniform_type(int p_uniform_type);
 	int _get_uniform_type() const;

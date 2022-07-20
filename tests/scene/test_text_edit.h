@@ -3139,7 +3139,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	v_scroll = text_edit->get_v_scroll();
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() > v_scroll);
+	CHECK(text_edit->get_v_scroll() >= v_scroll);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
@@ -3148,7 +3148,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->set_v_scroll_speed(10000);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() > v_scroll);
+	CHECK(text_edit->get_v_scroll() >= v_scroll);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);

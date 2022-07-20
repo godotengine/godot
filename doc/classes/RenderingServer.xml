@@ -3357,6 +3357,22 @@
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [XRInterface].
 			</description>
 		</method>
+		<method name="viewport_set_vrs_mode">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSMode" />
+			<description>
+				Sets the Variable Rate Shading (VRS) mode for the viewport. Note, if hardware does not support VRS this property is ignored.
+			</description>
+		</method>
+		<method name="viewport_set_vrs_texture">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="texture" type="RID" />
+			<description>
+				Texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE].
+			</description>
+		</method>
 		<method name="visibility_notifier_create">
 			<return type="RID" />
 			<description>
@@ -4115,6 +4131,18 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
+		</constant>
+		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
+			VRS is disabled.
+		</constant>
+		<constant name="VIEWPORT_VRS_TEXTURE" value="1" enum="ViewportVRSMode">
+			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+		</constant>
+		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
+			VRS texture is supplied by the primary [XRInterface].
+		</constant>
+		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
+			Represents the size of the [enum ViewportVRSMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 		</constant>

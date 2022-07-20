@@ -43,7 +43,7 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 		return false;
 	}
 
-	if (codegen.locals.has(p_name)) {
+	if (codegen.parameters.has(p_name) || codegen.locals.has(p_name)) {
 		return false; //shadowed
 	}
 

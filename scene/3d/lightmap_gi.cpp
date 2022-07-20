@@ -146,7 +146,7 @@ Array LightmapGIData::_get_light_textures_data() const {
 		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
 
 		for (int j = 0; j < texture_slice_count; j++) {
-			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2(0, 0, slice_width, slice_height), Point2(0, slice_height * j));
+			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
 		}
 
 		String texture_path = texture_count > 1 ? base_name + "_" + itos(i) + ".exr" : base_name + ".exr";

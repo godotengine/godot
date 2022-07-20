@@ -159,6 +159,7 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/immediate_mesh.h"
+#include "scene/resources/label_settings.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
@@ -860,6 +861,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FontVariation);
 
 	GDREGISTER_CLASS(Curve);
+
+	GDREGISTER_CLASS(LabelSettings);
 
 	GDREGISTER_CLASS(SceneReplicationConfig);
 

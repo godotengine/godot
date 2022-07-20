@@ -1968,6 +1968,12 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
+		<member name="rendering/vrs/mode" type="int" setter="" getter="" default="0">
+			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
+		</member>
+		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
+			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
+		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">

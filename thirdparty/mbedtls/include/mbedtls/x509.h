@@ -96,7 +96,7 @@
 #define MBEDTLS_ERR_X509_BUFFER_TOO_SMALL                 -0x2980
 /** A fatal error occurred, eg the chain is too long or the vrfy callback failed. */
 #define MBEDTLS_ERR_X509_FATAL_ERROR                      -0x3000
-/* \} name */
+/** \} name X509 Error codes */
 
 /**
  * \name X509 Verify codes
@@ -124,8 +124,8 @@
 #define MBEDTLS_X509_BADCRL_BAD_PK           0x040000  /**< The CRL is signed with an unacceptable PK alg (eg RSA vs ECDSA). */
 #define MBEDTLS_X509_BADCRL_BAD_KEY          0x080000  /**< The CRL is signed with an unacceptable key (eg bad curve, RSA too short). */
 
-/* \} name */
-/* \} addtogroup x509_module */
+/** \} name X509 Verify codes */
+/** \} addtogroup x509_module */
 
 /*
  * X.509 v3 Subject Alternative Name types.
@@ -255,7 +255,6 @@ typedef struct mbedtls_x509_time
 mbedtls_x509_time;
 
 /** \} name Structures for parsing X.509 certificates, CRLs and CSRs */
-/** \} addtogroup x509_module */
 
 /**
  * \brief          Store the certificate DN in printable form into buf;
@@ -310,6 +309,8 @@ int mbedtls_x509_time_is_past( const mbedtls_x509_time *to );
  *                 0 otherwise.
  */
 int mbedtls_x509_time_is_future( const mbedtls_x509_time *from );
+
+/** \} addtogroup x509_module */
 
 #if defined(MBEDTLS_SELF_TEST)
 
