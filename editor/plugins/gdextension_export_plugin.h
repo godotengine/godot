@@ -109,11 +109,6 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		ERR_FAIL_MSG(vformat("Couldn't export extension: %s. No suitable library found for export flags: %s", p_path, String(", ").join(tags)));
 	}
 
-	List<String> dependencies;
-	if (config->has_section("dependencies")) {
-		config->get_section_keys("dependencies", &dependencies);
-	}
-
 	for (const String &E : libraries) {
 		Vector<String> tags = E.split(".");
 		bool all_tags_met = true;
@@ -126,7 +121,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		}
 
 		if (all_tags_met) {
-			Dictionary dependency = config->get_value("dependencies", E);
+			Dictionary dependency = config->get_value("dependencies", E, Dictionary());
 			for (const Variant *key = dependency.next(nullptr); key; key = dependency.next(key)) {
 				String library_path = *key;
 				String target_path = dependency[*key];
