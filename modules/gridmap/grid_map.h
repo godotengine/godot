@@ -261,7 +261,7 @@ public:
 	bool get_center_z() const;
 
 	void set_cell_item(const Vector3i &p_position, int p_item, int p_rot = 0);
-	void set_cell_item_data(const Vector3i &p_position, int p_item, int p_rot = 0);
+	void set_cell_item_thread_safe(const Vector3i &p_position, int p_item, int p_rot = 0);
 	int get_cell_item(const Vector3i &p_position) const;
 	int get_cell_item_orientation(const Vector3i &p_position) const;
 
