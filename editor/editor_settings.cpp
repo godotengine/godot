@@ -414,7 +414,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
 	_initial_set("interface/editor/font_antialiased", true);
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
@@ -1370,7 +1370,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1489,7 +1489,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
@@ -1519,7 +1519,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;

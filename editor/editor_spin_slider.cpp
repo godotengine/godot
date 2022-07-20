@@ -37,7 +37,7 @@
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		Key key = Key::META;
 #else
 		Key key = Key::CTRL;

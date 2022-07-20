@@ -1227,7 +1227,7 @@ void VisualScriptEditor::_member_selected() {
 	selected = ti->get_metadata(0);
 
 	if (ti->get_parent() == members->get_root()->get_first_child()) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2208,7 +2208,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 						String(d["type"]) == "files" ||
 						String(d["type"]) == "nodes")) {
 			if (String(d["type"]) == "obj_property") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
@@ -2216,7 +2216,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			}
 
 			if (String(d["type"]) == "nodes") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
@@ -2224,7 +2224,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			}
 
 			if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
@@ -2287,7 +2287,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_set = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_set = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2396,7 +2396,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_preload = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2459,7 +2459,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return;
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_node = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_node = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2524,7 +2524,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Node *node = Object::cast_to<Node>(obj);
 		Vector2 pos = _get_pos_in_graph(p_point);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_get = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_get = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -3378,7 +3378,7 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 }
 
 void VisualScriptEditor::_selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);

@@ -260,7 +260,7 @@ else:
     ):
         selected_platform = "linuxbsd"
     elif sys.platform == "darwin":
-        selected_platform = "osx"
+        selected_platform = "macos"
     elif sys.platform == "win32":
         selected_platform = "windows"
     else:
@@ -271,6 +271,20 @@ else:
 
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
+
+if selected_platform in ["macos", "osx"]:
+    if selected_platform == "osx":
+        # Deprecated alias kept for compatibility.
+        print('Platform "osx" has been renamed to "macos" in Godot 4.0. Building for platform "macos".')
+    # Alias for convenience.
+    selected_platform = "macos"
+
+if selected_platform in ["ios", "iphone"]:
+    if selected_platform == "iphone":
+        # Deprecated alias kept for compatibility.
+        print('Platform "iphone" has been renamed to "ios" in Godot 4.0. Building for platform "ios".')
+    # Alias for convenience.
+    selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
@@ -554,7 +568,7 @@ if selected_platform in platform_list:
             )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        elif env["platform"] == "osx" or env["platform"] == "iphone":
+        elif env["platform"] == "macos" or env["platform"] == "ios":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
                 print(

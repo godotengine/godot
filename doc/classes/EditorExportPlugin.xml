@@ -96,7 +96,7 @@
 				Adds a static lib from the given [code]path[/code] to the iOS project.
 			</description>
 		</method>
-		<method name="add_osx_plugin_file">
+		<method name="add_macos_plugin_file">
 			<return type="void" />
 			<argument index="0" name="path" type="String" />
 			<description>
