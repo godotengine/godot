@@ -31,12 +31,12 @@ jobs:
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes)
+          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=no, use_ubsan=yes)
             cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
             tests: true
-            sconsflags: float=64 use_asan=yes use_ubsan=yes
+            sconsflags: float=64 use_asan=no use_ubsan=yes
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
