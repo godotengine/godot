@@ -252,6 +252,7 @@ def configure_msvc(env, manual_msvc_config):
         "kernel32",
         "ole32",
         "oleaut32",
+        "sapi",
         "user32",
         "gdi32",
         "IPHLPAPI",
@@ -268,12 +269,14 @@ def configure_msvc(env, manual_msvc_config):
         "dwmapi",
     ]
 
-    env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
-    if not env["use_volk"]:
-        LIBS += ["vulkan"]
+    if env["vulkan"]:
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+        if not env["use_volk"]:
+            LIBS += ["vulkan"]
 
-    env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-    LIBS += ["opengl32"]
+    if env["opengl3"]:
+        env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
+        LIBS += ["opengl32"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
@@ -426,6 +429,7 @@ def configure_mingw(env):
             "ws2_32",
             "kernel32",
             "oleaut32",
+            "sapi",
             "dinput8",
             "dxguid",
             "ksuser",

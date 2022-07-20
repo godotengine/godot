@@ -4,7 +4,7 @@
  *
  *   Arithmetic computations (specification).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -407,6 +407,19 @@ FT_BEGIN_HEADER
 #define FT_MSB( x )  FT_MSB_i386( x )
 
 #endif
+
+#elif defined( __WATCOMC__ ) && defined( __386__ )
+
+  extern __inline FT_Int32
+  FT_MSB_i386( FT_UInt32  x );
+
+#pragma aux FT_MSB_i386 =     \
+  "bsr eax, eax"              \
+  parm [eax] nomemory         \
+  value [eax]                 \
+  modify exact [eax] nomemory;
+
+#define FT_MSB( x )  FT_MSB_i386( x )
 
 #elif defined( __DECC ) || defined( __DECCXX )
 

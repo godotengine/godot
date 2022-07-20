@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #import "godot_view.h"
+
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #import "display_layer.h"
@@ -153,6 +154,8 @@ static const float earth_gravity = 9.80665;
 
 	[self initTouches];
 
+	self.multipleTouchEnabled = YES;
+
 	// Configure and start accelerometer
 	if (!self.motionManager) {
 		self.motionManager = [[CMMotionManager alloc] init];
@@ -226,8 +229,9 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:YES];
 
 		// Process all input events
-		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource)
-			;
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, TRUE) == kCFRunLoopRunHandledSource) {
+			// Continue.
+		}
 
 		// We are good to go, resume the CADisplayLink
 		[self.displayLink setPaused:NO];

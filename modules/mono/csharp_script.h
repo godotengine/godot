@@ -53,8 +53,9 @@ class CSharpLanguage;
 #ifdef NO_SAFE_CAST
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst)
+	if (!p_inst) {
 		return nullptr;
+	}
 	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
 }
 #else
@@ -109,7 +110,7 @@ private:
 
 	Ref<CSharpScript> base_cache; // TODO what's this for?
 
-	Set<Object *> instances;
+	HashSet<Object *> instances;
 
 #ifdef GD_MONO_HOT_RELOAD
 	struct StateBackup {
@@ -120,8 +121,8 @@ private:
 		List<Pair<StringName, Array>> event_signals;
 	};
 
-	Set<ObjectID> pending_reload_instances;
-	Map<ObjectID, StateBackup> pending_reload_state;
+	HashSet<ObjectID> pending_reload_instances;
+	RBMap<ObjectID, StateBackup> pending_reload_state;
 	StringName tied_class_name_for_reload;
 	StringName tied_class_namespace_for_reload;
 #endif
@@ -131,29 +132,29 @@ private:
 
 	SelfList<CSharpScript> script_list = this;
 
-	Map<StringName, Vector<SignalParameter>> _signals;
-	Map<StringName, EventSignal> event_signals;
+	HashMap<StringName, Vector<SignalParameter>> _signals;
+	HashMap<StringName, EventSignal> event_signals;
 	bool signals_invalidated = true;
 
 	Vector<Multiplayer::RPCConfig> rpc_functions;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
-	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
-	Set<PlaceHolderScriptInstance *> placeholders;
+	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
+	HashSet<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
 	bool exports_invalidated = true;
-	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	void _update_member_info_no_exports();
 	void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
-	Set<StringName> exported_members_names;
+	HashSet<StringName> exported_members_names;
 #endif
 
-	OrderedHashMap<StringName, PropertyInfo> member_info;
+	HashMap<StringName, PropertyInfo> member_info;
 
 	void _clear();
 
@@ -178,12 +179,12 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
-	Multiplayer::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
+	Multiplayer::RPCConfig _member_get_rpc_config(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
 
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	void _resource_path_changed() override;
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -201,9 +202,9 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
-	virtual const Vector<DocData::ClassDoc> &get_documentation() const override {
+	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		// TODO
-		static Vector<DocData::ClassDoc> docs;
+		Vector<DocData::ClassDoc> docs;
 		return docs;
 	}
 #endif // TOOLS_ENABLED
@@ -217,7 +218,7 @@ public:
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
-	void get_members(Set<StringName> *p_members) override;
+	void get_members(HashSet<StringName> *p_members) override;
 
 	bool is_tool() const override { return tool; }
 	bool is_valid() const override { return valid; }
@@ -294,7 +295,7 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	void mono_object_disposed(MonoObject *p_obj);
 
@@ -355,11 +356,11 @@ class CSharpLanguage : public ScriptLanguage {
 	Mutex script_gchandle_release_mutex;
 	Mutex language_bind_mutex;
 
-	Map<Object *, CSharpScriptBinding> script_bindings;
+	RBMap<Object *, CSharpScriptBinding> script_bindings;
 
 #ifdef DEBUG_ENABLED
 	// List of unsafe object references
-	Map<ObjectID, int> unsafe_object_references;
+	HashMap<ObjectID, int> unsafe_object_references;
 	Mutex unsafe_object_references_lock;
 #endif
 
@@ -466,7 +467,7 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
 	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
-			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, Set<int> *r_safe_lines = nullptr) const override {
+			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
@@ -501,6 +502,7 @@ public:
 
 	/* TODO? */ void get_public_functions(List<MethodInfo> *p_functions) const override {}
 	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {}
+	/* TODO? */ void get_public_annotations(List<MethodInfo> *p_annotations) const override {}
 
 	void reload_all_scripts() override;
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
@@ -517,7 +519,7 @@ public:
 	void thread_enter() override;
 	void thread_exit() override;
 
-	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
+	RBMap<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
 #ifdef DEBUG_ENABLED
@@ -533,7 +535,7 @@ public:
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
-	RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	void get_recognized_extensions(List<String> *p_extensions) const override;
 	bool handles_type(const String &p_type) const override;
 	String get_resource_type(const String &p_path) const override;
@@ -541,9 +543,9 @@ public:
 
 class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
 public:
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const override;
-	bool recognize(const RES &p_resource) const override;
+	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0) override;
+	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	bool recognize(const Ref<Resource> &p_resource) const override;
 };
 
 #endif // CSHARP_SCRIPT_H

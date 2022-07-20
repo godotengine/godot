@@ -135,7 +135,7 @@ return NULL;
 
 pcre2_jit_stack *jit_stack;
 
-if (startsize < 1 || maxsize < 1)
+if (startsize == 0 || maxsize == 0 || maxsize > SIZE_MAX - STACK_GROWTH_RATE)
   return NULL;
 if (startsize > maxsize)
   startsize = maxsize;

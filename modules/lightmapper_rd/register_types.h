@@ -31,7 +31,9 @@
 #ifndef LIGHTMAPPER_RD_REGISTER_TYPES_H
 #define LIGHTMAPPER_RD_REGISTER_TYPES_H
 
-void register_lightmapper_rd_types();
-void unregister_lightmapper_rd_types();
+#include "modules/register_module_types.h"
+
+void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level);
+void uninitialize_lightmapper_rd_module(ModuleInitializationLevel p_level);
 
 #endif // XATLAS_UNWRAP_REGISTER_TYPES_H

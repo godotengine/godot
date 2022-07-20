@@ -39,8 +39,8 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
+
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
 	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
 
@@ -52,11 +52,11 @@ public:
 class AnimationTreeEditor : public VBoxContainer {
 	GDCLASS(AnimationTreeEditor, VBoxContainer);
 
-	ScrollContainer *path_edit;
-	HBoxContainer *path_hb;
+	ScrollContainer *path_edit = nullptr;
+	HBoxContainer *path_hb = nullptr;
 
-	AnimationTree *tree;
-	MarginContainer *editor_base;
+	AnimationTree *tree = nullptr;
+	MarginContainer *editor_base = nullptr;
 
 	Vector<String> button_path;
 	Vector<String> edited_path;
@@ -96,9 +96,8 @@ public:
 class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
-	AnimationTreeEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
+	AnimationTreeEditor *anim_tree_editor = nullptr;
+	Button *button = nullptr;
 
 public:
 	virtual String get_name() const override { return "AnimationTree"; }
@@ -107,7 +106,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AnimationTreeEditorPlugin(EditorNode *p_node);
+	AnimationTreeEditorPlugin();
 	~AnimationTreeEditorPlugin();
 };
 

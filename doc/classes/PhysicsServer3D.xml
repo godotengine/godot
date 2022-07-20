@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer3D" inherits="Object" version="4.0">
+<class name="PhysicsServer3D" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Server interface for low-level physics access.
 	</brief_description>
@@ -733,7 +733,7 @@
 			<return type="int" />
 			<argument index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
 			<description>
-				Returns an Info defined by the [enum ProcessInfo] input given.
+				Returns information about the current state of the 3D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
 		<method name="heightmap_shape_create">

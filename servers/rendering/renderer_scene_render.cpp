@@ -30,9 +30,9 @@
 
 #include "renderer_scene_render.h"
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_ortogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const CameraMatrix p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter) {
 	view_count = 1;
-	is_ortogonal = p_is_ortogonal;
+	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -40,13 +40,14 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 
 	view_offset[0] = Transform3D();
 	view_projection[0] = p_projection;
+	taa_jitter = p_taa_jitter;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const CameraMatrix *p_projections, bool p_is_ortogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const CameraMatrix *p_projections, bool p_is_orthogonal, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
 	view_count = p_view_count;
-	is_ortogonal = p_is_ortogonal;
+	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
 	Vector<Plane> planes[2];
 
@@ -65,7 +66,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Vector3 y = n0.cross(n1).normalized();
 	Vector3 x = y.cross(z).normalized();
 	y = z.cross(x).normalized();
-	main_transform.basis.set(x, y, z);
+	main_transform.basis.set_columns(x, y, z);
 
 	// 3. create a horizon plane with one of the eyes and the up vector as normal.
 	Plane horizon(y, p_transforms[0].origin);

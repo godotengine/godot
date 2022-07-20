@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright (C) 2003-2021 by
+ * Copyright (C) 2003-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -200,7 +200,7 @@
                                       (AF_Dimension)dim );
 
         seg   = axhints->segments;
-        limit = seg + axhints->num_segments;
+        limit = FT_OFFSET( seg, axhints->num_segments );
 
         for ( ; seg < limit; seg++ )
         {
@@ -1989,7 +1989,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     FT_Pos        len_threshold, len_score, dist_score, max_width;
     AF_Segment    seg1, seg2;
 
@@ -2134,7 +2134,7 @@
     FT_Bool  top_to_bottom_hinting = 0;
 
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;
 
 #if 0
@@ -2500,7 +2500,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[AF_DIMENSION_VERT];
     AF_Edge       edge       = axis->edges;
-    AF_Edge       edge_limit = edge + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edge, axis->num_edges );
     AF_LatinAxis  latin      = &metrics->axis[AF_DIMENSION_VERT];
     FT_Fixed      scale      = latin->scale;
 
@@ -2993,7 +2993,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     FT_PtrDist    n_edges;
     AF_Edge       edge;
     AF_Edge       anchor     = NULL;

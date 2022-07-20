@@ -37,16 +37,19 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
 
-class EditorNode;
-
 class StyleBoxPreview : public VBoxContainer {
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 
-	Control *preview;
+	TextureRect *checkerboard = nullptr;
+	TextureButton *grid_preview = nullptr;
+	Control *preview = nullptr;
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();
 	void _redraw();
+	void _notification(int p_what);
+	static bool grid_preview_enabled;
+	void _grid_preview_toggled(bool p_active);
 
 protected:
 	static void _bind_methods();
@@ -71,7 +74,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "StyleBox"; }
 
-	StyleBoxEditorPlugin(EditorNode *p_node);
+	StyleBoxEditorPlugin();
 };
 
 #endif // STYLE_BOX_EDITOR_PLUGIN_H

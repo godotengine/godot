@@ -53,17 +53,15 @@ public:
 	};
 
 private:
-	EditorNode *editor_node;
-
 	bool tile_map_changed_needs_update = false;
 	ObjectID tile_map_id;
 	Ref<TileSet> tile_set;
 
-	Button *tilemap_editor_button;
-	TileMapEditor *tilemap_editor;
+	Button *tilemap_editor_button = nullptr;
+	TileMapEditor *tilemap_editor = nullptr;
 
-	Button *tileset_editor_button;
-	TileSetEditor *tileset_editor;
+	Button *tileset_editor_button = nullptr;
+	TileSetEditor *tileset_editor = nullptr;
 
 	void _update_editors();
 
@@ -127,7 +125,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	TilesEditorPlugin(EditorNode *p_node);
+	TilesEditorPlugin();
 	~TilesEditorPlugin();
 };
 

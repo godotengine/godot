@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2021 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -908,7 +908,7 @@ set_nottype_bits(pcre2_real_code *re, int cbit_type, unsigned int table_limit)
 {
 uint32_t c;
 for (c = 0; c < table_limit; c++)
-  re->start_bitmap[c] |= ~(re->tables[c+cbits_offset+cbit_type]);
+  re->start_bitmap[c] |= (uint8_t)(~(re->tables[c+cbits_offset+cbit_type]));
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
 if (table_limit != 32) for (c = 24; c < 32; c++) re->start_bitmap[c] = 0xff;
 #endif

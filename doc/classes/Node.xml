@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" version="4.0">
+<class name="Node" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -84,6 +84,17 @@
 				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
 			</description>
 		</method>
+		<method name="_shortcut_input" qualifiers="virtual">
+			<return type="void" />
+			<argument index="0" name="event" type="InputEvent" />
+			<description>
+				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
+				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
+				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
+				This method can be used to handle shortcuts.
+				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+			</description>
+		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="event" type="InputEvent" />
@@ -102,6 +113,7 @@
 				Called when an [InputEventKey] or [InputEventShortcut] hasn't been consumed by [method _input] or any GUI [Control] item. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
+				This method can be used to handle Unicode character input with [kbd]Alt[/kbd], [kbd]Alt + Ctrl[/kbd], and [kbd]Alt + Shift[/kbd] modifiers, after shortcuts were handled.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
 			</description>
@@ -133,7 +145,7 @@
 				[/csharp]
 				[/codeblocks]
 				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
-				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
+				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
 		<method name="add_sibling">
@@ -181,25 +193,45 @@
 				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
-		<method name="find_node" qualifiers="const">
+		<method name="find_child" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="mask" type="String" />
+			<argument index="0" name="pattern" type="String" />
 			<argument index="1" name="recursive" type="bool" default="true" />
 			<argument index="2" name="owned" type="bool" default="true" />
 			<description>
-				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]). Returns [code]null[/code] if no matching [Node] is found.
-				[b]Note:[/b] It does not match against the full path, just against individual node names.
-				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] instead. To avoid using [method find_node] too often, consider caching the node reference into a variable.
+				Finds the first descendant of this node whose name matches [code]pattern[/code] as in [method String.match].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Returns [code]null[/code] if no matching [Node] is found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
+				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
+			</description>
+		</method>
+		<method name="find_children" qualifiers="const">
+			<return type="Node[]" />
+			<argument index="0" name="pattern" type="String" />
+			<argument index="1" name="type" type="String" default="&quot;&quot;" />
+			<argument index="2" name="recursive" type="bool" default="true" />
+			<argument index="3" name="owned" type="bool" default="true" />
+			<description>
+				Finds descendants of this node whose name matches [code]pattern[/code] as in [method String.match], and/or type matches [code]type[/code] as in [method Object.is_class].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[code]type[/code] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
+				If [code]recursive[/code] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [code]recursive[/code] is [code]false[/code], only this node's direct children are matched.
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
+				Returns an empty array if no matching nodes are found.
+				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
+				[b]Note:[/b] If you only want to find the first descendant node that matches a pattern, see [method find_child].
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
 			<return type="Node" />
-			<argument index="0" name="mask" type="String" />
+			<argument index="0" name="pattern" type="String" />
 			<description>
-				Finds the first parent of the current node whose name matches [code]mask[/code] as in [method String.match] (i.e. case-sensitive, but [code]"*"[/code] matches zero or more characters and [code]"?"[/code] matches any single character except [code]"."[/code]).
-				[b]Note:[/b] It does not match against the full path, just against individual node names.
-				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] instead. To avoid using [method find_parent] too often, consider caching the node reference into a variable.
+				Finds the first parent of the current node whose name matches [code]pattern[/code] as in [method String.match].
+				[code]pattern[/code] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
+				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
 			</description>
 		</method>
 		<method name="get_child" qualifiers="const">
@@ -459,6 +491,12 @@
 				Returns [code]true[/code] if internal processing is enabled (see [method set_process_internal]).
 			</description>
 		</method>
+		<method name="is_processing_shortcut_input" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is processing shortcuts (see [method set_process_shortcut_input]).
+			</description>
+		</method>
 		<method name="is_processing_unhandled_input" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -480,10 +518,11 @@
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
-		<method name="print_stray_nodes">
+		<method name="print_orphan_nodes">
 			<return type="void" />
 			<description>
-				Prints all stray nodes (nodes outside the [SceneTree]). Used for debugging. Works only in debug builds.
+				Prints all orphan nodes (nodes outside the [SceneTree]). Used for debugging.
+				[b]Note:[/b] [method print_orphan_nodes] only works in debug builds. When called in a project exported in release mode, [method print_orphan_nodes] will not print anything.
 			</description>
 		</method>
 		<method name="print_tree">
@@ -583,10 +622,10 @@
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
-				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns an empty [Variant].
+				Sends a remote procedure call request for the given [code]method[/code] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behaviour depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
@@ -598,15 +637,15 @@
 			<argument index="3" name="transfer_mode" type="int" enum="TransferMode" default="2" />
 			<argument index="4" name="channel" type="int" default="0" />
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(auth)[/code]). By default, methods are not exposed to networking (and RPCs).
+				Changes the RPC mode for the given [code]method[/code] to the given [code]rpc_mode[/code], optionally specifying the [code]transfer_mode[/code] and [code]channel[/code] (on supported peers). See [enum RPCMode] and [enum TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc(any)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<argument index="0" name="peer_id" type="int" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
-				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). Returns an empty [Variant].
+				Sends a [method rpc] to a specific peer identified by [code]peer_id[/code] (see [method MultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
 		<method name="set_display_folded">
@@ -669,6 +708,13 @@
 				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
 			</description>
 		</method>
+		<method name="set_process_shortcut_input">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+				Enables shortcut processing. Enabled automatically if [method _shortcut_input] is overridden. Any calls to this before [method _ready] will be ignored.
+			</description>
+		</method>
 		<method name="set_process_unhandled_input">
 			<return type="void" />
 			<argument index="0" name="enable" type="bool" />
@@ -699,14 +745,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_multiplayer" type="MultiplayerAPI" setter="set_custom_multiplayer" getter="get_custom_multiplayer">
-			The override to the default [MultiplayerAPI]. Set to [code]null[/code] to use the default [SceneTree] one.
-		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
-			Add a custom description to a node.
+			Add a custom description to a node. It will be displayed in a tooltip when hovered in editor's scene tree.
 		</member>
 		<member name="multiplayer" type="MultiplayerAPI" setter="" getter="get_multiplayer">
-			The [MultiplayerAPI] instance associated with this node. Either the [member custom_multiplayer], or the default SceneTree one (if inside tree).
+			The [MultiplayerAPI] instance associated with this node. See [method SceneTree.get_multiplayer].
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
@@ -714,6 +757,7 @@
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.
+			[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
 			Can be used to pause or unpause the node, or make the node paused based on the [SceneTree], or make it inherit the process mode from its parent (default).
@@ -724,18 +768,24 @@
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			If a scene is instantiated from a file, its topmost node contains the absolute file path from which it was loaded in [member scene_file_path] (e.g. [code]res://levels/1.tscn[/code]). Otherwise, [member scene_file_path] is set to an empty string.
 		</member>
+		<member name="unique_name_in_owner" type="bool" setter="set_unique_name_in_owner" getter="is_unique_name_in_owner" default="false">
+			Sets this node's name as a unique name in its [member owner]. This allows the node to be accessed as [code]%Name[/code] instead of the full path, from any node within that scene.
+			If another node with the same owner already had that name declared as unique, that other node's name will no longer be set as having a unique name.
+		</member>
 	</members>
 	<signals>
 		<signal name="child_entered_tree">
 			<argument index="0" name="node" type="Node" />
 			<description>
 				Emitted when a child node enters the scene tree, either because it entered on its own or because this node entered with it.
+				This signal is emitted [i]after[/i] the child node's own [constant NOTIFICATION_ENTER_TREE] and [signal tree_entered].
 			</description>
 		</signal>
-		<signal name="child_exited_tree">
+		<signal name="child_exiting_tree">
 			<argument index="0" name="node" type="Node" />
 			<description>
-				Emitted when a child node exits the scene tree, either because it exited on its own or because this node exited.
+				Emitted when a child node is about to exit the scene tree, either because it is being removed or freed directly, or because this node is exiting the tree.
+				When this signal is received, the child [code]node[/code] is still in the tree and valid. This signal is emitted [i]after[/i] the child node's own [signal tree_exiting] and [constant NOTIFICATION_EXIT_TREE].
 			</description>
 		</signal>
 		<signal name="ready">
@@ -751,6 +801,7 @@
 		<signal name="tree_entered">
 			<description>
 				Emitted when the node enters the tree.
+				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_ENTER_TREE] notification.
 			</description>
 		</signal>
 		<signal name="tree_exited">
@@ -761,15 +812,18 @@
 		<signal name="tree_exiting">
 			<description>
 				Emitted when the node is still active but about to exit the tree. This is the right place for de-initialization (or a "destructor", if you will).
+				This signal is emitted [i]before[/i] the related [constant NOTIFICATION_EXIT_TREE] notification.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_ENTER_TREE" value="10">
 			Notification received when the node enters a [SceneTree].
+			This notification is emitted [i]before[/i] the related [signal tree_entered].
 		</constant>
 		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 			Notification received when the node is about to exit a [SceneTree].
+			This notification is emitted [i]after[/i] the related [signal tree_exiting].
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 			Notification received when the node is moved in the parent.
@@ -800,10 +854,13 @@
 			Notification received when the node is instantiated.
 		</constant>
 		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
-			Notification received when a drag begins.
+			Notification received when a drag operation begins. All nodes receive this notification, not only the dragged one.
+			Can be triggered either by dragging a [Control] that provides drag data (see [method Control._get_drag_data]) or using [method Control.force_drag].
+			Use [method Viewport.gui_get_drag_data] to get the dragged data.
 		</constant>
 		<constant name="NOTIFICATION_DRAG_END" value="22">
-			Notification received when a drag ends.
+			Notification received when a drag operation ends.
+			Use [method Viewport.gui_is_drag_successful] to check if the drag succeeded.
 		</constant>
 		<constant name="NOTIFICATION_PATH_RENAMED" value="23">
 			Notification received when the node's name or one of its parents' name is changed. This notification is [i]not[/i] received when the node is removed from the scene tree to be added to another parent later on.
@@ -852,6 +909,14 @@
 			Specific to the Android platform.
 		</constant>
 		<constant name="NOTIFICATION_WM_SIZE_CHANGED" value="1008">
+		</constant>
+		<constant name="NOTIFICATION_WM_DPI_CHANGE" value="1009">
+		</constant>
+		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
+			Notification received when the mouse enters the viewport.
+		</constant>
+		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
+			Notification received when the mouse leaves the viewport.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.

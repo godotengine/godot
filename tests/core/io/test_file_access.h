@@ -38,7 +38,7 @@
 namespace TestFileAccess {
 
 TEST_CASE("[FileAccess] CSV read") {
-	FileAccessRef f = FileAccess::open(TestUtils::get_data_path("translations.csv"), FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(TestUtils::get_data_path("translations.csv"), FileAccess::READ);
 
 	Vector<String> header = f->get_csv_line(); // Default delimiter: ",".
 	REQUIRE(header.size() == 3);
@@ -77,8 +77,6 @@ TEST_CASE("[FileAccess] CSV read") {
 	CHECK(row5[0] == "What about");
 	CHECK(row5[1] == "tab separated");
 	CHECK(row5[2] == "lines, good?");
-
-	f->close();
 }
 } // namespace TestFileAccess
 

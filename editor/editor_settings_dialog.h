@@ -43,15 +43,15 @@
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
-	bool updating;
+	bool updating = false;
 
-	TabContainer *tabs;
-	Control *tab_general;
-	Control *tab_shortcuts;
+	TabContainer *tabs = nullptr;
+	Control *tab_general = nullptr;
+	Control *tab_shortcuts = nullptr;
 
-	LineEdit *search_box;
-	LineEdit *shortcut_search_box;
-	SectionedInspector *inspector;
+	LineEdit *search_box = nullptr;
+	LineEdit *shortcut_search_box = nullptr;
+	SectionedInspector *inspector = nullptr;
 
 	// Shortcuts
 	enum ShortcutButton {
@@ -61,19 +61,19 @@ class EditorSettingsDialog : public AcceptDialog {
 		SHORTCUT_REVERT
 	};
 
-	Tree *shortcuts;
+	Tree *shortcuts = nullptr;
 	String shortcut_filter;
 
-	InputEventConfigurationDialog *shortcut_editor;
+	InputEventConfigurationDialog *shortcut_editor = nullptr;
 
 	bool is_editing_action = false;
 	String current_edited_identifier;
 	Array current_events;
 	int current_event_index = -1;
 
-	Timer *timer;
+	Timer *timer = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
@@ -82,14 +82,14 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	void _update_icons();
 
 	void _event_config_confirmed();
 
 	void _create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
-	Array _event_list_to_array_helper(List<Ref<InputEvent>> &p_events);
+	Array _event_list_to_array_helper(const List<Ref<InputEvent>> &p_events);
 	void _update_builtin_action(const String &p_name, const Array &p_events);
 	void _update_shortcut_events(const String &p_path, const Array &p_events);
 
@@ -103,17 +103,17 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
-	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
+	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
 
 	void _builtin_action_popup_index_pressed(int p_index);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
+	Label *restart_label = nullptr;
+	TextureRect *restart_icon = nullptr;
+	PanelContainer *restart_container = nullptr;
+	Button *restart_close_button = nullptr;
 
 	void _editor_restart_request();
 	void _editor_restart();

@@ -40,6 +40,9 @@ elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
+elif env["platform"] == "osx" or env["platform"] == "iphone":
+    # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 

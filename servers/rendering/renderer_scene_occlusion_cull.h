@@ -161,31 +161,31 @@ public:
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
 
-	void _print_warining() {
-		WARN_PRINT_ONCE("Occlusion culling is disabled at build time.");
+	void _print_warning() {
+		WARN_PRINT_ONCE("Occlusion culling is disabled at build-time.");
 	}
 
 	virtual bool is_occluder(RID p_rid) { return false; }
 	virtual RID occluder_allocate() { return RID(); }
 	virtual void occluder_initialize(RID p_occluder) {}
-	virtual void free_occluder(RID p_occluder) { _print_warining(); }
-	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) { _print_warining(); }
+	virtual void free_occluder(RID p_occluder) { _print_warning(); }
+	virtual void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) { _print_warning(); }
 
 	virtual void add_scenario(RID p_scenario) {}
 	virtual void remove_scenario(RID p_scenario) {}
-	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) { _print_warining(); }
-	virtual void scenario_remove_instance(RID p_scenario, RID p_instance) { _print_warining(); }
+	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) { _print_warning(); }
+	virtual void scenario_remove_instance(RID p_scenario, RID p_instance) { _print_warning(); }
 
-	virtual void add_buffer(RID p_buffer) { _print_warining(); }
-	virtual void remove_buffer(RID p_buffer) { _print_warining(); }
+	virtual void add_buffer(RID p_buffer) { _print_warning(); }
+	virtual void remove_buffer(RID p_buffer) { _print_warning(); }
 	virtual HZBuffer *buffer_get_ptr(RID p_buffer) {
 		return nullptr;
 	}
-	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) { _print_warining(); }
-	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) { _print_warining(); }
+	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) { _print_warning(); }
+	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) { _print_warning(); }
 	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {}
 	virtual RID buffer_get_debug_texture(RID p_buffer) {
-		_print_warining();
+		_print_warning();
 		return RID();
 	}
 

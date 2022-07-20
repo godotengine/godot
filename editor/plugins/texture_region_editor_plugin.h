@@ -39,11 +39,10 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
 class ViewPanner;
 
-class TextureRegionEditor : public VBoxContainer {
-	GDCLASS(TextureRegionEditor, VBoxContainer);
+class TextureRegionEditor : public AcceptDialog {
+	GDCLASS(TextureRegionEditor, AcceptDialog);
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -53,52 +52,52 @@ class TextureRegionEditor : public VBoxContainer {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	OptionButton *snap_mode_button;
-	Button *zoom_in;
-	Button *zoom_reset;
-	Button *zoom_out;
-	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
-	SpinBox *sb_step_y;
-	SpinBox *sb_step_x;
-	SpinBox *sb_off_y;
-	SpinBox *sb_off_x;
-	SpinBox *sb_sep_y;
-	SpinBox *sb_sep_x;
-	Panel *edit_draw;
+	OptionButton *snap_mode_button = nullptr;
+	Button *zoom_in = nullptr;
+	Button *zoom_reset = nullptr;
+	Button *zoom_out = nullptr;
+	HBoxContainer *hb_grid = nullptr; //For showing/hiding the grid controls when changing the SnapMode
+	SpinBox *sb_step_y = nullptr;
+	SpinBox *sb_step_x = nullptr;
+	SpinBox *sb_off_y = nullptr;
+	SpinBox *sb_off_x = nullptr;
+	SpinBox *sb_sep_y = nullptr;
+	SpinBox *sb_sep_x = nullptr;
+	Panel *edit_draw = nullptr;
 
-	VScrollBar *vscroll;
-	HScrollBar *hscroll;
+	VScrollBar *vscroll = nullptr;
+	HScrollBar *hscroll = nullptr;
 
-	EditorNode *editor;
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	Vector2 draw_ofs;
-	float draw_zoom;
-	bool updating_scroll;
+	float draw_zoom = 0.0;
+	bool updating_scroll = false;
 
-	int snap_mode;
+	int snap_mode = 0;
 	Vector2 snap_offset;
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-	Sprite2D *node_sprite_2d;
-	Sprite3D *node_sprite_3d;
-	NinePatchRect *node_ninepatch;
+	Sprite2D *node_sprite_2d = nullptr;
+	Sprite3D *node_sprite_3d = nullptr;
+	NinePatchRect *node_ninepatch = nullptr;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
 	Rect2 rect;
 	Rect2 rect_prev;
-	float prev_margin;
-	int edited_margin;
-	Map<RID, List<Rect2>> cache_map;
+	float prev_margin = 0.0f;
+	int edited_margin = 0;
+	HashMap<RID, List<Rect2>> cache_map;
 	List<Rect2> autoslice_cache;
-	bool autoslice_is_dirty;
+	bool autoslice_is_dirty = false;
 
-	bool drag;
-	bool creating;
+	bool drag = false;
+	bool creating = false;
 	Vector2 drag_from;
-	int drag_index;
+	int drag_index = 0;
+	bool request_center = false;
 
 	Ref<ViewPanner> panner;
 	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
@@ -141,32 +140,32 @@ public:
 	Sprite3D *get_sprite_3d();
 
 	void edit(Object *p_obj);
-	TextureRegionEditor(EditorNode *p_editor);
+	TextureRegionEditor();
+};
+
+//
+
+class EditorInspectorPluginTextureRegion : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginTextureRegion, EditorInspectorPlugin);
+
+	TextureRegionEditor *texture_region_editor = nullptr;
+
+	void _region_edit(Object *p_object);
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) override;
+
+	EditorInspectorPluginTextureRegion();
 };
 
 class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
-	bool manually_hidden;
-	Button *texture_region_button;
-	TextureRegionEditor *region_editor;
-	EditorNode *editor;
-
-protected:
-	static void _bind_methods();
-
-	void _editor_visiblity_changed();
-
 public:
 	virtual String get_name() const override { return "TextureRegion"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
-	void set_state(const Dictionary &p_state) override;
-	Dictionary get_state() const override;
 
-	TextureRegionEditorPlugin(EditorNode *p_node);
+	TextureRegionEditorPlugin();
 };
 
 #endif // TEXTURE_REGION_EDITOR_PLUGIN_H

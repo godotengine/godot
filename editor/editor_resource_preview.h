@@ -44,14 +44,14 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL2RC(Ref<Texture2D>, _generate, RES, Vector2i)
+	GDVIRTUAL2RC(Ref<Texture2D>, _generate, Ref<Resource>, Vector2i)
 	GDVIRTUAL2RC(Ref<Texture2D>, _generate_from_path, String, Vector2i)
 	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
 	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture2D> generate(const RES &p_from, const Size2 &p_size) const;
+	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size) const;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size) const;
 
 	virtual bool generate_small_preview_automatically() const;
@@ -81,11 +81,6 @@ class EditorResourcePreview : public Node {
 	SafeFlag exit;
 	SafeFlag exited;
 
-	// when running from GLES, we want to run the previews
-	// in the main thread using an update, rather than create
-	// a separate thread
-	bool _mainthread_only = false;
-
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
@@ -96,7 +91,7 @@ class EditorResourcePreview : public Node {
 
 	int order;
 
-	Map<String, Item> cache;
+	HashMap<String, Item> cache;
 
 	void _preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base);
@@ -124,9 +119,6 @@ public:
 
 	void start();
 	void stop();
-
-	// for single threaded mode
-	void update();
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

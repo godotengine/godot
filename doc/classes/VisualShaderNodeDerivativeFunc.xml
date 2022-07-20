@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeDerivativeFunc" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeDerivativeFunc" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Calculates a derivative within the visual shader graph.
 	</brief_description>
@@ -26,7 +26,10 @@
 		<constant name="OP_TYPE_VECTOR_3D" value="2" enum="OpType">
 			A 3D vector type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_4D" value="3" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="4" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 		<constant name="FUNC_SUM" value="0" enum="Function">

@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,16 +27,14 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <http://gamma.cs.unc.edu/RVO2/>
+ * <https://gamma.cs.unc.edu/RVO2/>
  */
 /**
  * \file    KdTree.h
  * \brief   Contains the KdTree class.
  */
-#ifndef RVO_KD_TREE_H_
-#define RVO_KD_TREE_H_
-
-#include "API.h"
+#ifndef RVO3D_KD_TREE_H_
+#define RVO3D_KD_TREE_H_
 
 #include <cstddef>
 #include <vector>
@@ -47,78 +45,78 @@
 // - Removed `sim_`.
 // - KdTree things are public
 namespace RVO {
-class Agent;
-class RVOSimulator;
+	class Agent;
+	class RVOSimulator;
 
-/**
+	/**
 	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
 	 */
-class KdTree {
-public:
-    /**
+	class KdTree {
+	public:
+		/**
 		 * \brief   Defines an agent <i>k</i>d-tree node.
 		 */
-    class AgentTreeNode {
-    public:
-        /**
+		class AgentTreeNode {
+		public:
+			/**
 			 * \brief   The beginning node number.
 			 */
-        size_t begin;
+			size_t begin;
 
-        /**
+			/**
 			 * \brief   The ending node number.
 			 */
-        size_t end;
+			size_t end;
 
-        /**
+			/**
 			 * \brief   The left node number.
 			 */
-        size_t left;
+			size_t left;
 
-        /**
+			/**
 			 * \brief   The right node number.
 			 */
-        size_t right;
+			size_t right;
 
-        /**
+			/**
 			 * \brief   The maximum coordinates.
 			 */
-        Vector3 maxCoord;
+			Vector3 maxCoord;
 
-        /**
+			/**
 			 * \brief   The minimum coordinates.
 			 */
-        Vector3 minCoord;
-    };
+			Vector3 minCoord;
+		};
 
-    /**
+		/**
 		 * \brief   Constructs a <i>k</i>d-tree instance.
 		 * \param   sim  The simulator instance.
 		 */
-    explicit KdTree();
+		explicit KdTree();
 
-    /**
+		/**
 		 * \brief   Builds an agent <i>k</i>d-tree.
 		 */
-    void buildAgentTree(std::vector<Agent *> agents);
+		void buildAgentTree(std::vector<Agent *> agents);
 
-    void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
+		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
 
-    /**
+		/**
 		 * \brief   Computes the agent neighbors of the specified agent.
 		 * \param   agent    A pointer to the agent for which agent neighbors are to be computed.
 		 * \param   rangeSq  The squared range around the agent.
 		 */
-    void computeAgentNeighbors(Agent *agent, float rangeSq) const;
+		void computeAgentNeighbors(Agent *agent, float rangeSq) const;
 
-    void queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const;
+		void queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const;
 
-    std::vector<Agent *> agents_;
-    std::vector<AgentTreeNode> agentTree_;
+		std::vector<Agent *> agents_;
+		std::vector<AgentTreeNode> agentTree_;
 
-    friend class Agent;
-    friend class RVOSimulator;
-};
-} // namespace RVO
+		friend class Agent;
+		friend class RVOSimulator;
+	};
+}
 
-#endif /* RVO_KD_TREE_H_ */
+#endif /* RVO3D_KD_TREE_H_ */

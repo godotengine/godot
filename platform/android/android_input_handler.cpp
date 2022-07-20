@@ -165,8 +165,9 @@ void AndroidInputHandler::process_touch(int p_event, int p_pointer, const Vector
 
 				ERR_CONTINUE(idx == -1);
 
-				if (touch[i].pos == p_points[idx].pos)
-					continue; //no move unncesearily
+				if (touch[i].pos == p_points[idx].pos) {
+					continue; // Don't move unnecessarily.
+				}
 
 				Ref<InputEventScreenDrag> ev;
 				ev.instantiate();
@@ -379,14 +380,4 @@ MouseButton AndroidInputHandler::_android_button_mask_to_godot_button_mask(int a
 	}
 
 	return godot_button_mask;
-}
-
-void AndroidInputHandler::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
-	ev.instantiate();
-	_set_key_modifier_state(ev);
-	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
-	Input::get_singleton()->parse_input_event(ev);
-	scroll_prev_pos = p_pos;
 }

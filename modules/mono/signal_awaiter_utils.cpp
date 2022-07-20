@@ -63,7 +63,7 @@ bool SignalAwaiterCallable::compare_less(const CallableCustom *p_a, const Callab
 
 uint32_t SignalAwaiterCallable::hash() const {
 	uint32_t hash = signal.hash();
-	return hash_djb2_one_64(target_id, hash);
+	return hash_murmur3_one_64(target_id, hash);
 }
 
 String SignalAwaiterCallable::get_as_text() const {
@@ -164,7 +164,7 @@ bool EventSignalCallable::compare_less(const CallableCustom *p_a, const Callable
 
 uint32_t EventSignalCallable::hash() const {
 	uint32_t hash = event_signal->field->get_name().hash();
-	return hash_djb2_one_64(owner->get_instance_id(), hash);
+	return hash_murmur3_one_64(owner->get_instance_id(), hash);
 }
 
 String EventSignalCallable::get_as_text() const {

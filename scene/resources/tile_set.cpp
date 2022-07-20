@@ -34,7 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/templates/local_vector.h"
-
+#include "core/templates/rb_set.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/gui/control.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
@@ -236,6 +236,9 @@ bool TileSet::TerrainsPattern::operator<(const TerrainsPattern &p_terrains_patte
 			return is_valid_bit[i] < p_terrains_pattern.is_valid_bit[i];
 		}
 	}
+	if (terrain != p_terrains_pattern.terrain) {
+		return terrain < p_terrains_pattern.terrain;
+	}
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i] && bits[i] != p_terrains_pattern.bits[i]) {
 			return bits[i] < p_terrains_pattern.bits[i];
@@ -253,10 +256,23 @@ bool TileSet::TerrainsPattern::operator==(const TerrainsPattern &p_terrains_patt
 			return false;
 		}
 	}
+	if (terrain != p_terrains_pattern.terrain) {
+		return false;
+	}
 	return true;
 }
 
-void TileSet::TerrainsPattern::set_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain) {
+void TileSet::TerrainsPattern::set_terrain(int p_terrain) {
+	ERR_FAIL_COND(p_terrain < -1);
+
+	terrain = p_terrain;
+}
+
+int TileSet::TerrainsPattern::get_terrain() const {
+	return terrain;
+}
+
+void TileSet::TerrainsPattern::set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain) {
 	ERR_FAIL_COND(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX);
 	ERR_FAIL_COND(!is_valid_bit[p_peering_bit]);
 	ERR_FAIL_COND(p_terrain < -1);
@@ -271,25 +287,27 @@ void TileSet::TerrainsPattern::set_terrain(TileSet::CellNeighbor p_peering_bit, 
 	bits[p_peering_bit] = p_terrain;
 }
 
-int TileSet::TerrainsPattern::get_terrain(TileSet::CellNeighbor p_peering_bit) const {
+int TileSet::TerrainsPattern::get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const {
 	ERR_FAIL_COND_V(p_peering_bit == TileSet::CELL_NEIGHBOR_MAX, -1);
 	ERR_FAIL_COND_V(!is_valid_bit[p_peering_bit], -1);
 	return bits[p_peering_bit];
 }
 
-void TileSet::TerrainsPattern::set_terrains_from_array(Array p_terrains) {
-	int in_array_index = 0;
+void TileSet::TerrainsPattern::from_array(Array p_terrains) {
+	set_terrain(p_terrains[0]);
+	int in_array_index = 1;
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i]) {
-			ERR_FAIL_COND(in_array_index >= p_terrains.size());
-			set_terrain(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
+			ERR_FAIL_INDEX(in_array_index, p_terrains.size());
+			set_terrain_peering_bit(TileSet::CellNeighbor(i), p_terrains[in_array_index]);
 			in_array_index++;
 		}
 	}
 }
 
-Array TileSet::TerrainsPattern::get_terrains_as_array() const {
+Array TileSet::TerrainsPattern::as_array() const {
 	Array output;
+	output.push_back(get_terrain());
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i]) {
 			output.push_back(bits[i]);
@@ -297,10 +315,11 @@ Array TileSet::TerrainsPattern::get_terrains_as_array() const {
 	}
 	return output;
 }
+
 TileSet::TerrainsPattern::TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set) {
 	ERR_FAIL_COND(p_terrain_set < 0);
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-		is_valid_bit[i] = (p_tile_set->is_valid_peering_bit_terrain(p_terrain_set, TileSet::CellNeighbor(i)));
+		is_valid_bit[i] = (p_tile_set->is_valid_terrain_peering_bit(p_terrain_set, TileSet::CellNeighbor(i)));
 		bits[i] = -1;
 	}
 	valid = true;
@@ -410,11 +429,16 @@ void TileSet::_update_terrains_cache() {
 
 							TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
 
+							// Main terrain.
+							if (terrains_pattern.get_terrain() >= 0) {
+								per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
+							}
+
 							// Terrain bits.
 							for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 								CellNeighbor bit = CellNeighbor(i);
-								if (is_valid_peering_bit_terrain(terrain_set, bit)) {
-									int terrain = terrains_pattern.get_terrain(bit);
+								if (is_valid_terrain_peering_bit(terrain_set, bit)) {
+									int terrain = terrains_pattern.get_terrain_peering_bit(bit);
 									if (terrain >= 0) {
 										per_terrain_pattern_tiles[terrain_set][terrains_pattern].insert(cell);
 									}
@@ -822,7 +846,7 @@ Color TileSet::get_terrain_color(int p_terrain_set, int p_terrain_index) const {
 	return terrain_sets[p_terrain_set].terrains[p_terrain_index].color;
 }
 
-bool TileSet::is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const {
+bool TileSet::is_valid_terrain_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode, TileSet::CellNeighbor p_peering_bit) const {
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
 		if (p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES || p_terrain_mode == TileSet::TERRAIN_MODE_MATCH_SIDES) {
 			if (p_peering_bit == TileSet::CELL_NEIGHBOR_RIGHT_SIDE ||
@@ -905,13 +929,13 @@ bool TileSet::is_valid_peering_bit_for_mode(TileSet::TerrainMode p_terrain_mode,
 	return false;
 }
 
-bool TileSet::is_valid_peering_bit_terrain(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const {
+bool TileSet::is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const {
 	if (p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count()) {
 		return false;
 	}
 
 	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
-	return is_valid_peering_bit_for_mode(terrain_mode, p_peering_bit);
+	return is_valid_terrain_peering_bit_for_mode(terrain_mode, p_peering_bit);
 }
 
 // Navigation
@@ -1345,19 +1369,19 @@ int TileSet::get_patterns_count() {
 	return patterns.size();
 }
 
-Set<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
-	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileSet::TerrainsPattern>());
+RBSet<TileSet::TerrainsPattern> TileSet::get_terrains_pattern_set(int p_terrain_set) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileSet::TerrainsPattern>());
 	_update_terrains_cache();
 
-	Set<TileSet::TerrainsPattern> output;
-	for (KeyValue<TileSet::TerrainsPattern, Set<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
+	RBSet<TileSet::TerrainsPattern> output;
+	for (KeyValue<TileSet::TerrainsPattern, RBSet<TileMapCell>> kv : per_terrain_pattern_tiles[p_terrain_set]) {
 		output.insert(kv.key);
 	}
 	return output;
 }
 
-Set<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
-	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), Set<TileMapCell>());
+RBSet<TileMapCell> TileSet::get_tiles_for_terrains_pattern(int p_terrain_set, TerrainsPattern p_terrain_tile_pattern) {
+	ERR_FAIL_INDEX_V(p_terrain_set, terrain_sets.size(), RBSet<TileMapCell>());
 	_update_terrains_cache();
 	return per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
 }
@@ -1368,13 +1392,13 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 
 	// Count the sum of probabilities.
 	double sum = 0.0;
-	Set<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	RBSet<TileMapCell> set = per_terrain_pattern_tiles[p_terrain_set][p_terrain_tile_pattern];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				sum += tile_data->get_probability();
 			} else {
 				sum += 1.0;
@@ -1389,13 +1413,13 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 	double picked = Math::random(0.0, sum);
 
 	// Pick the tile.
-	for (Set<TileMapCell>::Element *E = set.front(); E; E = E->next()) {
-		if (E->get().source_id >= 0) {
-			Ref<TileSetSource> source = sources[E->get().source_id];
+	for (const TileMapCell &E : set) {
+		if (E.source_id >= 0) {
+			Ref<TileSetSource> source = sources[E.source_id];
 
 			Ref<TileSetAtlasSource> atlas_source = source;
 			if (atlas_source.is_valid()) {
-				TileData *tile_data = atlas_source->get_tile_data(E->get().get_atlas_coords(), E->get().alternative_tile);
+				TileData *tile_data = atlas_source->get_tile_data(E.get_atlas_coords(), E.alternative_tile);
 				count += tile_data->get_probability();
 			} else {
 				count += 1.0;
@@ -1405,7 +1429,7 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 		}
 
 		if (count >= picked) {
-			return E->get();
+			return E;
 		}
 	}
 
@@ -1494,26 +1518,48 @@ void TileSet::draw_tile_shape(CanvasItem *p_canvas_item, Transform2D p_transform
 	}
 }
 
-Vector<Point2> TileSet::get_terrain_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::get_terrain_polygon(int p_terrain_set) {
+	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+		return _get_square_terrain_polygon(tile_size);
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		return _get_isometric_terrain_polygon(tile_size);
+	} else {
+		float overlap = 0.0;
+		switch (tile_shape) {
+			case TileSet::TILE_SHAPE_HEXAGON:
+				overlap = 0.25;
+				break;
+			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+				overlap = 0.0;
+				break;
+			default:
+				break;
+		}
+		return _get_half_offset_terrain_polygon(tile_size, overlap, tile_offset_axis);
+	}
+	return Vector<Point2>();
+}
+
+Vector<Point2> TileSet::get_terrain_peering_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit) {
 	ERR_FAIL_COND_V(p_terrain_set < 0 || p_terrain_set >= get_terrain_sets_count(), Vector<Point2>());
 
 	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(p_terrain_set);
 
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
 		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			return _get_square_corner_or_side_terrain_bit_polygon(tile_size, p_bit);
+			return _get_square_corner_or_side_terrain_peering_bit_polygon(tile_size, p_bit);
 		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			return _get_square_corner_terrain_bit_polygon(tile_size, p_bit);
+			return _get_square_corner_terrain_peering_bit_polygon(tile_size, p_bit);
 		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			return _get_square_side_terrain_bit_polygon(tile_size, p_bit);
+			return _get_square_side_terrain_peering_bit_polygon(tile_size, p_bit);
 		}
 	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			return _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, p_bit);
+			return _get_isometric_corner_or_side_terrain_peering_bit_polygon(tile_size, p_bit);
 		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			return _get_isometric_corner_terrain_bit_polygon(tile_size, p_bit);
+			return _get_isometric_corner_terrain_peering_bit_polygon(tile_size, p_bit);
 		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			return _get_isometric_side_terrain_bit_polygon(tile_size, p_bit);
+			return _get_isometric_side_terrain_peering_bit_polygon(tile_size, p_bit);
 		}
 	} else {
 		float overlap = 0.0;
@@ -1528,11 +1574,11 @@ Vector<Point2> TileSet::get_terrain_bit_polygon(int p_terrain_set, TileSet::Cell
 				break;
 		}
 		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-			return _get_half_offset_corner_or_side_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+			return _get_half_offset_corner_or_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, p_bit);
 		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-			return _get_half_offset_corner_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+			return _get_half_offset_corner_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, p_bit);
 		} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-			return _get_half_offset_side_terrain_bit_polygon(tile_size, p_bit, overlap, tile_offset_axis);
+			return _get_half_offset_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, p_bit);
 		}
 	}
 }
@@ -1544,30 +1590,68 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 
 	if (terrain_bits_meshes_dirty) {
 		// Recompute the meshes.
-		terrain_bits_meshes.clear();
+		terrain_peering_bits_meshes.clear();
 
 		for (int terrain_mode_index = 0; terrain_mode_index < 3; terrain_mode_index++) {
 			TerrainMode terrain_mode = TerrainMode(terrain_mode_index);
+
+			// Center terrain
+			Vector<Vector2> polygon;
+			if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
+				polygon = _get_square_terrain_polygon(tile_size);
+			} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+				polygon = _get_isometric_terrain_polygon(tile_size);
+			} else {
+				float overlap = 0.0;
+				switch (tile_shape) {
+					case TileSet::TILE_SHAPE_HEXAGON:
+						overlap = 0.25;
+						break;
+					case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+						overlap = 0.0;
+						break;
+					default:
+						break;
+				}
+				polygon = _get_half_offset_terrain_polygon(tile_size, overlap, tile_offset_axis);
+			}
+			{
+				Ref<ArrayMesh> mesh;
+				mesh.instantiate();
+				Vector<Vector2> uvs;
+				uvs.resize(polygon.size());
+				Vector<Color> colors;
+				colors.resize(polygon.size());
+				colors.fill(Color(1.0, 1.0, 1.0, 1.0));
+				Array a;
+				a.resize(Mesh::ARRAY_MAX);
+				a[Mesh::ARRAY_VERTEX] = polygon;
+				a[Mesh::ARRAY_TEX_UV] = uvs;
+				a[Mesh::ARRAY_COLOR] = colors;
+				a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(polygon);
+				mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+				terrain_meshes[terrain_mode] = mesh;
+			}
+			// Peering bits
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				CellNeighbor bit = CellNeighbor(i);
 
-				if (is_valid_peering_bit_for_mode(terrain_mode, bit)) {
-					Vector<Vector2> polygon;
+				if (is_valid_terrain_peering_bit_for_mode(terrain_mode, bit)) {
 					if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
 						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-							polygon = _get_square_corner_or_side_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_square_corner_or_side_terrain_peering_bit_polygon(tile_size, bit);
 						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-							polygon = _get_square_corner_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_square_corner_terrain_peering_bit_polygon(tile_size, bit);
 						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-							polygon = _get_square_side_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_square_side_terrain_peering_bit_polygon(tile_size, bit);
 						}
 					} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-							polygon = _get_isometric_corner_or_side_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_isometric_corner_or_side_terrain_peering_bit_polygon(tile_size, bit);
 						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-							polygon = _get_isometric_corner_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_isometric_corner_terrain_peering_bit_polygon(tile_size, bit);
 						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-							polygon = _get_isometric_side_terrain_bit_polygon(tile_size, bit);
+							polygon = _get_isometric_side_terrain_peering_bit_polygon(tile_size, bit);
 						}
 					} else {
 						float overlap = 0.0;
@@ -1582,29 +1666,30 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 								break;
 						}
 						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
-							polygon = _get_half_offset_corner_or_side_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+							polygon = _get_half_offset_corner_or_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, bit);
 						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
-							polygon = _get_half_offset_corner_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+							polygon = _get_half_offset_corner_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, bit);
 						} else { // TileData::TERRAIN_MODE_MATCH_SIDES
-							polygon = _get_half_offset_side_terrain_bit_polygon(tile_size, bit, overlap, tile_offset_axis);
+							polygon = _get_half_offset_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, bit);
 						}
 					}
-
-					Ref<ArrayMesh> mesh;
-					mesh.instantiate();
-					Vector<Vector2> uvs;
-					uvs.resize(polygon.size());
-					Vector<Color> colors;
-					colors.resize(polygon.size());
-					colors.fill(Color(1.0, 1.0, 1.0, 1.0));
-					Array a;
-					a.resize(Mesh::ARRAY_MAX);
-					a[Mesh::ARRAY_VERTEX] = polygon;
-					a[Mesh::ARRAY_TEX_UV] = uvs;
-					a[Mesh::ARRAY_COLOR] = colors;
-					a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(polygon);
-					mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
-					terrain_bits_meshes[terrain_mode][bit] = mesh;
+					{
+						Ref<ArrayMesh> mesh;
+						mesh.instantiate();
+						Vector<Vector2> uvs;
+						uvs.resize(polygon.size());
+						Vector<Color> colors;
+						colors.resize(polygon.size());
+						colors.fill(Color(1.0, 1.0, 1.0, 1.0));
+						Array a;
+						a.resize(Mesh::ARRAY_MAX);
+						a[Mesh::ARRAY_VERTEX] = polygon;
+						a[Mesh::ARRAY_TEX_UV] = uvs;
+						a[Mesh::ARRAY_COLOR] = colors;
+						a[Mesh::ARRAY_INDEX] = Geometry2D::triangulate_polygon(polygon);
+						mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+						terrain_peering_bits_meshes[terrain_mode][bit] = mesh;
+					}
 				}
 			}
 		}
@@ -1618,14 +1703,21 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 	TileSet::TerrainMode terrain_mode = get_terrain_set_mode(terrain_set);
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+	int terrain_id = p_tile_data->get_terrain();
+	if (terrain_id >= 0) {
+		Color color = get_terrain_color(terrain_set, terrain_id);
+		color.a = TERRAIN_ALPHA;
+		p_canvas_item->draw_mesh(terrain_meshes[terrain_mode], Ref<Texture2D>(), Transform2D(), color);
+	}
+
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		CellNeighbor bit = CellNeighbor(i);
-		if (is_valid_peering_bit_terrain(terrain_set, bit)) {
-			int terrain_id = p_tile_data->get_peering_bit_terrain(bit);
+		if (is_valid_terrain_peering_bit(terrain_set, bit)) {
+			terrain_id = p_tile_data->get_terrain_peering_bit(bit);
 			if (terrain_id >= 0) {
 				Color color = get_terrain_color(terrain_set, terrain_id);
 				color.a = TERRAIN_ALPHA;
-				p_canvas_item->draw_mesh(terrain_bits_meshes[terrain_mode][bit], Ref<Texture2D>(), Transform2D(), color);
+				p_canvas_item->draw_mesh(terrain_peering_bits_meshes[terrain_mode][bit], Ref<Texture2D>(), Transform2D(), color);
 			}
 		}
 	}
@@ -1670,13 +1762,16 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 						for (int terrain = 0; terrain < get_terrains_count(terrain_set); terrain++) {
 							bit_counts[terrain] = 0;
 						}
+						if (tile_data->get_terrain() >= 0) {
+							bit_counts[tile_data->get_terrain()] += 10;
+						}
 						for (int terrain_bit = 0; terrain_bit < TileSet::CELL_NEIGHBOR_MAX; terrain_bit++) {
 							TileSet::CellNeighbor cell_neighbor = TileSet::CellNeighbor(terrain_bit);
-							if (is_valid_peering_bit_terrain(terrain_set, cell_neighbor)) {
-								int terrain = tile_data->get_peering_bit_terrain(cell_neighbor);
+							if (is_valid_terrain_peering_bit(terrain_set, cell_neighbor)) {
+								int terrain = tile_data->get_terrain_peering_bit(cell_neighbor);
 								if (terrain >= 0) {
 									if (terrain >= (int)bit_counts.size()) {
-										WARN_PRINT(vformat("Invalid peering bit terrain: %d", terrain));
+										WARN_PRINT(vformat("Invalid terrain peering bit: %d", terrain));
 									} else {
 										bit_counts[terrain] += 1;
 									}
@@ -1706,19 +1801,16 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 			if (counts[terrain_set][terrain].count > 0) {
 				// Get the best tile.
 				Ref<Texture2D> texture = counts[terrain_set][terrain].texture;
-				Rect2 region = counts[terrain_set][terrain].region;
+				Rect2i region = counts[terrain_set][terrain].region;
 				image->create(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
-				image->blit_rect(texture->get_image(), region, Point2());
+				image->blit_rect(texture->get_image(), region, Point2i());
 				image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
 			} else {
 				image->create(1, 1, false, Image::FORMAT_RGBA8);
 				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
 			}
-			Ref<ImageTexture> icon;
-			icon.instantiate();
-			icon->create_from_image(image);
+			Ref<ImageTexture> icon = ImageTexture::create_from_image(image);
 			icon->set_size_override(p_size);
-
 			output.write[terrain_set].write[terrain] = icon;
 		}
 	}
@@ -1730,7 +1822,17 @@ void TileSet::_source_changed() {
 	emit_changed();
 }
 
-Vector<Point2> TileSet::_get_square_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_square_terrain_polygon(Vector2i p_size) {
+	Rect2 rect(-Vector2(p_size) / 6.0, Vector2(p_size) / 3.0);
+	return {
+		rect.position,
+		Vector2(rect.get_end().x, rect.position.y),
+		rect.get_end(),
+		Vector2(rect.position.x, rect.get_end().y)
+	};
+}
+
+Vector<Point2> TileSet::_get_square_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Rect2 bit_rect;
 	bit_rect.size = Vector2(p_size) / 3;
 	switch (p_bit) {
@@ -1773,7 +1875,7 @@ Vector<Point2> TileSet::_get_square_corner_or_side_terrain_bit_polygon(Vector2i 
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_square_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_square_corner_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	switch (p_bit) {
@@ -1815,7 +1917,7 @@ Vector<Point2> TileSet::_get_square_corner_terrain_bit_polygon(Vector2i p_size, 
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_square_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_square_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	switch (p_bit) {
@@ -1849,7 +1951,17 @@ Vector<Point2> TileSet::_get_square_side_terrain_bit_polygon(Vector2i p_size, Ti
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_isometric_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_isometric_terrain_polygon(Vector2i p_size) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	return {
+		Vector2(1, 0) * unit,
+		Vector2(0, 1) * unit,
+		Vector2(-1, 0) * unit,
+		Vector2(0, -1) * unit,
+	};
+}
+
+Vector<Point2> TileSet::_get_isometric_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	switch (p_bit) {
@@ -1907,7 +2019,7 @@ Vector<Point2> TileSet::_get_isometric_corner_or_side_terrain_bit_polygon(Vector
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_isometric_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_isometric_corner_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	switch (p_bit) {
@@ -1949,7 +2061,7 @@ Vector<Point2> TileSet::_get_isometric_corner_terrain_bit_polygon(Vector2i p_siz
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_isometric_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
+Vector<Point2> TileSet::_get_isometric_side_terrain_peering_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit) {
 	Vector2 unit = Vector2(p_size) / 6.0;
 	Vector<Vector2> polygon;
 	switch (p_bit) {
@@ -1983,7 +2095,30 @@ Vector<Point2> TileSet::_get_isometric_side_terrain_bit_polygon(Vector2i p_size,
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+Vector<Point2> TileSet::_get_half_offset_terrain_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+	Vector2 unit = Vector2(p_size) / 6.0;
+	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		return {
+			Vector2(1, 1.0 - p_overlap * 2.0) * unit,
+			Vector2(0, 1) * unit,
+			Vector2(-1, 1.0 - p_overlap * 2.0) * unit,
+			Vector2(-1, -1.0 + p_overlap * 2.0) * unit,
+			Vector2(0, -1) * unit,
+			Vector2(1, -1.0 + p_overlap * 2.0) * unit,
+		};
+	} else {
+		return {
+			Vector2(1, 0) * unit,
+			Vector2(1.0 - p_overlap * 2.0, -1) * unit,
+			Vector2(-1.0 + p_overlap * 2.0, -1) * unit,
+			Vector2(-1, 0) * unit,
+			Vector2(-1.0 + p_overlap * 2.0, 1) * unit,
+			Vector2(1.0 - p_overlap * 2.0, 1) * unit,
+		};
+	}
+}
+
+Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit) {
 	Vector<Vector2> point_list = {
 		Vector2(3, (3.0 * (1.0 - p_overlap * 2.0)) / 2.0),
 		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
@@ -2006,12 +2141,11 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vect
 	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = point_list[i] * unit;
+		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
 				polygon.push_back(point_list[17]);
@@ -2071,10 +2205,8 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vect
 				break;
 		}
 	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
@@ -2144,7 +2276,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_or_side_terrain_bit_polygon(Vect
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+Vector<Point2> TileSet::_get_half_offset_corner_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit) {
 	Vector<Vector2> point_list = {
 		Vector2(3, 0),
 		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
@@ -2161,12 +2293,11 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_s
 	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = point_list[i] * unit;
+		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER:
 				polygon.push_back(point_list[0]);
@@ -2202,10 +2333,8 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_s
 				break;
 		}
 	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_CORNER:
@@ -2251,7 +2380,7 @@ Vector<Point2> TileSet::_get_half_offset_corner_terrain_bit_polygon(Vector2i p_s
 	return polygon;
 }
 
-Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_size, TileSet::CellNeighbor p_bit, float p_overlap, TileSet::TileOffsetAxis p_offset_axis) {
+Vector<Point2> TileSet::_get_half_offset_side_terrain_peering_bit_polygon(Vector2i p_size, float p_overlap, TileSet::TileOffsetAxis p_offset_axis, TileSet::CellNeighbor p_bit) {
 	Vector<Vector2> point_list = {
 		Vector2(3, 3.0 * (1.0 - p_overlap * 2.0)),
 		Vector2(0, 3),
@@ -2262,12 +2391,11 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_siz
 	};
 
 	Vector2 unit = Vector2(p_size) / 6.0;
-	for (int i = 0; i < point_list.size(); i++) {
-		point_list.write[i] = point_list[i] * unit;
-	}
-
 	Vector<Vector2> polygon;
 	if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = point_list[i] * unit;
+		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
 				polygon.push_back(point_list[5]);
@@ -2297,10 +2425,8 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_bit_polygon(Vector2i p_siz
 				break;
 		}
 	} else {
-		if (p_offset_axis == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
-			for (int i = 0; i < point_list.size(); i++) {
-				point_list.write[i] = Vector2(point_list[i].y, point_list[i].x);
-			}
+		for (int i = 0; i < point_list.size(); i++) {
+			point_list.write[i] = Vector2(point_list[i].y, point_list[i].x) * unit;
 		}
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE:
@@ -2391,7 +2517,7 @@ void TileSet::_compatibility_conversion() {
 					value_array.push_back(alternative_tile);
 
 					if (!compatibility_tilemap_mapping.has(E.key)) {
-						compatibility_tilemap_mapping[E.key] = Map<Array, Array>();
+						compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
 					}
 					compatibility_tilemap_mapping[E.key][key_array] = value_array;
 					compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_SINGLE_TILE;
@@ -2483,7 +2609,7 @@ void TileSet::_compatibility_conversion() {
 							value_array.push_back(alternative_tile);
 
 							if (!compatibility_tilemap_mapping.has(E.key)) {
-								compatibility_tilemap_mapping[E.key] = Map<Array, Array>();
+								compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
 							}
 							compatibility_tilemap_mapping[E.key][key_array] = value_array;
 							compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
@@ -2571,7 +2697,7 @@ void TileSet::_compatibility_conversion() {
 	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
 		memdelete(E.value);
 	}
-	compatibility_data = Map<int, CompatibilityTileData *>();
+	compatibility_data = HashMap<int, CompatibilityTileData *>();
 }
 
 Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose) {
@@ -2622,12 +2748,12 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
 		// Get or create the compatibility object
 		CompatibilityTileData *ctd;
-		Map<int, CompatibilityTileData *>::Element *E = compatibility_data.find(id);
+		HashMap<int, CompatibilityTileData *>::Iterator E = compatibility_data.find(id);
 		if (!E) {
 			ctd = memnew(CompatibilityTileData);
 			compatibility_data.insert(id, ctd);
 		} else {
-			ctd = E->get();
+			ctd = E->value;
 		}
 
 		if (components.size() < 2) {
@@ -3099,7 +3225,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Terrains.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int terrain_set_index = 0; terrain_set_index < terrain_sets.size(); terrain_set_index++) {
-		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/mode", terrain_set_index), PROPERTY_HINT_ENUM, "Match corners and sides,Match corners,Match sides"));
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/mode", terrain_set_index), PROPERTY_HINT_ENUM, "Match Corners and Sides,Match Corners,Match Sides"));
 		p_list->push_back(PropertyInfo(Variant::NIL, vformat("terrain_set_%d/terrains", terrain_set_index), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, vformat("terrain_set_%d/terrain_", terrain_set_index)));
 		for (int terrain_index = 0; terrain_index < terrain_sets[terrain_set_index].terrains.size(); terrain_index++) {
 			p_list->push_back(PropertyInfo(Variant::STRING, vformat("terrain_set_%d/terrain_%d/name", terrain_set_index, terrain_index)));
@@ -3175,7 +3301,7 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size"), "set_tile_size", "get_tile_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "suffix:px"), "set_tile_size", "get_tile_size");
 
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_uv_clipping", "uv_clipping"), &TileSet::set_uv_clipping);
@@ -3264,16 +3390,10 @@ void TileSet::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
 	ADD_ARRAY("occlusion_layers", "occlusion_layer_");
 
-	ADD_GROUP("Physics", "");
+	ADD_GROUP("", "");
 	ADD_ARRAY("physics_layers", "physics_layer_");
-
-	ADD_GROUP("Terrains", "");
 	ADD_ARRAY("terrain_sets", "terrain_set_");
-
-	ADD_GROUP("Navigation", "");
 	ADD_ARRAY("navigation_layers", "navigation_layer_");
-
-	ADD_GROUP("Custom data", "");
 	ADD_ARRAY("custom_data_layers", "custom_data_layer_");
 
 	// -- Enum binding --
@@ -3807,7 +3927,7 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		tile_property_list.push_back(property_info);
 
 		// animation_frames_count.
-		tile_property_list.push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NETWORK));
+		tile_property_list.push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 
 		// animation_frame_*.
 		bool store_durations = tiles[E_tile.key].animation_frames_durations.size() >= 2;
@@ -4279,9 +4399,9 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_texture_padding"), &TileSetAtlasSource::get_use_texture_padding);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NO_EDITOR), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_margins", "get_margins");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_separation", "get_separation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NO_EDITOR), "set_texture_region_size", "get_texture_region_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_padding", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_texture_padding", "get_use_texture_padding");
 
 	// Base tiles
@@ -4432,6 +4552,10 @@ void TileSetAtlasSource::_update_padded_texture() {
 
 	Ref<Image> src = texture->get_image();
 
+	if (!src.is_valid()) {
+		return;
+	}
+
 	Ref<Image> image;
 	image.instantiate();
 	image->create(size.x, size.y, false, src->get_format());
@@ -4467,7 +4591,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 	if (!padded_texture.is_valid()) {
 		padded_texture.instantiate();
 	}
-	padded_texture->create_from_image(image);
+	padded_texture->set_image(image);
 	emit_changed();
 }
 
@@ -4797,6 +4921,10 @@ void TileData::move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {
 
 void TileData::remove_terrain(int p_terrain_set, int p_index) {
 	if (terrain_set == p_terrain_set) {
+		if (terrain == p_index) {
+			terrain = -1;
+		}
+
 		for (int i = 0; i < 16; i++) {
 			if (terrain_peering_bits[i] == p_index) {
 				terrain_peering_bits[i] = -1;
@@ -4931,11 +5059,11 @@ Vector2i TileData::get_texture_offset() const {
 	return tex_offset;
 }
 
-void TileData::set_material(Ref<ShaderMaterial> p_material) {
+void TileData::set_material(Ref<Material> p_material) {
 	material = p_material;
 	emit_signal(SNAME("changed"));
 }
-Ref<ShaderMaterial> TileData::get_material() const {
+Ref<Material> TileData::get_material() const {
 	return material;
 }
 
@@ -5116,36 +5244,51 @@ int TileData::get_terrain_set() const {
 	return terrain_set;
 }
 
-void TileData::set_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
+void TileData::set_terrain(int p_terrain) {
+	ERR_FAIL_COND(terrain_set < 0);
+	ERR_FAIL_COND(p_terrain < -1);
+	if (tile_set) {
+		ERR_FAIL_COND(p_terrain >= tile_set->get_terrains_count(terrain_set));
+	}
+	terrain = p_terrain;
+	emit_signal(SNAME("changed"));
+}
+
+int TileData::get_terrain() const {
+	return terrain;
+}
+
+void TileData::set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
 	ERR_FAIL_INDEX(p_peering_bit, TileSet::CellNeighbor::CELL_NEIGHBOR_MAX);
 	ERR_FAIL_COND(terrain_set < 0);
 	ERR_FAIL_COND(p_terrain_index < -1);
 	if (tile_set) {
 		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
-		ERR_FAIL_COND(!is_valid_peering_bit_terrain(p_peering_bit));
+		ERR_FAIL_COND(!is_valid_terrain_peering_bit(p_peering_bit));
 	}
 	terrain_peering_bits[p_peering_bit] = p_terrain_index;
 	emit_signal(SNAME("changed"));
 }
 
-int TileData::get_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
-	ERR_FAIL_COND_V(!is_valid_peering_bit_terrain(p_peering_bit), -1);
+int TileData::get_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const {
+	ERR_FAIL_COND_V(!is_valid_terrain_peering_bit(p_peering_bit), -1);
 	return terrain_peering_bits[p_peering_bit];
 }
 
-bool TileData::is_valid_peering_bit_terrain(TileSet::CellNeighbor p_peering_bit) const {
+bool TileData::is_valid_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit) const {
 	ERR_FAIL_COND_V(!tile_set, false);
 
-	return tile_set->is_valid_peering_bit_terrain(terrain_set, p_peering_bit);
+	return tile_set->is_valid_terrain_peering_bit(terrain_set, p_peering_bit);
 }
 
 TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
 	ERR_FAIL_COND_V(!tile_set, TileSet::TerrainsPattern());
 
 	TileSet::TerrainsPattern output(tile_set, terrain_set);
+	output.set_terrain(terrain);
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
-		if (tile_set->is_valid_peering_bit_terrain(terrain_set, TileSet::CellNeighbor(i))) {
-			output.set_terrain(TileSet::CellNeighbor(i), get_peering_bit_terrain(TileSet::CellNeighbor(i)));
+		if (tile_set->is_valid_terrain_peering_bit(terrain_set, TileSet::CellNeighbor(i))) {
+			output.set_terrain_peering_bit(TileSet::CellNeighbor(i), get_terrain_peering_bit(TileSet::CellNeighbor(i)));
 		}
 	}
 	return output;
@@ -5295,7 +5438,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 			TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 			if (components[1] == TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]) {
-				set_peering_bit_terrain(bit, p_value);
+				set_terrain_peering_bit(bit, p_value);
 				return true;
 			}
 		}
@@ -5457,9 +5600,9 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
-				if (is_valid_peering_bit_terrain(bit)) {
+				if (is_valid_terrain_peering_bit(bit)) {
 					property_info = PropertyInfo(Variant::INT, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]));
-					if (get_peering_bit_terrain(bit) == -1) {
+					if (get_terrain_peering_bit(bit) == -1) {
 						property_info.usage ^= PROPERTY_USAGE_STORAGE;
 					}
 					p_list->push_back(property_info);
@@ -5533,8 +5676,10 @@ void TileData::_bind_methods() {
 	// Terrain
 	ClassDB::bind_method(D_METHOD("set_terrain_set", "terrain_set"), &TileData::set_terrain_set);
 	ClassDB::bind_method(D_METHOD("get_terrain_set"), &TileData::get_terrain_set);
-	ClassDB::bind_method(D_METHOD("set_peering_bit_terrain", "peering_bit", "terrain"), &TileData::set_peering_bit_terrain);
-	ClassDB::bind_method(D_METHOD("get_peering_bit_terrain", "peering_bit"), &TileData::get_peering_bit_terrain);
+	ClassDB::bind_method(D_METHOD("set_terrain", "terrain"), &TileData::set_terrain);
+	ClassDB::bind_method(D_METHOD("get_terrain"), &TileData::get_terrain);
+	ClassDB::bind_method(D_METHOD("set_terrain_peering_bit", "peering_bit", "terrain"), &TileData::set_terrain_peering_bit);
+	ClassDB::bind_method(D_METHOD("get_terrain_peering_bit", "peering_bit"), &TileData::get_terrain_peering_bit);
 
 	// Navigation
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);
@@ -5554,14 +5699,15 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 
 	ADD_GROUP("Terrains", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain_set"), "set_terrain_set", "get_terrain_set");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "terrain"), "set_terrain", "get_terrain");
 
 	ADD_GROUP("Miscellaneous", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");

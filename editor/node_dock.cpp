@@ -52,9 +52,12 @@ void NodeDock::_bind_methods() {
 }
 
 void NodeDock::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
-		groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			connections_button->set_icon(get_theme_icon(SNAME("Signals"), SNAME("EditorIcons")));
+			groups_button->set_icon(get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+		} break;
 	}
 }
 
@@ -113,7 +116,7 @@ NodeDock::NodeDock() {
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
 
-	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
+	connections = memnew(ConnectionsDock);
 	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -131,7 +134,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	select_a_node->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	add_child(select_a_node);
 }
 

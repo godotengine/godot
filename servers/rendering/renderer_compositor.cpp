@@ -35,6 +35,7 @@
 #include "core/string/print_string.h"
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
+bool RendererCompositor::low_end = false;
 
 RendererCompositor *RendererCompositor::create() {
 	return _create_func();
@@ -45,7 +46,7 @@ bool RendererCompositor::is_xr_enabled() const {
 }
 
 RendererCompositor::RendererCompositor() {
-	xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 }
 
 RendererCanvasRender *RendererCanvasRender::singleton = nullptr;

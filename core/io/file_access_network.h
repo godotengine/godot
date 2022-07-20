@@ -52,7 +52,7 @@ class FileAccessNetworkClient {
 	bool quit = false;
 	Mutex mutex;
 	Mutex blockrequest_mutex;
-	Map<int, FileAccessNetwork *> accesses;
+	HashMap<int, FileAccessNetwork *> accesses;
 	Ref<StreamPeerTCP> client;
 	int32_t last_id = 0;
 	int32_t lockcount = 0;
@@ -86,15 +86,15 @@ class FileAccessNetwork : public FileAccess {
 	Semaphore page_sem;
 	Mutex buffer_mutex;
 	bool opened = false;
-	uint64_t total_size;
+	uint64_t total_size = 0;
 	mutable uint64_t pos = 0;
-	int32_t id;
+	int32_t id = -1;
 	mutable bool eof_flag = false;
 	mutable int32_t last_page = -1;
 	mutable uint8_t *last_page_buff = nullptr;
 
-	int32_t page_size;
-	int32_t read_ahead;
+	int32_t page_size = 0;
+	int32_t read_ahead = 0;
 
 	mutable int waiting_on_page = -1;
 
@@ -108,11 +108,13 @@ class FileAccessNetwork : public FileAccess {
 
 	mutable Error response;
 
-	uint64_t exists_modtime;
+	uint64_t exists_modtime = 0;
+
 	friend class FileAccessNetworkClient;
 	void _queue_page(int32_t p_page) const;
 	void _respond(uint64_t p_len, Error p_status);
 	void _set_block(uint64_t p_offset, const Vector<uint8_t> &p_block);
+	void _close();
 
 public:
 	enum Command {
@@ -131,7 +133,6 @@ public:
 	};
 
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
 	virtual void seek(uint64_t p_position); ///< seek to a given position

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpinBox" inherits="Range" version="4.0">
+<class name="SpinBox" inherits="Range" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Numerical input text field.
 	</brief_description>
@@ -25,6 +25,7 @@
 		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
 		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.
+		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonProfileHumanoid" inherits="SkeletonProfile" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		A [SkeletonProfile] as a preset that is optimized for the human form. This exists for standardization, so all parameters are read-only.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" overrides="SkeletonProfile" default="56" />
+		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" overrides="SkeletonProfile" default="4" />
+	</members>
+</class>

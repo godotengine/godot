@@ -49,30 +49,25 @@ class NativeExtensionMethodBind : public MethodBind {
 	bool vararg;
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		return Variant::Type(get_argument_type_func(method_userdata, p_arg));
 	}
-	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		GDNativePropertyInfo pinfo;
 		get_argument_info_func(method_userdata, p_arg, &pinfo);
-		PropertyInfo ret;
-		ret.type = Variant::Type(pinfo.type);
-		ret.name = pinfo.name;
-		ret.class_name = pinfo.class_name;
-		ret.hint = PropertyHint(pinfo.hint);
-		ret.usage = pinfo.usage;
-		ret.class_name = pinfo.class_name;
-		return ret;
+		return PropertyInfo(pinfo);
 	}
 
 public:
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+#ifdef DEBUG_METHODS_ENABLED
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		return GodotTypeInfo::Metadata(get_argument_metadata_func(method_userdata, p_arg));
 	}
+#endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) override {
 		Variant ret;
-		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
+		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 		GDNativeCallError ce{ GDNATIVE_CALL_OK, 0, 0 };
 		call_func(method_userdata, extension_instance, (const GDNativeVariantPtr *)p_args, p_arg_count, (GDNativeVariantPtr)&ret, &ce);
 		r_error.error = Callable::CallError::Error(ce.error);
@@ -80,16 +75,17 @@ public:
 		r_error.expected = ce.expected;
 		return ret;
 	}
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
+	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) override {
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
 		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
 		ptrcall_func(method_userdata, extension_instance, (const GDNativeTypePtr *)p_args, (GDNativeTypePtr)r_ret);
 	}
 
-	virtual bool is_vararg() const {
+	virtual bool is_vararg() const override {
 		return false;
 	}
-	NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
+
+	explicit NativeExtensionMethodBind(const GDNativeExtensionClassMethodInfo *p_method_info) {
 		method_userdata = p_method_info->method_userdata;
 		call_func = p_method_info->call_func;
 		ptrcall_func = p_method_info->ptrcall_func;
@@ -98,21 +94,31 @@ public:
 		get_argument_metadata_func = p_method_info->get_argument_metadata_func;
 		set_name(p_method_info->name);
 
-		vararg = p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_VARARG;
+		set_hint_flags(p_method_info->method_flags);
 
+		vararg = p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_VARARG;
 		_set_returns(p_method_info->has_return_value);
 		_set_const(p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_CONST);
+		_set_static(p_method_info->method_flags & GDNATIVE_EXTENSION_METHOD_FLAG_STATIC);
 #ifdef DEBUG_METHODS_ENABLED
 		_generate_argument_types(p_method_info->argument_count);
 #endif
 		set_argument_count(p_method_info->argument_count);
+
+		Vector<Variant> defargs;
+		defargs.resize(p_method_info->default_argument_count);
+		for (uint32_t i = 0; i < p_method_info->default_argument_count; i++) {
+			defargs.write[i] = *static_cast<Variant *>(p_method_info->default_arguments[i]);
+		}
+
+		set_default_arguments(defargs);
 	}
 };
 
 static GDNativeInterface gdnative_interface;
 
 void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!String(class_name).is_valid_identifier(), "Attempt to register extension class '" + class_name + "', which is not a valid class identifier.");
@@ -158,11 +164,12 @@ void NativeExtension::_register_extension_class(const GDNativeExtensionClassLibr
 	extension->native_extension.create_instance = p_extension_funcs->create_instance_func;
 	extension->native_extension.free_instance = p_extension_funcs->free_instance_func;
 	extension->native_extension.get_virtual = p_extension_funcs->get_virtual_func;
+	extension->native_extension.get_rid = p_extension_funcs->get_rid_func;
 
 	ClassDB::register_extension_class(&extension->native_extension);
 }
 void NativeExtension::_register_extension_class_method(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	StringName method_name = p_method_info->name;
@@ -175,37 +182,32 @@ void NativeExtension::_register_extension_class_method(const GDNativeExtensionCl
 
 	ClassDB::bind_method_custom(class_name, method);
 }
-void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value) {
-	NativeExtension *self = (NativeExtension *)p_library;
+void NativeExtension::_register_extension_class_integer_constant(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield) {
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension constant '" + String(p_constant_name) + "' for unexisting class '" + class_name + "'.");
 
 	//Extension *extension = &self->extension_classes[class_name];
 
-	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value);
+	ClassDB::bind_integer_constant(class_name, p_enum_name, p_constant_name, p_constant_value, p_is_bitfield);
 }
 
 void NativeExtension::_register_extension_class_property(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
-	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property '" + String(p_info->name) + "' for unexisting class '" + class_name + "'.");
+	String property_name = p_info->name;
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property '" + property_name + "' for unexisting class '" + class_name + "'.");
 
 	//Extension *extension = &self->extension_classes[class_name];
-	PropertyInfo pinfo;
-	pinfo.type = Variant::Type(p_info->type);
-	pinfo.name = p_info->name;
-	pinfo.class_name = p_info->class_name;
-	pinfo.hint = PropertyHint(p_info->hint);
-	pinfo.hint_string = p_info->hint_string;
-	pinfo.usage = p_info->usage;
+	PropertyInfo pinfo(*p_info);
 
 	ClassDB::add_property(class_name, pinfo, p_setter, p_getter);
 }
 
 void NativeExtension::_register_extension_class_property_group(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property group '" + String(p_group_name) + "' for unexisting class '" + class_name + "'.");
@@ -214,7 +216,7 @@ void NativeExtension::_register_extension_class_property_group(const GDNativeExt
 }
 
 void NativeExtension::_register_extension_class_property_subgroup(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class property subgroup '" + String(p_subgroup_name) + "' for unexisting class '" + class_name + "'.");
@@ -223,7 +225,7 @@ void NativeExtension::_register_extension_class_property_subgroup(const GDNative
 }
 
 void NativeExtension::_register_extension_class_signal(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension class signal '" + String(p_signal_name) + "' for unexisting class '" + class_name + "'.");
@@ -231,20 +233,14 @@ void NativeExtension::_register_extension_class_signal(const GDNativeExtensionCl
 	MethodInfo s;
 	s.name = p_signal_name;
 	for (int i = 0; i < p_argument_count; i++) {
-		PropertyInfo arg;
-		arg.type = Variant::Type(p_argument_info[i].type);
-		arg.name = p_argument_info[i].name;
-		arg.class_name = p_argument_info[i].class_name;
-		arg.hint = PropertyHint(p_argument_info[i].hint);
-		arg.hint_string = p_argument_info[i].hint_string;
-		arg.usage = p_argument_info[i].usage;
+		PropertyInfo arg(p_argument_info[i]);
 		s.arguments.push_back(arg);
 	}
 	ClassDB::add_signal(class_name, s);
 }
 
 void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name) {
-	NativeExtension *self = (NativeExtension *)p_library;
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
 
 	StringName class_name = p_class_name;
 	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to unregister unexisting extension class '" + class_name + "'.");
@@ -258,9 +254,16 @@ void NativeExtension::_unregister_extension_class(const GDNativeExtensionClassLi
 	self->extension_classes.erase(class_name);
 }
 
+void NativeExtension::_get_library_path(const GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path) {
+	NativeExtension *self = static_cast<NativeExtension *>(p_library);
+
+	*(String *)r_path = self->library_path;
+}
+
 Error NativeExtension::open_library(const String &p_path, const String &p_entry_symbol) {
-	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true);
+	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
+		ERR_PRINT("GDExtension dynamic library not found: " + p_path);
 		return err;
 	}
 
@@ -269,15 +272,20 @@ Error NativeExtension::open_library(const String &p_path, const String &p_entry_
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, p_entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
+		ERR_PRINT("GDExtension entry point '" + p_entry_symbol + "' not found in library " + p_path);
 		OS::get_singleton()->close_dynamic_library(library);
 		return err;
 	}
 
 	GDNativeInitializationFunction initialization_function = (GDNativeInitializationFunction)entry_funcptr;
 
-	initialization_function(&gdnative_interface, this, &initialization);
-	level_initialized = -1;
-	return OK;
+	if (initialization_function(&gdnative_interface, this, &initialization)) {
+		level_initialized = -1;
+		return OK;
+	} else {
+		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
+		return FAILED;
+	}
 }
 
 void NativeExtension::close_library() {
@@ -295,9 +303,10 @@ NativeExtension::InitializationLevel NativeExtension::get_minimum_library_initia
 	ERR_FAIL_COND_V(library == nullptr, INITIALIZATION_LEVEL_CORE);
 	return InitializationLevel(initialization.minimum_initialization_level);
 }
+
 void NativeExtension::initialize_library(InitializationLevel p_level) {
 	ERR_FAIL_COND(library == nullptr);
-	ERR_FAIL_COND(p_level <= int32_t(level_initialized));
+	ERR_FAIL_COND_MSG(p_level <= int32_t(level_initialized), vformat("Level '%d' must be higher than the current level '%d'", p_level, level_initialized));
 
 	level_initialized = int32_t(p_level);
 
@@ -349,9 +358,10 @@ void NativeExtension::initialize_native_extensions() {
 	gdnative_interface.classdb_register_extension_class_property_subgroup = _register_extension_class_property_subgroup;
 	gdnative_interface.classdb_register_extension_class_signal = _register_extension_class_signal;
 	gdnative_interface.classdb_unregister_extension_class = _unregister_extension_class;
+	gdnative_interface.get_library_path = _get_library_path;
 }
 
-RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
@@ -362,14 +372,16 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		ERR_PRINT("Error loading GDExtension config file: " + p_path);
+		return Ref<Resource>();
 	}
 
 	if (!config->has_section_key("configuration", "entry_symbol")) {
 		if (r_error) {
 			*r_error = ERR_INVALID_DATA;
 		}
-		return RES();
+		ERR_PRINT("GDExtension config file must contain 'configuration.entry_symbol' key: " + p_path);
+		return Ref<Resource>();
 	}
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
@@ -401,10 +413,11 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 		if (r_error) {
 			*r_error = ERR_FILE_NOT_FOUND;
 		}
-		return RES();
+		ERR_PRINT("No GDExtension library found for current architecture; in config file " + p_path);
+		return Ref<Resource>();
 	}
 
-	if (!library_path.is_resource_file()) {
+	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().plus_file(library_path);
 	}
 
@@ -418,7 +431,8 @@ RES NativeExtensionResourceLoader::load(const String &p_path, const String &p_or
 	}
 
 	if (err != OK) {
-		return RES();
+		// Errors already logged in open_library()
+		return Ref<Resource>();
 	}
 
 	return lib;

@@ -52,11 +52,19 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 		ReplicationProperty &prop = properties[idx];
 		if (what == "sync") {
 			prop.sync = p_value;
-			sync_props.push_back(prop.name);
+			if (prop.sync) {
+				sync_props.push_back(prop.name);
+			} else {
+				sync_props.erase(prop.name);
+			}
 			return true;
 		} else if (what == "spawn") {
 			prop.spawn = p_value;
-			spawn_props.push_back(prop.name);
+			if (prop.spawn) {
+				spawn_props.push_back(prop.name);
+			} else {
+				spawn_props.erase(prop.name);
+			}
 			return true;
 		}
 	}
@@ -124,6 +132,15 @@ void SceneReplicationConfig::remove_property(const NodePath &p_path) {
 	properties.erase(p_path);
 }
 
+bool SceneReplicationConfig::has_property(const NodePath &p_path) const {
+	for (int i = 0; i < properties.size(); i++) {
+		if (properties[i].name == p_path) {
+			return true;
+		}
+	}
+	return false;
+}
+
 int SceneReplicationConfig::property_get_index(const NodePath &p_path) const {
 	for (int i = 0; i < properties.size(); i++) {
 		if (properties[i].name == p_path) {
@@ -178,6 +195,7 @@ void SceneReplicationConfig::property_set_sync(const NodePath &p_path, bool p_en
 void SceneReplicationConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_properties"), &SceneReplicationConfig::get_properties);
 	ClassDB::bind_method(D_METHOD("add_property", "path", "index"), &SceneReplicationConfig::add_property, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("has_property", "path"), &SceneReplicationConfig::has_property);
 	ClassDB::bind_method(D_METHOD("remove_property", "path"), &SceneReplicationConfig::remove_property);
 	ClassDB::bind_method(D_METHOD("property_get_index", "path"), &SceneReplicationConfig::property_get_index);
 	ClassDB::bind_method(D_METHOD("property_get_spawn", "path"), &SceneReplicationConfig::property_get_spawn);

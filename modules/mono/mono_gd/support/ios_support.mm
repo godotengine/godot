@@ -94,8 +94,9 @@ GD_PINVOKE_EXPORT const char *xamarin_get_locale_country_code() {
 GD_PINVOKE_EXPORT void xamarin_log(const uint16_t *p_unicode_message) {
 	int length = 0;
 	const uint16_t *ptr = p_unicode_message;
-	while (*ptr++)
+	while (*ptr++) {
 		length += sizeof(uint16_t);
+	}
 	NSString *msg = [[NSString alloc] initWithBytes:p_unicode_message length:length encoding:NSUTF16LittleEndianStringEncoding];
 
 	os_log_info(OS_LOG_DEFAULT, "%{public}@", msg);

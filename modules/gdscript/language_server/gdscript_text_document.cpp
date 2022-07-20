@@ -109,23 +109,15 @@ void GDScriptTextDocument::notify_client_show_symbol(const lsp::DocumentSymbol *
 
 void GDScriptTextDocument::initialize() {
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members;
+		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
+			const ClassMembers &members = E.value;
 
-		const StringName *class_ptr = native_members.next(nullptr);
-		while (class_ptr) {
-			const ClassMembers &members = native_members.get(*class_ptr);
-
-			const String *name = members.next(nullptr);
-			while (name) {
-				const lsp::DocumentSymbol *symbol = members.get(*name);
+			for (const KeyValue<String, const lsp::DocumentSymbol *> &F : members) {
+				const lsp::DocumentSymbol *symbol = members.get(F.key);
 				lsp::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(String(*class_ptr), *name);
+				item.data = JOIN_SYMBOLS(String(E.key), F.key);
 				native_member_completions.push_back(item.to_json());
-
-				name = members.next(name);
 			}
-
-			class_ptr = native_members.next(class_ptr);
 		}
 	}
 }
@@ -149,9 +141,9 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String uri = params["uri"];
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
-	if (const Map<String, ExtendGDScriptParser *>::Element *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
+	if (HashMap<String, ExtendGDScriptParser *>::ConstIterator parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)) {
 		Vector<lsp::DocumentedSymbolInformation> list;
-		parser->get()->get_symbols().symbol_tree_as_list(uri, list);
+		parser->value->get_symbols().symbol_tree_as_list(uri, list);
 		for (int i = 0; i < list.size(); i++) {
 			arr.push_back(list[i].to_json());
 		}
@@ -166,49 +158,52 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	params.load(p_params);
 	Dictionary request_data = params.to_json();
 
-	List<ScriptCodeCompletionOption> options;
+	List<ScriptLanguage::CodeCompletionOption> options;
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
 
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
 
-		for (const ScriptCodeCompletionOption &option : options) {
+		for (const ScriptLanguage::CodeCompletionOption &option : options) {
 			lsp::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
+			item.insertText = option.insert_text;
 
 			switch (option.kind) {
-				case ScriptCodeCompletionOption::KIND_ENUM:
+				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
 					item.kind = lsp::CompletionItemKind::Enum;
 					break;
-				case ScriptCodeCompletionOption::KIND_CLASS:
+				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
 					item.kind = lsp::CompletionItemKind::Class;
 					break;
-				case ScriptCodeCompletionOption::KIND_MEMBER:
+				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
 					item.kind = lsp::CompletionItemKind::Property;
 					break;
-				case ScriptCodeCompletionOption::KIND_FUNCTION:
+				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
 					item.kind = lsp::CompletionItemKind::Method;
 					break;
-				case ScriptCodeCompletionOption::KIND_SIGNAL:
+				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
 					item.kind = lsp::CompletionItemKind::Event;
 					break;
-				case ScriptCodeCompletionOption::KIND_CONSTANT:
+				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
 					item.kind = lsp::CompletionItemKind::Constant;
 					break;
-				case ScriptCodeCompletionOption::KIND_VARIABLE:
+				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
 					item.kind = lsp::CompletionItemKind::Variable;
 					break;
-				case ScriptCodeCompletionOption::KIND_FILE_PATH:
+				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
 					item.kind = lsp::CompletionItemKind::File;
 					break;
-				case ScriptCodeCompletionOption::KIND_NODE_PATH:
+				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
 					item.kind = lsp::CompletionItemKind::Snippet;
 					break;
-				case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
+				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
 					item.kind = lsp::CompletionItemKind::Text;
 					break;
+				default: {
+				}
 			}
 
 			arr[i] = item.to_json();
@@ -273,8 +268,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 			}
 
 			if (!symbol) {
-				if (const Map<String, ExtendGDScriptParser *>::Element *E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
-					symbol = E->get()->get_member_symbol(member_name, inner_class_name);
+				if (HashMap<String, ExtendGDScriptParser *>::ConstIterator E = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(class_name)) {
+					symbol = E->value->get_member_symbol(member_name, inner_class_name);
 				}
 			}
 		}
@@ -284,12 +279,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		item.documentation = symbol->render();
 	}
 
-	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
-		item.insertText = item.label + "(";
-		if (symbol && symbol->children.is_empty()) {
-			item.insertText += ")";
-		}
-	} else if (item.kind == lsp::CompletionItemKind::Event) {
+	if (item.kind == lsp::CompletionItemKind::Event) {
 		if (params.context.triggerKind == lsp::CompletionTriggerKind::TriggerCharacter && (params.context.triggerCharacter == "(")) {
 			const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 			item.insertText = item.label.quote(quote_style);
@@ -420,10 +410,6 @@ Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
 
 GDScriptTextDocument::GDScriptTextDocument() {
 	file_checker = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-}
-
-GDScriptTextDocument::~GDScriptTextDocument() {
-	memdelete(file_checker);
 }
 
 void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {

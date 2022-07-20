@@ -34,8 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
-class EditorNode;
-
 class GradientEditor : public GradientEdit {
 	GDCLASS(GradientEditor, GradientEdit);
 
@@ -67,9 +65,9 @@ class GradientReverseButton : public BaseButton {
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
 
-	GradientEditor *editor;
-	HBoxContainer *gradient_tools_hbox;
-	GradientReverseButton *reverse_btn;
+	GradientEditor *editor = nullptr;
+	HBoxContainer *gradient_tools_hbox = nullptr;
+	GradientReverseButton *reverse_btn = nullptr;
 
 	void _reverse_button_pressed();
 
@@ -84,7 +82,7 @@ class GradientEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Gradient"; }
 
-	GradientEditorPlugin(EditorNode *p_node);
+	GradientEditorPlugin();
 };
 
 #endif // GRADIENT_EDITOR_PLUGIN_H

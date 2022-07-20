@@ -45,11 +45,12 @@ class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
 	Window *parent_visible = nullptr;
-	Panel *bg;
-	HBoxContainer *hbc;
-	Label *label;
-	Button *ok;
+	Panel *bg = nullptr;
+	HBoxContainer *hbc = nullptr;
+	Label *label = nullptr;
+	Button *ok = nullptr;
 	bool hide_on_ok = true;
+	bool close_on_escape = true;
 
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
@@ -87,11 +88,17 @@ public:
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
 
+	void set_close_on_escape(bool p_enable);
+	bool get_close_on_escape() const;
+
 	void set_text(String p_text);
 	String get_text() const;
 
 	void set_autowrap(bool p_autowrap);
 	bool has_autowrap();
+
+	void set_ok_button_text(String p_ok_button_text);
+	String get_ok_button_text() const;
 
 	AcceptDialog();
 	~AcceptDialog();
@@ -99,13 +106,17 @@ public:
 
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
-	Button *cancel;
+	Button *cancel = nullptr;
 
 protected:
 	static void _bind_methods();
 
 public:
 	Button *get_cancel_button();
+
+	void set_cancel_button_text(String p_cancel_button_text);
+	String get_cancel_button_text() const;
+
 	ConfirmationDialog();
 };
 

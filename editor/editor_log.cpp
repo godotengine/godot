@@ -38,7 +38,7 @@
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
-	EditorLog *self = (EditorLog *)p_self;
+	EditorLog *self = static_cast<EditorLog *>(p_self);
 	if (self->current != Thread::get_caller_id()) {
 		return;
 	}
@@ -80,6 +80,11 @@ void EditorLog::_update_theme() {
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
+
 	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
 	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
@@ -93,12 +98,11 @@ void EditorLog::_notification(int p_what) {
 			_update_theme();
 			_load_state();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_rebuild_log();
 		} break;
-		default:
-			break;
 	}
 }
 
@@ -164,7 +168,7 @@ void EditorLog::_copy_request() {
 	String text = log->get_selected_text();
 
 	if (text.is_empty()) {
-		text = log->get_text();
+		text = log->get_parsed_text();
 	}
 
 	if (!text.is_empty()) {
@@ -177,7 +181,7 @@ void EditorLog::clear() {
 }
 
 void EditorLog::_process_message(const String &p_msg, MessageType p_type) {
-	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg) {
+	if (messages.size() > 0 && messages[messages.size() - 1].text == p_msg && messages[messages.size() - 1].type == p_type) {
 		// If previous message is the same as the new one, increase previous count rather than adding another
 		// instance to the messages list.
 		LogMessage &previous = messages.write[messages.size() - 1];
@@ -212,7 +216,7 @@ void EditorLog::set_tool_button(Button *p_tool_button) {
 }
 
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
-	EditorLog *self = (EditorLog *)p_self;
+	EditorLog *self = static_cast<EditorLog *>(p_self);
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -254,6 +258,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	switch (p_message.type) {
 		case MSG_TYPE_STD: {
 		} break;
+		case MSG_TYPE_STD_RICH: {
+		} break;
 		case MSG_TYPE_ERROR: {
 			log->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 			Ref<Texture2D> icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
@@ -281,11 +287,15 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->pop();
 	}
 
-	log->add_text(p_message.text);
+	if (p_message.type == MSG_TYPE_STD_RICH) {
+		log->append_text(p_message.text);
+	} else {
+		log->add_text(p_message.text);
+	}
 
 	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
-	// We only "push" in the above switch when message type != STD, so only pop when that is the case.
-	if (p_message.type != MSG_TYPE_STD) {
+	// We only "push" in the above switch when message type != STD and RICH, so only pop when that is the case.
+	if (p_message.type != MSG_TYPE_STD && p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop();
 	}
 
@@ -338,17 +348,19 @@ EditorLog::EditorLog() {
 
 	// Log - Rich Text Label.
 	log = memnew(RichTextLabel);
+	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->set_deselect_on_focus_loss_enabled(false);
 	vb_left->add_child(log);
 
 	// Search box
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter messages"));
+	search_box->set_placeholder(TTR("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
 	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
@@ -413,6 +425,7 @@ EditorLog::EditorLog() {
 	std_filter->initialize_button(TTR("Toggle visibility of standard output messages."), callable_mp(this, &EditorLog::_set_filter_active));
 	vb_right->add_child(std_filter->toggle_button);
 	type_filter_map.insert(MSG_TYPE_STD, std_filter);
+	type_filter_map.insert(MSG_TYPE_STD_RICH, std_filter);
 
 	LogFilter *error_filter = memnew(LogFilter(MSG_TYPE_ERROR));
 	error_filter->initialize_button(TTR("Toggle visibility of errors."), callable_mp(this, &EditorLog::_set_filter_active));
@@ -446,6 +459,10 @@ void EditorLog::deinit() {
 
 EditorLog::~EditorLog() {
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		memdelete(E.value);
+		// MSG_TYPE_STD_RICH is connected to the std_filter button, so we do this
+		// to avoid it from being deleted twice, causing a crash on closing.
+		if (E.key != MSG_TYPE_STD_RICH) {
+			memdelete(E.value);
+		}
 	}
 }

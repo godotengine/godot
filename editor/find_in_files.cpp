@@ -99,13 +99,15 @@ void FindInFiles::set_folder(String folder) {
 	_root_dir = folder;
 }
 
-void FindInFiles::set_filter(const Set<String> &exts) {
+void FindInFiles::set_filter(const HashSet<String> &exts) {
 	_extension_filter = exts;
 }
 
-void FindInFiles::_notification(int p_notification) {
-	if (p_notification == NOTIFICATION_PROCESS) {
-		_process();
+void FindInFiles::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			_process();
+		} break;
 	}
 }
 
@@ -209,8 +211,8 @@ float FindInFiles::get_progress() const {
 }
 
 void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
-	DirAccessRef dir = DirAccess::open(path);
-	if (!dir) {
+	Ref<DirAccess> dir = DirAccess::open(path);
+	if (dir.is_null()) {
 		print_verbose("Cannot open directory! " + path);
 		return;
 	}
@@ -251,8 +253,8 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 }
 
 void FindInFiles::_scan_file(String fpath) {
-	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
-	if (!f) {
+	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+	if (f.is_null()) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
@@ -272,8 +274,6 @@ void FindInFiles::_scan_file(String fpath) {
 			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
 		}
 	}
-
-	f->close();
 }
 
 void FindInFiles::_bind_methods() {
@@ -443,11 +443,11 @@ String FindInFilesDialog::get_folder() const {
 	return text.strip_edges();
 }
 
-Set<String> FindInFilesDialog::get_filter() const {
+HashSet<String> FindInFilesDialog::get_filter() const {
 	// Could check the _filters_preferences but it might not have been generated yet.
-	Set<String> filters;
+	HashSet<String> filters;
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		if (cb->is_pressed()) {
 			filters.insert(cb->get_text());
 		}
@@ -456,26 +456,28 @@ Set<String> FindInFilesDialog::get_filter() const {
 }
 
 void FindInFilesDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible()) {
-			// Doesn't work more than once if not deferred...
-			_search_text_line_edit->call_deferred(SNAME("grab_focus"));
-			_search_text_line_edit->select_all();
-			// Extensions might have changed in the meantime, we clean them and instance them again.
-			for (int i = 0; i < _filters_container->get_child_count(); i++) {
-				_filters_container->get_child(i)->queue_delete();
-			}
-			Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
-			for (int i = 0; i < exts.size(); ++i) {
-				CheckBox *cb = memnew(CheckBox);
-				cb->set_text(exts[i]);
-				if (!_filters_preferences.has(exts[i])) {
-					_filters_preferences[exts[i]] = true;
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				// Doesn't work more than once if not deferred...
+				_search_text_line_edit->call_deferred(SNAME("grab_focus"));
+				_search_text_line_edit->select_all();
+				// Extensions might have changed in the meantime, we clean them and instance them again.
+				for (int i = 0; i < _filters_container->get_child_count(); i++) {
+					_filters_container->get_child(i)->queue_delete();
 				}
-				cb->set_pressed(_filters_preferences[exts[i]]);
-				_filters_container->add_child(cb);
+				Array exts = ProjectSettings::get_singleton()->get("editor/script/search_in_file_extensions");
+				for (int i = 0; i < exts.size(); ++i) {
+					CheckBox *cb = memnew(CheckBox);
+					cb->set_text(exts[i]);
+					if (!_filters_preferences.has(exts[i])) {
+						_filters_preferences[exts[i]] = true;
+					}
+					cb->set_pressed(_filters_preferences[exts[i]]);
+					_filters_container->add_child(cb);
+				}
 			}
-		}
+		} break;
 	}
 }
 
@@ -485,7 +487,7 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 
 void FindInFilesDialog::custom_action(const String &p_action) {
 	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
-		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		CheckBox *cb = static_cast<CheckBox *>(_filters_container->get_child(i));
 		_filters_preferences[cb->get_text()] = cb->is_pressed();
 	}
 
@@ -564,7 +566,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		Label *find_label = memnew(Label);
-		find_label->set_text(TTR("Find: "));
+		find_label->set_text(TTR("Find:"));
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
@@ -608,13 +610,11 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
-	_with_replace = false;
-
 	{
 		_replace_container = memnew(HBoxContainer);
 
 		Label *replace_label = memnew(Label);
-		replace_label->set_text(TTR("Replace: "));
+		replace_label->set_text(TTR("Replace:"));
 		_replace_container->add_child(replace_label);
 
 		_replace_line_edit = memnew(LineEdit);
@@ -687,19 +687,23 @@ void FindInFilesPanel::stop_search() {
 }
 
 void FindInFilesPanel::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PROCESS) {
-		_progress_bar->set_as_ratio(_finder->get_progress());
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
-		_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			_progress_bar->set_as_ratio(_finder->get_progress());
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+			_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+		} break;
 	}
 }
 
 void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
 	TreeItem *file_item;
-	Map<String, TreeItem *>::Element *E = _file_items.find(fpath);
+	HashMap<String, TreeItem *>::Iterator E = _file_items.find(fpath);
 
-	if (E == nullptr) {
+	if (!E) {
 		file_item = _results_display->create_item();
 		file_item->set_text(0, fpath);
 		file_item->set_metadata(0, fpath);
@@ -711,7 +715,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 
 		_file_items[fpath] = file_item;
 	} else {
-		file_item = E->value();
+		file_item = E->value;
 	}
 
 	int text_index = _with_replace ? 1 : 0;
@@ -750,18 +754,18 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 		return;
 	}
 
-	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
 	if (!E) {
 		return;
 	}
-	Result r = E->value();
+	Result r = E->value;
 	String item_text = item->get_text(_with_replace ? 1 : 0);
 	Ref<Font> font = _results_display->get_theme_font(SNAME("font"));
 	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), font_size).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), font_size).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
@@ -814,12 +818,12 @@ void FindInFilesPanel::_on_cancel_button_clicked() {
 
 void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
-	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
 
-	if (E == nullptr) {
+	if (!E) {
 		return;
 	}
-	Result r = E->value();
+	Result r = E->value;
 
 	TreeItem *file_item = item->get_parent();
 	String fpath = file_item->get_metadata(0);
@@ -846,9 +850,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 				continue;
 			}
 
-			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
-			ERR_FAIL_COND(F == nullptr);
-			locations.push_back(F->value());
+			HashMap<TreeItem *, Result>::Iterator F = _result_items.find(item);
+			ERR_FAIL_COND(!F);
+			locations.push_back(F->value);
 		}
 
 		if (locations.size() != 0) {
@@ -867,7 +871,7 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 // Same as get_line, but preserves line ending characters.
 class ConservativeGetLine {
 public:
-	String get_line(FileAccess *f) {
+	String get_line(Ref<FileAccess> f) {
 		_line_buffer.clear();
 
 		char32_t c = f->get_8();
@@ -902,8 +906,8 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// If there are unsaved changes, the user will be asked on focus,
 	// however that means either losing changes or losing replaces.
 
-	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file from path '" + fpath + "'.");
+	Ref<FileAccess> f = FileAccess::open(fpath, FileAccess::READ);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + fpath + "'.");
 
 	String buffer;
 	int current_line = 1;
@@ -952,8 +956,6 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
 	f->store_string(buffer);
-
-	f->close();
 }
 
 String FindInFilesPanel::get_replace_text() {

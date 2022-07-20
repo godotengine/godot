@@ -46,13 +46,13 @@
 static inline float
 _hb_angle_to_ratio (float a)
 {
-  return tanf (a * float (M_PI / 180.));
+  return tanf (a * float (-M_PI / 180.));
 }
 
 static inline float
 _hb_ratio_to_angle (float r)
 {
-  return atanf (r) * float (180. / M_PI);
+  return atanf (r) * float (-180. / M_PI);
 }
 
 /**
@@ -72,8 +72,7 @@ float
 hb_style_get_value (hb_font_t *font, hb_style_tag_t style_tag)
 {
   if (unlikely (style_tag == HB_STYLE_TAG_SLANT_RATIO))
-    return _hb_angle_to_ratio (hb_style_get_value (font, HB_STYLE_TAG_SLANT_ANGLE))
-	 + font->slant;
+    return _hb_angle_to_ratio (hb_style_get_value (font, HB_STYLE_TAG_SLANT_ANGLE));
 
   hb_face_t *face = font->face;
 

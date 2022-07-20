@@ -13,6 +13,7 @@ iphone_lib = [
     "display_server_iphone.mm",
     "joypad_iphone.mm",
     "godot_view.mm",
+    "tts_ios.mm",
     "display_layer.mm",
     "godot_app_delegate.m",
     "godot_view_renderer.mm",

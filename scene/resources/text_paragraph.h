@@ -31,6 +31,7 @@
 #ifndef TEXT_PARAGRAPH_H
 #define TEXT_PARAGRAPH_H
 
+#include "core/templates/local_vector.h"
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
@@ -38,15 +39,7 @@
 
 class TextParagraph : public RefCounted {
 	GDCLASS(TextParagraph, RefCounted);
-
-public:
-	enum OverrunBehavior {
-		OVERRUN_NO_TRIMMING,
-		OVERRUN_TRIM_CHAR,
-		OVERRUN_TRIM_WORD,
-		OVERRUN_TRIM_ELLIPSIS,
-		OVERRUN_TRIM_WORD_ELLIPSIS,
-	};
+	_THREAD_SAFE_CLASS_
 
 private:
 	RID dropcap_rid;
@@ -54,17 +47,16 @@ private:
 	Rect2 dropcap_margins;
 
 	RID rid;
-	Vector<RID> lines_rid;
-	int spacing_top = 0;
-	int spacing_bottom = 0;
+	LocalVector<RID> lines_rid;
 
 	bool lines_dirty = true;
 
 	float width = -1.0;
 	int max_lines_visible = -1;
 
-	uint16_t flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
-	OverrunBehavior overrun_behavior = OVERRUN_NO_TRIMMING;
+	BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND;
+	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -99,10 +91,10 @@ public:
 	void set_custom_punctuation(const String &p_punct);
 	String get_custom_punctuation() const;
 
-	bool set_dropcap(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "");
+	bool set_dropcap(const String &p_text, const Ref<Font> &p_font, int p_font_size, const Rect2 &p_dropcap_margins = Rect2(), const String &p_language = "");
 	void clear_dropcap();
 
-	bool add_string(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant());
+	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER);
 
@@ -111,11 +103,14 @@ public:
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
-	void set_flags(uint16_t p_flags);
-	uint16_t get_flags() const;
+	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_justification_flags() const;
 
-	void set_text_overrun_behavior(OverrunBehavior p_behavior);
-	OverrunBehavior get_text_overrun_behavior() const;
+	void set_break_flags(BitField<TextServer::LineBreakFlag> p_flags);
+	BitField<TextServer::LineBreakFlag> get_break_flags() const;
+
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
 	void set_width(float p_width);
 	float get_width() const;
@@ -156,11 +151,11 @@ public:
 
 	int hit_test(const Point2 &p_coords) const;
 
-	TextParagraph(const String &p_text, const Ref<Font> &p_fonts, int p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
+	Mutex &get_mutex() const { return _thread_safe_; };
+
+	TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };
-
-VARIANT_ENUM_CAST(TextParagraph::OverrunBehavior);
 
 #endif // TEXT_PARAGRAPH_H

@@ -80,7 +80,7 @@ void WorldBoundaryShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldBoundaryShape3D::set_plane);
 	ClassDB::bind_method(D_METHOD("get_plane"), &WorldBoundaryShape3D::get_plane);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
+	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane", PROPERTY_HINT_NONE, "suffix:m"), "set_plane", "get_plane");
 }
 
 WorldBoundaryShape3D::WorldBoundaryShape3D() :

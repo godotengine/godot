@@ -180,7 +180,7 @@ private:
 	/* AUDIO TRACK */
 
 	struct AudioKey {
-		RES stream;
+		Ref<Resource> stream;
 		real_t start_offset = 0.0; //offset from start
 		real_t end_offset = 0.0; //offset from end, if 0 then full length or infinite
 		AudioKey() {
@@ -436,11 +436,11 @@ public:
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
 
-	int audio_track_insert_key(int p_track, double p_time, const RES &p_stream, real_t p_start_offset = 0, real_t p_end_offset = 0);
-	void audio_track_set_key_stream(int p_track, int p_key, const RES &p_stream);
+	int audio_track_insert_key(int p_track, double p_time, const Ref<Resource> &p_stream, real_t p_start_offset = 0, real_t p_end_offset = 0);
+	void audio_track_set_key_stream(int p_track, int p_key, const Ref<Resource> &p_stream);
 	void audio_track_set_key_start_offset(int p_track, int p_key, real_t p_offset);
 	void audio_track_set_key_end_offset(int p_track, int p_key, real_t p_offset);
-	RES audio_track_get_key_stream(int p_track, int p_key) const;
+	Ref<Resource> audio_track_get_key_stream(int p_track, int p_key) const;
 	real_t audio_track_get_key_start_offset(int p_track, int p_key) const;
 	real_t audio_track_get_key_end_offset(int p_track, int p_key) const;
 

@@ -87,7 +87,7 @@ public:
 	bool has_method(const StringName &p_method) const override {
 		return false;
 	}
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
 	}
 	void notification(int p_notification) override {
@@ -133,7 +133,7 @@ TEST_CASE("[Object] Core getters") {
 }
 
 TEST_CASE("[Object] Metadata") {
-	const String meta_path = "hello/world complex métadata\n\n\t\tpath";
+	const String meta_path = "complex_metadata_path";
 	Object object;
 
 	object.set_meta(meta_path, Color(0, 1, 0));

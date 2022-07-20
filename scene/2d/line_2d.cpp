@@ -228,9 +228,9 @@ Line2D::LineCapMode Line2D::get_end_cap_mode() const {
 
 void Line2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_DRAW:
+		case NOTIFICATION_DRAW: {
 			_draw();
-			break;
+		} break;
 	}
 }
 
@@ -247,10 +247,7 @@ float Line2D::get_sharp_limit() const {
 }
 
 void Line2D::set_round_precision(int p_precision) {
-	if (p_precision < 1) {
-		p_precision = 1;
-	}
-	_round_precision = p_precision;
+	_round_precision = MAX(1, p_precision);
 	update();
 }
 
@@ -268,15 +265,15 @@ bool Line2D::get_antialiased() const {
 }
 
 void Line2D::_draw() {
-	if (_points.size() <= 1 || _width == 0.f) {
+	int len = _points.size();
+	if (len <= 1 || _width == 0.f) {
 		return;
 	}
 
 	// TODO Is this really needed?
 	// Copy points for faster access
 	Vector<Vector2> points;
-	points.resize(_points.size());
-	int len = points.size();
+	points.resize(len);
 	{
 		const Vector2 *points_read = _points.ptr();
 		for (int i = 0; i < len; ++i) {
@@ -396,7 +393,7 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");
@@ -409,7 +406,7 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_end_cap_mode", "get_end_cap_mode");
 	ADD_GROUP("Border", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), "set_round_precision", "get_round_precision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision", PROPERTY_HINT_RANGE, "1,32,1"), "set_round_precision", "get_round_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
 
 	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);

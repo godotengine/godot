@@ -39,14 +39,22 @@
 #include "tests/test_crypto_mbedtls.h"
 #endif
 
-void register_mbedtls_types() {
+void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	CryptoMbedTLS::initialize_crypto();
 	StreamPeerMbedTLS::initialize_ssl();
 	PacketPeerMbedDTLS::initialize_dtls();
 	DTLSServerMbedTLS::initialize();
 }
 
-void unregister_mbedtls_types() {
+void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
 	StreamPeerMbedTLS::finalize_ssl();

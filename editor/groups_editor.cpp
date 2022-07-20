@@ -303,7 +303,11 @@ void GroupDialog::_load_groups(Node *p_current) {
 	}
 }
 
-void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id) {
+void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
@@ -416,6 +420,8 @@ void GroupDialog::_bind_methods() {
 
 	ClassDB::bind_method("_rename_group_item", &GroupDialog::_rename_group_item);
 
+	ClassDB::bind_method("_group_selected", &GroupDialog::_group_selected);
+
 	ADD_SIGNAL(MethodInfo("group_edited"));
 }
 
@@ -426,7 +432,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	vbc->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	vbc->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
@@ -451,7 +457,7 @@ GroupDialog::GroupDialog() {
 	groups->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	groups->add_theme_constant_override("draw_guides", 1);
 	groups->connect("item_selected", callable_mp(this, &GroupDialog::_group_selected));
-	groups->connect("button_pressed", callable_mp(this, &GroupDialog::_modify_group_pressed));
+	groups->connect("button_clicked", callable_mp(this, &GroupDialog::_modify_group_pressed));
 	groups->connect("item_edited", callable_mp(this, &GroupDialog::_group_renamed));
 
 	HBoxContainer *chbc = memnew(HBoxContainer);
@@ -493,7 +499,7 @@ GroupDialog::GroupDialog() {
 
 	add_filter = memnew(LineEdit);
 	add_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	add_filter->set_placeholder(TTR("Filter nodes"));
+	add_filter->set_placeholder(TTR("Filter Nodes"));
 	add_filter_hbc->add_child(add_filter);
 	add_filter->connect("text_changed", callable_mp(this, &GroupDialog::_add_filter_changed));
 
@@ -543,7 +549,7 @@ GroupDialog::GroupDialog() {
 
 	remove_filter = memnew(LineEdit);
 	remove_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	remove_filter->set_placeholder(TTR("Filter nodes"));
+	remove_filter->set_placeholder(TTR("Filter Nodes"));
 	remove_filter_hbc->add_child(remove_filter);
 	remove_filter->connect("text_changed", callable_mp(this, &GroupDialog::_remove_filter_changed));
 
@@ -553,16 +559,16 @@ GroupDialog::GroupDialog() {
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
 	group_empty->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	group_empty->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	group_empty->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	group_empty->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
-	group_empty->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	group_empty->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	set_title(TTR("Group Editor"));
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
-	error->get_ok_button()->set_text(TTR("Close"));
+	error->set_ok_button_text(TTR("Close"));
 
 	_add_group_text_changed("");
 }
@@ -598,7 +604,11 @@ void GroupsEditor::_add_group(const String &p_group) {
 	undo_redo->commit_action();
 }
 
-void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id) {
+void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	if (!node) {
 		return;
 	}
@@ -733,7 +743,7 @@ GroupsEditor::GroupsEditor() {
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
-	tree->connect("button_pressed", callable_mp(this, &GroupsEditor::_modify_group));
+	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
 	tree->add_theme_constant_override("draw_guides", 1);
 	add_theme_constant_override("separation", 3 * EDSCALE);
 

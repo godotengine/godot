@@ -375,17 +375,17 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
             const Transform3D &tr = p_transform;
 
             GLfloat matrix[16]={ /* build a 16x16 matrix */
-                (GLfloat)tr.basis.elements[0][0],
-                (GLfloat)tr.basis.elements[1][0],
-                (GLfloat)tr.basis.elements[2][0],
+                (GLfloat)tr.basis.rows[0][0],
+                (GLfloat)tr.basis.rows[1][0],
+                (GLfloat)tr.basis.rows[2][0],
                 (GLfloat)0,
-                (GLfloat)tr.basis.elements[0][1],
-                (GLfloat)tr.basis.elements[1][1],
-                (GLfloat)tr.basis.elements[2][1],
+                (GLfloat)tr.basis.rows[0][1],
+                (GLfloat)tr.basis.rows[1][1],
+                (GLfloat)tr.basis.rows[2][1],
                 (GLfloat)0,
-                (GLfloat)tr.basis.elements[0][2],
-                (GLfloat)tr.basis.elements[1][2],
-                (GLfloat)tr.basis.elements[2][2],
+                (GLfloat)tr.basis.rows[0][2],
+                (GLfloat)tr.basis.rows[1][2],
+                (GLfloat)tr.basis.rows[2][2],
                 (GLfloat)0,
                 (GLfloat)tr.origin.x,
                 (GLfloat)tr.origin.y,
@@ -410,20 +410,20 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
             const Transform2D &tr = p_transform;
 
         GLfloat matrix[16]={ /* build a 16x16 matrix */
-            (GLfloat)tr.elements[0][0],
-            (GLfloat)tr.elements[0][1],
+            (GLfloat)tr.columns[0][0],
+            (GLfloat)tr.columns[0][1],
             (GLfloat)0,
             (GLfloat)0,
-            (GLfloat)tr.elements[1][0],
-            (GLfloat)tr.elements[1][1],
+            (GLfloat)tr.columns[1][0],
+            (GLfloat)tr.columns[1][1],
             (GLfloat)0,
             (GLfloat)0,
             (GLfloat)0,
             (GLfloat)0,
             (GLfloat)1,
             (GLfloat)0,
-            (GLfloat)tr.elements[2][0],
-            (GLfloat)tr.elements[2][1],
+            (GLfloat)tr.columns[2][0],
+            (GLfloat)tr.columns[2][1],
             (GLfloat)0,
             (GLfloat)1
         };

@@ -57,7 +57,7 @@ class OS_OSX : public OS_Unix {
 
 	MainLoop *main_loop = nullptr;
 
-	String open_with_filename;
+	List<String> launch_service_args;
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
@@ -73,14 +73,14 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
-	String get_open_with_filename() const;
-	void set_open_with_filename(const String &p_path);
+	virtual void set_cmdline_platform_args(const List<String> &p_args);
+	virtual List<String> get_cmdline_platform_args() const override;
 
 	virtual String get_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -102,6 +102,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

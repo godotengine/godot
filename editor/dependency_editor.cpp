@@ -40,7 +40,7 @@
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
-	Map<String, String> dep_rename;
+	HashMap<String, String> dep_rename;
 	dep_rename[replacing] = p_path;
 
 	ResourceLoader::rename_dependencies(editing, dep_rename);
@@ -49,7 +49,10 @@ void DependencyEditor::_searched(const String &p_path) {
 	_update_file();
 }
 
-void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
+void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	replacing = ti->get_text(1);
 
@@ -64,7 +67,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->popup_file_dialog();
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates) {
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fix_and_find(efsd->get_subdir(i), candidates);
 	}
@@ -121,12 +124,12 @@ void DependencyEditor::_fix_all() {
 		return;
 	}
 
-	Map<String, Map<String, String>> candidates;
+	HashMap<String, HashMap<String, String>> candidates;
 
 	for (const String &E : missing) {
 		String base = E.get_file();
 		if (!candidates.has(base)) {
-			candidates[base] = Map<String, String>();
+			candidates[base] = HashMap<String, String>();
 		}
 
 		candidates[base][E] = "";
@@ -134,9 +137,9 @@ void DependencyEditor::_fix_all() {
 
 	_fix_and_find(EditorFileSystem::get_singleton()->get_filesystem(), candidates);
 
-	Map<String, String> remaps;
+	HashMap<String, String> remaps;
 
-	for (KeyValue<String, Map<String, String>> &E : candidates) {
+	for (KeyValue<String, HashMap<String, String>> &E : candidates) {
 		for (const KeyValue<String, String> &F : E.value) {
 			if (!F.value.is_empty()) {
 				remaps[F.key] = F.value;
@@ -242,7 +245,7 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_clip_content(1, true);
 	tree->set_column_expand_ratio(1, 1);
 	tree->set_hide_root(true);
-	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
+	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
@@ -271,7 +274,11 @@ DependencyEditor::DependencyEditor() {
 }
 
 /////////////////////////////////////
-void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
+void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::RIGHT) {
+		return;
+	}
+
 	file_options->clear();
 	file_options->reset_size();
 	if (p_item >= 0) {
@@ -287,7 +294,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 	String fpath = owners->get_item_text(p_idx);
 
 	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		editor->open_request(fpath);
+		EditorNode::get_singleton()->open_request(fpath);
 		hide();
 		emit_signal(SNAME("confirmed"));
 	}
@@ -342,19 +349,17 @@ void DependencyEditorOwners::show(const String &p_path) {
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 	popup_centered_ratio(0.3);
 
-	set_title(TTR("Owners Of:") + " " + p_path.get_file());
+	set_title(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), owners->get_item_count()));
 }
 
-DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
-	editor = p_editor;
-
+DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_select_mode(ItemList::SELECT_SINGLE);
-	owners->connect("item_rmb_selected", callable_mp(this, &DependencyEditorOwners::_list_rmb_select));
+	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->set_allow_rmb_select(true);
 	add_child(owners);
@@ -412,7 +417,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	owners->clear();
 	owners->create_item(); // root
 
-	Map<String, TreeItem *> tree_items;
+	HashMap<String, TreeItem *> tree_items;
 	for (int i = 0; i < p_removed.size(); i++) {
 		RemovedDependency rd = p_removed[i];
 
@@ -482,7 +487,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 void DependencyRemoveDialog::ok_pressed() {
 	for (int i = 0; i < files_to_delete.size(); ++i) {
 		if (ResourceCache::has(files_to_delete[i])) {
-			Resource *res = ResourceCache::get(files_to_delete[i]);
+			Ref<Resource> res = ResourceCache::get_ref(files_to_delete[i]);
 			res->set_path("");
 		}
 
@@ -570,7 +575,7 @@ void DependencyRemoveDialog::_bind_methods() {
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
-	get_ok_button()->set_text(TTR("Remove"));
+	set_ok_button_text(TTR("Remove"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
@@ -636,8 +641,8 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	set_min_size(Size2(500, 220) * EDSCALE);
-	get_ok_button()->set_text(TTR("Open Anyway"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Open Anyway"));
+	set_cancel_button_text(TTR("Close"));
 
 	text = memnew(Label);
 	vb->add_child(text);
@@ -751,16 +756,18 @@ void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &path
 }
 
 void OrphanResourcesDialog::_delete_confirm() {
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (const String &E : paths) {
 		da->remove(E);
 		EditorFileSystem::get_singleton()->update_file(E);
 	}
-	memdelete(da);
 	refresh();
 }
 
-void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id) {
+void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 
 	String path = ti->get_metadata(0);
@@ -773,7 +780,7 @@ void OrphanResourcesDialog::_bind_methods() {
 OrphanResourcesDialog::OrphanResourcesDialog() {
 	set_title(TTR("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
-	get_ok_button()->set_text(TTR("Delete"));
+	set_ok_button_text(TTR("Delete"));
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
@@ -795,5 +802,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	files->connect("button_pressed", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
+	files->connect("button_clicked", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera3D" inherits="Node3D" version="4.0">
+<class name="Camera3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>
@@ -88,14 +88,14 @@
 			<return type="Vector3" />
 			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a normal vector in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_ray_origin" qualifiers="const">
 			<return type="Vector3" />
 			<argument index="0" name="screen_point" type="Vector2" />
 			<description>
-				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+				Returns a 3D position in world space, that is the result of projecting a point on the [Viewport] rectangle by the inverse camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="set_cull_mask_value">
@@ -155,6 +155,7 @@
 		</member>
 		<member name="current" type="bool" setter="set_current" getter="is_current" default="false">
 			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
+			If multiple cameras are in the scene, one will always be made current. For example, if two [Camera3D] nodes are present in the scene and only one is current, setting one camera's [member current] to [code]false[/code] will cause the other camera to be made current.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera3D.DopplerTracking" default="0">
 			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
@@ -192,7 +193,7 @@
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
 		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
-			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
+			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal and frustum modes. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical (Y) offset of the camera viewport.

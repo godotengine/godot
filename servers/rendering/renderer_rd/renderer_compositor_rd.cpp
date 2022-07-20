@@ -39,11 +39,14 @@ void RendererCompositorRD::prepare_for_blitting_render_targets() {
 
 void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
+	if (draw_list == RD::INVALID_ID) {
+		return; // Window is minimized and does not have valid swapchain, skip drawing without printing errors.
+	}
 
 	for (int i = 0; i < p_amount; i++) {
-		RID texture = storage->render_target_get_texture(p_render_targets[i].render_target);
+		RID texture = texture_storage->render_target_get_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(texture.is_null());
-		RID rd_texture = storage->texture_get_rd_texture(texture);
+		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 		ERR_CONTINUE(rd_texture.is_null());
 
 		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
@@ -53,8 +56,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u.binding = 0;
-			u.ids.push_back(blit.sampler);
-			u.ids.push_back(rd_texture);
+			u.append_id(blit.sampler);
+			u.append_id(rd_texture);
 			uniforms.push_back(u);
 			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 
@@ -151,7 +154,14 @@ uint64_t RendererCompositorRD::frame = 1;
 void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
-	memdelete(storage);
+	memdelete(effects);
+	memdelete(fog);
+	memdelete(particles_storage);
+	memdelete(light_storage);
+	memdelete(mesh_storage);
+	memdelete(material_storage);
+	memdelete(texture_storage);
+	memdelete(utilities);
 
 	//only need to erase these, the rest are erased by cascade
 	blit.shader.version_free(blit.shader_version);
@@ -162,9 +172,9 @@ void RendererCompositorRD::finalize() {
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 	RD::get_singleton()->prepare_screen_for_drawing();
 
-	RID texture = storage->texture_allocate();
-	storage->texture_2d_initialize(texture, p_image);
-	RID rd_texture = storage->texture_get_rd_texture(texture);
+	RID texture = texture_storage->texture_allocate();
+	texture_storage->texture_2d_initialize(texture, p_image);
+	RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 
 	RID uset;
 	{
@@ -172,8 +182,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.ids.push_back(blit.sampler);
-		u.ids.push_back(rd_texture);
+		u.append_id(blit.sampler);
+		u.append_id(rd_texture);
 		uniforms.push_back(u);
 		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
 	}
@@ -232,19 +242,21 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->swap_buffers();
 
-	storage->free(texture);
+	texture_storage->texture_free(texture);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
 
 RendererCompositorRD::RendererCompositorRD() {
+	uniform_set_cache = memnew(UniformSetCacheRD);
+
 	{
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
 		}
-		DirAccessRef da = DirAccess::open(shader_cache_dir);
-		if (!da) {
+		Ref<DirAccess> da = DirAccess::open(shader_cache_dir);
+		if (da.is_null()) {
 			ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 		} else {
 			Error err = da->change_dir("shader_cache");
@@ -276,27 +288,33 @@ RendererCompositorRD::RendererCompositorRD() {
 	}
 
 	singleton = this;
-	time = 0;
 
-	storage = memnew(RendererStorageRD);
-	canvas = memnew(RendererCanvasRenderRD(storage));
+	utilities = memnew(RendererRD::Utilities);
+	texture_storage = memnew(RendererRD::TextureStorage);
+	material_storage = memnew(RendererRD::MaterialStorage);
+	mesh_storage = memnew(RendererRD::MeshStorage);
+	light_storage = memnew(RendererRD::LightStorage);
+	particles_storage = memnew(RendererRD::ParticlesStorage);
+	fog = memnew(RendererRD::Fog);
+	canvas = memnew(RendererCanvasRenderRD());
 
 	back_end = (bool)(int)GLOBAL_GET("rendering/vulkan/rendering/back_end");
-	uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
 
 	if (back_end || textures_per_stage < 48) {
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile(storage));
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
 	} else { // back_end == false
 		// default to our high end renderer
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered(storage));
+		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
 	}
 
 	scene->init();
 
 	// now we're ready to create our effects,
-	storage->init_effects(!scene->_render_buffers_can_be_storage());
+	effects = memnew(EffectsRD(!scene->_render_buffers_can_be_storage()));
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
+	memdelete(uniform_set_cache);
 	ShaderRD::set_shader_cache_dir(String());
 }

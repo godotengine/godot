@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+/*
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -780,7 +780,7 @@ static void _exportBorderOutline(const SwStroke& stroke, SwOutline* outline, uin
     auto src = border->tags;
     auto tags = outline->types + outline->ptsCnt;
     auto cntrs = outline->cntrs + outline->cntrsCnt;
-    uint16_t idx = outline->ptsCnt;
+    auto idx = outline->ptsCnt;
 
     while (cnt > 0) {
 
@@ -921,7 +921,7 @@ SwOutline* strokeExportOutline(SwStroke* stroke, SwMpool* mpool, unsigned tid)
         outline->reservedPtsCnt = ptsCnt;
     }
     if (outline->reservedCntrsCnt < cntrsCnt) {
-        outline->cntrs = static_cast<uint16_t*>(realloc(outline->cntrs, sizeof(uint16_t) * cntrsCnt));
+        outline->cntrs = static_cast<uint32_t*>(realloc(outline->cntrs, sizeof(uint32_t) * cntrsCnt));
         outline->reservedCntrsCnt = cntrsCnt;
     }
 

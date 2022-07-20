@@ -42,10 +42,12 @@
 #include <dlfcn.h>
 #include <libproc.h>
 #include <mach-o/dyld.h>
+#include <os/log.h>
+#include <sys/sysctl.h>
 
 _FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
 	// Append framework executable name, or return as is if p_path is not a framework.
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
 		return p_path.plus_file(p_path.get_file().get_basename());
 	} else {
@@ -56,7 +58,8 @@ _FORCE_INLINE_ String OS_OSX::get_framework_executable(const String &p_path) {
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
 	// Prevent main loop from sleeping and redraw window during resize / modal popups.
 
-	if (get_singleton()->get_main_loop()) {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD || !ds->get_is_resizing())) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -70,6 +73,15 @@ void OS_OSX::initialize() {
 	crash_handler.initialize();
 
 	initialize_core();
+}
+
+String OS_OSX::get_processor_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
 }
 
 void OS_OSX::initialize_core() {
@@ -109,12 +121,12 @@ void OS_OSX::delete_main_loop() {
 	main_loop = nullptr;
 }
 
-String OS_OSX::get_open_with_filename() const {
-	return open_with_filename;
+void OS_OSX::set_cmdline_platform_args(const List<String> &p_args) {
+	launch_service_args = p_args;
 }
 
-void OS_OSX::set_open_with_filename(const String &p_path) {
-	open_with_filename = p_path;
+List<String> OS_OSX::get_cmdline_platform_args() const {
+	return launch_service_args;
 }
 
 String OS_OSX::get_name() const {
@@ -138,7 +150,7 @@ void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	}
 }
 
-Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -153,6 +165,11 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
+	}
+
 	return OK;
 }
 
@@ -301,21 +318,22 @@ String OS_OSX::get_executable_path() const {
 }
 
 Error OS_OSX::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
-	if (@available(macOS 10.15, *)) {
-		// Use NSWorkspace if path is an .app bundle.
-		NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
-		NSBundle *bundle = [NSBundle bundleWithURL:url];
-		if (bundle) {
-			NSMutableArray *arguments = [[NSMutableArray alloc] init];
-			for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-				[arguments addObject:[NSString stringWithUTF8String:E->get().utf8().get_data()]];
-			}
+	// Use NSWorkspace if path is an .app bundle.
+	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+	NSBundle *bundle = [NSBundle bundleWithURL:url];
+	if (bundle) {
+		NSMutableArray *arguments = [[NSMutableArray alloc] init];
+		for (const String &arg : p_arguments) {
+			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
+		}
+		if (@available(macOS 10.15, *)) {
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
+
 			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
 												  configuration:configuration
 											  completionHandler:^(NSRunningApplication *app, NSError *error) {
@@ -338,7 +356,19 @@ Error OS_OSX::create_process(const String &p_path, const List<String> &p_argumen
 
 			return err;
 		} else {
-			return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+			Error err = ERR_TIMEOUT;
+			NSError *error = nullptr;
+			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
+			if (error) {
+				err = ERR_CANT_FORK;
+				NSLog(@"Failed to execute: %@", error.localizedDescription);
+			} else {
+				if (r_child_id) {
+					*r_child_id = (ProcessID)[app processIdentifier];
+				}
+				err = OK;
+			}
+			return err;
 		}
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
@@ -430,7 +460,7 @@ void OS_OSX::run() {
 		} @catch (NSException *exception) {
 			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
-	};
+	}
 
 	main_loop->finalize();
 }

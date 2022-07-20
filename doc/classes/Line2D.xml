@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" version="4.0">
+<class name="Line2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D line.
 	</brief_description>
@@ -79,7 +79,8 @@
 			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
-			The smoothness of the rounded joints and caps. This is only used if a cap or joint is set as round.
+			The smoothness of the rounded joints and caps. Higher values result in smoother corners, but are more demanding to render and update. This is only used if a cap or joint is set as round.
+			[b]Note:[/b] The default value is tuned for lines with the default [member width]. For thin lines, this value should be reduced to a number between [code]2[/code] and [code]4[/code] to improve performance.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
 			The direction difference in radians between vector points. This value is only used if [member joint_mode] is set to [constant LINE_JOINT_SHARP].
@@ -120,10 +121,10 @@
 			Takes the left pixels of the texture and renders it over the whole line.
 		</constant>
 		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
-			Tiles the texture over the line. The texture must be imported with [b]Repeat[/b] enabled for it to work properly.
+			Tiles the texture over the line. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_ENABLED] or [constant CanvasItem.TEXTURE_REPEAT_MIRROR] for it to work properly.
 		</constant>
 		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
-			Stretches the texture across the line. Import the texture with [b]Repeat[/b] disabled for best results.
+			Stretches the texture across the line. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_DISABLED] for best results.
 		</constant>
 	</constants>
 </class>

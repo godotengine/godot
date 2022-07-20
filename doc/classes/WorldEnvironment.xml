@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WorldEnvironment" inherits="Node" version="4.0">
+<class name="WorldEnvironment" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Default environment properties for the entire scene (post-processing effects, lighting and background settings).
 	</brief_description>
@@ -16,6 +16,7 @@
 	</tutorials>
 	<members>
 		<member name="camera_effects" type="CameraEffects" setter="set_camera_effects" getter="get_camera_effects">
+			The [CameraEffects] resource used by this [WorldEnvironment], defining the default properties. This [CameraEffects] resource will be used by all [Camera3D]s that do not define their own [CameraEffects].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.

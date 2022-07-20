@@ -35,19 +35,17 @@
 #include "scene/3d/lightmap_gi.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
 struct EditorProgress;
 class EditorFileDialog;
 
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);
 
-	LightmapGI *lightmap;
+	LightmapGI *lightmap = nullptr;
 
-	Button *bake;
-	EditorNode *editor;
+	Button *bake = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
 	static bool bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
 	static void bake_func_end(uint64_t p_time_started);
@@ -65,7 +63,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	LightmapGIEditorPlugin(EditorNode *p_node);
+	LightmapGIEditorPlugin();
 	~LightmapGIEditorPlugin();
 };
 

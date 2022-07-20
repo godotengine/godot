@@ -58,6 +58,7 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 #endif // DISABLE_DEPRECATED
 
 void RectangleShape2D::set_size(const Vector2 &p_size) {
+	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
 	size = p_size;
 	_update_shape();
 }
@@ -100,7 +101,7 @@ void RectangleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &RectangleShape2D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &RectangleShape2D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 RectangleShape2D::RectangleShape2D() :

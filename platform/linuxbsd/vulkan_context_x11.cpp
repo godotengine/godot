@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "vulkan_context_x11.h"
+
 #ifdef USE_VOLK
 #include <volk.h>
 #else

@@ -36,13 +36,12 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/immediate_mesh.h"
 
-class EditorNode;
 class CanvasItemEditor;
 
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	enum Mode {
 		MODE_CREATE,
 		MODE_EDIT,
@@ -51,31 +50,30 @@ class Polygon3DEditor : public HBoxContainer {
 
 	Mode mode;
 
-	Button *button_create;
-	Button *button_edit;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
 
 	Ref<StandardMaterial3D> line_material;
 	Ref<StandardMaterial3D> handle_material;
 
-	EditorNode *editor;
-	Panel *panel;
-	Node3D *node;
+	Panel *panel = nullptr;
+	Node3D *node = nullptr;
 	Ref<Resource> node_resource;
 	Ref<ImmediateMesh> imesh;
-	MeshInstance3D *imgeom;
-	MeshInstance3D *pointsm;
+	MeshInstance3D *imgeom = nullptr;
+	MeshInstance3D *pointsm = nullptr;
 	Ref<ArrayMesh> m;
 
-	MenuButton *options;
+	MenuButton *options = nullptr;
 
-	int edited_point;
+	int edited_point = 0;
 	Vector2 edited_point_pos;
 	PackedVector2Array pre_move_edit;
 	PackedVector2Array wip;
 	bool wip_active;
 	bool snap_ignore;
 
-	float prev_depth;
+	float prev_depth = 0.0f;
 
 	void _wip_close();
 	void _polygon_draw();
@@ -93,15 +91,14 @@ protected:
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	void edit(Node *p_node);
-	Polygon3DEditor(EditorNode *p_editor);
+	Polygon3DEditor();
 	~Polygon3DEditor();
 };
 
 class Polygon3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Polygon3DEditorPlugin, EditorPlugin);
 
-	Polygon3DEditor *polygon_editor;
-	EditorNode *editor;
+	Polygon3DEditor *polygon_editor = nullptr;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
@@ -112,7 +109,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	Polygon3DEditorPlugin(EditorNode *p_node);
+	Polygon3DEditorPlugin();
 	~Polygon3DEditorPlugin();
 };
 

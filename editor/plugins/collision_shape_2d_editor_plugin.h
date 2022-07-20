@@ -32,10 +32,8 @@
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-
 #include "scene/2d/collision_shape_2d.h"
 
-class EditorNode;
 class CanvasItemEditor;
 
 class CollisionShape2DEditor : public Control {
@@ -63,10 +61,9 @@ class CollisionShape2DEditor : public Control {
 		Point2(1, -1),
 	};
 
-	EditorNode *editor;
-	UndoRedo *undo_redo;
-	CanvasItemEditor *canvas_item_editor;
-	CollisionShape2D *node;
+	UndoRedo *undo_redo = nullptr;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	CollisionShape2D *node = nullptr;
 
 	Vector<Point2> handles;
 
@@ -93,14 +90,13 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_node);
 
-	CollisionShape2DEditor(EditorNode *p_editor);
+	CollisionShape2DEditor();
 };
 
 class CollisionShape2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CollisionShape2DEditorPlugin, EditorPlugin);
 
-	CollisionShape2DEditor *collision_shape_2d_editor;
-	EditorNode *editor;
+	CollisionShape2DEditor *collision_shape_2d_editor = nullptr;
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
@@ -112,7 +108,7 @@ public:
 	virtual bool handles(Object *p_obj) const override;
 	virtual void make_visible(bool visible) override;
 
-	CollisionShape2DEditorPlugin(EditorNode *p_editor);
+	CollisionShape2DEditorPlugin();
 	~CollisionShape2DEditorPlugin();
 };
 

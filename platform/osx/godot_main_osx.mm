@@ -35,10 +35,20 @@
 #include <string.h>
 #include <unistd.h>
 
+#if defined(SANITIZERS_ENABLED)
+#include <sys/resource.h>
+#endif
+
 int main(int argc, char **argv) {
 #if defined(VULKAN_ENABLED)
 	// MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
+#if defined(SANITIZERS_ENABLED)
+	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.
+	struct rlimit stack_lim = { 0x1E00000, 0x1E00000 };
+	setrlimit(RLIMIT_STACK, &stack_lim);
 #endif
 
 	int first_arg = 1;
@@ -49,7 +59,7 @@ int main(int argc, char **argv) {
 			first_arg = i + 2;
 		}
 		printf("%i: %s\n", i, argv[i]);
-	};
+	}
 
 #ifdef DEBUG_ENABLED
 	// Lets report the path we made current after all that.
@@ -64,16 +74,11 @@ int main(int argc, char **argv) {
 	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
+	err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
 
-	if (err != OK) {
+	if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		return 0;
+	} else if (err != OK) {
 		return 255;
 	}
 
@@ -84,4 +89,4 @@ int main(int argc, char **argv) {
 	Main::cleanup();
 
 	return os.get_exit_code();
-};
+}

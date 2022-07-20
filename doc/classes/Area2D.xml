@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area2D" inherits="CollisionObject2D" version="4.0">
+<class name="Area2D" inherits="CollisionObject2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		2D area for detection and physics and audio influence.
 	</brief_description>
@@ -118,8 +118,8 @@
 				Emitted when one of another Area2D's [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_rid[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]area[/code] the other Area2D.
-				[code]area_shape_index[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]area_shape_index[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -131,8 +131,8 @@
 				Emitted when one of another Area2D's [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_rid[/code] the [RID] of the other Area2D's [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]area[/code] the other Area2D.
-				[code]area_shape_index[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]area_shape_index[/code] the index of the [Shape2D] of the other Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_entered">
@@ -158,8 +158,8 @@
 				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s enters one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body_rid[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
-				[code]body_shape_index[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -171,8 +171,8 @@
 				Emitted when one of a [PhysicsBody2D] or [TileMap]'s [Shape2D]s exits one of this Area2D's [Shape2D]s. Requires [member monitoring] to be set to [code]true[/code]. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[code]body_rid[/code] the [RID] of the [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody2D] or [TileMap].
-				[code]body_shape_index[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape2D] of the [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape2D] of this Area2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 	</signals>

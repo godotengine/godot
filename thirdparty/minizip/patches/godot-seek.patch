@@ -1,0 +1,294 @@
+diff --git a/thirdparty/minizip/ioapi.c b/thirdparty/minizip/ioapi.c
+index d666e5a228..db4c33b4b9 100644
+--- a/thirdparty/minizip/ioapi.c
++++ b/thirdparty/minizip/ioapi.c
+@@ -80,8 +80,15 @@ void fill_zlib_filefunc64_32_def_from_filefunc32(zlib_filefunc64_32_def* p_filef
+     p_filefunc64_32->zfile_func64.opaque = p_filefunc32->opaque;
+     p_filefunc64_32->zseek32_file = p_filefunc32->zseek_file;
+     p_filefunc64_32->ztell32_file = p_filefunc32->ztell_file;
++    /* GODOT start */
++    p_filefunc64_32->zfile_func64.alloc_mem = p_filefunc32->alloc_mem;
++    p_filefunc64_32->zfile_func64.free_mem = p_filefunc32->free_mem;
++    /* GODOT end */
+ }
+ 
++/* GODOT start */
++/*
++// GODOT end
+ 
+ 
+ static voidpf  ZCALLBACK fopen_file_func OF((voidpf opaque, const char* filename, int mode));
+@@ -255,3 +262,6 @@ void fill_fopen64_filefunc (zlib_filefunc64_def*  pzlib_filefunc_def)
+     pzlib_filefunc_def->zerror_file = ferror_file_func;
+     pzlib_filefunc_def->opaque = NULL;
+ }
++// GODOT start
++*/
++/* GODOT end */
+diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
+index 114bfab762..2f24a5b6a0 100644
+--- a/thirdparty/minizip/ioapi.h
++++ b/thirdparty/minizip/ioapi.h
+@@ -155,6 +155,10 @@ typedef struct zlib_filefunc_def_s
+     close_file_func     zclose_file;
+     testerror_file_func zerror_file;
+     voidpf              opaque;
++    /* GODOT start */
++    alloc_func          alloc_mem;
++    free_func           free_mem;
++    /* GODOT end */
+ } zlib_filefunc_def;
+ 
+ typedef ZPOS64_T (ZCALLBACK *tell64_file_func)    OF((voidpf opaque, voidpf stream));
+@@ -171,6 +175,10 @@ typedef struct zlib_filefunc64_def_s
+     close_file_func     zclose_file;
+     testerror_file_func zerror_file;
+     voidpf              opaque;
++    /* GODOT start */
++    alloc_func          alloc_mem;
++    free_func           free_mem;
++    /* GODOT end */
+ } zlib_filefunc64_def;
+ 
+ void fill_fopen64_filefunc OF((zlib_filefunc64_def* pzlib_filefunc_def));
+diff --git a/thirdparty/minizip/unzip.c b/thirdparty/minizip/unzip.c
+index 5e12e47474..3b191e827c 100644
+--- a/thirdparty/minizip/unzip.c
++++ b/thirdparty/minizip/unzip.c
+@@ -157,6 +157,9 @@ typedef struct
+     uLong compression_method;   /* compression method (0==store) */
+     ZPOS64_T byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
+     int   raw;
++    /* GODOT start */
++    int extra_size;
++    /* GODOT end */
+ } file_in_zip64_read_info_s;
+ 
+ 
+@@ -606,9 +609,10 @@ local unzFile unzOpenInternal (const void *path,
+     us.z_filefunc.zseek32_file = NULL;
+     us.z_filefunc.ztell32_file = NULL;
+     if (pzlib_filefunc64_32_def==NULL)
+-        fill_fopen64_filefunc(&us.z_filefunc.zfile_func64);
+-    else
+-        us.z_filefunc = *pzlib_filefunc64_32_def;
++        /* GODOT start */
++        return NULL; // standard i/o not supported
++    us.z_filefunc = *pzlib_filefunc64_32_def;
++    /* GODOT end */
+     us.is64bitOpenFunction = is64bitOpenFunction;
+ 
+ 
+@@ -800,6 +804,18 @@ extern unzFile ZEXPORT unzOpen64 (const void *path)
+     return unzOpenInternal(path, NULL, 1);
+ }
+ 
++/* GODOT start */
++extern void* unzGetOpaque(unzFile file) {
++
++    unz64_s* s;
++    if (file==NULL)
++        return NULL;
++    s=(unz64_s*)file;
++
++    return s->z_filefunc.zfile_func64.opaque;
++};
++/* GODOT end */
++
+ /*
+   Close a ZipFile opened with unzOpen.
+   If there is files inside the .Zip opened with unzOpenCurrentFile (see later),
+@@ -1018,10 +1034,23 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
+ 
+         if (lSeek!=0)
+         {
++            /* GODOT start */
++            if (lSeek<0) {
++                // WORKAROUND for backwards seeking
++                ZPOS64_T pos = ZTELL64(s->z_filefunc, s->filestream);
++                if (ZSEEK64(s->z_filefunc, s->filestream,pos+(ZPOS64_T)lSeek,ZLIB_FILEFUNC_SEEK_SET)==0)
++                    lSeek=0;
++                else
++                    err=UNZ_ERRNO;
++            } else {
++            /* GODOT end */
+             if (ZSEEK64(s->z_filefunc, s->filestream,(ZPOS64_T)lSeek,ZLIB_FILEFUNC_SEEK_CUR)==0)
+                 lSeek=0;
+             else
+                 err=UNZ_ERRNO;
++            /* GODOT start */
++            }
++            /* GODOT end */
+         }
+ 
+         while(acc < file_info.size_file_extra)
+@@ -1575,8 +1604,10 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+     }
+     else if ((s->cur_file_info.compression_method==Z_DEFLATED) && (!raw))
+     {
+-      pfile_in_zip_read_info->stream.zalloc = (alloc_func)0;
+-      pfile_in_zip_read_info->stream.zfree = (free_func)0;
++      /* GODOT start */
++      pfile_in_zip_read_info->stream.zalloc = s->z_filefunc.zfile_func64.alloc_mem;
++      pfile_in_zip_read_info->stream.zfree = s->z_filefunc.zfile_func64.free_mem;
++      /* GODOT end */
+       pfile_in_zip_read_info->stream.opaque = (voidpf)0;
+       pfile_in_zip_read_info->stream.next_in = 0;
+       pfile_in_zip_read_info->stream.avail_in = 0;
+@@ -1608,6 +1639,9 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+               iSizeVar;
+ 
+     pfile_in_zip_read_info->stream.avail_in = (uInt)0;
++    /* GODOT start */
++    pfile_in_zip_read_info->extra_size = iSizeVar;
++    /* GODOT end */
+ 
+     s->pfile_in_zip_read = pfile_in_zip_read_info;
+                 s->encrypted = 0;
+@@ -1638,6 +1672,85 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
+     return UNZ_OK;
+ }
+ 
++/* GODOT start */
++extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos) {
++
++    unz64_s* s;
++    file_in_zip64_read_info_s* pfile_in_zip_read_info;
++    if (file==NULL)
++        return UNZ_PARAMERROR;
++    s=(unz64_s*)file;
++    pfile_in_zip_read_info=s->pfile_in_zip_read;
++
++    if (pfile_in_zip_read_info==NULL)
++        return UNZ_PARAMERROR;
++
++    if (pfile_in_zip_read_info->compression_method==Z_BZIP2ED) { // don't know how to support bzip
++        return UNZ_INTERNALERROR;
++    }
++
++    if ((pfile_in_zip_read_info->compression_method==0) || (pfile_in_zip_read_info->raw)) {
++
++        pfile_in_zip_read_info->rest_read_compressed =
++                s->cur_file_info.compressed_size - pos;
++        pfile_in_zip_read_info->rest_read_uncompressed =
++                s->cur_file_info.uncompressed_size - pos;
++
++        pfile_in_zip_read_info->pos_in_zipfile =
++                s->cur_file_info_internal.offset_curfile + SIZEZIPLOCALHEADER +
++                        pfile_in_zip_read_info->extra_size + pos;
++
++        pfile_in_zip_read_info->stream.avail_in = (uInt)0;
++        pfile_in_zip_read_info->stream.total_out = pos;
++
++        return ZSEEK64(pfile_in_zip_read_info->z_filefunc,
++                       pfile_in_zip_read_info->filestream,
++                       pfile_in_zip_read_info->byte_before_the_zipfile + pfile_in_zip_read_info->pos_in_zipfile,
++                       ZLIB_FILEFUNC_SEEK_SET);
++
++    } else { // gzip
++
++        if (pos < pfile_in_zip_read_info->stream.total_out) { // negative seek, rewind
++
++            pfile_in_zip_read_info->rest_read_compressed =
++                    s->cur_file_info.compressed_size ;
++            pfile_in_zip_read_info->rest_read_uncompressed =
++                    s->cur_file_info.uncompressed_size ;
++
++            pfile_in_zip_read_info->pos_in_zipfile =
++                    s->cur_file_info_internal.offset_curfile + SIZEZIPLOCALHEADER +
++                            pfile_in_zip_read_info->extra_size;
++
++            (void)inflateReset(&pfile_in_zip_read_info->stream);
++
++            pfile_in_zip_read_info->stream.avail_in = (uInt)0;
++            pfile_in_zip_read_info->stream.total_out = 0;
++            pfile_in_zip_read_info->stream.next_in = 0;
++        }
++
++        // not sure where to read, so read on the stack
++        {
++            char buf[512];
++            int to_read = pos - pfile_in_zip_read_info->stream.total_out;
++            while (to_read) {
++
++                int len = to_read > sizeof(buf)?sizeof(buf):to_read;
++                int read = unzReadCurrentFile(file, buf, len);
++                if (read < 0) {
++                    return read;
++                }
++                to_read -= read;
++                if (read == UNZ_EOF) {
++                    return pos;
++                }
++            }
++        }
++    }
++
++    return pos;
++}
++/* GODOT end */
++
+ extern int ZEXPORT unzOpenCurrentFile (unzFile file)
+ {
+     return unzOpenCurrentFile3(file, NULL, NULL, 0, NULL);
+diff --git a/thirdparty/minizip/unzip.h b/thirdparty/minizip/unzip.h
+index 6f95e94d75..71a7d89692 100644
+--- a/thirdparty/minizip/unzip.h
++++ b/thirdparty/minizip/unzip.h
+@@ -202,6 +202,10 @@ extern int ZEXPORT unzClose OF((unzFile file));
+     these files MUST be closed with unzCloseCurrentFile before call unzClose.
+   return UNZ_OK if there is no problem. */
+ 
++/* GODOT start */
++extern void* unzGetOpaque(unzFile file);
++/* GODOT end */
++
+ extern int ZEXPORT unzGetGlobalInfo OF((unzFile file,
+                                         unz_global_info *pglobal_info));
+ 
+@@ -390,6 +394,13 @@ extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
+     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
+ */
+ 
++/* GODOT start */
++extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos);
++/*
++  Seek to position in uncompressed data
++*/
++/* GODOT end */
++
+ extern z_off_t ZEXPORT unztell OF((unzFile file));
+ 
+ extern ZPOS64_T ZEXPORT unztell64 OF((unzFile file));
+diff --git a/thirdparty/minizip/zip.c b/thirdparty/minizip/zip.c
+index 4e611e1163..6d1c26d9f8 100644
+--- a/thirdparty/minizip/zip.c
++++ b/thirdparty/minizip/zip.c
+@@ -854,9 +854,11 @@ extern zipFile ZEXPORT zipOpen3 (const void *pathname, int append, zipcharpc* gl
+ 
+     ziinit.z_filefunc.zseek32_file = NULL;
+     ziinit.z_filefunc.ztell32_file = NULL;
+-    if (pzlib_filefunc64_32_def==NULL)
+-        fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
+-    else
++    /* GODOT start */
++    if (pzlib_filefunc64_32_def==NULL) {
++        //fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
++    } else
++    /* GODOT end */
+         ziinit.z_filefunc = *pzlib_filefunc64_32_def;
+ 
+     ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
+@@ -1211,8 +1213,10 @@ extern int ZEXPORT zipOpenNewFileInZip4_64 (zipFile file, const char* filename,
+     {
+         if(zi->ci.method == Z_DEFLATED)
+         {
+-          zi->ci.stream.zalloc = (alloc_func)0;
+-          zi->ci.stream.zfree = (free_func)0;
++          /* GODOT start */
++          zi->ci.stream.zalloc = zi->z_filefunc.zfile_func64.alloc_mem;
++          zi->ci.stream.zfree = zi->z_filefunc.zfile_func64.free_mem;
++          /* GODOT end */
+           zi->ci.stream.opaque = (voidpf)0;
+ 
+           if (windowBits>0)

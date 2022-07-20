@@ -31,11 +31,11 @@
 #ifndef DISJOINT_SET_H
 #define DISJOINT_SET_H
 
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 
 /* This DisjointSet class uses Find with path compression and Union by rank */
-template <typename T, class C = Comparator<T>, class AL = DefaultAllocator>
+template <typename T, class H = HashMapHasherDefault, class C = HashMapComparatorDefault<T>, class AL = DefaultAllocator>
 class DisjointSet {
 	struct Element {
 		T object;
@@ -43,7 +43,7 @@ class DisjointSet {
 		int rank = 0;
 	};
 
-	typedef Map<T, Element *, C, AL> MapT;
+	typedef HashMap<T, Element *, H, C> MapT;
 
 	MapT elements;
 
@@ -65,15 +65,15 @@ public:
 
 /* FUNCTIONS */
 
-template <typename T, class C, class AL>
-DisjointSet<T, C, AL>::~DisjointSet() {
-	for (typename MapT::Element *itr = elements.front(); itr != nullptr; itr = itr->next()) {
-		memdelete_allocator<Element, AL>(itr->value());
+template <typename T, class H, class C, class AL>
+DisjointSet<T, H, C, AL>::~DisjointSet() {
+	for (KeyValue<T, Element *> &E : elements) {
+		memdelete_allocator<Element, AL>(E.value);
 	}
 }
 
-template <typename T, class C, class AL>
-typename DisjointSet<T, C, AL>::Element *DisjointSet<T, C, AL>::get_parent(Element *element) {
+template <typename T, class H, class C, class AL>
+typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::get_parent(Element *element) {
 	if (element->parent != element) {
 		element->parent = get_parent(element->parent);
 	}
@@ -81,11 +81,11 @@ typename DisjointSet<T, C, AL>::Element *DisjointSet<T, C, AL>::get_parent(Eleme
 	return element->parent;
 }
 
-template <typename T, class C, class AL>
-typename DisjointSet<T, C, AL>::Element *DisjointSet<T, C, AL>::insert_or_get(T object) {
-	typename MapT::Element *itr = elements.find(object);
+template <typename T, class H, class C, class AL>
+typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::insert_or_get(T object) {
+	typename MapT::Iterator itr = elements.find(object);
 	if (itr != nullptr) {
-		return itr->value();
+		return itr->value;
 	}
 
 	Element *new_element = memnew_allocator(Element, AL);
@@ -96,8 +96,8 @@ typename DisjointSet<T, C, AL>::Element *DisjointSet<T, C, AL>::insert_or_get(T 
 	return new_element;
 }
 
-template <typename T, class C, class AL>
-void DisjointSet<T, C, AL>::create_union(T a, T b) {
+template <typename T, class H, class C, class AL>
+void DisjointSet<T, H, C, AL>::create_union(T a, T b) {
 	Element *x = insert_or_get(a);
 	Element *y = insert_or_get(b);
 
@@ -121,28 +121,28 @@ void DisjointSet<T, C, AL>::create_union(T a, T b) {
 	}
 }
 
-template <typename T, class C, class AL>
-void DisjointSet<T, C, AL>::get_representatives(Vector<T> &out_representatives) {
-	for (typename MapT::Element *itr = elements.front(); itr != nullptr; itr = itr->next()) {
-		Element *element = itr->value();
+template <typename T, class H, class C, class AL>
+void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &out_representatives) {
+	for (KeyValue<T, Element *> &E : elements) {
+		Element *element = E.value;
 		if (element->parent == element) {
 			out_representatives.push_back(element->object);
 		}
 	}
 }
 
-template <typename T, class C, class AL>
-void DisjointSet<T, C, AL>::get_members(Vector<T> &out_members, T representative) {
-	typename MapT::Element *rep_itr = elements.find(representative);
+template <typename T, class H, class C, class AL>
+void DisjointSet<T, H, C, AL>::get_members(Vector<T> &out_members, T representative) {
+	typename MapT::Iterator rep_itr = elements.find(representative);
 	ERR_FAIL_COND(rep_itr == nullptr);
 
-	Element *rep_element = rep_itr->value();
+	Element *rep_element = rep_itr->value;
 	ERR_FAIL_COND(rep_element->parent != rep_element);
 
-	for (typename MapT::Element *itr = elements.front(); itr != nullptr; itr = itr->next()) {
-		Element *parent = get_parent(itr->value());
+	for (KeyValue<T, Element *> &E : elements) {
+		Element *parent = get_parent(E.value);
 		if (parent == rep_element) {
-			out_members.push_back(itr->key());
+			out_members.push_back(E.key);
 		}
 	}
 }

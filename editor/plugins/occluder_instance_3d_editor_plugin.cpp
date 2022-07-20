@@ -63,7 +63,7 @@ void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
 				break;
 			}
 			case OccluderInstance3D::BAKE_ERROR_CANT_SAVE: {
-				EditorNode::get_singleton()->show_warning(TTR("Could not save the new occluder at the specified path: ") + p_file);
+				EditorNode::get_singleton()->show_warning(TTR("Could not save the new occluder at the specified path:") + " " + p_file);
 				break;
 			}
 			default: {
@@ -101,11 +101,10 @@ void OccluderInstance3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method("_bake", &OccluderInstance3DEditorPlugin::_bake);
 }
 
-OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));
@@ -114,7 +113,7 @@ OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin(EditorNode *p_nod
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	file_dialog->add_filter("*.occ ; Occluder3D");
+	file_dialog->add_filter("*.occ", "Occluder3D");
 	file_dialog->set_title(TTR("Select occluder bake file:"));
 	file_dialog->connect("file_selected", callable_mp(this, &OccluderInstance3DEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);

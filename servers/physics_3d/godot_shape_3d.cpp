@@ -62,7 +62,7 @@ void GodotShape3D::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
 	configured = true;
 	for (const KeyValue<GodotShapeOwner3D *, int> &E : owners) {
-		GodotShapeOwner3D *co = (GodotShapeOwner3D *)E.key;
+		GodotShapeOwner3D *co = const_cast<GodotShapeOwner3D *>(E.key);
 		co->_shape_changed();
 	}
 }
@@ -76,20 +76,20 @@ Vector3 GodotShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotShape3D::add_owner(GodotShapeOwner3D *p_owner) {
-	Map<GodotShapeOwner3D *, int>::Element *E = owners.find(p_owner);
+	HashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
 	if (E) {
-		E->get()++;
+		E->value++;
 	} else {
 		owners[p_owner] = 1;
 	}
 }
 
 void GodotShape3D::remove_owner(GodotShapeOwner3D *p_owner) {
-	Map<GodotShapeOwner3D *, int>::Element *E = owners.find(p_owner);
+	HashMap<GodotShapeOwner3D *, int>::Iterator E = owners.find(p_owner);
 	ERR_FAIL_COND(!E);
-	E->get()--;
-	if (E->get() == 0) {
-		owners.erase(E);
+	E->value--;
+	if (E->value == 0) {
+		owners.remove(E);
 	}
 }
 
@@ -97,7 +97,7 @@ bool GodotShape3D::is_owner(GodotShapeOwner3D *p_owner) const {
 	return owners.has(p_owner);
 }
 
-const Map<GodotShapeOwner3D *, int> &GodotShape3D::get_owners() const {
+const HashMap<GodotShapeOwner3D *, int> &GodotShape3D::get_owners() const {
 	return owners;
 }
 
@@ -662,7 +662,7 @@ GodotCapsuleShape3D::GodotCapsuleShape3D() {}
 /********** CYLINDER *************/
 
 void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
+	Vector3 cylinder_axis = p_transform.basis.get_column(1).normalized();
 	real_t axis_dot = cylinder_axis.dot(p_normal);
 
 	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
@@ -1284,12 +1284,6 @@ Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
 void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_params) const {
 	const BVH *bvh = &p_params->bvh[p_idx];
 
-	/*
-	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-		return; //test against whole AABB, which isn't very costly
-	*/
-
-	//printf("addr: %p\n",bvh);
 	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 		return;
 	}
@@ -1444,7 +1438,7 @@ Vector3 GodotConcavePolygonShape3D::get_moment_of_inertia(real_t p_mass) const {
 struct _Volume_BVH_Element {
 	AABB aabb;
 	Vector3 center;
-	int face_index;
+	int face_index = 0;
 };
 
 struct _Volume_BVH_CompareX {
@@ -1467,10 +1461,10 @@ struct _Volume_BVH_CompareZ {
 
 struct _Volume_BVH {
 	AABB aabb;
-	_Volume_BVH *left;
-	_Volume_BVH *right;
+	_Volume_BVH *left = nullptr;
+	_Volume_BVH *right = nullptr;
 
-	int face_index;
+	int face_index = 0;
 };
 
 _Volume_BVH *_volume_build_bvh(_Volume_BVH_Element *p_elements, int p_size, int &count) {

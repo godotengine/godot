@@ -41,6 +41,7 @@ public:
 	struct Triangle {
 		Vector3 normal;
 		int indices[3];
+		int32_t surface_index;
 	};
 
 private:
@@ -81,8 +82,8 @@ private:
 
 public:
 	bool is_valid() const;
-	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const;
-	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal) const;
+	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr) const;
+	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr) const;
 	bool intersect_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector3 get_area_normal(const AABB &p_aabb) const;
@@ -92,7 +93,7 @@ public:
 	const Vector<Vector3> &get_vertices() const { return vertices; }
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
-	void create(const Vector<Vector3> &p_faces);
+	void create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices = Vector<int32_t>());
 	TriangleMesh();
 };
 

@@ -38,6 +38,7 @@ class NavigationObstacle3D : public Node {
 
 	Node3D *parent_node3d = nullptr;
 	RID agent;
+	RID map_before_pause;
 
 	bool estimate_radius = true;
 	real_t radius = 1.0;

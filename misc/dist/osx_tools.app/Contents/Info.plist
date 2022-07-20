@@ -8,8 +8,6 @@
 	<string>Godot</string>
 	<key>CFBundleName</key>
 	<string>Godot</string>
-	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2022 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>

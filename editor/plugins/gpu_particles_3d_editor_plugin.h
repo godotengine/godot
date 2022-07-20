@@ -35,28 +35,27 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/spin_box.h"
 
-class EditorNode;
 class SceneTreeDialog;
 
 class GPUParticles3DEditorBase : public Control {
 	GDCLASS(GPUParticles3DEditorBase, Control);
 
 protected:
-	Node3D *base_node;
-	Panel *panel;
-	MenuButton *options;
-	HBoxContainer *particles_editor_hb;
+	Node3D *base_node = nullptr;
+	Panel *panel = nullptr;
+	MenuButton *options = nullptr;
+	HBoxContainer *particles_editor_hb = nullptr;
 
-	SceneTreeDialog *emission_tree_dialog;
+	SceneTreeDialog *emission_tree_dialog = nullptr;
 
-	ConfirmationDialog *emission_dialog;
-	SpinBox *emission_amount;
-	OptionButton *emission_fill;
+	ConfirmationDialog *emission_dialog = nullptr;
+	SpinBox *emission_amount = nullptr;
+	OptionButton *emission_fill = nullptr;
 
 	Vector<Face3> geometry;
 
 	bool _generate(Vector<Vector3> &points, Vector<Vector3> &normals);
-	virtual void _generate_emission_points() = 0;
+	virtual void _generate_emission_points(){};
 	void _node_selected(const NodePath &p_path);
 
 	static void _bind_methods();
@@ -68,9 +67,9 @@ public:
 class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	GDCLASS(GPUParticles3DEditor, GPUParticles3DEditorBase);
 
-	ConfirmationDialog *generate_aabb;
-	SpinBox *generate_seconds;
-	GPUParticles3D *node;
+	ConfirmationDialog *generate_aabb = nullptr;
+	SpinBox *generate_seconds = nullptr;
+	GPUParticles3D *node = nullptr;
 
 	enum Menu {
 		MENU_OPTION_GENERATE_AABB,
@@ -102,8 +101,7 @@ public:
 class GPUParticles3DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles3DEditorPlugin, EditorPlugin);
 
-	GPUParticles3DEditor *particles_editor;
-	EditorNode *editor;
+	GPUParticles3DEditor *particles_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "GPUParticles3D"; }
@@ -112,7 +110,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GPUParticles3DEditorPlugin(EditorNode *p_node);
+	GPUParticles3DEditorPlugin();
 	~GPUParticles3DEditorPlugin();
 };
 

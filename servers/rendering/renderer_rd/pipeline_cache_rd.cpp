@@ -58,7 +58,7 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader, p_framebuffer_format_id, p_vertex_format_id, render_primitive, raster_state_version, multisample_state_version, depth_stencil_state, blend_state, dynamic_state_flags, p_render_pass, specialization_constants);
 	ERR_FAIL_COND_V(pipeline.is_null(), RID());
-	versions = (Version *)memrealloc(versions, sizeof(Version) * (version_count + 1));
+	versions = static_cast<Version *>(memrealloc(versions, sizeof(Version) * (version_count + 1)));
 	versions[version_count].framebuffer_id = p_framebuffer_format_id;
 	versions[version_count].vertex_id = p_vertex_format_id;
 	versions[version_count].wireframe = wireframe;

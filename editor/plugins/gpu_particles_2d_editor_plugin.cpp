@@ -61,7 +61,7 @@ void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 }
 
 void GPUParticles2DEditorPlugin::_selection_changed() {
-	List<Node *> selected_nodes = editor->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 
 	if (selected_particles.is_empty() && selected_nodes.is_empty()) {
 		return;
@@ -290,7 +290,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	{
 		uint8_t *tw = texdata.ptrw();
-		float *twf = (float *)tw;
+		float *twf = reinterpret_cast<float *>(tw);
 		for (int i = 0; i < vpc; i++) {
 			twf[i * 2 + 0] = valid_positions[i].x;
 			twf[i * 2 + 1] = valid_positions[i].y;
@@ -299,12 +299,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	img.instantiate();
 	img->create(w, h, false, Image::FORMAT_RGF, texdata);
-
-	Ref<ImageTexture> imgt;
-	imgt.instantiate();
-	imgt->create_from_image(img);
-
-	pm->set_emission_point_texture(imgt);
+	pm->set_emission_point_texture(ImageTexture::create_from_image(img));
 	pm->set_emission_point_count(vpc);
 
 	if (capture_colors) {
@@ -320,10 +315,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
-
-		imgt.instantiate();
-		imgt->create_from_image(img);
-		pm->set_emission_color_texture(imgt);
+		pm->set_emission_color_texture(ImageTexture::create_from_image(img));
 	}
 
 	if (valid_normals.size()) {
@@ -334,7 +326,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		{
 			uint8_t *tw = normdata.ptrw();
-			float *twf = (float *)tw;
+			float *twf = reinterpret_cast<float *>(tw);
 			for (int i = 0; i < vpc; i++) {
 				twf[i * 2 + 0] = valid_normals[i].x;
 				twf[i * 2 + 1] = valid_normals[i].y;
@@ -343,10 +335,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		img.instantiate();
 		img->create(w, h, false, Image::FORMAT_RGF, normdata);
-
-		imgt.instantiate();
-		imgt->create_from_image(img);
-		pm->set_emission_normal_texture(imgt);
+		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {
 		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
@@ -354,21 +343,22 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
-		file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
-		EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(menu->get_theme_icon(SNAME("GPUParticles2D"), SNAME("EditorIcons")));
+			file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
+			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", callable_mp(this, &GPUParticles2DEditorPlugin::_selection_changed));
+		} break;
 	}
 }
 
 void GPUParticles2DEditorPlugin::_bind_methods() {
 }
 
-GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
+GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	editor = p_node;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
@@ -390,7 +380,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
 	for (const String &E : ext) {
-		file->add_filter("*." + E + "; " + E.to_upper());
+		file->add_filter("*." + E, E.to_upper());
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);

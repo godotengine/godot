@@ -71,8 +71,11 @@ bool VisibleOnScreenNotifier3D::is_on_screen() const {
 }
 
 void VisibleOnScreenNotifier3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_EXIT_TREE) {
-		on_screen = false;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_EXIT_TREE: {
+			on_screen = false;
+		} break;
 	}
 }
 
@@ -80,14 +83,10 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
 
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb"), "set_aabb", "get_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_aabb", "get_aabb");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));
-}
-
-Vector<Face3> VisibleOnScreenNotifier3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
@@ -161,21 +160,23 @@ void VisibleOnScreenEnabler3D::_update_enable_mode(bool p_enable) {
 	}
 }
 void VisibleOnScreenEnabler3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 
-		node_id = ObjectID();
-		Node *node = get_node(enable_node_path);
-		if (node) {
-			node_id = node->get_instance_id();
-			node->set_process_mode(PROCESS_MODE_DISABLED);
-		}
-	}
+			node_id = ObjectID();
+			Node *node = get_node(enable_node_path);
+			if (node) {
+				node_id = node->get_instance_id();
+				node->set_process_mode(PROCESS_MODE_DISABLED);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		node_id = ObjectID();
+		case NOTIFICATION_EXIT_TREE: {
+			node_id = ObjectID();
+		} break;
 	}
 }
 

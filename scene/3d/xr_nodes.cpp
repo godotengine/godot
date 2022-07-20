@@ -44,16 +44,17 @@ void XRCamera3D::_notification(int p_what) {
 			if (origin != nullptr) {
 				origin->set_tracked_camera(this);
 			}
-		}; break;
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			// need to find our XROrigin3D parent and let it know we're no longer its camera!
 			XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 			if (origin != nullptr && origin->get_tracked_camera() == this) {
 				origin->set_tracked_camera(nullptr);
 			}
-		}; break;
-	};
-};
+		} break;
+	}
+}
 
 void XRCamera3D::_changed_tracker(const StringName p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
@@ -94,7 +95,7 @@ TypedArray<String> XRCamera3D::get_configuration_warnings() const {
 		// must be child node of XROrigin3D!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRCamera3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRCamera3D must have an XROrigin3D node as its parent."));
 		};
 	}
 
@@ -422,15 +423,15 @@ TypedArray<String> XRNode3D::get_configuration_warnings() const {
 		// must be child node of XROrigin!
 		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
 		if (origin == nullptr) {
-			warnings.push_back(TTR("XRController3D must have an XROrigin3D node as its parent."));
+			warnings.push_back(RTR("XRController3D must have an XROrigin3D node as its parent."));
 		}
 
 		if (tracker_name == "") {
-			warnings.push_back(TTR("No tracker name is set."));
+			warnings.push_back(RTR("No tracker name is set."));
 		}
 
 		if (pose_name == "") {
-			warnings.push_back(TTR("No pose is set."));
+			warnings.push_back(RTR("No pose is set."));
 		}
 	}
 
@@ -446,11 +447,6 @@ void XRController3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_axis", "name"), &XRController3D::get_axis);
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
-
-	ClassDB::bind_method(D_METHOD("get_rumble"), &XRController3D::get_rumble);
-	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &XRController3D::set_rumble);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
-	ADD_PROPERTY_DEFAULT("rumble", 0.0);
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
@@ -557,20 +553,6 @@ Vector2 XRController3D::get_axis(const StringName &p_name) const {
 	}
 }
 
-real_t XRController3D::get_rumble() const {
-	if (!tracker.is_valid()) {
-		return 0.0;
-	}
-
-	return tracker->get_rumble();
-}
-
-void XRController3D::set_rumble(real_t p_rumble) {
-	if (tracker.is_valid()) {
-		tracker->set_rumble(p_rumble);
-	}
-}
-
 XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
 	if (!tracker.is_valid()) {
@@ -595,7 +577,7 @@ Plane XRAnchor3D::get_plane() const {
 	Vector3 location = get_position();
 	Basis orientation = get_transform().basis;
 
-	Plane plane(orientation.get_axis(1).normalized(), location);
+	Plane plane(orientation.get_column(1).normalized(), location);
 
 	return plane;
 }
@@ -607,13 +589,13 @@ TypedArray<String> XROrigin3D::get_configuration_warnings() const {
 
 	if (is_visible() && is_inside_tree()) {
 		if (tracked_camera == nullptr) {
-			warnings.push_back(TTR("XROrigin3D requires an XRCamera3D child node."));
+			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 	}
 
-	bool xr_enabled = GLOBAL_GET("rendering/xr/enabled");
+	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
 	if (!xr_enabled) {
-		warnings.push_back(TTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
+		warnings.push_back(RTR("XR is not enabled in rendering project settings. Stereoscopic output is not supported unless this is enabled."));
 	}
 
 	return warnings;
@@ -657,10 +639,12 @@ void XROrigin3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(true);
-		}; break;
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			set_process_internal(false);
-		}; break;
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// set our world origin to our node transform
 			xr_server->set_world_origin(get_global_transform());
@@ -673,11 +657,9 @@ void XROrigin3D::_notification(int p_what) {
 
 				// now apply this to our camera
 				tracked_camera->set_transform(t);
-			};
-		}; break;
-		default:
-			break;
-	};
+			}
+		} break;
+	}
 
 	// send our notification to all active XE interfaces, they may need to react to it also
 	for (int i = 0; i < xr_server->get_interface_count(); i++) {

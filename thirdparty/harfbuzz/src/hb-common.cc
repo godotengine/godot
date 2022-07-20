@@ -160,7 +160,7 @@ hb_tag_to_string (hb_tag_t tag, char *buf)
 
 /* hb_direction_t */
 
-const char direction_strings[][4] = {
+static const char direction_strings[][4] = {
   "ltr",
   "rtl",
   "ttb",
@@ -1065,7 +1065,7 @@ hb_variation_from_string (const char *str, int len,
 static inline void free_static_C_locale ();
 
 static struct hb_C_locale_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer<hb_locale_t>,
-							     hb_C_locale_lazy_loader_t>
+							   hb_C_locale_lazy_loader_t>
 {
   static hb_locale_t create ()
   {

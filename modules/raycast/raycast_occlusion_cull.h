@@ -86,11 +86,13 @@ private:
 		RID scenario;
 		RID instance;
 
-		bool operator<(const InstanceID &rhs) const {
-			if (instance == rhs.instance) {
-				return rhs.scenario < scenario;
-			}
-			return instance < rhs.instance;
+		static uint32_t hash(const InstanceID &p_ins) {
+			uint32_t h = hash_murmur3_one_64(p_ins.scenario.get_id());
+			return hash_fmix32(hash_murmur3_one_64(p_ins.instance.get_id(), h));
+		}
+		bool operator==(const InstanceID &rhs) const {
+			return instance == rhs.instance && rhs.scenario == scenario;
+			;
 		}
 
 		InstanceID() {}
@@ -101,7 +103,7 @@ private:
 	struct Occluder {
 		PackedVector3Array vertices;
 		PackedInt32Array indices;
-		Set<InstanceID> users;
+		HashSet<InstanceID, InstanceID> users;
 	};
 
 	struct OccluderInstance {
@@ -115,7 +117,7 @@ private:
 
 	struct Scenario {
 		struct RaycastThreadData {
-			CameraRayTile *rays;
+			CameraRayTile *rays = nullptr;
 			const uint32_t *masks;
 		};
 
@@ -124,7 +126,7 @@ private:
 			uint32_t vertex_count;
 			Transform3D xform;
 			const Vector3 *read;
-			Vector3 *write;
+			Vector3 *write = nullptr;
 		};
 
 		Thread *commit_thread = nullptr;
@@ -136,7 +138,7 @@ private:
 		int current_scene_idx = 0;
 
 		HashMap<RID, OccluderInstance> instances;
-		Set<RID> dirty_instances; // To avoid duplicates
+		HashSet<RID> dirty_instances; // To avoid duplicates
 		LocalVector<RID> dirty_instances_array; // To iterate and split into threads
 		LocalVector<RID> removed_instances;
 

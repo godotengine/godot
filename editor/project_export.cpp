@@ -61,11 +61,16 @@ void ProjectExportDialog::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(presets->get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")));
 			delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 	}
 }
@@ -341,7 +346,7 @@ void ProjectExportDialog::_update_feature_list() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
-	Set<String> fset;
+	RBSet<String> fset;
 	List<String> features;
 
 	current->get_platform()->get_platform_features(&features);
@@ -361,13 +366,17 @@ void ProjectExportDialog::_update_feature_list() {
 	}
 
 	custom_feature_display->clear();
-	for (Set<String>::Element *E = fset.front(); E; E = E->next()) {
-		String f = E->get();
-		if (E->next()) {
-			f += ", ";
+	String text;
+	bool first = true;
+	for (const String &E : fset) {
+		if (!first) {
+			text += ", ";
+		} else {
+			first = false;
 		}
-		custom_feature_display->add_text(f);
+		text += E;
 	}
+	custom_feature_display->add_text(text);
 }
 
 void ProjectExportDialog::_custom_features_changed(const String &p_text) {
@@ -882,7 +891,8 @@ void ProjectExportDialog::_export_project() {
 
 	List<String> extension_list = platform->get_binary_extensions(current);
 	for (int i = 0; i < extension_list.size(); i++) {
-		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
+		// TRANSLATORS: This is the name of a project export file format. %s will be replaced by the platform name.
+		export_project->add_filter("*." + extension_list[i], vformat(TTR("%s Export"), platform->get_name()));
 	}
 
 	if (!current->get_export_path().is_empty()) {
@@ -919,17 +929,13 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 	current->set_export_path(p_path);
 
+	platform->clear_messages();
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
-	if (err != OK && err != ERR_SKIP) {
-		if (err == ERR_FILE_NOT_FOUND) {
-			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nExport templates seem to be missing or invalid."), platform->get_name()));
-		} else { // Assume misconfiguration. FIXME: Improve error handling and preset config validation.
-			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nThis might be due to a configuration issue in the export preset or your export settings."), platform->get_name()));
+	result_dialog_log->clear();
+	if (err != ERR_SKIP) {
+		if (platform->fill_log_messages(result_dialog_log, err)) {
+			result_dialog->popup_centered_ratio(0.5);
 		}
-
-		ERR_PRINT(vformat("Failed to export the project for platform '%s'.", platform->get_name()));
-		error_dialog->show();
-		error_dialog->popup_centered(Size2(300, 80));
 	}
 }
 
@@ -948,6 +954,8 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 	String mode = p_debug ? TTR("Debug") : TTR("Release");
 	EditorProgress ep("exportall", TTR("Exporting All") + " " + mode, EditorExport::get_singleton()->get_export_preset_count(), true);
 
+	bool show_dialog = false;
+	result_dialog_log->clear();
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
 		ERR_FAIL_COND(preset.is_null());
@@ -956,17 +964,16 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 
 		ep.step(preset->get_name(), i);
 
+		platform->clear_messages();
 		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
-		if (err != OK && err != ERR_SKIP) {
-			if (err == ERR_FILE_BAD_PATH) {
-				error_dialog->set_text(TTR("The given export path doesn't exist:") + "\n" + preset->get_export_path().get_base_dir());
-			} else {
-				error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " " + platform->get_name());
-			}
-			error_dialog->show();
-			error_dialog->popup_centered(Size2(300, 80));
-			ERR_PRINT("Failed to export project");
+		if (err == ERR_SKIP) {
+			return;
 		}
+		bool has_messages = platform->fill_log_messages(result_dialog_log, err);
+		show_dialog = show_dialog || has_messages;
+	}
+	if (show_dialog) {
+		result_dialog->popup_centered_ratio(0.5);
 	}
 }
 
@@ -1021,10 +1028,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
+	duplicate_preset->set_tooltip(TTR("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
+	delete_preset->set_tooltip(TTR("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_delete_preset));
@@ -1054,8 +1063,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Subsections.
 
 	sections = memnew(TabContainer);
-	sections->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	sections->set_use_hidden_tabs_for_min_size(true);
+	sections->set_theme_type_variation("TabContainerOdd");
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1065,6 +1074,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
@@ -1126,9 +1136,6 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Script export parameters.
 
-	updating_script_key = false;
-	updating_enc_filters = false;
-
 	VBoxContainer *sec_vb = memnew(VBoxContainer);
 	sec_vb->set_name(TTR("Encryption"));
 
@@ -1151,7 +1158,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	enc_ex_filters = memnew(LineEdit);
 	enc_ex_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
-			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.stex, *.import, music/*)"),
+			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.ctex, *.import, music/*)"),
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
@@ -1188,15 +1195,13 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
-	delete_confirm->get_ok_button()->set_text(TTR("Delete"));
+	delete_confirm->set_ok_button_text(TTR("Delete"));
 	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
 
-	updating = false;
-
-	get_cancel_button()->set_text(TTR("Close"));
-	get_ok_button()->set_text(TTR("Export PCK/ZIP..."));
+	set_cancel_button_text(TTR("Close"));
+	set_ok_button_text(TTR("Export PCK/ZIP..."));
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
@@ -1217,8 +1222,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
-	export_pck_zip->add_filter("*.zip ; " + TTR("ZIP File"));
-	export_pck_zip->add_filter("*.pck ; " + TTR("Godot Project Pack"));
+	export_pck_zip->add_filter("*.zip", TTR("ZIP File"));
+	export_pck_zip->add_filter("*.pck", TTR("Godot Project Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
@@ -1243,11 +1248,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error2->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	export_error2->set_text(String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ");
 
-	error_dialog = memnew(AcceptDialog);
-	error_dialog->set_title(TTR("Error"));
-	error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " ");
-	main_vb->add_child(error_dialog);
-	error_dialog->hide();
+	result_dialog = memnew(AcceptDialog);
+	result_dialog->set_title(TTR("Project Export"));
+	result_dialog_log = memnew(RichTextLabel);
+	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog->add_child(result_dialog_log);
+
+	main_vb->add_child(result_dialog);
+	result_dialog->hide();
 
 	LinkButton *download_templates = memnew(LinkButton);
 	download_templates->set_text(TTR("Manage Export Templates"));

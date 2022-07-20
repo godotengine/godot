@@ -63,8 +63,11 @@ private:
 
 		uint32_t key = 0;
 
-		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
+		static uint32_t hash(const MaterialKey &p_key) {
+			return hash_murmur3_one_32(p_key.key);
+		}
+		bool operator==(const MaterialKey &p_key) const {
+			return key == p_key.key;
 		}
 	};
 
@@ -81,7 +84,7 @@ private:
 		int users = 0;
 	};
 
-	static Map<MaterialKey, ShaderData> shader_map;
+	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 
 	MaterialKey current_key;
 
@@ -107,10 +110,10 @@ private:
 	LightMode light_mode = LIGHT_MODE_NORMAL;
 	bool particles_animation = false;
 
-	// Initialized in the constructor.
-	int particles_anim_h_frames;
-	int particles_anim_v_frames;
-	bool particles_anim_loop;
+	// Proper values set in constructor.
+	int particles_anim_h_frames = 0;
+	int particles_anim_v_frames = 0;
+	bool particles_anim_loop = false;
 
 protected:
 	static void _bind_methods();

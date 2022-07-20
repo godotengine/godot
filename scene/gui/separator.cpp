@@ -52,7 +52,6 @@ void Separator::_notification(int p_what) {
 			} else {
 				style->draw(get_canvas_item(), Rect2(0, (size.y - ssize.y) / 2, size.x, ssize.y));
 			}
-
 		} break;
 	}
 }

@@ -33,6 +33,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
+#include "core/templates/vector.h"
 
 struct AABB;
 struct Plane;
@@ -94,6 +95,7 @@ struct CameraMatrix {
 	operator String() const;
 
 	void scale_translate_to_fit(const AABB &p_aabb);
+	void add_jitter_offset(const Vector2 &p_offset);
 	void make_scale(const Vector3 &p_scale);
 	int get_pixels_per_meter(int p_for_pixel_width) const;
 	operator Transform3D() const;

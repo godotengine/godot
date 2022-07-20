@@ -47,7 +47,7 @@ void GodotStep2D::_populate_island(GodotBody2D *p_body, LocalVector<GodotBody2D 
 	}
 
 	for (const Pair<GodotConstraint2D *, int> &E : p_body->get_constraint_list()) {
-		GodotConstraint2D *constraint = (GodotConstraint2D *)E.first;
+		GodotConstraint2D *constraint = const_cast<GodotConstraint2D *>(E.first);
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -168,8 +168,8 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	const SelfList<GodotArea2D>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<GodotConstraint2D *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-			GodotConstraint2D *constraint = E->get();
+		for (GodotConstraint2D *E : aml.first()->self()->get_constraints()) {
+			GodotConstraint2D *constraint = E;
 			if (constraint->get_island_step() == _step) {
 				continue;
 			}

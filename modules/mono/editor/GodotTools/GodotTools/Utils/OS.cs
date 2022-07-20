@@ -184,7 +184,8 @@ namespace GodotTools.Utils
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
 
             using (Process process = Process.Start(startInfo))

@@ -35,7 +35,6 @@
 
 class VisualInstance3D : public Node3D {
 	GDCLASS(VisualInstance3D, Node3D);
-	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID base;
 	RID instance;
@@ -49,6 +48,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
@@ -58,8 +58,7 @@ public:
 	};
 
 	RID get_instance() const;
-	virtual AABB get_aabb() const = 0;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const = 0;
+	virtual AABB get_aabb() const;
 
 	virtual AABB get_transformed_aabb() const; // helper
 
@@ -127,7 +126,7 @@ private:
 
 	float extra_cull_margin = 0.0;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
-	GIMode gi_mode = GI_MODE_DISABLED;
+	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
 	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
@@ -137,7 +136,6 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -190,6 +188,7 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 	GeometryInstance3D();
+	virtual ~GeometryInstance3D();
 };
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);

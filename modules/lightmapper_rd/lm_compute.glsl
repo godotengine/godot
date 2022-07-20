@@ -316,19 +316,24 @@ void main() {
 
 	for (uint i = 0; i < params.light_count; i++) {
 		vec3 light_pos;
+		float dist;
 		float attenuation;
+		float soft_shadowing_disk_size;
 		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL) {
 			vec3 light_vec = lights.data[i].direction;
 			light_pos = position - light_vec * length(params.world_size);
+			dist = length(params.world_size);
 			attenuation = 1.0;
+			soft_shadowing_disk_size = lights.data[i].size;
 		} else {
 			light_pos = lights.data[i].position;
-			float d = distance(position, light_pos);
-			if (d > lights.data[i].range) {
+			dist = distance(position, light_pos);
+			if (dist > lights.data[i].range) {
 				continue;
 			}
+			soft_shadowing_disk_size = lights.data[i].size / dist;
 
-			attenuation = get_omni_attenuation(d, 1.0 / lights.data[i].range, lights.data[i].attenuation);
+			attenuation = get_omni_attenuation(dist, 1.0 / lights.data[i].range, lights.data[i].attenuation);
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
 				vec3 rel = normalize(position - light_pos);
@@ -352,27 +357,70 @@ void main() {
 			continue; //no need to do anything
 		}
 
-		if (trace_ray(position + light_dir * params.bias, light_pos) == RAY_MISS) {
-			vec3 light = lights.data[i].color * lights.data[i].energy * attenuation;
-			if (lights.data[i].static_bake) {
-				static_light += light;
+		float penumbra = 0.0;
+		if (lights.data[i].size > 0.0) {
+			vec3 light_to_point = -light_dir;
+			vec3 aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+			vec3 light_to_point_tan = normalize(cross(light_to_point, aux));
+			vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
+
+			const uint shadowing_rays_check_penumbra_denom = 2;
+			uint shadowing_ray_count = params.ray_count;
+
+			uint hits = 0;
+			uint noise = random_seed(ivec3(atlas_pos, 43573547 /* some prime */));
+			vec3 light_disk_to_point = light_to_point;
+			for (uint j = 0; j < shadowing_ray_count; j++) {
+				// Optimization:
+				// Once already traced an important proportion of rays, if all are hits or misses,
+				// assume we're not in the penumbra so we can infer the rest would have the same result
+				if (j == shadowing_ray_count / shadowing_rays_check_penumbra_denom) {
+					if (hits == j) {
+						// Assume totally lit
+						hits = shadowing_ray_count;
+						break;
+					} else if (hits == 0) {
+						// Assume totally dark
+						hits = 0;
+						break;
+					}
+				}
+
+				float r = randomize(noise);
+				float a = randomize(noise) * 2.0 * PI;
+				vec2 disk_sample = (r * vec2(cos(a), sin(a))) * soft_shadowing_disk_size * lights.data[i].shadow_blur;
+				light_disk_to_point = normalize(light_to_point + disk_sample.x * light_to_point_tan + disk_sample.y * light_to_point_bitan);
+
+				if (trace_ray(position - light_disk_to_point * params.bias, position - light_disk_to_point * dist) == RAY_MISS) {
+					hits++;
+				}
+			}
+			penumbra = float(hits) / float(shadowing_ray_count);
+		} else {
+			if (trace_ray(position + light_dir * params.bias, light_pos) == RAY_MISS) {
+				penumbra = 1.0;
+			}
+		}
+
+		vec3 light = lights.data[i].color * lights.data[i].energy * attenuation * penumbra;
+		if (lights.data[i].static_bake) {
+			static_light += light;
 #ifdef USE_SH_LIGHTMAPS
 
-				float c[4] = float[](
-						0.282095, //l0
-						0.488603 * light_dir.y, //l1n1
-						0.488603 * light_dir.z, //l1n0
-						0.488603 * light_dir.x //l1p1
-				);
+			float c[4] = float[](
+					0.282095, //l0
+					0.488603 * light_dir.y, //l1n1
+					0.488603 * light_dir.z, //l1n0
+					0.488603 * light_dir.x //l1p1
+			);
 
-				for (uint j = 0; j < 4; j++) {
-					sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
-				}
+			for (uint j = 0; j < 4; j++) {
+				sh_accum[j].rgb += light * c[j] * (1.0 / 3.0);
+			}
 #endif
 
-			} else {
-				dynamic_light += light;
-			}
+		} else {
+			dynamic_light += light;
 		}
 	}
 

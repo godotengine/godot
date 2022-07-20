@@ -264,6 +264,9 @@ void HTTPClientTCP::close() {
 }
 
 Error HTTPClientTCP::poll() {
+	if (tcp_connection.is_valid()) {
+		tcp_connection->poll();
+	}
 	switch (status) {
 		case STATUS_RESOLVING: {
 			ERR_FAIL_COND_V(resolving == IP::RESOLVER_INVALID_ID, ERR_BUG);

@@ -53,7 +53,7 @@ int add_path(int p_argc, char **p_args) {
 	p_args[p_argc] = nullptr;
 
 	return p_argc;
-};
+}
 
 int add_cmdline(int p_argc, char **p_args) {
 	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
@@ -67,12 +67,12 @@ int add_cmdline(int p_argc, char **p_args) {
 			continue;
 		}
 		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	};
+	}
 
 	p_args[p_argc] = nullptr;
 
 	return p_argc;
-};
+}
 
 int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	size_t len = strlen(argv[0]);
@@ -103,7 +103,7 @@ int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 	char *fargv[64];
 	for (int i = 0; i < argc; i++) {
 		fargv[i] = argv[i];
-	};
+	}
 	fargv[argc] = nullptr;
 	argc = add_path(argc, fargv);
 	argc = add_cmdline(argc, fargv);
@@ -112,17 +112,20 @@ int iphone_main(int argc, char **argv, String data_dir, String cache_dir) {
 
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 	printf("setup %i\n", err);
-	if (err != OK) {
+
+	if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		return 0;
+	} else if (err != OK) {
 		return 255;
 	}
 
 	os->initialize_modules();
 
 	return 0;
-};
+}
 
 void iphone_finish() {
 	printf("iphone_finish\n");
 	Main::cleanup();
 	delete os;
-};
+}

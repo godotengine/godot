@@ -49,7 +49,7 @@ public:
 private:
 	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
-	real_t gravity;
+	real_t gravity = 0.0;
 	bool gravity_is_point = false;
 	real_t gravity_distance_scale = 0.0;
 
@@ -98,7 +98,7 @@ private:
 		VSet<ShapePair> shapes;
 	};
 
-	Map<ObjectID, BodyState> body_map;
+	HashMap<ObjectID, BodyState> body_map;
 
 	void _area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape);
 
@@ -130,7 +130,7 @@ private:
 		VSet<AreaShapePair> shapes;
 	};
 
-	Map<ObjectID, AreaState> area_map;
+	HashMap<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
 	bool audio_bus_override = false;
@@ -228,4 +228,4 @@ public:
 
 VARIANT_ENUM_CAST(Area3D::SpaceOverride);
 
-#endif // AREA__H
+#endif // AREA_3D_H

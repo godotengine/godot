@@ -31,10 +31,10 @@
 #ifndef CLUSTER_BUILDER_RD_H
 #define CLUSTER_BUILDER_RD_H
 
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_render.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_store.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 class ClusterBuilderSharedDataRD {
 	friend class ClusterBuilderRD;
@@ -261,7 +261,7 @@ public:
 			e.type = ELEMENT_TYPE_OMNI_LIGHT;
 			e.original_index = cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT];
 
-			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 			cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT]++;
 
@@ -289,11 +289,11 @@ public:
 				e.touches_near = min_d < z_near;
 			} else {
 				//contains camera inside light
-				Plane base_plane(-xform.basis.get_axis(Vector3::AXIS_Z), xform.origin);
+				Plane base_plane(-xform.basis.get_column(Vector3::AXIS_Z), xform.origin);
 				float dist = base_plane.distance_to(Vector3());
 				if (dist >= 0 && dist < radius) {
 					//inside, check angle
-					float angle = Math::rad2deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_axis(Vector3::AXIS_Z))));
+					float angle = Math::rad2deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_column(Vector3::AXIS_Z))));
 					e.touches_near = angle < p_spot_aperture * 1.05; //overfit aperture a little due to cone overfit
 				} else {
 					e.touches_near = false;
@@ -309,7 +309,7 @@ public:
 			e.type = ELEMENT_TYPE_SPOT_LIGHT;
 			e.original_index = cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]; //use omni since they share index
 
-			RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 			cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]++;
 		}
@@ -331,9 +331,9 @@ public:
 		//extract scale and scale the matrix by it, makes things simpler
 		Vector3 scale = p_half_extents;
 		for (uint32_t i = 0; i < 3; i++) {
-			float s = xform.basis.elements[i].length();
+			float s = xform.basis.rows[i].length();
 			scale[i] *= s;
-			xform.basis.elements[i] /= s;
+			xform.basis.rows[i] /= s;
 		};
 
 		float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
@@ -356,7 +356,7 @@ public:
 		e.type = (p_box_type == BOX_TYPE_DECAL) ? ELEMENT_TYPE_DECAL : ELEMENT_TYPE_REFLECTION_PROBE;
 		e.original_index = cluster_count_by_type[e.type];
 
-		RendererStorageRD::store_transform_transposed_3x4(xform, e.transform_inv);
+		RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 		cluster_count_by_type[e.type]++;
 		render_element_count++;

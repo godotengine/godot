@@ -37,9 +37,11 @@
 #include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/tab_container.h"
 
 class RenameDialog : public ConfirmationDialog {
 	GDCLASS(RenameDialog, ConfirmationDialog);
@@ -60,44 +62,44 @@ class RenameDialog : public ConfirmationDialog {
 	void _update_preview_int(int new_value = 0);
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 
-	SceneTreeEditor *scene_tree_editor;
-	UndoRedo *undo_redo;
-	int global_count;
+	SceneTreeEditor *scene_tree_editor = nullptr;
+	UndoRedo *undo_redo = nullptr;
+	int global_count = 0;
 
-	LineEdit *lne_search;
-	LineEdit *lne_replace;
-	LineEdit *lne_prefix;
-	LineEdit *lne_suffix;
+	LineEdit *lne_search = nullptr;
+	LineEdit *lne_replace = nullptr;
+	LineEdit *lne_prefix = nullptr;
+	LineEdit *lne_suffix = nullptr;
 
-	TabContainer *tabc_features;
+	TabContainer *tabc_features = nullptr;
 
-	CheckBox *cbut_substitute;
-	CheckButton *cbut_regex;
-	CheckBox *cbut_process;
-	CheckBox *chk_per_level_counter;
+	CheckBox *cbut_substitute = nullptr;
+	CheckButton *cbut_regex = nullptr;
+	CheckBox *cbut_process = nullptr;
+	CheckBox *chk_per_level_counter = nullptr;
 
-	Button *but_insert_name;
-	Button *but_insert_parent;
-	Button *but_insert_type;
-	Button *but_insert_scene;
-	Button *but_insert_root;
-	Button *but_insert_count;
+	Button *but_insert_name = nullptr;
+	Button *but_insert_parent = nullptr;
+	Button *but_insert_type = nullptr;
+	Button *but_insert_scene = nullptr;
+	Button *but_insert_root = nullptr;
+	Button *but_insert_count = nullptr;
 
-	SpinBox *spn_count_start;
-	SpinBox *spn_count_step;
-	SpinBox *spn_count_padding;
+	SpinBox *spn_count_start = nullptr;
+	SpinBox *spn_count_step = nullptr;
+	SpinBox *spn_count_padding = nullptr;
 
-	OptionButton *opt_style;
-	OptionButton *opt_case;
+	OptionButton *opt_style = nullptr;
+	OptionButton *opt_case = nullptr;
 
-	Label *lbl_preview_title;
-	Label *lbl_preview;
+	Label *lbl_preview_title = nullptr;
+	Label *lbl_preview = nullptr;
 
 	List<Pair<NodePath, String>> to_rename;
-	Node *preview_node;
-	bool lock_preview_update;
+	Node *preview_node = nullptr;
+	bool lock_preview_update = false;
 	ErrorHandlerList eh;
-	bool has_errors;
+	bool has_errors = false;
 
 protected:
 	static void _bind_methods();

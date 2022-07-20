@@ -72,9 +72,9 @@ Input *Input::singleton = nullptr;
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
-void (*Input::warp_mouse_func)(const Vector2 &p_to_pos) = nullptr;
+void (*Input::warp_mouse_func)(const Vector2 &p_position) = nullptr;
 Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
-void (*Input::set_custom_mouse_cursor_func)(const RES &, Input::CursorShape, const Vector2 &) = nullptr;
+void (*Input::set_custom_mouse_cursor_func)(const Ref<Resource> &, Input::CursorShape, const Vector2 &) = nullptr;
 
 Input *Input::get_singleton() {
 	return singleton;
@@ -126,7 +126,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
 	ClassDB::bind_method(D_METHOD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
 	ClassDB::bind_method(D_METHOD("get_mouse_mode"), &Input::get_mouse_mode);
-	ClassDB::bind_method(D_METHOD("warp_mouse_position", "to"), &Input::warp_mouse_position);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Input::warp_mouse);
 	ClassDB::bind_method(D_METHOD("action_press", "action", "strength"), &Input::action_press, DEFVAL(1.f));
 	ClassDB::bind_method(D_METHOD("action_release", "action"), &Input::action_release);
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Input::set_default_cursor_shape, DEFVAL(CURSOR_ARROW));
@@ -134,7 +134,11 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_mouse_cursor", "image", "shape", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(CURSOR_ARROW), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
+	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -227,8 +231,8 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
-	for (Map<StringName, Input::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		if (E->get().pressed) {
+	for (const KeyValue<StringName, Input::Action> &E : action_state) {
+		if (E.value.pressed) {
 			return true;
 		}
 	}
@@ -272,65 +276,66 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return false;
 	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+		return E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
+		return E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return false;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return false;
 	}
 
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return !E->get().pressed && E->get().physics_frame == Engine::get_singleton()->get_physics_frames();
+		return !E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->get().pressed && E->get().process_frame == Engine::get_singleton()->get_process_frames();
+		return !E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return 0.0f;
 	}
 
-	return E->get().strength;
+	return E->value.strength;
 }
 
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
-	const Map<StringName, Action>::Element *E = action_state.find(p_action);
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
 	if (!E) {
 		return 0.0f;
 	}
 
-	if (p_exact && E->get().exact == false) {
+	if (p_exact && E->value.exact == false) {
 		return 0.0f;
 	}
 
-	return E->get().raw_strength;
+	return E->value.raw_strength;
 }
 
 float Input::get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const {
@@ -636,21 +641,21 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		}
 	}
 
-	for (OrderedHashMap<StringName, InputMap::Action>::ConstElement E = InputMap::get_singleton()->get_action_map().front(); E; E = E.next()) {
-		if (InputMap::get_singleton()->event_is_action(p_event, E.key())) {
+	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
+		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
 			// If not echo and action pressed state has changed
-			if (!p_event->is_echo() && is_action_pressed(E.key(), false) != p_event->is_action_pressed(E.key())) {
+			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
 				Action action;
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.process_frame = Engine::get_singleton()->get_process_frames();
-				action.pressed = p_event->is_action_pressed(E.key());
+				action.pressed = p_event->is_action_pressed(E.key);
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
-				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key(), true);
-				action_state[E.key()] = action;
+				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
+				action_state[E.key] = action;
 			}
-			action_state[E.key()].strength = p_event->get_action_strength(E.key());
-			action_state[E.key()].raw_strength = p_event->get_action_raw_strength(E.key());
+			action_state[E.key].strength = p_event->get_action_strength(E.key);
+			action_state[E.key].raw_strength = p_event->get_action_raw_strength(E.key);
 		}
 	}
 
@@ -733,8 +738,8 @@ MouseButton Input::get_mouse_button_mask() const {
 	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
-void Input::warp_mouse_position(const Vector2 &p_to) {
-	warp_mouse_func(p_to);
+void Input::warp_mouse(const Vector2 &p_position) {
+	warp_mouse_func(p_position);
 }
 
 Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
@@ -756,7 +761,7 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
-		warp_mouse_position(pos_warped + p_rect.position);
+		warp_mouse(pos_warped + p_rect.position);
 	}
 
 	return rel_warped;
@@ -772,6 +777,8 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = true;
 	action.strength = p_strength;
+	action.raw_strength = p_strength;
+	action.exact = true;
 
 	action_state[p_action] = action;
 }
@@ -783,6 +790,8 @@ void Input::action_release(const StringName &p_action) {
 	action.process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = false;
 	action.strength = 0.f;
+	action.raw_strength = 0.f;
+	action.exact = true;
 
 	action_state[p_action] = action;
 }
@@ -846,10 +855,12 @@ Input::CursorShape Input::get_current_cursor_shape() const {
 	return get_current_cursor_shape_func();
 }
 
-void Input::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
+
+	ERR_FAIL_INDEX(p_shape, CursorShape::CURSOR_MAX);
 
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
@@ -889,6 +900,10 @@ void Input::set_use_input_buffering(bool p_enable) {
 
 void Input::set_use_accumulated_input(bool p_enable) {
 	use_accumulated_input = p_enable;
+}
+
+bool Input::is_using_accumulated_input() {
+	return use_accumulated_input;
 }
 
 void Input::release_pressed_events() {
@@ -1070,7 +1085,6 @@ void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
-	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
@@ -1106,7 +1120,6 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 
 Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value) {
 	JoyEvent event;
-	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
@@ -1145,7 +1158,6 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 								// It doesn't make sense for a full axis to map to a button,
 								// but keeping as a default for a trigger with a positive half-axis.
 								event.value = (shifted_positive_value * 2) - 1;
-								;
 								break;
 						}
 						return event;
@@ -1398,14 +1410,14 @@ String Input::get_joy_guid(int p_device) const {
 	return joy_names[p_device].uid;
 }
 
-Array Input::get_connected_joypads() {
-	Array ret;
-	Map<int, Joypad>::Element *elem = joy_names.front();
+TypedArray<int> Input::get_connected_joypads() {
+	TypedArray<int> ret;
+	HashMap<int, Joypad>::Iterator elem = joy_names.begin();
 	while (elem) {
-		if (elem->get().connected) {
-			ret.push_back(elem->key());
+		if (elem->value.connected) {
+			ret.push_back(elem->key);
 		}
-		elem = elem->next();
+		++elem;
 	}
 	return ret;
 }
@@ -1441,6 +1453,10 @@ Input::Input() {
 			parse_mapping(entries[i]);
 		}
 	}
+}
+
+Input::~Input() {
+	singleton = nullptr;
 }
 
 //////////////////////////////////////////////////////////

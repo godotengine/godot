@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "gltf_mesh.h"
+
 #include "scene/resources/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {

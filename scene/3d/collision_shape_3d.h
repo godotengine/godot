@@ -37,14 +37,13 @@
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
 	GDCLASS(CollisionShape3D, Node3D);
-	OBJ_CATEGORY("3D Physics Nodes");
 
 	Ref<Shape3D> shape;
 
 	uint32_t owner_id = 0;
 	CollisionObject3D *parent = nullptr;
 
-	void resource_changed(RES res);
+	void resource_changed(Ref<Resource> res);
 	bool disabled = false;
 
 protected:

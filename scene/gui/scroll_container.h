@@ -47,8 +47,8 @@ public:
 	};
 
 private:
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
 
 	Size2 child_max_size;
 

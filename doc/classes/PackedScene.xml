@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" version="4.0">
+<class name="PackedScene" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An abstraction of a serialized scene.
 	</brief_description>
@@ -82,7 +82,7 @@
 				Returns [code]true[/code] if the scene file has nodes.
 			</description>
 		</method>
-		<method name="get_state">
+		<method name="get_state" qualifiers="const">
 			<return type="SceneState" />
 			<description>
 				Returns the [code]SceneState[/code] representing the scene file contents.

@@ -35,19 +35,16 @@
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
-struct EditorProgress;
 class EditorFileDialog;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);
 
-	OccluderInstance3D *occluder_instance;
+	OccluderInstance3D *occluder_instance = nullptr;
 
-	Button *bake;
-	EditorNode *editor;
+	Button *bake = nullptr;
 
-	EditorFileDialog *file_dialog;
+	EditorFileDialog *file_dialog = nullptr;
 
 	void _bake_select_file(const String &p_file);
 	void _bake();
@@ -62,7 +59,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	OccluderInstance3DEditorPlugin(EditorNode *p_node);
+	OccluderInstance3DEditorPlugin();
 	~OccluderInstance3DEditorPlugin();
 };
 

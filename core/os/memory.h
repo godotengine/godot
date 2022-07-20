@@ -186,15 +186,23 @@ void memdelete_arr(T *p_class) {
 
 struct _GlobalNil {
 	int color = 1;
-	_GlobalNil *right;
-	_GlobalNil *left;
-	_GlobalNil *parent;
+	_GlobalNil *right = nullptr;
+	_GlobalNil *left = nullptr;
+	_GlobalNil *parent = nullptr;
 
 	_GlobalNil();
 };
 
 struct _GlobalNilClass {
 	static _GlobalNil _nil;
+};
+
+template <class T>
+class DefaultTypedAllocator {
+public:
+	template <class... Args>
+	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
+	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
 };
 
 #endif // MEMORY_H

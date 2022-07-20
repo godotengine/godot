@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphEdit" inherits="Control" version="4.0">
+<class name="GraphEdit" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		GraphEdit is an area capable of showing various GraphNodes. It manages connection events between them.
 	</brief_description>
@@ -198,8 +198,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.
+		</member>
+		<member name="connection_lines_curvature" type="float" setter="set_connection_lines_curvature" getter="get_connection_lines_curvature" default="0.5">
+			The curvature of the lines between the nodes. 0 results in straight lines.
 		</member>
 		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="2.0">
 			The thickness of the lines between the nodes.
@@ -217,7 +221,6 @@
 		<member name="panning_scheme" type="int" setter="set_panning_scheme" getter="get_panning_scheme" enum="GraphEdit.PanningScheme" default="0">
 			Defines the control scheme for panning with mouse wheel.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>
@@ -296,8 +299,9 @@
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
+			<argument index="0" name="nodes" type="StringName[]" />
 			<description>
-				Emitted when a GraphNode is attempted to be removed from the GraphEdit.
+				Emitted when a GraphNode is attempted to be removed from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -342,7 +346,7 @@
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">
-			<argument index="0" name="ofs" type="Vector2" />
+			<argument index="0" name="offset" type="Vector2" />
 			<description>
 				Emitted when the scroll offset is changed by the user. It will not be emitted when changed in code.
 			</description>
@@ -371,15 +375,11 @@
 		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
 			The outline color of the selection rectangle.
 		</theme_item>
-		<theme_item name="bezier_len_neg" data_type="constant" type="int" default="160">
+		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
+			The horizontal range within which a port can be grabbed (inner side).
 		</theme_item>
-		<theme_item name="bezier_len_pos" data_type="constant" type="int" default="80">
-		</theme_item>
-		<theme_item name="port_grab_distance_horizontal" data_type="constant" type="int" default="24">
-			The horizontal range within which a port can be grabbed (on both sides).
-		</theme_item>
-		<theme_item name="port_grab_distance_vertical" data_type="constant" type="int" default="26">
-			The vertical range within which a port can be grabbed (on both sides).
+		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
+			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
 		</theme_item>

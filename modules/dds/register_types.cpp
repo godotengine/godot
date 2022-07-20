@@ -34,12 +34,20 @@
 
 static Ref<ResourceFormatDDS> resource_loader_dds;
 
-void register_dds_types() {
+void initialize_dds_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	resource_loader_dds.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_dds);
 }
 
-void unregister_dds_types() {
+void uninitialize_dds_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	ResourceLoader::remove_resource_format_loader(resource_loader_dds);
 	resource_loader_dds.unref();
 }

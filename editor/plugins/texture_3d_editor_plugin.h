@@ -36,19 +36,17 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
-
 class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 
-	SpinBox *layer;
-	Label *info;
+	SpinBox *layer = nullptr;
+	Label *info = nullptr;
 	Ref<Texture3D> texture;
 
 	Ref<Shader> shader;
 	Ref<ShaderMaterial> material;
 
-	Control *texture_rect;
+	Control *texture_rect = nullptr;
 
 	void _make_shaders();
 
@@ -90,7 +88,7 @@ class Texture3DEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Texture3D"; }
 
-	Texture3DEditorPlugin(EditorNode *p_node);
+	Texture3DEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

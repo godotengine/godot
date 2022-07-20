@@ -130,6 +130,7 @@ void Tween::stop() {
 	started = false;
 	running = false;
 	dead = false;
+	total_time = 0;
 }
 
 void Tween::pause() {
@@ -149,10 +150,6 @@ void Tween::kill() {
 
 bool Tween::is_running() {
 	return running;
-}
-
-void Tween::set_valid(bool p_valid) {
-	valid = p_valid;
 }
 
 bool Tween::is_valid() {
@@ -272,20 +269,23 @@ bool Tween::step(float p_delta) {
 		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
 		current_step = 0;
 		loops_done = 0;
+		total_time = 0;
 		start_tweeners();
 		started = true;
 	}
 
 	float rem_delta = p_delta * speed_scale;
 	bool step_active = false;
+	total_time += rem_delta;
+
+#ifdef DEBUG_ENABLED
+	float initial_delta = rem_delta;
+	bool potential_infinite = false;
+#endif
 
 	while (rem_delta > 0 && running) {
 		float step_delta = rem_delta;
 		step_active = false;
-
-#ifdef DEBUG_ENABLED
-		float prev_delta = rem_delta;
-#endif
 
 		for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 			// Modified inside Tweener.step().
@@ -311,17 +311,21 @@ bool Tween::step(float p_delta) {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
 					start_tweeners();
+#ifdef DEBUG_ENABLED
+					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
+						if (!potential_infinite) {
+							potential_infinite = true;
+						} else {
+							// Looped twice without using any time, this is 100% certain infinite loop.
+							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
+						}
+					}
+#endif
 				}
 			} else {
 				start_tweeners();
 			}
 		}
-
-#ifdef DEBUG_ENABLED
-		if (Math::is_equal_approx(rem_delta, prev_delta) && running && loops <= 0) {
-			ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
-		}
-#endif
 	}
 
 	return true;
@@ -331,7 +335,7 @@ bool Tween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
 		Node *bound_node = get_bound_node();
 		if (bound_node) {
-			return bound_node->can_process();
+			return bound_node->is_inside_tree() && bound_node->can_process();
 		}
 	}
 
@@ -344,6 +348,10 @@ Node *Tween::get_bound_node() const {
 	} else {
 		return nullptr;
 	}
+}
+
+float Tween::get_total_time() const {
+	return total_time;
 }
 
 real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t p_time, real_t p_initial, real_t p_delta, real_t p_duration) {
@@ -448,12 +456,12 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Transform2D d = p_delta_val;
 			Transform2D r;
 
-			APPLY_EQUATION(elements[0][0]);
-			APPLY_EQUATION(elements[0][1]);
-			APPLY_EQUATION(elements[1][0]);
-			APPLY_EQUATION(elements[1][1]);
-			APPLY_EQUATION(elements[2][0]);
-			APPLY_EQUATION(elements[2][1]);
+			APPLY_EQUATION(columns[0][0]);
+			APPLY_EQUATION(columns[0][1]);
+			APPLY_EQUATION(columns[1][0]);
+			APPLY_EQUATION(columns[1][1]);
+			APPLY_EQUATION(columns[2][0]);
+			APPLY_EQUATION(columns[2][1]);
 			return r;
 		}
 
@@ -488,15 +496,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Basis d = p_delta_val;
 			Basis r;
 
-			APPLY_EQUATION(elements[0][0]);
-			APPLY_EQUATION(elements[0][1]);
-			APPLY_EQUATION(elements[0][2]);
-			APPLY_EQUATION(elements[1][0]);
-			APPLY_EQUATION(elements[1][1]);
-			APPLY_EQUATION(elements[1][2]);
-			APPLY_EQUATION(elements[2][0]);
-			APPLY_EQUATION(elements[2][1]);
-			APPLY_EQUATION(elements[2][2]);
+			APPLY_EQUATION(rows[0][0]);
+			APPLY_EQUATION(rows[0][1]);
+			APPLY_EQUATION(rows[0][2]);
+			APPLY_EQUATION(rows[1][0]);
+			APPLY_EQUATION(rows[1][1]);
+			APPLY_EQUATION(rows[1][2]);
+			APPLY_EQUATION(rows[2][0]);
+			APPLY_EQUATION(rows[2][1]);
+			APPLY_EQUATION(rows[2][2]);
 			return r;
 		}
 
@@ -505,15 +513,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Transform3D d = p_delta_val;
 			Transform3D r;
 
-			APPLY_EQUATION(basis.elements[0][0]);
-			APPLY_EQUATION(basis.elements[0][1]);
-			APPLY_EQUATION(basis.elements[0][2]);
-			APPLY_EQUATION(basis.elements[1][0]);
-			APPLY_EQUATION(basis.elements[1][1]);
-			APPLY_EQUATION(basis.elements[1][2]);
-			APPLY_EQUATION(basis.elements[2][0]);
-			APPLY_EQUATION(basis.elements[2][1]);
-			APPLY_EQUATION(basis.elements[2][2]);
+			APPLY_EQUATION(basis.rows[0][0]);
+			APPLY_EQUATION(basis.rows[0][1]);
+			APPLY_EQUATION(basis.rows[0][2]);
+			APPLY_EQUATION(basis.rows[1][0]);
+			APPLY_EQUATION(basis.rows[1][1]);
+			APPLY_EQUATION(basis.rows[1][2]);
+			APPLY_EQUATION(basis.rows[2][0]);
+			APPLY_EQUATION(basis.rows[2][1]);
+			APPLY_EQUATION(basis.rows[2][2]);
 			APPLY_EQUATION(origin.x);
 			APPLY_EQUATION(origin.y);
 			APPLY_EQUATION(origin.z);
@@ -562,12 +570,12 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 		case Variant::TRANSFORM2D: {
 			Transform2D i = p_intial_val;
 			Transform2D f = p_final_val;
-			return Transform2D(f.elements[0][0] - i.elements[0][0],
-					f.elements[0][1] - i.elements[0][1],
-					f.elements[1][0] - i.elements[1][0],
-					f.elements[1][1] - i.elements[1][1],
-					f.elements[2][0] - i.elements[2][0],
-					f.elements[2][1] - i.elements[2][1]);
+			return Transform2D(f.columns[0][0] - i.columns[0][0],
+					f.columns[0][1] - i.columns[0][1],
+					f.columns[1][0] - i.columns[1][0],
+					f.columns[1][1] - i.columns[1][1],
+					f.columns[2][0] - i.columns[2][0],
+					f.columns[2][1] - i.columns[2][1]);
 		}
 
 		case Variant::AABB: {
@@ -579,29 +587,29 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 		case Variant::BASIS: {
 			Basis i = p_intial_val;
 			Basis f = p_final_val;
-			return Basis(f.elements[0][0] - i.elements[0][0],
-					f.elements[0][1] - i.elements[0][1],
-					f.elements[0][2] - i.elements[0][2],
-					f.elements[1][0] - i.elements[1][0],
-					f.elements[1][1] - i.elements[1][1],
-					f.elements[1][2] - i.elements[1][2],
-					f.elements[2][0] - i.elements[2][0],
-					f.elements[2][1] - i.elements[2][1],
-					f.elements[2][2] - i.elements[2][2]);
+			return Basis(f.rows[0][0] - i.rows[0][0],
+					f.rows[0][1] - i.rows[0][1],
+					f.rows[0][2] - i.rows[0][2],
+					f.rows[1][0] - i.rows[1][0],
+					f.rows[1][1] - i.rows[1][1],
+					f.rows[1][2] - i.rows[1][2],
+					f.rows[2][0] - i.rows[2][0],
+					f.rows[2][1] - i.rows[2][1],
+					f.rows[2][2] - i.rows[2][2]);
 		}
 
 		case Variant::TRANSFORM3D: {
 			Transform3D i = p_intial_val;
 			Transform3D f = p_final_val;
-			return Transform3D(f.basis.elements[0][0] - i.basis.elements[0][0],
-					f.basis.elements[0][1] - i.basis.elements[0][1],
-					f.basis.elements[0][2] - i.basis.elements[0][2],
-					f.basis.elements[1][0] - i.basis.elements[1][0],
-					f.basis.elements[1][1] - i.basis.elements[1][1],
-					f.basis.elements[1][2] - i.basis.elements[1][2],
-					f.basis.elements[2][0] - i.basis.elements[2][0],
-					f.basis.elements[2][1] - i.basis.elements[2][1],
-					f.basis.elements[2][2] - i.basis.elements[2][2],
+			return Transform3D(f.basis.rows[0][0] - i.basis.rows[0][0],
+					f.basis.rows[0][1] - i.basis.rows[0][1],
+					f.basis.rows[0][2] - i.basis.rows[0][2],
+					f.basis.rows[1][0] - i.basis.rows[1][0],
+					f.basis.rows[1][1] - i.basis.rows[1][1],
+					f.basis.rows[1][2] - i.basis.rows[1][2],
+					f.basis.rows[2][0] - i.basis.rows[2][0],
+					f.basis.rows[2][1] - i.basis.rows[2][1],
+					f.basis.rows[2][2] - i.basis.rows[2][2],
 					f.origin.x - i.origin.x,
 					f.origin.y - i.origin.y,
 					f.origin.z - i.origin.z);
@@ -624,6 +632,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
+	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);
 
 	ClassDB::bind_method(D_METHOD("is_running"), &Tween::is_running);
 	ClassDB::bind_method(D_METHOD("is_valid"), &Tween::is_valid);
@@ -640,7 +649,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parallel"), &Tween::parallel);
 	ClassDB::bind_method(D_METHOD("chain"), &Tween::chain);
 
-	ClassDB::bind_method(D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
+	ClassDB::bind_static_method("Tween", D_METHOD("interpolate_value", "initial_value", "delta_value", "elapsed_time", "duration", "trans_type", "ease_type"), &Tween::interpolate_variant);
 
 	ADD_SIGNAL(MethodInfo("step_finished", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("loop_finished", PropertyInfo(Variant::INT, "loop_count")));
@@ -669,6 +678,14 @@ void Tween::_bind_methods() {
 	BIND_ENUM_CONSTANT(EASE_OUT);
 	BIND_ENUM_CONSTANT(EASE_IN_OUT);
 	BIND_ENUM_CONSTANT(EASE_OUT_IN);
+}
+
+Tween::Tween() {
+	ERR_FAIL_MSG("Tween can't be created directly. Use create_tween() method.");
+}
+
+Tween::Tween(bool p_valid) {
+	valid = p_valid;
 }
 
 Ref<PropertyTweener> PropertyTweener::from(Variant p_value) {
@@ -741,12 +758,12 @@ bool PropertyTweener::step(float &r_delta) {
 	}
 
 	float time = MIN(elapsed_time - delay, duration);
-	target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
-
 	if (time < duration) {
+		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
 		r_delta = 0;
 		return true;
 	} else {
+		target_instance->set_indexed(property, final_val);
 		finished = true;
 		r_delta = elapsed_time - delay - duration;
 		emit_signal(SNAME("finished"));
@@ -838,7 +855,7 @@ bool CallbackTweener::step(float &r_delta) {
 		Callable::CallError ce;
 		callback.call(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_call_error_text(this, callback.get_method(), nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
 		}
 
 		finished = true;
@@ -895,8 +912,13 @@ bool MethodTweener::step(float &r_delta) {
 		return true;
 	}
 
+	Variant current_val;
 	float time = MIN(elapsed_time - delay, duration);
-	Variant current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	if (time < duration) {
+		current_val = tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type);
+	} else {
+		current_val = final_val;
+	}
 	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
 	argptr[0] = &current_val;
 
@@ -904,7 +926,7 @@ bool MethodTweener::step(float &r_delta) {
 	Callable::CallError ce;
 	callback.call(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_call_error_text(this, callback.get_method(), argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
 	}
 
 	if (time < duration) {
@@ -938,6 +960,7 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 	callback = p_callback;
 	initial_val = p_from;
 	delta_val = tween->calculate_delta_value(p_from, p_to);
+	final_val = p_to;
 	duration = p_duration;
 }
 

@@ -61,11 +61,11 @@ private:
 	Ref<StyleBoxFlat> warning_panel_style_progress;
 	Ref<StyleBoxFlat> error_panel_style_progress;
 
-	Button *main_button;
-	PanelContainer *disable_notifications_panel;
-	Button *disable_notifications_button;
+	Button *main_button = nullptr;
+	PanelContainer *disable_notifications_panel = nullptr;
+	Button *disable_notifications_button = nullptr;
 
-	VBoxContainer *vbox_container;
+	VBoxContainer *vbox_container = nullptr;
 	const int max_temporary_count = 5;
 	struct Toast {
 		Severity severity = SEVERITY_INFO;
@@ -80,7 +80,9 @@ private:
 		String tooltip;
 		int count = 0;
 	};
-	Map<Control *, Toast> toasts;
+	HashMap<Control *, Toast> toasts;
+
+	bool is_processing_error = false; // Makes sure that we don't handle errors that are triggered within the EditorToaster error processing.
 
 	const double default_message_duration = 5.0;
 

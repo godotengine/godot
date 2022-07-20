@@ -47,7 +47,7 @@ protected:
 	NodePath skeleton_path = NodePath("..");
 
 	LocalVector<float> blend_shape_tracks;
-	Map<StringName, int> blend_shape_properties;
+	HashMap<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
 
 	void _mesh_changed();
@@ -93,7 +93,6 @@ public:
 	void create_debug_tangents();
 
 	virtual AABB get_aabb() const override;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	MeshInstance3D();
 	~MeshInstance3D();

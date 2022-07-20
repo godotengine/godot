@@ -225,6 +225,7 @@ public:
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
+	String operator+(char32_t p_char) const;
 
 	String &operator+=(const String &);
 	String &operator+=(char32_t p_char);
@@ -269,6 +270,9 @@ public:
 	}
 
 	bool is_valid_string() const;
+
+	/* debug, error messages */
+	void print_unicode_error(const String &p_message, bool p_critical = false) const;
 
 	/* complex helpers */
 	String substr(int p_from, int p_chars = -1) const;
@@ -355,8 +359,8 @@ public:
 	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
 	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
 
-	String left(int p_pos) const;
-	String right(int p_pos) const;
+	String left(int p_len) const;
+	String right(int p_len) const;
 	String indent(const String &p_prefix) const;
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
@@ -372,11 +376,11 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
+	Error parse_utf8(const char *p_utf8, int p_len = -1);
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	Char16String utf16() const;
-	bool parse_utf16(const char16_t *p_utf16, int p_len = -1); //return true on error
+	Error parse_utf16(const char16_t *p_utf16, int p_len = -1);
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
@@ -426,6 +430,7 @@ public:
 	// node functions
 	static const String invalid_node_name_characters;
 	String validate_node_name() const;
+	String validate_identifier() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_int() const;
@@ -522,13 +527,19 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define TTRGET(m_value) TTR(m_value)
 
 #else
-#define TTR(m_value) String()
-#define TTRN(m_value) String()
-#define DTR(m_value) String()
-#define DTRN(m_value) String()
 #define TTRC(m_value) (m_value)
 #define TTRGET(m_value) (m_value)
 #endif
+
+// Use this to mark property names for editor translation.
+// Often for dynamic properties defined in _get_property_list().
+// Property names defined directly inside EDITOR_DEF, GLOBAL_DEF, and ADD_PROPERTY macros don't need this.
+#define PNAME(m_value) (m_value)
+
+// Similar to PNAME, but to mark groups, i.e. properties with PROPERTY_USAGE_GROUP.
+// Groups defined directly inside ADD_GROUP macros don't need this.
+// The arguments are the same as ADD_GROUP. m_prefix is only used for extraction.
+#define GNAME(m_value, m_prefix) (m_value)
 
 // Runtime translate for the public node API.
 String RTR(const String &p_text, const String &p_context = "");

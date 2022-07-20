@@ -49,12 +49,23 @@ class NavigationMesh : public Resource {
 		Vector3 from;
 		Vector3 to;
 
-		bool operator<(const _EdgeKey &p_with) const { return from == p_with.from ? to < p_with.to : from < p_with.from; }
+		static uint32_t hash(const _EdgeKey &p_key) {
+			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
+		}
+
+		bool operator==(const _EdgeKey &p_with) const {
+			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
+		}
 	};
 
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const override;
+
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif // DISABLE_DEPRECATED
 
 	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
@@ -82,13 +93,13 @@ public:
 	};
 
 protected:
-	float cell_size = 0.3f;
-	float cell_height = 0.2f;
-	float agent_height = 2.0f;
-	float agent_radius = 1.0f;
-	float agent_max_climb = 0.9f;
+	float cell_size = 0.25f;
+	float cell_height = 0.25f;
+	float agent_height = 1.5f;
+	float agent_radius = 0.5f;
+	float agent_max_climb = 0.25f;
 	float agent_max_slope = 45.0f;
-	float region_min_size = 8.0f;
+	float region_min_size = 2.0f;
 	float region_merge_size = 20.0f;
 	float edge_max_length = 12.0f;
 	float edge_max_error = 1.3f;
@@ -106,6 +117,8 @@ protected:
 	bool filter_low_hanging_obstacles = false;
 	bool filter_ledge_spans = false;
 	bool filter_walkable_low_height_spans = false;
+	AABB filter_baking_aabb;
+	Vector3 filter_baking_aabb_offset;
 
 public:
 	// Recast settings
@@ -174,6 +187,12 @@ public:
 
 	void set_filter_walkable_low_height_spans(bool p_value);
 	bool get_filter_walkable_low_height_spans() const;
+
+	void set_filter_baking_aabb(const AABB &p_aabb);
+	AABB get_filter_baking_aabb() const;
+
+	void set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset);
+	Vector3 get_filter_baking_aabb_offset() const;
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 

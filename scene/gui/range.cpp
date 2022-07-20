@@ -34,12 +34,15 @@ TypedArray<String> Range::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		warnings.push_back(TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
+		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
 	}
 
 	return warnings;
 }
 
+void Range::_value_changed(double p_value) {
+	GDVIRTUAL_CALL(_value_changed, p_value);
+}
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
 	emit_signal(SNAME("value_changed"), shared->val);
@@ -47,8 +50,8 @@ void Range::_value_changed_notify() {
 }
 
 void Range::Shared::emit_value_changed() {
-	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
-		Range *r = E->get();
+	for (Range *E : owners) {
+		Range *r = E;
 		if (!r->is_inside_tree()) {
 			continue;
 		}
@@ -67,8 +70,8 @@ void Range::_validate_values() {
 }
 
 void Range::Shared::emit_changed(const char *p_what) {
-	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
-		Range *r = E->get();
+	for (Range *E : owners) {
+		Range *r = E;
 		if (!r->is_inside_tree()) {
 			continue;
 		}
@@ -278,6 +281,8 @@ void Range::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_lesser"), "set_allow_lesser", "is_lesser_allowed");
+
+	GDVIRTUAL_BIND(_value_changed, "new_value");
 
 	ADD_LINKED_PROPERTY("min_value", "value");
 	ADD_LINKED_PROPERTY("min_value", "max_value");

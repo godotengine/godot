@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Light3D" inherits="VisualInstance3D" version="4.0">
+<class name="Light3D" inherits="VisualInstance3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides a base class for different kinds of light nodes.
 	</brief_description>
@@ -28,6 +28,23 @@
 		</method>
 	</methods>
 	<members>
+		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0">
+			The distance from the camera at which the light begins to fade away (in 3D units).
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false">
+			If [code]true[/code], the light will smoothly fade away when far from the active [Camera3D] starting at [member distance_fade_begin]. This acts as a form of level of detail (LOD). The light will fade out over [member distance_fade_begin] + [member distance_fade_length], after which it will be culled and not sent to the shader at all. Use this to reduce the number of active lights in a scene and thus improve performance.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="10.0">
+			Distance over which the light fades. The light's energy is progressively reduced over this distance and is completely invisible at the end.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_shadow" type="float" setter="set_distance_fade_shadow" getter="get_distance_fade_shadow" default="50.0">
+			The distance from the camera at which the light's shadow cuts off (in 3D units). Set this to a value lower than [member distance_fade_begin] + [member distance_fade_length] to further improve performance, as shadow rendering is often more expensive than light rendering itself.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D], and only when [member shadow_enabled] is [code]true[/code].
+			[b]Note:[/b] Due to a rendering engine limitation, shadows will be disabled instantly instead of fading smoothly according to [member distance_fade_length]. This may result in visible pop-in depending on the scene topography.
+		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
 			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
 		</member>
@@ -56,6 +73,7 @@
 		</member>
 		<member name="light_projector" type="Texture2D" setter="set_projector" getter="get_projector">
 			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained-glass.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for light projector textures is set globally with [member ProjectSettings.rendering/textures/light_projectors/filter].
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
 			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
@@ -63,17 +81,14 @@
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
 		</member>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.2">
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.1">
 			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
 		</member>
 		<member name="shadow_blur" type="float" setter="set_param" getter="get_param" default="1.0">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low-resolution shadow maps. A high value can impact performance, make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</member>
-		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 1)">
-			The color of shadows cast by this light.
-		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
-			If [code]true[/code], the light will cast shadows.
+			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
 		</member>
 		<member name="shadow_fog_fade" type="float" setter="set_param" getter="get_param" default="0.1">
 		</member>

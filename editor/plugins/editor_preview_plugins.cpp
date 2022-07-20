@@ -34,7 +34,7 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/resources/bit_map.h"
@@ -79,7 +79,7 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
 	if (atex.is_valid()) {
@@ -127,13 +127,9 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 	}
 	Vector2i new_size_i(MAX(1, (int)new_size.x), MAX(1, (int)new_size.y));
 	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
@@ -145,7 +141,7 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 	return p_type == "Image";
 }
 
-Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorImagePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Image> img = p_from;
 
 	if (img.is_null() || img->is_empty()) {
@@ -171,14 +167,9 @@ Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex;
-	ptex.instantiate();
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
@@ -194,7 +185,7 @@ bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "BitMap");
 }
 
-Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<BitMap> bm = p_from;
 
 	if (bm->get_size() == Size2()) {
@@ -239,13 +230,9 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 bool EditorBitmapPreviewPlugin::generate_small_preview_automatically() const {
@@ -261,7 +248,7 @@ bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "PackedScene");
 }
 
-Ref<Texture2D> EditorPackedScenePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorPackedScenePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	return generate_from_path(p_from->get_path(), p_size);
 }
 
@@ -282,11 +269,8 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	img.instantiate();
 	Error err = img->load(path);
 	if (err == OK) {
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
 		post_process_preview(img);
-		ptex->create_from_image(img);
-		return ptex;
+		return ImageTexture::create_from_image(img);
 
 	} else {
 		return Ref<Texture2D>();
@@ -316,7 +300,7 @@ bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
 
-Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Material> material = p_from;
 	ERR_FAIL_COND_V(material.is_null(), Ref<Texture2D>());
 
@@ -336,9 +320,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 		int thumbnail_size = MAX(p_size.x, p_size.y);
 		img->resize(thumbnail_size, thumbnail_size, Image::INTERPOLATE_CUBIC);
 		post_process_preview(img);
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-		ptex->create_from_image(img);
-		return ptex;
+		return ImageTexture::create_from_image(img);
 	}
 
 	return Ref<Texture2D>();
@@ -467,7 +449,7 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
 
-Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Script> scr = p_from;
 	if (scr.is_null()) {
 		return Ref<Texture2D>();
@@ -481,8 +463,8 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	List<String> kwors;
 	scr->get_language()->get_reserved_words(&kwors);
 
-	Set<String> control_flow_keywords;
-	Set<String> keywords;
+	HashSet<String> control_flow_keywords;
+	HashSet<String> keywords;
 
 	for (const String &E : kwors) {
 		if (scr->get_language()->is_control_flow_keyword(E)) {
@@ -591,13 +573,8 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 			}
 		}
 	}
-
 	post_process_preview(img);
-
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
@@ -609,7 +586,7 @@ bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "AudioStream");
 }
 
-Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture2D>());
 
@@ -676,12 +653,10 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 
 	//post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;
 	image.instantiate();
 	image->create(w, h, false, Image::FORMAT_RGB8, img);
-	ptex->create_from_image(image);
-	return ptex;
+	return ImageTexture::create_from_image(image);
 }
 
 EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
@@ -703,7 +678,7 @@ bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Mesh"); // Any mesh.
 }
 
-Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Mesh> mesh = p_from;
 	ERR_FAIL_COND_V(mesh.is_null(), Ref<Texture2D>());
 
@@ -746,12 +721,9 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-	ptex->create_from_image(img);
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
 EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
@@ -812,19 +784,12 @@ void EditorFontPreviewPlugin::_preview_done() {
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "FontData") || ClassDB::is_parent_class(p_type, "Font");
+	return ClassDB::is_parent_class(p_type, "Font");
 }
 
 Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
-	RES res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V(res.is_null(), Ref<Texture2D>());
-	Ref<Font> sampled_font;
-	if (res->is_class("Font")) {
-		sampled_font = res->duplicate();
-	} else if (res->is_class("FontData")) {
-		sampled_font.instantiate();
-		sampled_font->add_data(res->duplicate());
-	}
+	Ref<Font> sampled_font = ResourceLoader::load(p_path);
+	ERR_FAIL_COND_V(sampled_font.is_null(), Ref<Texture2D>());
 
 	String sample;
 	static const String sample_base = U"12漢字ԱբΑαАбΑαאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐAb😀";
@@ -836,18 +801,16 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	if (sample.is_empty()) {
 		sample = sampled_font->get_supported_chars().substr(0, 6);
 	}
-	Vector2 size = sampled_font->get_string_size(sample, 50);
+	Vector2 size = sampled_font->get_string_size(sample, HORIZONTAL_ALIGNMENT_LEFT, -1, 50);
 
 	Vector2 pos;
 
 	pos.x = 64 - size.x / 2;
 	pos.y = 80;
 
-	Ref<Font> font = sampled_font;
-
 	const Color c = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
-	font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
+	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
 	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Vector<Variant>(), Object::CONNECT_ONESHOT);
 
@@ -868,16 +831,12 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
 	img->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
-
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-	ptex->create_from_image(img);
-
-	return ptex;
+	return ImageTexture::create_from_image(img);
 }
 
-Ref<Texture2D> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	String path = p_from->get_path();
 	if (!FileAccess::exists(path)) {
 		return Ref<Texture2D>();
@@ -903,4 +862,31 @@ EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {
 	RS::get_singleton()->free(canvas_item);
 	RS::get_singleton()->free(canvas);
 	RS::get_singleton()->free(viewport);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+static const real_t GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR = 4.0;
+
+bool EditorGradientPreviewPlugin::handles(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "Gradient");
+}
+
+bool EditorGradientPreviewPlugin::generate_small_preview_automatically() const {
+	return true;
+}
+
+Ref<Texture2D> EditorGradientPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
+	Ref<Gradient> gradient = p_from;
+	if (gradient.is_valid()) {
+		Ref<GradientTexture1D> ptex;
+		ptex.instantiate();
+		ptex->set_width(p_size.width * GRADIENT_PREVIEW_TEXTURE_SCALE_FACTOR * EDSCALE);
+		ptex->set_gradient(gradient);
+		return ImageTexture::create_from_image(ptex->get_image());
+	}
+	return Ref<Texture2D>();
+}
+
+EditorGradientPreviewPlugin::EditorGradientPreviewPlugin() {
 }

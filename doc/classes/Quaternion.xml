@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Quaternion" version="4.0">
+<class name="Quaternion" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Quaternion.
 	</brief_description>
@@ -91,6 +91,11 @@
 				Returns the dot product of two quaternions.
 			</description>
 		</method>
+		<method name="exp" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+			</description>
+		</method>
 		<method name="get_angle" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -136,6 +141,11 @@
 			<return type="float" />
 			<description>
 				Returns the length of the quaternion, squared.
+			</description>
+		</method>
+		<method name="log" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -186,11 +196,6 @@
 		</constant>
 	</constants>
 	<operators>
-		<operator name="operator !=">
-			<return type="bool" />
-			<description>
-			</description>
-		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Quaternion" />
@@ -253,11 +258,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				Divides each component of the [Quaternion] by the given value. This operation is not meaningful on its own, but it can be used as a part of a larger expression.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

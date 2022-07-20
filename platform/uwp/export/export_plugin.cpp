@@ -98,13 +98,13 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait_flipped"), true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "images/background_color"), "transparent"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/store_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square44x44_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square71x71_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square150x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square310x310_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/wide310x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/splash_screen", PROPERTY_HINT_RESOURCE_TYPE, "StreamTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/store_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square44x44_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square71x71_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square150x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/square310x310_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/wide310x150_logo", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::OBJECT, "images/splash_screen", PROPERTY_HINT_RESOURCE_TYPE, "CompressedTexture2D"), Variant()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_square150x150"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "tiles/show_name_on_wide310x150"), false));
@@ -131,6 +131,14 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 }
 
 bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+#ifndef DEV_ENABLED
+	// We don't provide export templates for the UWP platform currently as it
+	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that
+	// contributors can still test the pipeline if/when we can build it again.
+	r_error = "The UWP platform is currently not supported in Godot 4.0.\n";
+	return false;
+#endif
+
 	String err;
 	bool valid = false;
 
@@ -201,37 +209,37 @@ bool EditorExportPlatformUWP::can_export(const Ref<EditorExportPreset> &p_preset
 		err += TTR("Invalid background color.") + "\n";
 	}
 
-	if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
+	if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
 		valid = false;
 		err += TTR("Invalid Store Logo image dimensions (should be 50x50).") + "\n";
 	}
 
-	if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
+	if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
 		valid = false;
 		err += TTR("Invalid square 44x44 logo image dimensions (should be 44x44).") + "\n";
 	}
 
-	if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
+	if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
 		valid = false;
 		err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 	}
 
-	if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+	if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
 		valid = false;
 		err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
+	if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
 		valid = false;
 		err += TTR("Invalid square 310x310 logo image dimensions (should be 310x310).") + "\n";
 	}
 
-	if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
+	if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
 		valid = false;
 		err += TTR("Invalid wide 310x150 logo image dimensions (should be 310x150).") + "\n";
 	}
 
-	if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
+	if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<CompressedTexture2D>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
 		valid = false;
 		err += TTR("Invalid splash screen image dimensions (should be 620x300).") + "\n";
 	}
@@ -287,14 +295,14 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	Error err = OK;
 
-	FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	AppxPackager packager;
 	packager.init(fa_pack);
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step("Creating package...", 0)) {
 		return ERR_SKIP;
@@ -324,6 +332,9 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16834];
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String path = String::utf8(fname);
 
@@ -416,7 +427,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	EditorNode::progress_add_task("project_files", "Project Files", 100);
 	packager.set_progress_task("project_files");
 
-	err = export_project_files(p_preset, save_appx_file, &packager);
+	err = export_project_files(p_preset, p_debug, save_appx_file, &packager);
 
 	EditorNode::progress_end_task("project_files");
 
@@ -488,11 +499,9 @@ void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
 	r_features->push_back("uwp");
 }
 
-void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+void EditorExportPlatformUWP::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
 }
 
 EditorExportPlatformUWP::EditorExportPlatformUWP() {
-	Ref<Image> img = memnew(Image(_uwp_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_uwp_logo)));
 }

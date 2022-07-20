@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORAUDIOBUSES_H
-#define EDITORAUDIOBUSES_H
+#ifndef EDITOR_AUDIO_BUSES_H
+#define EDITOR_AUDIO_BUSES_H
 
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -52,9 +52,9 @@ class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture2D> disabled_vu;
-	LineEdit *track_name;
-	MenuButton *bus_options;
-	VSlider *slider;
+	LineEdit *track_name = nullptr;
+	MenuButton *bus_options = nullptr;
+	VSlider *slider = nullptr;
 
 	int cc;
 	static const int CHANNELS_MAX = 4;
@@ -69,25 +69,25 @@ class EditorAudioBus : public PanelContainer {
 		TextureProgressBar *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
-	OptionButton *send;
+	OptionButton *send = nullptr;
 
-	PopupMenu *effect_options;
-	PopupMenu *bus_popup;
-	PopupMenu *delete_effect_popup;
+	PopupMenu *effect_options = nullptr;
+	PopupMenu *bus_popup = nullptr;
+	PopupMenu *delete_effect_popup = nullptr;
 
-	Panel *audio_value_preview_box;
-	Label *audio_value_preview_label;
-	Timer *preview_timer;
+	Panel *audio_value_preview_box = nullptr;
+	Label *audio_value_preview_label = nullptr;
+	Timer *preview_timer = nullptr;
 
-	Button *solo;
-	Button *mute;
-	Button *bypass;
+	Button *solo = nullptr;
+	Button *mute = nullptr;
+	Button *bypass = nullptr;
 
-	Tree *effects;
+	Tree *effects = nullptr;
 
-	bool updating_bus;
+	bool updating_bus = false;
 	bool is_master;
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);
@@ -108,7 +108,7 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_add(int p_which);
 	void _effect_selected();
 	void _delete_effect_pressed(int p_option);
-	void _effect_rmb(const Vector2 &p_pos);
+	void _effect_rmb(const Vector2 &p_pos, MouseButton p_button);
 	void _update_visible_channels();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
@@ -121,7 +121,7 @@ class EditorAudioBus : public PanelContainer {
 
 	friend class EditorAudioBuses;
 
-	EditorAudioBuses *buses;
+	EditorAudioBuses *buses = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -140,7 +140,7 @@ class EditorAudioBusDrop : public Control {
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
 protected:
 	static void _bind_methods();
@@ -153,22 +153,22 @@ public:
 class EditorAudioBuses : public VBoxContainer {
 	GDCLASS(EditorAudioBuses, VBoxContainer);
 
-	HBoxContainer *top_hb;
+	HBoxContainer *top_hb = nullptr;
 
-	ScrollContainer *bus_scroll;
-	HBoxContainer *bus_hb;
+	ScrollContainer *bus_scroll = nullptr;
+	HBoxContainer *bus_hb = nullptr;
 
-	EditorAudioBusDrop *drop_end;
+	EditorAudioBusDrop *drop_end = nullptr;
 
-	Label *file;
+	Label *file = nullptr;
 
-	Button *add;
-	Button *load;
-	Button *save_as;
-	Button *_default;
-	Button *_new;
+	Button *add = nullptr;
+	Button *load = nullptr;
+	Button *save_as = nullptr;
+	Button *_default = nullptr;
+	Button *_new = nullptr;
 
-	Timer *save_timer;
+	Timer *save_timer = nullptr;
 	String edited_path;
 
 	void _add_bus();
@@ -191,8 +191,8 @@ class EditorAudioBuses : public VBoxContainer {
 	void _load_default_layout();
 	void _new_layout();
 
-	EditorFileDialog *file_dialog;
-	bool new_layout;
+	EditorFileDialog *file_dialog = nullptr;
+	bool new_layout = false;
 
 	void _file_dialog_callback(const String &p_string);
 
@@ -262,7 +262,7 @@ public:
 class AudioBusesEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioBusesEditorPlugin, EditorPlugin);
 
-	EditorAudioBuses *audio_bus_editor;
+	EditorAudioBuses *audio_bus_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "SampleLibrary"; }
@@ -275,4 +275,4 @@ public:
 	~AudioBusesEditorPlugin();
 };
 
-#endif // EDITORAUDIOBUSES_H
+#endif // EDITOR_AUDIO_BUSES_H

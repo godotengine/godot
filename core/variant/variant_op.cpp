@@ -177,6 +177,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorAdd<double, double, double>>(Variant::OP_ADD, Variant::FLOAT, Variant::FLOAT);
 	register_op<OperatorEvaluatorAdd<String, String, String>>(Variant::OP_ADD, Variant::STRING, Variant::STRING);
 	register_op<OperatorEvaluatorAdd<String, char32_t, String>>(Variant::OP_ADD, Variant::INT, Variant::STRING);
+	register_op<OperatorEvaluatorAdd<String, String, char32_t>>(Variant::OP_ADD, Variant::STRING, Variant::INT);
 	register_op<OperatorEvaluatorAdd<Vector2, Vector2, Vector2>>(Variant::OP_ADD, Variant::VECTOR2, Variant::VECTOR2);
 	register_op<OperatorEvaluatorAdd<Vector2i, Vector2i, Vector2i>>(Variant::OP_ADD, Variant::VECTOR2I, Variant::VECTOR2I);
 	register_op<OperatorEvaluatorAdd<Vector3, Vector3, Vector3>>(Variant::OP_ADD, Variant::VECTOR3, Variant::VECTOR3);
@@ -359,6 +360,11 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorStringModT<PackedVector2Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_VECTOR2_ARRAY);
 	register_op<OperatorEvaluatorStringModT<PackedVector3Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_VECTOR3_ARRAY);
 	register_op<OperatorEvaluatorStringModT<PackedColorArray>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorPow<int64_t, int64_t, int64_t>>(Variant::OP_POWER, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorPow<double, int64_t, double>>(Variant::OP_POWER, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorPow<double, double, double>>(Variant::OP_POWER, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorPow<double, double, int64_t>>(Variant::OP_POWER, Variant::FLOAT, Variant::INT);
 
 	register_op<OperatorEvaluatorNeg<int64_t, int64_t>>(Variant::OP_NEGATE, Variant::INT, Variant::NIL);
 	register_op<OperatorEvaluatorNeg<double, double>>(Variant::OP_NEGATE, Variant::FLOAT, Variant::NIL);
@@ -928,6 +934,7 @@ static const char *_op_names[Variant::OP_MAX] = {
 	"unary-",
 	"unary+",
 	"%",
+	"**",
 	"<<",
 	">>",
 	"&",

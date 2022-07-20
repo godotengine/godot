@@ -46,7 +46,7 @@ name is available.
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
     Benjamin Larsson (Nallebeorn)
-    Bernard Liebl (poke1024)
+    Bernhard Liebl (poke1024)
     Bhuvan Vemula (Bhu1-V)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
@@ -60,6 +60,7 @@ name is available.
     Carter Anderson (cart)
     Chris Bradfield (cbscribe)
     Clay John (clayjohn)
+    ConteZero
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
@@ -86,6 +87,7 @@ name is available.
     Fabio Alessandrelli (Faless)
     fabriceci
     Ferenc Arn (tagcup)
+    FireForge (fire-forge)
     follower
     foxydevloper
     François Belair (Razoric480)
@@ -109,6 +111,7 @@ name is available.
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
     Ignacio Etcheverry (neikeq)
+    Igor Kordiukiewicz (IgorKordiukiewicz)
     Ilaria Cislaghi (QbieShay)
     Indah Sylvia (ISylvox)
     J08nY
@@ -121,6 +124,7 @@ name is available.
     Joan Fons Sanchez (JFonS)
     Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
+    Jordan Schidlowsky (winterpixelgames)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
@@ -149,6 +153,8 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Marios Staikopoulos (marstaik)
+    Mark Riedesel (klowner)
+    Markus Sauermann (Sauermann)
     Martin Capitanio (capnm)
     Martin Liška (marxin)
     Martin Sjursen (binbitten)
@@ -161,9 +167,11 @@ name is available.
     merumelu
     Meru Patel (Janglee123)
     Michael Alexsander (YeldhamDev)
+    Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
     Morris "Tabor" Arroad (mortarroad)
     mrezai
+    Muhammad Huri (CakHuri)
     muiroc
     Nathan Franke (nathanfranke)
     Nathan Lovato (NathanLovato)
@@ -179,19 +187,23 @@ name is available.
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
     Paul Trojahn (ptrojahn)
+    Paweł Fertyk (pfertyk)
     Pawel Kowal (pkowal1982)
+    Pawel Lampe (Scony)
     Pedro J. Estébanez (RandomShaper)
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
+    Rafael M. G. (rafallus)
     Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
-    raphael10241024
+    Raphael2048
     Raul Santos (raulsntos)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Rhody Lugo (rraallvv)
+    Ricardo Buring (rburing)
     Ricardo Subtil (Ev1lbl0w)
     Roberto F. Arroyo (robfram)
     Robin Hübner (profan)
@@ -206,14 +218,17 @@ name is available.
     Shiqing (kawa-yoiko)
     Silc 'Tokage' Renew (TokageItLab)
     Simon Wenner (swenner)
+    smix8
     Stijn Hinlopen (hinlopen)
     Swarnim Arun (minraws)
+    TC (floppyhammer)
     Thakee Nathees (ThakeeNathees)
     thebestnom
     Theo Hallenius (TheoXD)
     Timo Schwarzer (timoschwarzer)
     Timo (toger5)
     Tomasz Chabora (KoBeWi)
+    trollodel
     Twarit Waikar (IronicallySerious)
     Umang Kalra (theoway)
     Vinzenz Feenstra (vinzenz)
@@ -225,8 +240,8 @@ name is available.
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
-    Yuri Roubinsky (Chaosus)
-    Yuri Sizov (pycbouh)
+    Yuri Rubinsky (Chaosus)
+    Yuri Sizov (YuriSizov)
     Zae Chao (zaevi)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)

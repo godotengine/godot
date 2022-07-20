@@ -16,12 +16,14 @@
 #include "basisu_enc.h"
 #include "basisu_etc.h"
 #include "basisu_gpu_texture.h"
-#include "basisu_global_selector_palette_helpers.h"
 #include "../transcoder/basisu_file_headers.h"
 #include "../transcoder/basisu_transcoder.h"
 
 namespace basisu
 {
+	struct opencl_context;
+	typedef opencl_context* opencl_context_ptr;
+
 	struct vec2U
 	{
 		uint32_t m_comps[2];
@@ -51,7 +53,8 @@ namespace basisu
 			m_use_hierarchical_endpoint_codebooks(false),
 			m_use_hierarchical_selector_codebooks(false),
 			m_num_endpoint_codebook_iterations(0),
-			m_num_selector_codebook_iterations(0)
+			m_num_selector_codebook_iterations(0),
+			m_opencl_failed(false)
 		{
 		}
 
@@ -73,19 +76,12 @@ namespace basisu
 				m_perceptual(true),
 				m_debug_stats(false),
 				m_debug_images(false),
-																
 				m_dump_endpoint_clusterization(true),
 				m_validate(false),
 				m_multithreaded(false),
 				m_disable_hierarchical_endpoint_codebooks(false),
-				m_pGlobal_sel_codebook(NULL),
-				m_num_global_sel_codebook_pal_bits(0),
-				m_num_global_sel_codebook_mod_bits(0),
-				m_use_hybrid_selector_codebooks(false),
-				m_hybrid_codebook_quality_thresh(0.0f),
 				m_tex_type(basist::cBASISTexType2D),
-				m_pGlobal_codebooks(nullptr),
-				
+				m_pOpenCL_context(nullptr),
 				m_pJob_pool(nullptr)
 			{
 			}
@@ -106,13 +102,10 @@ namespace basisu
 			bool m_multithreaded;
 			bool m_disable_hierarchical_endpoint_codebooks;
 			
-			const basist::etc1_global_selector_codebook *m_pGlobal_sel_codebook;
-			uint32_t m_num_global_sel_codebook_pal_bits;
-			uint32_t m_num_global_sel_codebook_mod_bits;
-			bool m_use_hybrid_selector_codebooks;
-			float m_hybrid_codebook_quality_thresh;
 			basist::basis_texture_type m_tex_type;
 			const basist::basisu_lowlevel_etc1s_transcoder *m_pGlobal_codebooks;
+						
+			opencl_context_ptr m_pOpenCL_context;
 			
 			job_pool *m_pJob_pool;
 		};
@@ -150,16 +143,15 @@ namespace basisu
 		uint32_t get_total_selector_clusters() const { return static_cast<uint32_t>(m_selector_cluster_block_indices.size()); }
 		uint32_t get_block_selector_cluster_index(uint32_t block_index) const { return m_block_selector_cluster_index[block_index]; }
 		const etc_block &get_selector_cluster_selector_bits(uint32_t cluster_index) const { return m_optimized_cluster_selectors[cluster_index]; }
-
-		const basist::etc1_global_selector_codebook_entry_id_vec &get_selector_cluster_global_selector_entry_ids() const { return m_optimized_cluster_selector_global_cb_ids; }
-		const bool_vec &get_selector_cluster_uses_global_cb_vec() const { return m_selector_cluster_uses_global_cb; }
-
+				
 		// Returns block indices using each selector cluster
 		const uint_vec &get_selector_cluster_block_indices(uint32_t selector_cluster_index) const { return m_selector_cluster_block_indices[selector_cluster_index]; }
 
 		void dump_debug_image(const char *pFilename, uint32_t first_block, uint32_t num_blocks_x, uint32_t num_blocks_y, bool output_blocks);
 		
 		void reoptimize_remapped_endpoints(const uint_vec &new_block_endpoints, int_vec &old_to_new_endpoint_cluster_indices, bool optimize_final_codebook, uint_vec *pBlock_selector_indices = nullptr);
+
+		bool get_opencl_failed() const { return m_opencl_failed; }
 
 	private:
 		params m_params;
@@ -192,13 +184,14 @@ namespace basisu
 		vec6F_quantizer m_endpoint_clusterizer;
 
 		// For each endpoint cluster: An array of which subblock indices (block_index*2+subblock) are located in that cluster.
-		// Array of block indices for each endpoint cluster
 		basisu::vector<uint_vec> m_endpoint_clusters;
 
-		// Array of block indices for each parent endpoint cluster
+		// Array of subblock indices for each parent endpoint cluster
+		// Note: Initially, each endpoint cluster will only live in a single parent cluster, in a shallow tree. 
+		// As the endpoint clusters are manipulated this constraint gets broken.
 		basisu::vector<uint_vec> m_endpoint_parent_clusters;
 		
-		// Each block's parent cluster index
+		// Each block's parent endpoint cluster index
 		uint8_vec m_block_parent_endpoint_cluster; 
 
 		// Array of endpoint cluster indices for each parent endpoint cluster
@@ -295,10 +288,7 @@ namespace basisu
 
 		// Array of selector cluster indices for each parent selector cluster
 		basisu::vector<uint_vec> m_selector_clusters_within_each_parent_cluster;
-
-		basist::etc1_global_selector_codebook_entry_id_vec m_optimized_cluster_selector_global_cb_ids;
-		bool_vec m_selector_cluster_uses_global_cb;
-
+				
 		// Each block's selector cluster index
 		basisu::vector<uint32_t> m_block_selector_cluster_index;
 
@@ -330,6 +320,8 @@ namespace basisu
 
 		std::mutex m_lock;
 
+		bool m_opencl_failed;
+
 		//-----------------------------------------------------------------------------
 
 		void init_etc1_images();
@@ -351,6 +343,7 @@ namespace basisu
 		void find_optimal_selector_clusters_for_each_block();
 		uint32_t refine_block_endpoints_given_selectors();
 		void finalize();
+		bool validate_endpoint_cluster_hierarchy(bool ensure_clusters_have_same_parents) const;
 		bool validate_output() const;
 		void introduce_special_selector_clusters();
 		void optimize_selector_codebook();

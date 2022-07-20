@@ -144,12 +144,10 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			zoom_minus->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			zoom_plus->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -180,7 +178,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
-	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KeyModifierMask::CMD | Key::KEY_0));
+	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);

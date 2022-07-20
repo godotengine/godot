@@ -122,8 +122,10 @@ AABB Occluder3D::get_aabb() const {
 }
 
 void Occluder3D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		_update();
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update();
+		} break;
 	}
 }
 
@@ -190,7 +192,6 @@ void QuadOccluder3D::set_size(const Vector2 &p_size) {
 	}
 
 	size = p_size.max(Vector2());
-	;
 	_update();
 }
 
@@ -218,7 +219,7 @@ void QuadOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &QuadOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
 QuadOccluder3D::QuadOccluder3D() {
@@ -235,7 +236,6 @@ void BoxOccluder3D::set_size(const Vector3 &p_size) {
 	}
 
 	size = Vector3(MAX(p_size.x, 0.0f), MAX(p_size.y, 0.0f), MAX(p_size.z, 0.0f));
-	;
 	_update();
 }
 
@@ -285,7 +285,7 @@ void BoxOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &BoxOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
 BoxOccluder3D::BoxOccluder3D() {
@@ -354,7 +354,7 @@ void SphereOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereOccluder3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereOccluder3D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "suffix:m"), "set_radius", "get_radius");
 }
 
 SphereOccluder3D::SphereOccluder3D() {
@@ -431,10 +431,6 @@ AABB OccluderInstance3D::get_aabb() const {
 		return occluder->get_aabb();
 	}
 	return AABB();
-}
-
-Vector<Face3> OccluderInstance3D::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
@@ -690,25 +686,25 @@ TypedArray<String> OccluderInstance3D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
-		warnings.push_back(TTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
+		warnings.push_back(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
 
 	if (bake_mask == 0) {
-		warnings.push_back(TTR("The Bake Mask has no bits enabled, which means baking will not produce any occluder meshes for this OccluderInstance3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
+		warnings.push_back(RTR("The Bake Mask has no bits enabled, which means baking will not produce any occluder meshes for this OccluderInstance3D.\nTo resolve this, enable at least one bit in the Bake Mask property."));
 	}
 
 	if (occluder.is_null()) {
-		warnings.push_back(TTR("No occluder mesh is defined in the Occluder property, so no occlusion culling will be performed using this OccluderInstance3D.\nTo resolve this, set the Occluder property to one of the primitive occluder types or bake the scene meshes by selecting the OccluderInstance3D and pressing the Bake Occluders button at the top of the 3D editor viewport."));
+		warnings.push_back(RTR("No occluder mesh is defined in the Occluder property, so no occlusion culling will be performed using this OccluderInstance3D.\nTo resolve this, set the Occluder property to one of the primitive occluder types or bake the scene meshes by selecting the OccluderInstance3D and pressing the Bake Occluders button at the top of the 3D editor viewport."));
 	} else {
 		Ref<ArrayOccluder3D> arr_occluder = occluder;
 		if (arr_occluder.is_valid() && arr_occluder->get_indices().size() < 3) {
 			// Setting a new ArrayOccluder3D from the inspector will create an empty occluder,
 			// so warn the user about this.
-			warnings.push_back(TTR("The occluder mesh has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nTo generate a proper occluder mesh, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
+			warnings.push_back(RTR("The occluder mesh has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nTo generate a proper occluder mesh, select the OccluderInstance3D then use the Bake Occluders button at the top of the 3D editor viewport."));
 		}
 		Ref<PolygonOccluder3D> poly_occluder = occluder;
 		if (poly_occluder.is_valid() && poly_occluder->get_polygon().size() < 3) {
-			warnings.push_back(TTR("The polygon occluder has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nVertices can be added in the inspector or using the polygon editing tools at the top of the 3D editor viewport."));
+			warnings.push_back(RTR("The polygon occluder has less than 3 vertices, so no occlusion culling will be performed using this OccluderInstance3D.\nVertices can be added in the inspector or using the polygon editing tools at the top of the 3D editor viewport."));
 		}
 	}
 
@@ -740,7 +736,7 @@ void OccluderInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), "set_bake_simplification_distance", "get_bake_simplification_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");
 }
 
 OccluderInstance3D::OccluderInstance3D() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,7 @@ static bool _growOutlineContour(SwOutline& outline, uint32_t n)
 {
     if (outline.reservedCntrsCnt >= outline.cntrsCnt + n) return false;
     outline.reservedCntrsCnt = outline.cntrsCnt + n;
-    outline.cntrs = static_cast<uint16_t*>(realloc(outline.cntrs, outline.reservedCntrsCnt * sizeof(uint16_t)));
+    outline.cntrs = static_cast<uint32_t*>(realloc(outline.cntrs, outline.reservedCntrsCnt * sizeof(uint32_t)));
     return true;
 }
 

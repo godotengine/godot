@@ -34,6 +34,7 @@ thirdparty_sources = [
     "src/loaders/svg/tvgSvgSceneBuilder.cpp",
     "src/loaders/svg/tvgSvgPath.cpp",
     "src/loaders/svg/tvgSvgLoader.cpp",
+    "src/loaders/svg/tvgSvgCssStyle.cpp",
     "src/loaders/tvg/tvgTvgBinInterpreter.cpp",
     "src/loaders/tvg/tvgTvgLoader.cpp",
     "src/loaders/jpg/tvgJpgLoader.cpp",

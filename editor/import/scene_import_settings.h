@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENEIMPORTSETTINGS_H
-#define SCENEIMPORTSETTINGS_H
+#ifndef SCENE_IMPORT_SETTINGS_H
+#define SCENE_IMPORT_SETTINGS_H
 
 #include "editor/import/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
@@ -62,85 +62,85 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	Node *scene = nullptr;
 
-	HSplitContainer *tree_split;
-	HSplitContainer *property_split;
-	TabContainer *data_mode;
-	Tree *scene_tree;
-	Tree *mesh_tree;
-	Tree *material_tree;
+	HSplitContainer *tree_split = nullptr;
+	HSplitContainer *property_split = nullptr;
+	TabContainer *data_mode = nullptr;
+	Tree *scene_tree = nullptr;
+	Tree *mesh_tree = nullptr;
+	Tree *material_tree = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	SubViewport *base_viewport;
+	SubViewport *base_viewport = nullptr;
 
-	Camera3D *camera;
+	Camera3D *camera = nullptr;
 	bool first_aabb = false;
 	AABB contents_aabb;
 
-	DirectionalLight3D *light;
+	DirectionalLight3D *light = nullptr;
 	Ref<ArrayMesh> selection_mesh;
-	MeshInstance3D *node_selected;
+	MeshInstance3D *node_selected = nullptr;
 
-	MeshInstance3D *mesh_preview;
+	MeshInstance3D *mesh_preview = nullptr;
 	Ref<SphereMesh> material_preview;
 
 	Ref<StandardMaterial3D> collider_mat;
 
-	float cam_rot_x;
-	float cam_rot_y;
-	float cam_zoom;
+	float cam_rot_x = 0.0f;
+	float cam_rot_y = 0.0f;
+	float cam_zoom = 0.0f;
 
 	void _update_scene();
 
 	struct MaterialData {
 		bool has_import_id;
 		Ref<Material> material;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
-		TreeItem *material_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
+		TreeItem *material_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
 
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, MaterialData> material_map;
+	HashMap<String, MaterialData> material_map;
 
 	struct MeshData {
 		bool has_import_id;
 		Ref<Mesh> mesh;
-		TreeItem *scene_node;
-		TreeItem *mesh_node;
+		TreeItem *scene_node = nullptr;
+		TreeItem *mesh_node = nullptr;
 
 		float cam_rot_x = -Math_PI / 4;
 		float cam_rot_y = -Math_PI / 4;
 		float cam_zoom = 1;
-		Map<StringName, Variant> settings;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, MeshData> mesh_map;
+	HashMap<String, MeshData> mesh_map;
 
 	struct AnimationData {
 		Ref<Animation> animation;
-		TreeItem *scene_node;
-		Map<StringName, Variant> settings;
+		TreeItem *scene_node = nullptr;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, AnimationData> animation_map;
+	HashMap<String, AnimationData> animation_map;
 
 	struct NodeData {
-		Node *node;
-		TreeItem *scene_node;
-		Map<StringName, Variant> settings;
+		Node *node = nullptr;
+		TreeItem *scene_node = nullptr;
+		HashMap<StringName, Variant> settings;
 	};
-	Map<String, NodeData> node_map;
+	HashMap<String, NodeData> node_map;
 
 	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
 	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
 	void _fill_scene(Node *p_node, TreeItem *p_parent_item);
 
-	Set<Ref<Mesh>> mesh_set;
-	Set<Ref<Material>> material_set;
+	HashSet<Ref<Mesh>> mesh_set;
+	HashSet<Ref<Material>> material_set;
 
 	String selected_type;
 	String selected_id;
@@ -156,48 +156,54 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
-	Map<StringName, Variant> defaults;
+	HashMap<StringName, Variant> defaults;
 
-	SceneImportSettingsData *scene_import_settings_data;
+	SceneImportSettingsData *scene_import_settings_data = nullptr;
 
 	void _re_import();
 
 	String base_path;
 
-	MenuButton *action_menu;
+	MenuButton *action_menu = nullptr;
 
-	ConfirmationDialog *external_paths;
-	Tree *external_path_tree;
-	EditorFileDialog *save_path;
-	OptionButton *external_extension_type;
+	ConfirmationDialog *external_paths = nullptr;
+	Tree *external_path_tree = nullptr;
+	EditorFileDialog *save_path = nullptr;
+	OptionButton *external_extension_type = nullptr;
 
-	EditorFileDialog *item_save_path;
+	EditorFileDialog *item_save_path = nullptr;
 
 	void _menu_callback(int p_id);
 	void _save_dir_callback(const String &p_path);
 
-	int current_action;
+	int current_action = 0;
 
 	Vector<TreeItem *> save_path_items;
 
 	TreeItem *save_path_item = nullptr;
 	void _save_path_changed(const String &p_path);
-	void _browse_save_callback(Object *p_item, int p_column, int p_id);
+	void _browse_save_callback(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _save_dir_confirm();
 
 	Dictionary base_subresource_settings;
 
-	void _load_default_subresource_settings(Map<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
+	void _load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
+
+	bool editing_animation = false;
+
+	Timer *update_view_timer;
 
 protected:
 	void _notification(int p_what);
 
 public:
+	bool is_editing_animation() const { return editing_animation; }
 	void update_view();
-	void open_settings(const String &p_path);
+	void open_settings(const String &p_path, bool p_for_animation = false);
 	static SceneImportSettings *get_singleton();
+	Node *get_selected_node();
 	SceneImportSettings();
 	~SceneImportSettings();
 };
 
-#endif // SCENEIMPORTSETTINGS_H
+#endif // SCENE_IMPORT_SETTINGS_H

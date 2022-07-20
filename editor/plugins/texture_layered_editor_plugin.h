@@ -36,13 +36,11 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
-
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
 
-	SpinBox *layer;
-	Label *info;
+	SpinBox *layer = nullptr;
+	Label *info = nullptr;
 	Ref<TextureLayered> texture;
 
 	Ref<Shader> shaders[3];
@@ -50,7 +48,7 @@ class TextureLayeredEditor : public Control {
 
 	float x_rot = 0;
 	float y_rot = 0;
-	Control *texture_rect;
+	Control *texture_rect = nullptr;
 
 	void _make_shaders();
 
@@ -92,7 +90,7 @@ class TextureLayeredEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "TextureLayered"; }
 
-	TextureLayeredEditorPlugin(EditorNode *p_node);
+	TextureLayeredEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

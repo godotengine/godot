@@ -54,9 +54,11 @@
 		return;
 	}
 
+	ds->popup_close(window_id);
+
 	DisplayServerOSX::WindowData &wd = ds->get_window(window_id);
 	while (wd.transient_children.size()) {
-		ds->window_set_transient(wd.transient_children.front()->get(), DisplayServerOSX::INVALID_WINDOW_ID);
+		ds->window_set_transient(*wd.transient_children.begin(), DisplayServerOSX::INVALID_WINDOW_ID);
 	}
 
 	if (wd.transient_parent != DisplayServerOSX::INVALID_WINDOW_ID) {
@@ -144,6 +146,20 @@
 
 		//Force window resize event
 		[self windowDidResize:notification];
+	}
+}
+
+- (void)windowWillStartLiveResize:(NSNotification *)notification {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->set_is_resizing(true);
+	}
+}
+
+- (void)windowDidEndLiveResize:(NSNotification *)notification {
+	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->set_is_resizing(false);
 	}
 }
 

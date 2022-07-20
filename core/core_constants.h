@@ -39,7 +39,7 @@ public:
 	static StringName get_global_constant_enum(int p_idx);
 	static bool get_ignore_value_in_docs(int p_idx);
 	static const char *get_global_constant_name(int p_idx);
-	static int get_global_constant_value(int p_idx);
+	static int64_t get_global_constant_value(int p_idx);
 };
 
 #endif // GLOBAL_CONSTANTS_H

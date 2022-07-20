@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Basis" version="4.0">
+<class name="Basis" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		3×3 matrix datatype.
 	</brief_description>
@@ -35,9 +35,9 @@
 		<constructor name="Basis">
 			<return type="Basis" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]phi[/code], in radians. The axis must be a normalized vector.
+				Constructs a pure rotation basis matrix, rotated around the given [code]axis[/code] by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</constructor>
 		<constructor name="Basis">
@@ -136,9 +136,9 @@
 		<method name="rotated" qualifiers="const">
 			<return type="Basis" />
 			<argument index="0" name="axis" type="Vector3" />
-			<argument index="1" name="phi" type="float" />
+			<argument index="1" name="angle" type="float" />
 			<description>
-				Introduce an additional rotation around the given axis by phi (radians). The axis must be a normalized vector.
+				Introduce an additional rotation around the given axis by [code]angle[/code] (in radians). The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
@@ -225,11 +225,6 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator !=">
-			<return type="bool" />
 			<argument index="0" name="right" type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are not equal.
@@ -262,11 +257,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

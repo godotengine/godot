@@ -38,16 +38,16 @@
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
-	LineEdit *line_edit;
+	LineEdit *line_edit = nullptr;
 	int last_w = 0;
 	bool update_on_text_changed = false;
 
-	Timer *range_click_timer;
+	Timer *range_click_timer = nullptr;
 	void _range_click_timeout();
 	void _release_mouse();
 
 	void _text_submitted(const String &p_string);
-	virtual void _value_changed(double) override;
+	virtual void _value_changed(double p_value) override;
 	void _text_changed(const String &p_string);
 
 	String prefix;
@@ -56,11 +56,11 @@ class SpinBox : public Range {
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
 	struct Drag {
-		float base_val = 0.0;
+		double base_val = 0.0;
 		bool allowed = false;
 		bool enabled = false;
 		Vector2 capture_pos;
-		float diff_y = 0.0;
+		double diff_y = 0.0;
 	} drag;
 
 	void _line_edit_focus_exit();

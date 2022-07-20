@@ -37,7 +37,6 @@
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
-class EditorNode;
 class TileSet;
 
 class TileSetAtlasSourceEditor : public HBoxContainer {
@@ -86,10 +85,10 @@ public:
 		GDCLASS(AtlasTileProxyObject, Object);
 
 	private:
-		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor;
+		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
 		TileSetAtlasSource *tile_set_atlas_source = nullptr;
-		Set<TileSelection> tiles = Set<TileSelection>();
+		RBSet<TileSelection> tiles = RBSet<TileSelection>();
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -100,10 +99,10 @@ public:
 
 	public:
 		TileSetAtlasSource *get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
-		Set<TileSelection> get_edited_tiles() const { return tiles; };
+		RBSet<TileSelection> get_edited_tiles() const { return tiles; };
 
 		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles = Set<TileSelection>());
+		void edit(TileSetAtlasSource *p_tile_set_atlas_source, RBSet<TileSelection> p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
 			tiles_set_atlas_source_editor = p_tiles_set_atlas_source_editor;
@@ -115,42 +114,42 @@ private:
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
-	VBoxContainer *tile_data_painting_editor_container;
-	Label *tile_data_editors_label;
-	Button *tile_data_editor_dropdown_button;
-	Popup *tile_data_editors_popup;
-	Tree *tile_data_editors_tree;
+	VBoxContainer *tile_data_painting_editor_container = nullptr;
+	Label *tile_data_editors_label = nullptr;
+	Button *tile_data_editor_dropdown_button = nullptr;
+	Popup *tile_data_editors_popup = nullptr;
+	Tree *tile_data_editors_tree = nullptr;
 	void _tile_data_editor_dropdown_button_draw();
 	void _tile_data_editor_dropdown_button_pressed();
 
 	// -- Tile data editors --
 	String current_property;
 	Control *current_tile_data_editor_toolbar = nullptr;
-	Map<String, TileDataEditor *> tile_data_editors;
+	HashMap<String, TileDataEditor *> tile_data_editors;
 	TileDataEditor *current_tile_data_editor = nullptr;
 	void _tile_data_editors_tree_selected();
 
 	// -- Inspector --
-	AtlasTileProxyObject *tile_proxy_object;
-	Label *tile_inspector_label;
-	EditorInspector *tile_inspector;
-	Label *tile_inspector_no_tile_selected_label;
+	AtlasTileProxyObject *tile_proxy_object = nullptr;
+	Label *tile_inspector_label = nullptr;
+	EditorInspector *tile_inspector = nullptr;
+	Label *tile_inspector_no_tile_selected_label = nullptr;
 	String selected_property;
 	void _inspector_property_selected(String p_property);
 
-	TileSetAtlasSourceProxyObject *atlas_source_proxy_object;
-	Label *atlas_source_inspector_label;
-	EditorInspector *atlas_source_inspector;
+	TileSetAtlasSourceProxyObject *atlas_source_proxy_object = nullptr;
+	Label *atlas_source_inspector_label = nullptr;
+	EditorInspector *atlas_source_inspector = nullptr;
 
 	// -- Atlas view --
-	HBoxContainer *toolbox;
-	Label *tile_atlas_view_missing_source_label;
-	TileAtlasView *tile_atlas_view;
+	HBoxContainer *toolbox = nullptr;
+	Label *tile_atlas_view_missing_source_label = nullptr;
+	TileAtlasView *tile_atlas_view = nullptr;
 
 	// Dragging
 	enum DragType {
@@ -183,10 +182,10 @@ private:
 	Vector2i drag_current_tile;
 
 	Rect2i drag_start_tile_shape;
-	Set<Vector2i> drag_modified_tiles;
+	RBSet<Vector2i> drag_modified_tiles;
 	void _end_dragging();
 
-	Map<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
+	HashMap<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
 
 	// Popup functions.
 	enum MenuOptions {
@@ -203,20 +202,20 @@ private:
 
 	// Tool buttons.
 	Ref<ButtonGroup> tools_button_group;
-	Button *tool_setup_atlas_source_button;
-	Button *tool_select_button;
-	Button *tool_paint_button;
-	Label *tool_tile_id_label;
+	Button *tool_setup_atlas_source_button = nullptr;
+	Button *tool_select_button = nullptr;
+	Button *tool_paint_button = nullptr;
+	Label *tool_tile_id_label = nullptr;
 
 	// Tool settings.
-	HBoxContainer *tool_settings;
-	VSeparator *tool_settings_vsep;
-	HBoxContainer *tool_settings_tile_data_toolbar_container;
-	Button *tools_settings_erase_button;
-	MenuButton *tool_advanced_menu_buttom;
+	HBoxContainer *tool_settings = nullptr;
+	VSeparator *tool_settings_vsep = nullptr;
+	HBoxContainer *tool_settings_tile_data_toolbar_container = nullptr;
+	Button *tools_settings_erase_button = nullptr;
+	MenuButton *tool_advanced_menu_buttom = nullptr;
 
 	// Selection.
-	Set<TileSelection> selection;
+	RBSet<TileSelection> selection;
 
 	void _set_selection_from_array(Array p_selection);
 	Array _get_selection_as_array();
@@ -224,12 +223,12 @@ private:
 	// A control on the tile atlas to draw and handle input events.
 	Vector2i hovered_base_tile_coords = TileSetSource::INVALID_ATLAS_COORDS;
 
-	PopupMenu *base_tile_popup_menu;
-	PopupMenu *empty_base_tile_popup_menu;
+	PopupMenu *base_tile_popup_menu = nullptr;
+	PopupMenu *empty_base_tile_popup_menu = nullptr;
 	Ref<Texture2D> resize_handle;
 	Ref<Texture2D> resize_handle_disabled;
-	Control *tile_atlas_control;
-	Control *tile_atlas_control_unscaled;
+	Control *tile_atlas_control = nullptr;
+	Control *tile_atlas_control_unscaled = nullptr;
 	void _tile_atlas_control_draw();
 	void _tile_atlas_control_unscaled_draw();
 	void _tile_atlas_control_mouse_exited();
@@ -239,9 +238,9 @@ private:
 	// A control over the alternative tiles.
 	Vector3i hovered_alternative_tile_coords = Vector3i(TileSetSource::INVALID_ATLAS_COORDS.x, TileSetSource::INVALID_ATLAS_COORDS.y, TileSetSource::INVALID_TILE_ALTERNATIVE);
 
-	PopupMenu *alternative_tile_popup_menu;
-	Control *alternative_tiles_control;
-	Control *alternative_tiles_control_unscaled;
+	PopupMenu *alternative_tile_popup_menu = nullptr;
+	Control *alternative_tiles_control = nullptr;
+	Control *alternative_tiles_control_unscaled = nullptr;
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();
@@ -265,7 +264,7 @@ private:
 	// -- Misc --
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
-	AcceptDialog *confirm_auto_create_tiles;
+	AcceptDialog *confirm_auto_create_tiles = nullptr;
 
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);
@@ -294,7 +293,7 @@ class EditorPropertyTilePolygon : public EditorProperty {
 
 	void _add_focusable_children(Node *p_node);
 
-	GenericTilePolygonEditor *generic_tile_polygon_editor;
+	GenericTilePolygonEditor *generic_tile_polygon_editor = nullptr;
 	void _polygons_changed();
 
 public:

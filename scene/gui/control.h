@@ -44,7 +44,6 @@ class Panel;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
-	OBJ_CATEGORY("GUI Nodes");
 
 public:
 	enum Anchor {
@@ -117,7 +116,7 @@ public:
 		PRESET_BOTTOM_WIDE,
 		PRESET_VCENTER_WIDE,
 		PRESET_HCENTER_WIDE,
-		PRESET_WIDE
+		PRESET_FULL_RECT
 	};
 
 	enum LayoutPresetMode {
@@ -146,16 +145,6 @@ public:
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
 		TEXT_DIRECTION_INHERITED,
-	};
-
-	enum StructuredTextParser {
-		STRUCTURED_TEXT_DEFAULT,
-		STRUCTURED_TEXT_URI,
-		STRUCTURED_TEXT_FILE,
-		STRUCTURED_TEXT_EMAIL,
-		STRUCTURED_TEXT_LIST,
-		STRUCTURED_TEXT_NONE,
-		STRUCTURED_TEXT_CUSTOM
 	};
 
 private:
@@ -201,6 +190,7 @@ private:
 		Point2 custom_minimum_size;
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
 
@@ -227,12 +217,12 @@ private:
 		NodePath focus_prev;
 
 		bool bulk_theme_override = false;
-		HashMap<StringName, Ref<Texture2D>> icon_override;
-		HashMap<StringName, Ref<StyleBox>> style_override;
-		HashMap<StringName, Ref<Font>> font_override;
-		HashMap<StringName, int> font_size_override;
-		HashMap<StringName, Color> color_override;
-		HashMap<StringName, int> constant_override;
+		Theme::ThemeIconMap icon_override;
+		Theme::ThemeStyleMap style_override;
+		Theme::ThemeFontMap font_override;
+		Theme::ThemeFontSizeMap font_size_override;
+		Theme::ThemeColorMap color_override;
+		Theme::ThemeConstantMap constant_override;
 
 	} data;
 
@@ -291,7 +281,7 @@ protected:
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
-	virtual Array structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const;
+	virtual Array structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -479,6 +469,9 @@ public:
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 
+	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
+	bool is_force_pass_scroll_events() const;
+
 	/* SKINNING */
 
 	void begin_bulk_theme_override();
@@ -548,7 +541,7 @@ public:
 
 	void grab_click_focus();
 
-	void warp_mouse(const Point2 &p_to_pos);
+	void warp_mouse(const Point2 &p_position);
 
 	virtual bool is_text_field() const;
 
@@ -580,6 +573,5 @@ VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
-VARIANT_ENUM_CAST(Control::StructuredTextParser);
 
 #endif

@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language_extension.h"
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
@@ -60,6 +61,10 @@ static void gdnative_print_script_error(const char *p_description, const char *p
 	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
 }
 
+uint64_t gdnative_get_native_struct_size(const char *p_name) {
+	return ClassDB::get_native_struct_size(p_name);
+}
+
 // Variant functions
 
 static void gdnative_variant_new_copy(GDNativeVariantPtr r_dest, const GDNativeVariantPtr p_src) {
@@ -80,7 +85,7 @@ static void gdnative_variant_call(GDNativeVariantPtr p_self, const GDNativeStrin
 	const Variant **args = (const Variant **)p_args;
 	Variant ret;
 	Callable::CallError error;
-	self->call(*method, args, p_argcount, ret, error);
+	self->callp(*method, args, p_argcount, ret, error);
 	memnew_placement(r_return, Variant(ret));
 
 	if (r_error) {
@@ -152,7 +157,7 @@ static void gdnative_variant_set_indexed(GDNativeVariantPtr p_self, GDNativeInt 
 
 	bool valid;
 	bool oob;
-	self->set_indexed(p_index, value, valid, oob);
+	self->set_indexed(p_index, *value, valid, oob);
 	*r_valid = valid;
 	*r_oob = oob;
 }
@@ -225,6 +230,16 @@ static void gdnative_variant_iter_get(const GDNativeVariantPtr p_self, GDNativeV
 }
 
 /// Variant functions.
+static GDNativeInt gdnative_variant_hash(const GDNativeVariantPtr p_self) {
+	const Variant *self = (const Variant *)p_self;
+	return self->hash();
+}
+
+static GDNativeInt gdnative_variant_recursive_hash(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count) {
+	const Variant *self = (const Variant *)p_self;
+	return self->recursive_hash(p_recursion_count);
+}
+
 static GDNativeBool gdnative_variant_hash_compare(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other) {
 	const Variant *self = (const Variant *)p_self;
 	const Variant *other = (const Variant *)p_other;
@@ -234,6 +249,13 @@ static GDNativeBool gdnative_variant_hash_compare(const GDNativeVariantPtr p_sel
 static GDNativeBool gdnative_variant_booleanize(const GDNativeVariantPtr p_self) {
 	const Variant *self = (const Variant *)p_self;
 	return self->booleanize();
+}
+
+static void gdnative_variant_sub(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_dst) {
+	const Variant *a = (const Variant *)p_a;
+	const Variant *b = (const Variant *)p_b;
+	memnew_placement(r_dst, Variant);
+	Variant::sub(*a, *b, *(Variant *)r_dst);
 }
 
 static void gdnative_variant_blend(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst) {
@@ -860,6 +882,13 @@ static GDObjectInstanceID gdnative_object_get_instance_id(const GDNativeObjectPt
 	return (GDObjectInstanceID)o->get_instance_id();
 }
 
+static GDNativeScriptInstancePtr gdnative_script_instance_create(const GDNativeExtensionScriptInstanceInfo *p_info, GDNativeExtensionScriptInstanceDataPtr p_instance_data) {
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = p_info;
+	return reinterpret_cast<GDNativeScriptInstancePtr>(script_instance_extension);
+}
+
 static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_classname, const char *p_methodname, GDNativeInt p_hash) {
 	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
 	ERR_FAIL_COND_V(!mb, nullptr);
@@ -902,6 +931,8 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.print_warning = gdnative_print_warning;
 	gdni.print_script_error = gdnative_print_script_error;
 
+	gdni.get_native_struct_size = gdnative_get_native_struct_size;
+
 	/* GODOT VARIANT */
 
 	// variant general
@@ -923,8 +954,11 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.variant_iter_init = gdnative_variant_iter_init;
 	gdni.variant_iter_next = gdnative_variant_iter_next;
 	gdni.variant_iter_get = gdnative_variant_iter_get;
+	gdni.variant_hash = gdnative_variant_hash;
+	gdni.variant_recursive_hash = gdnative_variant_recursive_hash;
 	gdni.variant_hash_compare = gdnative_variant_hash_compare;
 	gdni.variant_booleanize = gdnative_variant_booleanize;
+	gdni.variant_sub = gdnative_variant_sub;
 	gdni.variant_blend = gdnative_variant_blend;
 	gdni.variant_interpolate = gdnative_variant_interpolate;
 	gdni.variant_duplicate = gdnative_variant_duplicate;
@@ -1026,6 +1060,10 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.object_get_instance_from_id = gdnative_object_get_instance_from_id;
 	gdni.object_get_instance_id = gdnative_object_get_instance_id;
 
+	/* SCRIPT INSTANCE */
+
+	gdni.script_instance_create = gdnative_script_instance_create;
+
 	/* CLASSDB */
 
 	gdni.classdb_construct_object = gdnative_classdb_construct_object;
@@ -1043,4 +1081,6 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.classdb_register_extension_class_property_subgroup = nullptr;
 	gdni.classdb_register_extension_class_signal = nullptr;
 	gdni.classdb_unregister_extension_class = nullptr;
+
+	gdni.get_library_path = nullptr;
 }

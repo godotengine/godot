@@ -32,6 +32,7 @@
 #define EDITOR_PROPERTIES_ARRAY_DICT_H
 
 #include "editor/editor_inspector.h"
+#include "editor/editor_locale_dialog.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/filesystem_dock.h"
 #include "scene/gui/button.h"
@@ -79,20 +80,20 @@ public:
 class EditorPropertyArray : public EditorProperty {
 	GDCLASS(EditorPropertyArray, EditorProperty);
 
-	PopupMenu *change_type;
-	bool updating;
-	bool dropping;
+	PopupMenu *change_type = nullptr;
+	bool updating = false;
+	bool dropping = false;
 
 	Ref<EditorPropertyArrayObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	VBoxContainer *property_vbox;
-	EditorSpinSlider *size_slider;
-	Button *button_add_item;
-	EditorPaginator *paginator;
+	Button *edit = nullptr;
+	MarginContainer *container = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 	Variant::Type array_type;
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
@@ -137,19 +138,19 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
-	PopupMenu *change_type;
-	bool updating;
+	PopupMenu *change_type = nullptr;
+	bool updating = false;
 
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
-	Button *edit;
-	VBoxContainer *vbox;
-	VBoxContainer *property_vbox;
-	EditorSpinSlider *size_slider;
-	Button *button_add_item;
-	EditorPaginator *paginator;
+	Button *edit = nullptr;
+	MarginContainer *container = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_sliderv;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
 
 	void _page_changed(int p_page);
 	void _edit_pressed();
@@ -167,6 +168,41 @@ protected:
 public:
 	virtual void update_property() override;
 	EditorPropertyDictionary();
+};
+
+class EditorPropertyLocalizableString : public EditorProperty {
+	GDCLASS(EditorPropertyLocalizableString, EditorProperty);
+
+	EditorLocaleDialog *locale_select = nullptr;
+
+	bool updating;
+
+	Ref<EditorPropertyDictionaryObject> object;
+	int page_length = 20;
+	int page_index = 0;
+	Button *edit = nullptr;
+	MarginContainer *container = nullptr;
+	VBoxContainer *property_vbox = nullptr;
+	EditorSpinSlider *size_slider = nullptr;
+	Button *button_add_item = nullptr;
+	EditorPaginator *paginator = nullptr;
+
+	void _page_changed(int p_page);
+	void _edit_pressed();
+	void _remove_item(Object *p_button, int p_index);
+	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+
+	void _add_locale_popup();
+	void _add_locale(const String &p_locale);
+	void _object_id_selected(const StringName &p_property, ObjectID p_id);
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+	virtual void update_property() override;
+	EditorPropertyLocalizableString();
 };
 
 #endif // EDITOR_PROPERTIES_ARRAY_DICT_H

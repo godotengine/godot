@@ -4,7 +4,7 @@
  *
  *   FreeType utility functions for bitmaps (body).
  *
- * Copyright (C) 2004-2021 by
+ * Copyright (C) 2004-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -480,7 +480,7 @@
      * A gamma of 2.2 is fair to assume.  And then, we need to
      * undo the premultiplication too.
      *
-     *   https://accessibility.kde.org/hsl-adjusted.php
+     *   http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html#SideNotes
      *
      * We do the computation with integers only, applying a gamma of 2.0.
      * We guarantee 32-bit arithmetic to avoid overflow but the resulting
@@ -488,9 +488,9 @@
      *
      */
 
-    l = (  4732UL /* 0.0722 * 65536 */ * bgra[0] * bgra[0] +
-          46871UL /* 0.7152 * 65536 */ * bgra[1] * bgra[1] +
-          13933UL /* 0.2126 * 65536 */ * bgra[2] * bgra[2] ) >> 16;
+    l = (  4731UL /* 0.072186 * 65536 */ * bgra[0] * bgra[0] +
+          46868UL /* 0.715158 * 65536 */ * bgra[1] * bgra[1] +
+          13937UL /* 0.212656 * 65536 */ * bgra[2] * bgra[2] ) >> 16;
 
     /*
      * Final transparency can be determined as follows.

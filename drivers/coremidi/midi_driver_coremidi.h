@@ -36,7 +36,7 @@
 #include "core/os/midi_driver.h"
 #include "core/templates/vector.h"
 
-#include <CoreMIDI/CoreMIDI.h>
+#import <CoreMIDI/CoreMIDI.h>
 #include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {

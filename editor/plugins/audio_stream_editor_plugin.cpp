@@ -39,29 +39,32 @@
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
-	}
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
+		} break;
 
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-		_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
-		_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
-		set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
+			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));
+			set_color(get_theme_color(SNAME("dark_color_1"), SNAME("Editor")));
 
-		_indicator->update();
-		_preview->update();
-	}
+			_indicator->update();
+			_preview->update();
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		_current = _player->get_playback_position();
-		_indicator->update();
-	}
+		case NOTIFICATION_PROCESS: {
+			_current = _player->get_playback_position();
+			_indicator->update();
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible_in_tree()) {
-			_stop();
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				_stop();
+			}
+		} break;
 	}
 }
 
@@ -210,7 +213,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
-	vbox->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_MINSIZE, 0);
+	vbox->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_MINSIZE, 0);
 	add_child(vbox);
 
 	_preview = memnew(ColorRect);
@@ -219,7 +222,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	vbox->add_child(_preview);
 
 	_indicator = memnew(Control);
-	_indicator->set_anchors_and_offsets_preset(PRESET_WIDE);
+	_indicator->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	_indicator->connect("draw", callable_mp(this, &AudioStreamEditor::_draw_indicator));
 	_indicator->connect("gui_input", callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
@@ -272,8 +275,7 @@ void AudioStreamEditorPlugin::make_visible(bool p_visible) {
 	audio_editor->set_visible(p_visible);
 }
 
-AudioStreamEditorPlugin::AudioStreamEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+AudioStreamEditorPlugin::AudioStreamEditorPlugin() {
 	audio_editor = memnew(AudioStreamEditor);
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);
 	audio_editor->hide();

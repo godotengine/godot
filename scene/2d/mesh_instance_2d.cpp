@@ -29,13 +29,16 @@
 /*************************************************************************/
 
 #include "mesh_instance_2d.h"
+
 #include "scene/scene_string_names.h"
 
 void MeshInstance2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		if (mesh.is_valid()) {
-			draw_mesh(mesh, texture);
-		}
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			if (mesh.is_valid()) {
+				draw_mesh(mesh, texture);
+			}
+		} break;
 	}
 }
 

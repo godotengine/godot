@@ -36,7 +36,7 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {
@@ -68,8 +68,8 @@ class GDMonoAssembly {
 	};
 
 	String name;
-	MonoImage *image;
-	MonoAssembly *assembly;
+	MonoImage *image = nullptr;
+	MonoAssembly *assembly = nullptr;
 
 	bool attrs_fetched = false;
 	MonoCustomAttrInfo *attributes = nullptr;
@@ -79,7 +79,7 @@ class GDMonoAssembly {
 #endif
 
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
-	Map<MonoClass *, GDMonoClass *> cached_raw;
+	HashMap<MonoClass *, GDMonoClass *> cached_raw;
 
 	static Vector<String> search_dirs;
 

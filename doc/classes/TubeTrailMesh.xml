@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TubeTrailMesh" inherits="PrimitiveMesh" version="4.0">
+<class name="TubeTrailMesh" inherits="PrimitiveMesh" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -11,7 +11,7 @@
 		</member>
 		<member name="radial_steps" type="int" setter="set_radial_steps" getter="get_radial_steps" default="8">
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 		</member>
 		<member name="section_length" type="float" setter="set_section_length" getter="get_section_length" default="0.2">
 		</member>

@@ -49,7 +49,7 @@ public:
 
 		int frame_number = 0;
 		float frame_time = 0;
-		float idle_time = 0;
+		float process_time = 0;
 		float physics_time = 0;
 		float physics_frame_time = 0;
 
@@ -73,8 +73,8 @@ public:
 
 		Vector<Category> categories;
 
-		Map<StringName, Category *> category_ptrs;
-		Map<StringName, Category::Item *> item_ptrs;
+		HashMap<StringName, Category *> category_ptrs;
+		HashMap<StringName, Category::Item *> item_ptrs;
 	};
 
 	enum DisplayMode {
@@ -90,37 +90,37 @@ public:
 	};
 
 private:
-	Button *activate;
-	Button *clear_button;
-	TextureRect *graph;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
-	Tree *variables;
-	HSplitContainer *h_split;
+	Tree *variables = nullptr;
+	HSplitContainer *h_split = nullptr;
 
-	Set<StringName> plot_sigs;
+	HashSet<StringName> plot_sigs;
 
-	OptionButton *display_mode;
-	OptionButton *display_time;
+	OptionButton *display_mode = nullptr;
+	OptionButton *display_time = nullptr;
 
-	SpinBox *cursor_metric_edit;
+	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
-	int total_metrics;
-	int last_metric;
+	int total_metrics = 0;
+	int last_metric = -1;
 
-	int max_functions;
+	int max_functions = 0;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
-	int hover_metric;
+	int hover_metric = -1;
 
-	float graph_height;
+	float graph_height = 1.0f;
 
-	bool seeking;
+	bool seeking = false;
 
-	Timer *frame_delay;
-	Timer *plot_delay;
+	Timer *frame_delay = nullptr;
+	Timer *plot_delay = nullptr;
 
 	void _update_frame();
 

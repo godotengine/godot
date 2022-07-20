@@ -34,17 +34,33 @@
 #include "core/os/os.h"
 #include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/effects_rd.h"
+#include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 class RendererCompositorRD : public RendererCompositor {
 protected:
-	RendererCanvasRenderRD *canvas;
-	RendererStorageRD *storage;
-	RendererSceneRenderRD *scene;
+	UniformSetCacheRD *uniform_set_cache = nullptr;
+	RendererCanvasRenderRD *canvas = nullptr;
+	RendererRD::Utilities *utilities = nullptr;
+	RendererRD::LightStorage *light_storage = nullptr;
+	RendererRD::MaterialStorage *material_storage = nullptr;
+	RendererRD::MeshStorage *mesh_storage = nullptr;
+	RendererRD::ParticlesStorage *particles_storage = nullptr;
+	RendererRD::TextureStorage *texture_storage = nullptr;
+	RendererRD::Fog *fog = nullptr;
+	EffectsRD *effects = nullptr;
+	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -78,15 +94,26 @@ protected:
 		RID sampler;
 	} blit;
 
-	Map<RID, RID> render_target_descriptors;
+	HashMap<RID, RID> render_target_descriptors;
 
-	double time;
-	double delta;
+	double time = 0.0;
+	double delta = 0.0;
 
 	static uint64_t frame;
 
 public:
-	RendererStorage *get_storage() { return storage; }
+	RendererUtilities *get_utilities() { return utilities; };
+	RendererLightStorage *get_light_storage() { return light_storage; }
+	RendererMaterialStorage *get_material_storage() { return material_storage; }
+	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
+	RendererParticlesStorage *get_particles_storage() { return particles_storage; }
+	RendererTextureStorage *get_texture_storage() { return texture_storage; }
+	RendererGI *get_gi() {
+		ERR_FAIL_NULL_V(scene, nullptr);
+		return scene->get_gi();
+	}
+	RendererFog *get_fog() { return fog; }
+	EffectsRD *get_effects() { return effects; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
@@ -114,6 +141,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
+		low_end = false;
 	}
 
 	static RendererCompositorRD *singleton;

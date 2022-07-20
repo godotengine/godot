@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" version="4.0">
+<class name="Tree" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -31,6 +31,7 @@
 		[/csharp]
 		[/codeblocks]
 		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_first_child] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
+		[b]Incremental search:[/b] Like [ItemList] and [PopupMenu], [Tree] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -39,13 +40,6 @@
 			<return type="void" />
 			<description>
 				Clears the tree. This removes all items.
-			</description>
-		</method>
-		<method name="clear_column_title_opentype_features">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<description>
-				Removes all OpenType features from the item's text.
 			</description>
 		</method>
 		<method name="create_item">
@@ -113,14 +107,6 @@
 				Returns column title language code.
 			</description>
 		</method>
-		<method name="get_column_title_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the column title.
-			</description>
-		</method>
 		<method name="get_column_width" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="column" type="int" />
@@ -179,8 +165,9 @@
 			<return type="Rect2" />
 			<argument index="0" name="item" type="TreeItem" />
 			<argument index="1" name="column" type="int" default="-1" />
+			<argument index="2" name="button_index" type="int" default="-1" />
 			<description>
-				Returns the rectangle area for the specified [TreeItem]. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified [TreeItem]. If [code]column[/code] is specified, only get the position and size of that column, otherwise get the rectangle containing all columns. If a button index is specified, the rectangle of that button will be returned.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -306,15 +293,6 @@
 				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 			</description>
 		</method>
-		<method name="set_column_title_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="column" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the column title.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
@@ -323,6 +301,7 @@
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], a right mouse button click can select items.
 		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
 			If [code]true[/code], column titles are visible.
 		</member>
@@ -340,7 +319,6 @@
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
 		</member>
@@ -352,10 +330,11 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="button_pressed">
+		<signal name="button_clicked">
 			<argument index="0" name="item" type="TreeItem" />
 			<argument index="1" name="column" type="int" />
 			<argument index="2" name="id" type="int" />
+			<argument index="3" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when a button on the tree was pressed (see [method TreeItem.add_button]).
 			</description>
@@ -378,22 +357,23 @@
 				Emitted when a column's title is pressed.
 			</description>
 		</signal>
+		<signal name="custom_item_clicked">
+			<argument index="0" name="mouse_button_index" type="int" />
+			<description>
+				Emitted when an item with [constant TreeItem.CELL_MODE_CUSTOM] is clicked with a mouse button.
+			</description>
+		</signal>
 		<signal name="custom_popup_edited">
 			<argument index="0" name="arrow_clicked" type="bool" />
 			<description>
 				Emitted when a cell with the [constant TreeItem.CELL_MODE_CUSTOM] is clicked to be edited.
 			</description>
 		</signal>
-		<signal name="empty_rmb">
+		<signal name="empty_clicked">
 			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="mouse_button_index" type="int" />
 			<description>
-				Emitted when the right mouse button is pressed in the empty space of the tree.
-			</description>
-		</signal>
-		<signal name="empty_tree_rmb_selected">
-			<argument index="0" name="position" type="Vector2" />
-			<description>
-				Emitted when the right mouse button is pressed if right mouse button selection is active and the tree is empty.
+				Emitted when a mouse button is clicked in the empty space of the tree.
 			</description>
 		</signal>
 		<signal name="item_activated">
@@ -422,15 +402,11 @@
 				Emitted when an item is edited.
 			</description>
 		</signal>
-		<signal name="item_rmb_edited">
-			<description>
-				Emitted when an item is edited using the right mouse button.
-			</description>
-		</signal>
-		<signal name="item_rmb_selected">
+		<signal name="item_mouse_selected">
 			<argument index="0" name="position" type="Vector2" />
+			<argument index="1" name="mouse_button_index" type="int" />
 			<description>
-				Emitted when an item is selected with the right mouse button.
+				Emitted when an item is selected with a mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
@@ -521,7 +497,7 @@
 		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
 			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="16">
@@ -545,7 +521,7 @@
 		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
 			The speed of border scrolling.
 		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="4">
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical padding inside each item, i.e. the distance between the item's content and top/bottom border.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">

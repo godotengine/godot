@@ -47,8 +47,8 @@ class BackgroundProgress : public HBoxContainer {
 		ProgressBar *progress = nullptr;
 	};
 
-	Map<String, Task> tasks;
-	Map<String, int> updates;
+	HashMap<String, Task> tasks;
+	HashMap<String, int> updates;
 	void _update();
 
 protected:
@@ -74,18 +74,18 @@ class ProgressDialog : public PopupPanel {
 		ProgressBar *progress = nullptr;
 		Label *state = nullptr;
 	};
-	HBoxContainer *cancel_hb;
-	Button *cancel;
+	HBoxContainer *cancel_hb = nullptr;
+	Button *cancel = nullptr;
 
-	Map<String, Task> tasks;
-	VBoxContainer *main;
+	HashMap<String, Task> tasks;
+	VBoxContainer *main = nullptr;
 	uint64_t last_progress_tick;
 
 	static ProgressDialog *singleton;
 	void _popup();
 
 	void _cancel_pressed();
-	bool cancelled;
+	bool cancelled = false;
 
 protected:
 	void _notification(int p_what);

@@ -51,20 +51,20 @@ public:
 		real_t f = d2.dot(r);
 		real_t s, t;
 		// Check if either or both segments degenerate into points.
-		if (a <= CMP_EPSILON && e <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON && e <= (real_t)CMP_EPSILON) {
 			// Both segments degenerate into points.
 			c1 = p1;
 			c2 = p2;
 			return Math::sqrt((c1 - c2).dot(c1 - c2));
 		}
-		if (a <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON) {
 			// First segment degenerates into a point.
 			s = 0.0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
 			t = CLAMP(t, 0.0f, 1.0f);
 		} else {
 			real_t c = d1.dot(r);
-			if (e <= CMP_EPSILON) {
+			if (e <= (real_t)CMP_EPSILON) {
 				// Second segment degenerates into a point.
 				t = 0.0;
 				s = CLAMP(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
@@ -185,7 +185,7 @@ public:
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
 		// Fail if C x B and D x B have the same sign (segments don't intersect).
-		if ((C.y < -CMP_EPSILON && D.y < -CMP_EPSILON) || (C.y > CMP_EPSILON && D.y > CMP_EPSILON)) {
+		if ((C.y < (real_t)-CMP_EPSILON && D.y < (real_t)-CMP_EPSILON) || (C.y > (real_t)CMP_EPSILON && D.y > (real_t)CMP_EPSILON)) {
 			return false;
 		}
 
@@ -198,7 +198,7 @@ public:
 		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
 
 		// Fail if segment C-D crosses line A-B outside of segment A-B.
-		if (ABpos < 0 || ABpos > 1.0f) {
+		if ((ABpos < 0) || (ABpos > 1)) {
 			return false;
 		}
 

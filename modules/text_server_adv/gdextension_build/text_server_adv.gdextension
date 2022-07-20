@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "textserver_advanced_init"
+
+[libraries]
+
+linux.64.debug = "bin/libtextserver_advanced.linux.debug.64.so"
+linux.64.release = "bin/libtextserver_advanced.linux.release.64.so"
+windows.64.debug = "bin/libtextserver_advanced.windows.debug.64.dll"
+windows.64.release = "bin/libtextserver_advanced.windows.release.64.dll"
+macos.debug = "bin/libtextserver_advanced.osx.debug.framework"
+macos.release = "bin/libtextserver_advanced.osx.release.framework"

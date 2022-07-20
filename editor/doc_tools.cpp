@@ -178,6 +178,20 @@ void DocTools::merge_from(const DocTools &p_data) {
 			}
 		}
 
+		for (int i = 0; i < c.annotations.size(); i++) {
+			DocData::MethodDoc &m = c.annotations.write[i];
+
+			for (int j = 0; j < cf.annotations.size(); j++) {
+				if (cf.annotations[j].name != m.name) {
+					continue;
+				}
+				const DocData::MethodDoc &mf = cf.annotations[j];
+
+				m.description = mf.description;
+				break;
+			}
+		}
+
 		for (int i = 0; i < c.properties.size(); i++) {
 			DocData::PropertyDoc &p = c.properties.write[i];
 
@@ -331,7 +345,7 @@ void DocTools::generate(bool p_basic_types) {
 	bool skip_setter_getter_methods = true;
 
 	while (classes.size()) {
-		Set<StringName> setters_getters;
+		HashSet<StringName> setters_getters;
 
 		String name = classes.front()->get();
 		if (!ClassDB::is_class_exposed(name)) {
@@ -429,7 +443,7 @@ void DocTools::generate(bool p_basic_types) {
 					PropertyInfo retinfo = mb->get_return_info();
 
 					found_type = true;
-					if (retinfo.type == Variant::INT && retinfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+					if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 						prop.enumeration = retinfo.class_name;
 						prop.type = "int";
 					} else if (retinfo.class_name != StringName()) {
@@ -575,6 +589,7 @@ void DocTools::generate(bool p_basic_types) {
 			constant.value = itos(ClassDB::get_integer_constant(name, E));
 			constant.is_value_valid = true;
 			constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
+			constant.is_bitfield = ClassDB::is_enum_bitfield(name, constant.enumeration);
 			c.constants.push_back(constant);
 		}
 
@@ -685,6 +700,11 @@ void DocTools::generate(bool p_basic_types) {
 
 		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
 			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
+				// Prevent generating for comparison with null.
+				if (Variant::Type(k) == Variant::NIL && (Variant::Operator(j) == Variant::OP_EQUAL || Variant::Operator(j) == Variant::OP_NOT_EQUAL)) {
+					continue;
+				}
+
 				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
 				if (rt != Variant::NIL) { // Has operator.
 					// Skip String % operator as it's registered separately for each Variant arg type,
@@ -954,8 +974,41 @@ void DocTools::generate(bool p_basic_types) {
 				c.constants.push_back(cd);
 			}
 
+			// Get annotations.
+			List<MethodInfo> ainfo;
+			lang->get_public_annotations(&ainfo);
+
+			for (const MethodInfo &ai : ainfo) {
+				DocData::MethodDoc atd;
+				atd.name = ai.name;
+
+				if (ai.flags & METHOD_FLAG_VARARG) {
+					if (!atd.qualifiers.is_empty()) {
+						atd.qualifiers += " ";
+					}
+					atd.qualifiers += "vararg";
+				}
+
+				DocData::return_doc_from_retinfo(atd, ai.return_val);
+
+				for (int j = 0; j < ai.arguments.size(); j++) {
+					DocData::ArgumentDoc ad;
+					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
+
+					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
+					if (darg_idx >= 0) {
+						Variant default_arg = ai.default_arguments[darg_idx];
+						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+					}
+
+					atd.arguments.push_back(ad);
+				}
+
+				c.annotations.push_back(atd);
+			}
+
 			// Skip adding the lang if it doesn't expose anything (e.g. C#).
-			if (c.methods.is_empty() && c.constants.is_empty()) {
+			if (c.methods.is_empty() && c.constants.is_empty() && c.annotations.is_empty()) {
 				continue;
 			}
 
@@ -1030,8 +1083,8 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 
 Error DocTools::load_classes(const String &p_dir) {
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir, &err);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(p_dir, &err);
+	if (da.is_null()) {
 		return err;
 	}
 
@@ -1058,8 +1111,8 @@ Error DocTools::load_classes(const String &p_dir) {
 
 Error DocTools::erase_classes(const String &p_dir) {
 	Error err;
-	DirAccessRef da = DirAccess::open(p_dir, &err);
-	if (!da) {
+	Ref<DirAccess> da = DirAccess::open(p_dir, &err);
+	if (da.is_null()) {
 		return err;
 	}
 
@@ -1157,6 +1210,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
 					ERR_FAIL_COND_V(err2, err2);
+				} else if (name2 == "annotations") {
+					Error err2 = _parse_methods(parser, c.annotations);
+					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "members") {
 					while (parser->read() == OK) {
 						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -1239,6 +1295,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_attribute_value("enum");
 								}
+								if (parser->has_attribute("is_bitfield")) {
+									constant2.is_bitfield = parser->get_attribute_value("is_bitfield").to_lower() == "true";
+								}
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1268,7 +1327,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 	return OK;
 }
 
-static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
+static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_string) {
 	if (p_string.is_empty()) {
 		return;
 	}
@@ -1279,7 +1338,7 @@ static void _write_string(FileAccess *f, int p_tablevel, const String &p_string)
 	f->store_string(tab + p_string + "\n");
 }
 
-static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
+static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
 	if (!p_method_docs.is_empty()) {
 		p_method_docs.sort();
 		_write_string(f, 1, "<" + p_name + "s>");
@@ -1332,7 +1391,7 @@ static void _write_method_doc(FileAccess *f, const String &p_name, Vector<DocDat
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const Map<String, String> &p_class_path) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1345,7 +1404,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 
 		Error err;
 		String save_file = save_path.plus_file(c.name + ".xml");
-		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
+		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
 
@@ -1356,7 +1415,12 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			header += " inherits=\"" + c.inherits + "\"";
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
-		header += ">";
+		// Reference the XML schema so editors can provide error checking.
+		// Modules are nested deep, so change the path to reference the same schema everywhere.
+		const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
@@ -1370,7 +1434,7 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 		_write_string(f, 1, "<tutorials>");
 		for (int i = 0; i < c.tutorials.size(); i++) {
 			DocData::TutorialDoc tutorial = c.tutorials.get(i);
-			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + tutorial.title.xml_escape() + "\"" : "";
+			String title_attribute = (!tutorial.title.is_empty()) ? " title=\"" + _translate_doc_string(tutorial.title).xml_escape() + "\"" : "";
 			_write_string(f, 2, "<link" + title_attribute + ">" + tutorial.link.xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
@@ -1414,7 +1478,11 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 				const DocData::ConstantDoc &k = c.constants[i];
 				if (k.is_value_valid) {
 					if (!k.enumeration.is_empty()) {
-						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+						if (k.is_bitfield) {
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\" is_bitfield=\"true\">");
+						} else {
+							_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+						}
 					} else {
 						_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
 					}
@@ -1431,6 +1499,8 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 
 			_write_string(f, 1, "</constants>");
 		}
+
+		_write_method_doc(f, "annotation", c.annotations);
 
 		if (!c.theme_properties.is_empty()) {
 			c.theme_properties.sort();
@@ -1463,7 +1533,8 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 Error DocTools::load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size) {
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	int ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	ERR_FAIL_COND_V_MSG(ret == -1, ERR_FILE_CORRUPT, "Compressed file is corrupt.");
 	class_list.clear();
 
 	Ref<XMLParser> parser = memnew(XMLParser);

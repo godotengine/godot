@@ -4,7 +4,9 @@
 
 import argparse
 import os
+import platform
 import re
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
@@ -34,6 +36,7 @@ BASE_STRINGS = [
     "Signals",
     "Enumerations",
     "Constants",
+    "Annotations",
     "Property Descriptions",
     "Constructor Descriptions",
     "Method Descriptions",
@@ -55,10 +58,12 @@ BASE_STRINGS = [
 ]
 strings_l10n = {}
 
+STYLES = {}
+
 
 def print_error(error, state):  # type: (str, State) -> None
-    print("ERROR: {}".format(error))
-    state.errored = True
+    print("{}{}ERROR:{} {}{}".format(STYLES["red"], STYLES["bold"], STYLES["regular"], error, STYLES["reset"]))
+    state.num_errors += 1
 
 
 class TypeName:
@@ -118,16 +123,18 @@ class MethodDef:
 
 
 class ConstantDef:
-    def __init__(self, name, value, text):  # type: (str, str, Optional[str]) -> None
+    def __init__(self, name, value, text, bitfield):  # type: (str, str, Optional[str], Optional[bool]) -> None
         self.name = name
         self.value = value
         self.text = text
+        self.is_bitfield = bitfield
 
 
 class EnumDef:
-    def __init__(self, name):  # type: (str) -> None
+    def __init__(self, name, bitfield):  # type: (str, Optional[bool]) -> None
         self.name = name
         self.values = OrderedDict()  # type: OrderedDict[str, ConstantDef]
+        self.is_bitfield = bitfield
 
 
 class ThemeItemDef:
@@ -151,6 +158,7 @@ class ClassDef:
         self.methods = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.operators = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.signals = OrderedDict()  # type: OrderedDict[str, SignalDef]
+        self.annotations = OrderedDict()  # type: OrderedDict[str, List[MethodDef]]
         self.theme_items = OrderedDict()  # type: OrderedDict[str, ThemeItemDef]
         self.inherits = None  # type: Optional[str]
         self.brief_description = None  # type: Optional[str]
@@ -163,8 +171,7 @@ class ClassDef:
 
 class State:
     def __init__(self):  # type: () -> None
-        # Has any error been reported?
-        self.errored = False
+        self.num_errors = 0
         self.classes = OrderedDict()  # type: OrderedDict[str, ClassDef]
         self.current_class = ""  # type: str
 
@@ -194,7 +201,7 @@ class State:
 
                 property_name = property.attrib["name"]
                 if property_name in class_def.properties:
-                    print_error("Duplicate property '{}', file: {}".format(property_name, class_name), self)
+                    print_error('{}.xml: Duplicate property "{}".'.format(class_name, property_name), self)
                     continue
 
                 type_name = TypeName.from_element(property)
@@ -302,10 +309,11 @@ class State:
                 constant_name = constant.attrib["name"]
                 value = constant.attrib["value"]
                 enum = constant.get("enum")
-                constant_def = ConstantDef(constant_name, value, constant.text)
+                is_bitfield = constant.get("is_bitfield") or False
+                constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
                 if enum is None:
                     if constant_name in class_def.constants:
-                        print_error("Duplicate constant '{}', file: {}".format(constant_name, class_name), self)
+                        print_error('{}.xml: Duplicate constant "{}".'.format(class_name, constant_name), self)
                         continue
 
                     class_def.constants[constant_name] = constant_def
@@ -315,10 +323,31 @@ class State:
                         enum_def = class_def.enums[enum]
 
                     else:
-                        enum_def = EnumDef(enum)
+                        enum_def = EnumDef(enum, is_bitfield)
                         class_def.enums[enum] = enum_def
 
                     enum_def.values[constant_name] = constant_def
+
+        annotations = class_root.find("annotations")
+        if annotations is not None:
+            for annotation in annotations:
+                assert annotation.tag == "annotation"
+
+                annotation_name = annotation.attrib["name"]
+                qualifiers = annotation.get("qualifiers")
+
+                params = parse_arguments(annotation)
+
+                desc_element = annotation.find("description")
+                annotation_desc = None
+                if desc_element is not None:
+                    annotation_desc = desc_element.text
+
+                annotation_def = MethodDef(annotation_name, return_type, params, annotation_desc, qualifiers)
+                if annotation_name not in class_def.annotations:
+                    class_def.annotations[annotation_name] = []
+
+                class_def.annotations[annotation_name].append(annotation_def)
 
         signals = class_root.find("signals")
         if signals is not None:
@@ -328,7 +357,7 @@ class State:
                 signal_name = signal.attrib["name"]
 
                 if signal_name in class_def.signals:
-                    print_error("Duplicate signal '{}', file: {}".format(signal_name, class_name), self)
+                    print_error('{}.xml: Duplicate signal "{}".'.format(class_name, signal_name), self)
                     continue
 
                 params = parse_arguments(signal)
@@ -351,8 +380,8 @@ class State:
                 theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
                 if theme_item_id in class_def.theme_items:
                     print_error(
-                        "Duplicate theme property '{}' of type '{}', file: {}".format(
-                            theme_item_name, theme_item_data_name, class_name
+                        '{}.xml: Duplicate theme item "{}" of type "{}".'.format(
+                            class_name, theme_item_name, theme_item_data_name
                         ),
                         self,
                     )
@@ -400,10 +429,26 @@ def parse_arguments(root):  # type: (ET.Element) -> List[ParameterDef]
 
 
 def main():  # type: () -> None
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://bugs.python.org/issue29059>
+    if platform.system().lower() == "windows":
+        from ctypes import windll, c_int, byref
+
+        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+        mode = c_int(0)
+        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+        mode = c_int(mode.value | 4)
+        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
+    parser.add_argument(
+        "--color",
+        action="store_true",
+        help="If passed, force colored output even if stdout is not a TTY (useful for continuous integration).",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
@@ -412,6 +457,13 @@ def main():  # type: () -> None
         help="If passed, no output will be generated and XML files are only checked for errors.",
     )
     args = parser.parse_args()
+
+    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    STYLES["red"] = "\x1b[91m" if should_color else ""
+    STYLES["green"] = "\x1b[92m" if should_color else ""
+    STYLES["bold"] = "\x1b[1m" if should_color else ""
+    STYLES["regular"] = "\x1b[22m" if should_color else ""
+    STYLES["reset"] = "\x1b[0m" if should_color else ""
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -430,7 +482,7 @@ def main():  # type: () -> None
                 if entry.msgid in BASE_STRINGS:
                     strings_l10n[entry.msgid] = entry.msgstr
         else:
-            print("No PO file at '{}' for language '{}'.".format(lang_file, args.lang))
+            print('No PO file at "{}" for language "{}".'.format(lang_file, args.lang))
 
     print("Checking for errors in the XML class reference...")
 
@@ -453,7 +505,7 @@ def main():  # type: () -> None
 
         elif os.path.isfile(path):
             if not path.endswith(".xml"):
-                print("Got non-.xml file '{}' in input, skipping.".format(path))
+                print('Got non-.xml file "{}" in input, skipping.'.format(path))
                 continue
 
             file_list.append(path)
@@ -465,17 +517,17 @@ def main():  # type: () -> None
         try:
             tree = ET.parse(cur_file)
         except ET.ParseError as e:
-            print_error("Parse error reading file '{}': {}".format(cur_file, e), state)
+            print_error("{}: Parse error while reading the file: {}".format(cur_file, e), state)
             continue
         doc = tree.getroot()
 
         if "version" not in doc.attrib:
-            print_error("Version missing from 'doc', file: {}".format(cur_file), state)
+            print_error('{}: "version" attribute missing from "doc".'.format(cur_file), state)
             continue
 
         name = doc.attrib["name"]
         if name in classes:
-            print_error("Duplicate class '{}'".format(name), state)
+            print_error('{}: Duplicate class "{}".'.format(cur_file, name), state)
             continue
 
         classes[name] = (doc, cur_file)
@@ -484,7 +536,7 @@ def main():  # type: () -> None
         try:
             state.parse_class(data[0], data[1])
         except Exception as e:
-            print_error("Exception while parsing class '{}': {}".format(name, e), state)
+            print_error("{}.xml: Exception while parsing class: {}".format(name, e), state)
 
     state.sort_classes()
 
@@ -499,12 +551,23 @@ def main():  # type: () -> None
         state.current_class = class_name
         make_rst_class(class_def, state, args.dry_run, args.output)
 
-    if not state.errored:
-        print("No errors found.")
+    if state.num_errors == 0:
+        print("{}No errors found in the class reference XML.{}".format(STYLES["green"], STYLES["reset"]))
         if not args.dry_run:
             print("Wrote reStructuredText files for each class to: %s" % args.output)
     else:
-        print("Errors were found in the class reference XML. Please check the messages above.")
+        if state.num_errors >= 2:
+            print(
+                "{}{} errors were found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], state.num_errors, STYLES["reset"]
+                )
+            )
+        else:
+            print(
+                "{}1 error was found in the class reference XML. Please check the messages above.{}".format(
+                    STYLES["red"], STYLES["reset"]
+                )
+            )
         exit(1)
 
 
@@ -669,11 +732,16 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             for value in e.values.values():
                 f.write(".. _class_{}_constant_{}:\n\n".format(class_name, value.name))
 
-            f.write("enum **{}**:\n\n".format(e.name))
+            if e.is_bitfield:
+                f.write("flags **{}**:\n\n".format(e.name))
+            else:
+                f.write("enum **{}**:\n\n".format(e.name))
+
             for value in e.values.values():
                 f.write("- **{}** = **{}**".format(value.name, value.value))
                 if value.text is not None and value.text.strip() != "":
-                    f.write(" --- " + rstize_text(value.text.strip(), state))
+                    # If value.text contains a bullet point list, each entry needs additional indentation
+                    f.write(" --- " + indent_bullets(rstize_text(value.text.strip(), state)))
 
                 f.write("\n\n")
 
@@ -693,6 +761,26 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
                 f.write(" --- " + rstize_text(constant.text.strip(), state))
 
             f.write("\n\n")
+
+    if len(class_def.annotations) > 0:
+        f.write(make_heading("Annotations", "-"))
+        index = 0
+
+        for method_list in class_def.annotations.values():
+            for i, m in enumerate(method_list):
+                if index != 0:
+                    f.write("----\n\n")
+
+                if i == 0:
+                    f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
+
+                ret_type, signature = make_method_signature(class_def, m, "", state)
+                f.write("- {} {}\n\n".format(ret_type, signature))
+
+                if m.description is not None and m.description.strip() != "":
+                    f.write(rstize_text(m.description.strip(), state) + "\n\n")
+
+                index += 1
 
     # Property descriptions
     if any(not p.overrides for p in class_def.properties.values()) > 0:
@@ -856,7 +944,7 @@ def escape_rst(text, until_pos=-1):  # type: (str) -> str
 def format_codeblock(code_type, post_text, indent_level, state):  # types: str, str, int, state
     end_pos = post_text.find("[/" + code_type + "]")
     if end_pos == -1:
-        print_error("[" + code_type + "] without a closing tag, file: {}".format(state.current_class), state)
+        print_error("{}.xml: [" + code_type + "] without a closing tag.".format(state.current_class), state)
         return None
 
     code_text = post_text[len("[" + code_type + "]") : end_pos]
@@ -875,9 +963,9 @@ def format_codeblock(code_type, post_text, indent_level, state):  # types: str, 
 
         if to_skip > indent_level:
             print_error(
-                "Four spaces should be used for indentation within ["
-                + code_type
-                + "], file: {}".format(state.current_class),
+                "{}.xml: Four spaces should be used for indentation within [{}].".format(
+                    state.current_class, code_type
+                ),
                 state,
             )
 
@@ -900,7 +988,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
         pre_text = text[:pos]
         indent_level = 0
-        while text[pos + 1] == "\t":
+        while pos + 1 < len(text) and text[pos + 1] == "\t":
             pos += 1
             indent_level += 1
         post_text = text[pos + 1 :]
@@ -987,7 +1075,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 if param.find(".") != -1:
                     ss = param.split(".")
                     if len(ss) > 2:
-                        print_error("Bad reference: '{}', file: {}".format(param, state.current_class), state)
+                        print_error('{}.xml: Bad reference: "{}".'.format(state.current_class, param), state)
                     class_param, method_param = ss
 
                 else:
@@ -1000,34 +1088,37 @@ def rstize_text(text, state):  # type: (str, State) -> str
                     if cmd.startswith("constructor"):
                         if method_param not in class_def.constructors:
                             print_error(
-                                "Unresolved constructor '{}', file: {}".format(param, state.current_class), state
+                                '{}.xml: Unresolved constructor "{}".'.format(state.current_class, param), state
                             )
                         ref_type = "_constructor"
                     if cmd.startswith("method"):
                         if method_param not in class_def.methods:
-                            print_error("Unresolved method '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved method "{}".'.format(state.current_class, param), state)
                         ref_type = "_method"
                     if cmd.startswith("operator"):
                         if method_param not in class_def.operators:
-                            print_error("Unresolved operator '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved operator "{}".'.format(state.current_class, param), state)
                         ref_type = "_operator"
 
                     elif cmd.startswith("member"):
                         if method_param not in class_def.properties:
-                            print_error("Unresolved member '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved member "{}".'.format(state.current_class, param), state)
                         ref_type = "_property"
 
                     elif cmd.startswith("theme_item"):
                         if method_param not in class_def.theme_items:
-                            print_error(
-                                "Unresolved theme item '{}', file: {}".format(param, state.current_class), state
-                            )
+                            print_error('{}.xml: Unresolved theme item "{}".'.format(state.current_class, param), state)
                         ref_type = "_theme_{}".format(class_def.theme_items[method_param].data_name)
 
                     elif cmd.startswith("signal"):
                         if method_param not in class_def.signals:
-                            print_error("Unresolved signal '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved signal "{}".'.format(state.current_class, param), state)
                         ref_type = "_signal"
+
+                    elif cmd.startswith("annotation"):
+                        if method_param not in class_def.annotations:
+                            print_error('{}.xml: Unresolved annotation "{}".'.format(state.current_class, param), state)
+                        ref_type = "_annotation"
 
                     elif cmd.startswith("constant"):
                         found = False
@@ -1052,13 +1143,13 @@ def rstize_text(text, state):  # type: (str, State) -> str
                                         break
 
                         if not found:
-                            print_error("Unresolved constant '{}', file: {}".format(param, state.current_class), state)
+                            print_error('{}.xml: Unresolved constant "{}".'.format(state.current_class, param), state)
                         ref_type = "_constant"
 
                 else:
                     print_error(
-                        "Unresolved type reference '{}' in method reference '{}', file: {}".format(
-                            class_param, param, state.current_class
+                        '{}.xml: Unresolved type reference "{}" in method reference "{}".'.format(
+                            state.current_class, class_param, param
                         ),
                         state,
                     )
@@ -1078,7 +1169,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 endurl_pos = text.find("[/url]", endq_pos + 1)
                 if endurl_pos == -1:
                     print_error(
-                        "Tag depth mismatch for [url]: no closing [/url], file: {}".format(state.current_class), state
+                        "{}.xml: Tag depth mismatch for [url]: no closing [/url]".format(state.current_class), state
                     )
                     break
                 link_title = text[endq_pos + 1 : endurl_pos]
@@ -1203,7 +1294,9 @@ def rstize_text(text, state):  # type: (str, State) -> str
         previous_pos = pos
 
     if tag_depth > 0:
-        print_error("Tag depth mismatch: too many/little open/close tags, file: {}".format(state.current_class), state)
+        print_error(
+            "{}.xml: Tag depth mismatch: too many (or too little) open/close tags.".format(state.current_class), state
+        )
 
     return text
 
@@ -1247,7 +1340,7 @@ def make_type(klass, state):  # type: (str, State) -> str
         link_type = link_type[:-2]
     if link_type in state.classes:
         return ":ref:`{}<class_{}>`".format(klass, link_type)
-    print_error("Unresolved type '{}', file: {}".format(klass, state.current_class), state)
+    print_error('{}.xml: Unresolved type "{}".'.format(state.current_class, klass), state)
     return klass
 
 
@@ -1271,7 +1364,7 @@ def make_enum(t, state):  # type: (str, State) -> str
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if "{}.{}".format(c, e) != "Vector3.Axis":
-        print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
+        print_error('{}.xml: Unresolved enum "{}".'.format(state.current_class, t), state)
 
     return t
 
@@ -1405,6 +1498,8 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
         clear_name = "div"
     elif clear_name == "%":
         clear_name = "mod"
+    elif clear_name == "**":
+        clear_name = "pow"
 
     elif clear_name == "unary+":
         clear_name = "unplus"
@@ -1429,9 +1524,28 @@ def sanitize_operator_name(dirty_name, state):  # type: (str, State) -> str
 
     else:
         clear_name = "xxx"
-        print_error("Unsupported operator type '{}', please add the missing rule.".format(dirty_name), state)
+        print_error('Unsupported operator type "{}", please add the missing rule.'.format(dirty_name), state)
 
     return clear_name
+
+
+def indent_bullets(text):  # type: (str) -> str
+    # Take the text and check each line for a bullet point represented by "-".
+    # Where found, indent the given line by a further "\t".
+    # Used to properly indent bullet points contained in the description for enum values.
+    # Ignore the first line - text will be prepended to it so bullet points wouldn't work anyway.
+    bullet_points = "-"
+
+    lines = text.splitlines(keepends=True)
+    for line_index, line in enumerate(lines[1:], start=1):
+        pos = 0
+        while pos < len(line) and line[pos] == "\t":
+            pos += 1
+
+        if pos < len(line) and line[pos] in bullet_points:
+            lines[line_index] = line[:pos] + "\t" + line[pos:]
+
+    return "".join(lines)
 
 
 if __name__ == "__main__":

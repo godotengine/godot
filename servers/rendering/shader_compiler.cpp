@@ -48,8 +48,8 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 	String type = ShaderLanguage::get_datatype_name(p_type);
-	if (ShaderLanguage::is_sampler_type(p_type)) {
-		type = type.replace("sampler", "texture"); //we use textures instead of samplers
+	if (!RS::get_singleton()->is_low_end() && ShaderLanguage::is_sampler_type(p_type)) {
+		type = type.replace("sampler", "texture"); //we use textures instead of samplers in Vulkan GLSL
 	}
 	return type;
 }
@@ -289,7 +289,7 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
 }
 
-void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
+void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
 	int fidx = -1;
 
 	for (int i = 0; i < p_node->functions.size(); i++) {
@@ -303,8 +303,8 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 
 	Vector<StringName> uses_functions;
 
-	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
-		uses_functions.push_back(E->get());
+	for (const StringName &E : p_node->functions[fidx].uses_function) {
+		uses_functions.push_back(E);
 	}
 	uses_functions.sort_custom<StringName::AlphCompare>(); //ensure order is deterministic so the same shader is always produced
 
@@ -538,7 +538,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					continue; // Instances are indexed directly, don't need index uniforms.
 				}
 				if (SL::is_sampler_type(uniform.type)) {
-					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") uniform ";
+					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
+					if (!RS::get_singleton()->is_low_end()) {
+						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") ";
+					}
+					ucode += "uniform ";
 				}
 
 				bool is_buffer_global = !SL::is_sampler_type(uniform.type) && uniform.scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -567,6 +571,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					texture.name = uniform_name;
 					texture.hint = uniform.hint;
 					texture.type = uniform.type;
+					texture.use_color = uniform.use_color;
 					texture.filter = uniform.filter;
 					texture.repeat = uniform.repeat;
 					texture.global = uniform.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
@@ -609,7 +614,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				r_gen_code.uniforms += uniform_defines[i];
 			}
 
-#if 1
 			// add up
 			int offset = 0;
 			for (int i = 0; i < uniform_sizes.size(); i++) {
@@ -629,41 +633,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
 				r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
 			}
-#else
-			// add up
-			for (int i = 0; i < uniform_sizes.size(); i++) {
-				if (i > 0) {
-					int align = uniform_sizes[i - 1] % uniform_alignments[i];
-					if (align != 0) {
-						uniform_sizes[i - 1] += uniform_alignments[i] - align;
-					}
-
-					uniform_sizes[i] = uniform_sizes[i] + uniform_sizes[i - 1];
-				}
-			}
-			//offset
-			r_gen_code.uniform_offsets.resize(uniform_sizes.size());
-			for (int i = 0; i < uniform_sizes.size(); i++) {
-				if (i > 0)
-					r_gen_code.uniform_offsets[i] = uniform_sizes[i - 1];
-				else
-					r_gen_code.uniform_offsets[i] = 0;
-			}
-			/*
-			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
-				if (SL::is_sampler_type(E->get().type)) {
-					continue;
-				}
-
-			}
-
-*/
-			if (uniform_sizes.size()) {
-				r_gen_code.uniform_total_size = uniform_sizes[uniform_sizes.size() - 1];
-			} else {
-				r_gen_code.uniform_total_size = 0;
-			}
-#endif
 
 			uint32_t index = p_default_actions.base_varying_index;
 
@@ -717,9 +686,13 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				vcode += ";\n";
-
-				r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
-				r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
+				// GLSL ES 3.0 does not allow layout qualifiers for varyings
+				if (!RS::get_singleton()->is_low_end()) {
+					r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
+					r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
+				}
+				r_gen_code.stage_globals[STAGE_VERTEX] += interp_mode + "out " + vcode;
+				r_gen_code.stage_globals[STAGE_FRAGMENT] += interp_mode + "in " + vcode;
 
 				index += inc;
 			}
@@ -763,7 +736,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
-			Map<StringName, String> function_code;
+			HashMap<StringName, String> function_code;
 
 			//code for functions
 			for (int i = 0; i < pnode->functions.size(); i++) {
@@ -776,7 +749,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			//place functions in actual code
 
-			Set<StringName> added_funcs_per_stage[STAGE_MAX];
+			HashSet<StringName> added_funcs_per_stage[STAGE_MAX];
 
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
@@ -1161,8 +1134,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code += ", ";
 						}
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (is_texture_func && i == 1) {
-							//need to map from texture to sampler in order to sample
+						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
+							//need to map from texture to sampler in order to sample when using Vulkan GLSL
 							StringName texture_uniform;
 							bool correct_texture_uniform = false;
 
@@ -1409,148 +1382,4 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 }
 
 ShaderCompiler::ShaderCompiler() {
-#if 0
-
-	/** SPATIAL SHADER **/
-
-	actions[RS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
-	actions[RS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
-	actions[RS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
-	actions[RS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[RS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
-	actions[RS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
-
-	actions[RS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
-	actions[RS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
-	actions[RS::SHADER_SPATIAL].renames["TANGENT"] = "tangent";
-	actions[RS::SHADER_SPATIAL].renames["BINORMAL"] = "binormal";
-	actions[RS::SHADER_SPATIAL].renames["POSITION"] = "position";
-	actions[RS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
-	actions[RS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
-	actions[RS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
-	actions[RS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
-	actions[RS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
-
-	//builtins
-
-	actions[RS::SHADER_SPATIAL].renames["TIME"] = "time";
-	actions[RS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"] = "viewport_size";
-
-	actions[RS::SHADER_SPATIAL].renames["FRAGCOORD"] = "gl_FragCoord";
-	actions[RS::SHADER_SPATIAL].renames["FRONT_FACING"] = "gl_FrontFacing";
-	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP"] = "normal_map";
-	actions[RS::SHADER_SPATIAL].renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
-	actions[RS::SHADER_SPATIAL].renames["ALBEDO"] = "albedo";
-	actions[RS::SHADER_SPATIAL].renames["ALPHA"] = "alpha";
-	actions[RS::SHADER_SPATIAL].renames["METALLIC"] = "metallic";
-	actions[RS::SHADER_SPATIAL].renames["SPECULAR"] = "specular";
-	actions[RS::SHADER_SPATIAL].renames["ROUGHNESS"] = "roughness";
-	actions[RS::SHADER_SPATIAL].renames["RIM"] = "rim";
-	actions[RS::SHADER_SPATIAL].renames["RIM_TINT"] = "rim_tint";
-	actions[RS::SHADER_SPATIAL].renames["CLEARCOAT"] = "clearcoat";
-	actions[RS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
-	actions[RS::SHADER_SPATIAL].renames["ANISOTROPY"] = "anisotropy";
-	actions[RS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
-	actions[RS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
-	actions[RS::SHADER_SPATIAL].renames["TRANSMISSION"] = "transmission";
-	actions[RS::SHADER_SPATIAL].renames["AO"] = "ao";
-	actions[RS::SHADER_SPATIAL].renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
-	actions[RS::SHADER_SPATIAL].renames["EMISSION"] = "emission";
-	actions[RS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
-	actions[RS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
-	actions[RS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
-	actions[RS::SHADER_SPATIAL].renames["SCREEN_TEXTURE"] = "screen_texture";
-	actions[RS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_buffer";
-	actions[RS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
-	actions[RS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
-	actions[RS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
-
-	//for light
-	actions[RS::SHADER_SPATIAL].renames["VIEW"] = "view";
-	actions[RS::SHADER_SPATIAL].renames["LIGHT_COLOR"] = "light_color";
-	actions[RS::SHADER_SPATIAL].renames["LIGHT"] = "light";
-	actions[RS::SHADER_SPATIAL].renames["ATTENUATION"] = "attenuation";
-	actions[RS::SHADER_SPATIAL].renames["DIFFUSE_LIGHT"] = "diffuse_light";
-	actions[RS::SHADER_SPATIAL].renames["SPECULAR_LIGHT"] = "specular_light";
-
-	actions[RS::SHADER_SPATIAL].usage_defines["TANGENT"] = "#define ENABLE_TANGENT_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["BINORMAL"] = "@TANGENT";
-	actions[RS::SHADER_SPATIAL].usage_defines["RIM"] = "#define LIGHT_USE_RIM\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["RIM_TINT"] = "@RIM";
-	actions[RS::SHADER_SPATIAL].usage_defines["CLEARCOAT"] = "#define LIGHT_USE_CLEARCOAT\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["CLEARCOAT_GLOSS"] = "@CLEARCOAT";
-	actions[RS::SHADER_SPATIAL].usage_defines["ANISOTROPY"] = "#define LIGHT_USE_ANISOTROPY\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
-	actions[RS::SHADER_SPATIAL].usage_defines["AO"] = "#define ENABLE_AO\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["AO_LIGHT_AFFECT"] = "#define ENABLE_AO\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["UV"] = "#define ENABLE_UV_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["UV2"] = "#define ENABLE_UV2_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP"] = "#define ENABLE_NORMAL_MAP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["NORMAL_MAP_DEPTH"] = "@NORMAL_MAP";
-	actions[RS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
-
-	actions[RS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["TRANSMISSION"] = "#define TRANSMISSION_USED\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
-
-	actions[RS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-	actions[RS::SHADER_SPATIAL].usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
-	actions[RS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
-
-	bool force_lambert = GLOBAL_GET("rendering/shading/overrides/force_lambert_over_burley");
-
-	if (!force_lambert) {
-		actions[RS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
-	}
-
-	actions[RS::SHADER_SPATIAL].render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["diffuse_toon"] = "#define DIFFUSE_TOON\n";
-
-	bool force_blinn = GLOBAL_GET("rendering/shading/overrides/force_blinn_over_ggx");
-
-	if (!force_blinn) {
-		actions[RS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_SCHLICK_GGX\n";
-	} else {
-		actions[RS::SHADER_SPATIAL].render_mode_defines["specular_schlick_ggx"] = "#define SPECULAR_BLINN\n";
-	}
-
-	actions[RS::SHADER_SPATIAL].render_mode_defines["specular_blinn"] = "#define SPECULAR_BLINN\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["specular_phong"] = "#define SPECULAR_PHONG\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["specular_toon"] = "#define SPECULAR_TOON\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
-	actions[RS::SHADER_SPATIAL].render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
-
-	/* PARTICLES SHADER */
-
-	actions[RS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
-	actions[RS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
-	actions[RS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[RS::SHADER_PARTICLES].renames["ACTIVE"] = "shader_active";
-	actions[RS::SHADER_PARTICLES].renames["RESTART"] = "restart";
-	actions[RS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
-	actions[RS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
-	actions[RS::SHADER_PARTICLES].renames["TIME"] = "time";
-	actions[RS::SHADER_PARTICLES].renames["LIFETIME"] = "lifetime";
-	actions[RS::SHADER_PARTICLES].renames["DELTA"] = "local_delta";
-	actions[RS::SHADER_PARTICLES].renames["NUMBER"] = "particle_number";
-	actions[RS::SHADER_PARTICLES].renames["INDEX"] = "index";
-	actions[RS::SHADER_PARTICLES].renames["GRAVITY"] = "current_gravity";
-	actions[RS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
-	actions[RS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
-
-	actions[RS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
-	actions[RS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
-	actions[RS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
-#endif
 }

@@ -154,7 +154,7 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 TEST_CASE("[Translation] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
 
-	Map<StringName, Variant> options;
+	HashMap<StringName, Variant> options;
 	options["compress"] = false;
 	options["delimiter"] = 0;
 

@@ -18,6 +18,7 @@ files = [
     "key_mapping_osx.mm",
     "godot_main_osx.mm",
     "dir_access_osx.mm",
+    "tts_osx.mm",
     "joypad_osx.cpp",
     "vulkan_context_osx.mm",
     "gl_manager_osx_legacy.mm",

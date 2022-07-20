@@ -60,6 +60,8 @@ struct _NO_DISCARD_ Quaternion {
 	Quaternion normalized() const;
 	bool is_normalized() const;
 	Quaternion inverse() const;
+	Quaternion log() const;
+	Quaternion exp() const;
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
@@ -145,7 +147,7 @@ struct _NO_DISCARD_ Quaternion {
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 
-		if (d < -1.0f + CMP_EPSILON) {
+		if (d < -1.0f + (real_t)CMP_EPSILON) {
 			x = 0;
 			y = 1;
 			z = 0;

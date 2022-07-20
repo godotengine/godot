@@ -41,7 +41,10 @@ namespace OT {
 
 struct BaseCoordFormat1
 {
-  hb_position_t get_coord () const { return coordinate; }
+  hb_position_t get_coord (hb_font_t *font, hb_direction_t direction) const
+  {
+    return HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (coordinate) : font->em_scale_x (coordinate);
+  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -58,10 +61,10 @@ struct BaseCoordFormat1
 
 struct BaseCoordFormat2
 {
-  hb_position_t get_coord () const
+  hb_position_t get_coord (hb_font_t *font, hb_direction_t direction) const
   {
     /* TODO */
-    return coordinate;
+    return HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (coordinate) : font->em_scale_x (coordinate);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -87,9 +90,10 @@ struct BaseCoordFormat3
 			   hb_direction_t direction) const
   {
     const Device &device = this+deviceTable;
-    return coordinate + (HB_DIRECTION_IS_VERTICAL (direction) ?
-			 device.get_y_delta (font, var_store) :
-			 device.get_x_delta (font, var_store));
+
+    return HB_DIRECTION_IS_HORIZONTAL (direction)
+	 ? font->em_scale_y (coordinate) + device.get_y_delta (font, var_store)
+	 : font->em_scale_x (coordinate) + device.get_x_delta (font, var_store);
   }
 
 
@@ -120,8 +124,8 @@ struct BaseCoord
 			   hb_direction_t        direction) const
   {
     switch (u.format) {
-    case 1: return u.format1.get_coord ();
-    case 2: return u.format2.get_coord ();
+    case 1: return u.format1.get_coord (font, direction);
+    case 2: return u.format2.get_coord (font, direction);
     case 3: return u.format3.get_coord (font, var_store, direction);
     default:return 0;
     }

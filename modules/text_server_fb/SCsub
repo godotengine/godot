@@ -4,22 +4,14 @@ Import("env")
 Import("env_modules")
 
 freetype_enabled = env.module_check_dependencies("text_server_fb", ["freetype"], True)
-msdngen_enabled = env.module_check_dependencies("text_server_fb", ["msdfgen"], True)
+msdfgen_enabled = env.module_check_dependencies("text_server_fb", ["msdfgen"], True)
 
 env_text_server_fb = env_modules.Clone()
 
-if msdngen_enabled:
-    env_text_server_fb.Append(
-        CPPPATH=[
-            "#thirdparty/msdfgen",
-        ]
-    )
+if env["builtin_msdfgen"] and msdfgen_enabled:
+    env_text_server_fb.Append(CPPPATH=["#thirdparty/msdfgen"])
 
-if freetype_enabled:
-    env_text_server_fb.Append(
-        CPPPATH=[
-            "#thirdparty/freetype/include",
-        ]
-    )
+if env["builtin_freetype"] and freetype_enabled:
+    env_text_server_fb.Append(CPPPATH=["#thirdparty/freetype/include"])
 
 env_text_server_fb.add_source_files(env.modules_sources, "*.cpp")

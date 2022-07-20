@@ -46,6 +46,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering_server.h"
+#include "tts_windows.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -81,9 +82,12 @@
 #define DVC_ROTATION 18
 
 #define CXO_MESSAGES 0x0004
+#define PK_STATUS 0x0002
 #define PK_NORMAL_PRESSURE 0x0400
 #define PK_TANGENT_PRESSURE 0x0800
 #define PK_ORIENTATION 0x1000
+
+#define TPS_INVERT 0x0010 /* 1.1 */
 
 typedef struct tagLOGCONTEXTW {
 	WCHAR lcName[40];
@@ -136,6 +140,7 @@ typedef struct tagORIENTATION {
 } ORIENTATION;
 
 typedef struct tagPACKET {
+	int pkStatus;
 	int pkNormalPressure;
 	int pkTangentPressure;
 	ORIENTATION pkOrientation;
@@ -156,6 +161,14 @@ typedef DWORD POINTER_INPUT_TYPE;
 typedef UINT32 POINTER_FLAGS;
 typedef UINT32 PEN_FLAGS;
 typedef UINT32 PEN_MASK;
+
+#ifndef PEN_FLAG_INVERTED
+#define PEN_FLAG_INVERTED 0x00000002
+#endif
+
+#ifndef PEN_FLAG_ERASER
+#define PEN_FLAG_ERASER 0x00000004
+#endif
 
 #ifndef PEN_MASK_PRESSURE
 #define PEN_MASK_PRESSURE 0x00000001
@@ -300,7 +313,6 @@ class DisplayServerWindows : public DisplayServer {
 	int key_event_pos;
 
 	bool old_invalid;
-	bool outside;
 	int old_x, old_y;
 	Point2i center;
 
@@ -313,12 +325,14 @@ class DisplayServerWindows : public DisplayServer {
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
 #endif
 
-	Map<int, Vector2> touch_state;
+	RBMap<int, Vector2> touch_state;
 
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
 	bool app_focused = false;
+
+	TTS_Windows *tts = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
@@ -339,6 +353,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+		bool exclusive = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -353,11 +368,13 @@ class DisplayServerWindows : public DisplayServer {
 		int min_pressure;
 		int max_pressure;
 		bool tilt_supported;
+		bool pen_inverted = false;
 		bool block_mm = false;
 
 		int last_pressure_update;
 		float last_pressure;
 		Vector2 last_tilt;
+		bool last_pen_inverted = false;
 
 		HBITMAP hBitmap; //DIB section for layered window
 		uint8_t *dib_data = nullptr;
@@ -369,6 +386,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		Size2 window_rect;
 		Point2 last_pos;
+		bool mouse_outside = true;
 
 		ObjectID instance_id;
 
@@ -385,14 +403,21 @@ class DisplayServerWindows : public DisplayServer {
 		Callable drop_files_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
-		Set<WindowID> transient_children;
+		HashSet<WindowID> transient_children;
+
+		bool is_popup = false;
+		Rect2i parent_safe_rect;
 	};
 
-	JoypadWindows *joypad;
+	JoypadWindows *joypad = nullptr;
+	HHOOK mouse_monitor = nullptr;
+	List<WindowID> popup_list;
+	uint64_t time_since_popup = 0;
+	Ref<Image> icon;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	Map<WindowID, WindowData> windows;
+	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
@@ -419,7 +444,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
-	Map<CursorShape, Vector<Variant>> cursors_cache;
+	RBMap<CursorShape, Vector<Variant>> cursors_cache;
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
@@ -437,16 +462,31 @@ class DisplayServerWindows : public DisplayServer {
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	LRESULT _handle_early_window_message(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
+
+	void popup_open(WindowID p_window);
+	void popup_close(WindowID p_window);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual Array tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	virtual void mouse_warp_to_position(const Point2i &p_to) override;
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual MouseButton mouse_get_button_state() const override;
 
@@ -472,6 +512,10 @@ public:
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
+
+	virtual WindowID window_get_active_popup() const override;
+	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
+	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -499,6 +543,7 @@ public:
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_transient(WindowID p_window, WindowID p_parent) override;
+	virtual void window_set_exclusive(WindowID p_window, bool p_exclusive) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window = MAIN_WINDOW_ID) const override;
@@ -533,7 +578,7 @@ public:
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
-	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
 
 	virtual bool get_swap_cancel_ok() override;
 

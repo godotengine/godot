@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScenePostImportPlugin" inherits="RefCounted" version="4.0">
+<class name="EditorScenePostImportPlugin" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plugin to control and modifying the process of importing a scene.
 	</brief_description>
@@ -34,7 +34,8 @@
 		<method name="_get_internal_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="category" type="int" />
-			<argument index="1" name="option" type="String" />
+			<argument index="1" name="for_animation" type="bool" />
+			<argument index="2" name="option" type="String" />
 			<description>
 				Return true or false whether a given option should be visible. Return null to ignore.
 			</description>
@@ -42,7 +43,8 @@
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="path" type="String" />
-			<argument index="1" name="option" type="String" />
+			<argument index="1" name="for_animation" type="bool" />
+			<argument index="2" name="option" type="String" />
 			<description>
 				Return true or false whether a given option should be visible. Return null to ignore.
 			</description>
@@ -86,7 +88,7 @@
 			<argument index="2" name="default_value" type="Variant" />
 			<argument index="3" name="hint" type="int" enum="PropertyHint" default="0" />
 			<argument index="4" name="hint_string" type="String" default="&quot;&quot;" />
-			<argument index="5" name="usage_flags" type="int" default="7" />
+			<argument index="5" name="usage_flags" type="int" default="6" />
 			<description>
 				Add a specific import option. This function can only be called from [method _get_import_options] and [method _get_internal_import_options].
 			</description>
@@ -112,7 +114,9 @@
 		</constant>
 		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE" value="5" enum="InternalImportCategory">
 		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="6" enum="InternalImportCategory">
+		<constant name="INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE" value="6" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="7" enum="InternalImportCategory">
 		</constant>
 	</constants>
 </class>

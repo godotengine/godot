@@ -73,7 +73,7 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.size() <= 0);
+	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
@@ -89,6 +89,95 @@ Array LightmapGIData::_get_user_data() const {
 		ret.push_back(users[i].slice_index);
 		ret.push_back(users[i].sub_instance);
 	}
+	return ret;
+}
+
+void LightmapGIData::_set_light_textures_data(const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+
+	if (p_data.size() == 1) {
+		set_light_texture(p_data[0]);
+	} else {
+		Vector<Ref<Image>> images;
+		for (int i = 0; i < p_data.size(); i++) {
+			Ref<TextureLayered> texture = p_data[i];
+			for (int j = 0; j < texture->get_layers(); j++) {
+				images.push_back(texture->get_layer_data(j));
+			}
+		}
+
+		Ref<Texture2DArray> combined_texture;
+		combined_texture.instantiate();
+
+		combined_texture->create_from_images(images);
+		set_light_texture(combined_texture);
+	}
+}
+
+Array LightmapGIData::_get_light_textures_data() const {
+	Array ret;
+	if (light_texture.is_null() || light_texture->get_layers() == 0) {
+		return ret;
+	}
+
+	Vector<Ref<Image>> images;
+	for (int i = 0; i < light_texture->get_layers(); i++) {
+		images.push_back(light_texture->get_layer_data(i));
+	}
+
+	int slice_count = images.size();
+	int slice_width = images[0]->get_width();
+	int slice_height = images[0]->get_height();
+
+	int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+
+	ret.resize(texture_count);
+
+	String base_name = get_path().get_basename();
+
+	int last_count = slice_count % slices_per_texture;
+	for (int i = 0; i < texture_count; i++) {
+		int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
+
+		Ref<Image> texture_image;
+		texture_image.instantiate();
+
+		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+
+		for (int j = 0; j < texture_slice_count; j++) {
+			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
+		}
+
+		String texture_path = texture_count > 1 ? base_name + "_" + itos(i) + ".exr" : base_name + ".exr";
+
+		Ref<ConfigFile> config;
+		config.instantiate();
+
+		if (FileAccess::exists(texture_path + ".import")) {
+			config->load(texture_path + ".import");
+		}
+
+		config->set_value("remap", "importer", "2d_array_texture");
+		config->set_value("remap", "type", "CompressedTexture2DArray");
+		if (!config->has_section_key("params", "compress/mode")) {
+			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+		}
+		config->set_value("params", "compress/channel_pack", 1);
+		config->set_value("params", "mipmaps/generate", false);
+		config->set_value("params", "slices/horizontal", 1);
+		config->set_value("params", "slices/vertical", texture_slice_count);
+
+		config->save(texture_path + ".import");
+
+		Error err = texture_image->save_exr(texture_path, false);
+		ERR_FAIL_COND_V(err, ret);
+		ResourceLoader::import(texture_path);
+		Ref<TextureLayered> t = ResourceLoader::load(texture_path); //if already loaded, it will be updated on refocus?
+		ERR_FAIL_COND_V(t.is_null(), ret);
+		ret[i] = t;
+	}
+
 	return ret;
 }
 
@@ -188,6 +277,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light_texture", "light_texture"), &LightmapGIData::set_light_texture);
 	ClassDB::bind_method(D_METHOD("get_light_texture"), &LightmapGIData::get_light_texture);
 
+	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
+	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
+
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
@@ -199,7 +291,8 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered"), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_EDITOR), "set_light_texture", "get_light_texture"); // property usage default but no save
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
@@ -318,12 +411,11 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
 	int over = 0;
 	int under = 0;
-	int coplanar = 0;
 	const BSPSimplex &s = p_simplices[p_simplex];
 	for (int i = 0; i < 4; i++) {
 		const Vector3 v = p_points[s.vertices[i]];
-		if (p_plane.has_point(v)) { //coplanar
-			coplanar++;
+		if (p_plane.has_point(v)) {
+			// Coplanar.
 		} else if (p_plane.is_point_over(v)) {
 			over++;
 		} else {
@@ -573,7 +665,7 @@ void LightmapGI::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cel
 	}
 }
 
-void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds) {
+void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds) {
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
 		if (i & 1) {
@@ -635,7 +727,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	bsud.to_percent = 0.8;
 
 	if (p_bake_step) {
-		p_bake_step(0.0, TTR("Finding meshes, lights and probes"), p_bake_userdata, true);
+		p_bake_step(0.0, RTR("Finding meshes, lights and probes"), p_bake_userdata, true);
 	}
 	/* STEP 1, FIND MESHES, LIGHTS AND PROBES */
 	Vector<Lightmapper::MeshData> mesh_data;
@@ -655,7 +747,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
-				p_bake_step(p * 0.1, vformat(TTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
+				p_bake_step(p * 0.1, vformat(RTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
 			}
 
 			MeshesFound &mf = meshes_found.write[m_i];
@@ -790,7 +882,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	/* STEP 2, CREATE PROBES */
 
 	if (p_bake_step) {
-		p_bake_step(0.3, TTR("Creating probes"), p_bake_userdata, true);
+		p_bake_step(0.3, RTR("Creating probes"), p_bake_userdata, true);
 	}
 
 	//bounds need to include the user probes
@@ -832,7 +924,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		for (int i = 0; i < mesh_data.size(); i++) {
 			if (p_bake_step) {
 				float p = (float)(i) / mesh_data.size();
-				p_bake_step(0.3 + p * 0.1, vformat(TTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
+				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
 			}
 
 			for (int j = 0; j < mesh_data[i].points.size(); j += 3) {
@@ -842,7 +934,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 
 		LocalVector<Vector3> new_probe_positions;
-		HashMap<Vector3i, bool, Vector3iHash> positions_used;
+		HashMap<Vector3i, bool> positions_used;
 		for (uint32_t i = 0; i < 8; i++) { //insert bounding endpoints
 			Vector3i pos;
 			if (i & 1) {
@@ -873,7 +965,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	// Add everything to lightmapper
 	if (p_bake_step) {
-		p_bake_step(0.4, TTR("Preparing Lightmapper"), p_bake_userdata, true);
+		p_bake_step(0.4, RTR("Preparing Lightmapper"), p_bake_userdata, true);
 	}
 
 	{
@@ -884,16 +976,16 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			Light3D *light = lights_found[i].light;
 			Transform3D xf = lights_found[i].xform;
 
-			Color linear_color = light->get_color().to_linear();
+			Color linear_color = light->get_color().srgb_to_linear();
 			if (Object::cast_to<DirectionalLight3D>(light)) {
 				DirectionalLight3D *l = Object::cast_to<DirectionalLight3D>(light);
-				lightmapper->add_directional_light(light->get_bake_mode() == Light3D::BAKE_STATIC, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_SIZE));
+				lightmapper->add_directional_light(light->get_bake_mode() == Light3D::BAKE_STATIC, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<OmniLight3D>(light)) {
 				OmniLight3D *l = Object::cast_to<OmniLight3D>(light);
-				lightmapper->add_omni_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE));
+				lightmapper->add_omni_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<SpotLight3D>(light)) {
 				SpotLight3D *l = Object::cast_to<SpotLight3D>(light);
-				lightmapper->add_spot_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_axis(Vector3::AXIS_Z).normalized(), linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE));
+				lightmapper->add_spot_light(light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, l->get_param(Light3D::PARAM_ENERGY), l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
@@ -907,7 +999,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	// Add everything to lightmapper
 	if (environment_mode != ENVIRONMENT_MODE_DISABLED) {
 		if (p_bake_step) {
-			p_bake_step(4.1, TTR("Preparing Environment"), p_bake_userdata, true);
+			p_bake_step(4.1, RTR("Preparing Environment"), p_bake_userdata, true);
 		}
 
 		environment_transform = get_global_transform().basis;
@@ -954,53 +1046,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		return BAKE_ERROR_MESHES_INVALID;
 	}
 
-	/* POSTBAKE: Save Textures */
-
-	Ref<TextureLayered> texture;
-	{
-		Vector<Ref<Image>> images;
-		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
-			images.push_back(lightmapper->get_bake_texture(i));
-		}
-		//we assume they are all the same, so let's create a large one for saving
-		Ref<Image> large_image;
-		large_image.instantiate();
-
-		large_image->create(images[0]->get_width(), images[0]->get_height() * images.size(), false, images[0]->get_format());
-
-		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
-			large_image->blit_rect(images[i], Rect2(0, 0, images[i]->get_width(), images[i]->get_height()), Point2(0, images[i]->get_height() * i));
-		}
-
-		String base_path = p_image_data_path.get_basename() + ".exr";
-
-		Ref<ConfigFile> config;
-
-		config.instantiate();
-		if (FileAccess::exists(base_path + ".import")) {
-			config->load(base_path + ".import");
-		}
-
-		config->set_value("remap", "importer", "2d_array_texture");
-		config->set_value("remap", "type", "StreamTexture2DArray");
-		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
-		}
-		config->set_value("params", "compress/channel_pack", 1);
-		config->set_value("params", "mipmaps/generate", false);
-		config->set_value("params", "slices/horizontal", 1);
-		config->set_value("params", "slices/vertical", images.size());
-
-		config->save(base_path + ".import");
-
-		Error err = large_image->save_exr(base_path, false);
-		ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
-		ResourceLoader::import(base_path);
-		Ref<Texture> t = ResourceLoader::load(base_path); //if already loaded, it will be updated on refocus?
-		ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
-		texture = t;
-	}
-
 	/* POSTBAKE: Save Light Data */
 
 	Ref<LightmapGIData> data;
@@ -1010,6 +1055,17 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		data->clear();
 	} else {
 		data.instantiate();
+	}
+
+	Ref<Texture2DArray> texture;
+	{
+		Vector<Ref<Image>> images;
+		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
+			images.push_back(lightmapper->get_bake_texture(i));
+		}
+
+		texture.instantiate();
+		texture->create_from_images(images);
 	}
 
 	data->set_light_texture(texture);
@@ -1046,7 +1102,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		//Obtain solved simplices
 
 		if (p_bake_step) {
-			p_bake_step(0.8, TTR("Generating Probe Volumes"), p_bake_userdata, true);
+			p_bake_step(0.8, RTR("Generating Probe Volumes"), p_bake_userdata, true);
 		}
 		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(points);
 
@@ -1101,7 +1157,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 //#define DEBUG_SIMPLICES_AS_OBJ_FILE
 #ifdef DEBUG_SIMPLICES_AS_OBJ_FILE
 		{
-			FileAccessRef f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_simplices.size(); i++) {
 				f->store_line("o Simplex" + itos(i));
 				for (int j = 0; j < 4; j++) {
@@ -1118,7 +1174,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					f->store_line(vformat("f %d %d %d", 4 * i + face_order[j][0], 4 * i + face_order[j][1], 4 * i + face_order[j][2]));
 				}
 			}
-			f->close();
 		}
 #endif
 
@@ -1130,7 +1185,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 
 		if (p_bake_step) {
-			p_bake_step(0.9, TTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
+			p_bake_step(0.9, RTR("Generating Probe Acceleration Structures"), p_bake_userdata, true);
 		}
 
 		_compute_bsp_tree(points, bsp_planes, planes_tested, bsp_simplices, bsp_simplex_indices, bsp_nodes);
@@ -1150,7 +1205,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 //#define DEBUG_BSP_TREE
 #ifdef DEBUG_BSP_TREE
-			FileAccessRef f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open("res://bsp.txt", FileAccess::WRITE);
 			for (uint32_t i = 0; i < bsp_nodes.size(); i++) {
 				f->store_line(itos(i) + " - plane: " + bsp_nodes[i].plane + " over: " + itos(bsp_nodes[i].over) + " under: " + itos(bsp_nodes[i].under));
 			}
@@ -1163,8 +1218,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	Error err = ResourceSaver::save(p_image_data_path, data);
 	data->set_path(p_image_data_path);
+	Error err = ResourceSaver::save(p_image_data_path, data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
@@ -1176,16 +1231,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 }
 
 void LightmapGI::_notification(int p_what) {
-	if (p_what == NOTIFICATION_POST_ENTER_TREE) {
-		if (light_data.is_valid()) {
-			_assign_lightmaps();
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (light_data.is_valid()) {
+				_assign_lightmaps();
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (light_data.is_valid()) {
-			_clear_lightmaps();
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (light_data.is_valid()) {
+				_clear_lightmaps();
+			}
+		} break;
 	}
 }
 
@@ -1259,10 +1316,6 @@ LightmapGI::BakeQuality LightmapGI::get_bake_quality() const {
 
 AABB LightmapGI::get_aabb() const {
 	return AABB();
-}
-
-Vector<Face3> LightmapGI::get_faces(uint32_t p_usage_flags) const {
-	return Vector<Face3>();
 }
 
 void LightmapGI::set_use_denoiser(bool p_enable) {

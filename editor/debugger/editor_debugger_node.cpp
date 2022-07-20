@@ -39,6 +39,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
+#include "scene/resources/packed_scene.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -60,7 +61,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	add_theme_constant_override("margin_right", -EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles"))->get_margin(SIDE_RIGHT));
 
 	tabs = memnew(TabContainer);
-	tabs->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
 	add_child(tabs);
@@ -89,7 +89,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
-	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger(EditorNode::get_singleton()));
+	ScriptEditorDebugger *node = memnew(ScriptEditorDebugger);
 
 	int id = tabs->get_tab_count();
 	node->connect("stop_requested", callable_mp(this, &EditorDebuggerNode::_debugger_wants_stop), varray(id));
@@ -103,6 +103,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated), varray(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated), varray(id));
 	node->connect("remote_object_requested", callable_mp(this, &EditorDebuggerNode::_remote_object_requested), varray(id));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -118,8 +119,8 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	}
 
 	if (!debugger_plugins.is_empty()) {
-		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
-			node->add_debugger_plugin(i->get());
+		for (const Ref<Script> &i : debugger_plugins) {
+			node->add_debugger_plugin(i);
 		}
 	}
 
@@ -141,11 +142,22 @@ void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p
 }
 
 void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_debugger) {
-	const String file = p_debugger->get_stack_script_file();
+	String file = p_debugger->get_stack_script_file();
 	if (file.is_empty()) {
 		return;
 	}
-	stack_script = ResourceLoader::load(file);
+	if (file.is_resource_file()) {
+		stack_script = ResourceLoader::load(file);
+	} else {
+		// If the script is built-in, it can be opened only if the scene is loaded in memory.
+		int i = file.find("::");
+		int j = file.rfind("(", i);
+		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
+			file = file.substr(j + 1, file.find(")", i) - j - 1);
+		}
+		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
+		stack_script = ResourceLoader::load(file);
+	}
 	const int line = p_debugger->get_stack_script_line() - 1;
 	emit_signal(SNAME("goto_script_line"), stack_script, line);
 	emit_signal(SNAME("set_execution"), stack_script, line);
@@ -170,7 +182,7 @@ void EditorDebuggerNode::_bind_methods() {
 }
 
 EditorDebuggerRemoteObject *EditorDebuggerNode::get_inspected_remote_object() {
-	return Object::cast_to<EditorDebuggerRemoteObject>(ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_current()));
+	return Object::cast_to<EditorDebuggerRemoteObject>(ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_current()));
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::get_debugger(int p_id) const {
@@ -240,24 +252,84 @@ void EditorDebuggerNode::_notification(int p_what) {
 				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			_update_debug_options();
 		} break;
-		default:
-			break;
-	}
 
-	if (p_what != NOTIFICATION_PROCESS || !server.is_valid()) {
-		return;
-	}
+		case NOTIFICATION_PROCESS: {
+			if (!server.is_valid()) {
+				return;
+			}
 
-	if (!server.is_valid() || !server->is_active()) {
-		stop();
-		return;
-	}
-	server->poll();
+			if (!server->is_active()) {
+				stop();
+				return;
+			}
+			server->poll();
 
-	// Errors and warnings
+			_update_errors();
+
+			// Remote scene tree update
+			remote_scene_tree_timeout -= get_process_delta_time();
+			if (remote_scene_tree_timeout < 0) {
+				remote_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
+				if (remote_scene_tree->is_visible_in_tree()) {
+					get_current_debugger()->request_remote_tree();
+				}
+			}
+
+			// Remote inspector update
+			inspect_edited_object_timeout -= get_process_delta_time();
+			if (inspect_edited_object_timeout < 0) {
+				inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
+				if (EditorDebuggerRemoteObject *obj = get_inspected_remote_object()) {
+					get_current_debugger()->request_remote_object(obj->remote_object_id);
+				}
+			}
+
+			// Take connections.
+			if (server->is_connection_available()) {
+				ScriptEditorDebugger *debugger = nullptr;
+				_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+					if (debugger || dbg->is_session_active()) {
+						return;
+					}
+					debugger = dbg;
+				});
+				if (debugger == nullptr) {
+					if (tabs->get_tab_count() <= 4) { // Max 4 debugging sessions active.
+						debugger = _add_debugger();
+					} else {
+						// We already have too many sessions, disconnecting new clients to prevent them from hanging.
+						server->take_connection()->close();
+						return; // Can't add, stop here.
+					}
+				}
+
+				EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
+				// Switch to remote tree view if so desired.
+				auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
+				if (auto_switch_remote_scene_tree) {
+					SceneTreeDock::get_singleton()->show_remote_tree();
+				}
+				// Good to go.
+				SceneTreeDock::get_singleton()->show_tab_buttons();
+				debugger->set_editor_remote_tree(remote_scene_tree);
+				debugger->start(server->take_connection());
+				// Send breakpoints.
+				for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
+					const Breakpoint &bp = E.key;
+					debugger->set_breakpoint(bp.source, bp.line, E.value);
+				} // Will arrive too late, how does the regular run work?
+
+				debugger->update_live_edit_root();
+			}
+		} break;
+	}
+}
+
+void EditorDebuggerNode::_update_errors() {
 	int error_count = 0;
 	int warning_count = 0;
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -290,62 +362,6 @@ void EditorDebuggerNode::_notification(int p_what) {
 		}
 		last_error_count = error_count;
 		last_warning_count = warning_count;
-	}
-
-	// Remote scene tree update
-	remote_scene_tree_timeout -= get_process_delta_time();
-	if (remote_scene_tree_timeout < 0) {
-		remote_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
-		if (remote_scene_tree->is_visible_in_tree()) {
-			get_current_debugger()->request_remote_tree();
-		}
-	}
-
-	// Remote inspector update
-	inspect_edited_object_timeout -= get_process_delta_time();
-	if (inspect_edited_object_timeout < 0) {
-		inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
-		if (EditorDebuggerRemoteObject *obj = get_inspected_remote_object()) {
-			get_current_debugger()->request_remote_object(obj->remote_object_id);
-		}
-	}
-
-	// Take connections.
-	if (server->is_connection_available()) {
-		ScriptEditorDebugger *debugger = nullptr;
-		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-			if (debugger || dbg->is_session_active()) {
-				return;
-			}
-			debugger = dbg;
-		});
-		if (debugger == nullptr) {
-			if (tabs->get_tab_count() <= 4) { // Max 4 debugging sessions active.
-				debugger = _add_debugger();
-			} else {
-				// We already have too many sessions, disconnecting new clients to prevent them from hanging.
-				server->take_connection()->close();
-				return; // Can't add, stop here.
-			}
-		}
-
-		EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
-		// Switch to remote tree view if so desired.
-		auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
-		if (auto_switch_remote_scene_tree) {
-			SceneTreeDock::get_singleton()->show_remote_tree();
-		}
-		// Good to go.
-		SceneTreeDock::get_singleton()->show_tab_buttons();
-		debugger->set_editor_remote_tree(remote_scene_tree);
-		debugger->start(server->take_connection());
-		// Send breakpoints.
-		for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
-			const Breakpoint &bp = E.key;
-			debugger->set_breakpoint(bp.source, bp.line, E.value);
-		} // Will arrive too late, how does the regular run work?
-
-		debugger->update_live_edit_root();
 	}
 }
 
@@ -597,12 +613,12 @@ void EditorDebuggerNode::_save_node_requested(ObjectID p_id, const String &p_fil
 }
 
 // Remote inspector/edit.
-void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
+void EditorDebuggerNode::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount) {
 	if (!singleton) {
 		return;
 	}
 	_for_all(singleton->tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_method_changed(p_base, p_name, VARIANT_ARG_PASS);
+		dbg->_method_changed(p_base, p_name, p_args, p_argcount);
 	});
 }
 

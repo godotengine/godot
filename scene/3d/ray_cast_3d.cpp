@@ -171,8 +171,8 @@ void RayCast3D::_notification(int p_what) {
 					exclude.erase(Object::cast_to<CollisionObject3D>(get_parent())->get_rid());
 				}
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (enabled) {
 				set_physics_process_internal(false);
@@ -181,8 +181,8 @@ void RayCast3D::_notification(int p_what) {
 			if (debug_shape) {
 				_clear_debug_shape();
 			}
-
 		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (!enabled) {
 				break;
@@ -193,7 +193,6 @@ void RayCast3D::_notification(int p_what) {
 			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
 				_update_debug_shape_material(true);
 			}
-
 		} break;
 	}
 }
@@ -341,7 +340,7 @@ void RayCast3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position", PROPERTY_HINT_NONE, "suffix:m"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 

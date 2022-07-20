@@ -42,6 +42,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 
@@ -103,8 +104,7 @@ void BoneTransformEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
-			break;
-		}
+		} break;
 	}
 }
 
@@ -251,6 +251,10 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 			create_physical_skeleton();
 			break;
 		}
+		case SKELETON_OPTION_EXPORT_SKELETON_PROFILE: {
+			export_skeleton_profile();
+			break;
+		}
 	}
 }
 
@@ -358,7 +362,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 void Skeleton3DEditor::create_physical_skeleton() {
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ERR_FAIL_COND(!get_tree());
-	Node *owner = skeleton == get_tree()->get_edited_scene_root() ? skeleton : skeleton->get_owner();
+	Node *owner = get_tree()->get_edited_scene_root();
 
 	const int bc = skeleton->get_bone_count();
 
@@ -369,37 +373,47 @@ void Skeleton3DEditor::create_physical_skeleton() {
 	Vector<BoneInfo> bones_infos;
 	bones_infos.resize(bc);
 
-	for (int bone_id = 0; bc > bone_id; ++bone_id) {
-		const int parent = skeleton->get_bone_parent(bone_id);
+	if (bc > 0) {
+		ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
+		for (int bone_id = 0; bc > bone_id; ++bone_id) {
+			const int parent = skeleton->get_bone_parent(bone_id);
 
-		if (parent < 0) {
-			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
+			if (parent < 0) {
+				bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
+			} else {
+				const int parent_parent = skeleton->get_bone_parent(parent);
 
-		} else {
-			const int parent_parent = skeleton->get_bone_parent(parent);
+				bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
-			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
+				// Create physical bone on parent.
+				if (!bones_infos[parent].physical_bone) {
+					PhysicalBone3D *physical_bone = create_physical_bone(parent, bone_id, bones_infos);
+					if (physical_bone && physical_bone->get_child(0)) {
+						CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(physical_bone->get_child(0));
+						if (collision_shape) {
+							bones_infos.write[parent].physical_bone = physical_bone;
 
-			// Create physical bone on parent.
-			if (!bones_infos[parent].physical_bone) {
-				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
+							ur->add_do_method(skeleton, "add_child", physical_bone);
+							ur->add_do_method(physical_bone, "set_owner", owner);
+							ur->add_do_method(collision_shape, "set_owner", owner);
+							ur->add_do_property(physical_bone, "bone_name", skeleton->get_bone_name(parent));
 
-				ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
-				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
-				ur->add_do_reference(bones_infos[parent].physical_bone);
-				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
-				ur->commit_action();
+							// Create joint between parent of parent.
+							if (parent_parent != -1) {
+								ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
+							}
 
-				bones_infos[parent].physical_bone->set_bone_name(skeleton->get_bone_name(parent));
-				bones_infos[parent].physical_bone->set_owner(owner);
-				bones_infos[parent].physical_bone->get_child(0)->set_owner(owner); // set shape owner
+							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", physical_bone);
+							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", collision_shape);
 
-				// Create joint between parent of parent.
-				if (-1 != parent_parent) {
-					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone3D::JOINT_TYPE_PIN);
+							ur->add_do_reference(physical_bone);
+							ur->add_undo_method(skeleton, "remove_child", physical_bone);
+						}
+					}
 				}
 			}
 		}
+		ur->commit_action();
 	}
 }
 
@@ -415,13 +429,20 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
+	bone_shape->set_name("CollisionShape3D");
 
 	Transform3D capsule_transform;
 	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
 	bone_shape->set_transform(capsule_transform);
 
+	/// Get an up vector not collinear with child rest origin
+	Vector3 up = Vector3(0, 1, 0);
+	if (up.cross(child_rest.origin).is_equal_approx(Vector3())) {
+		up = Vector3(0, 0, 1);
+	}
+
 	Transform3D body_transform;
-	body_transform.basis = Basis::looking_at(child_rest.origin);
+	body_transform.basis = Basis::looking_at(child_rest.origin, up);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
 	Transform3D joint_transform;
@@ -433,6 +454,73 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	physical_bone->set_body_offset(body_transform);
 	physical_bone->set_joint_offset(joint_transform);
 	return physical_bone;
+}
+
+void Skeleton3DEditor::export_skeleton_profile() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_title(TTR("Export Skeleton Profile As..."));
+
+	List<String> exts;
+	ResourceLoader::get_recognized_extensions_for_type("SkeletonProfile", &exts);
+	file_dialog->clear_filters();
+	for (const String &K : exts) {
+		file_dialog->add_filter("*." + K);
+	}
+
+	file_dialog->popup_file_dialog();
+}
+
+void Skeleton3DEditor::_file_selected(const String &p_file) {
+	// Export SkeletonProfile.
+	Ref<SkeletonProfile> sp(memnew(SkeletonProfile));
+
+	// Build SkeletonProfile.
+	sp->set_group_size(1);
+
+	Vector<Vector2> handle_positions;
+	Vector2 position_max;
+	Vector2 position_min;
+
+	int len = skeleton->get_bone_count();
+	sp->set_bone_size(len);
+	for (int i = 0; i < len; i++) {
+		sp->set_bone_name(i, skeleton->get_bone_name(i));
+		int parent = skeleton->get_bone_parent(i);
+		if (parent >= 0) {
+			sp->set_bone_parent(i, skeleton->get_bone_name(parent));
+		}
+		sp->set_reference_pose(i, skeleton->get_bone_rest(i));
+
+		Transform3D grest = skeleton->get_bone_global_rest(i);
+		handle_positions.append(Vector2(grest.origin.x, grest.origin.y));
+		if (i == 0) {
+			position_max = Vector2(grest.origin.x, grest.origin.y);
+			position_min = Vector2(grest.origin.x, grest.origin.y);
+		} else {
+			position_max.x = MAX(grest.origin.x, position_max.x);
+			position_max.y = MAX(grest.origin.y, position_max.y);
+			position_min.x = MIN(grest.origin.x, position_min.x);
+			position_min.y = MIN(grest.origin.y, position_min.y);
+		}
+	}
+
+	// Layout handles provisionaly.
+	Vector2 bound = Vector2(position_max.x - position_min.x, position_max.y - position_min.y);
+	Vector2 center = Vector2((position_max.x + position_min.x) * 0.5, (position_max.y + position_min.y) * 0.5);
+	float nrm = MAX(bound.x, bound.y);
+	if (nrm > 0) {
+		for (int i = 0; i < len; i++) {
+			handle_positions.write[i] = (handle_positions[i] - center) / nrm * 0.9;
+			sp->set_handle_offset(i, Vector2(0.5 + handle_positions[i].x, 0.5 - handle_positions[i].y));
+		}
+	}
+
+	Error err = ResourceSaver::save(p_file, sp);
+
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_file));
+		return;
+	}
 }
 
 Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -531,24 +619,29 @@ void Skeleton3DEditor::_joint_tree_selection_changed() {
 	TreeItem *selected = joint_tree->get_selected();
 	if (selected) {
 		const String path = selected->get_metadata(0);
-
-		if (path.begins_with("bones/")) {
-			const int b_idx = path.get_slicec('/', 1).to_int();
+		if (!path.begins_with("bones/")) {
+			return;
+		}
+		const int b_idx = path.get_slicec('/', 1).to_int();
+		selected_bone = b_idx;
+		if (pose_editor) {
 			const String bone_path = "bones/" + itos(b_idx) + "/";
-
 			pose_editor->set_target(bone_path);
 			pose_editor->set_keyable(keyable);
-			selected_bone = b_idx;
 		}
 	}
-	pose_editor->set_visible(selected);
+
+	if (pose_editor && pose_editor->is_inside_tree()) {
+		pose_editor->set_visible(selected);
+	}
 	set_bone_options_enabled(selected);
+
 	_update_properties();
 	_update_gizmo_visible();
 }
 
 // May be not used with single select mode.
-void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos) {
+void Skeleton3DEditor::_joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
 }
 
 void Skeleton3DEditor::_update_properties() {
@@ -567,7 +660,7 @@ void Skeleton3DEditor::update_joint_tree() {
 
 	TreeItem *root = joint_tree->create_item();
 
-	Map<int, TreeItem *> items;
+	HashMap<int, TreeItem *> items;
 
 	items.insert(-1, root);
 
@@ -579,7 +672,7 @@ void Skeleton3DEditor::update_joint_tree() {
 		bones_to_process.erase(current_bone_idx);
 
 		const int parent_idx = skeleton->get_bone_parent(current_bone_idx);
-		TreeItem *parent_item = items.find(parent_idx)->get();
+		TreeItem *parent_item = items.find(parent_idx)->value;
 
 		TreeItem *joint_item = joint_tree->create_item(parent_item);
 		items.insert(current_bone_idx, joint_item);
@@ -610,6 +703,11 @@ void Skeleton3DEditor::create_editors() {
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 
+	// Create File dialog.
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->connect("file_selected", callable_mp(this, &Skeleton3DEditor::_file_selected));
+	add_child(file_dialog);
+
 	// Create Top Menu Bar.
 	separator = memnew(VSeparator);
 	ne->add_control_to_menu_panel(separator);
@@ -628,6 +726,7 @@ void Skeleton3DEditor::create_editors() {
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
+	p->add_item(TTR("Export skeleton profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
 	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);
@@ -745,7 +844,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			update_joint_tree();
 			update_editors();
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
-			joint_tree->connect("item_rmb_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
+			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
 			skeleton->connect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
 			skeleton->connect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
@@ -787,8 +886,7 @@ void Skeleton3DEditor::edit_mode_toggled(const bool pressed) {
 	_update_gizmo_visible();
 }
 
-Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, EditorNode *p_editor, Skeleton3D *p_skeleton) :
-		editor(p_editor),
+Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *p_skeleton) :
 		editor_plugin(e_plugin),
 		skeleton(p_skeleton) {
 	singleton = this;
@@ -801,14 +899,14 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Edit
 
 shader_type spatial;
 render_mode unshaded, shadows_disabled, depth_draw_always;
-uniform sampler2D texture_albedo : hint_albedo;
+uniform sampler2D texture_albedo : source_color;
 uniform float point_size : hint_range(0,128) = 32;
 void vertex() {
 	if (!OUTPUT_IS_SRGB) {
 		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
 	}
 	VERTEX = VERTEX;
-	POSITION=PROJECTION_MATRIX*INV_CAMERA_MATRIX*WORLD_MATRIX*vec4(VERTEX.xyz,1.0);
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, 0, 0.999);
 	POINT_SIZE = point_size;
 }
@@ -822,7 +920,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = editor->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_param("point_size", handle->get_width());
 	handle_material->set_shader_param("texture_albedo", handle);
 
@@ -1013,15 +1111,12 @@ void EditorInspectorPluginSkeleton::parse_begin(Object *p_object) {
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_object);
 	ERR_FAIL_COND(!skeleton);
 
-	skel_editor = memnew(Skeleton3DEditor(this, editor, skeleton));
+	skel_editor = memnew(Skeleton3DEditor(this, skeleton));
 	add_custom_control(skel_editor);
 }
 
-Skeleton3DEditorPlugin::Skeleton3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-
+Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 	skeleton_plugin = memnew(EditorInspectorPluginSkeleton);
-	skeleton_plugin->editor = editor;
 
 	EditorInspector::add_inspector_plugin(skeleton_plugin);
 
@@ -1104,7 +1199,7 @@ void vertex() {
 		COLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );
 	}
 	VERTEX = VERTEX;
-	POSITION=PROJECTION_MATRIX*INV_CAMERA_MATRIX*WORLD_MATRIX*vec4(VERTEX.xyz,1.0);
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
 	POSITION.z = mix(POSITION.z, 0, 0.998);
 }
 void fragment() {
@@ -1203,8 +1298,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 	t.basis = to_local * p_transform.get_basis();
 
 	// Origin.
-	Vector3 orig = Vector3();
-	orig = skeleton->get_bone_pose(p_id).origin;
+	Vector3 orig = skeleton->get_bone_pose(p_id).origin;
 	Vector3 sub = p_transform.origin - skeleton->get_bone_global_pose(p_id).origin;
 	t.origin = orig + to_local.xform(sub);
 
@@ -1277,9 +1371,6 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		surface_tool->set_material(unselected_mat);
 	}
 
-	Vector<Transform3D> grests;
-	grests.resize(skeleton->get_bone_count());
-
 	LocalVector<int> bones;
 	LocalVector<float> weights;
 	bones.resize(4);
@@ -1303,11 +1394,6 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		child_bones_vector = skeleton->get_bone_children(current_bone_idx);
 		int child_bones_size = child_bones_vector.size();
 
-		// You have children but no parent, then you must be a root/parentless bone.
-		if (skeleton->get_bone_parent(current_bone_idx) < 0) {
-			grests.write[current_bone_idx] = skeleton->get_bone_rest(current_bone_idx);
-		}
-
 		for (int i = 0; i < child_bones_size; i++) {
 			// Something wrong.
 			if (child_bones_vector[i] < 0) {
@@ -1316,10 +1402,8 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			int child_bone_idx = child_bones_vector[i];
 
-			grests.write[child_bone_idx] = grests[current_bone_idx] * skeleton->get_bone_rest(child_bone_idx);
-
-			Vector3 v0 = grests[current_bone_idx].origin;
-			Vector3 v1 = grests[child_bone_idx].origin;
+			Vector3 v0 = skeleton->get_bone_global_rest(current_bone_idx).origin;
+			Vector3 v1 = skeleton->get_bone_global_rest(child_bone_idx).origin;
 			Vector3 d = (v1 - v0).normalized();
 			real_t dist = v0.distance_to(v1);
 
@@ -1327,7 +1411,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			int closest = -1;
 			real_t closest_d = 0.0;
 			for (int j = 0; j < 3; j++) {
-				real_t dp = Math::abs(grests[current_bone_idx].basis[j].normalized().dot(d));
+				real_t dp = Math::abs(skeleton->get_bone_global_rest(current_bone_idx).basis[j].normalized().dot(d));
 				if (j == 0 || dp > closest_d) {
 					closest = j;
 				}
@@ -1354,7 +1438,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					for (int j = 0; j < 3; j++) {
 						Vector3 axis;
 						if (first == Vector3()) {
-							axis = d.cross(d.cross(grests[current_bone_idx].basis[j])).normalized();
+							axis = d.cross(d.cross(skeleton->get_bone_global_rest(current_bone_idx).basis[j])).normalized();
 							first = axis;
 						} else {
 							axis = d.cross(first).normalized();
@@ -1409,7 +1493,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->add_vertex(v0);
 				surface_tool->set_bones(bones);
 				surface_tool->set_weights(weights);
-				surface_tool->add_vertex(v0 + (grests[current_bone_idx].basis.inverse())[j].normalized() * dist * bone_axis_length);
+				surface_tool->add_vertex(v0 + (skeleton->get_bone_global_rest(current_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 				if (j == closest) {
 					continue;
@@ -1426,7 +1510,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					surface_tool->add_vertex(v1);
 					surface_tool->set_bones(bones);
 					surface_tool->set_weights(weights);
-					surface_tool->add_vertex(v1 + (grests[child_bone_idx].basis.inverse())[j].normalized() * dist * bone_axis_length);
+					surface_tool->add_vertex(v1 + (skeleton->get_bone_global_rest(child_bone_idx).basis.inverse())[j].normalized() * dist * bone_axis_length);
 
 					if (j == closest) {
 						continue;

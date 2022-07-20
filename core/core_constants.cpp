@@ -41,20 +41,20 @@ struct _CoreConstant {
 	StringName enum_name;
 	bool ignore_value_in_docs = false;
 #endif
-	const char *name;
-	int value = 0;
+	const char *name = nullptr;
+	int64_t value = 0;
 
 	_CoreConstant() {}
 
 #ifdef DEBUG_METHODS_ENABLED
-	_CoreConstant(const StringName &p_enum_name, const char *p_name, int p_value, bool p_ignore_value_in_docs = false) :
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false) :
 			enum_name(p_enum_name),
 			ignore_value_in_docs(p_ignore_value_in_docs),
 			name(p_name),
 			value(p_value) {
 	}
 #else
-	_CoreConstant(const char *p_name, int p_value) :
+	_CoreConstant(const char *p_name, int64_t p_value) :
 			name(p_name),
 			value(p_value) {
 	}
@@ -73,13 +73,13 @@ static Vector<_CoreConstant> _global_constants;
 
 // This just binds enum classes as if they were regular enum constants.
 #define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_name), #m_name, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_name), #m_name, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int)m_enum::m_member, true));
+	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member), #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true));
 
 #define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
 	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant));
@@ -103,13 +103,13 @@ static Vector<_CoreConstant> _global_constants;
 
 // This just binds enum classes as if they were regular enum constants.
 #define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_name, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_name, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member) \
-	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int)m_enum::m_member));
+	_global_constants.push_back(_CoreConstant(#m_prefix "_" #m_member, (int64_t)m_enum::m_member));
 
 #define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
 	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
@@ -168,6 +168,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_IMAGE_MASK);
 	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TEXT_MASK);
 
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SPECIAL);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ESCAPE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, TAB);
@@ -212,6 +213,25 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F14);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F15);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F16);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F17);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F18);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F19);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F20);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F21);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F22);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F23);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F24);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F25);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F26);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F27);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F28);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F29);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F30);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F31);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F32);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F33);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F34);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F35);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_MULTIPLY);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_DIVIDE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_SUBTRACT);
@@ -422,6 +442,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, KPAD);
 	BIND_CORE_ENUM_CLASS_CONSTANT(KeyModifierMask, KEY_MASK, GROUP_SWITCH);
 
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, LEFT);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, RIGHT);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MIDDLE);
@@ -472,6 +493,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, SDL_MAX);
 	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, MAX);
 
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NOTE_OFF);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NOTE_ON);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, AFTERTOUCH);
@@ -548,8 +570,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ENUM);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ENUM_SUGGESTION);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_EXP_EASING);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LENGTH);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_KEY_ACCEL);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LINK);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_FLAGS);
 
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_2D_RENDER);
@@ -565,6 +586,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_DIR);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_RESOURCE_TYPE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MULTILINE_TEXT);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_EXPRESSION);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PLACEHOLDER_TEXT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
@@ -584,24 +606,26 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_TOO_BIG);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_VALID_TYPES);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_SAVE_FILE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_SAVE_FILE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INT_IS_OBJECTID);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INT_IS_POINTER);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ARRAY_TYPE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LOCALE_ID);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LOCALIZABLE_STRING);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_TYPE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NONE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_STORAGE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NETWORK);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR_HELPER);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKABLE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKED);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SUBGROUP);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CLASS_IS_BITFIELD);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);
@@ -629,11 +653,9 @@ void register_global_constants() {
 
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_NORMAL);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_EDITOR);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_NOSCRIPT);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_CONST);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_REVERSE);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_VIRTUAL);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_FROM_SCRIPT);
+	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_VARARG);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_STATIC);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_OBJECT_CORE);
 	BIND_CORE_ENUM_CONSTANT(METHOD_FLAGS_DEFAULT);
@@ -641,7 +663,7 @@ void register_global_constants() {
 	// rpc
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("RPC_MODE_DISABLED", Multiplayer::RPC_MODE_DISABLED);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("RPC_MODE_ANY_PEER", Multiplayer::RPC_MODE_ANY_PEER);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("RPC_MODE_AUTH", Multiplayer::RPC_MODE_AUTHORITY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("RPC_MODE_AUTHORITY", Multiplayer::RPC_MODE_AUTHORITY);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TRANSFER_MODE_UNRELIABLE", Multiplayer::TRANSFER_MODE_UNRELIABLE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TRANSFER_MODE_UNRELIABLE_ORDERED", Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED);
@@ -699,6 +721,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_NEGATE", Variant::OP_NEGATE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_POSITIVE", Variant::OP_POSITIVE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_MODULE", Variant::OP_MODULE);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_POWER", Variant::OP_POWER);
 	//bitwise
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_SHIFT_LEFT", Variant::OP_SHIFT_LEFT);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_SHIFT_RIGHT", Variant::OP_SHIFT_RIGHT);
@@ -746,6 +769,6 @@ const char *CoreConstants::get_global_constant_name(int p_idx) {
 	return _global_constants[p_idx].name;
 }
 
-int CoreConstants::get_global_constant_value(int p_idx) {
+int64_t CoreConstants::get_global_constant_value(int p_idx) {
 	return _global_constants[p_idx].value;
 }

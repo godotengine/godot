@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OmniLight3D" inherits="Light3D" version="4.0">
+<class name="OmniLight3D" inherits="Light3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Omnidirectional light, such as a light bulb or a candle.
 	</brief_description>
@@ -19,6 +19,7 @@
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
 			See [enum ShadowMode].
 		</member>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.2" />
 	</members>
 	<constants>
 		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">

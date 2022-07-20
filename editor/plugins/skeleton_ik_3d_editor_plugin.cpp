@@ -81,10 +81,9 @@ void SkeletonIK3DEditorPlugin::make_visible(bool p_visible) {
 void SkeletonIK3DEditorPlugin::_bind_methods() {
 }
 
-SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn = memnew(Button);
-	play_btn->set_icon(editor->get_gui_base()->get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+	play_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();

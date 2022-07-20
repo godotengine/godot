@@ -366,11 +366,11 @@ void PropertySelector::_item_selected() {
 	String text;
 	if (properties) {
 		while (!class_type.is_empty()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
+			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->get().properties.size(); i++) {
-					if (E->get().properties[i].name == name) {
-						text = DTR(E->get().properties[i].description);
+				for (int i = 0; i < E->value.properties.size(); i++) {
+					if (E->value.properties[i].name == name) {
+						text = DTR(E->value.properties[i].description);
 						break;
 					}
 				}
@@ -385,11 +385,11 @@ void PropertySelector::_item_selected() {
 		}
 	} else {
 		while (!class_type.is_empty()) {
-			Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_type);
+			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
 			if (E) {
-				for (int i = 0; i < E->get().methods.size(); i++) {
-					if (E->get().methods[i].name == name) {
-						text = DTR(E->get().methods[i].description);
+				for (int i = 0; i < E->value.methods.size(); i++) {
+					if (E->value.methods[i].name == name) {
+						text = DTR(E->value.methods[i].description);
 						break;
 					}
 				}
@@ -421,10 +421,14 @@ void PropertySelector::_hide_requested() {
 }
 
 void PropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
+		} break;
 	}
 }
 
@@ -577,7 +581,7 @@ PropertySelector::PropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok_button()->set_text(TTR("Open"));
+	set_ok_button_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -585,7 +589,6 @@ PropertySelector::PropertySelector() {
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);

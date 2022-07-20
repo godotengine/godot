@@ -7,9 +7,9 @@ readability.
 
 ## amd-fsr
 
-Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
-Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
-License: MIT
+- Upstream: https://github.com/GPUOpen-Effects/FidelityFX-FSR
+- Version: 1.0.2 (a21ffb8f6c13233ba336352bdff293894c706575, 2021)
+- License: MIT
 
 Files extracted from upstream source:
 
@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (646a9f826131cb0b9e14b5e4740874808315f83a, 2021)
+- Version: git (1531cfaf9ed5232248a0a45736686a849ca3befc, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -29,18 +29,16 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
-## bullet
+## brotli
 
-- Upstream: https://github.com/bulletphysics/bullet3
-- Version: 3.17 (ebe1916b90acae8b13cd8c6b637d8327cdc64e94, 2021)
-- License: zlib
+- Upstream: https://github.com/google/brotli
+- Version: git (f4153a09f87cbb9c826d8fc12c74642bb2d879ea, 2022)
+- License: MIT
 
 Files extracted from upstream source:
 
-- `src/*` apart from CMakeLists.txt and premake4.lua files
-- `LICENSE.txt`, and `VERSION` as `VERSION.txt`
-
-Includes some patches in the `patches` folder which have been sent upstream.
+- `common/`, `dec/` and `include/` folders
+- `LICENSE`
 
 
 ## certs
@@ -64,10 +62,13 @@ Files extracted from upstream source:
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.4 (97d5a9447e66cd5e107b7a6c463be4a468a40496, 2020)
+- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
 - License: MIT
 
-Extracted from .zip provided. Extracted license and header only.
+Files extracted from upstream source:
+
+- `doctest/doctest.h` as `doctest.h`
+- `LICENSE.txt`
 
 
 ## embree
@@ -117,7 +118,7 @@ will limit its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (7c3cb6fe708d4ae330b0ab2af1ad472bae2a37a2, 2021)
+- Version: 1.0 (153f0e04a18b93c277684b577365210adcf8e11c, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -132,38 +133,44 @@ Files extracted from upstream source:
 
 ## fonts
 
-- `NotoSans*.ttf`, `NotoNaskhArabicUI_*.ttf`:
+- `NotoSans*.woff2`, `NotoNaskhArabicUI_*.woff2`:
   * Upstream: https://github.com/googlefonts/noto-fonts
   * Version: v2017-10-24-phase3-second-cleanup
   * License: OFL-1.1
   * Comment: Use UI font variant if available, because it has tight vertical metrics and
     good for UI.
-- `JetBrainsMono_Regular.ttf`:
+- `JetBrainsMono_Regular.woff2`:
 	* Upstream: https://github.com/JetBrains/JetBrainsMono
   * Version: 2.242
   * License: OFL-1.1
-- `DroidSans*.ttf`:
+- `DroidSans*.woff2`:
   * Upstream: https://android.googlesource.com/platform/frameworks/base/+/master/data/fonts/
   * Version: ? (pre-2014 commit when DroidSansJapanese.ttf was obsoleted)
   * License: Apache 2.0
-- `OpenSans_SemiBold.ttf`:
+- `OpenSans_SemiBold.woff2`:
   * Upstream: https://fonts.google.com/specimen/Open+Sans
   * Version: 1.10 (downloaded from Google Fonts in February 2021)
   * License: Apache 2.0
-
+- All fonts are converted from the `.ttf` sources using `https://github.com/google/woff2` tool.
 
 
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.11.1 (3f83daeecb1a78d851b660eed025eeba362c0e4a, 2021)
+- Version: 2.12.1 (e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf, 2022)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
-- the `src/` folder, minus the `.mk` files and the `dlg` and `tools` subfolders
-- the `include/` folder, minus the `dlg` subfolder
+- `src/` folder, minus the `dlg` and `tools` subfolders
+  * These files can be removed: `.dat`, `.diff`, `.mk`, `.rc`, `README*`
+- `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
+
+Some changes have been made in order to prevent LTO from removing code.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
 
 
 ## glslang
@@ -206,7 +213,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 3.3.2 (ac46c3248e8b0316235943175c4d4a11c24dd4a9, 2022)
+- Version: 4.4.1 (096aaa62a6e0d07c02a4894fc036efc927e5aaf9, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -218,7 +225,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 70.1 (a56dde820dc35665a66f2e9ee8ba58e75049b668, 2021)
+- Version: 71.1 (c205e7ee49a7086a28b9c275fcfdac9ca3dc815d, 2022)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -228,14 +235,14 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- the `icudt70l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt71l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
 - Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
 - Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt70l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt70l.dat`.
+- Step 4: Copy `source/data/out/icudt71l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt71l.dat`.
 
 
 ## jpeg-compressor
@@ -247,6 +254,7 @@ Files generated from upstream source:
 Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
+- `jpge*.{c,h}`
 
 
 ## libogg
@@ -320,15 +328,15 @@ Files extracted from upstream source:
 
 ## mbedtls
 
-- Upstream: https://tls.mbed.org/
-- Version: 2.16.12 (cf4667126010c665341f9e50ef691b7ef8294188, 2021)
+- Upstream: https://github.com/Mbed-TLS/mbedtls
+- Version: 2.18.1 (dd79db10014d85b26d11fe57218431f2e5ede6f2, 2022)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
 
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
-- `LICENSE` and `apache-2.0.txt` files.
+- The `LICENSE` file.
 - Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
@@ -338,7 +346,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (f4c356d79fadb99cbf432f7e199d823581b0e19e, 2021)
+- Version: git (ea4558d1c0f217f1d67ed7fe0b07896ece88ae18, 2022)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -385,17 +393,17 @@ that file when upgrading.
 
 ## minizip
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (zlib contrib, 2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (zlib contrib, 2022)
 - License: zlib
 
 Files extracted from the upstream source:
 
-- contrib/minizip/{crypt.h,ioapi.{c,h},zip.{c,h},unzip.{c,h}}
+- contrib/minizip/{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}
 
 Important: Some files have Godot-made changes for use in core/io.
 They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the minizip/ folder.
+comments and a patch is provided in the `patches` folder.
 
 
 ## misc
@@ -426,10 +434,19 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
   * License: zlib
-- `open-simplex-noise.{c,h}`
-  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (826f1dd1724e6fb3ff45f58e48c0fbae864c3403, 2020) + custom changes
-  * License: Public Domain or Unlicense
+- `FastNoiseLite.h}`
+  * Upstream: https://github.com/Auburn/FastNoiseLite
+  * Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022) + custom changes
+  * License: MIT
+- `ok_color.h`
+  * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h
+  * Version: git (d69831edb90ffdcd08b7e64da3c5405acd48ad2c, 2022)
+  * License: MIT
+  * Modifications: License included in header.
+- `ok_color_shader.h`
+  * https://www.shadertoy.com/view/7sK3D1
+  * Version: 2021-09-13
+  * License: MIT
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
@@ -454,7 +471,7 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.00 (2bb4a0accd4003c1db4c24533981e01b1adfd656, 2019)
+  * Version: 1.01 (af1a5bc352164740c1cc1354942b1c6b72eacb8a, 2021)
   * License: Public Domain or Unlicense or MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
@@ -473,6 +490,7 @@ Files extracted from the upstream source:
 - `msdfgen.h`
 - Files in `core/` folder.
 - `LICENSE.txt` and `CHANGELOG.md`
+
 
 ## oidn
 
@@ -505,10 +523,34 @@ Patch files are provided in `oidn/patches/`.
 - scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
 
 
+## openxr
+
+- Upstream: https://github.com/KhronosGroup/OpenXR-SDK
+- Version: 1.0.23 (885a90f8934d84121344ba8e4aa5159d5b496e08, 2022)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- include/
+- src/common/
+- src/loader/
+- src/*.{c,h}
+- src/external/jsoncpp/include/
+- src/external/jsoncpp/src/lib_json/
+- LICENSE and COPYING.adoc
+
+Exclude:
+
+- src/external/android-jni-wrappers and src/external/jnipp (not used yet)
+- All CMake stuff: cmake/, CMakeLists.txt and *.cmake
+- All Gradle stuff: *gradle*, AndroidManifest.xml
+- All following files (and their .license files): *.{def,in,json,map,pom,rc}
+
+
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.39 (35fee4193b852cb504892352bd0155de10809889, 2021)
+- Version: 10.40 (3103b8f20a3b9944b177e812fde29fbfb8b90558, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -520,11 +562,14 @@ Files extracted from upstream source:
 - src/sljit/
 - AUTHORS and LICENCE
 
+A sljit patch from upstream was backported to fix macOS < 11.0 compilation
+in 10.40, it can be found in the `patches` folder.
+
 
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- Version: git (57610fa6ef31b39020231906f8c5d40eaa8294ae, 2019)
+- Version: git (5a870d427e47abd4a8e4ce58a95582ec049434d5, 2022)
 - License: zlib
 
 Files extracted from upstream source:
@@ -536,17 +581,17 @@ Files extracted from upstream source:
 ## rvo2
 
 - Upstream: https://github.com/snape/RVO2-3D
-- Version: 1.0.1 (e3883f288a9e55ecfed3633a01af3e12778c6acf, 2016)
+- Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
 - LICENSE
 
 Important: Some files have Godot-made changes; so to enrich the features
 originally proposed by this library and better integrate this library with
-Godot. Please check the file to know what's new.
+Godot. See the patch in the `patches` folder for details.
 
 
 ## spirv-reflect
@@ -602,7 +647,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/Samsung/thorvg
-- Version: 0.7.1 (d53eb2a880002cb770ace1c1ace9c5dfcfc28252, 2022)
+- Version: 0.8.1 (c4ccb1078f4390ec749ab8e05ba7e9e35f81285f, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -665,7 +710,7 @@ Files extracted from upstream source:
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-Version: 3.0.0-development (2021-07-07), branch `feature-small-buffers`, commit `cfea2f72851f9ee4a399769f18865047b83711f1`
+Version: 3.0.1 (2022-06-10), commit `cfdc0f8775ab3258a3b9c4e47d8ce4b6f52a5441`
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
@@ -691,7 +736,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (ec707faeac3b95e6b416076a9509718cce105b6a, 2021)
+- Version: git (16ace528acd2cf1f16a7c0dde99c42c486488dbe, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -702,8 +747,8 @@ Files extracted from upstream source:
 
 ## zlib
 
-- Upstream: http://www.zlib.net
-- Version: 1.2.11 (2017)
+- Upstream: https://www.zlib.net
+- Version: 1.2.12 (2022)
 - License: zlib
 
 Files extracted from upstream source:
@@ -714,7 +759,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.0 (a488ba114ec17ea1054b9057c26a046fc122b3b6, 2021)
+- Version: 1.5.2 (e47e674cd09583ff0503f0f6defd6d23d8b718d3, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

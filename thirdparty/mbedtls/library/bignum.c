@@ -1829,7 +1829,7 @@ int mbedtls_mpi_mod_int( mbedtls_mpi_uint *r, const mbedtls_mpi *A, mbedtls_mpi_
     /*
      * handle trivial cases
      */
-    if( b == 1 )
+    if( b == 1 || A->n == 0 )
     {
         *r = 0;
         return( 0 );
@@ -2317,7 +2317,7 @@ int mbedtls_mpi_gcd( mbedtls_mpi *G, const mbedtls_mpi *A, const mbedtls_mpi *B 
          * TA-TB is even so the division by 2 has an integer result.
          * Invariant (I) is preserved since any odd divisor of both TA and TB
          * also divides |TA-TB|/2, and any odd divisor of both TA and |TA-TB|/2
-         * also divides TB, and any odd divisior of both TB and |TA-TB|/2 also
+         * also divides TB, and any odd divisor of both TB and |TA-TB|/2 also
          * divides TA.
          */
         if( mbedtls_mpi_cmp_mpi( &TA, &TB ) >= 0 )

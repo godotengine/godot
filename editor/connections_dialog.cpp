@@ -30,16 +30,12 @@
 
 #include "connections_dialog.h"
 
-#include "core/string/print_string.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/spin_box.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -184,62 +180,11 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX) {
-		return;
-	}
-	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+	Variant::Type type = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
-
-	switch (vt) {
-		case Variant::BOOL:
-			value = false;
-			break;
-		case Variant::INT:
-			value = 0;
-			break;
-		case Variant::FLOAT:
-			value = 0.0;
-			break;
-		case Variant::STRING:
-			value = "";
-			break;
-		case Variant::STRING_NAME:
-			value = "";
-			break;
-		case Variant::VECTOR2:
-			value = Vector2();
-			break;
-		case Variant::RECT2:
-			value = Rect2();
-			break;
-		case Variant::VECTOR3:
-			value = Vector3();
-			break;
-		case Variant::PLANE:
-			value = Plane();
-			break;
-		case Variant::QUATERNION:
-			value = Quaternion();
-			break;
-		case Variant::AABB:
-			value = AABB();
-			break;
-		case Variant::BASIS:
-			value = Basis();
-			break;
-		case Variant::TRANSFORM3D:
-			value = Transform3D();
-			break;
-		case Variant::COLOR:
-			value = Color();
-			break;
-		default: {
-			ERR_FAIL();
-		} break;
-	}
-
-	ERR_FAIL_COND(value.get_type() == Variant::NIL);
+	Callable::CallError error;
+	Variant::construct(type, value, nullptr, 0, error);
 
 	cdbinds->params.push_back(value);
 	cdbinds->notify_changed();
@@ -281,8 +226,18 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			bind_editor->edit(cdbinds);
+
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			for (int i = 0; i < type_list->get_item_count(); i++) {
+				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
+				type_list->set_item_icon(i, get_theme_icon(type_name, SNAME("EditorIcons")));
+			}
+		} break;
 	}
 }
 
@@ -370,6 +325,24 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 
 	deferred->set_pressed(b_deferred);
 	oneshot->set_pressed(b_oneshot);
+
+	MethodInfo r_signal;
+	Ref<Script> source_script = source->get_script();
+	if (source_script.is_valid() && source_script->has_script_signal(signal)) {
+		List<MethodInfo> signals;
+		source_script->get_script_signal_list(&signals);
+		for (MethodInfo &mi : signals) {
+			if (mi.name == signal) {
+				r_signal = mi;
+				break;
+			}
+		}
+	} else {
+		ClassDB::get_signal(source->get_class(), signal, &r_signal);
+	}
+
+	unbind_count->set_max(r_signal.arguments.size());
+
 	unbind_count->set_value(p_cd.unbinds);
 	_unbind_count_changed(p_cd.unbinds);
 
@@ -456,21 +429,14 @@ ConnectDialog::ConnectDialog() {
 	type_list = memnew(OptionButton);
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
-	type_list->add_item("bool", Variant::BOOL);
-	type_list->add_item("int", Variant::INT);
-	type_list->add_item("real", Variant::FLOAT);
-	type_list->add_item("String", Variant::STRING);
-	type_list->add_item("StringName", Variant::STRING_NAME);
-	type_list->add_item("Vector2", Variant::VECTOR2);
-	type_list->add_item("Rect2", Variant::RECT2);
-	type_list->add_item("Vector3", Variant::VECTOR3);
-	type_list->add_item("Plane", Variant::PLANE);
-	type_list->add_item("Quaternion", Variant::QUATERNION);
-	type_list->add_item("AABB", Variant::AABB);
-	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform3D", Variant::TRANSFORM3D);
-	type_list->add_item("Color", Variant::COLOR);
-	type_list->select(0);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+			// These types can't be constructed or serialized properly, so skip them.
+			continue;
+		}
+
+		type_list->add_item(Variant::get_type_name(Variant::Type(i)), i);
+	}
 	bind_controls.push_back(type_list);
 
 	Button *add_bind = memnew(Button);
@@ -528,8 +494,8 @@ ConnectDialog::ConnectDialog() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 	error->set_title(TTR("Cannot connect signal"));
-	error->get_ok_button()->set_text(TTR("Close"));
-	get_ok_button()->set_text(TTR("Connect"));
+	error->set_ok_button_text(TTR("Close"));
+	set_ok_button_text(TTR("Connect"));
 }
 
 ConnectDialog::~ConnectDialog() {
@@ -624,6 +590,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	if (add_script_function) {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
+		script_function_args.resize(script_function_args.size() - cd.unbinds);
 		for (int i = 0; i < cd.binds.size(); i++) {
 			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
 		}
@@ -640,7 +607,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	it = nullptr;
 
 	if (add_script_function) {
-		editor->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
+		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), target, cd.method, script_function_args);
 		hide();
 	}
 
@@ -852,7 +819,7 @@ void ConnectionsDock::_go_to_script(TreeItem &p_item) {
 	}
 
 	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, cd.method)) {
-		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 	}
 }
 
@@ -897,7 +864,11 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 	}
 }
 
-void ConnectionsDock::_rmb_pressed(Vector2 p_position) {
+void ConnectionsDock::_rmb_pressed(Vector2 p_position, MouseButton p_button) {
+	if (p_button != MouseButton::RIGHT) {
+		return;
+	}
+
 	TreeItem *item = tree->get_selected();
 
 	if (!item) {
@@ -942,6 +913,7 @@ void ConnectionsDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			update_tree();
 		} break;
@@ -1061,27 +1033,27 @@ void ConnectionsDock::update_tree() {
 				String descr;
 				bool found = false;
 
-				Map<StringName, Map<StringName, String>>::Element *G = descr_cache.find(base);
+				HashMap<StringName, HashMap<StringName, String>>::Iterator G = descr_cache.find(base);
 				if (G) {
-					Map<StringName, String>::Element *F = G->get().find(signal_name);
+					HashMap<StringName, String>::Iterator F = G->value.find(signal_name);
 					if (F) {
 						found = true;
-						descr = F->get();
+						descr = F->value;
 					}
 				}
 
 				if (!found) {
 					DocTools *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(base);
+					HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(base);
 					while (F && descr.is_empty()) {
-						for (int i = 0; i < F->get().signals.size(); i++) {
-							if (F->get().signals[i].name == signal_name.operator String()) {
-								descr = DTR(F->get().signals[i].description);
+						for (int i = 0; i < F->value.signals.size(); i++) {
+							if (F->value.signals[i].name == signal_name.operator String()) {
+								descr = DTR(F->value.signals[i].description);
 								break;
 							}
 						}
-						if (!F->get().inherits.is_empty()) {
-							F = dd->class_list.find(F->get().inherits);
+						if (!F->value.inherits.is_empty()) {
+							F = dd->class_list.find(F->value.inherits);
 						} else {
 							break;
 						}
@@ -1147,15 +1119,14 @@ void ConnectionsDock::update_tree() {
 	connect_button->set_disabled(true);
 }
 
-ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
-	editor = p_editor;
+ConnectionsDock::ConnectionsDock() {
 	set_name(TTR("Signals"));
 
 	VBoxContainer *vbc = this;
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Filter signals"));
+	search_box->set_placeholder(TTR("Filter Signals"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect("text_changed", callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);
@@ -1199,7 +1170,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
-	tree->connect("item_rmb_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
+	tree->connect("item_mouse_selected", callable_mp(this, &ConnectionsDock::_rmb_pressed));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 

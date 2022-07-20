@@ -100,7 +100,7 @@ RID Shader::get_rid() const {
 void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
 		if (!default_textures.has(p_param)) {
-			default_textures[p_param] = Map<int, Ref<Texture2D>>();
+			default_textures[p_param] = HashMap<int, Ref<Texture2D>>();
 		}
 		default_textures[p_param][p_index] = p_texture;
 		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid(), p_index);
@@ -126,7 +126,7 @@ Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param, int 
 }
 
 void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
-	for (const KeyValue<StringName, Map<int, Ref<Texture2D>>> &E : default_textures) {
+	for (const KeyValue<StringName, HashMap<int, Ref<Texture2D>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
 }
@@ -172,7 +172,7 @@ Shader::~Shader() {
 
 ////////////
 
-RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -210,29 +210,26 @@ String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverShader::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	Ref<Shader> shader = p_resource;
 	ERR_FAIL_COND_V(shader.is_null(), ERR_INVALID_PARAMETER);
 
 	String source = shader->get_code();
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		memdelete(file);
 		return ERR_CANT_CREATE;
 	}
-	file->close();
-	memdelete(file);
 
 	return OK;
 }
 
-void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
 		if (shader->is_text_shader()) {
 			p_extensions->push_back("gdshader");
@@ -240,6 +237,6 @@ void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource,
 	}
 }
 
-bool ResourceFormatSaverShader::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverShader::recognize(const Ref<Resource> &p_resource) const {
 	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }

@@ -45,7 +45,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	};
 	String stage_code[RD::SHADER_STAGE_MAX];
 	int stages_found = 0;
-	Map<StringName, String> version_texts;
+	HashMap<StringName, String> version_texts;
 
 	versions.clear();
 	base_error = "";

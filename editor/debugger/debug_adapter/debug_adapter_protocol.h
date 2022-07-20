@@ -76,7 +76,7 @@ class DebugAdapterProtocol : public Object {
 
 private:
 	static DebugAdapterProtocol *singleton;
-	DebugAdapterParser *parser;
+	DebugAdapterParser *parser = nullptr;
 
 	List<Ref<DAPeer>> clients;
 	Ref<TCPServer> server;
@@ -111,12 +111,12 @@ private:
 	String _current_request;
 	Ref<DAPeer> _current_peer;
 
-	int breakpoint_id;
-	int stackframe_id;
-	int variable_id;
+	int breakpoint_id = 0;
+	int stackframe_id = 0;
+	int variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
-	Map<DAP::StackFrame, List<int>> stackframe_list;
-	Map<int, Array> variable_list;
+	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame> stackframe_list;
+	HashMap<int, Array> variable_list;
 
 public:
 	friend class DebugAdapterServer;

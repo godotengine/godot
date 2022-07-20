@@ -65,35 +65,34 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
 
-	Button *makedir;
+	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
-	//Button *action;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 	FileMode mode;
-	LineEdit *dir;
-	HBoxContainer *drives_container;
-	HBoxContainer *shortcuts_container;
-	OptionButton *drives;
-	Tree *tree;
-	HBoxContainer *file_box;
-	LineEdit *file;
-	OptionButton *filter;
-	AcceptDialog *mkdirerr;
-	AcceptDialog *exterr;
-	DirAccess *dir_access;
-	ConfirmationDialog *confirm_save;
+	LineEdit *dir = nullptr;
+	HBoxContainer *drives_container = nullptr;
+	HBoxContainer *shortcuts_container = nullptr;
+	OptionButton *drives = nullptr;
+	Tree *tree = nullptr;
+	HBoxContainer *file_box = nullptr;
+	LineEdit *file = nullptr;
+	OptionButton *filter = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
+	AcceptDialog *exterr = nullptr;
+	Ref<DirAccess> dir_access;
+	ConfirmationDialog *confirm_save = nullptr;
 
-	Label *message;
+	Label *message = nullptr;
 
-	Button *dir_prev;
-	Button *dir_next;
-	Button *dir_up;
+	Button *dir_prev = nullptr;
+	Button *dir_next = nullptr;
+	Button *dir_up = nullptr;
 
-	Button *refresh;
-	Button *show_hidden;
+	Button *refresh = nullptr;
+	Button *show_hidden = nullptr;
 
 	Vector<String> filters;
 
@@ -102,6 +101,8 @@ private:
 	void _push_history();
 
 	bool mode_overrides_title = true;
+	String root_subfolder;
+	String root_prefix;
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
@@ -132,9 +133,10 @@ private:
 	void _go_back();
 	void _go_forward();
 
+	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	bool _is_open_should_be_disabled();
 
@@ -149,7 +151,7 @@ protected:
 public:
 	void popup_file_dialog();
 	void clear_filters();
-	void add_filter(const String &p_filter);
+	void add_filter(const String &p_filter, const String &p_description = "");
 	void set_filters(const Vector<String> &p_filters);
 	Vector<String> get_filters() const;
 
@@ -162,6 +164,9 @@ public:
 	void set_current_dir(const String &p_dir);
 	void set_current_file(const String &p_file);
 	void set_current_path(const String &p_path);
+
+	void set_root_subfolder(const String &p_root);
+	String get_root_subfolder() const;
 
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;

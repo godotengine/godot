@@ -38,7 +38,6 @@ struct _IP_ResolverPrivate;
 
 class IP : public Object {
 	GDCLASS(IP, Object);
-	OBJ_CATEGORY("Networking");
 
 public:
 	enum ResolverStatus {
@@ -56,14 +55,14 @@ public:
 	};
 
 	enum {
-		RESOLVER_MAX_QUERIES = 32,
+		RESOLVER_MAX_QUERIES = 256,
 		RESOLVER_INVALID_ID = -1
 	};
 
 	typedef int ResolverID;
 
 private:
-	_IP_ResolverPrivate *resolver;
+	_IP_ResolverPrivate *resolver = nullptr;
 
 protected:
 	static IP *singleton;
@@ -93,7 +92,7 @@ public:
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const = 0;
 	Array get_resolve_item_addresses(ResolverID p_id) const;
 
-	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const = 0;
+	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 
 	void clear_cache(const String &p_hostname = "");

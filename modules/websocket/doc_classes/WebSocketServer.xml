@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebSocketServer" inherits="WebSocketMultiplayerPeer" version="4.0">
+<class name="WebSocketServer" inherits="WebSocketMultiplayerPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A WebSocket server implementation.
 	</brief_description>
@@ -58,6 +58,13 @@
 				You can specify the desired subprotocols via the "protocols" array. If the list empty (default), no sub-protocol will be requested.
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the server will behave like a multiplayer peer for the [MultiplayerAPI], connections from non-Godot clients will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.), on the [WebSocketPeer] returned via [code]get_peer(id)[/code] to communicate with the peer with given [code]id[/code] (e.g. [code]get_peer(id).get_available_packet_count[/code]).
+			</description>
+		</method>
+		<method name="set_extra_headers">
+			<return type="void" />
+			<argument index="0" name="headers" type="PackedStringArray" default="PackedStringArray()" />
+			<description>
+				Sets additional headers to be sent to clients during the HTTP handshake.
 			</description>
 		</method>
 		<method name="stop">

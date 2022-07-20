@@ -39,11 +39,11 @@ class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
 
 public:
-	Map<StringName, Variant> values;
+	HashMap<StringName, Variant> values;
 	List<PropertyInfo> properties;
 	Ref<ResourceImporter> importer;
 	Vector<String> paths;
-	Set<StringName> checked;
+	HashSet<StringName> checked;
 	bool checking;
 	String base_options_path;
 
@@ -128,7 +128,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 	for (const Pair<String, String> &E : importer_names) {
 		import_as->add_item(E.first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
+		import_as->set_item_metadata(-1, E.second);
 		if (E.second == importer_name) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
@@ -149,7 +149,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 	import_as->add_separator();
 	import_as->add_item(TTR("Keep File (No Import)"));
-	import_as->set_item_metadata(import_as->get_item_count() - 1, "keep");
+	import_as->set_item_metadata(-1, "keep");
 	if (p_importer_name == "keep") {
 		import_as->select(import_as->get_item_count() - 1);
 	}
@@ -193,8 +193,8 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	clear();
 
 	// Use the value that is repeated the most.
-	Map<String, Dictionary> value_frequency;
-	Set<String> extensions;
+	HashMap<String, Dictionary> value_frequency;
+	HashSet<String> extensions;
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
@@ -286,7 +286,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 
 	for (const Pair<String, String> &E : importer_names) {
 		import_as->add_item(E.first);
-		import_as->set_item_metadata(import_as->get_item_count() - 1, E.second);
+		import_as->set_item_metadata(-1, E.second);
 		if (E.second == params->importer->get_importer_name()) {
 			import_as->select(import_as->get_item_count() - 1);
 		}
@@ -564,6 +564,7 @@ void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -638,6 +639,7 @@ ImportDock::ImportDock() {
 	import_opts = memnew(EditorInspector);
 	content->add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
+	import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 
@@ -669,7 +671,7 @@ ImportDock::ImportDock() {
 	advanced->connect("pressed", callable_mp(this, &ImportDock::_advanced_options));
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->get_ok_button()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
+	reimport_confirm->set_ok_button_text(TTR("Save Scenes, Re-Import, and Restart"));
 	content->add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 
@@ -683,7 +685,7 @@ ImportDock::ImportDock() {
 
 	select_a_resource = memnew(Label);
 	select_a_resource->set_text(TTR("Select a resource file in the filesystem or in the inspector to adjust import settings."));
-	select_a_resource->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_resource->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

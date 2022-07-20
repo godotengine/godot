@@ -35,20 +35,18 @@
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/material.h"
 
-class EditorNode;
 class EditorFileDialog;
 struct EditorProgress;
 
 class VoxelGIEditorPlugin : public EditorPlugin {
 	GDCLASS(VoxelGIEditorPlugin, EditorPlugin);
 
-	VoxelGI *voxel_gi;
+	VoxelGI *voxel_gi = nullptr;
 
-	HBoxContainer *bake_hb;
-	Button *bake;
-	EditorNode *editor;
+	HBoxContainer *bake_hb = nullptr;
+	Button *bake = nullptr;
 
-	EditorFileDialog *probe_file;
+	EditorFileDialog *probe_file = nullptr;
 
 	static EditorProgress *tmp_progress;
 	static void bake_func_begin(int p_steps);
@@ -69,7 +67,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	VoxelGIEditorPlugin(EditorNode *p_node);
+	VoxelGIEditorPlugin();
 	~VoxelGIEditorPlugin();
 };
 

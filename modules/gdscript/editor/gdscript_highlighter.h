@@ -45,7 +45,7 @@ private:
 		bool line_only = false;
 	};
 	Vector<ColorRegion> color_regions;
-	Map<int, int> color_region_cache;
+	HashMap<int, int> color_region_cache;
 
 	HashMap<StringName, Color> keywords;
 	HashMap<StringName, Color> member_keywords;

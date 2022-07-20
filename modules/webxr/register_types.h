@@ -31,7 +31,9 @@
 #ifndef WEBXR_REGISTER_TYPES_H
 #define WEBXR_REGISTER_TYPES_H
 
-void register_webxr_types();
-void unregister_webxr_types();
+#include "modules/register_module_types.h"
+
+void initialize_webxr_module(ModuleInitializationLevel p_level);
+void uninitialize_webxr_module(ModuleInitializationLevel p_level);
 
 #endif // WEBXR_REGISTER_TYPES_H

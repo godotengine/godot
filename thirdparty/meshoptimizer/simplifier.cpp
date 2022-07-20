@@ -276,7 +276,15 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 		{
 			unsigned int target = edges[j].next;
 
-			if (!hasEdge(adjacency, target, vertex))
+			if (target == vertex)
+			{
+				// degenerate triangles have two distinct edges instead of three, and the self edge
+				// is bi-directional by definition; this can break border/seam classification by "closing"
+				// the open edge from another triangle and falsely marking the vertex as manifold
+				// instead we mark the vertex as having >1 open edges which turns it into locked/complex
+				openinc[vertex] = openout[vertex] = vertex;
+			}
+			else if (!hasEdge(adjacency, target, vertex))
 			{
 				openinc[target] = (openinc[target] == ~0u) ? vertex : target;
 				openout[vertex] = (openout[vertex] == ~0u) ? target : vertex;

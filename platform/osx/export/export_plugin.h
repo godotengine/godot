@@ -56,16 +56,17 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	void _make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path);
+	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true);
 	Error _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_should_error_on_non_code = true);
-	Error _copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path, const String &p_in_app_path,
+	Error _copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path, const String &p_in_app_path,
 			bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 			bool p_should_error_on_non_code_sign);
 	Error _export_osx_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin, const String &p_app_path_name,
-			DirAccessRef &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
+			Ref<DirAccess> &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 			const String &p_ent_path);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	void _zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);
+	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 	bool use_codesign() const { return true; }
 #ifdef OSX_ENABLED
@@ -100,7 +101,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 public:
 	virtual String get_name() const override { return "macOS"; }
@@ -126,7 +127,7 @@ public:
 		r_features->push_back("macos");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
 	EditorExportPlatformOSX();

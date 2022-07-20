@@ -53,8 +53,6 @@
 class EditorExportPlatformIOS : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
-	int version_code;
-
 	Ref<ImageTexture> logo;
 
 	// Plugins
@@ -65,7 +63,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Vector<PluginConfigIOS> plugins;
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
-	static Error _walk_dir_recursive(DirAccess *p_da, FileHandler p_handler, void *p_userdata);
+	static Error _walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata);
 	static Error _codesign(String p_file, void *p_userdata);
 	void _blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot);
 
@@ -141,7 +139,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	}
 
 	static void _check_for_changes_poll_thread(void *ud) {
-		EditorExportPlatformIOS *ea = (EditorExportPlatformIOS *)ud;
+		EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
 
 		while (!ea->quit_request.is_set()) {
 			// Nothing to do if we already know the plugins have changed.
@@ -206,7 +204,7 @@ public:
 		r_features->push_back("ios");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {
 	}
 
 	EditorExportPlatformIOS();
@@ -215,8 +213,8 @@ public:
 	/// List the gdip files in the directory specified by the p_path parameter.
 	static Vector<String> list_plugin_config_files(const String &p_path, bool p_check_directories) {
 		Vector<String> dir_files;
-		DirAccessRef da = DirAccess::open(p_path);
-		if (da) {
+		Ref<DirAccess> da = DirAccess::open(p_path);
+		if (da.is_valid()) {
 			da->list_dir_begin();
 			while (true) {
 				String file = da->get_next();

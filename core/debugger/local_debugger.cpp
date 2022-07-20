@@ -31,7 +31,7 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
-#include "scene/main/scene_tree.h"
+#include "core/os/os.h"
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
@@ -60,7 +60,7 @@ struct LocalDebugger::ScriptsProfiler {
 		}
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
 		_print_frame_data(false);
 	}
@@ -241,15 +241,15 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 		} else if (line.begins_with("br") || line.begins_with("break")) {
 			if (line.get_slice_count(" ") <= 1) {
-				const Map<int, Set<StringName>> &breakpoints = script_debugger->get_breakpoints();
+				const HashMap<int, HashSet<StringName>> &breakpoints = script_debugger->get_breakpoints();
 				if (breakpoints.size() == 0) {
 					print_line("No Breakpoints.");
 					continue;
 				}
 
 				print_line("Breakpoint(s): " + itos(breakpoints.size()));
-				for (const KeyValue<int, Set<StringName>> &E : breakpoints) {
-					print_line("\t" + String(E.value.front()->get()) + ":" + itos(E.key));
+				for (const KeyValue<int, HashSet<StringName>> &E : breakpoints) {
+					print_line("\t" + String(*E.value.begin()) + ":" + itos(E.key));
 				}
 
 			} else {
@@ -273,7 +273,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(-1);
 			script_debugger->set_lines_left(-1);
 
-			SceneTree::get_singleton()->quit();
+			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+			if (main_loop->get_class() == "SceneTree") {
+				main_loop->call("quit");
+			}
 			break;
 		} else if (line.begins_with("delete")) {
 			if (line.get_slice_count(" ") <= 1) {
@@ -369,11 +372,11 @@ LocalDebugger::LocalDebugger() {
 	Profiler scr_prof(
 			scripts_profiler,
 			[](void *p_user, bool p_enable, const Array &p_opts) {
-				((ScriptsProfiler *)p_user)->toggle(p_enable, p_opts);
+				static_cast<ScriptsProfiler *>(p_user)->toggle(p_enable, p_opts);
 			},
 			nullptr,
-			[](void *p_user, double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
-				((ScriptsProfiler *)p_user)->tick(p_frame_time, p_idle_time, p_physics_time, p_physics_frame_time);
+			[](void *p_user, double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
+				static_cast<ScriptsProfiler *>(p_user)->tick(p_frame_time, p_process_time, p_physics_time, p_physics_frame_time);
 			});
 	register_profiler("scripts", scr_prof);
 }

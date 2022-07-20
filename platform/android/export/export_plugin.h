@@ -28,28 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/image_loader.h"
-#include "core/io/json.h"
-#include "core/io/marshalls.h"
-#include "core/io/zip_io.h"
-#include "core/os/os.h"
-#include "core/templates/safe_refcount.h"
-#include "core/version.h"
-#include "drivers/png/png_driver_common.h"
-#include "editor/editor_export.h"
-#include "editor/editor_log.h"
-#include "editor/editor_settings.h"
-#include "main/splash.gen.h"
-#include "platform/android/logo.gen.h"
-#include "platform/android/run_icon.gen.h"
+#ifndef ANDROID_EXPORT_PLUGIN_H
+#define ANDROID_EXPORT_PLUGIN_H
 
 #include "godot_plugin_config.h"
-#include "gradle_export_util.h"
 
-#include <string.h>
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
+#include "editor/editor_export.h"
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
@@ -130,7 +116,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
 
-	bool _has_storage_permission(const Vector<String> &p_permissions);
+	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
+
+	bool _has_manage_external_storage_permission(const Vector<String> &p_permissions);
 
 	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
 
@@ -227,7 +215,7 @@ public:
 
 	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
-	Error save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
 	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags);
 
@@ -245,9 +233,11 @@ public:
 
 	virtual void get_platform_features(List<String> *r_features) override;
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
 	EditorExportPlatformAndroid();
 
 	~EditorExportPlatformAndroid();
 };
+
+#endif // ANDROID_EXPORT_PLUGIN_H

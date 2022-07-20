@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" version="4.0">
+<class name="ConfirmationDialog" inherits="AcceptDialog" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Dialog for confirmation of actions.
 	</brief_description>
@@ -27,6 +27,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cancel_button_text" type="String" setter="set_cancel_button_text" getter="get_cancel_button_text" default="&quot;Cancel&quot;">
+			The text displayed by the cancel button (see [method get_cancel_button]).
+		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" overrides="Window" default="Vector2i(200, 70)" />
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(200, 100)" />
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Please Confirm...&quot;" />

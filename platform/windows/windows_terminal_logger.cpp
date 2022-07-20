@@ -44,25 +44,29 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	const unsigned int BUFFER_SIZE = 16384;
 	char buf[BUFFER_SIZE + 1]; // +1 for the terminating character
 	int len = vsnprintf(buf, BUFFER_SIZE, p_format, p_list);
-	if (len <= 0)
+	if (len <= 0) {
 		return;
-	if ((unsigned int)len >= BUFFER_SIZE)
+	}
+	if ((unsigned int)len >= BUFFER_SIZE) {
 		len = BUFFER_SIZE; // Output is too big, will be truncated
+	}
 	buf[len] = 0;
 
 	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
-	if (wlen < 0)
+	if (wlen < 0) {
 		return;
+	}
 
 	wchar_t *wbuf = (wchar_t *)memalloc((len + 1) * sizeof(wchar_t));
 	ERR_FAIL_NULL_MSG(wbuf, "Out of memory.");
 	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
 	wbuf[wlen] = 0;
 
-	if (p_err)
+	if (p_err) {
 		fwprintf(stderr, L"%ls", wbuf);
-	else
+	} else {
 		wprintf(L"%ls", wbuf);
+	}
 
 	memfree(wbuf);
 

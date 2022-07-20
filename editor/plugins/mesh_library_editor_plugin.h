@@ -34,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/mesh_library.h"
 
-class EditorNode;
 class EditorFileDialog;
 class ConfirmationDialog;
 class MenuButton;
@@ -44,13 +43,12 @@ class MeshLibraryEditor : public Control {
 
 	Ref<MeshLibrary> mesh_library;
 
-	EditorNode *editor;
-	MenuButton *menu;
-	ConfirmationDialog *cd_remove;
-	ConfirmationDialog *cd_update;
-	EditorFileDialog *file;
-	bool apply_xforms;
-	int to_erase;
+	MenuButton *menu = nullptr;
+	ConfirmationDialog *cd_remove = nullptr;
+	ConfirmationDialog *cd_update = nullptr;
+	EditorFileDialog *file = nullptr;
+	bool apply_xforms = false;
+	int to_erase = 0;
 
 	enum {
 		MENU_OPTION_ADD_ITEM,
@@ -60,7 +58,7 @@ class MeshLibraryEditor : public Control {
 		MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS
 	};
 
-	int option;
+	int option = 0;
 	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
 	void _menu_remove_confirm();
@@ -77,14 +75,13 @@ public:
 	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true, bool p_apply_xforms = false);
 
-	MeshLibraryEditor(EditorNode *p_editor);
+	MeshLibraryEditor();
 };
 
 class MeshLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
-	MeshLibraryEditor *mesh_library_editor;
-	EditorNode *editor;
+	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "MeshLibrary"; }
@@ -93,7 +90,7 @@ public:
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	MeshLibraryEditorPlugin(EditorNode *p_node);
+	MeshLibraryEditorPlugin();
 };
 
 #endif // MESH_LIBRARY_EDITOR_PLUGIN_H

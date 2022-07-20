@@ -52,7 +52,7 @@ class ThreadWorkPool {
 		C *instance;
 		M method;
 		U userdata;
-		virtual void work() {
+		virtual void work() override {
 			while (true) {
 				uint32_t work_index = index->fetch_add(1, std::memory_order_relaxed);
 				if (work_index >= max_elements) {
@@ -68,7 +68,7 @@ class ThreadWorkPool {
 		Semaphore start;
 		Semaphore completed;
 		std::atomic<bool> exit;
-		BaseWork *work;
+		BaseWork *work = nullptr;
 	};
 
 	ThreadData *threads = nullptr;

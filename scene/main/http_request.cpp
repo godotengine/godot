@@ -164,7 +164,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 }
 
 void HTTPRequest::_thread_func(void *p_userdata) {
-	HTTPRequest *hr = (HTTPRequest *)p_userdata;
+	HTTPRequest *hr = static_cast<HTTPRequest *>(p_userdata);
 
 	Error err = hr->_request();
 
@@ -197,10 +197,7 @@ void HTTPRequest::cancel_request() {
 		thread.wait_to_finish();
 	}
 
-	if (file) {
-		memdelete(file);
-		file = nullptr;
-	}
+	file.unref();
 	client->close();
 	body.clear();
 	got_response = false;
@@ -365,7 +362,7 @@ bool HTTPRequest::_update_connection() {
 
 				if (!download_to_file.is_empty()) {
 					file = FileAccess::open(download_to_file, FileAccess::WRITE);
-					if (!file) {
+					if (file.is_null()) {
 						call_deferred(SNAME("_request_done"), RESULT_DOWNLOAD_FILE_CANT_OPEN, response_code, response_headers, PackedByteArray());
 						return true;
 					}
@@ -381,7 +378,7 @@ bool HTTPRequest::_update_connection() {
 
 			if (chunk.size()) {
 				downloaded.add(chunk.size());
-				if (file) {
+				if (file.is_valid()) {
 					const uint8_t *r = chunk.ptr();
 					file->store_buffer(r, chunk.size());
 					if (file->get_error() != OK) {
@@ -464,20 +461,22 @@ void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArra
 }
 
 void HTTPRequest::_notification(int p_what) {
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (use_threads.is_set()) {
-			return;
-		}
-		bool done = _update_connection();
-		if (done) {
-			set_process_internal(false);
-		}
-	}
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (use_threads.is_set()) {
+				return;
+			}
+			bool done = _update_connection();
+			if (done) {
+				set_process_internal(false);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (requesting) {
-			cancel_request();
-		}
+		case NOTIFICATION_EXIT_TREE: {
+			if (requesting) {
+				cancel_request();
+			}
+		} break;
 	}
 }
 
@@ -556,12 +555,12 @@ void HTTPRequest::set_https_proxy(const String &p_host, int p_port) {
 	client->set_https_proxy(p_host, p_port);
 }
 
-void HTTPRequest::set_timeout(int p_timeout) {
+void HTTPRequest::set_timeout(double p_timeout) {
 	ERR_FAIL_COND(p_timeout < 0);
 	timeout = p_timeout;
 }
 
-int HTTPRequest::get_timeout() {
+double HTTPRequest::get_timeout() {
 	return timeout;
 }
 
@@ -608,12 +607,12 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_download_chunk_size", "get_download_chunk_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000,suffix:B"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeout", PROPERTY_HINT_RANGE, "0,3600,0.1,or_greater,suffix:s"), "set_timeout", "get_timeout");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
 
@@ -639,10 +638,4 @@ HTTPRequest::HTTPRequest() {
 	timer->set_one_shot(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
-}
-
-HTTPRequest::~HTTPRequest() {
-	if (file) {
-		memdelete(file);
-	}
 }

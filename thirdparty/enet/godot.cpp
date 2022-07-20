@@ -259,7 +259,7 @@ public:
 class ENetDTLSServer : public ENetGodotSocket {
 	Ref<DTLSServer> server;
 	Ref<UDPServer> udp_server;
-	Map<String, Ref<PacketPeerDTLS>> peers;
+	HashMap<String, Ref<PacketPeerDTLS>> peers;
 	int last_service = 0;
 	IPAddress local_address;
 
@@ -331,15 +331,16 @@ public:
 		List<String> remove;
 		Error err = ERR_BUSY;
 		// TODO this needs to be fair!
-		for (Map<String, Ref<PacketPeerDTLS>>::Element *E = peers.front(); E; E = E->next()) {
-			Ref<PacketPeerDTLS> peer = E->get();
+
+		for (KeyValue<String, Ref<PacketPeerDTLS>> & E : peers) {
+			Ref<PacketPeerDTLS> peer = E.value;
 			peer->poll();
 
 			if (peer->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 				continue;
 			} else if (peer->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
 				// Peer disconnected, removing it.
-				remove.push_back(E->key());
+				remove.push_back(E.key);
 				continue;
 			}
 
@@ -348,12 +349,12 @@ public:
 				err = peer->get_packet(&buffer, r_read);
 				if (err != OK || p_len < r_read) {
 					// Something wrong with this peer, removing it.
-					remove.push_back(E->key());
+					remove.push_back(E.key);
 					err = FAILED;
 					continue;
 				}
 
-				Vector<String> s = E->key().rsplit(":", false, 1);
+				Vector<String> s = E.key.rsplit(":", false, 1);
 				ERR_CONTINUE(s.size() != 2); // BUG!
 
 				memcpy(p_buffer, buffer, r_read);
@@ -376,8 +377,8 @@ public:
 	}
 
 	void close() {
-		for (Map<String, Ref<PacketPeerDTLS>>::Element *E = peers.front(); E; E = E->next()) {
-			E->get()->disconnect_from_peer();
+		for (KeyValue<String, Ref<PacketPeerDTLS>> &E : peers) {
+			E.value->disconnect_from_peer();
 		}
 		peers.clear();
 		udp_server->stop();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScript" inherits="Script" version="4.0">
+<class name="VisualScript" inherits="Script" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A script implemented in the Visual Script programming environment.
 	</brief_description>
@@ -316,7 +316,7 @@
 		</method>
 		<method name="set_scroll">
 			<return type="void" />
-			<argument index="0" name="ofs" type="Vector2" />
+			<argument index="0" name="offset" type="Vector2" />
 			<description>
 				Set the screen center to the given position.
 			</description>

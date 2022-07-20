@@ -152,30 +152,11 @@ Vector2 Vector2::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, const real_t p_weight) const {
-	Vector2 p0 = p_pre_a;
-	Vector2 p1 = *this;
-	Vector2 p2 = p_b;
-	Vector2 p3 = p_post_b;
-
-	real_t t = p_weight;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	Vector2 out;
-	out = 0.5f *
-			((p1 * 2.0f) +
-					(-p0 + p2) * t +
-					(2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-	return out;
-}
-
 Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
 	Vector2 v = *this;
 	Vector2 vd = p_to - v;
 	real_t len = vd.length();
-	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+	return len <= p_delta || len < (real_t)CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.

@@ -86,36 +86,39 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 #endif
 
 void Path2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
-		//draw the curve!!
+	switch (p_what) {
+		// Draw the curve if path debugging is enabled.
+		case NOTIFICATION_DRAW: {
+			if (!curve.is_valid()) {
+				break;
+			}
 
-		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
-			return;
-		}
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
+				return;
+			}
 
-		if (curve->get_point_count() < 2) {
-			return;
-		}
+			if (curve->get_point_count() < 2) {
+				return;
+			}
 
 #ifdef TOOLS_ENABLED
-		const real_t line_width = 2 * EDSCALE;
+			const real_t line_width = get_tree()->get_debug_paths_width() * EDSCALE;
 #else
-		const real_t line_width = 2;
+			const real_t line_width = get_tree()->get_debug_paths_width();
 #endif
-		const Color color = Color(0.5, 0.6, 1.0, 0.7);
+			_cached_draw_pts.resize(curve->get_point_count() * 8);
+			int count = 0;
 
-		_cached_draw_pts.resize(curve->get_point_count() * 8);
-		int count = 0;
-
-		for (int i = 0; i < curve->get_point_count(); i++) {
-			for (int j = 0; j < 8; j++) {
-				real_t frac = j * (1.0 / 8.0);
-				Vector2 p = curve->interpolate(i, frac);
-				_cached_draw_pts.set(count++, p);
+			for (int i = 0; i < curve->get_point_count(); i++) {
+				for (int j = 0; j < 8; j++) {
+					real_t frac = j * (1.0 / 8.0);
+					Vector2 p = curve->interpolate(i, frac);
+					_cached_draw_pts.set(count++, p);
+				}
 			}
-		}
 
-		draw_polyline(_cached_draw_pts, color, line_width, true);
+			draw_polyline(_cached_draw_pts, get_tree()->get_debug_paths_color(), line_width, true);
+		} break;
 	}
 }
 
@@ -124,7 +127,7 @@ void Path2D::_curve_changed() {
 		return;
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
 		return;
 	}
 
@@ -226,8 +229,8 @@ void PathFollow2D::_notification(int p_what) {
 			if (path) {
 				_update_transform();
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;
@@ -258,7 +261,7 @@ TypedArray<String> PathFollow2D::get_configuration_warnings() const {
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
-			warnings.push_back(TTR("PathFollow2D only works when set as a child of a Path2D node."));
+			warnings.push_back(RTR("PathFollow2D only works when set as a child of a Path2D node."));
 		}
 	}
 
@@ -290,7 +293,7 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
 	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
@@ -301,12 +304,13 @@ void PathFollow2D::_bind_methods() {
 }
 
 void PathFollow2D::set_offset(real_t p_offset) {
+	ERR_FAIL_COND(!isfinite(p_offset));
 	offset = p_offset;
 	if (path) {
 		if (path->get_curve().is_valid()) {
 			real_t path_length = path->get_curve()->get_baked_length();
 
-			if (loop) {
+			if (loop && path_length) {
 				offset = Math::fposmod(offset, path_length);
 				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
 					offset = path_length;

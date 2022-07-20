@@ -38,24 +38,23 @@
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
-class EditorNode;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
-	Tree *tree;
-	Button *fixdeps;
+	Tree *tree = nullptr;
+	Button *fixdeps = nullptr;
 
-	EditorFileDialog *search;
+	EditorFileDialog *search = nullptr;
 
 	String replacing;
 	String editing;
 	List<String> missing;
 
-	void _fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates);
+	void _fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates);
 
 	void _searched(const String &p_path);
-	void _load_pressed(Object *p_item, int p_cell, int p_button);
+	void _load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button);
 	void _fix_all();
 	void _update_list();
 
@@ -72,15 +71,14 @@ public:
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
-	ItemList *owners;
-	PopupMenu *file_options;
-	EditorNode *editor;
+	ItemList *owners = nullptr;
+	PopupMenu *file_options = nullptr;
 	String editing;
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
 
 	static void _bind_methods();
-	void _list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _select_file(int p_idx);
 	void _file_option(int p_option);
 
@@ -91,16 +89,16 @@ private:
 
 public:
 	void show(const String &p_path);
-	DependencyEditorOwners(EditorNode *p_editor);
+	DependencyEditorOwners();
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {
 	GDCLASS(DependencyRemoveDialog, ConfirmationDialog);
 
-	Label *text;
-	Tree *owners;
+	Label *text = nullptr;
+	Tree *owners = nullptr;
 
-	Map<String, String> all_remove_files;
+	HashMap<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
 	Vector<String> files_to_delete;
 
@@ -144,9 +142,9 @@ public:
 private:
 	String for_file;
 	Mode mode;
-	Button *fdep;
-	Label *text;
-	Tree *files;
+	Button *fdep = nullptr;
+	Label *text = nullptr;
+	Tree *files = nullptr;
 	void ok_pressed() override;
 	void custom_action(const String &) override;
 
@@ -158,9 +156,9 @@ public:
 class OrphanResourcesDialog : public ConfirmationDialog {
 	GDCLASS(OrphanResourcesDialog, ConfirmationDialog);
 
-	DependencyEditor *dep_edit;
-	Tree *files;
-	ConfirmationDialog *delete_confirm;
+	DependencyEditor *dep_edit = nullptr;
+	Tree *files = nullptr;
+	ConfirmationDialog *delete_confirm = nullptr;
 	void ok_pressed() override;
 
 	bool _fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent);
@@ -168,7 +166,7 @@ class OrphanResourcesDialog : public ConfirmationDialog {
 	List<String> paths;
 	void _find_to_delete(TreeItem *p_item, List<String> &paths);
 	void _delete_confirm();
-	void _button_pressed(Object *p_item, int p_column, int p_id);
+	void _button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	void refresh();
 	static void _bind_methods();

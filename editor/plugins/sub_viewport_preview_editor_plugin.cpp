@@ -30,8 +30,6 @@
 
 #include "sub_viewport_preview_editor_plugin.h"
 
-#include "editor/editor_node.h"
-
 bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {
 	return Object::cast_to<SubViewport>(p_object) != nullptr;
 }
@@ -45,7 +43,7 @@ void EditorInspectorPluginSubViewportPreview::parse_begin(Object *p_object) {
 	add_custom_control(sub_viewport_preview);
 }
 
-SubViewportPreviewEditorPlugin::SubViewportPreviewEditorPlugin(EditorNode *p_node) {
+SubViewportPreviewEditorPlugin::SubViewportPreviewEditorPlugin() {
 	Ref<EditorInspectorPluginSubViewportPreview> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

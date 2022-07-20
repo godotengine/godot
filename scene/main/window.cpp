@@ -111,31 +111,19 @@ Size2i Window::get_real_size() const {
 
 void Window::set_max_size(const Size2i &p_max_size) {
 	max_size = p_max_size;
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_max_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		max_size = DisplayServer::get_singleton()->window_get_max_size(window_id);
-	}
 	return max_size;
 }
 
 void Window::set_min_size(const Size2i &p_min_size) {
 	min_size = p_min_size;
-	if (!wrap_controls && window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_min_size(min_size, window_id);
-	}
 	_update_window_size();
 }
 
 Size2i Window::get_min_size() const {
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		min_size = DisplayServer::get_singleton()->window_get_min_size(window_id);
-	}
 	return min_size;
 }
 
@@ -165,14 +153,26 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
+		}
+#else
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
+#endif
 	}
 }
 
 bool Window::get_flag(Flags p_flag) const {
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
+		}
+#else
 		flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
+#endif
 	}
 	return flags[p_flag];
 }
@@ -255,6 +255,15 @@ void Window::_make_window() {
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
+#ifdef TOOLS_ENABLED
+	if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+	} else {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+	}
+#else
+	DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+#endif
 
 	_update_window_size();
 
@@ -262,9 +271,9 @@ void Window::_make_window() {
 		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
 	}
 
-	for (Set<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
-		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, transient_parent->window_id);
+	for (const Window *E : transient_children) {
+		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->window_id, transient_parent->window_id);
 		}
 	}
 
@@ -289,9 +298,9 @@ void Window::_clear_window() {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
 
-	for (Set<Window *>::Element *E = transient_children.front(); E; E = E->next()) {
-		if (E->get()->window_id != DisplayServer::INVALID_WINDOW_ID) {
-			DisplayServer::get_singleton()->window_set_transient(E->get()->window_id, DisplayServer::INVALID_WINDOW_ID);
+	for (const Window *E : transient_children) {
+		if (E->window_id != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_transient(E->window_id, DisplayServer::INVALID_WINDOW_ID);
 		}
 	}
 
@@ -339,9 +348,11 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
 			emit_signal(SNAME("mouse_entered"));
+			notification(NOTIFICATION_VP_MOUSE_ENTER);
 			DisplayServer::get_singleton()->cursor_set_shape(DisplayServer::CURSOR_ARROW); //restore cursor shape
 		} break;
 		case DisplayServer::WINDOW_EVENT_MOUSE_EXIT: {
+			notification(NOTIFICATION_VP_MOUSE_EXIT);
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 			emit_signal(SNAME("mouse_exited"));
 		} break;
@@ -433,8 +444,14 @@ void Window::set_visible(bool p_visible) {
 	//update transient exclusive
 	if (transient_parent) {
 		if (exclusive && visible) {
-			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+#ifdef TOOLS_ENABLED
+			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+				ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+				transient_parent->exclusive_child = this;
+			}
+#else
 			transient_parent->exclusive_child = this;
+#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -481,7 +498,13 @@ void Window::_make_transient() {
 		window->transient_children.insert(this);
 		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
+#ifdef TOOLS_ENABLED
+				if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+					transient_parent->exclusive_child = this;
+				}
+#else
 				transient_parent->exclusive_child = this;
+#endif
 			} else if (transient_parent->exclusive_child != this) {
 				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
 			}
@@ -523,10 +546,28 @@ void Window::set_exclusive(bool p_exclusive) {
 
 	exclusive = p_exclusive;
 
+	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
+#ifdef TOOLS_ENABLED
+		if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+		} else {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+		}
+#else
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
+#endif
+	}
+
 	if (transient_parent) {
 		if (p_exclusive && is_inside_tree() && is_visible()) {
 			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
+#ifdef TOOLS_ENABLED
+			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+				transient_parent->exclusive_child = this;
+			}
+#else
 			transient_parent->exclusive_child = this;
+#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -568,6 +609,7 @@ void Window::_update_window_size() {
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+		DisplayServer::get_singleton()->window_set_max_size(max_size, window_id);
 	}
 
 	//update the viewport
@@ -670,7 +712,7 @@ void Window::_update_viewport_size() {
 
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
-				final_size = viewport_size;
+				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
 			} break;
@@ -733,18 +775,16 @@ void Window::_notification(int p_what) {
 			bool embedded = false;
 			{
 				embedder = _get_embedder();
-
 				if (embedder) {
 					embedded = true;
-
 					if (!visible) {
-						embedder = nullptr; //not yet since not visible
+						embedder = nullptr; // Not yet since not visible.
 					}
 				}
 			}
 
 			if (embedded) {
-				//create as embedded
+				// Create as embedded.
 				if (embedder) {
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -752,22 +792,22 @@ void Window::_notification(int p_what) {
 				}
 
 			} else {
-				if (get_parent() == nullptr) {
-					//it's the root window!
-					visible = true; //always visible
+				if (!get_parent()) {
+					// It's the root window!
+					visible = true; // Always visible.
 					window_id = DisplayServer::MAIN_WINDOW_ID;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					_update_from_window();
-					//since this window already exists (created on start), we must update pos and size from it
+					// Since this window already exists (created on start), we must update pos and size from it.
 					{
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 					}
-					_update_viewport_size(); //then feed back to the viewport
+					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 				} else {
-					//create
+					// Create.
 					if (visible) {
 						_make_window();
 					}
@@ -782,12 +822,30 @@ void Window::_notification(int p_what) {
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
+
+			if (theme.is_null()) {
+				Control *parent_c = cast_to<Control>(get_parent());
+				if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+					theme_owner = parent_c->data.theme_owner;
+					theme_owner_window = parent_c->data.theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				} else {
+					Window *parent_w = cast_to<Window>(get_parent());
+					if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+						theme_owner = parent_w->theme_owner;
+						theme_owner_window = parent_w->theme_owner_window;
+						notification(NOTIFICATION_THEME_CHANGED);
+					}
+				}
+			}
 		} break;
+
 		case NOTIFICATION_READY: {
 			if (wrap_controls) {
 				_update_child_controls();
 			}
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (embedder) {
 				embedder->_sub_window_update(this);
@@ -806,6 +864,7 @@ void Window::_notification(int p_what) {
 
 			child_controls_changed();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (transient) {
 				_clear_transient();
@@ -943,7 +1002,7 @@ bool Window::_can_consume_input_events() const {
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (EngineDebugger::is_active()) {
-		//quit from game window using F8
+		// Quit from game window using F8.
 		Ref<InputEventKey> k = p_ev;
 		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::F8) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
@@ -951,15 +1010,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (exclusive_child != nullptr) {
-		/*
-		Window *focus_target = exclusive_child;
-		focus_target->grab_focus();
-		while (focus_target->exclusive_child != nullptr) {
-			focus_target = focus_target->exclusive_child;
-			focus_target->grab_focus();
-		}*/
-
-		if (!is_embedding_subwindows()) { //not embedding, no need for event
+		if (!is_embedding_subwindows()) { // Not embedding, no need for event.
 			return;
 		}
 	}
@@ -977,7 +1028,7 @@ void Window::_window_input_text(const String &p_text) {
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal(SNAME("files_dropped"), p_files, current_screen);
+	emit_signal(SNAME("files_dropped"), p_files);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1041,7 +1092,9 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 
 	Rect2i popup_rect;
 	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	if (parent_rect != Rect2()) {
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
 
 	popup(popup_rect);
 }
@@ -1062,12 +1115,13 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	if (p_minsize == Size2i()) {
-		popup_rect.size = _get_contents_minimum_size();
-	} else {
-		popup_rect.size = p_minsize;
+	Size2 contents_minsize = _get_contents_minimum_size();
+	popup_rect.size.x = MAX(p_minsize.x, contents_minsize.x);
+	popup_rect.size.y = MAX(p_minsize.y, contents_minsize.y);
+
+	if (parent_rect != Rect2()) {
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 	}
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
@@ -1075,6 +1129,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
 	Rect2 parent_rect;
 
@@ -1088,14 +1143,24 @@ void Window::popup_centered_ratio(float p_ratio) {
 	}
 
 	Rect2i popup_rect;
-	popup_rect.size = parent_rect.size * p_ratio;
-	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	if (parent_rect != Rect2()) {
+		popup_rect.size = parent_rect.size * p_ratio;
+		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
+	}
 
 	popup(popup_rect);
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
+
+	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+		// Send a focus-out notification when opening a Window Manager Popup.
+		SceneTree *scene_tree = get_tree();
+		if (scene_tree) {
+			scene_tree->notify_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_viewports", NOTIFICATION_WM_WINDOW_FOCUS_OUT);
+		}
+	}
 
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
@@ -1448,6 +1513,15 @@ void Window::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+Transform2D Window::get_screen_transform() const {
+	Transform2D embedder_transform = Transform2D();
+	if (_get_embedder()) {
+		embedder_transform.translate(get_position());
+		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+	}
+	return embedder_transform * Viewport::get_screen_transform();
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -1564,8 +1638,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_centered_clamped", "minsize", "fallback_ratio"), &Window::popup_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
 
@@ -1579,10 +1653,11 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 
 	ADD_GROUP("Limits", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size"), "set_min_size", "get_min_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size"), "set_max_size", "get_max_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "max_size", PROPERTY_HINT_NONE, "suffix:px"), "set_max_size", "get_max_size");
 
 	ADD_GROUP("Content Scale", "content_scale_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "content_scale_size"), "set_content_scale_size", "get_content_scale_size");
@@ -1622,6 +1697,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_ALWAYS_ON_TOP);
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
+	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);

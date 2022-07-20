@@ -66,6 +66,7 @@ void VisibleOnScreenNotifier2D::set_rect(const Rect2 &p_rect) {
 	if (is_inside_tree()) {
 		RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 	}
+	update();
 }
 
 Rect2 VisibleOnScreenNotifier2D::get_rect() const {
@@ -75,15 +76,16 @@ Rect2 VisibleOnScreenNotifier2D::get_rect() const {
 void VisibleOnScreenNotifier2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			//get_world_2d()->
 			on_screen = false;
 			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				draw_rect(rect, Color(1, 0.5, 1, 0.2));
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			on_screen = false;
 			RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), false, Rect2(), Callable(), Callable());
@@ -100,7 +102,7 @@ void VisibleOnScreenNotifier2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rect"), &VisibleOnScreenNotifier2D::get_rect);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier2D::is_on_screen);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect"), "set_rect", "get_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect", PROPERTY_HINT_NONE, "suffix:px"), "set_rect", "get_rect");
 
 	ADD_SIGNAL(MethodInfo("screen_entered"));
 	ADD_SIGNAL(MethodInfo("screen_exited"));
@@ -169,21 +171,23 @@ void VisibleOnScreenEnabler2D::_update_enable_mode(bool p_enable) {
 	}
 }
 void VisibleOnScreenEnabler2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			return;
-		}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				return;
+			}
 
-		node_id = ObjectID();
-		Node *node = get_node(enable_node_path);
-		if (node) {
-			node_id = node->get_instance_id();
-			node->set_process_mode(PROCESS_MODE_DISABLED);
-		}
-	}
+			node_id = ObjectID();
+			Node *node = get_node(enable_node_path);
+			if (node) {
+				node_id = node->get_instance_id();
+				node->set_process_mode(PROCESS_MODE_DISABLED);
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		node_id = ObjectID();
+		case NOTIFICATION_EXIT_TREE: {
+			node_id = ObjectID();
+		} break;
 	}
 }
 
@@ -195,7 +199,7 @@ void VisibleOnScreenEnabler2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enable_node_path"), &VisibleOnScreenEnabler2D::get_enable_node_path);
 
 	ADD_GROUP("Enabling", "enable_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,WhenPaused"), "set_enable_mode", "get_enable_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable_mode", PROPERTY_HINT_ENUM, "Inherit,Always,When Paused"), "set_enable_mode", "get_enable_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "enable_node_path"), "set_enable_node_path", "get_enable_node_path");
 
 	BIND_ENUM_CONSTANT(ENABLE_MODE_INHERIT);

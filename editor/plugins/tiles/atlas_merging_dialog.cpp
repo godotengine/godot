@@ -62,7 +62,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 		int line_height = 0;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
 			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
-			merged_mapping.push_back(Map<Vector2i, Vector2i>());
+			merged_mapping.push_back(HashMap<Vector2i, Vector2i>());
 
 			// Layout the tiles.
 			Vector2i atlas_size;
@@ -116,12 +116,8 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 			}
 		}
 
-		Ref<ImageTexture> output_image_texture;
-		output_image_texture.instantiate();
-		output_image_texture->create_from_image(output_image);
-
 		merged->set_name(p_atlas_sources[0]->get_name());
-		merged->set_texture(output_image_texture);
+		merged->set_texture(ImageTexture::create_from_image(output_image));
 		merged->set_texture_region_size(new_texture_region_size);
 	}
 }
@@ -241,7 +237,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 			if (texture.is_valid()) {
 				String item_text = vformat("%s (id:%d)", texture->get_path().get_file(), source_id);
 				atlas_merging_atlases_list->add_item(item_text, texture);
-				atlas_merging_atlases_list->set_item_metadata(atlas_merging_atlases_list->get_item_count() - 1, source_id);
+				atlas_merging_atlases_list->set_item_metadata(-1, source_id);
 			}
 		}
 	}
@@ -260,7 +256,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	set_hide_on_ok(false);
 
 	// Ok buttons
-	get_ok_button()->set_text(TTR("Merge (Keep original Atlases)"));
+	set_ok_button_text(TTR("Merge (Keep original Atlases)"));
 	get_ok_button()->set_disabled(true);
 	merge_button = add_button(TTR("Merge"), true, "merge");
 	merge_button->set_disabled(true);

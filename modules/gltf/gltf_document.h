@@ -33,19 +33,12 @@
 
 #include "gltf_animation.h"
 
-#include "core/error/error_list.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
-#include "gltf_document_extension_convert_importer_mesh.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/material.h"
-#include "scene/resources/texture.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
@@ -135,12 +128,12 @@ private:
 	}
 
 	template <class T>
-	static Array to_array(const Set<T> &p_inp) {
+	static Array to_array(const HashSet<T> &p_inp) {
 		Array ret;
-		typename Set<T>::Element *elem = p_inp.front();
+		typename HashSet<T>::Iterator elem = p_inp.begin();
 		while (elem) {
-			ret.push_back(elem->get());
-			elem = elem->next();
+			ret.push_back(*elem);
+			++elem;
 		}
 		return ret;
 	}
@@ -154,23 +147,23 @@ private:
 	}
 
 	template <class T>
-	static void set_from_array(Set<T> &r_out, const Array &p_inp) {
+	static void set_from_array(HashSet<T> &r_out, const Array &p_inp) {
 		r_out.clear();
 		for (int i = 0; i < p_inp.size(); i++) {
 			r_out.insert(p_inp[i]);
 		}
 	}
 	template <class K, class V>
-	static Dictionary to_dict(const Map<K, V> &p_inp) {
+	static Dictionary to_dict(const HashMap<K, V> &p_inp) {
 		Dictionary ret;
-		for (typename Map<K, V>::Element *E = p_inp.front(); E; E = E->next()) {
-			ret[E->key()] = E->value();
+		for (const KeyValue<K, V> &E : p_inp) {
+			ret[E.key] = E.value;
 		}
 		return ret;
 	}
 
 	template <class K, class V>
-	static void set_from_dict(Map<K, V> &r_out, const Dictionary &p_inp) {
+	static void set_from_dict(HashMap<K, V> &r_out, const Dictionary &p_inp) {
 		r_out.clear();
 		Array keys = p_inp.keys();
 		for (int i = 0; i < keys.size(); i++) {
@@ -196,7 +189,7 @@ private:
 	Ref<Texture2D> _get_texture(Ref<GLTFState> state,
 			const GLTFTextureIndex p_texture);
 	Error _parse_json(const String &p_path, Ref<GLTFState> state);
-	Error _parse_glb(FileAccess *f, Ref<GLTFState> state);
+	Error _parse_glb(Ref<FileAccess> f, Ref<GLTFState> state);
 	void _compute_node_heights(Ref<GLTFState> state);
 	Error _parse_buffers(Ref<GLTFState> state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> state);
@@ -381,7 +374,7 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
+	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30, String p_base_path = String());
 	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0, int32_t p_bake_fps = 30);
 
@@ -457,7 +450,7 @@ public:
 	void _convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> state, const String &p_path);
-	Error _parse(Ref<GLTFState> state, String p_path, FileAccess *f, int p_bake_fps);
+	Error _parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> f, int p_bake_fps);
 };
 
 #endif // GLTF_DOCUMENT_H

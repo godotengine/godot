@@ -72,6 +72,8 @@ public:
 
 	void set_visible(bool p_visible);
 	bool is_visible() const;
+	void show();
+	void hide();
 
 	void set_transform(const Transform2D &p_xform);
 	Transform2D get_transform() const;

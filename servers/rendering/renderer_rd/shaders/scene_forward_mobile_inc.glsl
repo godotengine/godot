@@ -7,7 +7,7 @@
 
 #include "decal_data_inc.glsl"
 
-#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -125,15 +125,16 @@ global_variables;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-layout(set = 1, binding = 0, std140) uniform SceneData {
+struct SceneData {
 	highp mat4 projection_matrix;
 	highp mat4 inv_projection_matrix;
-	highp mat4 camera_matrix;
-	highp mat4 inv_camera_matrix;
+	highp mat4 inv_view_matrix;
+	highp mat4 view_matrix;
 
 	// only used for multiview
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
 
 	highp vec2 viewport_size;
 	highp vec2 screen_pixel_size;
@@ -189,8 +190,12 @@ layout(set = 1, binding = 0, std140) uniform SceneData {
 	uint pad1;
 	uint pad2;
 	uint pad3;
+};
+
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
 }
-scene_data;
+scene_data_block;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 

@@ -51,7 +51,7 @@ class GodotShape3D {
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
-	Map<GodotShapeOwner3D *, int> owners;
+	HashMap<GodotShapeOwner3D *, int> owners;
 
 protected:
 	void configure(const AABB &p_aabb);
@@ -93,7 +93,7 @@ public:
 	void add_owner(GodotShapeOwner3D *p_owner);
 	void remove_owner(GodotShapeOwner3D *p_owner);
 	bool is_owner(GodotShapeOwner3D *p_owner) const;
-	const Map<GodotShapeOwner3D *, int> &get_owners() const;
+	const HashMap<GodotShapeOwner3D *, int> &get_owners() const;
 
 	GodotShape3D() {}
 	virtual ~GodotShape3D();

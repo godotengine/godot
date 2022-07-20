@@ -37,6 +37,19 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
 
+static bool _is_in_handle(int p_id, int p_num_points) {
+	int t = (p_id + 1) % 2;
+	int idx = (p_id + 1) / 2;
+	// order of points is [out_0, out_1, in_1, out_2, in_2, ... out_n-1, in_n-1, in_n]
+	if (idx == 0) {
+		return false;
+	} else if (idx == (p_num_points - 1)) {
+		return true;
+	} else {
+		return (t == 1);
+	}
+}
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -47,12 +60,10 @@ String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 		return TTR("Curve Point #") + itos(p_id);
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 	String n = TTR("Curve Point #") + itos(idx);
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		n += " In";
 	} else {
 		n += " Out";
@@ -72,13 +83,11 @@ Variant Path3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 		return original;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
 	Vector3 ofs;
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		ofs = c->get_point_in(idx);
 	} else {
 		ofs = c->get_point_out(idx);
@@ -102,7 +111,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 
 	// Setting curve point positions
 	if (!p_secondary) {
-		const Plane p = Plane(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
+		const Plane p = Plane(p_camera->get_transform().basis.get_column(2), gt.xform(original));
 
 		Vector3 inters;
 
@@ -119,14 +128,12 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		return;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
-
-	int idx = p_id / 2;
-	int t = p_id % 2;
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
 	Vector3 base = c->get_point_position(idx);
 
-	Plane p(p_camera->get_transform().basis.get_axis(2), gt.xform(original));
+	Plane p(p_camera->get_transform().basis.get_column(2), gt.xform(original));
 
 	Vector3 inters;
 
@@ -144,7 +151,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 			local.snap(Vector3(snap, snap, snap));
 		}
 
-		if (t == 0) {
+		if (_is_in_handle(p_id, c->get_point_count())) {
 			c->set_point_in(idx, local);
 			if (Path3DEditorPlugin::singleton->mirror_angle_enabled()) {
 				c->set_point_out(idx, Path3DEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
@@ -179,12 +186,10 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		return;
 	}
 
-	p_id += 1; // Account for the first point only having an "out" handle
+	// (p_id + 1) Accounts for the first point only having an "out" handle
+	int idx = (p_id + 1) / 2;
 
-	int idx = p_id / 2;
-	int t = p_id % 2;
-
-	if (t == 0) {
+	if (_is_in_handle(p_id, c->get_point_count())) {
 		if (p_cancel) {
 			c->set_point_in(p_id, p_restore);
 			return;
@@ -263,16 +268,16 @@ void Path3DGizmo::redraw() {
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
 			handles.push_back(p);
-			if (i > 0) {
-				v3p.push_back(p);
-				v3p.push_back(p + c->get_point_in(i));
-				sec_handles.push_back(p + c->get_point_in(i));
-			}
-
+			// push Out points first so they get selected if the In and Out points are on top of each other.
 			if (i < c->get_point_count() - 1) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_out(i));
 				sec_handles.push_back(p + c->get_point_out(i));
+			}
+			if (i > 0) {
+				v3p.push_back(p);
+				v3p.push_back(p + c->get_point_in(i));
+				sec_handles.push_back(p + c->get_point_in(i));
 			}
 		}
 
@@ -320,14 +325,14 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->is_ctrl_pressed()))) {
 			//click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
-			int idx = 0;
 			int rc = v3a.size();
 			int closest_seg = -1;
 			Vector3 closest_seg_point;
-			float closest_d = 1e20;
 
 			if (rc >= 2) {
+				int idx = 0;
 				const Vector3 *r = v3a.ptr();
+				float closest_d = 1e20;
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS; //nope, existing
@@ -379,7 +384,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				}
 			}
 
-			UndoRedo *ur = editor->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			if (closest_seg != -1) {
 				//subdivide
 
@@ -396,7 +401,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				} else {
 					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(p_camera->get_transform().basis.get_axis(2), origin);
+				Plane p(p_camera->get_transform().basis.get_column(2), origin);
 				Vector3 ray_from = p_camera->project_ray_origin(mbpos);
 				Vector3 ray_dir = p_camera->project_ray_normal(mbpos);
 
@@ -421,21 +426,21 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
 				if (dist_to_p < click_dist) {
-					UndoRedo *ur = editor->get_undo_redo();
+					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove Path Point"));
 					ur->add_do_method(c.ptr(), "remove_point", i);
 					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_out < click_dist) {
-					UndoRedo *ur = editor->get_undo_redo();
+					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove Out-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_in < click_dist) {
-					UndoRedo *ur = editor->get_undo_redo();
+					UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 					ur->create_action(TTR("Remove In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
@@ -514,7 +519,7 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
 		return;
 	}
-	UndoRedo *ur = editor->get_undo_redo();
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Close Curve"));
 	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
 	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
@@ -571,9 +576,8 @@ void Path3DEditorPlugin::_bind_methods() {
 
 Path3DEditorPlugin *Path3DEditorPlugin::singleton = nullptr;
 
-Path3DEditorPlugin::Path3DEditorPlugin(EditorNode *p_node) {
+Path3DEditorPlugin::Path3DEditorPlugin() {
 	path = nullptr;
-	editor = p_node;
 	singleton = this;
 	mirror_handle_angle = true;
 	mirror_handle_length = true;

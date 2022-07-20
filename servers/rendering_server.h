@@ -47,7 +47,7 @@ class RenderingServer : public Object {
 
 	static RenderingServer *singleton;
 
-	int mm_policy;
+	int mm_policy = 0;
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
@@ -439,10 +439,10 @@ public:
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, LightParam p_param, float p_value) = 0;
 	virtual void light_set_shadow(RID p_light, bool p_enabled) = 0;
-	virtual void light_set_shadow_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_projector(RID p_light, RID p_texture) = 0;
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
+	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 
 	enum LightBakeMode {
@@ -469,9 +469,15 @@ public:
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS,
 	};
 
+	enum LightDirectionalSkyMode {
+		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY,
+		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY,
+		LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY,
+	};
+
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
-	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
+	virtual void light_directional_set_sky_mode(RID p_light, LightDirectionalSkyMode p_mode) = 0;
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 
@@ -485,8 +491,8 @@ public:
 		SHADOW_QUALITY_MAX
 	};
 
-	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
@@ -718,8 +724,11 @@ public:
 
 	enum FogVolumeShape {
 		FOG_VOLUME_SHAPE_ELLIPSOID,
+		FOG_VOLUME_SHAPE_CONE,
+		FOG_VOLUME_SHAPE_CYLINDER,
 		FOG_VOLUME_SHAPE_BOX,
 		FOG_VOLUME_SHAPE_WORLD,
+		FOG_VOLUME_SHAPE_MAX,
 	};
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, FogVolumeShape p_shape) = 0;
@@ -847,8 +856,8 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
-	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
+	virtual void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
+	virtual void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
 		VIEWPORT_MSAA_DISABLED,
@@ -868,11 +877,13 @@ public:
 
 	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
 
+	virtual void viewport_set_use_taa(RID p_viewport, bool p_use_taa) = 0;
+
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
 
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
-	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_debanding) = 0;
+	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
 
 	enum ViewportOcclusionCullingBuildQuality {
@@ -924,6 +935,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS,
 		VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
+		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -931,6 +943,18 @@ public:
 	virtual void viewport_set_measure_render_time(RID p_viewport, bool p_enable) = 0;
 	virtual double viewport_get_measured_render_time_cpu(RID p_viewport) const = 0;
 	virtual double viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
+
+	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const = 0;
+
+	enum ViewportVRSMode {
+		VIEWPORT_VRS_DISABLED,
+		VIEWPORT_VRS_TEXTURE,
+		VIEWPORT_VRS_XR,
+		VIEWPORT_VRS_MAX,
+	};
+
+	virtual void viewport_set_vrs_mode(RID p_viewport, ViewportVRSMode p_mode) = 0;
+	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
 	/* SKY API */
 
@@ -1009,10 +1033,10 @@ public:
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
 
 	enum EnvironmentSSRRoughnessQuality {
-		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
-		ENV_SSR_ROUGNESS_QUALITY_LOW,
-		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
-		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+		ENV_SSR_ROUGHNESS_QUALITY_DISABLED,
+		ENV_SSR_ROUGHNESS_QUALITY_LOW,
+		ENV_SSR_ROUGHNESS_QUALITY_MEDIUM,
+		ENV_SSR_ROUGHNESS_QUALITY_HIGH,
 	};
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
@@ -1287,7 +1311,7 @@ public:
 		NINE_PATCH_TILE_FIT,
 	};
 
-	virtual void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0) = 0;
+	virtual void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0, bool p_antialiased = false) = 0;
 	virtual void canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0) = 0;
 	virtual void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) = 0;
@@ -1462,7 +1486,7 @@ public:
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
 	virtual bool has_changed() const = 0;
-	virtual void init() = 0;
+	virtual void init();
 	virtual void finish() = 0;
 
 	/* STATUS INFORMATION */
@@ -1481,6 +1505,7 @@ public:
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const = 0;
+	virtual String get_video_adapter_api_version() const = 0;
 
 	struct FrameProfileArea {
 		String name;
@@ -1569,6 +1594,7 @@ VARIANT_ENUM_CAST(RenderingServer::LightParam);
 VARIANT_ENUM_CAST(RenderingServer::LightBakeMode);
 VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
+VARIANT_ENUM_CAST(RenderingServer::LightDirectionalSkyMode);
 VARIANT_ENUM_CAST(RenderingServer::LightProjectorFilter);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeAmbientMode);
@@ -1593,6 +1619,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
+VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);

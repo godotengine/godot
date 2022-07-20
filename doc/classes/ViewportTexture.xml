@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ViewportTexture" inherits="Texture2D" version="4.0">
+<class name="ViewportTexture" inherits="Texture2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Texture which displays the content of a [Viewport].
 	</brief_description>
@@ -14,7 +14,6 @@
 		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<members>
-		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">
 			The path to the [Viewport] node to display. This is relative to the scene root, not to the node which uses the texture.
 		</member>

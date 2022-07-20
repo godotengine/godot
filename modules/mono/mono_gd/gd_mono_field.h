@@ -36,14 +36,14 @@
 #include "i_mono_class_member.h"
 
 class GDMonoField : public IMonoClassMember {
-	GDMonoClass *owner;
-	MonoClassField *mono_field;
+	GDMonoClass *owner = nullptr;
+	MonoClassField *mono_field = nullptr;
 
 	StringName name;
 	ManagedType type;
 
 	bool attrs_fetched;
-	MonoCustomAttrInfo *attributes;
+	MonoCustomAttrInfo *attributes = nullptr;
 
 public:
 	virtual GDMonoClass *get_enclosing_class() const final { return owner; }

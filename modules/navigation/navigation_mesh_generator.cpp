@@ -34,7 +34,6 @@
 
 #include "core/math/convex_hull.h"
 #include "core/os/thread.h"
-#include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -50,7 +49,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
@@ -125,6 +123,28 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
+void NavigationMeshGenerator::_add_mesh_array(const Array &p_array, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
+	Vector<Vector3> mesh_vertices = p_array[Mesh::ARRAY_VERTEX];
+	const Vector3 *vr = mesh_vertices.ptr();
+
+	Vector<int> mesh_indices = p_array[Mesh::ARRAY_INDEX];
+	const int *ir = mesh_indices.ptr();
+
+	const int face_count = mesh_indices.size() / 3;
+	const int current_vertex_count = p_vertices.size() / 3;
+
+	for (int j = 0; j < mesh_vertices.size(); j++) {
+		_add_vertex(p_xform.xform(vr[j]), p_vertices);
+	}
+
+	for (int j = 0; j < face_count; j++) {
+		// CCW
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 0]));
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 2]));
+		p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
+	}
+}
+
 void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = p_vertices.size() / 3;
@@ -152,14 +172,16 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 	if (Object::cast_to<MultiMeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MultiMeshInstance3D *multimesh_instance = Object::cast_to<MultiMeshInstance3D>(p_node);
 		Ref<MultiMesh> multimesh = multimesh_instance->get_multimesh();
-		Ref<Mesh> mesh = multimesh->get_mesh();
-		if (mesh.is_valid()) {
-			int n = multimesh->get_visible_instance_count();
-			if (n == -1) {
-				n = multimesh->get_instance_count();
-			}
-			for (int i = 0; i < n; i++) {
-				_add_mesh(mesh, p_navmesh_transform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+		if (multimesh.is_valid()) {
+			Ref<Mesh> mesh = multimesh->get_mesh();
+			if (mesh.is_valid()) {
+				int n = multimesh->get_visible_instance_count();
+				if (n == -1) {
+					n = multimesh->get_instance_count();
+				}
+				for (int i = 0; i < n; i++) {
+					_add_mesh(mesh, p_navmesh_transform * multimesh_instance->get_global_transform() * multimesh->get_instance_transform(i), p_vertices, p_indices);
+				}
 			}
 		}
 	}
@@ -181,50 +203,48 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
-			for (int i = 0; i < p_node->get_child_count(); ++i) {
-				Node *child = p_node->get_child(i);
-				if (Object::cast_to<CollisionShape3D>(child)) {
-					CollisionShape3D *col_shape = Object::cast_to<CollisionShape3D>(child);
+			List<uint32_t> shape_owners;
+			static_body->get_shape_owners(&shape_owners);
+			for (uint32_t shape_owner : shape_owners) {
+				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
+				for (int i = 0; i < shape_count; i++) {
+					Ref<Shape3D> s = static_body->shape_owner_get_shape(shape_owner, i);
+					if (s.is_null()) {
+						continue;
+					}
 
-					Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * col_shape->get_transform();
-
-					Ref<Mesh> mesh;
-					Ref<Shape3D> s = col_shape->get_shape();
+					const Transform3D transform = p_navmesh_transform * static_body->get_global_transform() * static_body->shape_owner_get_transform(shape_owner);
 
 					BoxShape3D *box = Object::cast_to<BoxShape3D>(*s);
 					if (box) {
-						Ref<BoxMesh> box_mesh;
-						box_mesh.instantiate();
-						box_mesh->set_size(box->get_size());
-						mesh = box_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						BoxMesh::create_mesh_array(arr, box->get_size());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					CapsuleShape3D *capsule = Object::cast_to<CapsuleShape3D>(*s);
 					if (capsule) {
-						Ref<CapsuleMesh> capsule_mesh;
-						capsule_mesh.instantiate();
-						capsule_mesh->set_radius(capsule->get_radius());
-						capsule_mesh->set_height(capsule->get_height());
-						mesh = capsule_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CapsuleMesh::create_mesh_array(arr, capsule->get_radius(), capsule->get_height());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					CylinderShape3D *cylinder = Object::cast_to<CylinderShape3D>(*s);
 					if (cylinder) {
-						Ref<CylinderMesh> cylinder_mesh;
-						cylinder_mesh.instantiate();
-						cylinder_mesh->set_height(cylinder->get_height());
-						cylinder_mesh->set_bottom_radius(cylinder->get_radius());
-						cylinder_mesh->set_top_radius(cylinder->get_radius());
-						mesh = cylinder_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CylinderMesh::create_mesh_array(arr, cylinder->get_radius(), cylinder->get_radius(), cylinder->get_height());
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					SphereShape3D *sphere = Object::cast_to<SphereShape3D>(*s);
 					if (sphere) {
-						Ref<SphereMesh> sphere_mesh;
-						sphere_mesh.instantiate();
-						sphere_mesh->set_radius(sphere->get_radius());
-						sphere_mesh->set_height(sphere->get_radius() * 2.0);
-						mesh = sphere_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						SphereMesh::create_mesh_array(arr, sphere->get_radius(), sphere->get_radius() * 2.0);
+						_add_mesh_array(arr, transform, p_vertices, p_indices);
 					}
 
 					ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
@@ -255,10 +275,6 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 							_add_faces(faces, transform, p_vertices, p_indices);
 						}
 					}
-
-					if (mesh.is_valid()) {
-						_add_mesh(mesh, transform, p_vertices, p_indices);
-					}
 				}
 			}
 		}
@@ -285,44 +301,39 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 				RID shape = shapes[i + 1];
 				PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
 				Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);
-				Ref<Mesh> mesh;
 
 				switch (type) {
 					case PhysicsServer3D::SHAPE_SPHERE: {
 						real_t radius = data;
-						Ref<SphereMesh> sphere_mesh;
-						sphere_mesh.instantiate();
-						sphere_mesh->set_radius(radius);
-						sphere_mesh->set_height(radius * 2.0);
-						mesh = sphere_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_BOX: {
 						Vector3 extents = data;
-						Ref<BoxMesh> box_mesh;
-						box_mesh.instantiate();
-						box_mesh->set_size(2.0 * extents);
-						mesh = box_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						BoxMesh::create_mesh_array(arr, extents * 2.0);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CAPSULE: {
 						Dictionary dict = data;
 						real_t radius = dict["radius"];
 						real_t height = dict["height"];
-						Ref<CapsuleMesh> capsule_mesh;
-						capsule_mesh.instantiate();
-						capsule_mesh->set_radius(radius);
-						capsule_mesh->set_height(height);
-						mesh = capsule_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CapsuleMesh::create_mesh_array(arr, radius, height);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CYLINDER: {
 						Dictionary dict = data;
 						real_t radius = dict["radius"];
 						real_t height = dict["height"];
-						Ref<CylinderMesh> cylinder_mesh;
-						cylinder_mesh.instantiate();
-						cylinder_mesh->set_height(height);
-						cylinder_mesh->set_bottom_radius(radius);
-						cylinder_mesh->set_top_radius(radius);
-						mesh = cylinder_mesh;
+						Array arr;
+						arr.resize(RS::ARRAY_MAX);
+						CylinderMesh::create_mesh_array(arr, radius, radius, height);
+						_add_mesh_array(arr, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_CONVEX_POLYGON: {
 						PackedVector3Array vertices = data;
@@ -354,10 +365,6 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 					default: {
 						WARN_PRINT("Unsupported collision shape type.");
 					} break;
-				}
-
-				if (mesh.is_valid()) {
-					_add_mesh(mesh, shapes[i], p_vertices, p_indices);
 				}
 			}
 		}
@@ -440,8 +447,33 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.minRegionArea = (int)(p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size());
 	cfg.mergeRegionArea = (int)(p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size());
 	cfg.maxVertsPerPoly = (int)p_nav_mesh->get_verts_per_poly();
-	cfg.detailSampleDist = p_nav_mesh->get_detail_sample_distance() < 0.9f ? 0 : p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance();
+	cfg.detailSampleDist = MAX(p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_nav_mesh->get_cell_height() * p_nav_mesh->get_detail_sample_max_error();
+
+	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_nav_mesh->get_agent_height())) {
+		WARN_PRINT("Property agent_height is ceiled to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableClimb * cfg.ch, p_nav_mesh->get_agent_max_climb())) {
+		WARN_PRINT("Property agent_max_climb is floored to cell_height voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.walkableRadius * cfg.cs, p_nav_mesh->get_agent_radius())) {
+		WARN_PRINT("Property agent_radius is ceiled to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxEdgeLen * cfg.cs, p_nav_mesh->get_edge_max_length())) {
+		WARN_PRINT("Property edge_max_length is rounded to cell_size voxel units and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.minRegionArea, p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size())) {
+		WARN_PRINT("Property region_min_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size())) {
+		WARN_PRINT("Property region_merge_size is converted to int and loses precision.");
+	}
+	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_nav_mesh->get_verts_per_poly())) {
+		WARN_PRINT("Property verts_per_poly is converted to int and loses precision.");
+	}
+	if (p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance() < 0.1f) {
+		WARN_PRINT("Property detail_sample_distance is clamped to 0.1 world units as the resulting value from multiplying with cell_size is too low.");
+	}
 
 	cfg.bmin[0] = bmin[0];
 	cfg.bmin[1] = bmin[1];
@@ -450,12 +482,35 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[1] = bmax[1];
 	cfg.bmax[2] = bmax[2];
 
+	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
+
+	bool aabb_has_no_volume = baking_aabb.has_no_volume();
+
+	if (!aabb_has_no_volume) {
+		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
+
+		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
+		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
+		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;
+		cfg.bmax[0] = cfg.bmin[0] + baking_aabb.size[0];
+		cfg.bmax[1] = cfg.bmin[1] + baking_aabb.size[1];
+		cfg.bmax[2] = cfg.bmin[2] + baking_aabb.size[2];
+	}
+
 #ifdef TOOLS_ENABLED
 	if (ep) {
 		ep->step(TTR("Calculating grid size..."), 2);
 	}
 #endif
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
+
+	// ~30000000 seems to be around sweetspot where Editor baking breaks
+	if ((cfg.width * cfg.height) > 30000000) {
+		WARN_PRINT("NavigationMesh baking process will likely fail."
+				   "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
+				   "\nIf baking does not fail, the resulting NavigationMesh will create serious pathfinding performance issues."
+				   "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry.");
+	}
 
 #ifdef TOOLS_ENABLED
 	if (ep) {
@@ -591,6 +646,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
+	// FIXME
+#endif
+#if 0
+	// After discussion on devchat disabled EditorProgress for now as it is not thread-safe and uses hacks and Main::iteration() for steps.
+	// EditorProgress randomly crashes the Engine when the bake function is used with a thread e.g. inside Editor with a tool script and procedural navigation
+	// This was not a problem in older versions as previously Godot was unable to (re)bake NavigationMesh at runtime.
+	// If EditorProgress is fixed and made thread-safe this should be enabled again.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 	}

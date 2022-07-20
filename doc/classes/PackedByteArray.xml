@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedByteArray" version="4.0">
+<class name="PackedByteArray" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A packed [Array] of bytes.
+		A packed array of bytes.
 	</brief_description>
 	<description>
-		An [Array] specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -59,6 +59,13 @@
 			<argument index="0" name="compression_mode" type="int" default="0" />
 			<description>
 				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum File.CompressionMode]'s constants.
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<description>
+				Returns the number of times an element is in the array.
 			</description>
 		</method>
 		<method name="decode_double" qualifiers="const">
@@ -257,6 +264,14 @@
 				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
 			</description>
 		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
 		<method name="get_string_from_ascii" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -352,6 +367,14 @@
 				Reverses the order of the elements in the array.
 			</description>
 		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="value" type="int" />
+			<argument index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
 		<method name="set">
 			<return type="void" />
 			<argument index="0" name="index" type="int" />
@@ -386,7 +409,7 @@
 			<return type="PackedFloat32Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedFloat32Array], where each block of 4 bytes has been converted to a 32-bit float (C++ [code]float[/code]).
-				The size of the new array will be [code]byte_array.size() / 4[/code].
+				The size of the input array must be a multiple of 4 (size of 32-bit float). The size of the new array will be [code]byte_array.size() / 4[/code].
 				If the original data can't be converted to 32-bit floats, the resulting data is undefined.
 			</description>
 		</method>
@@ -394,7 +417,7 @@
 			<return type="PackedFloat64Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedFloat64Array], where each block of 8 bytes has been converted to a 64-bit float (C++ [code]double[/code], Godot [float]).
-				The size of the new array will be [code]byte_array.size() / 8[/code].
+				The size of the input array must be a multiple of 8 (size of 64-bit double). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to 64-bit floats, the resulting data is undefined.
 			</description>
 		</method>
@@ -402,25 +425,20 @@
 			<return type="PackedInt32Array" />
 			<description>
 				Returns a copy of the data converted to a [PackedInt32Array], where each block of 4 bytes has been converted to a signed 32-bit integer (C++ [code]int32_t[/code]).
-				The size of the new array will be [code]byte_array.size() / 4[/code].
+				The size of the input array must be a multiple of 4 (size of 32-bit integer). The size of the new array will be [code]byte_array.size() / 4[/code].
 				If the original data can't be converted to signed 32-bit integers, the resulting data is undefined.
 			</description>
 		</method>
 		<method name="to_int64_array" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<description>
-				Returns a copy of the data converted to a [PackedInt64Array], where each block of 4 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
-				The size of the new array will be [code]byte_array.size() / 8[/code].
+				Returns a copy of the data converted to a [PackedInt64Array], where each block of 8 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
+				The size of the input array must be a multiple of 8 (size of 64-bit integer). The size of the new array will be [code]byte_array.size() / 8[/code].
 				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
 			</description>
 		</method>
 	</methods>
 	<operators>
-		<operator name="operator !=">
-			<return type="bool" />
-			<description>
-			</description>
-		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="PackedByteArray" />
@@ -430,11 +448,6 @@
 		<operator name="operator +">
 			<return type="PackedByteArray" />
 			<argument index="0" name="right" type="PackedByteArray" />
-			<description>
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
 			<description>
 			</description>
 		</operator>

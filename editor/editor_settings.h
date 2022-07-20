@@ -31,15 +31,14 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "core/input/shortcut.h"
 #include "core/io/config_file.h"
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/string/translation.h"
-#include "editor/editor_paths.h"
+#include "core/templates/rb_set.h"
 
 class EditorPlugin;
+class InputEvent;
+class Shortcut;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
@@ -79,21 +78,23 @@ private:
 
 	static Ref<EditorSettings> singleton;
 
+	HashSet<String> changed_settings;
+
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
 
 	Ref<Resource> clipboard;
-	mutable Map<String, Ref<Shortcut>> shortcuts;
-	Map<String, List<Ref<InputEvent>>> builtin_action_overrides;
+	mutable HashMap<String, Ref<Shortcut>> shortcuts;
+	HashMap<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	String config_file_path;
 
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
 
-	bool save_changed_setting;
-	bool optimize_save; //do not save stuff that came from config but was not set from engine
+	bool save_changed_setting = true;
+	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _set_only(const StringName &p_name, const Variant &p_value);
@@ -142,6 +143,9 @@ public:
 	bool property_can_revert(const String &p_setting);
 	Variant property_get_revert(const String &p_setting);
 	void add_property_hint(const PropertyInfo &p_hint);
+	Array get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+	void mark_setting_changed(const String &p_setting);
 
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
@@ -161,7 +165,7 @@ public:
 	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
-	void load_favorites();
+	void load_favorites_and_recent_dirs();
 
 	bool is_dark_theme();
 
@@ -176,7 +180,7 @@ public:
 	String get_editor_layouts_config() const;
 	float get_auto_display_scale() const;
 
-	void add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);

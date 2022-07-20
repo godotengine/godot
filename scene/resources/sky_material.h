@@ -40,16 +40,19 @@ class ProceduralSkyMaterial : public Material {
 private:
 	Color sky_top_color;
 	Color sky_horizon_color;
-	float sky_curve;
-	float sky_energy;
+	float sky_curve = 0.0f;
+	float sky_energy = 0.0f;
+	Ref<Texture2D> sky_cover;
+	Color sky_cover_modulate;
 
 	Color ground_bottom_color;
 	Color ground_horizon_color;
-	float ground_curve;
-	float ground_energy;
+	float ground_curve = 0.0f;
+	float ground_energy = 0.0f;
 
-	float sun_angle_max;
-	float sun_curve;
+	float sun_angle_max = 0.0f;
+	float sun_curve = 0.0f;
+	bool use_debanding = true;
 
 	static Mutex shader_mutex;
 	static RID shader;
@@ -72,6 +75,12 @@ public:
 	void set_sky_energy(float p_energy);
 	float get_sky_energy() const;
 
+	void set_sky_cover(const Ref<Texture2D> &p_sky_cover);
+	Ref<Texture2D> get_sky_cover() const;
+
+	void set_sky_cover_modulate(const Color &p_sky_cover_modulate);
+	Color get_sky_cover_modulate() const;
+
 	void set_ground_bottom_color(const Color &p_ground_bottom);
 	Color get_ground_bottom_color() const;
 
@@ -89,6 +98,9 @@ public:
 
 	void set_sun_curve(float p_curve);
 	float get_sun_curve() const;
+
+	void set_use_debanding(bool p_use_debanding);
+	bool get_use_debanding() const;
 
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
@@ -146,16 +158,16 @@ private:
 	static Mutex shader_mutex;
 	static RID shader;
 
-	float rayleigh;
+	float rayleigh = 0.0f;
 	Color rayleigh_color;
-	float mie;
-	float mie_eccentricity;
+	float mie = 0.0f;
+	float mie_eccentricity = 0.0f;
 	Color mie_color;
-	float turbidity;
-	float sun_disk_scale;
+	float turbidity = 0.0f;
+	float sun_disk_scale = 0.0f;
 	Color ground_color;
-	float exposure;
-	float dither_strength;
+	float exposure = 0.0f;
+	bool use_debanding = true;
 	Ref<Texture2D> night_sky;
 	static void _update_shader();
 	mutable bool shader_set = false;
@@ -191,8 +203,8 @@ public:
 	void set_exposure(float p_exposure);
 	float get_exposure() const;
 
-	void set_dither_strength(float p_dither_strength);
-	float get_dither_strength() const;
+	void set_use_debanding(bool p_use_debanding);
+	bool get_use_debanding() const;
 
 	void set_night_sky(const Ref<Texture2D> &p_night_sky);
 	Ref<Texture2D> get_night_sky() const;

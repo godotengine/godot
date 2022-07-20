@@ -31,15 +31,17 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "editor/animation_track_editor.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_path.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tree.h"
 
-class EditorNode;
 class EditorFileDialog;
 
 class InspectorDock : public VBoxContainer {
@@ -60,39 +62,46 @@ class InspectorDock : public VBoxContainer {
 		COLLAPSE_ALL,
 		EXPAND_ALL,
 
+		// Matches `EditorPropertyNameProcessor::Style`.
+		PROPERTY_NAME_STYLE_RAW,
+		PROPERTY_NAME_STYLE_CAPITALIZED,
+		PROPERTY_NAME_STYLE_LOCALIZED,
+
 		OBJECT_METHOD_BASE = 500
 	};
 
-	EditorNode *editor;
-	EditorData *editor_data;
+	EditorData *editor_data = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	Object *current;
+	Object *current = nullptr;
 
-	Button *backward_button;
-	Button *forward_button;
+	Button *backward_button = nullptr;
+	Button *forward_button = nullptr;
 
-	EditorFileDialog *load_resource_dialog;
-	CreateDialog *new_resource_dialog;
-	Button *resource_new_button;
-	Button *resource_load_button;
-	MenuButton *resource_save_button;
-	MenuButton *resource_extra_button;
-	MenuButton *history_menu;
-	LineEdit *search;
+	EditorFileDialog *load_resource_dialog = nullptr;
+	CreateDialog *new_resource_dialog = nullptr;
+	Button *resource_new_button = nullptr;
+	Button *resource_load_button = nullptr;
+	MenuButton *resource_save_button = nullptr;
+	MenuButton *resource_extra_button = nullptr;
+	MenuButton *history_menu = nullptr;
+	LineEdit *search = nullptr;
 
-	Button *open_docs_button;
-	MenuButton *object_menu;
-	EditorPath *editor_path;
+	Button *open_docs_button = nullptr;
+	MenuButton *object_menu = nullptr;
+	EditorPath *editor_path = nullptr;
 
-	Button *warning;
-	AcceptDialog *warning_dialog;
+	Button *warning = nullptr;
+	AcceptDialog *warning_dialog = nullptr;
 
 	int current_option = -1;
-	ConfirmationDialog *unique_resources_confirmation;
-	Tree *unique_resources_list_tree;
+	ConfirmationDialog *unique_resources_confirmation = nullptr;
+	Tree *unique_resources_list_tree = nullptr;
 
+	EditorPropertyNameProcessor::Style property_name_style;
+
+	void _prepare_menu();
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
@@ -109,7 +118,7 @@ class InspectorDock : public VBoxContainer {
 
 	void _warning_pressed();
 	void _resource_created();
-	void _resource_selected(const RES &p_res, const String &p_property);
+	void _resource_selected(const Ref<Resource> &p_res, const String &p_property);
 	void _edit_forward();
 	void _edit_back();
 	void _menu_collapseall();
@@ -138,7 +147,9 @@ public:
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
 
-	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
+
+	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();
 };
 

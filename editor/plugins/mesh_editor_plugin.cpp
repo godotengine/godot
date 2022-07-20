@@ -30,7 +30,6 @@
 
 #include "mesh_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
@@ -50,18 +49,20 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void MeshEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			//get_scene()->connect("node_removed",this,"_node_removed");
 
-		if (first_enter) {
-			//it's in propertyeditor so. could be moved around
+			if (first_enter) {
+				//it's in propertyeditor so. could be moved around
 
-			light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
-			light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
-			light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
-			light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
-			first_enter = false;
-		}
+				light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
+				light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
+				light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
+				light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
+				first_enter = false;
+			}
+		} break;
 	}
 }
 
@@ -111,7 +112,7 @@ MeshEditor::MeshEditor() {
 	viewport->set_world_3d(world_3d); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
-	viewport->set_msaa(Viewport::MSAA_2X);
+	viewport->set_msaa(Viewport::MSAA_4X);
 	set_stretch(true);
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
@@ -136,7 +137,7 @@ MeshEditor::MeshEditor() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	hb->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
 	hb->add_spacer();
 
@@ -177,7 +178,7 @@ void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
+MeshEditorPlugin::MeshEditorPlugin() {
 	Ref<EditorInspectorPluginMesh> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

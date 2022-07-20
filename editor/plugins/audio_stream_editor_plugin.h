@@ -36,7 +36,6 @@
 #include "scene/gui/color_rect.h"
 #include "scene/resources/texture.h"
 
-class EditorNode;
 class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 
@@ -76,8 +75,7 @@ public:
 class AudioStreamEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
-	AudioStreamEditor *audio_editor;
-	EditorNode *editor;
+	AudioStreamEditor *audio_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "Audio"; }
@@ -86,7 +84,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AudioStreamEditorPlugin(EditorNode *p_node);
+	AudioStreamEditorPlugin();
 	~AudioStreamEditorPlugin();
 };
 

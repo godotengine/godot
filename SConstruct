@@ -48,8 +48,6 @@ _helper_module("methods", "methods.py")
 _helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
-_helper_module("editor.editor_builders", "editor/editor_builders.py")
-_helper_module("editor.template_builders", "editor/template_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 _helper_module("modules.modules_builders", "modules/modules_builders.py")
 
@@ -57,6 +55,10 @@ _helper_module("modules.modules_builders", "modules/modules_builders.py")
 import methods
 import glsl_builders
 import gles3_builders
+
+if methods.get_cmdline_bool("tools", True):
+    _helper_module("editor.editor_builders", "editor/editor_builders.py")
+    _helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Scan possible build platforms
 
@@ -101,11 +103,13 @@ custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
-if os.name == "nt" and (platform_arg == "android" or methods.get_cmdline_bool("use_mingw", False)):
-    custom_tools = ["mingw"]
+if platform_arg == "android":
+    custom_tools = ["clang", "clang++", "as", "ar", "link"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
+elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
+    custom_tools = ["mingw"]
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -173,6 +177,7 @@ opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", Tru
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 video driver", True))
+opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
@@ -197,7 +202,6 @@ opts.Add("system_certs_path", "Use this path as SSL certificates default for edi
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Thirdparty libraries
-opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
@@ -393,10 +397,25 @@ if selected_platform in platform_list:
     sys.path.insert(0, tmppath)
     import detect
 
-    if "create" in dir(detect):
-        env = detect.create(env_base)
-    else:
-        env = env_base.Clone()
+    env = env_base.Clone()
+
+    # Default num_jobs to local cpu count if not user specified.
+    # SCons has a peculiarity where user-specified options won't be overridden
+    # by SetOption, so we can rely on this to know if we should use our default.
+    initial_num_jobs = env.GetOption("num_jobs")
+    altered_num_jobs = initial_num_jobs + 1
+    env.SetOption("num_jobs", altered_num_jobs)
+    if env.GetOption("num_jobs") == altered_num_jobs:
+        cpu_count = os.cpu_count()
+        if cpu_count is None:
+            print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        else:
+            safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
+            print(
+                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
+                % (cpu_count, safer_cpu_count)
+            )
+            env.SetOption("num_jobs", safer_cpu_count)
 
     if env["compiledb"]:
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
@@ -616,10 +635,10 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wno-error=cpp"])
                 if cc_version_major == 7:  # Bogus warning fixed in 8+.
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
+                if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+                    env.Append(CCFLAGS=["-Wno-error=return-type"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
-        else:  # always enable those errors
-            env.Append(CCFLAGS=["-Werror=return-type"])
 
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()
@@ -741,7 +760,7 @@ if selected_platform in platform_list:
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
-    editor_module_list = ["freetype"]
+    editor_module_list = []
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
             "Build option 'module_"
@@ -787,7 +806,8 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
-    SConscript("editor/SCsub")
+    if env["tools"]:
+        SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
     SConscript("platform/SCsub")

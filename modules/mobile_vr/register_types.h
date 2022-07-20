@@ -31,7 +31,9 @@
 #ifndef MOBILE_VR_REGISTER_TYPES_H
 #define MOBILE_VR_REGISTER_TYPES_H
 
-void register_mobile_vr_types();
-void unregister_mobile_vr_types();
+#include "modules/register_module_types.h"
+
+void initialize_mobile_vr_module(ModuleInitializationLevel p_level);
+void uninitialize_mobile_vr_module(ModuleInitializationLevel p_level);
 
 #endif // MOBILE_VR_REGISTER_TYPES_H

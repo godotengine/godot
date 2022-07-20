@@ -1,11 +1,13 @@
 // Non functional android library used to provide Android Studio editor support to the project.
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -15,6 +17,10 @@ android {
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
     }
 
     packagingOptions {
@@ -27,8 +33,6 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
         }
     }
-
-    ndkVersion versions.ndkVersion
 
     externalNativeBuild {
         cmake {

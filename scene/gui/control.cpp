@@ -190,10 +190,10 @@ String Control::properties_managed_by_container[] = {
 	"anchor_top",
 	"anchor_right",
 	"anchor_bottom",
-	"rect_position",
-	"rect_rotation",
-	"rect_scale",
-	"rect_size"
+	"position",
+	"rotation",
+	"scale",
+	"size"
 };
 
 void Control::accept_event() {
@@ -250,42 +250,41 @@ Transform2D Control::_get_internal_transform() const {
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	// Prefixes "custom_*" are supported for compatibility with 3.x.
-	if (!name.begins_with("theme_override") && !name.begins_with("custom")) {
+	if (!name.begins_with("theme_override")) {
 		return false;
 	}
 
 	if (p_value.get_type() == Variant::NIL || (p_value.get_type() == Variant::OBJECT && (Object *)p_value == nullptr)) {
-		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
 				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
 				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
 				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			data.font_size_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
@@ -294,22 +293,22 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 	} else {
-		if (name.begins_with("theme_override_icons/") || name.begins_with("custom_icons/")) {
+		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_icon_override(dname, p_value);
-		} else if (name.begins_with("theme_override_styles/") || name.begins_with("custom_styles/")) {
+		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_style_override(dname, p_value);
-		} else if (name.begins_with("theme_override_fonts/") || name.begins_with("custom_fonts/")) {
+		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_override(dname, p_value);
-		} else if (name.begins_with("theme_override_font_sizes/") || name.begins_with("custom_font_sizes/")) {
+		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_font_size_override(dname, p_value);
-		} else if (name.begins_with("theme_override_colors/") || name.begins_with("custom_colors/")) {
+		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
-		} else if (name.begins_with("theme_override_constants/") || name.begins_with("custom_constants/")) {
+		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
 		} else {
@@ -368,7 +367,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> theme = Theme::get_default();
 
-	p_list->push_back(PropertyInfo(Variant::NIL, "Theme Overrides", PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::NIL, TTRC("Theme Overrides"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	{
 		List<StringName> names;
@@ -415,7 +414,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 			}
 
-			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater", usage));
+			p_list->push_back(PropertyInfo(Variant::INT, "theme_override_font_sizes/" + E, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
 		}
 	}
 	{
@@ -472,6 +471,17 @@ void Control::_validate_property(PropertyInfo &property) const {
 		property.hint_string = hint_string;
 	}
 
+	if (property.name == "mouse_force_pass_scroll_events") {
+		// Disable force pass if the control is not stopping the event.
+		if (data.mouse_filter != MOUSE_FILTER_STOP) {
+			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
+
+	if (property.name == "scale") {
+		property.hint = PROPERTY_HINT_LINK;
+	}
+
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
 	Node *parent_node = get_parent_control();
 	if (!parent_node) {
@@ -491,7 +501,7 @@ void Control::_validate_property(PropertyInfo &property) const {
 	} else if (Object::cast_to<Container>(parent_node)) {
 		// If the parent is a container, display only container-related properties.
 		if (property.name.begins_with("anchor_") || property.name.begins_with("offset_") || property.name.begins_with("grow_") || property.name == "anchors_preset" ||
-				(property.name.begins_with("rect_") && property.name != "rect_min_size" && property.name != "rect_clip_content" && property.name != "rect_global_position")) {
+				property.name == "position" || property.name == "rotation" || property.name == "scale" || property.name == "size" || property.name == "pivot_offset") {
 			property.usage ^= PROPERTY_USAGE_EDITOR;
 
 		} else if (property.name == "layout_mode") {
@@ -691,17 +701,17 @@ void Control::_update_canvas_item_transform() {
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE: {
-		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
 			data.is_rtl_dirty = true;
 			_size_changed();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
+
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
 			connect("ready", callable_mp(this, &Control::_clear_size_warning), varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
@@ -713,41 +723,40 @@ void Control::_notification(int p_notification) {
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
-			Node *parent = this; //meh
-			Control *parent_control = nullptr;
-			bool subwindow = false;
+			if (data.theme.is_null()) {
+				if (data.parent && (data.parent->data.theme_owner || data.parent->data.theme_owner_window)) {
+					data.theme_owner = data.parent->data.theme_owner;
+					data.theme_owner_window = data.parent->data.theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				} else if (data.parent_window && (data.parent_window->theme_owner || data.parent_window->theme_owner_window)) {
+					data.theme_owner = data.parent_window->theme_owner;
+					data.theme_owner_window = data.parent_window->theme_owner_window;
+					notification(NOTIFICATION_THEME_CHANGED);
+				}
+			}
 
-			while (parent) {
-				parent = parent->get_parent();
+			CanvasItem *node = this;
+			bool has_parent_control = false;
 
+			while (!node->is_set_as_top_level()) {
+				CanvasItem *parent = Object::cast_to<CanvasItem>(node->get_parent());
 				if (!parent) {
 					break;
 				}
 
-				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
-				if (ci && ci->is_set_as_top_level()) {
-					subwindow = true;
-					break;
-				}
-
-				parent_control = Object::cast_to<Control>(parent);
-
+				Control *parent_control = Object::cast_to<Control>(parent);
 				if (parent_control) {
-					break;
-				} else if (ci) {
-				} else {
+					has_parent_control = true;
 					break;
 				}
+
+				node = parent;
 			}
 
-			if (parent_control && !subwindow) {
-				//do nothing, has a parent control and not top_level
-				if (data.theme.is_null() && parent_control->data.theme_owner) {
-					data.theme_owner = parent_control->data.theme_owner;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
+			if (has_parent_control) {
+				// Do nothing, has a parent control.
 			} else {
-				//is a regular root control or top_level
+				// Is a regular root control or top_level.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				data.RI = viewport->_gui_add_root_control(this);
@@ -758,12 +767,13 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
-				//connect viewport
+				// Connect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_CANVAS: {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
@@ -784,8 +794,8 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = nullptr;
 			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
-
 		} break;
+
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			// some parents need to know the order of the children to draw (like TabContainer)
 			// update if necessary
@@ -797,50 +807,53 @@ void Control::_notification(int p_notification) {
 			if (data.RI) {
 				get_viewport()->_gui_set_root_order_dirty();
 			}
-
 		} break;
+
 		case NOTIFICATION_RESIZED: {
 			emit_signal(SceneStringNames::get_singleton()->resized);
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			_update_canvas_item_transform();
 			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
-			//emit_signal(SceneStringNames::get_singleton()->draw);
-
 		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			emit_signal(SceneStringNames::get_singleton()->focus_entered);
 			update();
 		} break;
+
 		case NOTIFICATION_FOCUS_EXIT: {
 			emit_signal(SceneStringNames::get_singleton()->focus_exited);
 			update();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 			update();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				if (get_viewport() != nullptr) {
 					get_viewport()->_gui_hide_control(this);
 				}
-
-				//remove key focus
-
 			} else {
 				data.minimum_size_valid = false;
+				_update_minimum_size();
 				_size_changed();
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {
@@ -1102,7 +1115,7 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font && (*font)->get_data_count() > 0) {
+		if (font) {
 			return *font;
 		}
 	}
@@ -1499,14 +1512,15 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 	bool list_changed = false;
 
 	if (p_mode == LayoutMode::LAYOUT_MODE_POSITION || p_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
-		if (has_meta("_edit_layout_mode") && (int)get_meta("_edit_layout_mode") != (int)p_mode) {
+		if ((int)get_meta("_edit_layout_mode", p_mode) != (int)p_mode) {
 			list_changed = true;
 		}
 
 		set_meta("_edit_layout_mode", (int)p_mode);
 
 		if (p_mode == LayoutMode::LAYOUT_MODE_POSITION) {
-			set_meta("_edit_use_custom_anchors", false);
+			remove_meta("_edit_layout_mode");
+			remove_meta("_edit_use_custom_anchors");
 			set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
 			set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
 		}
@@ -1585,14 +1599,25 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	set_meta("_edit_layout_mode", (int)LayoutMode::LAYOUT_MODE_ANCHORS);
+	bool list_changed = false;
+
+	if (get_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS).operator int() != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		list_changed = true;
+		set_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
+	}
 
 	if (p_preset == -1) {
-		set_meta("_edit_use_custom_anchors", true);
-		notify_property_list_changed();
+		if (!get_meta("_edit_use_custom_anchors", false)) {
+			set_meta("_edit_use_custom_anchors", true);
+			notify_property_list_changed();
+		}
 		return; // Keep settings as is.
 	}
-	set_meta("_edit_use_custom_anchors", false);
+
+	if (get_meta("_edit_use_custom_anchors", true)) {
+		list_changed = true;
+		remove_meta("_edit_use_custom_anchors");
+	}
 
 	LayoutPreset preset = (LayoutPreset)p_preset;
 	// Set correct anchors.
@@ -1617,7 +1642,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_offsets_preset(preset, LayoutPresetMode::PRESET_MODE_MINSIZE);
 			break;
 	}
@@ -1625,12 +1650,14 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 	// Select correct grow directions.
 	set_grow_direction_preset(preset);
 
-	notify_property_list_changed();
+	if (list_changed) {
+		notify_property_list_changed();
+	}
 }
 
 int Control::_get_anchors_layout_preset() const {
 	// If the custom preset was selected by user, use it.
-	if (has_meta("_edit_use_custom_anchors") && (bool)get_meta("_edit_use_custom_anchors")) {
+	if ((bool)get_meta("_edit_use_custom_anchors", false)) {
 		return -1;
 	}
 
@@ -1691,7 +1718,7 @@ int Control::_get_anchors_layout_preset() const {
 	}
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_WIDE;
+		return (int)LayoutPreset::PRESET_FULL_RECT;
 	}
 
 	// Does not match any preset, return "Custom".
@@ -1710,7 +1737,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_LEFT, ANCHOR_BEGIN, p_keep_offsets);
 			break;
 
@@ -1738,7 +1765,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_TOP, ANCHOR_BEGIN, p_keep_offsets);
 			break;
 
@@ -1780,7 +1807,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_RIGHT, ANCHOR_END, p_keep_offsets);
 			break;
 	}
@@ -1808,7 +1835,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_BOTTOM, ANCHOR_END, p_keep_offsets);
 			break;
 	}
@@ -1843,7 +1870,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
 			break;
 
@@ -1871,7 +1898,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin + parent_rect.position.y;
 			break;
 
@@ -1913,7 +1940,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
 			break;
 	}
@@ -1941,7 +1968,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin + parent_rect.position.y;
 			break;
 	}
@@ -1976,7 +2003,7 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_h_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 			break;
 	}
@@ -2004,7 +2031,7 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_v_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 			break;
 	}
@@ -2055,7 +2082,7 @@ Point2 Control::get_global_position() const {
 
 Point2 Control::get_screen_position() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Point2());
-	Point2 global_pos = get_viewport()->get_canvas_transform().xform(get_global_position());
+	Point2 global_pos = get_global_transform_with_canvas().get_origin();
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
 		global_pos += w->get_position();
@@ -2317,7 +2344,7 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 
 static Control *_next_control(Control *p_from) {
 	if (p_from->is_set_as_top_level()) {
-		return nullptr; // can't go above
+		return nullptr; // Can't go above.
 	}
 
 	Control *parent = Object::cast_to<Control>(p_from->get_parent());
@@ -2337,7 +2364,7 @@ static Control *_next_control(Control *p_from) {
 		return c;
 	}
 
-	//no next in parent, try the same in parent
+	// No next in parent, try the same in parent.
 	return _next_control(parent);
 }
 
@@ -2361,7 +2388,7 @@ Control *Control::find_next_valid_focus() const {
 			}
 		}
 
-		// find next child
+		// Find next child.
 
 		Control *next_child = nullptr;
 
@@ -2377,7 +2404,7 @@ Control *Control::find_next_valid_focus() const {
 
 		if (!next_child) {
 			next_child = _next_control(from);
-			if (!next_child) { //nothing else.. go up and find either window or subwindow
+			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
 				while (next_child && !next_child->is_set_as_top_level()) {
 					next_child = cast_to<Control>(next_child->get_parent());
@@ -2395,7 +2422,7 @@ Control *Control::find_next_valid_focus() const {
 			}
 		}
 
-		if (next_child == this) { // no next control->
+		if (next_child == from || next_child == this) { // No next control.
 			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
 		}
 		if (next_child) {
@@ -2427,7 +2454,7 @@ static Control *_prev_control(Control *p_from) {
 		return p_from;
 	}
 
-	//no prev in parent, try the same in parent
+	// No prev in parent, try the same in parent.
 	return _prev_control(child);
 }
 
@@ -2451,12 +2478,12 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		// find prev child
+		// Find prev child.
 
 		Control *prev_child = nullptr;
 
 		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
-			//find last of the children
+			// Find last of the children.
 
 			prev_child = _prev_control(from);
 
@@ -2479,7 +2506,7 @@ Control *Control::find_prev_valid_focus() const {
 			}
 		}
 
-		if (prev_child == this) { // no prev control->
+		if (prev_child == from || prev_child == this) { // No prev control.
 			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
 		}
 
@@ -2915,6 +2942,7 @@ int Control::get_v_size_flags() const {
 void Control::set_mouse_filter(MouseFilter p_filter) {
 	ERR_FAIL_INDEX(p_filter, 3);
 	data.mouse_filter = p_filter;
+	notify_property_list_changed();
 	update_configuration_warnings();
 }
 
@@ -2922,99 +2950,34 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
-void Control::warp_mouse(const Point2 &p_to_pos) {
+void Control::set_force_pass_scroll_events(bool p_force_pass_scroll_events) {
+	data.force_pass_scroll_events = p_force_pass_scroll_events;
+}
+
+bool Control::is_force_pass_scroll_events() const {
+	return data.force_pass_scroll_events;
+}
+
+void Control::warp_mouse(const Point2 &p_position) {
 	ERR_FAIL_COND(!is_inside_tree());
-	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
+	get_viewport()->warp_mouse(get_global_transform_with_canvas().xform(p_position));
 }
 
 bool Control::is_text_field() const {
 	return false;
 }
 
-Array Control::structured_text_parser(StructuredTextParser p_theme_type, const Array &p_args, const String &p_text) const {
-	Array ret;
-	switch (p_theme_type) {
-		case STRUCTURED_TEXT_URI: {
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == '.') || (p_text[i] == ':') || (p_text[i] == '&') || (p_text[i] == '=') || (p_text[i] == '@') || (p_text[i] == '?') || (p_text[i] == '#')) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_FILE: {
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '\\') || (p_text[i] == '/') || (p_text[i] == ':')) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_EMAIL: {
-			bool local = true;
-			int prev = 0;
-			for (int i = 0; i < p_text.length(); i++) {
-				if ((p_text[i] == '@') && local) { // Add full "local" as single context.
-					local = false;
-					ret.push_back(Vector2i(prev, i));
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, i));
-					}
-					ret.push_back(Vector2i(i, i + 1));
-					prev = i + 1;
-				}
-			}
-			if (prev != p_text.length()) {
-				ret.push_back(Vector2i(prev, p_text.length()));
-			}
-		} break;
-		case STRUCTURED_TEXT_LIST: {
-			if (p_args.size() == 1 && p_args[0].get_type() == Variant::STRING) {
-				Vector<String> tags = p_text.split(String(p_args[0]));
-				int prev = 0;
-				for (int i = 0; i < tags.size(); i++) {
-					if (prev != i) {
-						ret.push_back(Vector2i(prev, prev + tags[i].length()));
-					}
-					ret.push_back(Vector2i(prev + tags[i].length(), prev + tags[i].length() + 1));
-					prev = prev + tags[i].length() + 1;
-				}
-			}
-		} break;
-		case STRUCTURED_TEXT_CUSTOM: {
-			Array r;
-			if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, r)) {
-				for (int i = 0; i < r.size(); i++) {
-					if (r[i].get_type() == Variant::VECTOR2I) {
-						ret.push_back(Vector2i(r[i]));
-					}
-				}
-			}
-		} break;
-		case STRUCTURED_TEXT_NONE:
-		case STRUCTURED_TEXT_DEFAULT:
-		default: {
-			ret.push_back(Vector2i(0, p_text.length()));
+Array Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
+		Array ret;
+		if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret)) {
+			return ret;
+		} else {
+			return Array();
 		}
+	} else {
+		return TS->parse_structured_text(p_parser_type, p_args, p_text);
 	}
-	return ret;
 }
 
 void Control::set_rotation(real_t p_radians) {
@@ -3126,7 +3089,7 @@ TypedArray<String> Control::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
-		warnings.push_back(TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
+		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
 	return warnings;
@@ -3209,6 +3172,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
+	ClassDB::bind_method(D_METHOD("get_screen_position"), &Control::get_screen_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
@@ -3306,6 +3270,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
 
+	ClassDB::bind_method(D_METHOD("set_force_pass_scroll_events", "force_pass_scroll_events"), &Control::set_force_pass_scroll_events);
+	ClassDB::bind_method(D_METHOD("is_force_pass_scroll_events"), &Control::is_force_pass_scroll_events);
+
 	ClassDB::bind_method(D_METHOD("set_clip_contents", "enable"), &Control::set_clip_contents);
 	ClassDB::bind_method(D_METHOD("is_clipping_contents"), &Control::is_clipping_contents);
 
@@ -3315,7 +3282,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Control::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
@@ -3327,8 +3294,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
 
 	ADD_GROUP("Layout", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
@@ -3348,24 +3315,22 @@ void Control::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anchor_bottom", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "_set_anchor", "get_anchor", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Anchor Offsets", "offset_", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_TOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_offset", "get_offset", SIDE_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_left", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_right", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "offset_bottom", PROPERTY_HINT_RANGE, "-4096,4096,suffix:px"), "set_offset", "get_offset", SIDE_BOTTOM);
 
 	ADD_SUBGROUP_INDENT("Grow Direction", "grow_", 1);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_horizontal", PROPERTY_HINT_ENUM, "Left,Right,Both"), "set_h_grow_direction", "get_h_grow_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grow_vertical", PROPERTY_HINT_ENUM, "Top,Bottom,Both"), "set_v_grow_direction", "get_v_grow_direction");
 
-	ADD_SUBGROUP("Rectangle", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_global_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
-
-	ADD_SUBGROUP("Transform", "rect_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rect_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "rect_pivot_offset"), "set_pivot_offset", "get_pivot_offset");
+	ADD_SUBGROUP("Transform", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "_set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "_set_global_position", "get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_pivot_offset", "get_pivot_offset");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");
@@ -3389,6 +3354,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
 	ADD_GROUP("Theme", "theme_");
@@ -3442,7 +3408,7 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_BOTTOM_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_VCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_HCENTER_WIDE);
-	BIND_ENUM_CONSTANT(PRESET_WIDE);
+	BIND_ENUM_CONSTANT(PRESET_FULL_RECT);
 
 	BIND_ENUM_CONSTANT(PRESET_MODE_MINSIZE);
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_WIDTH);
@@ -3476,14 +3442,6 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_AUTO);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_LTR);
 	BIND_ENUM_CONSTANT(TEXT_DIRECTION_RTL);
-
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_DEFAULT);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_URI);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_FILE);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_EMAIL);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_LIST);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_NONE);
-	BIND_ENUM_CONSTANT(STRUCTURED_TEXT_CUSTOM);
 
 	ADD_SIGNAL(MethodInfo("resized"));
 	ADD_SIGNAL(MethodInfo("gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));

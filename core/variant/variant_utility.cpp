@@ -219,16 +219,20 @@ struct VariantUtilityFunctions {
 		return Math::step_decimals(step);
 	}
 
-	static inline int range_step_decimals(float step) {
-		return Math::range_step_decimals(step);
-	}
-
 	static inline double snapped(double value, double step) {
 		return Math::snapped(value, step);
 	}
 
 	static inline double lerp(double from, double to, double weight) {
 		return Math::lerp(from, to, weight);
+	}
+
+	static inline double cubic_interpolate(double from, double to, double pre, double post, double weight) {
+		return Math::cubic_interpolate(from, to, pre, post, weight);
+	}
+
+	static inline double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+		return Math::bezier_interpolate(p_start, p_control_1, p_control_2, p_end, p_t);
 	}
 
 	static inline double lerp_angle(double from, double to, double weight) {
@@ -265,6 +269,52 @@ struct VariantUtilityFunctions {
 
 	static inline double db2linear(double db) {
 		return Math::db2linear(db);
+	}
+
+	static inline Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
+		Variant::Type x_type = p_x.get_type();
+		if (x_type != Variant::INT && x_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type min_type = p_min.get_type();
+		if (min_type != Variant::INT && min_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant::Type max_type = p_max.get_type();
+		if (max_type != Variant::INT && max_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = x_type;
+			return Variant();
+		}
+
+		Variant value;
+
+		switch (x_type) {
+			case Variant::INT: {
+				if (x_type != min_type || x_type != max_type) {
+					value = wrapf((double)p_x, (double)p_min, (double)p_max);
+				} else {
+					value = wrapi((int)p_x, (int)p_min, (int)p_max);
+				}
+			} break;
+			case Variant::FLOAT: {
+				value = wrapf((double)p_x, (double)p_min, (double)p_max);
+			} break;
+			default:
+				break;
+		}
+
+		r_error.error = Callable::CallError::CALL_OK;
+		return value;
 	}
 
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
@@ -435,7 +485,7 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_OK;
 			if (obj.is_ref_counted()) {
 				Ref<WeakRef> wref = memnew(WeakRef);
-				REF r = obj;
+				Ref<RefCounted> r = obj;
 				if (r.is_valid()) {
 					wref->set_ref(r);
 				}
@@ -470,20 +520,20 @@ struct VariantUtilityFunctions {
 			r_error.argument = 1;
 			return String();
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 
-		return str;
+		return s;
 	}
 
 	static inline String error_string(Error error) {
@@ -495,98 +545,114 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_line(str);
+		print_line(s);
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		String s;
+		for (int i = 0; i < p_arg_count; i++) {
+			String os = p_args[i]->operator String();
+
+			if (i == 0) {
+				s = os;
+			} else {
+				s += os;
+			}
+		}
+
+		print_line_rich(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			String str;
+			String s;
 			for (int i = 0; i < p_arg_count; i++) {
 				String os = p_args[i]->operator String();
 
 				if (i == 0) {
-					str = os;
+					s = os;
 				} else {
-					str += os;
+					s += os;
 				}
 			}
 
 			// No need to use `print_verbose()` as this call already only happens
 			// when verbose mode is enabled. This avoids performing string argument concatenation
 			// when not needed.
-			print_line(str);
+			print_line(s);
 		}
 
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		print_error(str);
+		print_error(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += "\t";
+				s += "\t";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
-				str += " ";
+				s += " ";
 			}
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		print_line(str);
+		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		OS::get_singleton()->print("%s", str.utf8().get_data());
+		OS::get_singleton()->print("%s", s.utf8().get_data());
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -595,18 +661,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		ERR_PRINT(str);
+		ERR_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -615,18 +681,18 @@ struct VariantUtilityFunctions {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 1;
 		}
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
 
 			if (i == 0) {
-				str = os;
+				s = os;
 			} else {
-				str += os;
+				s += os;
 			}
 		}
 
-		WARN_PRINT(str);
+		WARN_PRINT(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -1110,14 +1176,14 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 struct VariantUtilityFunctionInfo {
-	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant::ValidatedUtilityFunction validated_call_utility;
-	Variant::PTRUtilityFunction ptr_call_utility;
+	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedUtilityFunction validated_call_utility = nullptr;
+	Variant::PTRUtilityFunction ptr_call_utility = nullptr;
 	Vector<String> argnames;
-	bool is_vararg;
-	bool returns_value;
-	int argcount;
-	Variant::Type (*get_arg_type)(int);
+	bool is_vararg = false;
+	bool returns_value = false;
+	int argcount = 0;
+	Variant::Type (*get_arg_type)(int) = nullptr;
 	Variant::Type return_type;
 	Variant::UtilityFunctionType type;
 };
@@ -1200,10 +1266,11 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cubic_interpolate, sarray("from", "to", "pre", "post", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
@@ -1216,6 +1283,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
 
+	FUNCBINDVR3(wrap, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1254,6 +1322,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
@@ -1423,17 +1492,17 @@ uint32_t Variant::get_utility_function_hash(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	ERR_FAIL_COND_V(!bfi, 0);
 
-	uint32_t hash = hash_djb2_one_32(bfi->is_vararg);
-	hash = hash_djb2_one_32(bfi->returns_value, hash);
+	uint32_t hash = hash_murmur3_one_32(bfi->is_vararg);
+	hash = hash_murmur3_one_32(bfi->returns_value, hash);
 	if (bfi->returns_value) {
-		hash = hash_djb2_one_32(bfi->return_type, hash);
+		hash = hash_murmur3_one_32(bfi->return_type, hash);
 	}
-	hash = hash_djb2_one_32(bfi->argcount, hash);
+	hash = hash_murmur3_one_32(bfi->argcount, hash);
 	for (int i = 0; i < bfi->argcount; i++) {
-		hash = hash_djb2_one_32(bfi->get_arg_type(i), hash);
+		hash = hash_murmur3_one_32(bfi->get_arg_type(i), hash);
 	}
 
-	return hash;
+	return hash_fmix32(hash);
 }
 
 void Variant::get_utility_function_list(List<StringName> *r_functions) {

@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_value_changed(double) {
+void SpinBox::_value_changed(double p_value) {
 	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 	if (!prefix.is_empty()) {
 		value = prefix + " " + value;
@@ -48,6 +48,7 @@ void SpinBox::_value_changed(double) {
 		value += " " + suffix;
 	}
 	line_edit->set_text(value);
+	Range::_value_changed(p_value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -61,7 +62,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 		return;
 	}
 
-	Variant value = expr->execute(Array(), nullptr, false);
+	Variant value = expr->execute(Array(), nullptr, false, true);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 	}
@@ -166,7 +167,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
-			float diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8f) * SIGN(drag.diff_y);
+			double diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8) * SIGN(drag.diff_y);
 			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -196,34 +197,44 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 }
 
 void SpinBox::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
 
-		_adjust_width_for_icon(updown);
+			_adjust_width_for_icon(updown);
 
-		RID ci = get_canvas_item();
-		Size2i size = get_size();
+			RID ci = get_canvas_item();
+			Size2i size = get_size();
 
-		if (is_layout_rtl()) {
-			updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
-		} else {
-			updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
-		}
+			if (is_layout_rtl()) {
+				updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
+			} else {
+				updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+			}
+		} break;
 
-	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
-		//_value_changed(0);
-	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-		_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
-		_value_changed(0);
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		_release_mouse();
-	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		_value_changed(0);
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		call_deferred(SNAME("update_minimum_size"));
-		get_line_edit()->call_deferred(SNAME("update_minimum_size"));
-	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		update();
+		case NOTIFICATION_ENTER_TREE: {
+			_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
+			_value_changed(0);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			_release_mouse();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_value_changed(0);
+			update();
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			call_deferred(SNAME("update_minimum_size"));
+			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+		} break;
+
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			update();
+		} break;
 	}
 }
 
@@ -308,7 +319,7 @@ SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
-	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	line_edit->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 

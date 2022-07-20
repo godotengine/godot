@@ -82,12 +82,6 @@ void Camera3D::_update_camera() {
 
 	RenderingServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
-	// here goes listener stuff
-	/*
-	if (viewport_ptr && is_inside_scene() && is_current())
-		get_viewport()->_camera_3d_transform_changed_notify();
-	*/
-
 	if (get_tree()->is_node_being_edited(this) || !is_current()) {
 		return;
 	}
@@ -108,14 +102,15 @@ void Camera3D::_notification(int p_what) {
 			if (current || first_camera) {
 				viewport->_camera_3d_set(this);
 			}
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_WORLD: {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
@@ -131,13 +126,14 @@ void Camera3D::_notification(int p_what) {
 				viewport->_camera_3d_remove(this);
 				viewport = nullptr;
 			}
-
 		} break;
+
 		case NOTIFICATION_BECAME_CURRENT: {
 			if (viewport) {
 				viewport->find_world_3d()->_register_camera(this);
 			}
 		} break;
+
 		case NOTIFICATION_LOST_CURRENT: {
 			if (viewport) {
 				viewport->find_world_3d()->_remove_camera(this);
@@ -148,8 +144,8 @@ void Camera3D::_notification(int p_what) {
 
 Transform3D Camera3D::get_camera_transform() const {
 	Transform3D tr = get_global_transform().orthonormalized();
-	tr.origin += tr.basis.get_axis(1) * v_offset;
-	tr.origin += tr.basis.get_axis(0) * h_offset;
+	tr.origin += tr.basis.get_column(1) * v_offset;
+	tr.origin += tr.basis.get_column(0) * h_offset;
 	return tr;
 }
 
@@ -221,8 +217,6 @@ void Camera3D::make_current() {
 	}
 
 	get_viewport()->_camera_3d_set(this);
-
-	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
 void Camera3D::clear_current(bool p_enable_next) {
@@ -311,7 +305,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 
 bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 	Transform3D t = get_global_transform();
-	Vector3 eyedir = -t.basis.get_axis(2).normalized();
+	Vector3 eyedir = -t.basis.get_column(2).normalized();
 	return eyedir.dot(p_pos - t.origin) < near;
 }
 
@@ -479,9 +473,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_near", "near"), &Camera3D::set_near);
 	ClassDB::bind_method(D_METHOD("get_projection"), &Camera3D::get_projection);
 	ClassDB::bind_method(D_METHOD("set_projection", "mode"), &Camera3D::set_projection);
-	ClassDB::bind_method(D_METHOD("set_h_offset", "ofs"), &Camera3D::set_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset", "offset"), &Camera3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &Camera3D::get_h_offset);
-	ClassDB::bind_method(D_METHOD("set_v_offset", "ofs"), &Camera3D::set_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset", "offset"), &Camera3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera3D::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);
@@ -507,16 +501,16 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_effects", "get_effects");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp"), "set_near", "get_near");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp"), "set_far", "get_far");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.01,suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
@@ -561,7 +555,7 @@ void Camera3D::set_fov(real_t p_fov) {
 }
 
 void Camera3D::set_size(real_t p_size) {
-	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
+	ERR_FAIL_COND(p_size < 0.001 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 }

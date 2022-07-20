@@ -34,6 +34,7 @@
 #include "core/io/json.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
@@ -100,7 +101,7 @@ bool EditorFeatureProfile::is_class_editor_disabled(const StringName &p_class) c
 void EditorFeatureProfile::set_disable_class_property(const StringName &p_class, const StringName &p_property, bool p_disabled) {
 	if (p_disabled) {
 		if (!disabled_properties.has(p_class)) {
-			disabled_properties[p_class] = Set<StringName>();
+			disabled_properties[p_class] = HashSet<StringName>();
 		}
 
 		disabled_properties[p_class].insert(p_property);
@@ -165,24 +166,24 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Dictionary data;
 	data["type"] = "feature_profile";
 	Array dis_classes;
-	for (Set<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
-		dis_classes.push_back(String(E->get()));
+	for (const StringName &E : disabled_classes) {
+		dis_classes.push_back(String(E));
 	}
 	dis_classes.sort();
 	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
-	for (Set<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
-		dis_editors.push_back(String(E->get()));
+	for (const StringName &E : disabled_editors) {
+		dis_editors.push_back(String(E));
 	}
 	dis_editors.sort();
 	data["disabled_editors"] = dis_editors;
 
 	Array dis_props;
 
-	for (KeyValue<StringName, Set<StringName>> &E : disabled_properties) {
-		for (Set<StringName>::Element *F = E.value.front(); F; F = F->next()) {
-			dis_props.push_back(String(E.key) + ":" + String(F->get()));
+	for (KeyValue<StringName, HashSet<StringName>> &E : disabled_properties) {
+		for (const StringName &F : E.value) {
+			dis_props.push_back(String(E.key) + ":" + String(F));
 		}
 	}
 
@@ -197,13 +198,12 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	data["disabled_features"] = dis_features;
 
-	FileAccessRef f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	JSON json;
 	String text = json.stringify(data, "\t");
 	f->store_string(text);
-	f->close();
 	return OK;
 }
 
@@ -309,18 +309,20 @@ EditorFeatureProfile::EditorFeatureProfile() {}
 //////////////////////////
 
 void EditorFeatureProfileManager::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		current_profile = EDITOR_GET("_default_feature_profile");
-		if (!current_profile.is_empty()) {
-			current.instantiate();
-			Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
-			if (err != OK) {
-				ERR_PRINT("Error loading default feature profile: " + current_profile);
-				current_profile = String();
-				current.unref();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			current_profile = EDITOR_GET("_default_feature_profile");
+			if (!current_profile.is_empty()) {
+				current.instantiate();
+				Error err = current->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
+				if (err != OK) {
+					ERR_PRINT("Error loading default feature profile: " + current_profile);
+					current_profile = String();
+					current.unref();
+				}
 			}
-		}
-		_update_profile_list(current_profile);
+			_update_profile_list(current_profile);
+		} break;
 	}
 }
 
@@ -347,8 +349,8 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	}
 
 	Vector<String> profiles;
-	DirAccessRef d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> d = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(d.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	d->list_dir_begin();
 	while (true) {
@@ -450,8 +452,8 @@ void EditorFeatureProfileManager::_profile_action(int p_action) {
 void EditorFeatureProfileManager::_erase_selected_profile() {
 	String selected = _get_selected_profile();
 	ERR_FAIL_COND(selected.is_empty());
-	DirAccessRef da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
-	ERR_FAIL_COND_MSG(!da, "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
+	Ref<DirAccess> da = DirAccess::open(EditorSettings::get_singleton()->get_feature_profiles_dir());
+	ERR_FAIL_COND_MSG(da.is_null(), "Cannot open directory '" + EditorSettings::get_singleton()->get_feature_profiles_dir() + "'.");
 
 	da->remove(selected + ".profile");
 	if (selected == current_profile) {
@@ -554,9 +556,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		String class_description;
 
 		DocTools *dd = EditorHelp::get_doc_data();
-		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(class_name);
+		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
 		if (E) {
-			class_description = DTR(E->get().brief_description);
+			class_description = DTR(E->value.brief_description);
 		}
 
 		description_bit->set_text(class_description);
@@ -605,17 +607,24 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		TreeItem *properties = property_list->create_item(root);
 		properties->set_text(0, TTR("Class Properties:"));
 
+		const EditorPropertyNameProcessor::Style text_style = EditorPropertyNameProcessor::get_settings_style();
+		const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(text_style);
+
 		for (const PropertyInfo &E : props) {
 			String name = E.name;
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
+			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style);
+
 			TreeItem *property = property_list->create_item(properties);
 			property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			property->set_editable(0, true);
 			property->set_selectable(0, true);
 			property->set_checked(0, !edited->is_class_property_disabled(class_name, name));
-			property->set_text(0, name.capitalize());
+			property->set_text(0, text);
+			property->set_tooltip(0, tooltip);
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));
@@ -974,7 +983,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(new_profile_dialog);
 	new_profile_dialog->connect("confirmed", callable_mp(this, &EditorFeatureProfileManager::_create_new_profile));
 	new_profile_dialog->register_text_enter(new_profile_name);
-	new_profile_dialog->get_ok_button()->set_text(TTR("Create"));
+	new_profile_dialog->set_ok_button_text(TTR("Create"));
 
 	erase_profile_dialog = memnew(ConfirmationDialog);
 	add_child(erase_profile_dialog);
@@ -984,7 +993,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	import_profiles = memnew(EditorFileDialog);
 	add_child(import_profiles);
 	import_profiles->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
-	import_profiles->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	import_profiles->add_filter("*.profile", TTR("Godot Feature Profile"));
 	import_profiles->connect("files_selected", callable_mp(this, &EditorFeatureProfileManager::_import_profiles));
 	import_profiles->set_title(TTR("Import Profile(s)"));
 	import_profiles->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -992,7 +1001,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.profile; " + TTR("Godot Feature Profile"));
+	export_profile->add_filter("*.profile", TTR("Godot Feature Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorFeatureProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -1005,8 +1014,6 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	add_child(update_timer);
 	update_timer->connect("timeout", callable_mp(this, &EditorFeatureProfileManager::_emit_current_profile_changed));
 	update_timer->set_one_shot(true);
-
-	updating_features = false;
 
 	singleton = this;
 }

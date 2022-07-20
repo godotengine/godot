@@ -43,7 +43,7 @@ class IPUnix : public IP {
 	static IP *_create_unix();
 
 public:
-	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const override;
+	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override;
 
 	static void make_default();
 	IPUnix();

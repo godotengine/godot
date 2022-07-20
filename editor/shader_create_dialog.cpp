@@ -57,6 +57,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 			current_mode = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_mode", 0);
 			mode_menu->select(current_mode);
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
@@ -134,7 +135,7 @@ void ShaderCreateDialog::ok_pressed() {
 }
 
 void ShaderCreateDialog::_create_new() {
-	RES shader;
+	Ref<Resource> shader;
 
 	if (language_menu->get_selected() == int(SHADER_TYPE_TEXT)) {
 		Ref<Shader> text_shader;
@@ -183,7 +184,6 @@ void ShaderCreateDialog::_create_new() {
 		Ref<VisualShader> visual_shader;
 		visual_shader.instantiate();
 		shader = visual_shader;
-		visual_shader->set_engine_version(Engine::get_singleton()->get_version_info());
 		visual_shader->set_mode(Shader::Mode(current_mode));
 	}
 
@@ -204,7 +204,7 @@ void ShaderCreateDialog::_create_new() {
 
 void ShaderCreateDialog::_load_exist() {
 	String path = file_path->get_text();
-	RES p_shader = ResourceLoader::load(path, "Shader");
+	Ref<Resource> p_shader = ResourceLoader::load(path, "Shader");
 	if (p_shader.is_null()) {
 		alert->set_text(vformat(TTR("Error loading shader from %s"), path));
 		alert->popup_centered();
@@ -270,7 +270,7 @@ void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
 void ShaderCreateDialog::_browse_path() {
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_browse->set_title(TTR("Open Shader / Choose Location"));
-	file_browse->get_ok_button()->set_text(TTR("Open"));
+	file_browse->set_ok_button_text(TTR("Open"));
 
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
@@ -312,7 +312,7 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
@@ -370,18 +370,18 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		return TTR("Path is not local.");
 	}
 
-	DirAccessRef d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
 		return TTR("Invalid base path.");
 	}
 
-	DirAccessRef f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (f->dir_exists(p)) {
 		return TTR("A directory with the same name exists.");
 	}
 
 	String extension = p.get_extension();
-	Set<String> extensions;
+	HashSet<String> extensions;
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		for (const String &ext : language_data[i].extensions) {
@@ -469,20 +469,20 @@ void ShaderCreateDialog::_update_dialog() {
 	builtin_warning_label->set_visible(is_built_in);
 
 	if (is_built_in) {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		_msg_path_valid(true, TTR("Built-in shader (into scene file)."));
 	} else if (is_new_shader_created) {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will create a new shader file."));
 		}
 	} else if (load_enabled) {
-		get_ok_button()->set_text(TTR("Load"));
+		set_ok_button_text(TTR("Load"));
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will load an existing shader file."));
 		}
 	} else {
-		get_ok_button()->set_text(TTR("Create"));
+		set_ok_button_text(TTR("Create"));
 		_msg_path_valid(false, TTR("Shader file already exists."));
 
 		shader_ok = false;
@@ -528,7 +528,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	builtin_warning_label->set_text(
 			TTR("Note: Built-in shaders can't be edited using an external editor."));
 	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	builtin_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
@@ -632,13 +632,13 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	add_child(file_browse);
 
 	alert = memnew(AcceptDialog);
-	alert->get_label()->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);
 
-	get_ok_button()->set_text(TTR("Create"));
+	set_ok_button_text(TTR("Create"));
 	set_hide_on_ok(false);
 
 	set_title(TTR("Create Shader"));

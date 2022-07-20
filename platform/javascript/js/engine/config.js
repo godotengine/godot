@@ -334,6 +334,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			locale = navigator.languages ? navigator.languages[0] : navigator.language;
 			locale = locale.split('.')[0];
 		}
+		locale = locale.replace('-', '_');
 		const onExit = this.onExit;
 
 		// Godot configuration.

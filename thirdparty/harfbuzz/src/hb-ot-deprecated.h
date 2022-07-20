@@ -50,6 +50,21 @@ HB_BEGIN_DECLS
  */
 #define HB_MATH_GLYPH_PART_FLAG_EXTENDER HB_OT_MATH_GLYPH_PART_FLAG_EXTENDER
 
+/* https://github.com/harfbuzz/harfbuzz/pull/3417 */
+/**
+ * HB_OT_MATH_SCRIPT:
+ *
+ * Use #HB_SCRIPT_MATH or #HB_OT_TAG_MATH_SCRIPT instead.
+ *
+ * <note>Previous versions of this documentation recommended passing
+ * #HB_OT_MATH_SCRIPT to hb_buffer_set_script() to enable math shaping, but this
+ * usage is no longer supported. Use #HB_SCRIPT_MATH instead.</note>
+ *
+ * Since: 1.3.3
+ * Deprecated: 3.4.0
+ */
+#define HB_OT_MATH_SCRIPT HB_OT_TAG_MATH_SCRIPT
+
 
 /* Like hb_ot_layout_table_find_script, but takes zero-terminated array of scripts to test */
 HB_EXTERN HB_DEPRECATED_FOR (hb_ot_layout_table_select_script) hb_bool_t

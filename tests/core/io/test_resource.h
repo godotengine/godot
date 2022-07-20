@@ -69,7 +69,7 @@ TEST_CASE("[Resource] Duplication") {
 TEST_CASE("[Resource] Saving and loading") {
 	Ref<Resource> resource = memnew(Resource);
 	resource->set_name("Hello world");
-	resource->set_meta("    ExampleMetadata    ", Vector2i(40, 80));
+	resource->set_meta("ExampleMetadata", Vector2i(40, 80));
 	resource->set_meta("string", "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks");
 	Ref<Resource> child_resource = memnew(Resource);
 	child_resource->set_name("I'm a child resource");
@@ -84,7 +84,7 @@ TEST_CASE("[Resource] Saving and loading") {
 			loaded_resource_binary->get_name() == "Hello world",
 			"The loaded resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_binary->get_meta("    ExampleMetadata    ") == Vector2i(40, 80),
+			loaded_resource_binary->get_meta("ExampleMetadata") == Vector2i(40, 80),
 			"The loaded resource metadata should be equal to the expected value.");
 	CHECK_MESSAGE(
 			loaded_resource_binary->get_meta("string") == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",
@@ -99,7 +99,7 @@ TEST_CASE("[Resource] Saving and loading") {
 			loaded_resource_text->get_name() == "Hello world",
 			"The loaded resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			loaded_resource_text->get_meta("    ExampleMetadata    ") == Vector2i(40, 80),
+			loaded_resource_text->get_meta("ExampleMetadata") == Vector2i(40, 80),
 			"The loaded resource metadata should be equal to the expected value.");
 	CHECK_MESSAGE(
 			loaded_resource_text->get_meta("string") == "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks",

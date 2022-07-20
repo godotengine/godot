@@ -35,49 +35,51 @@
 #include "servers/audio_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
-			play();
-		}
-	}
-
-	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-			if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
-				playbacks_to_remove.push_back(playback);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+				play();
 			}
-		}
-		// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
-		for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
-			stream_playbacks.erase(playback);
-		}
-		if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
-			// This node is no longer actively playing audio.
-			active.clear();
-			set_process_internal(false);
-		}
-		if (!playbacks_to_remove.is_empty()) {
-			emit_signal(SNAME("finished"));
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-			AudioServer::get_singleton()->stop_playback_stream(playback);
-		}
-		stream_playbacks.clear();
-	}
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Vector<Ref<AudioStreamPlayback>> playbacks_to_remove;
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+					playbacks_to_remove.push_back(playback);
+				}
+			}
+			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
+			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
+				stream_playbacks.erase(playback);
+			}
+			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
+				// This node is no longer actively playing audio.
+				active.clear();
+				set_process_internal(false);
+			}
+			if (!playbacks_to_remove.is_empty()) {
+				emit_signal(SNAME("finished"));
+			}
+		} break;
 
-	if (p_what == NOTIFICATION_PAUSED) {
-		if (!can_process()) {
-			// Node can't process so we start fading out to silence
-			set_stream_paused(true);
-		}
-	}
+		case NOTIFICATION_EXIT_TREE: {
+			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+				AudioServer::get_singleton()->stop_playback_stream(playback);
+			}
+			stream_playbacks.clear();
+		} break;
 
-	if (p_what == NOTIFICATION_UNPAUSED) {
-		set_stream_paused(false);
+		case NOTIFICATION_PAUSED: {
+			if (!can_process()) {
+				// Node can't process so we start fading out to silence
+				set_stream_paused(true);
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			set_stream_paused(false);
+		} break;
 	}
 }
 
@@ -347,7 +349,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");

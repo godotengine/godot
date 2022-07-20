@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "godot_body_pair_2d.h"
+
 #include "godot_collision_solver_2d.h"
 #include "godot_space_2d.h"
 
@@ -38,7 +39,7 @@
 #define MAX_BIAS_ROTATION (Math_PI / 8)
 
 void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self) {
-	GodotBodyPair2D *self = (GodotBodyPair2D *)p_self;
+	GodotBodyPair2D *self = static_cast<GodotBodyPair2D *>(p_self);
 
 	self->_contact_added_callback(p_point_A, p_point_B);
 }
@@ -202,7 +203,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	// Check one-way collision based on motion direction.
 	if (p_A->get_shape(p_shape_A)->allows_one_way_collision() && p_B->is_shape_set_as_one_way_collision(p_shape_B)) {
-		Vector2 direction = p_xform_B.get_axis(1).normalized();
+		Vector2 direction = p_xform_B.columns[1].normalized();
 		if (direction.dot(mnormal) < CMP_EPSILON) {
 			collided = false;
 			oneway_disabled = true;
@@ -259,7 +260,7 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 	Transform2D xform_Bu = B->get_transform();
-	xform_Bu.elements[2] -= offset_A;
+	xform_Bu.columns[2] -= offset_A;
 	Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	GodotShape2D *shape_A_ptr = A->get_shape(shape_A);
@@ -299,11 +300,11 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 	if (!prev_collided) {
 		if (shape_B_ptr->allows_one_way_collision() && A->is_shape_set_as_one_way_collision(shape_A)) {
-			Vector2 direction = xform_A.get_axis(1).normalized();
+			Vector2 direction = xform_A.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (c.normal.dot(direction) > -CMP_EPSILON) { //greater (normal inverted)
+				if (c.normal.dot(direction) > -CMP_EPSILON) { // Greater (normal inverted).
 					continue;
 				}
 				valid = true;
@@ -317,11 +318,11 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		}
 
 		if (shape_A_ptr->allows_one_way_collision() && B->is_shape_set_as_one_way_collision(shape_B)) {
-			Vector2 direction = xform_B.get_axis(1).normalized();
+			Vector2 direction = xform_B.columns[1].normalized();
 			bool valid = false;
 			for (int i = 0; i < contact_count; i++) {
 				Contact &c = contacts[i];
-				if (c.normal.dot(direction) < CMP_EPSILON) { //less (normal ok)
+				if (c.normal.dot(direction) < CMP_EPSILON) { // Less (normal ok).
 					continue;
 				}
 				valid = true;
@@ -350,7 +351,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
 			Transform2D xform_Bu = B->get_transform();
-			xform_Bu.elements[2] -= offset_A;
+			xform_Bu.columns[2] -= offset_A;
 			Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 			if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {

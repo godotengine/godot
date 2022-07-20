@@ -8,7 +8,7 @@
  * be used to parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2004-2021 by
+ * Copyright (C) 2004-2022 by
  * Albert Chin-A-Young.
  *
  * based on code in `src/gzip/ftgzip.c'
@@ -369,7 +369,7 @@
     FT_ZERO( stream );
     stream->memory = memory;
 
-    if ( !FT_NEW( zip ) )
+    if ( !FT_QNEW( zip ) )
     {
       error = ft_lzw_file_init( zip, stream, source );
       if ( error )

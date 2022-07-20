@@ -40,7 +40,7 @@ class Engine {
 public:
 	struct Singleton {
 		StringName name;
-		Object *ptr;
+		Object *ptr = nullptr;
 		StringName class_name; //used for binding generation hinting
 		bool user_created = false;
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
@@ -69,9 +69,10 @@ private:
 	bool _in_physics = false;
 
 	List<Singleton> singletons;
-	Map<StringName, Object *> singleton_ptrs;
+	HashMap<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint = false;
+	bool project_manager_hint = false;
 
 	static Engine *singleton;
 
@@ -119,9 +120,15 @@ public:
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
+
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+
+	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;

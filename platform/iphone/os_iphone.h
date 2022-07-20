@@ -52,11 +52,11 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-	iOS *ios;
+	iOS *ios = nullptr;
 
-	JoypadIPhone *joypad_iphone;
+	JoypadIPhone *joypad_iphone = nullptr;
 
-	MainLoop *main_loop;
+	MainLoop *main_loop = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -92,7 +92,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
@@ -109,6 +109,7 @@ public:
 	virtual String get_locale() const override;
 
 	virtual String get_unique_id() const override;
+	virtual String get_processor_name() const override;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500) override;
 

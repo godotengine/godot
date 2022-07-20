@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerSSL" inherits="StreamPeer" version="4.0">
+<class name="StreamPeerSSL" inherits="StreamPeer" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		SSL stream peer.
 	</brief_description>
@@ -42,6 +42,12 @@
 			<return type="int" enum="StreamPeerSSL.Status" />
 			<description>
 				Returns the status of the connection. See [enum Status] for values.
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="StreamPeer" />
+			<description>
+				Returns the underlying [StreamPeer] connection, used in [method accept_stream] or [method connect_to_stream].
 			</description>
 		</method>
 		<method name="poll">

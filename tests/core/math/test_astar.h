@@ -37,7 +37,7 @@
 
 namespace TestAStar {
 
-class ABCX : public AStar {
+class ABCX : public AStar3D {
 public:
 	enum {
 		A,
@@ -58,7 +58,7 @@ public:
 	}
 
 	// Disable heuristic completely.
-	real_t _compute_cost(int p_from, int p_to) {
+	real_t _compute_cost(int64_t p_from, int64_t p_to) {
 		if (p_from == A && p_to == C) {
 			return 1000;
 		}
@@ -66,18 +66,18 @@ public:
 	}
 };
 
-TEST_CASE("[AStar] ABC path") {
+TEST_CASE("[AStar3D] ABC path") {
 	ABCX abcx;
-	Vector<int> path = abcx.get_id_path(ABCX::A, ABCX::C);
+	Vector<int64_t> path = abcx.get_id_path(ABCX::A, ABCX::C);
 	REQUIRE(path.size() == 3);
 	CHECK(path[0] == ABCX::A);
 	CHECK(path[1] == ABCX::B);
 	CHECK(path[2] == ABCX::C);
 }
 
-TEST_CASE("[AStar] ABCX path") {
+TEST_CASE("[AStar3D] ABCX path") {
 	ABCX abcx;
-	Vector<int> path = abcx.get_id_path(ABCX::X, ABCX::C);
+	Vector<int64_t> path = abcx.get_id_path(ABCX::X, ABCX::C);
 	REQUIRE(path.size() == 4);
 	CHECK(path[0] == ABCX::X);
 	CHECK(path[1] == ABCX::A);
@@ -85,8 +85,8 @@ TEST_CASE("[AStar] ABCX path") {
 	CHECK(path[3] == ABCX::C);
 }
 
-TEST_CASE("[AStar] Add/Remove") {
-	AStar a;
+TEST_CASE("[AStar3D] Add/Remove") {
+	AStar3D a;
 
 	// Manual tests.
 	a.add_point(1, Vector3(0, 0, 0));
@@ -213,13 +213,13 @@ TEST_CASE("[AStar] Add/Remove") {
 	// It's been great work, cheers. \(^ ^)/
 }
 
-TEST_CASE("[Stress][AStar] Find paths") {
+TEST_CASE("[Stress][AStar3D] Find paths") {
 	// Random stress tests with Floyd-Warshall.
 	const int N = 30;
 	Math::seed(0);
 
 	for (int test = 0; test < 1000; test++) {
-		AStar a;
+		AStar3D a;
 		Vector3 p[N];
 		bool adj[N][N] = { { false } };
 
@@ -318,7 +318,7 @@ TEST_CASE("[Stress][AStar] Find paths") {
 		for (int u = 0; u < N; u++) {
 			for (int v = 0; v < N; v++) {
 				if (u != v) {
-					Vector<int> route = a.get_id_path(u, v);
+					Vector<int64_t> route = a.get_id_path(u, v);
 					if (!Math::is_inf(d[u][v])) {
 						// Reachable.
 						if (route.size() == 0) {

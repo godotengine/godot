@@ -31,8 +31,16 @@
 #ifndef REGISTER_MODULE_TYPES_H
 #define REGISTER_MODULE_TYPES_H
 
-void preregister_module_types();
-void register_module_types();
-void unregister_module_types();
+#include "core/extension/gdnative_interface.h"
+
+enum ModuleInitializationLevel {
+	MODULE_INITIALIZATION_LEVEL_CORE = GDNATIVE_INITIALIZATION_CORE,
+	MODULE_INITIALIZATION_LEVEL_SERVERS = GDNATIVE_INITIALIZATION_SERVERS,
+	MODULE_INITIALIZATION_LEVEL_SCENE = GDNATIVE_INITIALIZATION_SCENE,
+	MODULE_INITIALIZATION_LEVEL_EDITOR = GDNATIVE_INITIALIZATION_EDITOR
+};
+
+void initialize_modules(ModuleInitializationLevel p_level);
+void uninitialize_modules(ModuleInitializationLevel p_level);
 
 #endif // REGISTER_MODULE_TYPES_H

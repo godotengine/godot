@@ -50,7 +50,7 @@ class LipO : public RefCounted {
 		uint32_t align;
 	};
 
-	FileAccess *fa = nullptr;
+	Ref<FileAccess> fa;
 	Vector<FatArch> archs;
 
 	static inline size_t PAD(size_t s, size_t a) {

@@ -200,7 +200,7 @@ private:
 
 	struct ContactMonitor {
 		bool locked = false;
-		Map<ObjectID, BodyState> body_map;
+		HashMap<ObjectID, BodyState> body_map;
 	};
 
 	ContactMonitor *contact_monitor = nullptr;
@@ -337,8 +337,8 @@ public:
 	};
 	bool move_and_slide();
 
-	const Vector2 &get_motion_velocity() const;
-	void set_motion_velocity(const Vector2 &p_velocity);
+	const Vector2 &get_velocity() const;
+	void set_velocity(const Vector2 &p_velocity);
 
 	bool is_on_floor() const;
 	bool is_on_floor_only() const;
@@ -378,7 +378,7 @@ private:
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t moving_platform_floor_layers = UINT32_MAX;
 	uint32_t moving_platform_wall_layers = 0;
-	Vector2 motion_velocity;
+	Vector2 velocity;
 
 	Vector2 floor_normal;
 	Vector2 platform_velocity;
@@ -441,11 +441,11 @@ private:
 	Ref<KinematicCollision2D> _get_slide_collision(int p_bounce);
 	Ref<KinematicCollision2D> _get_last_slide_collision();
 	const Vector2 &get_up_direction() const;
-	bool _on_floor_if_snapped(bool was_on_floor, bool vel_dir_facing_up);
+	bool _on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up);
 	void set_up_direction(const Vector2 &p_up_direction);
 	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
 	void _set_platform_data(const PhysicsServer2D::MotionResult &p_result);
-	void _snap_on_floor(bool was_on_floor, bool vel_dir_facing_up);
+	void _snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor = false);
 
 protected:
 	void _notification(int p_what);

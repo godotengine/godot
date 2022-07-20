@@ -80,7 +80,9 @@ void OS::print_error(const char *p_function, const char *p_file, int p_line, con
 		return;
 	}
 
-	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	if (_logger) {
+		_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	}
 }
 
 void OS::print(const char *p_format, ...) {
@@ -91,7 +93,24 @@ void OS::print(const char *p_format, ...) {
 	va_list argp;
 	va_start(argp, p_format);
 
-	_logger->logv(p_format, argp, false);
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
+
+	va_end(argp);
+}
+
+void OS::print_rich(const char *p_format, ...) {
+	if (!_stdout_enabled) {
+		return;
+	}
+
+	va_list argp;
+	va_start(argp, p_format);
+
+	if (_logger) {
+		_logger->logv(p_format, argp, false);
+	}
 
 	va_end(argp);
 }
@@ -104,7 +123,9 @@ void OS::printerr(const char *p_format, ...) {
 	va_list argp;
 	va_start(argp, p_format);
 
-	_logger->logv(p_format, argp, true);
+	if (_logger) {
+		_logger->logv(p_format, argp, true);
+	}
 
 	va_end(argp);
 }
@@ -173,7 +194,7 @@ void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
-static FileAccess *_OSPRF = nullptr;
+static Ref<FileAccess> _OSPRF;
 
 static void _OS_printres(Object *p_obj) {
 	Resource *res = Object::cast_to<Resource>(p_obj);
@@ -182,7 +203,7 @@ static void _OS_printres(Object *p_obj) {
 	}
 
 	String str = vformat("%s - %s - %s", res->to_string(), res->get_name(), res->get_path());
-	if (_OSPRF) {
+	if (_OSPRF.is_valid()) {
 		_OSPRF->store_line(str);
 	} else {
 		print_line(str);
@@ -190,24 +211,19 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF);
+	ERR_FAIL_COND(!p_to_file.is_empty() && _OSPRF.is_valid());
 	if (!p_to_file.is_empty()) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = nullptr;
+			_OSPRF.unref();
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
 	ObjectDB::debug_objects(_OS_printres);
 
-	if (!p_to_file.is_empty()) {
-		if (_OSPRF) {
-			memdelete(_OSPRF);
-		}
-		_OSPRF = nullptr;
-	}
+	_OSPRF.unref();
 }
 
 void OS::print_resources_in_use(bool p_short) {
@@ -234,6 +250,11 @@ String OS::get_locale() const {
 // `get_locale()` in a way that's consistent for all platforms.
 String OS::get_locale_language() const {
 	return get_locale().left(3).replace("_", "");
+}
+
+// Embedded PCK offset.
+uint64_t OS::get_embedded_pck_offset() const {
+	return 0;
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
@@ -328,17 +349,13 @@ void OS::yield() {
 
 void OS::ensure_user_data_dir() {
 	String dd = get_user_data_dir();
-	DirAccess *da = DirAccess::open(dd);
-	if (da) {
-		memdelete(da);
+	if (DirAccess::exists(dd)) {
 		return;
 	}
 
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
 	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
-
-	memdelete(da);
 }
 
 String OS::get_model_name() const {
@@ -356,6 +373,10 @@ String OS::get_unique_id() const {
 
 int OS::get_processor_count() const {
 	return 1;
+}
+
+String OS::get_processor_name() const {
+	return "";
 }
 
 bool OS::can_use_threads() const {
@@ -382,21 +403,27 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 
+	if (p_feature == "movie") {
+		return _writing_movie;
+	}
+
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
 		return true;
 	}
 #else
-	if (p_feature == "release")
+	if (p_feature == "release") {
 		return true;
+	}
 #endif
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone")
+	if (p_feature == "standalone") {
 		return true;
+	}
 #endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
@@ -405,19 +432,29 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
-#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	if (p_feature == "x86_64") {
 		return true;
 	}
-#elif (defined(__i386) || defined(__i386__))
+#elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
+	if (p_feature == "x86_32") {
+		return true;
+	}
+#endif
 	if (p_feature == "x86") {
 		return true;
 	}
-#elif defined(__aarch64__)
+#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
 	if (p_feature == "arm64") {
 		return true;
 	}
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(_M_ARM)
+	if (p_feature == "arm32") {
+		return true;
+	}
+#endif
 #if defined(__ARM_ARCH_7A__)
 	if (p_feature == "armv7a" || p_feature == "armv7") {
 		return true;
@@ -447,6 +484,19 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "ppc") {
+		return true;
+	}
+#elif defined(__wasm__)
+#if defined(__wasm64__)
+	if (p_feature == "wasm64") {
+		return true;
+	}
+#elif defined(__wasm32__)
+	if (p_feature == "wasm32") {
+		return true;
+	}
+#endif
+	if (p_feature == "wasm") {
 		return true;
 	}
 #endif
@@ -548,6 +598,8 @@ OS::OS() {
 }
 
 OS::~OS() {
-	memdelete(_logger);
+	if (_logger) {
+		memdelete(_logger);
+	}
 	singleton = nullptr;
 }

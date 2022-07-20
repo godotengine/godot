@@ -36,6 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/message_queue.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
@@ -47,7 +48,7 @@ bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::_handles needs to be overridden.");
 }
 
-Ref<Texture2D> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
+Ref<Texture2D> EditorResourcePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 	Ref<Texture2D> preview;
 	if (GDVIRTUAL_CALL(_generate, p_from, p_size, preview)) {
 		return preview;
@@ -61,7 +62,7 @@ Ref<Texture2D> EditorResourcePreviewGenerator::generate_from_path(const String &
 		return preview;
 	}
 
-	RES res = ResourceLoader::load(p_path);
+	Ref<Resource> res = ResourceLoader::load(p_path);
 	if (!res.is_valid()) {
 		return res;
 	}
@@ -183,7 +184,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			small_image = small_image->duplicate();
 			small_image->resize(small_thumbnail_size, small_thumbnail_size, Image::INTERPOLATE_CUBIC);
 			r_small_texture.instantiate();
-			r_small_texture->create_from_image(small_image);
+			r_small_texture->set_image(small_image);
 		}
 
 		break;
@@ -198,14 +199,12 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			if (has_small_texture) {
 				ResourceSaver::save(cache_base + "_small.png", r_small_texture);
 			}
-			FileAccess *f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
-			ERR_FAIL_COND_MSG(!f, "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
+			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
+			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			f->store_line(itos(thumbnail_size));
 			f->store_line(itos(has_small_texture));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
 			f->store_line(FileAccess::get_md5(p_item.path));
-			f->close();
-			memdelete(f);
 		}
 	}
 }
@@ -250,8 +249,8 @@ void EditorResourcePreview::_iterate() {
 				//does not have it, try to load a cached thumbnail
 
 				String file = cache_base + ".txt";
-				FileAccess *f = FileAccess::open(file, FileAccess::READ);
-				if (!f) {
+				Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
+				if (f.is_null()) {
 					// No cache found, generate
 					_generate_preview(texture, small_texture, item, cache_base);
 				} else {
@@ -264,33 +263,31 @@ void EditorResourcePreview::_iterate() {
 
 					if (tsize != thumbnail_size) {
 						cache_valid = false;
-						memdelete(f);
+						f.unref();
 					} else if (last_modtime != modtime) {
 						String last_md5 = f->get_line();
 						String md5 = FileAccess::get_md5(item.path);
-						memdelete(f);
+						f.unref();
 
 						if (last_md5 != md5) {
 							cache_valid = false;
-
 						} else {
 							//update modified time
 
-							f = FileAccess::open(file, FileAccess::WRITE);
-							if (!f) {
+							Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
+							if (f2.is_null()) {
 								// Not returning as this would leave the thread hanging and would require
 								// some proper cleanup/disabling of resource preview generation.
 								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 							} else {
-								f->store_line(itos(thumbnail_size));
-								f->store_line(itos(has_small_texture));
-								f->store_line(itos(modtime));
-								f->store_line(md5);
-								memdelete(f);
+								f2->store_line(itos(thumbnail_size));
+								f2->store_line(itos(has_small_texture));
+								f2->store_line(itos(modtime));
+								f2->store_line(md5);
 							}
 						}
 					} else {
-						memdelete(f);
+						f.unref();
 					}
 
 					if (cache_valid) {
@@ -303,14 +300,14 @@ void EditorResourcePreview::_iterate() {
 							cache_valid = false;
 						} else {
 							texture.instantiate();
-							texture->create_from_image(img);
+							texture->set_image(img);
 
 							if (has_small_texture) {
 								if (small_img->load(cache_base + "_small.png") != OK) {
 									cache_valid = false;
 								} else {
 									small_texture.instantiate();
-									small_texture->create_from_image(small_img);
+									small_texture->set_image(small_img);
 								}
 							}
 						}
@@ -433,12 +430,8 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	if (OS::get_singleton()->get_render_main_thread_mode() == OS::RENDER_ANY_THREAD) {
-		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-		thread.start(_thread_func, this);
-	} else {
-		_mainthread_only = true;
-	}
+	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+	thread.start(_thread_func, this);
 }
 
 void EditorResourcePreview::stop() {
@@ -460,19 +453,4 @@ EditorResourcePreview::EditorResourcePreview() {
 
 EditorResourcePreview::~EditorResourcePreview() {
 	stop();
-}
-
-void EditorResourcePreview::update() {
-	if (!_mainthread_only) {
-		return;
-	}
-
-	if (!exit.is_set()) {
-		// no need to even lock the mutex if the size is zero
-		// there is no problem if queue.size() is wrong, even if
-		// there was a race condition.
-		if (queue.size()) {
-			_iterate();
-		}
-	}
 }

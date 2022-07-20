@@ -51,6 +51,7 @@ protected:
 	uint32_t handshake_timeout = 3000;
 
 public:
+	virtual void set_extra_headers(const Vector<String> &p_headers) = 0;
 	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
 	virtual void stop() = 0;
 	virtual bool is_listening() const = 0;

@@ -490,6 +490,35 @@ namespace basisu
 			return dc;
 		}
 
+		void get_block_colors_etc1s(color_rgba* pBlock_colors) const
+		{
+			color_rgba b;
+
+			unpack_color5(b, get_base5_color(), true);
+
+			const int* pInten_table = g_etc1_inten_tables[get_inten_table(0)];
+
+			pBlock_colors[0].set(clamp255(b.r + pInten_table[0]), clamp255(b.g + pInten_table[0]), clamp255(b.b + pInten_table[0]), 255);
+			pBlock_colors[1].set(clamp255(b.r + pInten_table[1]), clamp255(b.g + pInten_table[1]), clamp255(b.b + pInten_table[1]), 255);
+			pBlock_colors[2].set(clamp255(b.r + pInten_table[2]), clamp255(b.g + pInten_table[2]), clamp255(b.b + pInten_table[2]), 255);
+			pBlock_colors[3].set(clamp255(b.r + pInten_table[3]), clamp255(b.g + pInten_table[3]), clamp255(b.b + pInten_table[3]), 255);
+		}
+
+		static void get_block_colors_etc1s(color_rgba* pBlock_colors, const color_rgba &base5_color, uint32_t inten_table)
+		{
+			color_rgba b;
+			b.r = (base5_color.r << 3U) | (base5_color.r >> 2U);
+			b.g = (base5_color.g << 3U) | (base5_color.g >> 2U);
+			b.b = (base5_color.b << 3U) | (base5_color.b >> 2U);
+						
+			const int* pInten_table = g_etc1_inten_tables[inten_table];
+
+			pBlock_colors[0].set(clamp255(b.r + pInten_table[0]), clamp255(b.g + pInten_table[0]), clamp255(b.b + pInten_table[0]), 255);
+			pBlock_colors[1].set(clamp255(b.r + pInten_table[1]), clamp255(b.g + pInten_table[1]), clamp255(b.b + pInten_table[1]), 255);
+			pBlock_colors[2].set(clamp255(b.r + pInten_table[2]), clamp255(b.g + pInten_table[2]), clamp255(b.b + pInten_table[2]), 255);
+			pBlock_colors[3].set(clamp255(b.r + pInten_table[3]), clamp255(b.g + pInten_table[3]), clamp255(b.b + pInten_table[3]), 255);
+		}
+
 		void get_block_color(color_rgba& color, uint32_t subblock_index, uint32_t selector_index) const
 		{
 			color_rgba b;

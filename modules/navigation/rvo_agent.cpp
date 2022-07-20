@@ -65,8 +65,9 @@ void RvoAgent::dispatch_callback() {
 		return;
 	}
 	Object *obj = ObjectDB::get_instance(callback.id);
-	if (obj == nullptr) {
+	if (!obj) {
 		callback.id = ObjectID();
+		return;
 	}
 
 	Callable::CallError responseCallError;
@@ -75,5 +76,5 @@ void RvoAgent::dispatch_callback() {
 
 	const Variant *vp[2] = { &callback.new_velocity, &callback.udata };
 	int argc = (callback.udata.get_type() == Variant::NIL) ? 1 : 2;
-	obj->call(callback.method, vp, argc, responseCallError);
+	obj->callp(callback.method, vp, argc, responseCallError);
 }

@@ -164,17 +164,6 @@ Array AudioDriver::capture_get_device_list() {
 	return list;
 }
 
-AudioDriver::AudioDriver() {
-	_last_mix_time = 0;
-	_last_mix_frames = 0;
-	input_position = 0;
-	input_size = 0;
-
-#ifdef DEBUG_ENABLED
-	prof_time = 0;
-#endif
-}
-
 AudioDriverDummy AudioDriverManager::dummy_driver;
 AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS] = {
 	&AudioDriverManager::dummy_driver,
@@ -1117,13 +1106,13 @@ float AudioServer::get_playback_speed_scale() const {
 void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
 	ERR_FAIL_COND(p_playback.is_null());
 
-	Map<StringName, Vector<AudioFrame>> map;
+	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volume_db_vector;
 
 	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
@@ -1184,13 +1173,13 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes) {
 	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
 
-	Map<StringName, Vector<AudioFrame>> map;
+	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volumes;
 
 	set_playback_bus_volumes_linear(p_playback, map);
 }
 
-void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Map<StringName, Vector<AudioFrame>> p_bus_volumes) {
+void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes) {
 	ERR_FAIL_COND(p_bus_volumes.size() > MAX_BUSES_PER_PLAYBACK);
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
@@ -1226,7 +1215,7 @@ void AudioServer::set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p
 	ERR_FAIL_COND(p_playback.is_null());
 	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
 
-	Map<StringName, Vector<AudioFrame>> map;
+	HashMap<StringName, Vector<AudioFrame>> map;
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
 	if (!playback_node) {
@@ -1343,6 +1332,7 @@ void AudioServer::init_channels_and_buffers() {
 		for (int j = 0; j < channel_count; j++) {
 			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
+		_update_bus_effects(i);
 	}
 }
 
@@ -1731,6 +1721,10 @@ void AudioServer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "capture_device"), "capture_set_device", "capture_get_device");
+	// The default value may be set to an empty string by the platform-specific audio driver.
+	// Override for class reference generation purposes.
+	ADD_PROPERTY_DEFAULT("capture_device", "Default");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed_scale"), "set_playback_speed_scale", "get_playback_speed_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
@@ -1743,15 +1737,6 @@ void AudioServer::_bind_methods() {
 
 AudioServer::AudioServer() {
 	singleton = this;
-	mix_frames = 0;
-	channel_count = 0;
-	to_mix = 0;
-#ifdef DEBUG_ENABLED
-	prof_time = 0;
-#endif
-	mix_time = 0;
-	mix_size = 0;
-	playback_speed_scale = 1;
 }
 
 AudioServer::~AudioServer() {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture3D" inherits="Texture" version="4.0">
+<class name="Texture3D" inherits="Texture" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -7,6 +7,36 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_data" qualifiers="virtual const">
+			<return type="Image[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_depth" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_format" qualifiers="virtual const">
+			<return type="int" enum="Image.Format" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_height" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_width" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_mipmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="Image[]" />
 			<description>

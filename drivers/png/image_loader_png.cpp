@@ -36,18 +36,16 @@
 
 #include <string.h>
 
-Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, bool p_force_linear, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
 	if (err) {
-		f->close();
 		return err;
 	}
 	{
 		uint8_t *writer = file_buffer.ptrw();
 		f->get_buffer(writer, buffer_size);
-		f->close();
 	}
 	const uint8_t *reader = file_buffer.ptr();
 	return PNGDriverCommon::png_to_image(reader, buffer_size, p_force_linear, p_image);

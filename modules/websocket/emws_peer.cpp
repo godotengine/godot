@@ -31,6 +31,7 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_peer.h"
+
 #include "core/io/ip.h"
 
 void EMWSPeer::set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size) {
@@ -66,8 +67,9 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 }
 
 Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	if (_in_buffer.packets_left() == 0)
+	if (_in_buffer.packets_left() == 0) {
 		return ERR_UNAVAILABLE;
+	}
 
 	int read = 0;
 	Error err = _in_buffer.read_packet(_packet_buffer.ptrw(), _packet_buffer.size(), &_is_string, read);
@@ -109,7 +111,7 @@ void EMWSPeer::close(int p_code, String p_reason) {
 
 IPAddress EMWSPeer::get_connected_host() const {
 	ERR_FAIL_V_MSG(IPAddress(), "Not supported in HTML5 export.");
-};
+}
 
 uint16_t EMWSPeer::get_connected_port() const {
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");

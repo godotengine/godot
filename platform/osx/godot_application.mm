@@ -37,6 +37,11 @@
 - (void)sendEvent:(NSEvent *)event {
 	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
 	if (ds) {
+		if ([event type] == NSEventTypeLeftMouseDown || [event type] == NSEventTypeRightMouseDown || [event type] == NSEventTypeOtherMouseDown) {
+			if (ds->mouse_process_popups()) {
+				return;
+			}
+		}
 		ds->send_event(event);
 	}
 

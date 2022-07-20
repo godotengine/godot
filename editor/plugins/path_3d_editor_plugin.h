@@ -37,12 +37,10 @@
 #include "scene/3d/path_3d.h"
 #include "scene/gui/separator.h"
 
-class EditorNode;
-
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
-	Path3D *path;
+	Path3D *path = nullptr;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
@@ -72,23 +70,21 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
-	Separator *sep;
-	Button *curve_create;
-	Button *curve_edit;
-	Button *curve_del;
-	Button *curve_close;
-	MenuButton *handle_menu;
+	Separator *sep = nullptr;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
-	EditorNode *editor;
-
-	Path3D *path;
+	Path3D *path = nullptr;
 
 	void _update_theme();
 
 	void _mode_changed(int p_idx);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
-	bool handle_clicked;
+	bool handle_clicked = false;
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
 
@@ -118,7 +114,7 @@ public:
 	bool is_handle_clicked() { return handle_clicked; }
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
-	Path3DEditorPlugin(EditorNode *p_node);
+	Path3DEditorPlugin();
 	~Path3DEditorPlugin();
 };
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" version="4.0">
+<class name="@GlobalScope" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Global scope constants and functions.
 	</brief_description>
@@ -104,6 +104,17 @@
 				[codeblock]
 				var a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
+			</description>
+		</method>
+		<method name="bezier_interpolate">
+			<return type="float" />
+			<argument index="0" name="start" type="float" />
+			<argument index="1" name="control_1" type="float" />
+			<argument index="2" name="control_2" type="float" />
+			<argument index="3" name="end" type="float" />
+			<argument index="4" name="t" type="float" />
+			<description>
+				Returns the point at the given [code]t[/code] on a one-dimnesional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [code]control_1[/code], [code]control_2[/code], and [code]end[/code] points.
 			</description>
 		</method>
 		<method name="bytes2var">
@@ -221,6 +232,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="cubic_interpolate">
+			<return type="float" />
+			<argument index="0" name="from" type="float" />
+			<argument index="1" name="to" type="float" />
+			<argument index="2" name="pre" type="float" />
+			<argument index="3" name="post" type="float" />
+			<argument index="4" name="weight" type="float" />
+			<description>
+				Cubic interpolates between two values by the factor defined in [code]weight[/code] with pre and post values.
+			</description>
+		</method>
 		<method name="db2linear">
 			<return type="float" />
 			<argument index="0" name="db" type="float" />
@@ -255,7 +277,7 @@
 				- Greater than 1.0 (exclusive): Ease in
 				[/codeblock]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
-				See also [method smoothstep]. If you need to perform more advanced transitions, use [Tween] or [AnimationPlayer].
+				See also [method smoothstep]. If you need to perform more advanced transitions, use [method Tween.interpolate_value].
 			</description>
 		</method>
 		<method name="error_string">
@@ -446,6 +468,7 @@
 				    rotation = lerp_angle(min_angle, max_angle, elapsed)
 				    elapsed += delta
 				[/codeblock]
+				[b]Note:[/b] This method lerps through the shortest path between [code]from[/code] and [code]to[/code]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
 		</method>
 		<method name="linear2db">
@@ -634,6 +657,16 @@
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
+		<method name="print_rich" qualifiers="vararg">
+			<description>
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+				[codeblock]
+				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
+				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
 		<method name="print_verbose" qualifiers="vararg">
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
@@ -778,12 +811,6 @@
 				[codeblock]
 				range_lerp(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
-			</description>
-		</method>
-		<method name="range_step_decimals">
-			<return type="int" />
-			<argument index="0" name="x" type="float" />
-			<description>
 			</description>
 		</method>
 		<method name="rid_allocate_id">
@@ -1034,6 +1061,27 @@
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
+		<method name="wrap">
+			<return type="Variant" />
+			<argument index="0" name="value" type="Variant" />
+			<argument index="1" name="min" type="Variant" />
+			<argument index="2" name="max" type="Variant" />
+			<description>
+				Wraps the [Variant] [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				Variant types [int] and [float] (real) are supported. If any of the argument is [float] the result will be [float], otherwise it is [int].
+				[codeblock]
+				var a = wrap(4, 5, 10)
+				# a is 9 (int)
+
+				var a = wrap(7, 5, 10)
+				# a is 7 (int)
+
+				var a = wrap(10.5, 5, 10)
+				# a is 5.5 (float)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="wrapf">
 			<return type="float" />
 			<argument index="0" name="value" type="float" />
@@ -1273,6 +1321,9 @@
 		<constant name="INLINE_ALIGNMENT_TEXT_MASK" value="12" enum="InlineAlignment">
 			A bit mask for [code]INLINE_ALIGNMENT_TO_*[/code] alignment constants.
 		</constant>
+		<constant name="KEY_NONE" value="0" enum="Key">
+			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
+		</constant>
 		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
@@ -1405,6 +1456,63 @@
 		<constant name="KEY_F16" value="16777259" enum="Key">
 			F16 key.
 		</constant>
+		<constant name="KEY_F17" value="16777260" enum="Key">
+			F17 key.
+		</constant>
+		<constant name="KEY_F18" value="16777261" enum="Key">
+			F18 key.
+		</constant>
+		<constant name="KEY_F19" value="16777262" enum="Key">
+			F19 key.
+		</constant>
+		<constant name="KEY_F20" value="16777263" enum="Key">
+			F20 key.
+		</constant>
+		<constant name="KEY_F21" value="16777264" enum="Key">
+			F21 key.
+		</constant>
+		<constant name="KEY_F22" value="16777265" enum="Key">
+			F22 key.
+		</constant>
+		<constant name="KEY_F23" value="16777266" enum="Key">
+			F23 key.
+		</constant>
+		<constant name="KEY_F24" value="16777267" enum="Key">
+			F24 key.
+		</constant>
+		<constant name="KEY_F25" value="16777268" enum="Key">
+			F25 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F26" value="16777269" enum="Key">
+			F26 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F27" value="16777270" enum="Key">
+			F27 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F28" value="16777271" enum="Key">
+			F28 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F29" value="16777272" enum="Key">
+			F29 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F30" value="16777273" enum="Key">
+			F30 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F31" value="16777274" enum="Key">
+			F31 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F32" value="16777275" enum="Key">
+			F32 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F33" value="16777276" enum="Key">
+			F33 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F34" value="16777277" enum="Key">
+			F34 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
+		<constant name="KEY_F35" value="16777278" enum="Key">
+			F35 key. Only supported on macOS and Linux due to a Windows limitation.
+		</constant>
 		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="Key">
 			Multiply (*) key on the numeric keypad.
 		</constant>
@@ -1450,148 +1558,148 @@
 		<constant name="KEY_KP_9" value="16777359" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="16777260" enum="Key">
+		<constant name="KEY_SUPER_L" value="16777280" enum="Key">
 			Left Super key (Windows key).
 		</constant>
-		<constant name="KEY_SUPER_R" value="16777261" enum="Key">
+		<constant name="KEY_SUPER_R" value="16777281" enum="Key">
 			Right Super key (Windows key).
 		</constant>
-		<constant name="KEY_MENU" value="16777262" enum="Key">
+		<constant name="KEY_MENU" value="16777282" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="16777263" enum="Key">
+		<constant name="KEY_HYPER_L" value="16777283" enum="Key">
 			Left Hyper key.
 		</constant>
-		<constant name="KEY_HYPER_R" value="16777264" enum="Key">
+		<constant name="KEY_HYPER_R" value="16777284" enum="Key">
 			Right Hyper key.
 		</constant>
-		<constant name="KEY_HELP" value="16777265" enum="Key">
+		<constant name="KEY_HELP" value="16777285" enum="Key">
 			Help key.
 		</constant>
-		<constant name="KEY_DIRECTION_L" value="16777266" enum="Key">
+		<constant name="KEY_DIRECTION_L" value="16777286" enum="Key">
 			Left Direction key.
 		</constant>
-		<constant name="KEY_DIRECTION_R" value="16777267" enum="Key">
+		<constant name="KEY_DIRECTION_R" value="16777287" enum="Key">
 			Right Direction key.
 		</constant>
-		<constant name="KEY_BACK" value="16777280" enum="Key">
+		<constant name="KEY_BACK" value="16777288" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
-		<constant name="KEY_FORWARD" value="16777281" enum="Key">
+		<constant name="KEY_FORWARD" value="16777289" enum="Key">
 			Media forward key.
 		</constant>
-		<constant name="KEY_STOP" value="16777282" enum="Key">
+		<constant name="KEY_STOP" value="16777290" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_REFRESH" value="16777283" enum="Key">
+		<constant name="KEY_REFRESH" value="16777291" enum="Key">
 			Media refresh key.
 		</constant>
-		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="Key">
+		<constant name="KEY_VOLUMEDOWN" value="16777292" enum="Key">
 			Volume down key.
 		</constant>
-		<constant name="KEY_VOLUMEMUTE" value="16777285" enum="Key">
+		<constant name="KEY_VOLUMEMUTE" value="16777293" enum="Key">
 			Mute volume key.
 		</constant>
-		<constant name="KEY_VOLUMEUP" value="16777286" enum="Key">
+		<constant name="KEY_VOLUMEUP" value="16777294" enum="Key">
 			Volume up key.
 		</constant>
-		<constant name="KEY_BASSBOOST" value="16777287" enum="Key">
+		<constant name="KEY_BASSBOOST" value="16777295" enum="Key">
 			Bass Boost key.
 		</constant>
-		<constant name="KEY_BASSUP" value="16777288" enum="Key">
+		<constant name="KEY_BASSUP" value="16777296" enum="Key">
 			Bass up key.
 		</constant>
-		<constant name="KEY_BASSDOWN" value="16777289" enum="Key">
+		<constant name="KEY_BASSDOWN" value="16777297" enum="Key">
 			Bass down key.
 		</constant>
-		<constant name="KEY_TREBLEUP" value="16777290" enum="Key">
+		<constant name="KEY_TREBLEUP" value="16777298" enum="Key">
 			Treble up key.
 		</constant>
-		<constant name="KEY_TREBLEDOWN" value="16777291" enum="Key">
+		<constant name="KEY_TREBLEDOWN" value="16777299" enum="Key">
 			Treble down key.
 		</constant>
-		<constant name="KEY_MEDIAPLAY" value="16777292" enum="Key">
+		<constant name="KEY_MEDIAPLAY" value="16777300" enum="Key">
 			Media play key.
 		</constant>
-		<constant name="KEY_MEDIASTOP" value="16777293" enum="Key">
+		<constant name="KEY_MEDIASTOP" value="16777301" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_MEDIAPREVIOUS" value="16777294" enum="Key">
+		<constant name="KEY_MEDIAPREVIOUS" value="16777302" enum="Key">
 			Previous song key.
 		</constant>
-		<constant name="KEY_MEDIANEXT" value="16777295" enum="Key">
+		<constant name="KEY_MEDIANEXT" value="16777303" enum="Key">
 			Next song key.
 		</constant>
-		<constant name="KEY_MEDIARECORD" value="16777296" enum="Key">
+		<constant name="KEY_MEDIARECORD" value="16777304" enum="Key">
 			Media record key.
 		</constant>
-		<constant name="KEY_HOMEPAGE" value="16777297" enum="Key">
+		<constant name="KEY_HOMEPAGE" value="16777305" enum="Key">
 			Home page key.
 		</constant>
-		<constant name="KEY_FAVORITES" value="16777298" enum="Key">
+		<constant name="KEY_FAVORITES" value="16777306" enum="Key">
 			Favorites key.
 		</constant>
-		<constant name="KEY_SEARCH" value="16777299" enum="Key">
+		<constant name="KEY_SEARCH" value="16777307" enum="Key">
 			Search key.
 		</constant>
-		<constant name="KEY_STANDBY" value="16777300" enum="Key">
+		<constant name="KEY_STANDBY" value="16777308" enum="Key">
 			Standby key.
 		</constant>
-		<constant name="KEY_OPENURL" value="16777301" enum="Key">
+		<constant name="KEY_OPENURL" value="16777309" enum="Key">
 			Open URL / Launch Browser key.
 		</constant>
-		<constant name="KEY_LAUNCHMAIL" value="16777302" enum="Key">
+		<constant name="KEY_LAUNCHMAIL" value="16777310" enum="Key">
 			Launch Mail key.
 		</constant>
-		<constant name="KEY_LAUNCHMEDIA" value="16777303" enum="Key">
+		<constant name="KEY_LAUNCHMEDIA" value="16777311" enum="Key">
 			Launch Media key.
 		</constant>
-		<constant name="KEY_LAUNCH0" value="16777304" enum="Key">
+		<constant name="KEY_LAUNCH0" value="16777312" enum="Key">
 			Launch Shortcut 0 key.
 		</constant>
-		<constant name="KEY_LAUNCH1" value="16777305" enum="Key">
+		<constant name="KEY_LAUNCH1" value="16777313" enum="Key">
 			Launch Shortcut 1 key.
 		</constant>
-		<constant name="KEY_LAUNCH2" value="16777306" enum="Key">
+		<constant name="KEY_LAUNCH2" value="16777314" enum="Key">
 			Launch Shortcut 2 key.
 		</constant>
-		<constant name="KEY_LAUNCH3" value="16777307" enum="Key">
+		<constant name="KEY_LAUNCH3" value="16777315" enum="Key">
 			Launch Shortcut 3 key.
 		</constant>
-		<constant name="KEY_LAUNCH4" value="16777308" enum="Key">
+		<constant name="KEY_LAUNCH4" value="16777316" enum="Key">
 			Launch Shortcut 4 key.
 		</constant>
-		<constant name="KEY_LAUNCH5" value="16777309" enum="Key">
+		<constant name="KEY_LAUNCH5" value="16777317" enum="Key">
 			Launch Shortcut 5 key.
 		</constant>
-		<constant name="KEY_LAUNCH6" value="16777310" enum="Key">
+		<constant name="KEY_LAUNCH6" value="16777318" enum="Key">
 			Launch Shortcut 6 key.
 		</constant>
-		<constant name="KEY_LAUNCH7" value="16777311" enum="Key">
+		<constant name="KEY_LAUNCH7" value="16777319" enum="Key">
 			Launch Shortcut 7 key.
 		</constant>
-		<constant name="KEY_LAUNCH8" value="16777312" enum="Key">
+		<constant name="KEY_LAUNCH8" value="16777320" enum="Key">
 			Launch Shortcut 8 key.
 		</constant>
-		<constant name="KEY_LAUNCH9" value="16777313" enum="Key">
+		<constant name="KEY_LAUNCH9" value="16777321" enum="Key">
 			Launch Shortcut 9 key.
 		</constant>
-		<constant name="KEY_LAUNCHA" value="16777314" enum="Key">
+		<constant name="KEY_LAUNCHA" value="16777322" enum="Key">
 			Launch Shortcut A key.
 		</constant>
-		<constant name="KEY_LAUNCHB" value="16777315" enum="Key">
+		<constant name="KEY_LAUNCHB" value="16777323" enum="Key">
 			Launch Shortcut B key.
 		</constant>
-		<constant name="KEY_LAUNCHC" value="16777316" enum="Key">
+		<constant name="KEY_LAUNCHC" value="16777324" enum="Key">
 			Launch Shortcut C key.
 		</constant>
-		<constant name="KEY_LAUNCHD" value="16777317" enum="Key">
+		<constant name="KEY_LAUNCHD" value="16777325" enum="Key">
 			Launch Shortcut D key.
 		</constant>
-		<constant name="KEY_LAUNCHE" value="16777318" enum="Key">
+		<constant name="KEY_LAUNCHE" value="16777326" enum="Key">
 			Launch Shortcut E key.
 		</constant>
-		<constant name="KEY_LAUNCHF" value="16777319" enum="Key">
+		<constant name="KEY_LAUNCHF" value="16777327" enum="Key">
 			Launch Shortcut F key.
 		</constant>
 		<constant name="KEY_UNKNOWN" value="33554431" enum="Key">
@@ -2005,7 +2113,7 @@
 		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="-16777216" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask">
 			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">
@@ -2028,6 +2136,9 @@
 		</constant>
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
 			Group Switch key mask.
+		</constant>
+		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
+			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
 		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="MouseButton">
 			Left mouse button.
@@ -2172,6 +2283,9 @@
 		</constant>
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
+		</constant>
+		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
+			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
 			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
@@ -2388,62 +2502,63 @@
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
-			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "noslider" to hide the slider.
+			Additionally, other keywords can be included: "exp" for exponential range editing, "radians" for editing radian angles in degrees, "degrees" to hint at an angle and "no_slider" to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
+			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a string property is can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
 			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
 			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"inout"[/code] to also include in/out easing.
 		</constant>
-		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
-			Deprecated hint, unused.
+		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
+			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="6" enum="PropertyHint">
-			Deprecated hint, unused.
-		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="8" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="13" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
+		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+		</constant>
+		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
+			Hints that a string property is an [Expression].
 		</constant>
 		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
@@ -2493,97 +2608,100 @@
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="37" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="38" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="39" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="41" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
+			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="44" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
 			The property is shown in the editor inspector (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_NETWORK" value="4" enum="PropertyUsageFlags">
-			Deprecated usage flag, unused.
-		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_HELPER" value="8" enum="PropertyUsageFlags">
-			Deprecated usage flag, unused.
-		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
 			The property can be checked in the editor inspector.
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
 			The property is checked in the editor inspector.
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="64" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
 			The property is a translatable string.
 		</constant>
-		<constant name="PROPERTY_USAGE_GROUP" value="128" enum="PropertyUsageFlags">
-			Used to group properties together in the editor.
+		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags">
+			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
-			Used to group properties together in the editor in a subgroup (under a group).
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags">
+			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags">
+		</constant>
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].
 		</constant>
-		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags">
 			Editing the property prompts the user for restarting the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="8192" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags">
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ANIMATE_AS_TRIGGER" value="16384" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="32768" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="65536" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="131072" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="524288" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="262144" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="524288" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="1048576" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="8388608" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="16777216" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="33554432" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="67108864" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="1073741824" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT" value="7" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="71" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_EDITOR" value="5" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
@@ -2592,24 +2710,17 @@
 		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags">
 			Flag for an editor method.
 		</constant>
-		<constant name="METHOD_FLAG_NOSCRIPT" value="4" enum="MethodFlags">
-			Deprecated method flag, unused.
-		</constant>
-		<constant name="METHOD_FLAG_CONST" value="8" enum="MethodFlags">
+		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags">
 			Flag for a constant method.
 		</constant>
-		<constant name="METHOD_FLAG_REVERSE" value="16" enum="MethodFlags">
-			Deprecated method flag, unused.
-		</constant>
-		<constant name="METHOD_FLAG_VIRTUAL" value="32" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags">
 			Flag for a virtual method.
 		</constant>
-		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64" enum="MethodFlags">
-			Deprecated method flag, unused.
+		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
 		</constant>
-		<constant name="METHOD_FLAG_STATIC" value="256" enum="MethodFlags">
+		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
 		</constant>
-		<constant name="METHOD_FLAG_OBJECT_CORE" value="512" enum="MethodFlags">
+		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
 			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
@@ -2621,8 +2732,8 @@
 		<constant name="RPC_MODE_ANY_PEER" value="1" enum="RPCMode">
 			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
 		</constant>
-		<constant name="RPC_MODE_AUTH" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(auth)[/code] annotation. See [method Node.set_multiplayer_authority].
+		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(authority)[/code] annotation. See [method Node.set_multiplayer_authority].
 		</constant>
 		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
 			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [constant TRANSFER_MODE_UNRELIABLE_ORDERED]. Use for non-critical data, and always consider whether the order matters.
@@ -2780,40 +2891,43 @@
 		<constant name="OP_MODULE" value="12" enum="Variant.Operator">
 			Remainder/modulo operator ([code]%[/code]).
 		</constant>
-		<constant name="OP_SHIFT_LEFT" value="13" enum="Variant.Operator">
+		<constant name="OP_POWER" value="13" enum="Variant.Operator">
+			Power operator ([code]**[/code]).
+		</constant>
+		<constant name="OP_SHIFT_LEFT" value="14" enum="Variant.Operator">
 			Left shift operator ([code]&lt;&lt;[/code]).
 		</constant>
-		<constant name="OP_SHIFT_RIGHT" value="14" enum="Variant.Operator">
+		<constant name="OP_SHIFT_RIGHT" value="15" enum="Variant.Operator">
 			Right shift operator ([code]&gt;&gt;[/code]).
 		</constant>
-		<constant name="OP_BIT_AND" value="15" enum="Variant.Operator">
+		<constant name="OP_BIT_AND" value="16" enum="Variant.Operator">
 			Bitwise AND operator ([code]&amp;[/code]).
 		</constant>
-		<constant name="OP_BIT_OR" value="16" enum="Variant.Operator">
+		<constant name="OP_BIT_OR" value="17" enum="Variant.Operator">
 			Bitwise OR operator ([code]|[/code]).
 		</constant>
-		<constant name="OP_BIT_XOR" value="17" enum="Variant.Operator">
+		<constant name="OP_BIT_XOR" value="18" enum="Variant.Operator">
 			Bitwise XOR operator ([code]^[/code]).
 		</constant>
-		<constant name="OP_BIT_NEGATE" value="18" enum="Variant.Operator">
+		<constant name="OP_BIT_NEGATE" value="19" enum="Variant.Operator">
 			Bitwise NOT operator ([code]~[/code]).
 		</constant>
-		<constant name="OP_AND" value="19" enum="Variant.Operator">
+		<constant name="OP_AND" value="20" enum="Variant.Operator">
 			Logical AND operator ([code]and[/code] or [code]&amp;&amp;[/code]).
 		</constant>
-		<constant name="OP_OR" value="20" enum="Variant.Operator">
+		<constant name="OP_OR" value="21" enum="Variant.Operator">
 			Logical OR operator ([code]or[/code] or [code]||[/code]).
 		</constant>
-		<constant name="OP_XOR" value="21" enum="Variant.Operator">
+		<constant name="OP_XOR" value="22" enum="Variant.Operator">
 			Logical XOR operator (not implemented in GDScript).
 		</constant>
-		<constant name="OP_NOT" value="22" enum="Variant.Operator">
+		<constant name="OP_NOT" value="23" enum="Variant.Operator">
 			Logical NOT operator ([code]not[/code] or [code]![/code]).
 		</constant>
-		<constant name="OP_IN" value="23" enum="Variant.Operator">
+		<constant name="OP_IN" value="24" enum="Variant.Operator">
 			Logical IN operator ([code]in[/code]).
 		</constant>
-		<constant name="OP_MAX" value="24" enum="Variant.Operator">
+		<constant name="OP_MAX" value="25" enum="Variant.Operator">
 			Represents the size of the [enum Variant.Operator] enum.
 		</constant>
 	</constants>

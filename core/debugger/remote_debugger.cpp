@@ -107,7 +107,7 @@ public:
 		}
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_bandwidth_time > 200) {
 			last_bandwidth_time = pt;
@@ -130,7 +130,7 @@ class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 public:
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		if (!performance) {
 			return;
 		}
@@ -161,14 +161,15 @@ public:
 			if (!monitor_value.is_num()) {
 				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
 				arr[i + max] = Variant();
+			} else {
+				arr[i + max] = monitor_value;
 			}
-			arr[i + max] = monitor_value;
 		}
 
 		EngineDebugger::get_singleton()->send_message("performance:profile_frame", arr);
 	}
 
-	PerformanceProfiler(Object *p_performance) {
+	explicit PerformanceProfiler(Object *p_performance) {
 		performance = p_performance;
 	}
 };
@@ -189,7 +190,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 		return; //ignore script errors, those go through debugger
 	}
 
-	RemoteDebugger *rd = (RemoteDebugger *)p_this;
+	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
 		return;
 	}
@@ -207,8 +208,8 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 	rd->script_debugger->send_error(String::utf8(p_func), String::utf8(p_file), p_line, String::utf8(p_err), String::utf8(p_descr), p_editor_notify, p_type, si);
 }
 
-void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error) {
-	RemoteDebugger *rd = (RemoteDebugger *)p_this;
+void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
+	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive prints during flush.
 		return;
@@ -236,7 +237,13 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 
 		OutputString output_string;
 		output_string.message = s;
-		output_string.type = p_error ? MESSAGE_TYPE_ERROR : MESSAGE_TYPE_LOG;
+		if (p_error) {
+			output_string.type = MESSAGE_TYPE_ERROR;
+		} else if (p_rich) {
+			output_string.type = MESSAGE_TYPE_LOG_RICH;
+		} else {
+			output_string.type = MESSAGE_TYPE_LOG;
+		}
 		rd->output_strings.push_back(output_string);
 
 		if (overflowed) {
@@ -290,6 +297,14 @@ void RemoteDebugger::flush_output() {
 				}
 				strings.push_back(output_string.message);
 				types.push_back(MESSAGE_TYPE_ERROR);
+			} else if (output_string.type == MESSAGE_TYPE_LOG_RICH) {
+				if (!joined_log_strings.is_empty()) {
+					strings.push_back(String("\n").join(joined_log_strings));
+					types.push_back(MESSAGE_TYPE_LOG_RICH);
+					joined_log_strings.clear();
+				}
+				strings.push_back(output_string.message);
+				types.push_back(MESSAGE_TYPE_LOG_RICH);
 			} else {
 				joined_log_strings.push_back(output_string.message);
 			}
@@ -656,12 +671,12 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	// Core and profiler captures.
 	Capture core_cap(this,
 			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return ((RemoteDebugger *)p_user)->_core_capture(p_cmd, p_data, r_captured);
+				return static_cast<RemoteDebugger *>(p_user)->_core_capture(p_cmd, p_data, r_captured);
 			});
 	register_message_capture("core", core_cap);
 	Capture profiler_cap(this,
 			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return ((RemoteDebugger *)p_user)->_profiler_capture(p_cmd, p_data, r_captured);
+				return static_cast<RemoteDebugger *>(p_user)->_profiler_capture(p_cmd, p_data, r_captured);
 			});
 	register_message_capture("profiler", profiler_cap);
 

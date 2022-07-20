@@ -44,7 +44,7 @@ class SkeletonModification3D : public Resource {
 protected:
 	static void _bind_methods();
 
-	SkeletonModificationStack3D *stack;
+	SkeletonModificationStack3D *stack = nullptr;
 	int execution_mode = 0; // 0 = process
 
 	bool enabled = true;

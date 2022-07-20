@@ -35,61 +35,61 @@
 #include "editor/editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-			Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
-			if (eep.is_null()) {
-				continue;
-			}
-			Ref<ImageTexture> icon = eep->get_run_icon();
-			if (!icon.is_null()) {
-				Ref<Image> im = icon->get_image();
-				im = im->duplicate();
-				im->clear_mipmaps();
-				if (!im->is_empty()) {
-					im->resize(16 * EDSCALE, 16 * EDSCALE);
-					Ref<ImageTexture> small_icon;
-					small_icon.instantiate();
-					small_icon->create_from_image(im);
-					MenuButton *mb = memnew(MenuButton);
-					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
-					mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
-					mb->set_icon(small_icon);
-					add_child(mb);
-					menus[i] = mb;
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+				if (eep.is_null()) {
+					continue;
 				}
-			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_PROCESS) {
-		bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
-
-		if (changed) {
-			for (KeyValue<int, MenuButton *> &E : menus) {
-				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
-				MenuButton *mb = E.value;
-				int dc = eep->get_options_count();
-
-				if (dc == 0) {
-					mb->hide();
-				} else {
-					mb->get_popup()->clear();
-					mb->show();
-					if (dc == 1) {
-						mb->set_tooltip(eep->get_option_tooltip(0));
-					} else {
-						mb->set_tooltip(eep->get_options_tooltip());
-						for (int i = 0; i < dc; i++) {
-							mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
-							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
-						}
+				Ref<ImageTexture> icon = eep->get_run_icon();
+				if (!icon.is_null()) {
+					Ref<Image> im = icon->get_image();
+					im = im->duplicate();
+					im->clear_mipmaps();
+					if (!im->is_empty()) {
+						im->resize(16 * EDSCALE, 16 * EDSCALE);
+						Ref<ImageTexture> small_icon = ImageTexture::create_from_image(im);
+						MenuButton *mb = memnew(MenuButton);
+						mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native), varray(i));
+						mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native), varray(-1, i));
+						mb->set_icon(small_icon);
+						add_child(mb);
+						menus[i] = mb;
 					}
 				}
 			}
+		} break;
 
-			first = false;
-		}
+		case NOTIFICATION_PROCESS: {
+			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
+
+			if (changed) {
+				for (KeyValue<int, MenuButton *> &E : menus) {
+					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
+					MenuButton *mb = E.value;
+					int dc = eep->get_options_count();
+
+					if (dc == 0) {
+						mb->hide();
+					} else {
+						mb->get_popup()->clear();
+						mb->show();
+						if (dc == 1) {
+							mb->set_tooltip(eep->get_option_tooltip(0));
+						} else {
+							mb->set_tooltip(eep->get_options_tooltip());
+							for (int i = 0; i < dc; i++) {
+								mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
+								mb->get_popup()->set_item_tooltip(-1, eep->get_option_tooltip(i));
+							}
+						}
+					}
+				}
+
+				first = false;
+			}
+		} break;
 	}
 }
 
@@ -149,7 +149,13 @@ Error EditorRunNative::run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 	}
 
-	return eep->run(preset, p_idx, flags);
+	eep->clear_messages();
+	Error err = eep->run(preset, p_idx, flags);
+	result_dialog_log->clear();
+	if (eep->fill_log_messages(result_dialog_log, err)) {
+		result_dialog->popup_centered_ratio(0.5);
+	}
+	return err;
 }
 
 void EditorRunNative::resume_run_native() {
@@ -165,8 +171,16 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 }
 
 EditorRunNative::EditorRunNative() {
+	result_dialog = memnew(AcceptDialog);
+	result_dialog->set_title(TTR("Project Run"));
+	result_dialog_log = memnew(RichTextLabel);
+	result_dialog_log->set_custom_minimum_size(Size2(300, 80) * EDSCALE);
+	result_dialog->add_child(result_dialog_log);
+
+	add_child(result_dialog);
+	result_dialog->hide();
+
 	set_process(true);
-	first = true;
 	resume_idx = 0;
 	resume_platform = 0;
 }

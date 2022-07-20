@@ -50,8 +50,6 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
-
 	~GPUParticlesCollision3D();
 };
 
@@ -213,7 +211,6 @@ private:
 	Vector3 extents = Vector3(1, 1, 1);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
-	float follow_camera_push_ratio = 0.1;
 
 	UpdateMode update_mode = UPDATE_MODE_WHEN_MOVED;
 
@@ -231,11 +228,8 @@ public:
 	void set_update_mode(UpdateMode p_update_mode);
 	UpdateMode get_update_mode() const;
 
-	void set_follow_camera_mode(bool p_enabled);
-	bool is_follow_camera_mode_enabled() const;
-
-	void set_follow_camera_push_ratio(float p_ratio);
-	float get_follow_camera_push_ratio() const;
+	void set_follow_camera_enabled(bool p_enabled);
+	bool is_follow_camera_enabled() const;
 
 	virtual AABB get_aabb() const override;
 
@@ -273,8 +267,6 @@ public:
 
 	void set_directionality(real_t p_directionality);
 	real_t get_directionality() const;
-
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
 
 	~GPUParticlesAttractor3D();
 };

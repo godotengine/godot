@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
+
 #include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
@@ -177,12 +178,12 @@ void Container::_notification(int p_what) {
 			pending_sort = false;
 			queue_sort();
 		} break;
-		case NOTIFICATION_RESIZED: {
-			queue_sort();
-		} break;
+
+		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_THEME_CHANGED: {
 			queue_sort();
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
 				queue_sort();
@@ -195,7 +196,7 @@ TypedArray<String> Container::get_configuration_warnings() const {
 	TypedArray<String> warnings = Control::get_configuration_warnings();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		warnings.push_back(TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
+		warnings.push_back(RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
 
 	return warnings;

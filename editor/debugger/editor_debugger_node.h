@@ -70,6 +70,14 @@ private:
 		String source;
 		int line = 0;
 
+		static uint32_t hash(const Breakpoint &p_val) {
+			uint32_t h = HashMapHasherDefault::hash(p_val.source);
+			return hash_murmur3_one_32(p_val.line, h);
+		}
+		bool operator==(const Breakpoint &p_b) const {
+			return (line == p_b.line && source == p_b.source);
+		}
+
 		bool operator<(const Breakpoint &p_b) const {
 			if (line == p_b.line) {
 				return source < p_b.source;
@@ -102,12 +110,13 @@ private:
 	bool debug_with_external_editor = false;
 	bool hide_on_stop = true;
 	CameraOverride camera_override = OVERRIDE_NONE;
-	Map<Breakpoint, bool> breakpoints;
+	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
-	Set<Ref<Script>> debugger_plugins;
+	HashSet<Ref<Script>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
+	void _update_errors();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
@@ -124,7 +133,7 @@ protected:
 	void _remote_object_requested(ObjectID p_id, int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
-	void _clear_execution(REF p_script) {
+	void _clear_execution(Ref<RefCounted> p_script) {
 		emit_signal(SNAME("clear_execution"), p_script);
 	}
 
@@ -171,7 +180,7 @@ public:
 
 	// Remote inspector/edit.
 	void request_remote_tree();
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
+	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	// LiveDebug

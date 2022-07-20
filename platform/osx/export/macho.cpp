@@ -49,7 +49,7 @@ uint32_t MachO::seg_align(uint64_t p_vmaddr, uint32_t p_min, uint32_t p_max) {
 }
 
 bool MachO::alloc_signature(uint64_t p_size) {
-	ERR_FAIL_COND_V_MSG(!fa, false, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "MachO: File not opened.");
 	if (signature_offset != 0) {
 		// Nothing to do, already have signature load command.
 		return true;
@@ -103,15 +103,15 @@ bool MachO::alloc_signature(uint64_t p_size) {
 }
 
 bool MachO::is_macho(const String &p_path) {
-	FileAccessRef fb = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fb, false, vformat("MachO: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
 	uint32_t magic = fb->get_32();
 	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
 }
 
 bool MachO::open_file(const String &p_path) {
 	fa = FileAccess::open(p_path, FileAccess::READ_WRITE);
-	ERR_FAIL_COND_V_MSG(!fa, false, vformat("MachO: Can't open file: \"%s\".", p_path));
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
 	uint32_t magic = fa->get_32();
 	MachHeader mach_header;
 
@@ -232,37 +232,37 @@ bool MachO::open_file(const String &p_path) {
 }
 
 uint64_t MachO::get_exe_base() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return exe_base;
 }
 
 uint64_t MachO::get_exe_limit() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return exe_limit;
 }
 
 int32_t MachO::get_align() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return align;
 }
 
 uint32_t MachO::get_cputype() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return cputype;
 }
 
 uint32_t MachO::get_cpusubtype() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return cpusubtype;
 }
 
 uint64_t MachO::get_size() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	return fa->get_length();
 }
 
 uint64_t MachO::get_signature_offset() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	ERR_FAIL_COND_V_MSG(signature_offset == 0, 0, "MachO: No signature load command.");
 
 	fa->seek(signature_offset + 8);
@@ -274,7 +274,7 @@ uint64_t MachO::get_signature_offset() {
 }
 
 uint64_t MachO::get_code_limit() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 
 	if (signature_offset == 0) {
 		return fa->get_length() + PAD(fa->get_length(), 16);
@@ -284,7 +284,7 @@ uint64_t MachO::get_code_limit() {
 }
 
 uint64_t MachO::get_signature_size() {
-	ERR_FAIL_COND_V_MSG(!fa, 0, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "MachO: File not opened.");
 	ERR_FAIL_COND_V_MSG(signature_offset == 0, 0, "MachO: No signature load command.");
 
 	fa->seek(signature_offset + 12);
@@ -296,7 +296,7 @@ uint64_t MachO::get_signature_size() {
 }
 
 bool MachO::is_signed() {
-	ERR_FAIL_COND_V_MSG(!fa, false, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "MachO: File not opened.");
 	if (signature_offset == 0) {
 		return false;
 	}
@@ -325,7 +325,7 @@ bool MachO::is_signed() {
 }
 
 PackedByteArray MachO::get_cdhash_sha1() {
-	ERR_FAIL_COND_V_MSG(!fa, PackedByteArray(), "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "MachO: File not opened.");
 	if (signature_offset == 0) {
 		return PackedByteArray();
 	}
@@ -372,7 +372,7 @@ PackedByteArray MachO::get_cdhash_sha1() {
 }
 
 PackedByteArray MachO::get_cdhash_sha256() {
-	ERR_FAIL_COND_V_MSG(!fa, PackedByteArray(), "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "MachO: File not opened.");
 	if (signature_offset == 0) {
 		return PackedByteArray();
 	}
@@ -419,7 +419,7 @@ PackedByteArray MachO::get_cdhash_sha256() {
 }
 
 PackedByteArray MachO::get_requirements() {
-	ERR_FAIL_COND_V_MSG(!fa, PackedByteArray(), "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedByteArray(), "MachO: File not opened.");
 	if (signature_offset == 0) {
 		return PackedByteArray();
 	}
@@ -451,16 +451,16 @@ PackedByteArray MachO::get_requirements() {
 	return PackedByteArray();
 }
 
-const FileAccess *MachO::get_file() const {
+const Ref<FileAccess> MachO::get_file() const {
 	return fa;
 }
 
-FileAccess *MachO::get_file() {
+Ref<FileAccess> MachO::get_file() {
 	return fa;
 }
 
 bool MachO::set_signature_size(uint64_t p_size) {
-	ERR_FAIL_COND_V_MSG(!fa, false, "MachO: File not opened.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "MachO: File not opened.");
 
 	// Ensure signature load command exists.
 	ERR_FAIL_COND_V_MSG(link_edit_offset == 0, false, "MachO: No __LINKEDIT segment found.");
@@ -543,14 +543,6 @@ bool MachO::set_signature_size(uint64_t p_size) {
 		fa->store_8(0x00);
 	}
 	return true;
-}
-
-MachO::~MachO() {
-	if (fa) {
-		fa->close();
-		memdelete(fa);
-		fa = nullptr;
-	}
 }
 
 #endif // MODULE_REGEX_ENABLED

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Timer" inherits="Node" version="4.0">
+<class name="Timer" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A countdown timer.
 	</brief_description>
@@ -21,7 +21,7 @@
 			<return type="void" />
 			<argument index="0" name="time_sec" type="float" default="-1" />
 			<description>
-				Starts the timer. Sets [code]wait_time[/code] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [code]wait_time[/code].
+				Starts the timer. Sets [member wait_time] to [code]time_sec[/code] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [member wait_time].
 				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
 			</description>
 		</method>

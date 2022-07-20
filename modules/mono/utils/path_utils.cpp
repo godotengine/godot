@@ -57,11 +57,13 @@ String cwd() {
 
 	Char16String buffer;
 	buffer.resize((int)expected_size);
-	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0)
+	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0) {
 		return ".";
+	}
 
 	String result;
-	if (result.parse_utf16(buffer.ptr())) {
+	result.parse_utf16(buffer.ptr());
+	if (result.is_empty()) {
 		return ".";
 	}
 	return result.simplify_path();
@@ -72,7 +74,7 @@ String cwd() {
 	}
 
 	String result;
-	if (result.parse_utf8(buffer)) {
+	if (result.parse_utf8(buffer) != OK) {
 		return ".";
 	}
 
@@ -95,8 +97,9 @@ String realpath(const String &p_path) {
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-	if (hFile == INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE) {
 		return p_path;
+	}
 
 	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED);
 
@@ -112,7 +115,8 @@ String realpath(const String &p_path) {
 	::CloseHandle(hFile);
 
 	String result;
-	if (result.parse_utf16(buffer.ptr())) {
+	result.parse_utf16(buffer.ptr());
+	if (result.is_empty()) {
 		return p_path;
 	}
 
@@ -125,10 +129,10 @@ String realpath(const String &p_path) {
 	}
 
 	String result;
-	bool parse_ok = result.parse_utf8(resolved_path);
+	Error parse_ok = result.parse_utf8(resolved_path);
 	::free(resolved_path);
 
-	if (parse_ok) {
+	if (parse_ok != OK) {
 		return p_path;
 	}
 
@@ -177,8 +181,9 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 #ifdef WINDOWS_ENABLED
 String get_drive_letter(const String &p_norm_path) {
 	int idx = p_norm_path.find(":/");
-	if (idx != -1 && idx < p_norm_path.find("/"))
+	if (idx != -1 && idx < p_norm_path.find("/")) {
 		return p_norm_path.substr(0, idx + 1);
+	}
 	return String();
 }
 #endif

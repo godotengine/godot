@@ -111,9 +111,11 @@ void EditorHelpSearch::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
@@ -178,14 +180,12 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-	old_search = false;
-
 	set_hide_on_ok(false);
 
 	set_title(TTR("Search Help"));
 
 	get_ok_button()->set_disabled(true);
-	get_ok_button()->set_text(TTR("Open"));
+	set_ok_button_text(TTR("Open"));
 
 	// Split search and results area.
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -313,7 +313,7 @@ bool EditorHelpSearch::Runner::_slice() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+	iterator_doc = EditorHelp::get_doc_data()->class_list.begin();
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -322,16 +322,20 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes() {
-	DocData::ClassDoc &class_doc = iterator_doc->value();
+	DocData::ClassDoc &class_doc = iterator_doc->value;
+	if (class_doc.name.is_empty()) {
+		return false;
+	}
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
-		matches[class_doc.name] = ClassMatch();
-		ClassMatch &match = matches[class_doc.name];
-
+		ClassMatch match;
 		match.doc = &class_doc;
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
-			match.name = term.is_empty() || _match_string(term, class_doc.name);
+			// If the search term is empty, add any classes which are not script docs or which don't start with
+			// a double-quotation. This will ensure that only C++ classes and explicitly named classes will
+			// be added.
+			match.name = (term.is_empty() && (!class_doc.is_script_doc || class_doc.name[0] != '\"')) || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
@@ -397,15 +401,17 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 					}
 				}
 			}
+			matches[class_doc.name] = match;
 		}
+		matches[class_doc.name] = match;
 	}
 
-	iterator_doc = iterator_doc->next();
+	++iterator_doc;
 	return !iterator_doc;
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	results_tree->clear();
 	root_item = results_tree->create_item();
@@ -415,7 +421,10 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
-	ClassMatch &match = iterator_match->value();
+	if (!iterator_match) {
+		return false;
+	}
+	ClassMatch &match = iterator_match->value;
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
@@ -427,18 +436,25 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 		}
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items_init() {
-	iterator_match = matches.front();
+	iterator_match = matches.begin();
 
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items() {
-	ClassMatch &match = iterator_match->value();
+	ClassMatch &match = iterator_match->value;
+
+	if (!match.doc) {
+		return false;
+	}
+	if (match.doc->name.is_empty()) {
+		return false;
+	}
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
@@ -469,7 +485,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
 	}
 
-	iterator_match = iterator_match->next();
+	++iterator_match;
 	return !iterator_match;
 }
 
@@ -507,6 +523,9 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
+	if (p_match.doc->name.is_empty()) {
+		return nullptr;
+	}
 	if (class_items.has(p_match.doc->name)) {
 		return class_items[p_match.doc->name];
 	}
@@ -518,7 +537,9 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 			parent = class_items[p_match.doc->inherits];
 		} else {
 			ClassMatch &base_match = matches[p_match.doc->inherits];
-			parent = _create_class_hierarchy(base_match);
+			if (base_match.doc) {
+				parent = _create_class_hierarchy(base_match);
+			}
 		}
 	}
 
@@ -534,7 +555,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	}
-	String tooltip = p_doc->brief_description.strip_edges();
+	String tooltip = DTR(p_doc->brief_description.strip_edges());
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);

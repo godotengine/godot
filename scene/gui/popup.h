@@ -42,14 +42,11 @@ class Popup : public Window {
 
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
-	bool close_on_parent_focus = true;
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
 
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
-
-	void _parent_focused();
 
 protected:
 	void _close_pressed();
@@ -58,12 +55,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _parent_focused();
+
+	virtual void _post_popup() override;
+
 public:
-	void set_as_minsize();
-
-	void set_close_on_parent_focus(bool p_close);
-	bool get_close_on_parent_focus();
-
 	Popup();
 	~Popup();
 };
@@ -71,7 +67,7 @@ public:
 class PopupPanel : public Popup {
 	GDCLASS(PopupPanel, Popup);
 
-	Panel *panel;
+	Panel *panel = nullptr;
 
 protected:
 	void _update_child_rects();

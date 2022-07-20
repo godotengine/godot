@@ -217,7 +217,7 @@ void SkeletonModificationStack3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0, 1, 0.001"), "set_strength", "get_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_modification_count", "get_modification_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "modification_count", PROPERTY_HINT_RANGE, "0, 100, 1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Modifications,modifications/"), "set_modification_count", "get_modification_count");
 }
 
 SkeletonModificationStack3D::SkeletonModificationStack3D() {

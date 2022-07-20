@@ -52,10 +52,10 @@ String ResourceImporterImageFont::get_save_extension() const {
 }
 
 String ResourceImporterImageFont::get_resource_type() const {
-	return "FontData";
+	return "FontFile";
 }
 
-bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -64,6 +64,9 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "font_size"), 14));
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), Array()));
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }
 
@@ -85,27 +88,31 @@ bool ResourceImporterImageFont::_decode_range(const String &p_token, int32_t &r_
 	}
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
 	int rows = p_options["rows"];
 	int base_size = p_options["font_size"];
 	Vector<String> ranges = p_options["character_ranges"];
+	Array fallbacks = p_options["fallbacks"];
 
-	Ref<FontData> font;
+	Ref<FontFile> font;
 	font.instantiate();
 	font->set_antialiased(false);
+	font->set_generate_mipmaps(false);
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(base_size);
+	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_force_autohinter(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);
+	font->set_fallbacks(fallbacks);
 
 	Ref<Image> img;
 	img.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, img);
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture: ") + "\"" + p_source_file + "\".");
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, TTR("Can't load font texture:") + " \"" + p_source_file + "\".");
 	font->set_texture_image(0, Vector2i(base_size, 0), 0, img);
 
 	int count = columns * rows;
@@ -143,10 +150,10 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range.");
 		}
 	}
-	font->set_ascent(0, base_size, 0.5 * chr_height);
-	font->set_descent(0, base_size, 0.5 * chr_height);
+	font->set_cache_ascent(0, base_size, 0.5 * chr_height);
+	font->set_cache_descent(0, base_size, 0.5 * chr_height);
 
-	int flg = ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	int flg = 0;
 	if ((bool)p_options["compress"]) {
 		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
 	}

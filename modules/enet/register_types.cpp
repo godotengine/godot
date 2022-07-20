@@ -36,7 +36,11 @@
 
 static bool enet_ok = false;
 
-void register_enet_types() {
+void initialize_enet_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (enet_initialize() != 0) {
 		ERR_PRINT("ENet initialization failure");
 	} else {
@@ -44,11 +48,15 @@ void register_enet_types() {
 	}
 
 	GDREGISTER_CLASS(ENetMultiplayerPeer);
-	GDREGISTER_VIRTUAL_CLASS(ENetPacketPeer);
+	GDREGISTER_ABSTRACT_CLASS(ENetPacketPeer);
 	GDREGISTER_CLASS(ENetConnection);
 }
 
-void unregister_enet_types() {
+void uninitialize_enet_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	if (enet_ok) {
 		enet_deinitialize();
 	}

@@ -37,7 +37,7 @@
 class JSONRPC : public Object {
 	GDCLASS(JSONRPC, Object)
 
-	Map<String, Object *> method_scopes;
+	HashMap<String, Object *> method_scopes;
 
 protected:
 	static void _bind_methods();

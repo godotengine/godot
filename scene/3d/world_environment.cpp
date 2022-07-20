@@ -34,27 +34,32 @@
 #include "scene/main/window.h"
 
 void WorldEnvironment::_notification(int p_what) {
-	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-		if (environment.is_valid()) {
-			add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_environment();
-		}
+	switch (p_what) {
+		case Node3D::NOTIFICATION_ENTER_WORLD:
+		case Node3D::NOTIFICATION_ENTER_TREE: {
+			if (environment.is_valid()) {
+				add_to_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_environment();
+			}
 
-		if (camera_effects.is_valid()) {
-			add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_camera_effects();
-		}
+			if (camera_effects.is_valid()) {
+				add_to_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_camera_effects();
+			}
+		} break;
 
-	} else if (p_what == Node3D::NOTIFICATION_EXIT_WORLD || p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-		if (environment.is_valid()) {
-			remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_environment();
-		}
+		case Node3D::NOTIFICATION_EXIT_WORLD:
+		case Node3D::NOTIFICATION_EXIT_TREE: {
+			if (environment.is_valid()) {
+				remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_environment();
+			}
 
-		if (camera_effects.is_valid()) {
-			remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
-			_update_current_camera_effects();
-		}
+			if (camera_effects.is_valid()) {
+				remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
+				_update_current_camera_effects();
+			}
+		} break;
 	}
 }
 
@@ -66,7 +71,7 @@ void WorldEnvironment::_update_current_environment() {
 	} else {
 		get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
 	}
-	get_tree()->call_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
 }
 
 void WorldEnvironment::_update_current_camera_effects() {
@@ -77,7 +82,7 @@ void WorldEnvironment::_update_current_camera_effects() {
 		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
 	}
 
-	get_tree()->call_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
@@ -134,7 +139,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!environment.is_valid() && !camera_effects.is_valid()) {
-		warnings.push_back(TTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
+		warnings.push_back(RTR("To have any visible effect, WorldEnvironment requires its \"Environment\" property to contain an Environment, its \"Camera Effects\" property to contain a CameraEffects resource, or both."));
 	}
 
 	if (!is_inside_tree()) {
@@ -146,7 +151,7 @@ TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
 	}
 
 	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
-		warnings.push_back(TTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
+		warnings.push_back(RTR("Only one WorldEnvironment is allowed per scene (or set of instantiated scenes)."));
 	}
 
 	return warnings;

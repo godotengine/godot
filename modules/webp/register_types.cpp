@@ -31,14 +31,28 @@
 #include "register_types.h"
 
 #include "image_loader_webp.h"
+#include "resource_saver_webp.h"
 
-static ImageLoaderWEBP *image_loader_webp = nullptr;
+static ImageLoaderWebP *image_loader_webp = nullptr;
+static Ref<ResourceSaverWebP> resource_saver_webp;
 
-void register_webp_types() {
-	image_loader_webp = memnew(ImageLoaderWEBP);
+void initialize_webp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
+	image_loader_webp = memnew(ImageLoaderWebP);
+	resource_saver_webp.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_webp);
+	ResourceSaver::add_resource_format_saver(resource_saver_webp);
 }
 
-void unregister_webp_types() {
+void uninitialize_webp_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	memdelete(image_loader_webp);
+	ResourceSaver::remove_resource_format_saver(resource_saver_webp);
+	resource_saver_webp.unref();
 }

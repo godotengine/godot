@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" version="4.0">
+<class name="HTTPRequest" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
@@ -15,7 +15,7 @@
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
 		    add_child(http_request)
-		    http_request.connect("request_completed", self, "_http_request_completed")
+		    http_request.request_completed.connect(self._http_request_completed)
 
 		    # Perform a GET request. The URL below returns JSON as of writing.
 		    var error = http_request.request("https://httpbin.org/get")
@@ -25,7 +25,7 @@
 		    # Perform a POST request. The URL below returns JSON as of writing.
 		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    # The snippet below is provided for reference only.
-		    var body = {"name": "Godette"}
+		    var body = JSON.new().stringify({"name": "Godette"})
 		    error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
@@ -33,7 +33,9 @@
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
-		    var response = parse_json(body.get_string_from_utf8())
+		    var json = JSON.new()
+		    json.parse(body.get_string_from_utf8())
+		    var response = json.get_data()
 
 		    # Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
 		    print(response.headers["User-Agent"])
@@ -44,7 +46,7 @@
 		    // Create an HTTP request node and connect its completion signal.
 		    var httpRequest = new HTTPRequest();
 		    AddChild(httpRequest);
-		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
 		    // Perform a GET request. The URL below returns JSON as of writing.
 		    Error error = httpRequest.Request("https://httpbin.org/get");
@@ -56,21 +58,24 @@
 		    // Perform a POST request. The URL below returns JSON as of writing.
 		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    // The snippet below is provided for reference only.
-		    string[] body = { "name", "Godette" };
-		    // GDScript to_json is non existent, so we use JSON.Print() here.
-		    error = httpRequest.Request("https://httpbin.org/post", null, true, HTTPClient.Method.Post, JSON.Print(body));
+		    string body = new JSON().Stringify(new Godot.Collections.Dictionary
+		    {
+		        { "name", "Godette" }
+		    });
+		    error = httpRequest.Request("https://httpbin.org/post", null, true, HTTPClient.Method.Post, body);
 		    if (error != Error.Ok)
 		    {
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
 		}
 
-
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
 		{
-		    // GDScript parse_json is non existent so we have to use JSON.parse, which has a slightly different syntax.
-		    var response = JSON.Parse(body.GetStringFromUTF8()).Result as Godot.Collections.Dictionary;
+		    var json = new JSON();
+		    json.Parse(body.GetStringFromUTF8());
+		    var response = json.GetData() as Godot.Collections.Dictionary;
+
 		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
 		    GD.Print((response["headers"] as Godot.Collections.Dictionary)["User-Agent"]);
 		}
@@ -83,7 +88,7 @@
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
 		    add_child(http_request)
-		    http_request.connect("request_completed", self, "_http_request_completed")
+		    http_request.request_completed.connect(self._http_request_completed)
 
 		    # Perform the HTTP request. The URL below returns a PNG image as of writing.
 		    var error = http_request.request("https://via.placeholder.com/512")
@@ -101,8 +106,7 @@
 		    if error != OK:
 		        push_error("Couldn't load the image.")
 
-		    var texture = ImageTexture.new()
-		    texture.create_from_image(image)
+		    var texture = ImageTexture.create_from_image(image)
 
 		    # Display the image in a TextureRect node.
 		    var texture_rect = TextureRect.new()
@@ -115,7 +119,7 @@
 		    // Create an HTTP request node and connect its completion signal.
 		    var httpRequest = new HTTPRequest();
 		    AddChild(httpRequest);
-		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
 		    // Perform the HTTP request. The URL below returns a PNG image as of writing.
 		    Error error = httpRequest.Request("https://via.placeholder.com/512");
@@ -124,7 +128,6 @@
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
 		}
-
 
 		// Called when the HTTP request is completed.
 		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
@@ -247,7 +250,8 @@
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
-		<member name="timeout" type="int" setter="set_timeout" getter="get_timeout" default="0">
+		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
+			If set to a value greater than [code]0.0[/code] before the request starts, the HTTP request will time out after [code]timeout[/code] seconds have passed and the request is not [i]completed[/i] yet. For small HTTP requests such as REST API usage, set [member timeout] to a value between [code]10.0[/code] and [code]30.0[/code] to prevent the application from getting stuck if the request fails to get a response in a timely manner. For file downloads, leave this to [code]0.0[/code] to prevent the download from failing if it takes too much time.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.

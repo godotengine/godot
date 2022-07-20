@@ -39,15 +39,18 @@ void EditorNetworkProfiler::_bind_methods() {
 }
 
 void EditorNetworkProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-		incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
-		outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			incoming_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowDown"), SNAME("EditorIcons")));
+			outgoing_bandwidth_text->set_right_icon(get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
 
-		// This needs to be done here to set the faded color when the profiler is first opened
-		incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
-		outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+			// This needs to be done here to set the faded color when the profiler is first opened
+			incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+			outgoing_bandwidth_text->add_theme_color_override("font_uneditable_color", get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
+		} break;
 	}
 }
 

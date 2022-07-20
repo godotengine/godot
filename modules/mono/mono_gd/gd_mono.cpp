@@ -52,10 +52,6 @@
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
 
-#ifdef TOOLS_ENABLED
-#include "main/main.h"
-#endif
-
 #ifdef ANDROID_ENABLED
 #include "android_mono_config.h"
 #include "support/android_support.h"
@@ -143,7 +139,7 @@ void gd_mono_debug_init() {
 
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().is_empty() ||
-			Main::is_project_manager()) {
+			Engine::get_singleton()->is_project_manager_hint()) {
 		if (da_args.size() == 0) {
 			return;
 		}
@@ -155,8 +151,9 @@ void gd_mono_debug_init() {
 						  .utf8();
 	}
 #else
-	if (da_args.length() == 0)
+	if (da_args.length() == 0) {
 		return; // Exported games don't use the project settings to setup the debugger agent
+	}
 #endif
 
 	// Debugging enabled
@@ -230,8 +227,9 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 		path_value += mono_reg_info.bin_dir;
 	}
 #else
-	if (DirAccess::exists(bundled_bin_dir))
+	if (DirAccess::exists(bundled_bin_dir)) {
 		path_value += bundled_bin_dir;
+	}
 #endif // TOOLS_ENABLED
 
 #else
@@ -423,7 +421,7 @@ void GDMono::initialize_load_assemblies() {
 	bool tool_assemblies_loaded = _load_tools_assemblies();
 	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
 
-	if (Main::is_project_manager()) {
+	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
 #endif
@@ -645,9 +643,8 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 
 	// Create destination directory if needed
 	if (!DirAccess::exists(dst_dir)) {
-		DirAccess *da = DirAccess::create_for_path(dst_dir);
+		Ref<DirAccess> da = DirAccess::create_for_path(dst_dir);
 		Error err = da->make_dir_recursive(dst_dir);
-		memdelete(da);
 
 		if (err != OK) {
 			ERR_PRINT("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
@@ -655,7 +652,7 @@ bool GDMono::copy_prebuilt_api_assembly(ApiAssemblyInfo::Type p_api_type, const 
 		}
 	}
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	String xml_file = assembly_name + ".xml";
 	if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK) {
@@ -815,7 +812,7 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager()
+	String assembly_dir = !Engine::get_singleton()->is_project_manager_hint()
 			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
 			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
@@ -848,7 +845,7 @@ bool GDMono::_load_editor_api_assembly(LoadedApiAssembly &r_loaded_api_assembly,
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
 
 	// If running the project manager, load it from the prebuilt API directory
-	String assembly_dir = !Main::is_project_manager()
+	String assembly_dir = !Engine::get_singleton()->is_project_manager_hint()
 			? GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config)
 			: GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
 
@@ -932,7 +929,7 @@ void GDMono::_load_api_assemblies() {
 		// this time update them from the prebuilt assemblies directory before trying to load them again.
 
 		// Shouldn't happen. The project manager loads the prebuilt API assemblies
-		CRASH_COND_MSG(Main::is_project_manager(), "Failed to load one of the prebuilt API assemblies.");
+		CRASH_COND_MSG(Engine::get_singleton()->is_project_manager_hint(), "Failed to load one of the prebuilt API assemblies.");
 
 		// 1. Unload the scripts domain
 		Error domain_unload_err = _unload_scripts_domain();
@@ -1170,9 +1167,8 @@ GDMonoClass *GDMono::get_class(MonoClass *p_raw_class) {
 	int32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		GDMonoAssembly *assembly = domain_assemblies.get(*k);
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		GDMonoAssembly *assembly = E.value;
 		if (assembly->get_image() == image) {
 			GDMonoClass *klass = assembly->get_class(p_raw_class);
 			if (klass) {
@@ -1193,9 +1189,8 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 	int32_t domain_id = mono_domain_get_id(mono_domain_get());
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		GDMonoAssembly *assembly = domain_assemblies.get(*k);
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		GDMonoAssembly *assembly = E.value;
 		klass = assembly->get_class(p_namespace, p_name);
 		if (klass) {
 			return klass;
@@ -1208,9 +1203,8 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 void GDMono::_domain_assemblies_cleanup(int32_t p_domain_id) {
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[p_domain_id];
 
-	const String *k = nullptr;
-	while ((k = domain_assemblies.next(k))) {
-		memdelete(domain_assemblies.get(*k));
+	for (const KeyValue<String, GDMonoAssembly *> &E : domain_assemblies) {
+		memdelete(E.value);
 	}
 
 	assemblies.erase(p_domain_id);
@@ -1273,8 +1267,9 @@ GDMono::~GDMono() {
 
 		print_verbose("Mono: Finalizing scripts domain...");
 
-		if (mono_domain_get() != root_domain)
+		if (mono_domain_get() != root_domain) {
 			mono_domain_set(root_domain, true);
+		}
 
 		finalizing_scripts_domain = true;
 
@@ -1300,13 +1295,11 @@ GDMono::~GDMono() {
 		// Leave the rest to 'mono_jit_cleanup'
 #endif
 
-		const int32_t *k = nullptr;
-		while ((k = assemblies.next(k))) {
-			HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies.get(*k);
+		for (const KeyValue<int32_t, HashMap<String, GDMonoAssembly *>> &E : assemblies) {
+			const HashMap<String, GDMonoAssembly *> &domain_assemblies = E.value;
 
-			const String *kk = nullptr;
-			while ((kk = domain_assemblies.next(kk))) {
-				memdelete(domain_assemblies.get(*kk));
+			for (const KeyValue<String, GDMonoAssembly *> &F : domain_assemblies) {
+				memdelete(F.value);
 			}
 		}
 		assemblies.clear();

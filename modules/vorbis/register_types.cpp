@@ -33,7 +33,11 @@
 #include "audio_stream_ogg_vorbis.h"
 #include "resource_importer_ogg_vorbis.h"
 
-void register_vorbis_types() {
+void initialize_vorbis_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		Ref<ResourceImporterOGGVorbis> ogg_vorbis_importer;
@@ -45,4 +49,8 @@ void register_vorbis_types() {
 	GDREGISTER_CLASS(AudioStreamPlaybackOGGVorbis);
 }
 
-void unregister_vorbis_types() {}
+void uninitialize_vorbis_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

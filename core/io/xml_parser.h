@@ -68,6 +68,7 @@ private:
 	char *data = nullptr;
 	char *P = nullptr;
 	uint64_t length = 0;
+	uint64_t current_line = 0;
 	String node_name;
 	bool node_empty = false;
 	NodeType node_type = NODE_NONE;
@@ -87,6 +88,13 @@ private:
 	void _parse_comment();
 	void _parse_opening_xml_element();
 	void _parse_current_node();
+
+	_FORCE_INLINE_ void next_char() {
+		if (*P == '\n') {
+			current_line++;
+		}
+		P++;
+	}
 
 	static void _bind_methods();
 
@@ -113,7 +121,6 @@ public:
 
 	void close();
 
-	XMLParser();
 	~XMLParser();
 };
 

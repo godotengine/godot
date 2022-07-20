@@ -650,7 +650,7 @@ static bool mergeRegions(rcRegion& rega, rcRegion& regb)
 		return false;
 	
 	// Merge neighbours.
-	rega.connections.resize(0);
+	rega.connections.clear();
 	for (int i = 0, ni = acon.size(); i < ni-1; ++i)
 		rega.connections.push(acon[(insa+1+i) % ni]);
 		
@@ -876,8 +876,8 @@ static bool mergeAndFilterRegions(rcContext* ctx, int minRegionArea, int mergeRe
 		// Also keep track of the regions connects to a tile border.
 		bool connectsToBorder = false;
 		int spanCount = 0;
-		stack.resize(0);
-		trace.resize(0);
+		stack.clear();
+		trace.clear();
 
 		reg.visited = true;
 		stack.push(i);
@@ -1068,7 +1068,7 @@ static bool mergeAndFilterLayerRegions(rcContext* ctx, int minRegionArea,
 		{
 			const rcCompactCell& c = chf.cells[x+y*w];
 
-			lregs.resize(0);
+			lregs.clear();
 			
 			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 			{
@@ -1139,7 +1139,7 @@ static bool mergeAndFilterLayerRegions(rcContext* ctx, int minRegionArea,
 		// Start search.
 		root.id = layerId;
 
-		stack.resize(0);
+		stack.clear();
 		stack.push(i);
 		
 		while (stack.size() > 0)

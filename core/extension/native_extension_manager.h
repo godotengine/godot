@@ -37,7 +37,7 @@ class NativeExtensionManager : public Object {
 	GDCLASS(NativeExtensionManager, Object);
 
 	int32_t level = -1;
-	Map<String, Ref<NativeExtension>> native_extension_map;
+	HashMap<String, Ref<NativeExtension>> native_extension_map;
 
 	static void _bind_methods();
 

@@ -211,15 +211,6 @@ float AudioFilterSW::get_response(float p_freq, Coeffs *p_coeffs) {
 	return H;
 }
 
-AudioFilterSW::AudioFilterSW() {
-	sampling_rate = 44100;
-	resonance = 0.5;
-	cutoff = 5000;
-	gain = 1.0;
-	mode = LOWPASS;
-	stages = 1;
-}
-
 AudioFilterSW::Processor::Processor() {
 	set_filter(nullptr);
 }

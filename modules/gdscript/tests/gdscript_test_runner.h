@@ -63,8 +63,8 @@ public:
 
 private:
 	struct ErrorHandlerData {
-		TestResult *result;
-		GDScriptTest *self;
+		TestResult *result = nullptr;
+		GDScriptTest *self = nullptr;
 		ErrorHandlerData(TestResult *p_result, GDScriptTest *p_this) {
 			result = p_result;
 			self = p_this;
@@ -86,7 +86,7 @@ private:
 	TestResult execute_test_code(bool p_is_generating);
 
 public:
-	static void print_handler(void *p_this, const String &p_message, bool p_error);
+	static void print_handler(void *p_this, const String &p_message, bool p_error, bool p_rich);
 	static void error_handler(void *p_this, const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_explanation, bool p_editor_notify, ErrorHandlerType p_type);
 	TestResult run_test();
 	bool generate_output();

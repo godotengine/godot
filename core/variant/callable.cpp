@@ -37,7 +37,7 @@
 #include "core/object/script_language.h"
 
 void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callable(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
 }
 
 void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
@@ -59,7 +59,7 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 			return;
 		}
 #endif
-		r_return_value = obj->call(method, p_arguments, p_argcount, r_call_error);
+		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
 	}
 }
 
@@ -143,7 +143,8 @@ uint32_t Callable::hash() const {
 		return custom->hash();
 	} else {
 		uint32_t hash = method.hash();
-		return hash_djb2_one_64(object, hash);
+		hash = hash_murmur3_one_64(object, hash);
+		return hash_fmix32(hash);
 	}
 }
 
@@ -379,7 +380,7 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 		return ERR_INVALID_DATA;
 	}
 
-	return obj->emit_signal(name, p_arguments, p_argcount);
+	return obj->emit_signalp(name, p_arguments, p_argcount);
 }
 
 Error Signal::connect(const Callable &p_callable, uint32_t p_flags) {
@@ -428,4 +429,14 @@ Signal::Signal(const Object *p_object, const StringName &p_name) {
 Signal::Signal(ObjectID p_object, const StringName &p_name) {
 	object = p_object;
 	name = p_name;
+}
+
+bool CallableComparator::operator()(const Variant &p_l, const Variant &p_r) const {
+	const Variant *args[2] = { &p_l, &p_r };
+	Callable::CallError err;
+	Variant res;
+	func.call(args, 2, res, err);
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 1, err));
+	return res;
 }

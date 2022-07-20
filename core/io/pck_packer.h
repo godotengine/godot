@@ -38,7 +38,7 @@ class FileAccess;
 class PCKPacker : public RefCounted {
 	GDCLASS(PCKPacker, RefCounted);
 
-	FileAccess *file = nullptr;
+	Ref<FileAccess> file;
 	int alignment = 0;
 	uint64_t ofs = 0;
 
@@ -63,7 +63,6 @@ public:
 	Error flush(bool p_verbose = false);
 
 	PCKPacker() {}
-	~PCKPacker();
 };
 
 #endif // PCK_PACKER_H

@@ -34,6 +34,20 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 
+void UndoRedo::Operation::delete_reference() {
+	if (type != Operation::TYPE_REFERENCE) {
+		return;
+	}
+	if (ref.is_valid()) {
+		ref.unref();
+	} else {
+		Object *obj = ObjectDB::get_instance(object);
+		if (obj) {
+			memdelete(obj);
+		}
+	}
+}
+
 void UndoRedo::_discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
@@ -41,16 +55,7 @@ void UndoRedo::_discard_redo() {
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
 		for (Operation &E : actions.write[i].do_ops) {
-			if (E.type == Operation::TYPE_REFERENCE) {
-				if (E.ref.is_valid()) {
-					E.ref.unref();
-				} else {
-					Object *obj = ObjectDB::get_instance(E.object);
-					if (obj) {
-						memdelete(obj);
-					}
-				}
-			}
+			E.delete_reference();
 		}
 		//ERASE do data
 	}
@@ -97,13 +102,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 				for (unsigned int i = 0; i < to_remove.size(); i++) {
 					List<Operation>::Element *E = to_remove[i];
 					// Delete all object references
-					if (E->get().type == Operation::TYPE_REFERENCE) {
-						Object *obj = ObjectDB::get_instance(E->get().object);
-
-						if (obj) {
-							memdelete(obj);
-						}
-					}
+					E->get().delete_reference();
 					E->erase();
 				}
 			}
@@ -127,8 +126,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 	force_keep_in_merge_ends = false;
 }
 
-void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS
+void UndoRedo::add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -141,14 +139,13 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
 	do_op.type = Operation::TYPE_METHOD;
 	do_op.name = p_method;
 
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		do_op.args[i] = *argptr[i];
+	for (int i = 0; i < p_argcount; i++) {
+		do_op.args.push_back(*p_args[i]);
 	}
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
 
-void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
-	VARIANT_ARGPTRS
+void UndoRedo::add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
@@ -168,8 +165,8 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_method;
 
-	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		undo_op.args[i] = *argptr[i];
+	for (int i = 0; i < p_argcount; i++) {
+		undo_op.args.push_back(*p_args[i]);
 	}
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
@@ -186,7 +183,7 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 
 	do_op.type = Operation::TYPE_PROPERTY;
 	do_op.name = p_property;
-	do_op.args[0] = p_value;
+	do_op.args.push_back(p_value);
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
 
@@ -209,7 +206,7 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	undo_op.type = Operation::TYPE_PROPERTY;
 	undo_op.force_keep_in_merge_ends = force_keep_in_merge_ends;
 	undo_op.name = p_property;
-	undo_op.args[0] = p_value;
+	undo_op.args.push_back(p_value);
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
 
@@ -270,16 +267,7 @@ void UndoRedo::_pop_history_tail() {
 	}
 
 	for (Operation &E : actions.write[0].undo_ops) {
-		if (E.type == Operation::TYPE_REFERENCE) {
-			if (E.ref.is_valid()) {
-				E.ref.unref();
-			} else {
-				Object *obj = ObjectDB::get_instance(E.object);
-				if (obj) {
-					memdelete(obj);
-				}
-			}
-		}
+		E.delete_reference();
 	}
 
 	actions.remove_at(0);
@@ -324,23 +312,18 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 		switch (op.type) {
 			case Operation::TYPE_METHOD: {
+				int argc = op.args.size();
 				Vector<const Variant *> argptrs;
-				argptrs.resize(VARIANT_ARG_MAX);
-				int argc = 0;
-
-				for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-					if (op.args[i].get_type() == Variant::NIL) {
-						break;
-					}
-					argptrs.write[i] = &op.args[i];
-					argc++;
-				}
 				argptrs.resize(argc);
 
+				for (int i = 0; i < argc; i++) {
+					argptrs.write[i] = &op.args[i];
+				}
+
 				Callable::CallError ce;
-				obj->call(op.name, (const Variant **)argptrs.ptr(), argc, ce);
+				obj->callp(op.name, (const Variant **)argptrs.ptr(), argc, ce);
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
+					ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
 				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
@@ -351,7 +334,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 #endif
 
 				if (method_callback) {
-					method_callback(method_callbck_ud, obj, op.name, VARIANT_ARGS_FROM_ARRAY(op.args));
+					method_callback(method_callback_ud, obj, op.name, (const Variant **)argptrs.ptr(), argc);
 				}
 			} break;
 			case Operation::TYPE_PROPERTY: {
@@ -449,7 +432,7 @@ void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback, void 
 
 void UndoRedo::set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud) {
 	method_callback = p_method_callback;
-	method_callbck_ud = p_ud;
+	method_callback_ud = p_ud;
 }
 
 void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud) {
@@ -461,25 +444,25 @@ UndoRedo::~UndoRedo() {
 	clear_history();
 }
 
-Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::OBJECT;
-		return Variant();
+		return;
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -487,36 +470,28 @@ Variant UndoRedo::_add_do_method(const Variant **p_args, int p_argcount, Callabl
 	Object *object = *p_args[0];
 	StringName method = *p_args[1];
 
-	Variant v[VARIANT_ARG_MAX];
-
-	for (int i = 0; i < MIN(VARIANT_ARG_MAX, p_argcount - 2); ++i) {
-		v[i] = *p_args[i + 2];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	add_do_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
-	return Variant();
+	add_do_methodp(object, method, p_args + 2, p_argcount - 2);
 }
 
-Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
-		return Variant();
+		return;
 	}
 
 	if (p_args[0]->get_type() != Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::OBJECT;
-		return Variant();
+		return;
 	}
 
 	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+		return;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -524,15 +499,7 @@ Variant UndoRedo::_add_undo_method(const Variant **p_args, int p_argcount, Calla
 	Object *object = *p_args[0];
 	StringName method = *p_args[1];
 
-	Variant v[VARIANT_ARG_MAX];
-
-	for (int i = 0; i < MIN(VARIANT_ARG_MAX, p_argcount - 2); ++i) {
-		v[i] = *p_args[i + 2];
-	}
-
-	static_assert(VARIANT_ARG_MAX == 8, "This code needs to be updated if VARIANT_ARG_MAX != 8");
-	add_undo_method(object, method, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
-	return Variant();
+	add_undo_methodp(object, method, p_args + 2, p_argcount - 2);
 }
 
 void UndoRedo::_bind_methods() {

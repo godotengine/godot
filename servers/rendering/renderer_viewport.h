@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_scene.h"
+#include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
@@ -66,7 +67,11 @@ public:
 
 		RS::ViewportMSAA msaa;
 		RS::ViewportScreenSpaceAA screen_space_aa;
+		bool use_taa;
 		bool use_debanding;
+
+		RendererSceneRender::CameraData prev_camera_data;
+		uint64_t prev_camera_data_frame = 0;
 
 		bool use_occlusion_culling;
 		bool occlusion_buffer_dirty;
@@ -129,7 +134,7 @@ public:
 		};
 
 		struct CanvasData {
-			CanvasBase *canvas;
+			CanvasBase *canvas = nullptr;
 			Transform2D transform;
 			int layer;
 			int sublayer;
@@ -137,7 +142,7 @@ public:
 
 		Transform2D global_transform;
 
-		Map<RID, CanvasData> canvas_map;
+		HashMap<RID, CanvasData> canvas_map;
 
 		RendererScene::RenderInfo render_info;
 
@@ -233,6 +238,9 @@ public:
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
+	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);
+	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
+
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
 	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
@@ -247,11 +255,12 @@ public:
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
 	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
 
-	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
-	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
+	void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
+	void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
+	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 	void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling);
 	void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread);
@@ -272,6 +281,11 @@ public:
 	void viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RS::CanvasItemTextureRepeat p_repeat);
 
 	void viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::ViewportSDFOversize p_over_size, RS::ViewportSDFScale p_scale);
+
+	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const;
+
+	void viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode);
+	void viewport_set_vrs_texture(RID p_viewport, RID p_texture);
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 

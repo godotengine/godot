@@ -45,7 +45,7 @@
 #include "tests/core/math/test_expression.h"
 #include "tests/core/math/test_geometry_2d.h"
 #include "tests/core/math/test_geometry_3d.h"
-#include "tests/core/math/test_math.h"
+#include "tests/core/math/test_plane.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
 #include "tests/core/math/test_rect2i.h"
@@ -60,11 +60,11 @@
 #include "tests/core/string/test_string.h"
 #include "tests/core/string/test_translation.h"
 #include "tests/core/templates/test_command_queue.h"
+#include "tests/core/templates/test_hash_map.h"
+#include "tests/core/templates/test_hash_set.h"
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_oa_hash_map.h"
-#include "tests/core/templates/test_ordered_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_vector.h"
 #include "tests/core/test_crypto.h"
@@ -77,12 +77,9 @@
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
-#include "tests/scene/test_gui.h"
 #include "tests/scene/test_path_3d.h"
-#include "tests/servers/test_physics_2d.h"
-#include "tests/servers/test_physics_3d.h"
-#include "tests/servers/test_render.h"
-#include "tests/servers/test_shader_lang.h"
+#include "tests/scene/test_text_edit.h"
+#include "tests/scene/test_theme.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
@@ -110,9 +107,9 @@ int test_main(int argc, char *argv[]) {
 
 	// Run custom test tools.
 	if (test_commands) {
-		for (Map<String, TestFunc>::Element *E = test_commands->front(); E; E = E->next()) {
-			if (args.find(E->key())) {
-				const TestFunc &test_func = E->get();
+		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {
+			if (args.find(E.key)) {
+				const TestFunc &test_func = E.value;
 				test_func();
 				run_tests = false;
 				break;
@@ -166,10 +163,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 	SignalWatcher *signal_watcher = nullptr;
 
-	PhysicsServer3D *physics_3d_server = nullptr;
-	PhysicsServer2D *physics_2d_server = nullptr;
-	NavigationServer3D *navigation_3d_server = nullptr;
-	NavigationServer2D *navigation_2d_server = nullptr;
+	PhysicsServer3D *physics_server_3d = nullptr;
+	PhysicsServer2D *physics_server_2d = nullptr;
+	NavigationServer3D *navigation_server_3d = nullptr;
+	NavigationServer2D *navigation_server_2d = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		SignalWatcher::get_singleton()->_clear_signals();
@@ -181,6 +178,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(MessageQueue);
 
 			GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+
+			memnew(Input);
 
 			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
@@ -194,14 +193,14 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			RenderingServerDefault::get_singleton()->init();
 			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
-			physics_3d_server = PhysicsServer3DManager::new_default_server();
-			physics_3d_server->init();
+			physics_server_3d = PhysicsServer3DManager::new_default_server();
+			physics_server_3d->init();
 
-			physics_2d_server = PhysicsServer2DManager::new_default_server();
-			physics_2d_server->init();
+			physics_server_2d = PhysicsServer2DManager::new_default_server();
+			physics_server_2d->init();
 
-			navigation_3d_server = NavigationServer3DManager::new_default_server();
-			navigation_2d_server = memnew(NavigationServer2D);
+			navigation_server_3d = NavigationServer3DManager::new_default_server();
+			navigation_server_2d = memnew(NavigationServer2D);
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -229,26 +228,30 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		clear_default_theme();
 
-		if (navigation_3d_server) {
-			memdelete(navigation_3d_server);
-			navigation_3d_server = nullptr;
+		if (navigation_server_3d) {
+			memdelete(navigation_server_3d);
+			navigation_server_3d = nullptr;
 		}
 
-		if (navigation_2d_server) {
-			memdelete(navigation_2d_server);
-			navigation_2d_server = nullptr;
+		if (navigation_server_2d) {
+			memdelete(navigation_server_2d);
+			navigation_server_2d = nullptr;
 		}
 
-		if (physics_3d_server) {
-			physics_3d_server->finish();
-			memdelete(physics_3d_server);
-			physics_3d_server = nullptr;
+		if (physics_server_3d) {
+			physics_server_3d->finish();
+			memdelete(physics_server_3d);
+			physics_server_3d = nullptr;
 		}
 
-		if (physics_2d_server) {
-			physics_2d_server->finish();
-			memdelete(physics_2d_server);
-			physics_2d_server = nullptr;
+		if (physics_server_2d) {
+			physics_server_2d->finish();
+			memdelete(physics_server_2d);
+			physics_server_2d = nullptr;
+		}
+
+		if (Input::get_singleton()) {
+			memdelete(Input::get_singleton());
 		}
 
 		if (RenderingServer::get_singleton()) {

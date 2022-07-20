@@ -33,7 +33,7 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 #include "servers/rendering_server.h"
 
 // Based on Bullet soft body.
@@ -147,7 +147,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 	}
 }
 
-void GodotSoftBody3D::update_rendering_server(RenderingServerHandler *p_rendering_server_handler) {
+void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
 	if (soft_mesh.is_null()) {
 		return;
 	}
@@ -429,33 +429,33 @@ uint32_t GodotSoftBody3D::get_node_count() const {
 }
 
 real_t GodotSoftBody3D::get_node_inv_mass(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), 0.0);
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), 0.0);
 	return nodes[p_node_index].im;
 }
 
 Vector3 GodotSoftBody3D::get_node_position(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].x;
 }
 
 Vector3 GodotSoftBody3D::get_node_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].v;
 }
 
 Vector3 GodotSoftBody3D::get_node_biased_velocity(uint32_t p_node_index) const {
-	ERR_FAIL_COND_V(p_node_index >= nodes.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_node_index, nodes.size(), Vector3());
 	return nodes[p_node_index].bv;
 }
 
 void GodotSoftBody3D::apply_node_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.v += p_impulse * node.im;
 }
 
 void GodotSoftBody3D::apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
-	ERR_FAIL_COND(p_node_index >= nodes.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.bv += p_impulse * node.im;
 }
@@ -465,7 +465,7 @@ uint32_t GodotSoftBody3D::get_face_count() const {
 }
 
 void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1, Vector3 &r_point_2, Vector3 &r_point_3) const {
-	ERR_FAIL_COND(p_face_index >= faces.size());
+	ERR_FAIL_UNSIGNED_INDEX(p_face_index, faces.size());
 	const Face &face = faces[p_face_index];
 	r_point_1 = face.n[0]->x;
 	r_point_2 = face.n[1]->x;
@@ -473,7 +473,7 @@ void GodotSoftBody3D::get_face_points(uint32_t p_face_index, Vector3 &r_point_1,
 }
 
 Vector3 GodotSoftBody3D::get_face_normal(uint32_t p_face_index) const {
-	ERR_FAIL_COND_V(p_face_index >= faces.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_face_index, faces.size(), Vector3());
 	return faces[p_face_index].normal;
 }
 
@@ -494,7 +494,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 		// Process vertices.
 		{
 			uint32_t vertex_count = 0;
-			Map<Vector3, uint32_t> unique_vertices;
+			HashMap<Vector3, uint32_t> unique_vertices;
 
 			vertices.resize(visual_vertex_count);
 			map_visual_to_physics.resize(visual_vertex_count);
@@ -502,11 +502,11 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 			for (int visual_vertex_index = 0; visual_vertex_index < visual_vertex_count; ++visual_vertex_index) {
 				const Vector3 &vertex = p_vertices[visual_vertex_index];
 
-				Map<Vector3, uint32_t>::Element *e = unique_vertices.find(vertex);
+				HashMap<Vector3, uint32_t>::Iterator e = unique_vertices.find(vertex);
 				uint32_t vertex_id;
 				if (e) {
 					// Already existing.
-					vertex_id = e->value();
+					vertex_id = e->value;
 				} else {
 					// Create new one.
 					vertex_id = vertex_count++;
@@ -1272,7 +1272,7 @@ struct _SoftBodyIntersectSegmentInfo {
 	real_t hit_dist_sq = INFINITY;
 
 	static bool process_hit(uint32_t p_face_index, void *p_userdata) {
-		_SoftBodyIntersectSegmentInfo &query_info = *(_SoftBodyIntersectSegmentInfo *)(p_userdata);
+		_SoftBodyIntersectSegmentInfo &query_info = *(static_cast<_SoftBodyIntersectSegmentInfo *>(p_userdata));
 
 		Vector3 points[3];
 		query_info.soft_body->get_face_points(p_face_index, points[0], points[1], points[2]);

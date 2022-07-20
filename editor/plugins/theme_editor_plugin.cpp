@@ -834,6 +834,8 @@ void ThemeItemImportTree::_notification(int p_what) {
 			select_icons_warning_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
 			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 
+			import_items_filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+
 			// Bottom panel buttons.
 			import_collapse_types_button->set_icon(get_theme_icon(SNAME("CollapseTree"), SNAME("EditorIcons")));
 			import_expand_types_button->set_icon(get_theme_icon(SNAME("ExpandTree"), SNAME("EditorIcons")));
@@ -881,15 +883,10 @@ void ThemeItemImportTree::_bind_methods() {
 }
 
 ThemeItemImportTree::ThemeItemImportTree() {
-	HBoxContainer *import_items_filter_hb = memnew(HBoxContainer);
-	add_child(import_items_filter_hb);
-	Label *import_items_filter_label = memnew(Label);
-	import_items_filter_label->set_text(TTR("Filter:"));
-	import_items_filter_hb->add_child(import_items_filter_label);
 	import_items_filter = memnew(LineEdit);
+	import_items_filter->set_placeholder(TTR("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
-	import_items_filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	import_items_filter_hb->add_child(import_items_filter);
+	add_child(import_items_filter);
 	import_items_filter->connect("text_changed", callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
 
 	HBoxContainer *import_main_hb = memnew(HBoxContainer);
@@ -1122,7 +1119,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 			select_icons_warning = memnew(Label);
 			select_icons_warning->set_text(TTR("Caution: Adding icon data may considerably increase the size of your Theme resource."));
-			select_icons_warning->set_autowrap_mode(Label::AUTOWRAP_WORD_SMART);
+			select_icons_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 			select_icons_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			select_icons_warning_hb->add_child(select_icons_warning);
 		}
@@ -1287,7 +1284,11 @@ void ThemeItemEditorDialog::_edited_type_selected() {
 	_update_edit_item_tree(selected_type);
 }
 
-void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_edited_type_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1461,7 +1462,11 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	}
 }
 
-void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id) {
+void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	if (!item) {
 		return;
@@ -1863,9 +1868,6 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_remove_all->set_icon(get_theme_icon(SNAME("ThemeRemoveAllItems"), SNAME("EditorIcons")));
 
 			import_another_theme_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-
-			tc->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			tc->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 		} break;
 	}
 }
@@ -1881,14 +1883,14 @@ void ThemeItemEditorDialog::set_edited_theme(const Ref<Theme> &p_theme) {
 
 ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_editor) {
 	set_title(TTR("Manage Theme Items"));
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(false); // Closing may require a confirmation in some cases.
 
 	theme_type_editor = p_theme_type_editor;
 
 	tc = memnew(TabContainer);
-	tc->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	add_child(tc);
+	tc->set_theme_type_variation("TabContainerOdd");
 
 	// Edit Items tab.
 	HSplitContainer *edit_dialog_hs = memnew(HSplitContainer);
@@ -1910,7 +1912,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_dialog_side_vb->add_child(edit_type_list);
 	edit_type_list->connect("item_selected", callable_mp(this, &ThemeItemEditorDialog::_edited_type_selected));
-	edit_type_list->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
+	edit_type_list->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_edited_type_button_pressed));
 
 	Label *edit_add_type_label = memnew(Label);
 	edit_add_type_label->set_text(TTR("Add Type:"));
@@ -2012,14 +2014,14 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);
 	edit_items_vb->add_child(edit_items_tree);
-	edit_items_tree->connect("button_pressed", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
+	edit_items_tree->connect("button_clicked", callable_mp(this, &ThemeItemEditorDialog::_item_tree_button_pressed));
 
 	edit_items_message = memnew(Label);
-	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	edit_items_message->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	edit_items_message->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	edit_items_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	edit_items_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	edit_items_message->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	edit_items_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	edit_items_tree->add_child(edit_items_message);
 
 	edit_theme_item_dialog = memnew(ConfirmationDialog);
@@ -2046,6 +2048,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
+	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
 	tc->set_tab_title(1, TTR("Import Items"));
 
@@ -2077,7 +2080,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
 	for (const String &E : ext) {
-		import_another_theme_dialog->add_filter("*." + E + "; Theme Resource");
+		import_another_theme_dialog->add_filter("*." + E, TTR("Theme Resource"));
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk));
@@ -2339,8 +2342,8 @@ void ThemeTypeEditor::_update_type_list_debounced() {
 	update_debounce_timer->start();
 }
 
-OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
-	OrderedHashMap<StringName, bool> items;
+HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
+	HashMap<StringName, bool> items;
 	List<StringName> names;
 
 	if (include_default) {
@@ -2367,12 +2370,12 @@ OrderedHashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_
 	}
 
 	List<StringName> keys;
-	for (OrderedHashMap<StringName, bool>::Element E = items.front(); E; E = E.next()) {
-		keys.push_back(E.key());
+	for (const KeyValue<StringName, bool> &E : items) {
+		keys.push_back(E.key);
 	}
 	keys.sort_custom<StringName::AlphCompare>();
 
-	OrderedHashMap<StringName, bool> ordered_items;
+	HashMap<StringName, bool> ordered_items;
 	for (const StringName &E : keys) {
 		ordered_items[E] = items[E];
 	}
@@ -2464,18 +2467,18 @@ void ThemeTypeEditor::_update_type_items() {
 			color_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = color_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key(), E.get());
+		HashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
+		for (const KeyValue<StringName, bool> &E : color_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key, E.value);
 			ColorPickerButton *item_editor = memnew(ColorPickerButton);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_pick_color(edited_theme->get_color(E.key(), edited_type));
-				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_pick_color(edited_theme->get_color(E.key, edited_type));
+				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed), varray(E.key));
 			} else {
-				item_editor->set_pick_color(Theme::get_default()->get_color(E.key(), edited_type));
+				item_editor->set_pick_color(Theme::get_default()->get_color(E.key, edited_type));
 				item_editor->set_disabled(true);
 			}
 
@@ -2492,9 +2495,9 @@ void ThemeTypeEditor::_update_type_items() {
 			constant_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = constant_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key(), E.get());
+		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
+		for (const KeyValue<StringName, bool> &E : constant_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
@@ -2504,11 +2507,11 @@ void ThemeTypeEditor::_update_type_items() {
 			item_editor->set_allow_greater(true);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_value(edited_theme->get_constant(E.key(), edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_constant(E.key, edited_type));
+				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_constant_item_changed), varray(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_constant(E.key(), edited_type));
+				item_editor->set_value(Theme::get_default()->get_constant(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2525,27 +2528,27 @@ void ThemeTypeEditor::_update_type_items() {
 			font_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = font_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key(), E.get());
+		HashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
+		for (const KeyValue<StringName, bool> &E : font_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Font");
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				if (edited_theme->has_font(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_font(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_font(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_font(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_font_item_changed), varray(E.key));
 			} else {
-				if (Theme::get_default()->has_font(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key(), edited_type));
+				if (Theme::get_default()->has_font(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_font(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -2563,9 +2566,9 @@ void ThemeTypeEditor::_update_type_items() {
 			font_size_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = font_size_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key(), E.get());
+		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
+		for (const KeyValue<StringName, bool> &E : font_size_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_min(-100000);
@@ -2575,11 +2578,11 @@ void ThemeTypeEditor::_update_type_items() {
 			item_editor->set_allow_greater(true);
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				item_editor->set_value(edited_theme->get_font_size(E.key(), edited_type));
-				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed), varray(E.key()));
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_font_size(E.key, edited_type));
+				item_editor->connect("value_changed", callable_mp(this, &ThemeTypeEditor::_font_size_item_changed), varray(E.key));
 			} else {
-				item_editor->set_value(Theme::get_default()->get_font_size(E.key(), edited_type));
+				item_editor->set_value(Theme::get_default()->get_font_size(E.key, edited_type));
 				item_editor->set_editable(false);
 			}
 
@@ -2596,27 +2599,27 @@ void ThemeTypeEditor::_update_type_items() {
 			icon_items_list->remove_child(node);
 		}
 
-		OrderedHashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = icon_items.front(); E; E = E.next()) {
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key(), E.get());
+		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
+		for (const KeyValue<StringName, bool> &E : icon_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_base_type("Texture2D");
 			item_control->add_child(item_editor);
 
-			if (E.get()) {
-				if (edited_theme->has_icon(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_icon(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_icon(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_icon(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_icon_item_changed), varray(E.key));
 			} else {
-				if (Theme::get_default()->has_icon(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key(), edited_type));
+				if (Theme::get_default()->has_icon(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_icon(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -2655,7 +2658,7 @@ void ThemeTypeEditor::_update_type_items() {
 			if (edited_theme->has_stylebox(leading_stylebox.item_name, edited_type)) {
 				item_editor->set_edited_resource(leading_stylebox.stylebox);
 			} else {
-				item_editor->set_edited_resource(RES());
+				item_editor->set_edited_resource(Ref<Resource>());
 			}
 			item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
 			item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(leading_stylebox.item_name));
@@ -2664,26 +2667,26 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(memnew(HSeparator));
 		}
 
-		OrderedHashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
-		for (OrderedHashMap<StringName, bool>::Element E = stylebox_items.front(); E; E = E.next()) {
-			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key()) {
+		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
+		for (const KeyValue<StringName, bool> &E : stylebox_items) {
+			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key) {
 				continue;
 			}
 
-			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, E.key(), E.get());
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_STYLEBOX, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
 			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			item_editor->set_stretch_ratio(1.5);
 			item_editor->set_base_type("StyleBox");
 
-			if (E.get()) {
-				if (edited_theme->has_stylebox(E.key(), edited_type)) {
-					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key(), edited_type));
+			if (E.value) {
+				if (edited_theme->has_stylebox(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_stylebox(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
-				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(E.key()));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_stylebox_item_changed), varray(E.key));
 
 				Button *pin_leader_button = memnew(Button);
 				pin_leader_button->set_flat(true);
@@ -2691,12 +2694,12 @@ void ThemeTypeEditor::_update_type_items() {
 				pin_leader_button->set_icon(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")));
 				pin_leader_button->set_tooltip(TTR("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
 				item_control->add_child(pin_leader_button);
-				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed), varray(item_editor, E.key()));
+				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed), varray(item_editor, E.key));
 			} else {
-				if (Theme::get_default()->has_stylebox(E.key(), edited_type)) {
-					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key(), edited_type));
+				if (Theme::get_default()->has_stylebox(E.key, edited_type)) {
+					item_editor->set_edited_resource(Theme::get_default()->get_stylebox(E.key, edited_type));
 				} else {
-					item_editor->set_edited_resource(RES());
+					item_editor->set_edited_resource(Ref<Resource>());
 				}
 				item_editor->set_editable(false);
 			}
@@ -2730,7 +2733,7 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 void ThemeTypeEditor::_add_type_button_cbk() {
 	add_type_mode = ADD_THEME_TYPE;
 	add_type_dialog->set_title(TTR("Add Item Type"));
-	add_type_dialog->get_ok_button()->set_text(TTR("Add Type"));
+	add_type_dialog->set_ok_button_text(TTR("Add Type"));
 	add_type_dialog->set_include_own_types(false);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
@@ -2928,10 +2931,6 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 				ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
 			}
 		} break;
-		case Theme::DATA_TYPE_FONT_SIZE: {
-			ur->add_do_method(*edited_theme, "clear_font_size", p_item_name, edited_type);
-			ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
-		} break;
 		case Theme::DATA_TYPE_ICON: {
 			ur->add_do_method(*edited_theme, "clear_icon", p_item_name, edited_type);
 			if (edited_theme->has_icon(p_item_name, edited_type)) {
@@ -3065,7 +3064,7 @@ void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name)
 	ur->commit_action();
 }
 
-void ThemeTypeEditor::_edit_resource_item(RES p_resource, bool p_edit) {
+void ThemeTypeEditor::_edit_resource_item(Ref<Resource> p_resource, bool p_edit) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
@@ -3131,7 +3130,7 @@ void ThemeTypeEditor::_change_pinned_stylebox() {
 
 		Ref<StyleBox> new_stylebox = edited_theme->get_stylebox(leading_stylebox.item_name, edited_type);
 		leading_stylebox.stylebox = new_stylebox;
-		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : RES());
+		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : Ref<Resource>());
 
 		if (leading_stylebox.stylebox.is_valid()) {
 			new_stylebox->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
@@ -3169,7 +3168,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 	leader.pinned = true;
 	leader.item_name = p_item_name;
 	leader.stylebox = p_stylebox;
-	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : RES());
+	leader.ref_stylebox = (p_stylebox.is_valid() ? p_stylebox->duplicate() : Ref<Resource>());
 
 	leading_stylebox = leader;
 	if (p_stylebox.is_valid()) {
@@ -3211,11 +3210,13 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->get_stylebox_list(edited_type, &names);
 	List<Ref<StyleBox>> styleboxes;
 	for (const StringName &E : names) {
-		if (E == leading_stylebox.item_name) {
+		Ref<StyleBox> sb = edited_theme->get_stylebox(E, edited_type);
+
+		// Avoid itself, stylebox can be shared between items.
+		if (sb == leading_stylebox.stylebox) {
 			continue;
 		}
 
-		Ref<StyleBox> sb = edited_theme->get_stylebox(E, edited_type);
 		if (sb->get_class() == leading_stylebox.stylebox->get_class()) {
 			styleboxes.push_back(sb);
 		}
@@ -3268,7 +3269,7 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 void ThemeTypeEditor::_add_type_variation_cbk() {
 	add_type_mode = ADD_VARIATION_BASE;
 	add_type_dialog->set_title(TTR("Set Variation Base Type"));
-	add_type_dialog->get_ok_button()->set_text(TTR("Set Base Type"));
+	add_type_dialog->set_ok_button_text(TTR("Set Base Type"));
 	add_type_dialog->set_include_own_types(true);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
@@ -3294,9 +3295,6 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(4, get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(5, get_theme_icon(SNAME("StyleBoxFlat"), SNAME("EditorIcons")));
 			data_type_tabs->set_tab_icon(6, get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
-
-			data_type_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("tab_selected_odd"), SNAME("TabContainer")));
-			data_type_tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
 
 			type_variation_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
@@ -3393,9 +3391,11 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_default_items_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_add_default_type_items));
 
 	data_type_tabs = memnew(TabContainer);
+	data_type_tabs->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	main_vb->add_child(data_type_tabs);
 	data_type_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	data_type_tabs->set_use_hidden_tabs_for_min_size(true);
+	data_type_tabs->set_theme_type_variation("TabContainerOdd");
 
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);
@@ -3439,7 +3439,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
 	type_variation_locked->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	type_variation_locked->set_autowrap_mode(Label::AUTOWRAP_WORD);
+	type_variation_locked->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
 	type_variation_locked->hide();
 
@@ -3578,7 +3578,7 @@ void ThemeEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), SNAME("EditorStyles")));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), SNAME("EditorStyles")));
-			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel_odd"), SNAME("TabContainer")));
+			preview_tabs_content->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainerOdd")));
 
 			add_preview_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
@@ -3640,7 +3640,6 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs_vb->add_child(preview_tabs_content);
 
 	preview_tabs = memnew(TabBar);
-	preview_tabs->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
 	preview_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
@@ -3664,7 +3663,7 @@ ThemeEditor::ThemeEditor() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
 	for (const String &E : ext) {
-		preview_scene_dialog->add_filter("*." + E + "; Scene");
+		preview_scene_dialog->add_filter("*." + E, TTR("Scene"));
 	}
 	main_hs->add_child(preview_scene_dialog);
 	preview_scene_dialog->connect("file_selected", callable_mp(this, &ThemeEditor::_preview_scene_dialog_cbk));
@@ -3695,7 +3694,7 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 
 	// If we are editing a theme already and this particular resource happens to belong to it,
 	// then we just keep editing it, despite not being able to directly handle it.
-	// This only goes one layer deep, but if required this can be extended to support, say, FontData inside of Font.
+	// This only goes one layer deep, but if required this can be extended to support, say, Font inside of Font.
 	bool belongs_to_theme = false;
 
 	if (Object::cast_to<Font>(p_node)) {
@@ -3757,21 +3756,20 @@ bool ThemeEditorPlugin::handles(Object *p_node) const {
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		editor->make_bottom_panel_item_visible(theme_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(theme_editor);
 	} else {
 		if (theme_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 
 		button->hide();
 	}
 }
 
-ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();
 }

@@ -4,7 +4,7 @@
  *
  *   AFM support for Type 1 fonts (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -203,7 +203,7 @@
       kp->index1 = FT_Get_Char_Index( t1_face, p[0] );
       kp->index2 = FT_Get_Char_Index( t1_face, p[1] );
 
-      kp->x = (FT_Int)FT_PEEK_SHORT_LE(p + 2);
+      kp->x = (FT_Int)FT_PEEK_SHORT_LE( p + 2 );
       kp->y = 0;
 
       kp++;

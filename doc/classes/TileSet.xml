@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" version="4.0">
+<class name="TileSet" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -113,7 +113,7 @@
 			<argument index="0" name="source_from" type="int" />
 			<argument index="1" name="coords_from" type="Vector2i" />
 			<description>
-				Returns the coodinate-level proxy for the given identifiers. The returned array contains the two proxie's target identifiers (source ID and atlas coords ID).
+				Returns the coordinate-level proxy for the given identifiers. The returned array contains the two target identifiers of the proxy (source ID and atlas coordinates ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
 			</description>
 		</method>

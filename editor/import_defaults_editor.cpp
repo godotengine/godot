@@ -31,6 +31,7 @@
 #include "import_defaults_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "editor/action_map_editor.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_plugin_settings.h"
@@ -43,8 +44,8 @@ class ImportDefaultsEditorSettings : public Object {
 	GDCLASS(ImportDefaultsEditorSettings, Object)
 	friend class ImportDefaultsEditor;
 	List<PropertyInfo> properties;
-	Map<StringName, Variant> values;
-	Map<StringName, Variant> default_values;
+	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> default_values;
 
 	Ref<ResourceImporter> importer;
 
@@ -79,8 +80,15 @@ protected:
 };
 
 void ImportDefaultsEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PREDELETE) {
-		inspector->edit(nullptr);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			inspector->edit(nullptr);
+		} break;
 	}
 }
 

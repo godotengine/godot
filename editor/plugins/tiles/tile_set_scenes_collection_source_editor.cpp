@@ -330,12 +330,13 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			_update_scenes_list();
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_scenes_collection_source_changed_needs_update) {
 				// Update everything.
 				_update_source_inspector();
@@ -344,14 +345,13 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 				_update_tile_inspector();
 				tile_set_scenes_collection_source_changed_needs_update = false;
 			}
-			break;
-		case NOTIFICATION_VISIBILITY_CHANGED:
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Update things just in case.
 			_update_scenes_list();
 			_update_action_buttons();
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -394,13 +394,12 @@ void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, c
 
 	if (p_from == scene_tiles_list) {
 		// Handle dropping a texture in the list of atlas resources.
-		int scene_id = -1;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
 		for (int i = 0; i < files.size(); i++) {
 			Ref<PackedScene> resource = ResourceLoader::load(files[i]);
 			if (resource.is_valid()) {
-				scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
+				int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 				undo_redo->create_action(TTR("Add a Scene Tile"));
 				undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
 				undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);

@@ -176,7 +176,7 @@ PropertyInfo VisualScriptExpression::get_output_value_port_info(int p_idx) const
 }
 
 String VisualScriptExpression::get_caption() const {
-	return TTR("Expression");
+	return RTR("Expression");
 }
 
 String VisualScriptExpression::get_text() const {
@@ -1299,10 +1299,10 @@ bool VisualScriptExpression::_compile_expression() {
 
 class VisualScriptNodeInstanceExpression : public VisualScriptNodeInstance {
 public:
-	VisualScriptInstance *instance;
-	VisualScriptExpression *expression;
+	VisualScriptInstance *instance = nullptr;
+	VisualScriptExpression *expression = nullptr;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	//virtual int get_working_memory_size() const override { return 0; }
 	//execute by parsing the tree directly
 	virtual bool _execute(const Variant **p_inputs, VisualScriptExpression::ENode *p_node, Variant &r_ret, String &r_error_str, Callable::CallError &ce) {
 		switch (p_node->type) {
@@ -1500,7 +1500,7 @@ public:
 					argp.write[i] = &arr[i];
 				}
 
-				base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+				base.callp(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
 					r_error_str = "On call to '" + String(call->method) + "':";
@@ -1512,7 +1512,7 @@ public:
 		return false;
 	}
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) override {
 		if (!expression->root || expression->error_set) {
 			r_error_str = expression->error_str;
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;

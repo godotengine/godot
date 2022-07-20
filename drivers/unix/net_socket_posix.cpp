@@ -147,7 +147,7 @@ void NetSocketPosix::_set_ip_port(struct sockaddr_storage *p_addr, IPAddress *r_
 		if (r_port) {
 			*r_port = ntohs(addr6->sin6_port);
 		}
-	};
+	}
 }
 
 NetSocket *NetSocketPosix::_create_func() {
@@ -256,7 +256,7 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, Str
 
 	IPAddress if_ip;
 	uint32_t if_v6id = 0;
-	Map<String, IP::Interface_Info> if_info;
+	HashMap<String, IP::Interface_Info> if_info;
 	IP::get_singleton()->get_local_interfaces(&if_info);
 	for (KeyValue<String, IP::Interface_Info> &E : if_info) {
 		IP::Interface_Info &c = E.value;
@@ -325,8 +325,9 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 
 #if defined(__OpenBSD__)
 	// OpenBSD does not support dual stacking, fallback to IPv4 only.
-	if (ip_type == IP::TYPE_ANY)
+	if (ip_type == IP::TYPE_ANY) {
 		ip_type = IP::TYPE_IPV4;
+	}
 #endif
 
 	int family = ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
@@ -420,7 +421,7 @@ Error NetSocketPosix::listen(int p_max_pending) {
 		print_verbose("Failed to listen from socket.");
 		close();
 		return FAILED;
-	};
+	}
 
 	return OK;
 }
@@ -494,8 +495,9 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 		return FAILED;
 	}
 
-	if (ret == 0)
+	if (ret == 0) {
 		return ERR_BUSY;
+	}
 
 	if (FD_ISSET(_sock, &ex)) {
 		_get_socket_error();
@@ -503,10 +505,12 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 		return FAILED;
 	}
 
-	if (rdp && FD_ISSET(_sock, rdp))
+	if (rdp && FD_ISSET(_sock, rdp)) {
 		ready = true;
-	if (wrp && FD_ISSET(_sock, wrp))
+	}
+	if (wrp && FD_ISSET(_sock, wrp)) {
 		ready = true;
+	}
 
 	return ready ? OK : ERR_BUSY;
 #else

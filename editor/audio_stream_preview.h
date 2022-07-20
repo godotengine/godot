@@ -85,7 +85,7 @@ class AudioStreamPreviewGenerator : public Node {
 		Preview() {}
 	};
 
-	Map<ObjectID, Preview> previews;
+	HashMap<ObjectID, Preview> previews;
 
 	static void _preview_thread(void *p_preview);
 

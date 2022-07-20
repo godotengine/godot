@@ -478,7 +478,7 @@ _resume:
 	case 18:
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -535,7 +535,7 @@ _resume:
 	case 16:
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -635,7 +635,7 @@ _resume:
 }
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -645,7 +645,7 @@ _resume:
 	case 17:
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -674,7 +674,7 @@ _resume:
 }
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -701,7 +701,7 @@ _resume:
 }
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -733,7 +733,7 @@ _again:
 	case 16:
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))
@@ -820,7 +820,7 @@ _again:
 }
 #line 58 "hb-buffer-deserialize-text.rl"
 	{
-	/* TODO Unescape delimeters. */
+	/* TODO Unescape delimiters. */
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
 					&info.codepoint))

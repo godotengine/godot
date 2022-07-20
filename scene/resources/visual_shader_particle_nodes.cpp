@@ -74,9 +74,9 @@ Vector<StringName> VisualShaderNodeParticleEmitter::get_editable_properties() co
 	return props;
 }
 
-Map<StringName, String> VisualShaderNodeParticleEmitter::get_editable_properties_names() const {
-	Map<StringName, String> names;
-	names.insert("mode_2d", TTR("2D Mode"));
+HashMap<StringName, String> VisualShaderNodeParticleEmitter::get_editable_properties_names() const {
+	HashMap<StringName, String> names;
+	names.insert("mode_2d", RTR("2D Mode"));
 	return names;
 }
 
@@ -470,7 +470,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector2> 
 		image->set_pixel(i, 0, Color(v.x, v.y, 0));
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}
@@ -491,7 +491,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Vector3> 
 		image->set_pixel(i, 0, Color(v.x, v.y, v.z));
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}
@@ -511,7 +511,7 @@ void VisualShaderNodeParticleMeshEmitter::_update_texture(const Vector<Color> &p
 		image->set_pixel(i, 0, p_array[i]);
 	}
 	if (r_texture->get_width() != p_array.size() || p_array.size() == 0) {
-		r_texture->create_from_image(image);
+		r_texture->set_image(image);
 	} else {
 		r_texture->update(image);
 	}
@@ -704,13 +704,13 @@ Vector<StringName> VisualShaderNodeParticleMeshEmitter::get_editable_properties(
 	return props;
 }
 
-Map<StringName, String> VisualShaderNodeParticleMeshEmitter::get_editable_properties_names() const {
-	Map<StringName, String> names = VisualShaderNodeParticleEmitter::get_editable_properties_names();
+HashMap<StringName, String> VisualShaderNodeParticleMeshEmitter::get_editable_properties_names() const {
+	HashMap<StringName, String> names = VisualShaderNodeParticleEmitter::get_editable_properties_names();
 
-	names.insert("mesh", TTR("Mesh"));
-	names.insert("use_all_surfaces", TTR("Use All Surfaces"));
+	names.insert("mesh", RTR("Mesh"));
+	names.insert("use_all_surfaces", RTR("Use All Surfaces"));
 	if (!use_all_surfaces) {
-		names.insert("surface_index", TTR("Surface Index"));
+		names.insert("surface_index", RTR("Surface Index"));
 	}
 
 	return names;
@@ -1318,7 +1318,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			code += tab + "TRANSFORM = " + p_input_vars[5] + ";\n";
 		}
 	} else {
-		if (!p_input_vars[0].is_empty()) { // active (begin)
+		if (!p_input_vars[0].is_empty()) { // Active (begin).
 			code += tab + "ACTIVE = " + p_input_vars[0] + ";\n";
 			code += tab + "if(ACTIVE) {\n";
 			tab += "	";
@@ -1381,7 +1381,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
 			}
 		}
-		if (!p_input_vars[0].is_empty()) { // active (end)
+		if (!p_input_vars[0].is_empty()) { // Active (end).
 			code += "	}\n";
 		}
 	}

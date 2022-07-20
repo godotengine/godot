@@ -53,7 +53,6 @@ layout(set = 0, binding = 7) uniform sampler linear_sampler;
 
 #ifdef MODE_DENSITY
 layout(rgba16f, set = 0, binding = 8) uniform restrict writeonly image3D density_map;
-layout(rgba16f, set = 0, binding = 9) uniform restrict readonly image3D fog_map; //unused
 #endif
 
 #ifdef MODE_FOG
@@ -235,7 +234,6 @@ void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max,
 	uint item_min_max = cluster_buffer.data[p_offset];
 	item_min = item_min_max & 0xFFFF;
 	item_max = item_min_max >> 16;
-	;
 
 	item_from = item_min >> 5;
 	item_to = (item_max == 0) ? 0 : ((item_max - 1) >> 5) + 1; //side effect of how it is stored, as item_max 0 means no elements
@@ -383,7 +381,6 @@ void main() {
 				float depth_z = -view_pos.z;
 
 				vec4 pssm_coord;
-				vec3 shadow_color = directional_lights.data[i].shadow_color1.rgb;
 				vec3 light_dir = directional_lights.data[i].direction;
 				vec4 v = vec4(view_pos, 1.0);
 				float z_range;
@@ -414,7 +411,7 @@ void main() {
 
 				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, view_pos.z)); //done with negative values for performance
 
-				shadow_attenuation = mix(shadow_color, vec3(1.0), shadow);
+				shadow_attenuation = mix(vec3(0.0), vec3(1.0), shadow);
 			}
 
 			total_light += shadow_attenuation * directional_lights.data[i].color * directional_lights.data[i].energy * henyey_greenstein(dot(normalize(view_pos), normalize(directional_lights.data[i].direction)), params.phase_g);

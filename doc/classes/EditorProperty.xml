@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorProperty" inherits="Container" version="4.0">
+<class name="EditorProperty" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Custom control to edit properties for adding into the inspector.
 	</brief_description>
@@ -38,7 +38,7 @@
 				Gets the edited object.
 			</description>
 		</method>
-		<method name="get_edited_property">
+		<method name="get_edited_property" qualifiers="const">
 			<return type="StringName" />
 			<description>
 				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.

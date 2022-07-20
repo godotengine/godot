@@ -109,10 +109,10 @@ ShaderWarning::Code ShaderWarning::get_code_from_name(const String &p_name) {
 	ERR_FAIL_V_MSG(WARNING_MAX, "Invalid shader warning name: " + p_name);
 }
 
-static Map<int, uint32_t> *code_to_flags_map = nullptr;
+static HashMap<int, uint32_t> *code_to_flags_map = nullptr;
 
 static void init_code_to_flags_map() {
-	code_to_flags_map = memnew((Map<int, uint32_t>));
+	code_to_flags_map = memnew((HashMap<int, uint32_t>));
 	code_to_flags_map->insert(ShaderWarning::FLOAT_COMPARISON, ShaderWarning::FLOAT_COMPARISON_FLAG);
 	code_to_flags_map->insert(ShaderWarning::UNUSED_CONSTANT, ShaderWarning::UNUSED_CONSTANT_FLAG);
 	code_to_flags_map->insert(ShaderWarning::UNUSED_FUNCTION, ShaderWarning::UNUSED_FUNCTION_FLAG);
@@ -124,7 +124,7 @@ static void init_code_to_flags_map() {
 	code_to_flags_map->insert(ShaderWarning::DEVICE_LIMIT_EXCEEDED, ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
 }
 
-ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const Map<Code, bool> &p_map) {
+ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const HashMap<Code, bool> &p_map) {
 	uint32_t result = 0U;
 
 	if (code_to_flags_map == nullptr) {

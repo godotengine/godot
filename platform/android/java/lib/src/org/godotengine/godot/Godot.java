@@ -34,8 +34,11 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.WINDOW_SERVICE;
 
 import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.io.directory.DirectoryAccessHandler;
+import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
+import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
@@ -47,7 +50,6 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -164,8 +166,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private Sensor mMagnetometer;
 	private Sensor mGyroscope;
 
-	public static GodotIO io;
-	public static GodotNetUtils netUtils;
+	public GodotIO io;
+	public GodotNetUtils netUtils;
+	public GodotTTS tts;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -333,9 +336,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		if (godotHost != null) {
-			godotHost.onGodotRestartRequested(this);
-		}
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onGodotRestartRequested(this);
+			}
+		});
 	}
 
 	public void alert(final String message, final String title) {
@@ -455,19 +460,26 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
-		GodotLib.io = io;
 		netUtils = new GodotNetUtils(activity);
+		tts = new GodotTTS(activity);
+		Context context = getContext();
+		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
+		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-		mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
-		GodotLib.initialize(activity, this, activity.getAssets(), use_apk_expansion);
+		GodotLib.initialize(activity,
+				this,
+				activity.getAssets(),
+				io,
+				netUtils,
+				directoryAccessHandler,
+				fileAccessHandler,
+				use_apk_expansion,
+				tts);
 
 		result_callback = null;
 
@@ -508,17 +520,14 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				use_debug_opengl = true;
 			} else if (command_line[i].equals("--use_immersive")) {
 				use_immersive = true;
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
-					window.getDecorView().setSystemUiVisibility(
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
-							View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-
-					UiChangeListener();
-				}
+				window.getDecorView().setSystemUiVisibility(
+						View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | // hide nav bar
+						View.SYSTEM_UI_FLAG_FULLSCREEN | // hide status bar
+						View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				UiChangeListener();
 			} else if (command_line[i].equals("--use_apk_expansion")) {
 				use_apk_expansion = true;
 			} else if (has_extra && command_line[i].equals("--apk_expansion_md5")) {
@@ -665,14 +674,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public String getClipboard() {
-		String copiedText = "";
-
-		if (mClipboard.hasPrimaryClip()) {
-			ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
-			copiedText = item.getText().toString();
-		}
-
-		return copiedText;
+		ClipData clipData = mClipboard.getPrimaryClip();
+		if (clipData == null)
+			return "";
+		CharSequence text = clipData.getItemAt(0).getText();
+		if (text == null)
+			return "";
+		return text.toString();
 	}
 
 	public void setClipboard(String p_text) {
@@ -698,7 +706,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
-		if (use_immersive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
+		if (use_immersive) {
 			Window window = getActivity().getWindow();
 			window.getDecorView().setSystemUiVisibility(
 					View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
@@ -718,15 +726,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final View decorView = getActivity().getWindow().getDecorView();
 		decorView.setOnSystemUiVisibilityChangeListener(visibility -> {
 			if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-					decorView.setSystemUiVisibility(
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-				}
+				decorView.setSystemUiVisibility(
+						View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+						View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+						View.SYSTEM_UI_FLAG_FULLSCREEN |
+						View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 			}
 		});
 	}
@@ -859,9 +865,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private void forceQuit() {
 		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
 		// native Godot components that is started in Godot#onVideoInit.
-		if (godotHost != null) {
-			godotHost.onGodotForceQuit(this);
-		}
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onGodotForceQuit(this);
+			}
+		});
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
@@ -885,9 +893,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 			// Create Hex String
 			StringBuilder hexString = new StringBuilder();
-			for (int i = 0; i < messageDigest.length; i++) {
-				String s = Integer.toHexString(0xFF & messageDigest[i]);
-
+			for (byte b : messageDigest) {
+				String s = Integer.toHexString(0xFF & b);
 				if (s.length() == 1) {
 					s = "0" + s;
 				}
@@ -1010,6 +1017,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mProgressFraction.setText(Helpers.getDownloadProgressString(progress.mOverallProgress,
 				progress.mOverallTotal));
 	}
+
 	public void initInputDevices() {
 		mRenderView.initInputDevices();
 	}
@@ -1017,5 +1025,14 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	@Keep
 	private GodotRenderView getRenderView() { // used by native side to get renderView
 		return mRenderView;
+	}
+
+	@Keep
+	private void createNewGodotInstance(String[] args) {
+		runOnUiThread(() -> {
+			if (godotHost != null) {
+				godotHost.onNewGodotInstanceRequested(args);
+			}
+		});
 	}
 }

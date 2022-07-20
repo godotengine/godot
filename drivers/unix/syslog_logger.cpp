@@ -31,7 +31,9 @@
 #ifdef UNIX_ENABLED
 
 #include "syslog_logger.h"
+
 #include "core/string/print_string.h"
+
 #include <syslog.h>
 
 void SyslogLogger::logv(const char *p_format, va_list p_list, bool p_err) {

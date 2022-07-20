@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneFormatImporter" inherits="RefCounted" version="4.0">
+<class name="EditorSceneFormatImporter" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Imports scenes from third-parties' 3D files.
 	</brief_description>
@@ -29,16 +29,8 @@
 		<method name="_get_option_visibility" qualifiers="virtual const">
 			<return type="Variant" />
 			<argument index="0" name="path" type="String" />
-			<argument index="1" name="option" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="_import_animation" qualifiers="virtual">
-			<return type="Animation" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="flags" type="int" />
-			<argument index="2" name="options" type="Dictionary" />
-			<argument index="3" name="bake_fps" type="int" />
+			<argument index="1" name="for_animation" type="bool" />
+			<argument index="2" name="option" type="String" />
 			<description>
 			</description>
 		</method>
@@ -62,6 +54,8 @@
 		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="8">
 		</constant>
 		<constant name="IMPORT_USE_NAMED_SKIN_BINDS" value="16">
+		</constant>
+		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32">
 		</constant>
 	</constants>
 </class>

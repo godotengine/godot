@@ -42,6 +42,11 @@
 #include "scene/resources/shader.h"
 #include "servers/rendering/shader_warnings.h"
 
+class ItemList;
+class VisualShaderEditor;
+class HSplitContainer;
+class ShaderCreateDialog;
+
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
@@ -65,7 +70,7 @@ protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) override;
+	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
 	virtual void _validate_script() override;
@@ -108,19 +113,19 @@ class ShaderEditor : public PanelContainer {
 		HELP_DOCS,
 	};
 
-	MenuButton *edit_menu;
-	MenuButton *search_menu;
-	PopupMenu *bookmarks_menu;
-	MenuButton *help_menu;
-	PopupMenu *context_menu;
+	MenuButton *edit_menu = nullptr;
+	MenuButton *search_menu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	MenuButton *help_menu = nullptr;
+	PopupMenu *context_menu = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle;
+	uint64_t idle = 0;
 
-	GotoLineDialog *goto_line_dialog;
-	ConfirmationDialog *erase_tab_confirm;
-	ConfirmationDialog *disk_changed;
+	GotoLineDialog *goto_line_dialog = nullptr;
+	ConfirmationDialog *erase_tab_confirm = nullptr;
+	ConfirmationDialog *disk_changed = nullptr;
 
-	ShaderTextEditor *shader_editor;
+	ShaderTextEditor *shader_editor = nullptr;
 
 	void _menu_option(int p_option);
 	mutable Ref<Shader> shader;
@@ -154,16 +159,46 @@ public:
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 	void save_external_data(const String &p_str = "");
 
-	ShaderEditor(EditorNode *p_node);
+	ShaderEditor();
 };
 
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
-	bool _2d;
-	ShaderEditor *shader_editor;
-	EditorNode *editor;
-	Button *button;
+	struct EditedShader {
+		Ref<Shader> shader;
+		ShaderEditor *shader_editor = nullptr;
+		VisualShaderEditor *visual_shader_editor = nullptr;
+	};
+
+	LocalVector<EditedShader> edited_shaders;
+
+	enum {
+		FILE_NEW,
+		FILE_OPEN,
+		FILE_SAVE,
+		FILE_SAVE_AS,
+		FILE_INSPECT,
+		FILE_CLOSE,
+		FILE_MAX
+	};
+
+	HSplitContainer *main_split = nullptr;
+	ItemList *shader_list = nullptr;
+	TabContainer *shader_tabs = nullptr;
+
+	Button *button = nullptr;
+	MenuButton *file_menu = nullptr;
+
+	ShaderCreateDialog *shader_create_dialog = nullptr;
+
+	void _update_shader_list();
+	void _shader_selected(int p_index);
+	void _menu_item_pressed(int p_index);
+	void _resource_saved(Object *obj);
+	void _close_shader(int p_index);
+
+	void _shader_created(Ref<Shader> p_shader);
 
 public:
 	virtual String get_name() const override { return "Shader"; }
@@ -173,12 +208,13 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
-	ShaderEditor *get_shader_editor() const { return shader_editor; }
+	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
+	VisualShaderEditor *get_visual_shader_editor(const Ref<Shader> &p_for_shader);
 
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 
-	ShaderEditorPlugin(EditorNode *p_node);
+	ShaderEditorPlugin();
 	~ShaderEditorPlugin();
 };
 

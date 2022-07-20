@@ -29,13 +29,11 @@
 /*************************************************************************/
 
 #include "resource_importer_bitmask.h"
-#include "core/io/config_file.h"
+
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_node.h"
+#include "core/io/resource_saver.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/texture.h"
 
 String ResourceImporterBitMap::get_importer_name() const {
 	return "bitmap";
@@ -57,7 +55,7 @@ String ResourceImporterBitMap::get_resource_type() const {
 	return "BitMap";
 }
 
-bool ResourceImporterBitMap::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterBitMap::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -74,7 +72,7 @@ void ResourceImporterBitMap::get_import_options(const String &p_path, List<Impor
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
 }
 
-Error ResourceImporterBitMap::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterBitMap::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	int create_from = p_options["create_from"];
 	float threshold = p_options["threshold"];
 	Ref<Image> image;

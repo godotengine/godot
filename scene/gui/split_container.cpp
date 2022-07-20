@@ -168,15 +168,18 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();
 		} break;
+
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			if (get_theme_constant(SNAME("autohide"))) {
 				update();
 			}
 		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (!_getch(0) || !_getch(1)) {
 				return;
@@ -200,6 +203,7 @@ void SplitContainer::_notification(int p_what) {
 				draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
@@ -373,7 +377,7 @@ void SplitContainer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset"), "set_split_offset", "get_split_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_split_offset", "get_split_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
 

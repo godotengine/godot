@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve2D" inherits="Resource" version="4.0">
+<class name="Curve2D" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Describes a Bézier curve in 2D space.
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="2" name="out" type="Vector2" default="Vector2(0, 0)" />
 			<argument index="3" name="at_position" type="int" default="-1" />
 			<description>
-				Adds a point to a curve at [code]position[/code], with control points [code]in[/code] and [code]out[/code].
+				Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s position, with control points [code]in[/code] and [code]out[/code].
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt;0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
 			</description>
 		</method>
@@ -53,12 +53,6 @@
 			<description>
 				Returns the closest baked point (in curve's local space) to [code]to_point[/code].
 				[code]to_point[/code] must be in this curve's local space.
-			</description>
-		</method>
-		<method name="get_point_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of points describing the curve.
 			</description>
 		</method>
 		<method name="get_point_in" qualifiers="const">
@@ -154,6 +148,9 @@
 	<members>
 		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval" default="5.0">
 			The distance in pixels between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
+		</member>
+		<member name="point_count" type="int" setter="set_point_count" getter="get_point_count" default="0">
+			The number of points describing the curve.
 		</member>
 	</members>
 </class>

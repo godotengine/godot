@@ -37,7 +37,7 @@
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
-	NavigationRegion2D *node;
+	NavigationRegion2D *node = nullptr;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 
@@ -57,14 +57,14 @@ protected:
 	virtual void _create_resource() override;
 
 public:
-	NavigationPolygonEditor(EditorNode *p_editor);
+	NavigationPolygonEditor();
 };
 
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:
-	NavigationPolygonEditorPlugin(EditorNode *p_node);
+	NavigationPolygonEditorPlugin();
 };
 
 #endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

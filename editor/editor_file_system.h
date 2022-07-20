@@ -34,8 +34,8 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/set.h"
 #include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
 
@@ -47,9 +47,9 @@ class EditorFileSystemDirectory : public Object {
 
 	String name;
 	uint64_t modified_time;
-	bool verified; //used for checking changes
+	bool verified = false; //used for checking changes
 
-	EditorFileSystemDirectory *parent;
+	EditorFileSystemDirectory *parent = nullptr;
 	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct FileInfo {
@@ -109,6 +109,37 @@ public:
 	~EditorFileSystemDirectory();
 };
 
+class EditorFileSystemImportFormatSupportQuery : public RefCounted {
+	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
+
+protected:
+	GDVIRTUAL0RC(bool, _is_active)
+	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
+	GDVIRTUAL0RC(bool, _query)
+	static void _bind_methods() {
+		GDVIRTUAL_BIND(_is_active);
+		GDVIRTUAL_BIND(_get_file_extensions);
+		GDVIRTUAL_BIND(_query);
+	}
+
+public:
+	virtual bool is_active() const {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_is_active, ret);
+		return ret;
+	}
+	virtual Vector<String> get_file_extensions() const {
+		Vector<String> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_file_extensions, ret);
+		return ret;
+	}
+	virtual bool query() {
+		bool ret = false;
+		GDVIRTUAL_REQUIRED_CALL(_query, ret);
+		return ret;
+	}
+};
+
 class EditorFileSystem : public Node {
 	GDCLASS(EditorFileSystem, Node);
 
@@ -132,28 +163,28 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads;
+	bool use_threads = true;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
-	EditorFileSystemDirectory *new_filesystem;
+	EditorFileSystemDirectory *new_filesystem = nullptr;
 
-	bool abort_scan;
-	bool scanning;
-	bool importing;
-	bool first_scan;
-	bool scan_changes_pending;
+	bool abort_scan = false;
+	bool scanning = false;
+	bool importing = false;
+	bool first_scan = true;
+	bool scan_changes_pending = false;
 	float scan_total;
 	String filesystem_settings_version_for_import;
-	bool revalidate_import_files;
+	bool revalidate_import_files = false;
 
 	void _scan_filesystem();
 
-	Set<String> late_update_files;
+	HashSet<String> late_update_files;
 
 	void _save_late_updated_files();
 
-	EditorFileSystemDirectory *filesystem;
+	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
 
@@ -182,7 +213,7 @@ class EditorFileSystem : public Node {
 	};
 
 	void _save_filesystem_cache();
-	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file);
 
 	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
@@ -190,15 +221,15 @@ class EditorFileSystem : public Node {
 
 	void _delete_internal_files(String p_file);
 
-	Set<String> textfile_extensions;
-	Set<String> valid_extensions;
-	Set<String> import_extensions;
+	HashSet<String> textfile_extensions;
+	HashSet<String> valid_extensions;
+	HashSet<String> import_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAccess> &da, const ScanProgress &p_progress);
 
 	Thread thread_sources;
-	bool scanning_changes;
-	bool scanning_changes_done;
+	bool scanning_changes = false;
+	bool scanning_changes_done = false;
 
 	static void _thread_func_sources(void *_userdata);
 
@@ -209,7 +240,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	void _reimport_file(const String &p_file, const Map<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
+	void _reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -238,11 +269,11 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
-	Set<String> group_file_cache;
+	HashSet<String> group_file_cache;
 
 	ThreadWorkPool import_threads;
 
@@ -257,6 +288,9 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
+	bool _scan_import_support(Vector<String> reimports);
+
+	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
 protected:
 	void _notification(int p_what);
@@ -272,7 +306,7 @@ public:
 	void scan();
 	void scan_changes();
 	void update_file(const String &p_file);
-	Set<String> get_valid_extensions() const;
+	HashSet<String> get_valid_extensions() const;
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
@@ -280,7 +314,7 @@ public:
 
 	void reimport_files(const Vector<String> &p_files);
 
-	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const Map<StringName, Variant> &p_custom_params);
+	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params);
 
 	void update_script_classes();
 
@@ -289,6 +323,8 @@ public:
 
 	static bool _should_skip_directory(const String &p_path);
 
+	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
+	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	EditorFileSystem();
 	~EditorFileSystem();
 };

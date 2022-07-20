@@ -40,7 +40,7 @@ class MultiplayerSynchronizer : public Node {
 
 private:
 	Ref<SceneReplicationConfig> replication_config;
-	NodePath root_path;
+	NodePath root_path = NodePath(".."); // Start with parent, like with AnimationPlayer.
 	uint64_t interval_msec = 0;
 
 	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);

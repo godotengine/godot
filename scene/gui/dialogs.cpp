@@ -33,24 +33,19 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "line_edit.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "scene/main/window.h" // Only used to check for more modals when dimming the editor.
-#endif
+#include "scene/gui/line_edit.h"
 
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (close_on_escape && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_cancel_pressed();
 	}
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive()) {
+	if (close_on_escape && !is_exclusive()) {
 		_cancel_pressed();
 	}
 }
@@ -72,21 +67,25 @@ void AcceptDialog::_notification(int p_what) {
 				}
 			}
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
 				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
 				parent_visible = nullptr;
 			}
 		} break;
+
 		case NOTIFICATION_READY:
 		case NOTIFICATION_WM_SIZE_CHANGED: {
 			if (is_visible()) {
 				_update_child_rects();
 			}
 		} break;
+
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_cancel_pressed();
 		} break;
@@ -94,6 +93,9 @@ void AcceptDialog::_notification(int p_what) {
 }
 
 void AcceptDialog::_text_submitted(const String &p_text) {
+	if (get_ok_button() && get_ok_button()->is_disabled()) {
+		return; // Do not allow submission if OK button is disabled.
+	}
 	_ok_pressed();
 }
 
@@ -143,12 +145,28 @@ bool AcceptDialog::get_hide_on_ok() const {
 	return hide_on_ok;
 }
 
+void AcceptDialog::set_close_on_escape(bool p_hide) {
+	close_on_escape = p_hide;
+}
+
+bool AcceptDialog::get_close_on_escape() const {
+	return close_on_escape;
+}
+
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-	label->set_autowrap_mode(p_autowrap ? Label::AUTOWRAP_WORD : Label::AUTOWRAP_OFF);
+	label->set_autowrap_mode(p_autowrap ? TextServer::AUTOWRAP_WORD : TextServer::AUTOWRAP_OFF);
 }
 
 bool AcceptDialog::has_autowrap() {
-	return label->get_autowrap_mode() != Label::AUTOWRAP_OFF;
+	return label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
+}
+
+void AcceptDialog::set_ok_button_text(String p_ok_button_text) {
+	ok->set_text(p_ok_button_text);
+}
+
+String AcceptDialog::get_ok_button_text() const {
+	return ok->get_text();
 }
 
 void AcceptDialog::register_text_enter(Control *p_line_edit) {
@@ -252,7 +270,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel.is_empty()) {
-		c = TTRC("Cancel");
+		c = "Cancel";
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
@@ -286,6 +304,8 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
+	ClassDB::bind_method(D_METHOD("set_close_on_escape", "enabled"), &AcceptDialog::set_close_on_escape);
+	ClassDB::bind_method(D_METHOD("get_close_on_escape"), &AcceptDialog::get_close_on_escape);
 	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_cancel_button", "name"), &AcceptDialog::add_cancel_button);
 	ClassDB::bind_method(D_METHOD("remove_button", "button"), &AcceptDialog::remove_button);
@@ -294,14 +314,19 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_ok_button_text", "text"), &AcceptDialog::set_ok_button_text);
+	ClassDB::bind_method(D_METHOD("get_ok_button_text"), &AcceptDialog::get_ok_button_text);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("cancelled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
+
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_close_on_escape"), "set_close_on_escape", "get_close_on_escape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 
@@ -336,7 +361,7 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew(Button);
-	ok->set_text(TTRC("OK"));
+	ok->set_text("OK");
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
@@ -352,8 +377,20 @@ AcceptDialog::~AcceptDialog() {
 
 // ConfirmationDialog
 
+void ConfirmationDialog::set_cancel_button_text(String p_cancel_button_text) {
+	cancel->set_text(p_cancel_button_text);
+}
+
+String ConfirmationDialog::get_cancel_button_text() const {
+	return cancel->get_text();
+}
+
 void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
+	ClassDB::bind_method(D_METHOD("set_cancel_button_text"), &ConfirmationDialog::set_cancel_button_text);
+	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");
 }
 
 Button *ConfirmationDialog::get_cancel_button() {

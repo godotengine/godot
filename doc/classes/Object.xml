@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="4.0">
+<class name="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all non-built-in types.
 	</brief_description>
@@ -53,7 +53,8 @@
 		<method name="_init" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when the object is initialized.
+				Called when the object is initialized in memory. Can be defined to take in parameters, that are passed in when constructing.
+				[b]Note:[/b] If [method _init] is defined with required parameters, then explicit construction is the only valid means of creating an Object of the class. If any other means (such as [method PackedScene.instantiate]) is used, then initialization will fail.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -106,7 +107,7 @@
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
-			<return type="void" />
+			<return type="Variant" />
 			<argument index="0" name="method" type="StringName" />
 			<description>
 				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
@@ -156,7 +157,7 @@
 			<description>
 				Connects a [code]signal[/code] to a [code]callable[/code]. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the [Callable]'s method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				[b]Note:[/b] This method is the legacy implementation for connecting signals. The recommended modern approach is to use [method Signal.connect] and to use [method Callable.bind] to add and validate parameter binds. Both syntaxes are shown below.
-				A signal can only be connected once to a [Callable]. It will throw an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
+				A signal can only be connected once to a [Callable]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]
 				Connecting signals is one of the most common operations in Godot and the API gives many options to do so, which are described further down. The code block below shows the recommended approach for both GDScript and C#.
@@ -244,7 +245,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_down] signal will be connected to [code]_on_button_down[/code]), option 3 offers the best validation: it will throw a compile-time error if either the [code]button_down[/code] signal or the [code]_on_button_down[/code] callable are undefined. On the other hand, option 2 only relies on string names and will only be able to validate either names at runtime: it will throw a runtime error if [code]"button_down"[/code] doesn't correspond to a signal, or if [code]"_on_button_down"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
+				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_down] signal will be connected to [code]_on_button_down[/code]), option 3 offers the best validation: it will print a compile-time error if either the [code]button_down[/code] signal or the [code]_on_button_down[/code] callable are undefined. On the other hand, option 2 only relies on string names and will only be able to validate either names at runtime: it will print a runtime error if [code]"button_down"[/code] doesn't correspond to a signal, or if [code]"_on_button_down"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
 				[b]Parameter bindings and passing:[/b]
 				For legacy or language-specific reasons, there are also several ways to bind parameters to signals. One can pass a [code]binds[/code] [Array] to [method Object.connect] or [method Signal.connect], or use the recommended [method Callable.bind] method to create a new callable from an existing one, with the given parameter binds.
 				One can also pass additional parameters when emitting the signal with [method emit_signal]. The examples below show the relationship between those two types of parameters.
@@ -296,11 +297,11 @@
 			<argument index="1" name="callable" type="Callable" />
 			<description>
 				Disconnects a [code]signal[/code] from a given [code]callable[/code].
-				If you try to disconnect a connection that does not exist, the method will throw an error. Use [method is_connected] to ensure that the connection exists.
+				If you try to disconnect a connection that does not exist, the method will print an error. Use [method is_connected] to ensure that the connection exists.
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<argument index="0" name="signal" type="StringName" />
 			<description>
 				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
@@ -324,7 +325,7 @@
 		</method>
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="property" type="String" />
+			<argument index="0" name="property" type="StringName" />
 			<description>
 				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
@@ -365,8 +366,10 @@
 		<method name="get_meta" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="name" type="StringName" />
+			<argument index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata entry for the given [code]name[/code].
+				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -396,7 +399,7 @@
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
 			<return type="Array" />
-			<argument index="0" name="signal" type="String" />
+			<argument index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [code]signal[/code].
 			</description>
@@ -487,7 +490,7 @@
 		</method>
 		<method name="set">
 			<return type="void" />
-			<argument index="0" name="property" type="String" />
+			<argument index="0" name="property" type="StringName" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
 				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.

@@ -33,6 +33,7 @@
 #include "tile_data_editors.h"
 #include "tiles_editor_plugin.h"
 
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
@@ -181,7 +182,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		}
 
 		sources_list->add_item(item_text, texture);
-		sources_list->set_item_metadata(sources_list->get_item_count() - 1, source_id);
+		sources_list->set_item_metadata(-1, source_id);
 	}
 
 	// Set again the current selected item if needed.
@@ -332,14 +333,15 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
-			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
@@ -348,9 +350,7 @@ void TileSetEditor::_notification(int p_what) {
 				_update_patterns_list();
 				tile_set_changed_needs_update = false;
 			}
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -505,7 +505,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 						for (int terrain_set_index = begin; terrain_set_index < end; terrain_set_index++) {
 							for (int l = 0; l < TileSet::CELL_NEIGHBOR_MAX; l++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(l);
-								if (tile_data->is_valid_peering_bit_terrain(bit)) {
+								if (tile_data->is_valid_terrain_peering_bit(bit)) {
 									ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[l]));
 								}
 							}
@@ -513,7 +513,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 					} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
 						for (int terrain_index = 0; terrain_index < TileSet::CELL_NEIGHBOR_MAX; terrain_index++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(terrain_index);
-							if (tile_data->is_valid_peering_bit_terrain(bit)) {
+							if (tile_data->is_valid_terrain_peering_bit(bit)) {
 								ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[terrain_index]));
 							}
 						}
@@ -607,9 +607,10 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 
 						if (components.size() == 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "mode") {
 							ADD_UNDO(tile_data, "terrain_set");
+							ADD_UNDO(tile_data, "terrain");
 							for (int l = 0; l < TileSet::CELL_NEIGHBOR_MAX; l++) {
 								TileSet::CellNeighbor bit = TileSet::CellNeighbor(l);
-								if (tile_data->is_valid_peering_bit_terrain(bit)) {
+								if (tile_data->is_valid_terrain_peering_bit(bit)) {
 									ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[l]));
 								}
 							}
@@ -664,6 +665,7 @@ TileSetEditor::TileSetEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tiles"));
 	tabs_bar->add_tab(TTR("Patterns"));

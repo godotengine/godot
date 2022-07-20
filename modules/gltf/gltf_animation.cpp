@@ -45,7 +45,7 @@ void GLTFAnimation::set_loop(bool p_val) {
 	loop = p_val;
 }
 
-Map<int, GLTFAnimation::Track> &GLTFAnimation::get_tracks() {
+HashMap<int, GLTFAnimation::Track> &GLTFAnimation::get_tracks() {
 	return tracks;
 }
 

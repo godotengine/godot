@@ -60,8 +60,16 @@ public interface GodotHost {
 	default void onGodotForceQuit(Godot instance) {}
 
 	/**
-	 * Invoked on the GL thread when the Godot instance wants to be restarted. It's up to the host
+	 * Invoked on the UI thread when the Godot instance wants to be restarted. It's up to the host
 	 * to perform the appropriate action(s).
 	 */
 	default void onGodotRestartRequested(Godot instance) {}
+
+	/**
+	 * Invoked on the UI thread when a new Godot instance is requested. It's up to the host to
+	 * perform the appropriate action(s).
+	 *
+	 * @param args Arguments used to initialize the new instance.
+	 */
+	default void onNewGodotInstanceRequested(String[] args) {}
 }

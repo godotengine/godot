@@ -40,7 +40,11 @@ static Lightmapper *create_lightmapper_rd() {
 }
 #endif
 
-void register_lightmapper_rd_types() {
+void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	GLOBAL_DEF("rendering/lightmapping/bake_quality/low_quality_ray_count", 16);
 	GLOBAL_DEF("rendering/lightmapping/bake_quality/medium_quality_ray_count", 64);
 	GLOBAL_DEF("rendering/lightmapping/bake_quality/high_quality_ray_count", 256);
@@ -59,5 +63,8 @@ void register_lightmapper_rd_types() {
 #endif
 }
 
-void unregister_lightmapper_rd_types() {
+void uninitialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 }

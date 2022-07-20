@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSGPrimitive3D" inherits="CSGShape3D" version="4.0">
+<class name="CSGPrimitive3D" inherits="CSGShape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Base class for CSG primitives.
 	</brief_description>
@@ -11,8 +11,8 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="invert_faces" type="bool" setter="set_invert_faces" getter="is_inverting_faces" default="false">
-			Invert the faces of the mesh.
+		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
+			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
 		</member>
 	</members>
 </class>

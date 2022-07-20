@@ -34,27 +34,23 @@
 #ifdef GLES3_ENABLED
 
 #include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "storage/material_storage.h"
+#include "storage/texture_storage.h"
 
 #include "shaders/canvas.glsl.gen.h"
 
 class RasterizerSceneGLES3;
 
 class RasterizerCanvasGLES3 : public RendererCanvasRender {
+	static RasterizerCanvasGLES3 *singleton;
+
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
-
-	enum {
-		BASE_UNIFORM_BUFFER_OBJECT = 0,
-		MATERIAL_UNIFORM_BUFFER_OBJECT = 1,
-		TRANSFORMS_UNIFORM_BUFFER_OBJECT = 2,
-		CANVAS_TEXTURE_UNIFORM_BUFFER_OBJECT = 3,
-	};
 
 	enum {
 
@@ -100,6 +96,14 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	};
 
 public:
+	enum {
+		BASE_UNIFORM_LOCATION = 0,
+		GLOBAL_UNIFORM_LOCATION = 1,
+		LIGHT_UNIFORM_LOCATION = 2,
+		INSTANCE_UNIFORM_LOCATION = 3,
+		MATERIAL_UNIFORM_LOCATION = 4,
+	};
+
 	struct StateBuffer {
 		float canvas_transform[16];
 		float screen_transform[16];
@@ -164,40 +168,24 @@ public:
 		LocalVector<GLsync> fences;
 		uint32_t current_buffer = 0;
 
-		InstanceData *instance_data_array;
+		InstanceData *instance_data_array = nullptr;
 		bool canvas_texscreen_used;
-		CanvasShaderGLES3 canvas_shader;
 		RID canvas_shader_current_version;
 		RID canvas_shader_default_version;
-		//CanvasShadowShaderGLES3 canvas_shadow_shader;
-		//LensDistortedShaderGLES3 lens_shader;
-
-		bool using_texture_rect;
-
-		bool using_ninepatch;
-		bool using_skeleton;
-
-		Transform2D skeleton_transform;
-		Transform2D skeleton_transform_inverse;
-		Size2i skeleton_texture_size;
 
 		RID current_tex = RID();
+		Size2 current_pixel_size = Size2();
 		RID current_normal = RID();
 		RID current_specular = RID();
-		RasterizerStorageGLES3::Texture *current_tex_ptr;
+		GLES3::Texture *current_tex_ptr;
 		RID current_shader_version = RID();
 		RS::PrimitiveType current_primitive = RS::PRIMITIVE_MAX;
 		uint32_t current_primitive_points = 0;
 		Item::Command::Type current_command = Item::Command::TYPE_RECT;
 
-		bool end_batch = false;
+		bool transparent_render_target = false;
 
-		Transform3D vp;
-		Light *using_light;
-		bool using_shadow;
-		bool using_transparent_rt;
-
-		// FROM RD Renderer
+		double time = 0.0;
 
 		uint32_t max_lights_per_render;
 		uint32_t max_lights_per_item;
@@ -215,20 +203,13 @@ public:
 
 	typedef void Texture;
 
-	RasterizerSceneGLES3 *scene_render;
-
-	RasterizerStorageGLES3 *storage;
-
-	void _set_uniforms();
-
-	void canvas_begin();
-	void canvas_end();
+	void canvas_begin(RID p_to_render_target, bool p_to_backbuffer);
 
 	//virtual void draw_window_margins(int *black_margin, RID *black_image) override;
 	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
 
-	virtual void reset_canvas();
-	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
+	void reset_canvas();
+	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache);
 
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) override;
 
@@ -247,13 +228,15 @@ public:
 	bool free(RID p_rid) override;
 	void update() override;
 
-	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, RID &r_last_texture, Size2 &r_texpixel_size);
+	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index);
 
 	struct PolygonBuffers {
 		GLuint vertex_buffer;
 		GLuint vertex_array;
 		GLuint index_buffer;
 		int count;
+		bool color_disabled = false;
+		Color color;
 	};
 
 	struct {
@@ -268,11 +251,12 @@ public:
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer = false);
 	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index);
 	void _render_batch(uint32_t &p_max_index);
-	void _end_batch(uint32_t &p_max_index);
+	void _bind_instance_data_buffer(uint32_t p_max_index);
 	void _allocate_instance_data_buffer();
 
-	void initialize();
-	void finalize();
+	void set_time(double p_time);
+
+	static RasterizerCanvasGLES3 *get_singleton();
 	RasterizerCanvasGLES3();
 	~RasterizerCanvasGLES3();
 };

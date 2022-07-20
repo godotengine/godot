@@ -92,30 +92,34 @@ void FileDialog::_theme_changed() {
 }
 
 void FileDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible()) {
-			set_process_unhandled_input(false);
-		}
-	}
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
-		if (vbox->is_layout_rtl()) {
-			dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
-			dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
-		} else {
-			dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
-			dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
-		}
-		refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
-		show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
-		_theme_changed();
-	}
-	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		update_filters();
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				set_process_shortcut_input(false);
+			}
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
+			if (vbox->is_layout_rtl()) {
+				dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+				dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+			} else {
+				dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+				dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+			}
+			refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
+			show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
+			_theme_changed();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update_filters();
+		} break;
 	}
 }
 
-void FileDialog::unhandled_input(const Ref<InputEvent> &p_event) {
+void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -166,13 +170,17 @@ Vector<String> FileDialog::get_selected_files() const {
 };
 
 void FileDialog::update_dir() {
-	dir->set_text(dir_access->get_current_dir(false));
+	if (root_prefix.is_empty()) {
+		dir->set_text(dir_access->get_current_dir(false));
+	} else {
+		dir->set_text(dir_access->get_current_dir(false).trim_prefix(root_prefix).trim_prefix("/"));
+	}
 
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
 			drives->add_item(RTR("Network"));
-			drives->set_item_disabled(drives->get_item_count() - 1, true);
+			drives->set_item_disabled(-1, true);
 			drives->select(drives->get_item_count() - 1);
 		} else {
 			drives->select(dir_access->get_current_drive());
@@ -184,10 +192,8 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_submitted(String p_dir) {
-	dir_access->change_dir(p_dir);
+	_change_dir(root_prefix.plus_file(p_dir));
 	file->set_text("");
-	invalidate();
-	update_dir();
 	_push_history();
 }
 
@@ -213,7 +219,7 @@ void FileDialog::_post_popup() {
 		tree->grab_focus();
 	}
 
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	// For open dir mode, deselect all items on file dialog open.
 	if (mode == FILE_MODE_OPEN_DIR) {
@@ -258,7 +264,8 @@ void FileDialog::_action_pressed() {
 		return;
 	}
 
-	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	String file_text = file->get_text();
+	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().plus_file(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		emit_signal(SNAME("file_selected"), f);
@@ -332,7 +339,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text(TTRC("File exists, overwrite?"));
+			confirm_save->set_text(RTR("File exists, overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
 		} else {
 			emit_signal(SNAME("file_selected"), f);
@@ -373,9 +380,7 @@ bool FileDialog::_is_open_should_be_disabled() {
 }
 
 void FileDialog::_go_up() {
-	dir_access->change_dir("..");
-	update_file_list();
-	update_dir();
+	_change_dir("..");
 	_push_history();
 }
 
@@ -385,9 +390,7 @@ void FileDialog::_go_back() {
 	}
 
 	local_history_pos--;
-	dir_access->change_dir(local_history[local_history_pos]);
-	update_file_list();
-	update_dir();
+	_change_dir(local_history[local_history_pos]);
 
 	dir_prev->set_disabled(local_history_pos == 0);
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
@@ -399,9 +402,7 @@ void FileDialog::_go_forward() {
 	}
 
 	local_history_pos++;
-	dir_access->change_dir(local_history[local_history_pos]);
-	update_file_list();
-	update_dir();
+	_change_dir(local_history[local_history_pos]);
 
 	dir_prev->set_disabled(local_history_pos == 0);
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
@@ -418,10 +419,10 @@ void FileDialog::deselect_all() {
 		switch (mode) {
 			case FILE_MODE_OPEN_FILE:
 			case FILE_MODE_OPEN_FILES:
-				get_ok_button()->set_text(TTRC("Open"));
+				set_ok_button_text(RTR("Open"));
 				break;
 			case FILE_MODE_OPEN_DIR:
-				get_ok_button()->set_text(TTRC("Select Current Folder"));
+				set_ok_button_text(RTR("Select Current Folder"));
 				break;
 			case FILE_MODE_OPEN_ANY:
 			case FILE_MODE_SAVE_FILE:
@@ -445,7 +446,7 @@ void FileDialog::_tree_selected() {
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
 	} else if (mode == FILE_MODE_OPEN_DIR) {
-		get_ok_button()->set_text(TTRC("Select This Folder"));
+		set_ok_button_text(RTR("Select This Folder"));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -460,12 +461,10 @@ void FileDialog::_tree_item_activated() {
 	Dictionary d = ti->get_metadata(0);
 
 	if (d["dir"]) {
-		dir_access->change_dir(d["name"]);
+		_change_dir(d["name"]);
 		if (mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES || mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 			file->set_text("");
 		}
-		call_deferred(SNAME("_update_file_list"));
-		call_deferred(SNAME("_update_dir"));
 		_push_history();
 	} else {
 		_action_pressed();
@@ -481,7 +480,12 @@ void FileDialog::update_file_name() {
 		String filter_str = filters[idx];
 		String file_str = file->get_text();
 		String base_name = file_str.get_basename();
-		file_str = base_name + "." + filter_str.strip_edges().to_lower();
+		Vector<String> filter_substr = filter_str.split(";");
+		if (filter_substr.size() >= 2) {
+			file_str = base_name + "." + filter_substr[0].strip_edges().get_extension().to_lower();
+		} else {
+			file_str = base_name + "." + filter_str.strip_edges().get_extension().to_lower();
+		}
 		file->set_text(file_str);
 	}
 }
@@ -497,7 +501,7 @@ void FileDialog::update_file_list() {
 	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
 		message->hide();
 	} else {
-		message->set_text(TTRC("You don't have permission to access contents of this folder."));
+		message->set_text(RTR("You don't have permission to access contents of this folder."));
 		message->show();
 	}
 
@@ -669,9 +673,13 @@ void FileDialog::clear_filters() {
 	invalidate();
 }
 
-void FileDialog::add_filter(const String &p_filter) {
+void FileDialog::add_filter(const String &p_filter, const String &p_description) {
 	ERR_FAIL_COND_MSG(p_filter.begins_with("."), "Filter must be \"filename.extension\", can't start with dot.");
-	filters.push_back(p_filter);
+	if (p_description.is_empty()) {
+		filters.push_back(p_filter);
+	} else {
+		filters.push_back(vformat("%s ; %s", p_filter, p_description));
+	}
 	update_filters();
 	invalidate();
 }
@@ -699,9 +707,7 @@ String FileDialog::get_current_path() const {
 }
 
 void FileDialog::set_current_dir(const String &p_dir) {
-	dir_access->change_dir(p_dir);
-	update_dir();
-	invalidate();
+	_change_dir(p_dir);
 	_push_history();
 }
 
@@ -727,6 +733,27 @@ void FileDialog::set_current_path(const String &p_path) {
 	}
 }
 
+void FileDialog::set_root_subfolder(const String &p_root) {
+	root_subfolder = p_root;
+	ERR_FAIL_COND_MSG(!dir_access->dir_exists(p_root), "root_subfolder must be an existing sub-directory.");
+
+	local_history.clear();
+	local_history_pos = -1;
+
+	dir_access->change_dir(root_subfolder);
+	if (root_subfolder.is_empty()) {
+		root_prefix = "";
+	} else {
+		root_prefix = dir_access->get_current_dir();
+	}
+	invalidate();
+	update_dir();
+}
+
+String FileDialog::get_root_subfolder() const {
+	return root_subfolder;
+}
+
 void FileDialog::set_mode_overrides_title(bool p_override) {
 	mode_overrides_title = p_override;
 }
@@ -741,35 +768,35 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
-			get_ok_button()->set_text(TTRC("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_FILES:
-			get_ok_button()->set_text(TTRC("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open File(s)"));
 			}
 			makedir->hide();
 			break;
 		case FILE_MODE_OPEN_DIR:
-			get_ok_button()->set_text(TTRC("Select Current Folder"));
+			set_ok_button_text(RTR("Select Current Folder"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_OPEN_ANY:
-			get_ok_button()->set_text(TTRC("Open"));
+			set_ok_button_text(RTR("Open"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Open a File or Directory"));
 			}
 			makedir->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
-			get_ok_button()->set_text(TTRC("Save"));
+			set_ok_button_text(RTR("Save"));
 			if (mode_overrides_title) {
 				set_title(TTRC("Save a File"));
 			}
@@ -793,7 +820,6 @@ void FileDialog::set_access(Access p_access) {
 	if (access == p_access) {
 		return;
 	}
-	memdelete(dir_access);
 	switch (p_access) {
 		case ACCESS_FILESYSTEM: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -806,6 +832,8 @@ void FileDialog::set_access(Access p_access) {
 		} break;
 	}
 	access = p_access;
+	root_prefix = "";
+	root_subfolder = "";
 	_update_drives();
 	invalidate();
 	update_filters();
@@ -828,10 +856,8 @@ FileDialog::Access FileDialog::get_access() const {
 void FileDialog::_make_dir_confirm() {
 	Error err = dir_access->make_dir(makedirname->get_text().strip_edges());
 	if (err == OK) {
-		dir_access->change_dir(makedirname->get_text().strip_edges());
-		invalidate();
+		_change_dir(makedirname->get_text().strip_edges());
 		update_filters();
-		update_dir();
 		_push_history();
 	} else {
 		mkdirerr->popup_centered(Size2(250, 50));
@@ -846,11 +872,25 @@ void FileDialog::_make_dir() {
 
 void FileDialog::_select_drive(int p_idx) {
 	String d = drives->get_item_text(p_idx);
-	dir_access->change_dir(d);
+	_change_dir(d);
 	file->set_text("");
+	_push_history();
+}
+
+void FileDialog::_change_dir(const String &p_new_dir) {
+	if (root_prefix.is_empty()) {
+		dir_access->change_dir(p_new_dir);
+	} else {
+		String old_dir = dir_access->get_current_dir();
+		dir_access->change_dir(p_new_dir);
+		if (!dir_access->get_current_dir(false).begins_with(root_prefix)) {
+			dir_access->change_dir(old_dir);
+			return;
+		}
+	}
+
 	invalidate();
 	update_dir();
-	_push_history();
 }
 
 void FileDialog::_update_drives(bool p_select) {
@@ -883,7 +923,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_cancel_pressed"), &FileDialog::_cancel_pressed);
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &FileDialog::clear_filters);
-	ClassDB::bind_method(D_METHOD("add_filter", "filter"), &FileDialog::add_filter);
+	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::add_filter, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &FileDialog::set_filters);
 	ClassDB::bind_method(D_METHOD("get_filters"), &FileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &FileDialog::get_current_dir);
@@ -900,6 +940,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &FileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &FileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
+	ClassDB::bind_method(D_METHOD("set_root_subfolder", "dir"), &FileDialog::set_root_subfolder);
+	ClassDB::bind_method(D_METHOD("get_root_subfolder"), &FileDialog::get_root_subfolder);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
 	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
@@ -911,12 +953,13 @@ void FileDialog::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "root_subfolder"), "set_root_subfolder", "get_root_subfolder");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir"), "set_current_dir", "get_current_dir");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file"), "set_current_file", "get_current_file");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path"), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
 
 	ADD_SIGNAL(MethodInfo("file_selected", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::PACKED_STRING_ARRAY, "paths")));
@@ -960,13 +1003,13 @@ FileDialog::FileDialog() {
 
 	dir_prev = memnew(Button);
 	dir_prev->set_flat(true);
-	dir_prev->set_tooltip(TTRC("Go to previous folder."));
+	dir_prev->set_tooltip(RTR("Go to previous folder."));
 	dir_next = memnew(Button);
 	dir_next->set_flat(true);
-	dir_next->set_tooltip(TTRC("Go to next folder."));
+	dir_next->set_tooltip(RTR("Go to next folder."));
 	dir_up = memnew(Button);
 	dir_up->set_flat(true);
-	dir_up->set_tooltip(TTRC("Go to parent folder."));
+	dir_up->set_tooltip(RTR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
 	hbc->add_child(dir_up);
@@ -974,7 +1017,7 @@ FileDialog::FileDialog() {
 	dir_next->connect("pressed", callable_mp(this, &FileDialog::_go_forward));
 	dir_up->connect("pressed", callable_mp(this, &FileDialog::_go_up));
 
-	hbc->add_child(memnew(Label(TTRC("Path:"))));
+	hbc->add_child(memnew(Label(RTR("Path:"))));
 
 	drives_container = memnew(HBoxContainer);
 	hbc->add_child(drives_container);
@@ -984,13 +1027,13 @@ FileDialog::FileDialog() {
 	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);
-	dir->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	dir->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	hbc->add_child(dir);
 	dir->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	refresh = memnew(Button);
 	refresh->set_flat(true);
-	refresh->set_tooltip(TTRC("Refresh files."));
+	refresh->set_tooltip(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
@@ -998,7 +1041,7 @@ FileDialog::FileDialog() {
 	show_hidden->set_flat(true);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(TTRC("Toggle the visibility of hidden files."));
+	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
 	hbc->add_child(show_hidden);
 
@@ -1006,26 +1049,26 @@ FileDialog::FileDialog() {
 	hbc->add_child(shortcuts_container);
 
 	makedir = memnew(Button);
-	makedir->set_text(TTRC("Create Folder"));
+	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
 	vbox->add_child(hbc);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbox->add_margin_child(TTRC("Directories & Files:"), tree, true);
+	vbox->add_margin_child(RTR("Directories & Files:"), tree, true);
 
 	message = memnew(Label);
 	message->hide();
-	message->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	message->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(message);
 
 	file_box = memnew(HBoxContainer);
-	file_box->add_child(memnew(Label(TTRC("File:"))));
+	file_box->add_child(memnew(Label(RTR("File:"))));
 	file = memnew(LineEdit);
-	file->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
+	file->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
@@ -1054,22 +1097,22 @@ FileDialog::FileDialog() {
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	makedialog = memnew(ConfirmationDialog);
-	makedialog->set_title(TTRC("Create Folder"));
+	makedialog->set_title(RTR("Create Folder"));
 	VBoxContainer *makevb = memnew(VBoxContainer);
 	makedialog->add_child(makevb);
 
 	makedirname = memnew(LineEdit);
-	makedirname->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
-	makevb->add_margin_child(TTRC("Name:"), makedirname);
+	makedirname->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	makevb->add_margin_child(RTR("Name:"), makedirname);
 	add_child(makedialog, false, INTERNAL_MODE_FRONT);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
-	mkdirerr->set_text(TTRC("Could not create folder."));
+	mkdirerr->set_text(RTR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
-	exterr->set_text(TTRC("Must use a valid extension."));
+	exterr->set_text(RTR("Must use a valid extension."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 
 	update_filters();
@@ -1086,5 +1129,4 @@ FileDialog::~FileDialog() {
 	if (unregister_func) {
 		unregister_func(this);
 	}
-	memdelete(dir_access);
 }

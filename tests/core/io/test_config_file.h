@@ -155,7 +155,7 @@ antiAliasing=false
 "a=b"=7
 )");
 
-	FileAccessRef file = FileAccess::open(config_path, FileAccess::READ);
+	Ref<FileAccess> file = FileAccess::open(config_path, FileAccess::READ);
 	CHECK_MESSAGE(file->get_as_utf8_string() == contents,
 			"The saved configuration file should match the expected format.");
 }

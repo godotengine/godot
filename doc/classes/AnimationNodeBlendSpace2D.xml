@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="4.0">
+<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Blends linearly between three [AnimationNode] of any type placed in a 2D space.
 	</brief_description>
@@ -112,6 +112,10 @@
 		</member>
 		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0.1, 0.1)">
 			Position increment to snap to when moving a point.
+		</member>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
+			If [code]false[/code], the blended animations' frame are stopped when the blend value is [code]0[/code].
+			If [code]true[/code], forcing the blended animations to advance frame.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">
 			Name of the blend space's X axis.

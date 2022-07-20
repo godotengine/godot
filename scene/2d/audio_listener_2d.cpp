@@ -57,7 +57,7 @@ bool AudioListener2D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AudioListener2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "current"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("current")));
 }
 
 void AudioListener2D::_notification(int p_what) {
@@ -67,6 +67,7 @@ void AudioListener2D::_notification(int p_what) {
 				make_current();
 			}
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {

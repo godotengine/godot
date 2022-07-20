@@ -31,7 +31,9 @@
 #ifndef DDS_REGISTER_TYPES_H
 #define DDS_REGISTER_TYPES_H
 
-void register_dds_types();
-void unregister_dds_types();
+#include "modules/register_module_types.h"
+
+void initialize_dds_module(ModuleInitializationLevel p_level);
+void uninitialize_dds_module(ModuleInitializationLevel p_level);
 
 #endif // DDS_REGISTER_TYPES_H

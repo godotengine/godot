@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "box_container.h"
+
 #include "label.h"
 #include "margin_container.h"
 
@@ -51,7 +52,7 @@ void BoxContainer::_resort() {
 	int stretch_min = 0;
 	int stretch_avail = 0;
 	float stretch_ratio_total = 0.0;
-	Map<Control *, _MinSizeCache> min_size_cache;
+	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -294,9 +295,11 @@ void BoxContainer::_notification(int p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();

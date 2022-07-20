@@ -54,7 +54,7 @@ String ResourceImporterMP3::get_resource_type() const {
 	return "AudioStreamMP3";
 }
 
-bool ResourceImporterMP3::get_option_visibility(const String &p_path, const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterMP3::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
@@ -71,13 +71,12 @@ void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 }
 
-Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterMP3::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];
 
-	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
-
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
+	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
 
 	uint64_t len = f->get_length();
 
@@ -86,8 +85,6 @@ Error ResourceImporterMP3::import(const String &p_source_file, const String &p_s
 	uint8_t *w = data.ptrw();
 
 	f->get_buffer(w, len);
-
-	memdelete(f);
 
 	Ref<AudioStreamMP3> mp3_stream;
 	mp3_stream.instantiate();

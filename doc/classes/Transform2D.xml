@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" version="4.0">
+<class name="Transform2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		2D transformation (2×3 matrix).
 	</brief_description>
@@ -139,16 +139,16 @@
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Transform2D" />
-			<argument index="0" name="phi" type="float" />
+			<argument index="0" name="angle" type="float" />
 			<description>
-				Rotates the transform by the given angle (in radians), using matrix multiplication.
+				Returns a copy of the transform rotated by the given [code]angle[/code] (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
 			<return type="Transform2D" />
 			<argument index="0" name="scale" type="Vector2" />
 			<description>
-				Scales the transform by the given scale factor, using matrix multiplication.
+				Returns a copy of the transform scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="set_rotation">
@@ -163,6 +163,7 @@
 			<argument index="0" name="scale" type="Vector2" />
 			<description>
 				Sets the transform's scale.
+				[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
 			</description>
 		</method>
 		<method name="set_skew">
@@ -176,7 +177,7 @@
 			<return type="Transform2D" />
 			<argument index="0" name="offset" type="Vector2" />
 			<description>
-				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Returns a copy of the transform translated by the given [code]offset[/code], relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
@@ -204,11 +205,6 @@
 		</constant>
 	</constants>
 	<operators>
-		<operator name="operator !=">
-			<return type="bool" />
-			<description>
-			</description>
-		</operator>
 		<operator name="operator !=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Transform2D" />
@@ -257,11 +253,6 @@
 			<argument index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform2D], including the origin vector, which scales it uniformly.
-			</description>
-		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">

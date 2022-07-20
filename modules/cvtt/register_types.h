@@ -33,8 +33,10 @@
 
 #ifdef TOOLS_ENABLED
 
-void register_cvtt_types();
-void unregister_cvtt_types();
+#include "modules/register_module_types.h"
+
+void initialize_cvtt_module(ModuleInitializationLevel p_level);
+void uninitialize_cvtt_module(ModuleInitializationLevel p_level);
 
 #endif // TOOLS_ENABLED
 

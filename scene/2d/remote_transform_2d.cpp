@@ -115,8 +115,8 @@ void RemoteTransform2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_cache();
-
 		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
 				break;
@@ -125,7 +125,6 @@ void RemoteTransform2D::_notification(int p_what) {
 			if (cache.is_valid()) {
 				_update_remote();
 			}
-
 		} break;
 	}
 }
@@ -188,7 +187,7 @@ TypedArray<String> RemoteTransform2D::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
-		warnings.push_back(TTR("Path property must point to a valid Node2D node to work."));
+		warnings.push_back(RTR("Path property must point to a valid Node2D node to work."));
 	}
 
 	return warnings;

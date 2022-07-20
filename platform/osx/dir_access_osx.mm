@@ -34,8 +34,8 @@
 
 #include <errno.h>
 
-#include <AppKit/NSWorkspace.h>
-#include <Foundation/Foundation.h>
+#import <AppKit/NSWorkspace.h>
+#import <Foundation/Foundation.h>
 
 String DirAccessOSX::fix_unicode_name(const char *p_name) const {
 	String fname;

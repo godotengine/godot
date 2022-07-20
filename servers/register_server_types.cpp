@@ -55,9 +55,11 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
-#include "core/extension/native_extension_manager.h"
 #include "debugger/servers_debugger.h"
 #include "display_server.h"
+#include "movie_writer/movie_writer.h"
+#include "movie_writer/movie_writer_mjpeg.h"
+#include "movie_writer/movie_writer_pngwav.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
 #include "physics_2d/godot_physics_server_2d.h"
@@ -70,7 +72,9 @@
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
+#include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/rendering/shader_types.h"
+#include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
 #include "xr/xr_interface.h"
@@ -83,17 +87,17 @@ ShaderTypes *shader_types = nullptr;
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
-	PhysicsServer3D *physics_server = memnew(GodotPhysicsServer3D(using_threads));
+	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
 
-	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
+	return memnew(PhysicsServer3DWrapMT(physics_server_3d, using_threads));
 }
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_separate_thread");
 
-	PhysicsServer2D *physics_server = memnew(GodotPhysicsServer2D(using_threads));
+	PhysicsServer2D *physics_server_2d = memnew(GodotPhysicsServer2D(using_threads));
 
-	return memnew(PhysicsServer2DWrapMT(physics_server, using_threads));
+	return memnew(PhysicsServer2DWrapMT(physics_server_2d, using_threads));
 }
 
 static bool has_server_feature_callback(const String &p_feature) {
@@ -106,33 +110,50 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
-void preregister_server_types() {
+static MovieWriterMJPEG *writer_mjpeg = nullptr;
+static MovieWriterPNGWAV *writer_pngwav = nullptr;
+
+void register_server_types() {
 	shader_types = memnew(ShaderTypes);
 
 	GDREGISTER_CLASS(TextServerManager);
-	GDREGISTER_VIRTUAL_CLASS(TextServer);
+	GDREGISTER_ABSTRACT_CLASS(TextServer);
 	GDREGISTER_CLASS(TextServerExtension);
+	GDREGISTER_CLASS(TextServerDummy);
+
+	GDREGISTER_NATIVE_STRUCT(Glyph, "int start = -1;int end = -1;uint8_t count = 0;uint8_t repeat = 1;uint16_t flags = 0;float x_off = 0.f;float y_off = 0.f;float advance = 0.f;RID font_rid;int font_size = 0;int32_t index = 0");
+	GDREGISTER_NATIVE_STRUCT(CaretInfo, "Rect2 leading_caret;Rect2 trailing_caret;TextServer::Direction leading_direction;TextServer::Direction trailing_direction");
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton(), "TextServerManager"));
-}
 
-void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
-	GDREGISTER_VIRTUAL_CLASS(DisplayServer);
-	GDREGISTER_VIRTUAL_CLASS(RenderingServer);
+	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
+	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3D);
-	GDREGISTER_VIRTUAL_CLASS(NavigationServer2D);
-	GDREGISTER_VIRTUAL_CLASS(NavigationServer3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3DExtension)
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DRenderingServerHandler)
+
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionRayResult, "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionShapeResult, "RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionShapeRestInfo, "Vector3 point;Vector3 normal;RID rid;ObjectID collider_id;int shape;Vector3 linear_velocity");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionCollision, "Vector3 position;Vector3 normal;Vector3 collider_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionStateCallback, "void *instance;void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state)");
+
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);
 
-	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
-	GDREGISTER_VIRTUAL_CLASS(XRInterface);
+	GDREGISTER_ABSTRACT_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
@@ -149,7 +170,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioBusLayout);
 
 	GDREGISTER_CLASS(AudioStreamGenerator);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamGeneratorPlayback);
+	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects
@@ -183,12 +204,12 @@ void register_server_types() {
 
 		GDREGISTER_CLASS(AudioEffectRecord);
 		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
-		GDREGISTER_VIRTUAL_CLASS(AudioEffectSpectrumAnalyzerInstance);
+		GDREGISTER_ABSTRACT_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
 		GDREGISTER_CLASS(AudioEffectCapture);
 	}
 
-	GDREGISTER_VIRTUAL_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
 	GDREGISTER_CLASS(RDAttachmentFormat);
@@ -208,21 +229,23 @@ void register_server_types() {
 
 	GDREGISTER_CLASS(CameraFeed);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState2D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState2D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3D);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectBodyState3D);
+	GDREGISTER_ABSTRACT_CLASS(PhysicsDirectSpaceState3D);
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
+
+	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
 
 	ServersDebugger::initialize();
 
@@ -240,15 +263,18 @@ void register_server_types() {
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics3D");
 
-	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
+	writer_mjpeg = memnew(MovieWriterMJPEG);
+	MovieWriter::add_writer(writer_mjpeg);
+
+	writer_pngwav = memnew(MovieWriterPNGWAV);
+	MovieWriter::add_writer(writer_pngwav);
 }
 
 void unregister_server_types() {
 	ServersDebugger::deinitialize();
-
-	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
-
 	memdelete(shader_types);
+	memdelete(writer_mjpeg);
+	memdelete(writer_pngwav);
 }
 
 void register_server_singletons() {

@@ -52,7 +52,7 @@
  * array is owned by the @face and should not be modified.  It can be
  * used as long as @face is alive.
  *
- * Returns: (out) (transfer none) (array length=num_entries): Array of available name entries.
+ * Returns: (transfer none) (array length=num_entries): Array of available name entries.
  * Since: 2.1.0
  **/
 const hb_ot_name_entry_t *

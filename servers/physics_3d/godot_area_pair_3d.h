@@ -37,8 +37,8 @@
 #include "godot_soft_body_3d.h"
 
 class GodotAreaPair3D : public GodotConstraint3D {
-	GodotBody3D *body;
-	GodotArea3D *area;
+	GodotBody3D *body = nullptr;
+	GodotArea3D *area = nullptr;
 	int body_shape;
 	int area_shape;
 	bool colliding = false;
@@ -55,8 +55,8 @@ public:
 };
 
 class GodotArea2Pair3D : public GodotConstraint3D {
-	GodotArea3D *area_a;
-	GodotArea3D *area_b;
+	GodotArea3D *area_a = nullptr;
+	GodotArea3D *area_b = nullptr;
 	int shape_a;
 	int shape_b;
 	bool colliding_a = false;
@@ -76,8 +76,8 @@ public:
 };
 
 class GodotAreaSoftBodyPair3D : public GodotConstraint3D {
-	GodotSoftBody3D *soft_body;
-	GodotArea3D *area;
+	GodotSoftBody3D *soft_body = nullptr;
+	GodotArea3D *area = nullptr;
 	int soft_body_shape;
 	int area_shape;
 	bool colliding = false;

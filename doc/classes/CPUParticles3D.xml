@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles3D" inherits="GeometryInstance3D" version="4.0">
+<class name="CPUParticles3D" inherits="GeometryInstance3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		CPU-based 3D particle emitter.
 	</brief_description>
@@ -370,19 +370,22 @@
 		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
 			Particles will be emitted in the volume of a sphere.
 		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="2" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2" enum="EmissionShape">
+			Particles will be emitted on the surface of a sphere.
+		</constant>
+		<constant name="EMISSION_SHAPE_BOX" value="3" enum="EmissionShape">
 			Particles will be emitted in the volume of a box.
 		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_POINTS" value="4" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_RING" value="5" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
 			Particles will be emitted in a ring or cylinder.
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>

@@ -37,11 +37,12 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
 #include "main/main.h"
-#include "plugins/canvas_item_editor_plugin.h"
-#include "plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/rendering_server.h"
@@ -132,8 +133,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		Main::iteration();
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		ERR_CONTINUE(!img.is_valid() || img->is_empty());
-		Ref<ImageTexture> it(memnew(ImageTexture));
-		it->create_from_image(img);
+		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
 		RS::get_singleton()->free(inst);
 
@@ -523,6 +523,7 @@ void EditorPlugin::remove_tool_menu_item(const String &p_name) {
 	EditorNode::get_singleton()->remove_tool_menu_item(p_name);
 }
 
+
 // Accessing Configure Snap
 void EditorPlugin::set_snap_configuration(const Dictionary &configure_snap) {
 	CanvasItemEditor::get_singleton()->set_state(configure_snap);
@@ -536,6 +537,10 @@ Dictionary EditorPlugin::get_snap_configuration() {
 		configure_snap[key] = item_state[key];
 	}
 	return configure_snap;
+
+
+PopupMenu *EditorPlugin::get_export_as_menu() {
+	return EditorNode::get_singleton()->get_export_as_menu();
 }
 
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
@@ -777,20 +782,20 @@ void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::get_singleton()->add_importer(p_importer, p_first_priority);
+	ResourceImporterScene::add_importer(p_importer, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
+	ResourceImporterScene::remove_importer(p_importer);
 }
 
 void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
-	ResourceImporterScene::get_singleton()->add_post_importer_plugin(p_plugin, p_first_priority);
+	ResourceImporterScene::add_post_importer_plugin(p_plugin, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
-	ResourceImporterScene::get_singleton()->remove_post_importer_plugin(p_plugin);
+	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
 }
 
 int find(const PackedStringArray &a, const String &v) {
@@ -863,11 +868,14 @@ void EditorPlugin::_editor_project_settings_changed() {
 	emit_signal(SNAME("project_settings_changed"));
 }
 void EditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		EditorNode::get_singleton()->disconnect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			EditorNode::get_singleton()->disconnect("project_settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+		} break;
 	}
 }
 
@@ -881,6 +889,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
+	ClassDB::bind_method(D_METHOD("get_export_as_menu"), &EditorPlugin::get_export_as_menu);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
 

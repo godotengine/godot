@@ -56,6 +56,10 @@ struct _NO_DISCARD_ Color {
 	float get_s() const;
 	float get_v() const;
 	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
+	float get_ok_hsl_h() const;
+	float get_ok_hsl_s() const;
+	float get_ok_hsl_l() const;
+	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -138,7 +142,7 @@ struct _NO_DISCARD_ Color {
 
 		float cMax = MAX(cRed, MAX(cGreen, cBlue));
 
-		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
+		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / (real_t)Math_LN2)) + 1.0f + B;
 
 		float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
 
@@ -169,14 +173,14 @@ struct _NO_DISCARD_ Color {
 		return res;
 	}
 
-	_FORCE_INLINE_ Color to_linear() const {
+	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
 				r < 0.04045f ? r * (1.0 / 12.92) : Math::pow((r + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				g < 0.04045f ? g * (1.0 / 12.92) : Math::pow((g + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				b < 0.04045f ? b * (1.0 / 12.92) : Math::pow((b + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
 				a);
 	}
-	_FORCE_INLINE_ Color to_srgb() const {
+	_FORCE_INLINE_ Color linear_to_srgb() const {
 		return Color(
 				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
 				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
@@ -195,6 +199,7 @@ struct _NO_DISCARD_ Color {
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
+	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
@@ -213,6 +218,9 @@ struct _NO_DISCARD_ Color {
 	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
 	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v()); }
 	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v); }
+	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l()); }
+	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l()); }
+	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l); }
 
 	_FORCE_INLINE_ Color() {}
 

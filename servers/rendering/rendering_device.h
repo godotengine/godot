@@ -123,19 +123,10 @@ public:
 		DeviceFamily device_family = DEVICE_UNKNOWN;
 		uint32_t version_major = 1.0;
 		uint32_t version_minor = 0.0;
-
-		// subgroup capabilities
-		uint32_t subgroup_size = 0;
-		uint32_t subgroup_in_shaders = 0; // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
-		uint32_t subgroup_operations = 0; // Set flags, using SubgroupOperations
-
-		// features
-		bool supports_multiview = false; // If true this device supports multiview options
-		bool supports_fsr_half_float = false; // If true this device supports FSR scaling 3D in half float mode, otherwise use the fallback mode
 	};
 
-	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const Capabilities *p_capabilities);
-	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const Capabilities *p_capabilities);
+	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const RenderingDevice *p_render_device);
+	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device);
 	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 private:
@@ -444,6 +435,7 @@ public:
 		TEXTURE_USAGE_CAN_COPY_FROM_BIT = (1 << 7),
 		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
 		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
+		TEXTURE_USAGE_VRS_ATTACHMENT_BIT = (1 << 10),
 	};
 
 	enum TextureSwizzle {
@@ -500,6 +492,7 @@ public:
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
+	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, uint64_t p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) = 0;
 
 	enum TextureSliceType {
 		TEXTURE_SLICE_2D,
@@ -527,6 +520,7 @@ public:
 	/*********************/
 
 	struct AttachmentFormat {
+		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
@@ -550,6 +544,7 @@ public:
 		Vector<int32_t> resolve_attachments;
 		Vector<int32_t> preserve_attachments;
 		int32_t depth_attachment = ATTACHMENT_UNUSED;
+		int32_t vrs_attachment = ATTACHMENT_UNUSED; // density map for VRS, only used if supported
 	};
 
 	virtual FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1) = 0;
@@ -673,6 +668,13 @@ public:
 
 	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
 
+	enum Features {
+		SUPPORTS_MULTIVIEW,
+		SUPPORTS_FSR_HALF_FLOAT,
+		SUPPORTS_ATTACHMENT_VRS,
+	};
+	virtual bool has_feature(const Features p_feature) const = 0;
+
 	virtual Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
 	virtual String shader_get_spirv_cache_key() const;
 
@@ -725,16 +727,65 @@ public:
 
 	struct Uniform {
 		UniformType uniform_type;
-		int binding; //binding index as specified in shader
+		int binding; // Binding index as specified in shader.
 
-		//for single items, provide one ID, for
-		//multiple items (declared as arrays in shader),
-		//provide more
-		//for sampler with texture, supply two IDs for each.
-		//accepted IDs are: Sampler, Texture, Uniform Buffer and Texture Buffer
-		Vector<RID> ids;
+	private:
+		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
+		RID id; // If only one is provided, this is used.
+		Vector<RID> ids; // If multiple ones are provided, this is used instead.
 
-		Uniform() {
+	public:
+		_FORCE_INLINE_ uint32_t get_id_count() const {
+			return (id.is_valid() ? 1 : ids.size());
+		}
+
+		_FORCE_INLINE_ RID get_id(uint32_t p_idx) const {
+			if (id.is_valid()) {
+				ERR_FAIL_COND_V(p_idx != 0, RID());
+				return id;
+			} else {
+				return ids[p_idx];
+			}
+		}
+		_FORCE_INLINE_ void set_id(uint32_t p_idx, RID p_id) {
+			if (id.is_valid()) {
+				ERR_FAIL_COND(p_idx != 0);
+				id = p_id;
+			} else {
+				ids.write[p_idx] = p_id;
+			}
+		}
+
+		_FORCE_INLINE_ void append_id(RID p_id) {
+			if (ids.is_empty()) {
+				if (id == RID()) {
+					id = p_id;
+				} else {
+					ids.push_back(id);
+					ids.push_back(p_id);
+					id = RID();
+				}
+			} else {
+				ids.push_back(p_id);
+			}
+		}
+
+		_FORCE_INLINE_ void clear_ids() {
+			id = RID();
+			ids.clear();
+		}
+
+		_FORCE_INLINE_ Uniform(UniformType p_type, int p_binding, RID p_id) {
+			uniform_type = p_type;
+			binding = p_binding;
+			id = p_id;
+		}
+		_FORCE_INLINE_ Uniform(UniformType p_type, int p_binding, const Vector<RID> &p_ids) {
+			uniform_type = p_type;
+			binding = p_binding;
+			ids = p_ids;
+		}
+		_FORCE_INLINE_ Uniform() {
 			uniform_type = UNIFORM_TYPE_IMAGE;
 			binding = 0;
 		}
@@ -1170,9 +1221,12 @@ public:
 		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X,
 		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y,
 		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z,
+		LIMIT_SUBGROUP_SIZE,
+		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
+		LIMIT_SUBGROUP_OPERATIONS,
 	};
 
-	virtual int limit_get(Limit p_limit) = 0;
+	virtual uint64_t limit_get(Limit p_limit) const = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() = 0;
@@ -1203,6 +1257,7 @@ public:
 	virtual String get_device_vendor_name() const = 0;
 	virtual String get_device_name() const = 0;
 	virtual RenderingDevice::DeviceType get_device_type() const = 0;
+	virtual String get_device_api_version() const = 0;
 	virtual String get_device_pipeline_cache_uuid() const = 0;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
@@ -1272,6 +1327,7 @@ VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
 VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
+VARIANT_ENUM_CAST(RenderingDevice::Features)
 
 typedef RenderingDevice RD;
 

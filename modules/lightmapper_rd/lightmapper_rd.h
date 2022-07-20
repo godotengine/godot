@@ -57,8 +57,9 @@ class LightmapperRD : public Lightmapper {
 		float attenuation = 0.0;
 		float cos_spot_angle = 0.0;
 		float inv_spot_attenuation = 0.0;
+		float shadow_blur = 0.0;
 		uint32_t static_bake = 0;
-		uint32_t pad[3] = {};
+		uint32_t pad[2] = {};
 
 		bool operator<(const Light &p_light) const {
 			return type < p_light.type;
@@ -110,12 +111,12 @@ class LightmapperRD : public Lightmapper {
 
 	struct EdgeHash {
 		_FORCE_INLINE_ static uint32_t hash(const Edge &p_edge) {
-			uint32_t h = hash_djb2_one_float(p_edge.a.x);
-			h = hash_djb2_one_float(p_edge.a.y, h);
-			h = hash_djb2_one_float(p_edge.a.z, h);
-			h = hash_djb2_one_float(p_edge.b.x, h);
-			h = hash_djb2_one_float(p_edge.b.y, h);
-			h = hash_djb2_one_float(p_edge.b.z, h);
+			uint32_t h = hash_murmur3_one_float(p_edge.a.x);
+			h = hash_murmur3_one_float(p_edge.a.y, h);
+			h = hash_murmur3_one_float(p_edge.a.z, h);
+			h = hash_murmur3_one_float(p_edge.b.x, h);
+			h = hash_murmur3_one_float(p_edge.b.y, h);
+			h = hash_murmur3_one_float(p_edge.b.z, h);
 			return h;
 		}
 	};
@@ -146,15 +147,15 @@ class LightmapperRD : public Lightmapper {
 
 	struct VertexHash {
 		_FORCE_INLINE_ static uint32_t hash(const Vertex &p_vtx) {
-			uint32_t h = hash_djb2_one_float(p_vtx.position[0]);
-			h = hash_djb2_one_float(p_vtx.position[1], h);
-			h = hash_djb2_one_float(p_vtx.position[2], h);
-			h = hash_djb2_one_float(p_vtx.uv[0], h);
-			h = hash_djb2_one_float(p_vtx.uv[1], h);
-			h = hash_djb2_one_float(p_vtx.normal_xy[0], h);
-			h = hash_djb2_one_float(p_vtx.normal_xy[1], h);
-			h = hash_djb2_one_float(p_vtx.normal_z, h);
-			return h;
+			uint32_t h = hash_murmur3_one_float(p_vtx.position[0]);
+			h = hash_murmur3_one_float(p_vtx.position[1], h);
+			h = hash_murmur3_one_float(p_vtx.position[2], h);
+			h = hash_murmur3_one_float(p_vtx.uv[0], h);
+			h = hash_murmur3_one_float(p_vtx.uv[1], h);
+			h = hash_murmur3_one_float(p_vtx.normal_xy[0], h);
+			h = hash_murmur3_one_float(p_vtx.normal_xy[1], h);
+			h = hash_murmur3_one_float(p_vtx.normal_z, h);
+			return hash_fmix32(h);
 		}
 	};
 
@@ -236,9 +237,9 @@ class LightmapperRD : public Lightmapper {
 
 public:
 	virtual void add_mesh(const MeshData &p_mesh) override;
-	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance) override;
-	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) override;
-	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) override;
+	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance, float p_shadow_blur) override;
+	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) override;
+	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) override;
 	virtual void add_probe(const Vector3 &p_position) override;
 	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr) override;
 

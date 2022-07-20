@@ -52,6 +52,7 @@
 	bool ime_input_event_in_progress;
 	bool mouse_down_control;
 	bool ignore_momentum_scroll;
+	bool last_pen_inverted;
 }
 
 - (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;

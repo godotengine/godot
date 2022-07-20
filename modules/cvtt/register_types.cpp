@@ -34,11 +34,19 @@
 
 #include "image_compress_cvtt.h"
 
-void register_cvtt_types() {
+void initialize_cvtt_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	Image::set_compress_bptc_func(image_compress_cvtt);
 	Image::_image_decompress_bptc = image_decompress_cvtt;
 }
 
-void unregister_cvtt_types() {}
+void uninitialize_cvtt_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}
 
 #endif

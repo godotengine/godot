@@ -29,11 +29,13 @@
 /*************************************************************************/
 
 #include "rasterizer_gles3.h"
+#include "storage/utilities.h"
 
 #ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "storage/texture_storage.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -95,14 +97,12 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	time_total = Math::fmod(time_total, time_roll_over);
 
-	storage.frame.time = time_total;
-	storage.frame.count++;
-	storage.frame.delta = frame_step;
+	canvas->set_time(time_total);
+	scene->set_time(time_total, frame_step);
 
-	storage.update_dirty_resources();
-
-	storage.info.render_final = storage.info.render;
-	storage.info.render.reset();
+	GLES3::Utilities *utilities = GLES3::Utilities::get_singleton();
+	utilities->info.render_final = utilities->info.render;
+	utilities->info.render.reset();
 
 	//scene->iteration();
 }
@@ -193,13 +193,31 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
 void RasterizerGLES3::initialize() {
-	print_verbose("Using OpenGL video driver");
+	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
+}
 
-	storage._main_thread_id = Thread::get_caller_id();
+void RasterizerGLES3::finalize() {
+	memdelete(scene);
+	memdelete(canvas);
+	memdelete(gi);
+	memdelete(fog);
+	memdelete(copy_effects);
+	memdelete(light_storage);
+	memdelete(particles_storage);
+	memdelete(mesh_storage);
+	memdelete(material_storage);
+	memdelete(texture_storage);
+	memdelete(utilities);
+	memdelete(config);
+}
 
+RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
+		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
+		// or we need to actually test for this situation before constructing this.
 		return;
 	}
 #endif
@@ -248,33 +266,37 @@ void RasterizerGLES3::initialize() {
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	print_line("OpenGL Renderer: " + RS::get_singleton()->get_video_adapter_name());
-	storage.initialize();
-	canvas.initialize();
-	//	scene.initialize();
-
-	// make sure the OS knows to only access the renderer from the main thread
-	OS::get_singleton()->set_render_main_thread_mode(OS::RENDER_MAIN_THREAD_ONLY);
+	// OpenGL needs to be initialized before initializing the Rasterizers
+	config = memnew(GLES3::Config);
+	utilities = memnew(GLES3::Utilities);
+	texture_storage = memnew(GLES3::TextureStorage);
+	material_storage = memnew(GLES3::MaterialStorage);
+	mesh_storage = memnew(GLES3::MeshStorage);
+	particles_storage = memnew(GLES3::ParticlesStorage);
+	light_storage = memnew(GLES3::LightStorage);
+	copy_effects = memnew(GLES3::CopyEffects);
+	gi = memnew(GLES3::GI);
+	fog = memnew(GLES3::Fog);
+	canvas = memnew(RasterizerCanvasGLES3());
+	scene = memnew(RasterizerSceneGLES3());
 }
 
-RasterizerGLES3::RasterizerGLES3() {
-	canvas.storage = &storage;
-	canvas.scene_render = &scene;
-	storage.canvas = &canvas;
-	//scene.storage = &storage;
-	storage.scene = &scene;
+RasterizerGLES3::~RasterizerGLES3() {
 }
 
 void RasterizerGLES3::prepare_for_blitting_render_targets() {
 }
 
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
-	ERR_FAIL_COND(storage.frame.current_rt);
+	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
-	RasterizerStorageGLES3::RenderTarget *rt = storage.render_target_owner.get_or_null(p_render_target);
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
 	// TODO: do we need a keep 3d linear option?
+
+	// Make sure we are drawing to the right context.
+	DisplayServer::get_singleton()->gl_window_make_current(p_screen);
 
 	if (rt->external.fbo != 0) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
@@ -282,16 +304,15 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
 	}
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	glBlitFramebuffer(0, 0, rt->width, rt->height, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	// Flip content upside down to correct for coordinates.
+	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y, 0, p_screen_rect.size.y, p_screen_rect.size.x, 0, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 // is this p_screen useless in a multi window environment?
 void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	// do this once off for all blits
-	storage.bind_framebuffer_system();
-
-	storage.frame.current_rt = nullptr;
+	// All blits are going to the system framebuffer, so just bind once.
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	for (int i = 0; i < p_amount; i++) {
 		const BlitToScreen &blit = p_render_targets[i];
@@ -322,12 +343,8 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	}
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	canvas.canvas_begin();
-
-	RID texture = storage.texture_create();
-	//storage.texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
-	storage._texture_allocate_internal(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RenderingDevice::TEXTURE_TYPE_2D);
-	storage.texture_set_data(texture, p_image);
+	RID texture = texture_storage->texture_allocate();
+	texture_storage->texture_2d_initialize(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
@@ -349,13 +366,12 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
 
-	RasterizerStorageGLES3::Texture *t = storage.texture_owner.get_or_null(texture);
-	glActiveTexture(GL_TEXTURE0 + storage.config.max_texture_image_units - 1);
+	GLES3::Texture *t = texture_storage->get_texture(texture);
+	glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	canvas.canvas_end();
 
-	storage.free(texture);
+	texture_storage->texture_free(texture);
 
 	end_frame(true);
 }

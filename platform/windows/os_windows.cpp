@@ -46,6 +46,7 @@
 #include "windows_terminal_logger.h"
 
 #include <avrt.h>
+#include <bcrypt.h>
 #include <direct.h>
 #include <knownfolders.h>
 #include <process.h>
@@ -106,8 +107,9 @@ void RedirectIOToConsole() {
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
-	if (!EngineDebugger::is_active())
+	if (!EngineDebugger::is_active()) {
 		return FALSE;
+	}
 
 	switch (dwCtrlType) {
 		case CTRL_C_EVENT:
@@ -127,8 +129,33 @@ void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
 
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	String err_str;
+	if (p_errorexp && p_errorexp[0]) {
+		err_str = String::utf8(p_errorexp);
+	} else {
+		err_str = String::utf8(p_file) + ":" + itos(p_line) + " - " + String::utf8(p_error);
+	}
+
+	if (p_editor_notify) {
+		err_str += " (User)\n";
+	} else {
+		err_str += "\n";
+	}
+
+	OutputDebugStringW((LPCWSTR)err_str.utf16().ptr());
+}
+#endif
+
 void OS_Windows::initialize() {
 	crash_handler.initialize();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	error_handlers.errfunc = _error_handler;
+	error_handlers.userdata = this;
+	add_error_handler(&error_handlers);
+#endif
 
 #ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();
@@ -151,7 +178,7 @@ void OS_Windows::initialize() {
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	timeBeginPeriod(1);
 
-	process_map = memnew((Map<ProcessID, ProcessInfo>));
+	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	// Add current Godot PID to the list of known PIDs
 	ProcessInfo current_pi = {};
@@ -165,8 +192,9 @@ void OS_Windows::initialize() {
 }
 
 void OS_Windows::delete_main_loop() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 }
 
@@ -179,8 +207,9 @@ void OS_Windows::finalize() {
 	driver_midi.close();
 #endif
 
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 
 	main_loop = nullptr;
 }
@@ -190,9 +219,19 @@ void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
+
+#ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
+	remove_error_handler(&error_handlers);
+#endif
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	NTSTATUS status = BCryptGenRandom(nullptr, r_buffer, p_bytes, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	ERR_FAIL_COND_V(status, FAILED);
+	return OK;
+}
+
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
@@ -218,6 +257,10 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (cookie) {
 		remove_dll_directory(cookie);
+	}
+
+	if (r_resolved_path != nullptr) {
+		*r_resolved_path = path;
 	}
 
 	return OK;
@@ -254,12 +297,19 @@ OS::Date OS_Windows::get_date(bool p_utc) const {
 		GetLocalTime(&systemtime);
 	}
 
+	//Get DST information from Windows, but only if p_utc is false.
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+		daylight = true;
+	}
+
 	Date date;
 	date.day = systemtime.wDay;
 	date.month = Month(systemtime.wMonth);
 	date.weekday = Weekday(systemtime.wDayOfWeek);
 	date.year = systemtime.wYear;
-	date.dst = false;
+	date.dst = daylight;
 	return date;
 }
 
@@ -281,19 +331,23 @@ OS::Time OS_Windows::get_time(bool p_utc) const {
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
-	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
 		daylight = true;
+	}
 
+	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
 	if (daylight) {
 		ret.name = info.DaylightName;
+		ret.bias = info.Bias + info.DaylightBias;
 	} else {
 		ret.name = info.StandardName;
+		ret.bias = info.Bias + info.StandardBias;
 	}
 
 	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
 	// For example, on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
-	ret.bias = -info.Bias;
+	ret.bias = -ret.bias;
 	return ret;
 }
 
@@ -315,10 +369,11 @@ double OS_Windows::get_unix_time() const {
 }
 
 void OS_Windows::delay_usec(uint32_t p_usec) const {
-	if (p_usec < 1000)
+	if (p_usec < 1000) {
 		Sleep(1);
-	else
+	} else {
 		Sleep(p_usec / 1000);
+	}
 }
 
 uint64_t OS_Windows::get_ticks_usec() const {
@@ -359,6 +414,31 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 		}
 	}
 	return p_text;
+}
+
+static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_pipe_mutex) {
+	// Try to convert from default ANSI code page to Unicode.
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, nullptr, 0);
+	if (total_wchars > 0) {
+		wchars.resize(total_wchars);
+		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptr(), total_wchars) == 0) {
+			wchars.clear();
+		}
+	}
+
+	if (p_pipe_mutex) {
+		p_pipe_mutex->lock();
+	}
+	if (wchars.is_empty()) {
+		// Let's hope it's compatible with UTF-8.
+		(*r_pipe) += String::utf8(p_bytes, p_size);
+	} else {
+		(*r_pipe) += String(wchars.ptr(), total_wchars);
+	}
+	if (p_pipe_mutex) {
+		p_pipe_mutex->unlock();
+	}
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
@@ -409,21 +489,44 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	if (r_pipe) {
 		CloseHandle(pipe[1]); // Close pipe write handle (only child process is writing).
-		char buf[4096];
+
+		LocalVector<char> bytes;
+		int bytes_in_buffer = 0;
+
+		const int CHUNK_SIZE = 4096;
 		DWORD read = 0;
 		for (;;) { // Read StdOut and StdErr from pipe.
-			bool success = ReadFile(pipe[0], buf, 4096, &read, NULL);
+			bytes.resize(bytes_in_buffer + CHUNK_SIZE);
+			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, NULL);
 			if (!success || read == 0) {
 				break;
 			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
+
+			// Assume that all possible encodings are ASCII-compatible.
+			// Break at newline to allow receiving long output in portions.
+			int newline_index = -1;
+			for (int i = read - 1; i >= 0; i--) {
+				if (bytes[bytes_in_buffer + i] == '\n') {
+					newline_index = i;
+					break;
+				}
 			}
-			(*r_pipe) += String::utf8(buf, read);
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
+			if (newline_index == -1) {
+				bytes_in_buffer += read;
+				continue;
 			}
-		};
+
+			const int bytes_to_convert = bytes_in_buffer + (newline_index + 1);
+			_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
+
+			bytes_in_buffer = read - (newline_index + 1);
+			memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
+		}
+
+		if (bytes_in_buffer > 0) {
+			_append_to_pipe(bytes.ptr(), bytes_in_buffer, r_pipe, p_pipe_mutex);
+		}
+
 		CloseHandle(pipe[0]); // Close pipe read handle.
 	} else {
 		WaitForSingleObject(pi.pi.hProcess, INFINITE);
@@ -439,7 +542,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	CloseHandle(pi.pi.hThread);
 
 	return OK;
-};
+}
 
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	String path = p_path.replace("/", "\\");
@@ -471,7 +574,7 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	process_map->insert(pid, pi);
 
 	return OK;
-};
+}
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
@@ -485,15 +588,35 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	CloseHandle(pi.hThread);
 
 	return ret != 0 ? OK : FAILED;
-};
+}
 
 int OS_Windows::get_process_id() const {
 	return _getpid();
 }
 
+bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	if (!process_map->has(p_pid)) {
+		return false;
+	}
+
+	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return false;
+	}
+
+	if (dw_exit_code != STILL_ACTIVE) {
+		return false;
+	}
+
+	return true;
+}
+
 Error OS_Windows::set_cwd(const String &p_cwd) {
-	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0)
+	if (_wchdir((LPCWSTR)(p_cwd.utf16().get_data())) != 0) {
 		return ERR_CANT_OPEN;
+	}
 
 	return OK;
 }
@@ -516,7 +639,7 @@ bool OS_Windows::has_environment(const String &p_var) const {
 	free(env);
 	return has_env;
 #endif
-};
+}
 
 String OS_Windows::get_environment(const String &p_var) const {
 	WCHAR wval[0x7fff]; // MSDN says 32767 char is the maximum
@@ -535,7 +658,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
 		return fgets(buff, 1024, stdin);
-	};
+	}
 
 	return String();
 }
@@ -573,17 +696,20 @@ String OS_Windows::get_locale() const {
 	int sublang = SUBLANGID(langid);
 
 	while (wl->locale) {
-		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL)
+		if (wl->main_lang == lang && wl->sublang == SUBLANG_NEUTRAL) {
 			neutral = wl->locale;
+		}
 
-		if (lang == wl->main_lang && sublang == wl->sublang)
+		if (lang == wl->main_lang && sublang == wl->sublang) {
 			return String(wl->locale).replace("-", "_");
+		}
 
 		wl++;
 	}
 
-	if (!neutral.is_empty())
+	if (!neutral.is_empty()) {
 		return String(neutral).replace("-", "_");
+	}
 
 	return "en";
 }
@@ -610,31 +736,106 @@ BOOL is_wow64() {
 
 int OS_Windows::get_processor_count() const {
 	SYSTEM_INFO sysinfo;
-	if (is_wow64())
+	if (is_wow64()) {
 		GetNativeSystemInfo(&sysinfo);
-	else
+	} else {
 		GetSystemInfo(&sysinfo);
+	}
 
 	return sysinfo.dwNumberOfProcessors;
 }
 
+String OS_Windows::get_processor_name() const {
+	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
+
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(id.utf16().get_data()), 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	} else {
+		RegCloseKey(hkey);
+		ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+	}
+}
+
 void OS_Windows::run() {
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->initialize();
 
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-		if (Main::iteration())
+		if (Main::iteration()) {
 			break;
-	};
+		}
+	}
 
 	main_loop->finalize();
 }
 
 MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
+}
+
+uint64_t OS_Windows::get_embedded_pck_offset() const {
+	Ref<FileAccess> f = FileAccess::open(get_executable_path(), FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+
+	// Process header.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return 0;
+		}
+	}
+
+	int num_sections;
+	{
+		int64_t header_pos = f->get_position();
+
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(f->get_position() + 2 + opt_header_size);
+	}
+	int64_t section_table_pos = f->get_position();
+
+	// Search for the "pck" section.
+	int64_t off = 0;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (strcmp((char *)section_name, "pck") == 0) {
+			f->seek(section_header_pos + 20);
+			off = f->get_32();
+			break;
+		}
+	}
+
+	return off;
 }
 
 String OS_Windows::get_config_path() const {

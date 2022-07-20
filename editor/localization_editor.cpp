@@ -40,25 +40,27 @@
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		translation_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_delete));
-		translation_pot_list->connect("button_pressed", callable_mp(this, &LocalizationEditor::_pot_delete));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
+			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
 
-		List<String> tfn;
-		ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
-		for (const String &E : tfn) {
-			translation_file_open->add_filter("*." + E);
-		}
+			List<String> tfn;
+			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
+			for (const String &E : tfn) {
+				translation_file_open->add_filter("*." + E);
+			}
 
-		List<String> rfn;
-		ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
-		for (const String &E : rfn) {
-			translation_res_file_open_dialog->add_filter("*." + E);
-			translation_res_option_file_open_dialog->add_filter("*." + E);
-		}
+			List<String> rfn;
+			ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
+			for (const String &E : rfn) {
+				translation_res_file_open_dialog->add_filter("*." + E);
+				translation_res_option_file_open_dialog->add_filter("*." + E);
+			}
 
-		_update_pot_file_extensions();
-		pot_generate_dialog->add_filter("*.pot");
+			_update_pot_file_extensions();
+			pot_generate_dialog->add_filter("*.pot");
+		} break;
 	}
 }
 
@@ -91,7 +93,11 @@ void LocalizationEditor::_translation_file_open() {
 	translation_file_open->popup_file_dialog();
 }
 
-void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p_button) {
+void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
@@ -237,8 +243,12 @@ void LocalizationEditor::_translation_res_option_changed() {
 	updating_translations = false;
 }
 
-void LocalizationEditor::_translation_res_delete(Object *p_item, int p_column, int p_button) {
+void LocalizationEditor::_translation_res_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (updating_translations) {
+		return;
+	}
+
+	if (p_mouse_button != MouseButton::LEFT) {
 		return;
 	}
 
@@ -265,8 +275,12 @@ void LocalizationEditor::_translation_res_delete(Object *p_item, int p_column, i
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_column, int p_button) {
+void LocalizationEditor::_translation_res_option_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (updating_translations) {
+		return;
+	}
+
+	if (p_mouse_button != MouseButton::LEFT) {
 		return;
 	}
 
@@ -318,7 +332,11 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	undo_redo->commit_action();
 }
 
-void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button) {
+void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
+	if (p_mouse_button != MouseButton::LEFT) {
+		return;
+	}
+
 	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!ti);
 
@@ -471,11 +489,9 @@ void LocalizationEditor::_bind_methods() {
 
 LocalizationEditor::LocalizationEditor() {
 	undo_redo = EditorNode::get_undo_redo();
-	updating_translations = false;
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);
-	translations->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 
@@ -536,7 +552,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap = memnew(Tree);
 		translation_remap->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		translation_remap->connect("cell_selected", callable_mp(this, &LocalizationEditor::_translation_res_select));
-		translation_remap->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_res_delete));
+		translation_remap->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_delete));
 		tmc->add_child(translation_remap);
 
 		translation_res_file_open_dialog = memnew(EditorFileDialog);
@@ -572,7 +588,7 @@ LocalizationEditor::LocalizationEditor() {
 		translation_remap_options->set_column_clip_content(1, false);
 		translation_remap_options->set_column_custom_minimum_width(1, 250);
 		translation_remap_options->connect("item_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_changed));
-		translation_remap_options->connect("button_pressed", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
+		translation_remap_options->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_res_option_delete));
 		translation_remap_options->connect("custom_popup_edited", callable_mp(this, &LocalizationEditor::_translation_res_option_popup));
 		tmc->add_child(translation_remap_options);
 

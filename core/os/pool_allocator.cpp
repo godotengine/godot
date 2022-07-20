@@ -149,7 +149,7 @@ void PoolAllocator::compact_up(int p_from) {
 	}
 }
 
-bool PoolAllocator::find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry) {
+bool PoolAllocator::find_entry_index(EntryIndicesPos *p_map_pos, const Entry *p_entry) {
 	EntryArrayPos entry_pos = entry_max;
 
 	for (int i = 0; i < entry_count; i++) {
@@ -424,7 +424,7 @@ bool PoolAllocator::is_locked(ID p_mem) const {
 	}
 
 	mt_lock();
-	const Entry *e = ((PoolAllocator *)(this))->get_entry(p_mem);
+	const Entry *e = const_cast<PoolAllocator *>(this)->get_entry(p_mem);
 	if (!e) {
 		mt_unlock();
 		ERR_PRINT("!e");

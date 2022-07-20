@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidDynamicBody3D" inherits="PhysicsBody3D" version="4.0">
+<class name="RigidDynamicBody3D" inherits="PhysicsBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 3D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
@@ -225,9 +225,8 @@
 				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
 				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
-				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
+				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -239,9 +238,8 @@
 				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
 				[code]body_rid[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
-				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
+				[code]body_shape_index[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[code]local_shape_index[/code] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

@@ -33,6 +33,9 @@
 #include "emws_server.h"
 #include "core/os/os.h"
 
+void EMWSServer::set_extra_headers(const Vector<String> &p_headers) {
+}
+
 Error EMWSServer::listen(int p_port, Vector<String> p_protocols, bool gd_mp_api) {
 	return FAILED;
 }

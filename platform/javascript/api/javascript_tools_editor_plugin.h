@@ -46,7 +46,7 @@ private:
 public:
 	static void initialize();
 
-	JavaScriptToolsEditorPlugin(EditorNode *p_editor);
+	JavaScriptToolsEditorPlugin();
 };
 #else
 class JavaScriptToolsEditorPlugin {

@@ -31,12 +31,13 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/math/vector2.h"
-#include "core/math/vector3i.h"
-#include "core/string/ustring.h"
 
+class String;
 struct Basis;
+struct Vector2;
+struct Vector3i;
 
 struct _NO_DISCARD_ Vector3 {
 	static const int AXIS_COUNT = 3;
@@ -58,10 +59,12 @@ struct _NO_DISCARD_ Vector3 {
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 3);
 		return coord[p_axis];
 	}
 
@@ -94,40 +97,20 @@ struct _NO_DISCARD_ Vector3 {
 	void snap(const Vector3 p_val);
 	Vector3 snapped(const Vector3 p_val) const;
 
-	void rotate(const Vector3 &p_axis, const real_t p_phi);
-	Vector3 rotated(const Vector3 &p_axis, const real_t p_phi) const;
+	void rotate(const Vector3 &p_axis, const real_t p_angle);
+	Vector3 rotated(const Vector3 &p_axis, const real_t p_angle) const;
 
 	/* Static Methods between 2 vector3s */
 
 	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
-	Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
+
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
-	_FORCE_INLINE_ Vector2 octahedron_encode() const {
-		Vector3 n = *this;
-		n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
-		Vector2 o;
-		if (n.z >= 0.0f) {
-			o.x = n.x;
-			o.y = n.y;
-		} else {
-			o.x = (1.0f - Math::abs(n.y)) * (n.x >= 0.0f ? 1.0f : -1.0f);
-			o.y = (1.0f - Math::abs(n.x)) * (n.y >= 0.0f ? 1.0f : -1.0f);
-		}
-		o.x = o.x * 0.5f + 0.5f;
-		o.y = o.y * 0.5f + 0.5f;
-		return o;
-	}
-
-	static _FORCE_INLINE_ Vector3 octahedron_decode(const Vector2 &p_oct) {
-		Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
-		Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0f, 1.0f);
-		n.x += n.x >= 0 ? -t : t;
-		n.y += n.y >= 0 ? -t : t;
-		return n.normalized();
-	}
+	Vector2 octahedron_encode() const;
+	static Vector3 octahedron_decode(const Vector2 &p_oct);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
@@ -183,16 +166,9 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
-	_FORCE_INLINE_ operator Vector3i() const {
-		return Vector3i(x, y, z);
-	}
+	operator Vector3i() const;
 
 	_FORCE_INLINE_ Vector3() {}
-	_FORCE_INLINE_ Vector3(const Vector3i &p_ivec) {
-		x = p_ivec.x;
-		y = p_ivec.y;
-		z = p_ivec.z;
-	}
 	_FORCE_INLINE_ Vector3(const real_t p_x, const real_t p_y, const real_t p_z) {
 		x = p_x;
 		y = p_y;
@@ -251,6 +227,27 @@ Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
 	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
 	real_t angle = angle_to(p_to);
 	return rotated(cross(p_to).normalized(), angle * p_weight) * (result_length / start_length);
+}
+
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
+	Vector3 res = *this;
+	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
+	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
+	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	return res;
+}
+
+Vector3 Vector3::bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const {
+	Vector3 res = *this;
+
+	/* Formula from Wikipedia article on Bezier curves. */
+	real_t omt = (1.0 - p_t);
+	real_t omt2 = omt * omt;
+	real_t omt3 = omt2 * omt;
+	real_t t2 = p_t * p_t;
+	real_t t3 = t2 * p_t;
+
+	return res * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
 }
 
 real_t Vector3::distance_to(const Vector3 &p_to) const {
@@ -344,7 +341,7 @@ Vector3 &Vector3::operator*=(const real_t p_scalar) {
 }
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion
-// to Vector2i instead for integers where it should not.
+// to Vector3i instead for integers where it should not.
 
 _FORCE_INLINE_ Vector3 operator*(const float p_scalar, const Vector3 &p_vec) {
 	return p_vec * p_scalar;

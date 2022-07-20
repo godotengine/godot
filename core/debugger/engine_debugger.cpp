@@ -39,9 +39,9 @@
 EngineDebugger *EngineDebugger::singleton = nullptr;
 ScriptDebugger *EngineDebugger::script_debugger = nullptr;
 
-Map<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
-Map<StringName, EngineDebugger::Capture> EngineDebugger::captures;
-Map<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
+HashMap<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
+HashMap<StringName, EngineDebugger::Capture> EngineDebugger::captures;
+HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
 	ERR_FAIL_COND_MSG(profilers.has(p_name), "Profiler already registered: " + p_name);

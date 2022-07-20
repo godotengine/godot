@@ -158,6 +158,22 @@ namespace basisu
 				}
 			}
 		}
+
+#if 0
+		for (uint32_t y = 0; y < 64; y++)
+		{
+			printf("{");
+			for (uint32_t x = 0; x < 256; x++)
+			{
+				printf("0x%X", g_etc1_inverse_lookup[y][x]);
+				if (x != 255)
+					printf(",");
+				if (((x & 63) == 63) && (x != 255))
+					printf("\n");
+			}
+			printf("},\n");
+		}
+#endif
 	}
 
 	// Packs solid color blocks efficiently using a set of small precomputed tables.
@@ -1126,6 +1142,7 @@ namespace basisu
 				if (!g_eval_dist_tables[inten_table][m_max_comp_spread])
 					continue;
 			}
+
 #if 0
 			if (m_pParams->m_quality <= cETCQualityMedium)
 			{

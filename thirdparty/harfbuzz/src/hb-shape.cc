@@ -50,7 +50,7 @@
 
 static inline void free_static_shaper_list ();
 
-static const char *nil_shaper_list[] = {nullptr};
+static const char * const nil_shaper_list[] = {nullptr};
 
 static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
 							      hb_shaper_list_lazy_loader_t>
@@ -73,7 +73,7 @@ static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
   }
   static void destroy (const char **l)
   { hb_free (l); }
-  static const char ** get_null ()
+  static const char * const * get_null ()
   { return nil_shaper_list; }
 } static_shaper_list;
 
@@ -126,12 +126,44 @@ hb_shape_full (hb_font_t          *font,
 	       unsigned int        num_features,
 	       const char * const *shaper_list)
 {
+  if (unlikely (!buffer->len))
+    return true;
+
+  buffer->enter ();
+
+  hb_buffer_t *text_buffer = nullptr;
+  if (buffer->flags & HB_BUFFER_FLAG_VERIFY)
+  {
+    text_buffer = hb_buffer_create ();
+    hb_buffer_append (text_buffer, buffer, 0, -1);
+  }
+
   hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached2 (font->face, &buffer->props,
 							      features, num_features,
 							      font->coords, font->num_coords,
 							      shaper_list);
+
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
+
+  if (buffer->max_ops <= 0)
+    buffer->shaping_failed = true;
+
   hb_shape_plan_destroy (shape_plan);
+
+  if (text_buffer)
+  {
+    if (res && buffer->successful && !buffer->shaping_failed
+	    && text_buffer->successful
+	    && !buffer->verify (text_buffer,
+				font,
+				features,
+				num_features,
+				shaper_list))
+      res = false;
+    hb_buffer_destroy (text_buffer);
+  }
+
+  buffer->leave ();
 
   return res;
 }

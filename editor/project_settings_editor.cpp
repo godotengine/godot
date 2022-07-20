@@ -35,6 +35,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
@@ -49,7 +50,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();
-	set_process_unhandled_input(true);
+	set_process_shortcut_input(true);
 
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
@@ -63,7 +64,7 @@ void ProjectSettingsEditor::queue_save() {
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
-	tab_container->set_current_tab(plugin_settings->get_index());
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -202,7 +203,7 @@ void ProjectSettingsEditor::_select_type(Variant::Type p_type) {
 	type_box->select(type_box->get_item_index(p_type));
 }
 
-void ProjectSettingsEditor::unhandled_input(const Ref<InputEvent> &p_event) {
+void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	const Ref<InputEventKey> k = p_event;
@@ -249,7 +250,7 @@ String ProjectSettingsEditor::_get_setting_name() const {
 }
 
 void ProjectSettingsEditor::_add_feature_overrides() {
-	Set<String> presets;
+	HashSet<String> presets;
 
 	presets.insert("bptc");
 	presets.insert("s3tc");
@@ -261,6 +262,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
+	presets.insert("movie");
 
 	EditorExport *ee = EditorExport::get_singleton();
 
@@ -292,8 +294,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
 	int id = 1;
-	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
-		feature_box->add_item(E->get(), id++);
+	for (const String &E : presets) {
+		feature_box->add_item(E, id++);
 	}
 }
 
@@ -351,7 +353,7 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 			undo_redo->create_action(TTR("Edit Input Action Event"));
 		} else if (event_count > old_event_count) {
 			undo_redo->create_action(TTR("Add Input Action Event"));
-		} else if (event_count < old_event_count) {
+		} else {
 			undo_redo->create_action(TTR("Remove Input Action Event"));
 		}
 
@@ -420,7 +422,7 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 	Variant target_value = ps->get(target_name);
 
 	List<PropertyInfo> props;
-	OrderedHashMap<String, Variant> action_values;
+	HashMap<String, Variant> action_values;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
 	undo_redo->create_action(TTR("Update Input Action Order"));
@@ -437,9 +439,9 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);
 	}
 
-	for (OrderedHashMap<String, Variant>::Element E = action_values.front(); E; E = E.next()) {
-		String name = E.key();
-		Variant value = E.get();
+	for (const KeyValue<String, Variant> &E : action_values) {
+		String name = E.key;
+		const Variant &value = E.value;
 
 		if (name == target_name) {
 			if (p_before) {
@@ -515,12 +517,12 @@ void ProjectSettingsEditor::_update_theme() {
 
 	type_box->clear();
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		// There's no point in adding Nil types, and Object types
-		// can't be serialized correctly in the project settings.
-		if (i != Variant::NIL && i != Variant::OBJECT) {
-			String type = Variant::get_type_name(Variant::Type(i));
-			type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+			// These types can't be serialized properly, so skip them.
+			continue;
 		}
+		String type = Variant::get_type_name(Variant::Type(i));
+		type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
 	}
 }
 
@@ -531,11 +533,13 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
 			}
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			general_settings_inspector->edit(ps);
 			_update_action_map_editor();
 			_update_theme();
 		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 		} break;
@@ -557,8 +561,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	data = p_data;
 
 	tab_container = memnew(TabContainer);
-	tab_container->set_tab_alignment(TabContainer::ALIGNMENT_LEFT);
 	tab_container->set_use_hidden_tabs_for_min_size(true);
+	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
 	VBoxContainer *general_editor = memnew(VBoxContainer);
@@ -585,7 +589,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_editor->add_child(header);
 
 	property_box = memnew(LineEdit);
-	property_box->set_placeholder(TTR("Select a setting or type its name"));
+	property_box->set_placeholder(TTR("Select a Setting or Type its Name"));
 	property_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	header->add_child(property_box);
@@ -615,6 +619,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
 	general_settings_inspector->get_inspector()->connect("restart_requested", callable_mp(this, &ProjectSettingsEditor::_editor_restart_request));
@@ -661,7 +666,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	autoload_settings = memnew(EditorAutoloadSettings);
-	autoload_settings->set_name(TTR("AutoLoad"));
+	autoload_settings->set_name(TTR("Autoload"));
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	tab_container->add_child(autoload_settings);
 
@@ -680,7 +685,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	timer->set_one_shot(true);
 	add_child(timer);
 
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(true);
 
 	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
@@ -695,4 +700,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
 	import_defaults_editor->connect("project_settings_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
+
+	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }

@@ -30,13 +30,11 @@
 
 #include "polygon_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
-#include "core/input/input.h"
-#include "core/io/file_access.h"
+#include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_container.h"
@@ -71,6 +69,7 @@ void Polygon2DEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			button_uv->set_icon(get_theme_icon(SNAME("Uv"), SNAME("EditorIcons")));
 
@@ -98,6 +97,7 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				uv_edit->hide();
@@ -455,7 +455,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 
 	Transform2D mtx;
-	mtx.elements[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	Ref<InputEventMouseButton> mb = p_input;
@@ -970,7 +970,7 @@ void Polygon2DEditor::_uv_draw() {
 	String warning;
 
 	Transform2D mtx;
-	mtx.elements[2] = -uv_draw_ofs;
+	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
 	RS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(), mtx);
@@ -1062,7 +1062,7 @@ void Polygon2DEditor::_uv_draw() {
 	for (int i = 0; i < uvs.size(); i++) {
 		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
 
-		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/polygon_editor/show_previous_outline", true)) {
+		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
 			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE));
 		}
 
@@ -1070,7 +1070,7 @@ void Polygon2DEditor::_uv_draw() {
 		if (uv_create && i == uvs.size() - 1) {
 			next_point = uv_create_to;
 		}
-		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
+		if (i < uv_draw_max) { // If using or creating polygons, do not show outline (will show polygons instead).
 			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE));
 		}
 	}
@@ -1228,9 +1228,7 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
-		AbstractPolygon2DEditor(p_editor) {
-	node = nullptr;
+Polygon2DEditor::Polygon2DEditor() {
 	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
 	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(10, 10));
 	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);
@@ -1489,6 +1487,6 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_edit_draw->set_clip_contents(true);
 }
 
-Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) :
-		AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2D") {
+Polygon2DEditorPlugin::Polygon2DEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(Polygon2DEditor), "Polygon2D") {
 }

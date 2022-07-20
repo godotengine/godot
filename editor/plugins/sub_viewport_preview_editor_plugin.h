@@ -35,8 +35,6 @@
 #include "editor/plugins/texture_editor_plugin.h"
 #include "scene/main/viewport.h"
 
-class EditorNode;
-
 class EditorInspectorPluginSubViewportPreview : public EditorInspectorPluginTexture {
 	GDCLASS(EditorInspectorPluginSubViewportPreview, EditorInspectorPluginTexture);
 
@@ -51,7 +49,7 @@ class SubViewportPreviewEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "SubViewportPreview"; }
 
-	SubViewportPreviewEditorPlugin(EditorNode *p_node);
+	SubViewportPreviewEditorPlugin();
 };
 
 #endif // SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H

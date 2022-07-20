@@ -141,7 +141,7 @@ void Crypto::_bind_methods() {
 
 /// Resource loader/saver
 
-RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+Ref<Resource> ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
 		X509Certificate *cert = X509Certificate::create();
@@ -185,7 +185,7 @@ String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const
 	return "";
 }
 
-Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error ResourceFormatSaverCrypto::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
 	Error err;
 	Ref<X509Certificate> cert = p_resource;
 	Ref<CryptoKey> key = p_resource;
@@ -201,7 +201,7 @@ Error ResourceFormatSaverCrypto::save(const String &p_path, const RES &p_resourc
 	return OK;
 }
 
-void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	const X509Certificate *cert = Object::cast_to<X509Certificate>(*p_resource);
 	const CryptoKey *key = Object::cast_to<CryptoKey>(*p_resource);
 	if (cert) {
@@ -215,6 +215,6 @@ void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource,
 	}
 }
 
-bool ResourceFormatSaverCrypto::recognize(const RES &p_resource) const {
+bool ResourceFormatSaverCrypto::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<X509Certificate>(*p_resource) || Object::cast_to<CryptoKey>(*p_resource);
 }

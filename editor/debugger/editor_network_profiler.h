@@ -42,15 +42,15 @@ class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 
 private:
-	Button *activate;
-	Button *clear_button;
-	Tree *counters_display;
-	LineEdit *incoming_bandwidth_text;
-	LineEdit *outgoing_bandwidth_text;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	Tree *counters_display = nullptr;
+	LineEdit *incoming_bandwidth_text = nullptr;
+	LineEdit *outgoing_bandwidth_text = nullptr;
 
-	Timer *frame_delay;
+	Timer *frame_delay = nullptr;
 
-	Map<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
+	HashMap<ObjectID, SceneDebugger::RPCNodeInfo> nodes_data;
 
 	void _update_frame();
 

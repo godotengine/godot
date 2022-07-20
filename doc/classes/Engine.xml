@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Engine" inherits="Object" version="4.0">
+<class name="Engine" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Access to engine properties.
 	</brief_description>
@@ -94,6 +94,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_script_language" qualifiers="const">
+			<return type="ScriptLanguage" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_script_language_count">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object" />
 			<argument index="0" name="name" type="StringName" />
@@ -165,6 +176,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the game is inside the fixed process and physics phase of the game loop.
+			</description>
+		</method>
+		<method name="register_script_language">
+			<return type="void" />
+			<argument index="0" name="language" type="ScriptLanguage" />
+			<description>
 			</description>
 		</method>
 		<method name="register_singleton">

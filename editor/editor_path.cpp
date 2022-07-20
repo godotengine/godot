@@ -30,6 +30,7 @@
 
 #include "editor_path.h"
 
+#include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
@@ -71,7 +72,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 		int index = sub_objects_menu->get_item_count();
 		sub_objects_menu->add_icon_item(icon, proper_name, objects.size());
-		sub_objects_menu->set_item_h_offset(index, p_depth * 10 * EDSCALE);
+		sub_objects_menu->set_item_horizontal_offset(index, p_depth * 10 * EDSCALE);
 		objects.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
@@ -193,11 +194,11 @@ void EditorPath::_notification(int p_what) {
 void EditorPath::_bind_methods() {
 }
 
-EditorPath::EditorPath(EditorHistory *p_history) {
+EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->set_anchors_and_offsets_preset(PRESET_WIDE);
+	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
 	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
 	add_child(main_mc);

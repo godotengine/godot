@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" version="4.0">
+<class name="EditorPlugin" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
@@ -261,14 +261,28 @@
 		<method name="_get_state" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				Gets the state of your plugin editor. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns).
+				Override this method to provide a state data you want to be saved, like view position, grid settings, folding, etc. This is used when saving the scene (so state is kept when opening it again) and for switching tabs (so state can be restored when the tab returns). This data is automatically saved for each scene in an [code]editstate[/code] file in the editor metadata folder. If you want to store global (scene-independent) editor data for your plugin, you can use [method _get_window_layout] instead.
+				Use [method _set_state] to restore your saved state.
+				[b]Note:[/b] This method should not be used to save important settings that should persist with the project.
+				[b]Note:[/b] You must implement [method _get_plugin_name] for the state to be stored and restored correctly.
+				[codeblock]
+				func _get_state():
+				    var state = {"zoom": zoom, "preferred_color": my_color}
+				    return state
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_get_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="configuration" type="ConfigFile" />
 			<description>
-				Gets the GUI layout of the plugin. This is used to save the project's editor layout when [method queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
+				Override this method to provide the GUI layout of the plugin or any other data you want to be stored. This is used to save the project's editor layout when [method queue_save_layout] is called or the editor layout was changed (for example changing the position of a dock). The data is stored in the [code]editor_layout.cfg[/code] file in the editor metadata directory.
+				Use [method _set_window_layout] to restore your saved layout.
+				[codeblock]
+				func _get_window_layout(configuration):
+				    configuration.set_value("MyPlugin", "window_position", $Window.position)
+				    configuration.set_value("MyPlugin", "icon_color", $Icon.modulate)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_handles" qualifiers="virtual const">
@@ -282,6 +296,28 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
+				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_base_control] and made visible inside [method _make_visible].
+				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
+				[codeblock]
+				var plugin_control
+
+				func _enter_tree():
+				    plugin_control = preload("my_plugin_control.tscn").instantiate()
+				    get_editor_interface().get_editor_main_control().add_child(plugin_control)
+				    plugin_control.hide()
+
+				func _has_main_screen():
+				    return true
+
+				func _make_visible(visible):
+				    plugin_control.visible = visible
+
+				func _get_plugin_name():
+				    return "My Super Cool Plugin 3000"
+
+				func _get_plugin_icon():
+				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_make_visible" qualifiers="virtual">
@@ -302,14 +338,25 @@
 			<return type="void" />
 			<argument index="0" name="state" type="Dictionary" />
 			<description>
-				Restore the state saved by [method _get_state].
+				Restore the state saved by [method _get_state]. This method is called when the current scene tab is changed in the editor.
+				[b]Note:[/b] Your plugin must implement [method _get_plugin_name], otherwise it will not be recognized and this method will not be called.
+				[codeblock]
+				func _set_state(data):
+				    zoom = data.get("zoom", 1.0)
+				    preferred_color = data.get("my_color", Color.white)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_set_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<argument index="0" name="configuration" type="ConfigFile" />
 			<description>
-				Restore the plugin GUI layout saved by [method _get_window_layout].
+				Restore the plugin GUI layout and data saved by [method _get_window_layout]. This method is called for every plugin on editor startup. Use the provided [code]configuration[/code] file to read your saved data.
+				[codeblock]
+				func _set_window_layout(configuration):
+				    $Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
+				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.white)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_autoload_singleton">
@@ -470,10 +517,16 @@
 				Returns the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
 			</description>
 		</method>
+		<method name="get_export_as_menu">
+			<return type="PopupMenu" />
+			<description>
+				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
+			</description>
+		</method>
 		<method name="get_script_create_dialog">
 			<return type="ScriptCreateDialog" />
 			<description>
-				Gets the Editor's dialogue used for making scripts.
+				Gets the Editor's dialog used for making scripts.
 				[b]Note:[/b] Users can configure it before use.
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>

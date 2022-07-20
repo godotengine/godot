@@ -40,7 +40,6 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class EditorNode;
 class ProgressBar;
 class EditorFileDialog;
 
@@ -48,21 +47,21 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;
-	GraphEdit *graph;
-	MenuButton *add_node;
+	GraphEdit *graph = nullptr;
+	MenuButton *add_node = nullptr;
 	Vector2 position_from_popup_menu;
 	bool use_position_from_popup_menu;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
-	AcceptDialog *filter_dialog;
-	Tree *filters;
-	CheckBox *filter_enabled;
+	AcceptDialog *filter_dialog = nullptr;
+	Tree *filters = nullptr;
+	CheckBox *filter_enabled = nullptr;
 
-	Map<StringName, ProgressBar *> animations;
+	HashMap<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
 
 	String to_node = "";
@@ -104,7 +103,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _open_in_editor(const String &p_which);
 	void _anim_selected(int p_index, Array p_options, const String &p_node);
 	void _delete_request(const String &p_which);
-	void _delete_nodes_request();
+	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	bool _update_filters(const Ref<AnimationNode> &anode);
 	void _edit_filters(const String &p_which);
@@ -120,7 +119,10 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _removed_from_graph();
 
-	EditorFileDialog *open_file;
+	void _update_editor_settings();
+	void _update_theme();
+
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 

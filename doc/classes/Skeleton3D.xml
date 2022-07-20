@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton3D" inherits="Node3D" version="4.0">
+<class name="Skeleton3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Skeleton for characters and animated objects.
 	</brief_description>
@@ -111,6 +111,14 @@
 			<return type="Transform3D" />
 			<argument index="0" name="bone_idx" type="int" />
 			<description>
+				Returns the global pose override transform for [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_global_rest" qualifiers="const">
+			<return type="Transform3D" />
+			<argument index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the global rest transform for [code]bone_idx[/code].
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override" qualifiers="const">

@@ -4,7 +4,7 @@
  *
  *   Type 42 objects manager (specification).
  *
- * Copyright (C) 2002-2021 by
+ * Copyright (C) 2002-2022 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,

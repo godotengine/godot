@@ -49,9 +49,8 @@ void SceneReplicationInterface::make_default() {
 
 void SceneReplicationInterface::_free_remotes(int p_id) {
 	const HashMap<uint32_t, ObjectID> remotes = rep_state->peer_get_remotes(p_id);
-	const uint32_t *k = nullptr;
-	while ((k = remotes.next(k))) {
-		Node *node = rep_state->get_node(remotes.get(*k));
+	for (const KeyValue<uint32_t, ObjectID> &E : remotes) {
+		Node *node = rep_state->get_node(E.value);
 		ERR_CONTINUE(!node);
 		node->queue_delete();
 	}
@@ -168,7 +167,7 @@ Error SceneReplicationInterface::_send_spawn(Node *p_node, MultiplayerSpawner *p
 	uint32_t nid = rep_state->ensure_net_id(oid);
 
 	// Prepare custom arg and scene_id
-	uint8_t scene_id = p_spawner->get_spawn_id(oid);
+	uint8_t scene_id = p_spawner->find_spawnable_scene_index_from_object(oid);
 	bool is_custom = scene_id == MultiplayerSpawner::INVALID_ID;
 	Variant spawn_arg = p_spawner->get_spawn_argument(oid);
 	int spawn_arg_size = 0;
@@ -309,12 +308,15 @@ Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p
 	Error err = rep_state->peer_del_remote(p_from, net_id, &node);
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(!node, ERR_BUG);
+	if (node->get_parent() != nullptr) {
+		node->get_parent()->remove_child(node);
+	}
 	node->queue_delete();
 	return OK;
 }
 
 void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
-	const Set<ObjectID> &known = rep_state->get_known_nodes(p_peer);
+	const HashSet<ObjectID> &known = rep_state->get_known_nodes(p_peer);
 	if (known.is_empty()) {
 		return;
 	}
@@ -350,11 +352,12 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 		}
 		if (size) {
 			uint32_t net_id = rep_state->get_net_id(oid);
-			if (net_id == 0) {
+			if (net_id == 0 || (net_id & 0x80000000)) {
 				// First time path based ID.
 				NodePath rel_path = multiplayer->get_root_path().rel_path_to(sync->get_path());
 				int path_id = 0;
 				multiplayer->send_object_cache(sync, rel_path, p_peer, path_id);
+				ERR_CONTINUE_MSG(net_id && net_id != (uint32_t(path_id) | 0x80000000), "This should never happen!");
 				net_id = path_id;
 				rep_state->set_net_id(oid, net_id | 0x80000000);
 			}

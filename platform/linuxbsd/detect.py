@@ -75,6 +75,7 @@ def get_opts():
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
+        BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
@@ -115,7 +116,7 @@ def configure(env):
 
     ## Architecture
 
-    is64 = sys.maxsize > 2 ** 32
+    is64 = sys.maxsize > 2**32
     if env["bits"] == "default":
         env["bits"] = "64" if is64 else "32"
 
@@ -162,6 +163,7 @@ def configure(env):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
+        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(
@@ -261,27 +263,6 @@ def configure(env):
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
 
-    if not env["builtin_bullet"]:
-        # We need at least version 2.90
-        min_bullet_version = "2.90"
-
-        import subprocess
-
-        bullet_version = subprocess.check_output(["pkg-config", "bullet", "--modversion"]).strip()
-        if str(bullet_version) < min_bullet_version:
-            # Abort as system bullet was requested but too old
-            print(
-                "Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(
-                    bullet_version, min_bullet_version
-                )
-            )
-            sys.exit(255)
-        env.ParseConfig("pkg-config bullet --cflags --libs")
-
-    if False:  # not env['builtin_assimp']:
-        # FIXME: Add min version check
-        env.ParseConfig("pkg-config assimp --cflags --libs")
-
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
@@ -339,29 +320,41 @@ def configure(env):
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+        env.ParseConfig("pkg-config alsa --cflags")  # Only cflags, we dlopen the library.
     else:
         print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
         if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
+            env.ParseConfig("pkg-config libpulse --cflags")  # Only cflags, we dlopen the library.
         else:
+            env["pulseaudio"] = False
             print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
 
     if env["dbus"]:
         if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
             env.Append(CPPDEFINES=["DBUS_ENABLED"])
-            env.ParseConfig("pkg-config --cflags --libs dbus-1")
+            env.ParseConfig("pkg-config dbus-1 --cflags --libs")
         else:
             print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
+
+    if env["speechd"]:
+        if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
+            env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+            env.ParseConfig("pkg-config speech-dispatcher --cflags")  # Only cflags, we dlopen the library.
+        else:
+            env["speechd"] = False
+            print("Warning: Speech Dispatcher development libraries not found. Disabling Text-to-Speech support.")
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                 env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                env.ParseConfig("pkg-config libudev --cflags")  # Only cflags, we dlopen the library.
             else:
+                env["udev"] = False
                 print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
     else:
         env["udev"] = False  # Linux specific
@@ -386,11 +379,11 @@ def configure(env):
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
-            # No pkgconfig file for glslang so far
+            # No pkgconfig file so far, hardcode expected lib name.
             env.Append(LIBS=["glslang", "SPIRV"])
 
     env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    env.Append(LIBS=["GL"])
+    env.ParseConfig("pkg-config gl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 

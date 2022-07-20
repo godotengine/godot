@@ -50,10 +50,8 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 		path_get_cache.erase(p_id);
 		// Cleanup sent cache.
 		// Some refactoring is needed to make this faster and do paths GC.
-		List<NodePath> keys;
-		path_send_cache.get_key_list(&keys);
-		for (const NodePath &E : keys) {
-			PathSentCache *psc = path_send_cache.getptr(E);
+		for (const KeyValue<NodePath, PathSentCache> &E : path_send_cache) {
+			PathSentCache *psc = path_send_cache.getptr(E.key);
 			psc->confirmed_peers.erase(p_id);
 		}
 	}
@@ -134,87 +132,59 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	PathSentCache *psc = path_send_cache.getptr(path);
 	ERR_FAIL_COND_MSG(!psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
 
-	Map<int, bool>::Element *E = psc->confirmed_peers.find(p_from);
+	HashMap<int, bool>::Iterator E = psc->confirmed_peers.find(p_from);
 	ERR_FAIL_COND_MSG(!E, "Invalid packet received. Source peer was not found in cache for the given path.");
-	E->get() = true;
+	E->value = true;
 }
 
-bool SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, int p_target) {
-	bool has_all_peers = true;
-	List<int> peers_to_add; // If one is missing, take note to add it.
+Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, const List<int> &p_peers) {
+	// Encode function name.
+	const CharString path = String(p_path).utf8();
+	const int path_len = encode_cstring(path.get_data(), nullptr);
 
-	for (const Set<int>::Element *E = multiplayer->get_connected_peers().front(); E; E = E->next()) {
-		if (p_target < 0 && E->get() == -p_target) {
-			continue; // Continue, excluded.
-		}
+	// Extract MD5 from rpc methods list.
+	const String methods_md5 = multiplayer->get_rpc_md5(p_node);
+	const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
 
-		if (p_target > 0 && E->get() != p_target) {
-			continue; // Continue, not for this peer.
-		}
+	Vector<uint8_t> packet;
+	packet.resize(1 + 4 + path_len + methods_md5_len);
+	int ofs = 0;
 
-		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
+	packet.write[ofs] = MultiplayerAPI::NETWORK_COMMAND_SIMPLIFY_PATH;
+	ofs += 1;
 
-		if (!F || !F->get()) {
-			// Path was not cached, or was cached but is unconfirmed.
-			if (!F) {
-				// Not cached at all, take note.
-				peers_to_add.push_back(E->get());
-			}
+	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 
-			has_all_peers = false;
-		}
-	}
+	ofs += encode_uint32(psc->id, &packet.write[ofs]);
 
-	if (peers_to_add.size() > 0) {
-		// Those that need to be added, send a message for this.
+	ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
 
-		// Encode function name.
-		const CharString path = String(p_path).utf8();
-		const int path_len = encode_cstring(path.get_data(), nullptr);
-
-		// Extract MD5 from rpc methods list.
-		const String methods_md5 = multiplayer->get_rpc_md5(p_node);
-		const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
-
-		Vector<uint8_t> packet;
-		packet.resize(1 + 4 + path_len + methods_md5_len);
-		int ofs = 0;
-
-		packet.write[ofs] = MultiplayerAPI::NETWORK_COMMAND_SIMPLIFY_PATH;
-		ofs += 1;
-
-		ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
-
-		ofs += encode_uint32(psc->id, &packet.write[ofs]);
-
-		ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
-
-		Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
-		ERR_FAIL_COND_V(multiplayer_peer.is_null(), false);
+	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
+	ERR_FAIL_COND_V(multiplayer_peer.is_null(), ERR_BUG);
 
 #ifdef DEBUG_ENABLED
-		multiplayer->profile_bandwidth("out", packet.size() * peers_to_add.size());
+	multiplayer->profile_bandwidth("out", packet.size() * p_peers.size());
 #endif
 
-		for (int &E : peers_to_add) {
-			multiplayer_peer->set_target_peer(E); // To all of you.
-			multiplayer_peer->set_transfer_channel(0);
-			multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
-			multiplayer_peer->put_packet(packet.ptr(), packet.size());
-
-			psc->confirmed_peers.insert(E, false); // Insert into confirmed, but as false since it was not confirmed.
-		}
+	Error err = OK;
+	for (int peer_id : p_peers) {
+		multiplayer_peer->set_target_peer(peer_id);
+		multiplayer_peer->set_transfer_channel(0);
+		multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+		err = multiplayer_peer->put_packet(packet.ptr(), packet.size());
+		ERR_FAIL_COND_V(err != OK, err);
+		// Insert into confirmed, but as false since it was not confirmed.
+		psc->confirmed_peers.insert(peer_id, false);
 	}
-
-	return has_all_peers;
+	return err;
 }
 
 bool SceneCacheInterface::is_cache_confirmed(NodePath p_path, int p_peer) {
 	const PathSentCache *psc = path_send_cache.getptr(p_path);
 	ERR_FAIL_COND_V(!psc, false);
-	const Map<int, bool>::Element *F = psc->confirmed_peers.find(p_peer);
+	HashMap<int, bool>::ConstIterator F = psc->confirmed_peers.find(p_peer);
 	ERR_FAIL_COND_V(!F, false); // Should never happen.
-	return F->get();
+	return F->value;
 }
 
 bool SceneCacheInterface::send_object_cache(Object *p_obj, NodePath p_path, int p_peer_id, int &r_id) {
@@ -230,19 +200,55 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, NodePath p_path, int 
 	}
 	r_id = psc->id;
 
-	return _send_confirm_path(node, p_path, psc, p_peer_id);
+	bool has_all_peers = true;
+	List<int> peers_to_add; // If one is missing, take note to add it.
+
+	if (p_peer_id > 0) {
+		// Fast single peer check.
+		HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(p_peer_id);
+		if (!F) {
+			peers_to_add.push_back(p_peer_id); // Need to also be notified.
+			has_all_peers = false;
+		} else if (!F->value) {
+			has_all_peers = false;
+		}
+	} else {
+		// Long and painful.
+		for (const int &E : multiplayer->get_connected_peers()) {
+			if (p_peer_id < 0 && E == -p_peer_id) {
+				continue; // Continue, excluded.
+			}
+			if (p_peer_id > 0 && E != p_peer_id) {
+				continue; // Continue, not for this peer.
+			}
+
+			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
+			if (!F) {
+				peers_to_add.push_back(E); // Need to also be notified.
+				has_all_peers = false;
+			} else if (!F->value) {
+				has_all_peers = false;
+			}
+		}
+	}
+
+	if (peers_to_add.size()) {
+		_send_confirm_path(node, p_path, psc, peers_to_add);
+	}
+
+	return has_all_peers;
 }
 
 Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_COND_V(!root_node, nullptr);
-	Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
+	HashMap<int, PathGetCache>::Iterator E = path_get_cache.find(p_from);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, vformat("No cache found for peer %d.", p_from));
 
-	Map<int, PathGetCache::NodeInfo>::Element *F = E->get().nodes.find(p_cache_id);
+	HashMap<int, PathGetCache::NodeInfo>::Iterator F = E->value.nodes.find(p_cache_id);
 	ERR_FAIL_COND_V_MSG(!F, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
 
-	PathGetCache::NodeInfo *ni = &F->get();
+	PathGetCache::NodeInfo *ni = &F->value;
 	Node *node = root_node->get_node(ni->path);
 	if (!node) {
 		ERR_PRINT("Failed to get cached path: " + String(ni->path) + ".");

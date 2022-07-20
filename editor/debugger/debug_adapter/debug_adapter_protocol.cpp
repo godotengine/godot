@@ -268,12 +268,12 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			x.type = type_vec2;
 			y.type = type_vec2;
 			origin.type = type_vec2;
-			x.value = transform.elements[0];
-			y.value = transform.elements[1];
-			origin.value = transform.elements[2];
-			x.variablesReference = parse_variant(transform.elements[0]);
-			y.variablesReference = parse_variant(transform.elements[1]);
-			origin.variablesReference = parse_variant(transform.elements[2]);
+			x.value = transform.columns[0];
+			y.value = transform.columns[1];
+			origin.value = transform.columns[2];
+			x.variablesReference = parse_variant(transform.columns[0]);
+			y.variablesReference = parse_variant(transform.columns[1]);
+			origin.variablesReference = parse_variant(transform.columns[2]);
 
 			Array arr;
 			arr.push_back(x.to_json());
@@ -349,20 +349,20 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		case Variant::BASIS: {
 			int id = variable_id++;
 			Basis basis = p_var;
-			const String type_vec2 = Variant::get_type_name(Variant::VECTOR2);
+			const String type_vec3 = Variant::get_type_name(Variant::VECTOR3);
 			DAP::Variable x, y, z;
 			x.name = "x";
 			y.name = "y";
 			z.name = "z";
-			x.type = type_vec2;
-			y.type = type_vec2;
-			z.type = type_vec2;
-			x.value = basis.elements[0];
-			y.value = basis.elements[1];
-			z.value = basis.elements[2];
-			x.variablesReference = parse_variant(basis.elements[0]);
-			y.variablesReference = parse_variant(basis.elements[1]);
-			z.variablesReference = parse_variant(basis.elements[2]);
+			x.type = type_vec3;
+			y.type = type_vec3;
+			z.type = type_vec3;
+			x.value = basis.rows[0];
+			y.value = basis.rows[1];
+			z.value = basis.rows[2];
+			x.variablesReference = parse_variant(basis.rows[0]);
+			y.variablesReference = parse_variant(basis.rows[1]);
+			z.variablesReference = parse_variant(basis.rows[2]);
 
 			Array arr;
 			arr.push_back(x.to_json());
@@ -918,11 +918,11 @@ void DebugAdapterProtocol::on_debug_stack_frame_vars(const int &p_size) {
 	DAP::StackFrame frame;
 	frame.id = _current_frame;
 	ERR_FAIL_COND(!stackframe_list.has(frame));
-	List<int> scope_ids = stackframe_list.find(frame)->value();
+	List<int> scope_ids = stackframe_list.find(frame)->value;
 	for (List<int>::Element *E = scope_ids.front(); E; E = E->next()) {
 		int variable_id = E->get();
 		if (variable_list.has(variable_id)) {
-			variable_list.find(variable_id)->value().clear();
+			variable_list.find(variable_id)->value.clear();
 		} else {
 			variable_list.insert(variable_id, Array());
 		}
@@ -937,7 +937,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	DAP::StackFrame frame;
 	frame.id = _current_frame;
 
-	List<int> scope_ids = stackframe_list.find(frame)->value();
+	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
 	ERR_FAIL_INDEX(stack_var.type, 3);
 	int variable_id = scope_ids[stack_var.type];
@@ -949,7 +949,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	variable.type = Variant::get_type_name(stack_var.value.get_type());
 	variable.variablesReference = parse_variant(stack_var.value);
 
-	variable_list.find(variable_id)->value().push_back(variable.to_json());
+	variable_list.find(variable_id)->value.push_back(variable.to_json());
 	_remaining_vars--;
 }
 

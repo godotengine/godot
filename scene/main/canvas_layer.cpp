@@ -58,13 +58,17 @@ void CanvasLayer::set_visible(bool p_visible) {
 		if (c) {
 			RenderingServer::get_singleton()->canvas_item_set_visible(c->get_canvas_item(), p_visible && c->is_visible());
 
-			if (c->is_visible()) {
-				c->_propagate_visibility_changed(p_visible);
-			} else {
-				c->notification(CanvasItem::NOTIFICATION_VISIBILITY_CHANGED);
-			}
+			c->_propagate_visibility_changed(p_visible);
 		}
 	}
+}
+
+void CanvasLayer::show() {
+	set_visible(true);
+}
+
+void CanvasLayer::hide() {
+	set_visible(false);
 }
 
 bool CanvasLayer::is_visible() const {
@@ -92,7 +96,7 @@ void CanvasLayer::_update_xform() {
 }
 
 void CanvasLayer::_update_locrotscale() {
-	ofs = transform.elements[2];
+	ofs = transform.columns[2];
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
 	locrotscale_dirty = false;
@@ -166,8 +170,8 @@ void CanvasLayer::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 			RenderingServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
 			_update_follow_viewport();
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_NULL_MSG(vp, "Viewport is not initialized.");
 
@@ -175,13 +179,12 @@ void CanvasLayer::_notification(int p_what) {
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 			viewport = RID();
 			_update_follow_viewport(false);
-
 		} break;
+
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			if (is_inside_tree()) {
 				RenderingServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_index());
 			}
-
 		} break;
 	}
 }
@@ -295,6 +298,8 @@ void CanvasLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasLayer::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &CanvasLayer::is_visible);
+	ClassDB::bind_method(D_METHOD("show"), &CanvasLayer::show);
+	ClassDB::bind_method(D_METHOD("hide"), &CanvasLayer::hide);
 
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CanvasLayer::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &CanvasLayer::get_transform);
@@ -323,10 +328,10 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_lesser,or_greater,radians"), "set_rotation", "get_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale", PROPERTY_HINT_LINK), "set_scale", "get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "suffix:px"), "set_transform", "get_transform");
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");

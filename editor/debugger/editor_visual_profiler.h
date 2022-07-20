@@ -67,40 +67,39 @@ public:
 	};
 
 private:
-	Button *activate;
-	Button *clear_button;
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
 
-	TextureRect *graph;
+	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
-	Tree *variables;
-	HSplitContainer *h_split;
-	CheckBox *frame_relative;
-	CheckBox *linked;
+	Tree *variables = nullptr;
+	HSplitContainer *h_split = nullptr;
+	CheckBox *frame_relative = nullptr;
+	CheckBox *linked = nullptr;
 
-	OptionButton *display_mode;
+	OptionButton *display_mode = nullptr;
 
-	SpinBox *cursor_metric_edit;
+	SpinBox *cursor_metric_edit = nullptr;
 
 	Vector<Metric> frame_metrics;
-	int last_metric;
+	int last_metric = -1;
+
+	int hover_metric = -1;
 
 	StringName selected_area;
 
-	bool updating_frame;
+	bool updating_frame = false;
 
-	//int cursor_metric;
-	int hover_metric;
+	float graph_height_cpu = 1.0f;
+	float graph_height_gpu = 1.0f;
 
-	float graph_height_cpu;
-	float graph_height_gpu;
+	float graph_limit = 1000.0f / 60;
 
-	float graph_limit;
+	bool seeking = false;
 
-	bool seeking;
-
-	Timer *frame_delay;
-	Timer *plot_delay;
+	Timer *frame_delay = nullptr;
+	Timer *plot_delay = nullptr;
 
 	void _update_frame(bool p_focus_selected = false);
 

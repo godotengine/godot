@@ -60,7 +60,7 @@ int VideoStreamPlayer::_audio_mix_callback(void *p_udata, const float *p_data, i
 	ERR_FAIL_NULL_V(p_udata, 0);
 	ERR_FAIL_NULL_V(p_data, 0);
 
-	VideoStreamPlayer *vp = (VideoStreamPlayer *)p_udata;
+	VideoStreamPlayer *vp = static_cast<VideoStreamPlayer *>(p_udata);
 
 	int todo = MIN(vp->resampler.get_writer_space(), p_frames);
 
@@ -77,7 +77,7 @@ int VideoStreamPlayer::_audio_mix_callback(void *p_udata, const float *p_data, i
 
 void VideoStreamPlayer::_mix_audios(void *p_self) {
 	ERR_FAIL_NULL(p_self);
-	reinterpret_cast<VideoStreamPlayer *>(p_self)->_mix_audio();
+	static_cast<VideoStreamPlayer *>(p_self)->_mix_audio();
 }
 
 // Called from audio thread
@@ -134,7 +134,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
-
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -162,7 +161,6 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			if (!playback->is_playing()) {
 				emit_signal(SceneStringNames::get_singleton()->finished);
 			}
-
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -175,10 +173,31 @@ void VideoStreamPlayer::_notification(int p_notification) {
 
 			Size2 s = expand ? get_size() : texture->get_size();
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
-
 		} break;
-	};
-};
+
+		case NOTIFICATION_PAUSED: {
+			if (is_playing() && !is_paused()) {
+				paused_from_tree = true;
+				if (playback.is_valid()) {
+					playback->set_paused(true);
+					set_process_internal(false);
+				}
+				last_audio_time = 0;
+			}
+		} break;
+
+		case NOTIFICATION_UNPAUSED: {
+			if (paused_from_tree) {
+				paused_from_tree = false;
+				if (playback.is_valid()) {
+					playback->set_paused(false);
+					set_process_internal(true);
+				}
+				last_audio_time = 0;
+			}
+		} break;
+	}
+}
 
 Size2 VideoStreamPlayer::get_minimum_size() const {
 	if (!expand && !texture.is_null()) {
@@ -243,11 +262,11 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	if (!expand) {
 		update_minimum_size();
 	}
-};
+}
 
 Ref<VideoStream> VideoStreamPlayer::get_stream() const {
 	return stream;
-};
+}
 
 void VideoStreamPlayer::play() {
 	ERR_FAIL_COND(!is_inside_tree());
@@ -257,10 +276,12 @@ void VideoStreamPlayer::play() {
 	playback->stop();
 	playback->play();
 	set_process_internal(true);
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
-	//	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
 	last_audio_time = 0;
-};
+
+	if (!can_process()) {
+		_notification(NOTIFICATION_PAUSED);
+	}
+}
 
 void VideoStreamPlayer::stop() {
 	if (!is_inside_tree()) {
@@ -271,11 +292,10 @@ void VideoStreamPlayer::stop() {
 	}
 
 	playback->stop();
-	//	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	resampler.flush();
 	set_process_internal(false);
 	last_audio_time = 0;
-};
+}
 
 bool VideoStreamPlayer::is_playing() const {
 	if (playback.is_null()) {
@@ -283,16 +303,24 @@ bool VideoStreamPlayer::is_playing() const {
 	}
 
 	return playback->is_playing();
-};
+}
 
 void VideoStreamPlayer::set_paused(bool p_paused) {
 	paused = p_paused;
+	if (!p_paused && !can_process()) {
+		paused_from_tree = true;
+		return;
+	} else if (p_paused && paused_from_tree) {
+		paused_from_tree = false;
+		return;
+	}
+
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
 		set_process_internal(!p_paused);
-	};
+	}
 	last_audio_time = 0;
-};
+}
 
 bool VideoStreamPlayer::is_paused() const {
 	return paused;
@@ -316,11 +344,11 @@ int VideoStreamPlayer::get_audio_track() const {
 
 void VideoStreamPlayer::set_volume(float p_vol) {
 	volume = p_vol;
-};
+}
 
 float VideoStreamPlayer::get_volume() const {
 	return volume;
-};
+}
 
 void VideoStreamPlayer::set_volume_db(float p_db) {
 	if (p_db < -79) {
@@ -328,7 +356,7 @@ void VideoStreamPlayer::set_volume_db(float p_db) {
 	} else {
 		set_volume(Math::db2linear(p_db));
 	}
-};
+}
 
 float VideoStreamPlayer::get_volume_db() const {
 	if (volume == 0) {
@@ -336,21 +364,21 @@ float VideoStreamPlayer::get_volume_db() const {
 	} else {
 		return Math::linear2db(volume);
 	}
-};
+}
 
 String VideoStreamPlayer::get_stream_name() const {
 	if (stream.is_null()) {
 		return "<No Stream>";
 	}
 	return stream->get_name();
-};
+}
 
 float VideoStreamPlayer::get_stream_position() const {
 	if (playback.is_null()) {
 		return 0;
 	}
 	return playback->get_playback_position();
-};
+}
 
 void VideoStreamPlayer::set_stream_position(float p_position) {
 	if (playback.is_valid()) {
@@ -368,14 +396,14 @@ Ref<Texture2D> VideoStreamPlayer::get_video_texture() const {
 
 void VideoStreamPlayer::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
-};
+}
 
 bool VideoStreamPlayer::has_autoplay() const {
 	return autoplay;
-};
+}
 
 void VideoStreamPlayer::set_bus(const StringName &p_bus) {
-	//if audio is active, must lock this
+	// If audio is active, must lock this.
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
@@ -449,13 +477,12 @@ void VideoStreamPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
-	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_RANGE, "0,15,0.01,exp", PROPERTY_USAGE_NONE), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000,suffix:ms"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
@@ -464,7 +491,5 @@ void VideoStreamPlayer::_bind_methods() {
 VideoStreamPlayer::VideoStreamPlayer() {}
 
 VideoStreamPlayer::~VideoStreamPlayer() {
-	//	if (stream_rid.is_valid())
-	//		AudioServer::get_singleton()->free(stream_rid);
-	resampler.clear(); //Not necessary here, but make in consistent with other "stream_player" classes
-};
+	resampler.clear(); // Not necessary here, but make in consistent with other "stream_player" classes.
+}

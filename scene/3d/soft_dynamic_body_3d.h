@@ -36,7 +36,7 @@
 
 class SoftDynamicBody3D;
 
-class SoftDynamicBodyRenderingServerHandler : public RenderingServerHandler {
+class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
 	friend class SoftDynamicBody3D;
 
 	RID mesh;
@@ -84,7 +84,7 @@ public:
 	};
 
 private:
-	SoftDynamicBodyRenderingServerHandler rendering_server_handler;
+	SoftDynamicBodyRenderingServerHandler *rendering_server_handler = nullptr;
 
 	RID physics_rid;
 

@@ -34,8 +34,8 @@
 
 #include "core/string/print_string.h"
 
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <CoreServices/CoreServices.h>
 
 bool osx_is_app_bundle_installed(const String &p_bundle_id) {
 	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);

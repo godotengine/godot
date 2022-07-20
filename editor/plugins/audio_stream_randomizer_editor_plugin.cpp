@@ -30,6 +30,8 @@
 
 #include "audio_stream_randomizer_editor_plugin.h"
 
+#include "editor/editor_node.h"
+
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }
 
@@ -112,7 +114,7 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 	}
 }
 
-AudioStreamRandomizerEditorPlugin::AudioStreamRandomizerEditorPlugin(EditorNode *p_node) {
+AudioStreamRandomizerEditorPlugin::AudioStreamRandomizerEditorPlugin() {
 	EditorNode::get_singleton()->get_editor_data().add_move_array_element_function(SNAME("AudioStreamRandomizer"), callable_mp(this, &AudioStreamRandomizerEditorPlugin::_move_stream_array_element));
 }
 

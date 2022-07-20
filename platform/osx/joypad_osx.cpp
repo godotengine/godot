@@ -195,7 +195,7 @@ void joypad::add_hid_element(IOHIDElementRef p_element) {
 }
 
 static void hid_element_added(const void *p_value, void *p_parameter) {
-	joypad *joy = (joypad *)p_parameter;
+	joypad *joy = static_cast<joypad *>(p_parameter);
 	joy->add_hid_element((IOHIDElementRef)p_value);
 }
 
@@ -322,10 +322,11 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 		// Bluetooth device.
 		String guid = "05000000";
 		for (int i = 0; i < 12; i++) {
-			if (i < name.size())
+			if (i < name.size()) {
 				guid += _hex_str(name[i]);
-			else
+			} else {
 				guid += "00";
+			}
 		}
 		input->joy_connection_changed(id, true, name, guid);
 	}
@@ -381,8 +382,9 @@ bool joypad::check_ff_features() {
 	if (ret == FF_OK && (features.supportedEffects & FFCAP_ET_CONSTANTFORCE)) {
 		uint32_t val;
 		ret = FFDeviceGetForceFeedbackProperty(ff_device, FFPROP_FFGAIN, &val, sizeof(val));
-		if (ret != FF_OK)
+		if (ret != FF_OK) {
 			return false;
+		}
 		int num_axes = features.numFfAxes;
 		ff_axes = (DWORD *)memalloc(sizeof(DWORD) * num_axes);
 		ff_directions = (LONG *)memalloc(sizeof(LONG) * num_axes);
@@ -509,16 +511,18 @@ void JoypadOSX::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 
 int JoypadOSX::get_joy_index(int p_id) const {
 	for (int i = 0; i < device_list.size(); i++) {
-		if (device_list[i].id == p_id)
+		if (device_list[i].id == p_id) {
 			return i;
+		}
 	}
 	return -1;
 }
 
 int JoypadOSX::get_joy_ref(IOHIDDeviceRef p_device) const {
 	for (int i = 0; i < device_list.size(); i++) {
-		if (device_list[i].device_ref == p_device)
+		if (device_list[i].device_ref == p_device) {
 			return i;
+		}
 	}
 	return -1;
 }
@@ -536,10 +540,10 @@ static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 u
 	CFDictionaryRef retval = nullptr;
 	CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
 	CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
-	const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
-	const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 
 	if (pageNumRef && usageNumRef) {
+		const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
+		const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 		retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 	}
 

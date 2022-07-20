@@ -1900,7 +1900,8 @@
                       /*     WeightVector                         */
                       {
                         FT_UInt   idx;
-                        PS_Blend  blend = decoder->blend;
+                        PS_Blend  blend         = decoder->blend;
+                        FT_UInt   len_buildchar = decoder->len_buildchar;
 
 
                         if ( arg_cnt != 1 || !blend )
@@ -1908,14 +1909,15 @@
 
                         idx = (FT_UInt)cf2_stack_popInt( opStack );
 
-                        if ( idx + blend->num_designs >
-                               decoder->len_buildchar   )
+                        if ( len_buildchar < blend->num_designs       ||
+                             len_buildchar - blend->num_designs < idx )
                           goto Unexpected_OtherSubr;
 
-                        ft_memcpy( &decoder->buildchar[idx],
-                                   blend->weight_vector,
-                                   blend->num_designs *
-                                   sizeof ( blend->weight_vector[0] ) );
+                        if ( decoder->buildchar && blend->weight_vector )
+                          ft_memcpy( &decoder->buildchar[idx],
+                                     blend->weight_vector,
+                                     blend->num_designs *
+                                       sizeof ( blend->weight_vector[0] ) );
                       }
                       break;
 

@@ -128,10 +128,9 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-Skeleton2DEditorPlugin::Skeleton2DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
+Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 	sprite_editor = memnew(Skeleton2DEditor);
-	editor->get_main_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_main_control()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

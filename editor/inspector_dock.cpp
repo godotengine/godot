@@ -33,9 +33,16 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
+
+void InspectorDock::_prepare_menu() {
+	PopupMenu *menu = object_menu->get_popup();
+	for (int i = EditorPropertyNameProcessor::STYLE_RAW; i <= EditorPropertyNameProcessor::STYLE_LOCALIZED; i++) {
+		menu->set_item_checked(menu->get_item_index(PROPERTY_NAME_STYLE_RAW + i), i == property_name_style);
+	}
+}
 
 void InspectorDock::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
@@ -77,7 +84,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
-				editor->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+				EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 				emit_signal(SNAME("request_help"), current->get_class());
 			}
 		} break;
@@ -110,8 +117,8 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 
 						Variant v = current->get(E->get().name);
-						REF ref = v;
-						RES res = ref;
+						Ref<RefCounted> ref = v;
+						Ref<Resource> res = ref;
 						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
 							// Valid resource which would be duplicated if action is confirmed.
 							resource_propnames.append(E->get().name);
@@ -142,7 +149,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				if (current) {
 					List<PropertyInfo> props;
 					current->get_property_list(&props);
-					Map<RES, RES> duplicates;
+					HashMap<Ref<Resource>, Ref<Resource>> duplicates;
 					for (const PropertyInfo &prop_info : props) {
 						if (!(prop_info.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
@@ -150,9 +157,9 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 						Variant v = current->get(prop_info.name);
 						if (v.is_ref_counted()) {
-							REF ref = v;
+							Ref<RefCounted> ref = v;
 							if (ref.is_valid()) {
-								RES res = ref;
+								Ref<Resource> res = ref;
 								if (res.is_valid()) {
 									if (!duplicates.has(res)) {
 										duplicates[res] = res->duplicate();
@@ -169,10 +176,17 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				editor_data->get_undo_redo().clear_history();
 
-				editor->get_editor_plugins_over()->edit(nullptr);
-				editor->get_editor_plugins_over()->edit(current);
+				EditorNode::get_singleton()->get_editor_plugins_over()->edit(nullptr);
+				EditorNode::get_singleton()->get_editor_plugins_over()->edit(current);
 			}
 
+		} break;
+
+		case PROPERTY_NAME_STYLE_RAW:
+		case PROPERTY_NAME_STYLE_CAPITALIZED:
+		case PROPERTY_NAME_STYLE_LOCALIZED: {
+			property_name_style = (EditorPropertyNameProcessor::Style)(p_option - PROPERTY_NAME_STYLE_RAW);
+			inspector->set_property_name_style(property_name_style);
 		} break;
 
 		default: {
@@ -205,19 +219,19 @@ void InspectorDock::_load_resource(const String &p_type) {
 
 	load_resource_dialog->clear_filters();
 	for (int i = 0; i < extensions.size(); i++) {
-		load_resource_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+		load_resource_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 	}
 
 	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (int i = 0; i < textfile_ext.size(); i++) {
-		load_resource_dialog->add_filter("*." + textfile_ext[i] + " ; " + textfile_ext[i].to_upper());
+		load_resource_dialog->add_filter("*." + textfile_ext[i], textfile_ext[i].to_upper());
 	}
 
 	load_resource_dialog->popup_file_dialog();
 }
 
 void InspectorDock::_resource_file_selected(String p_file) {
-	RES res;
+	Ref<Resource> res;
 	if (ResourceLoader::exists(p_file, "")) {
 		res = ResourceLoader::load(p_file);
 	} else {
@@ -232,68 +246,68 @@ void InspectorDock::_resource_file_selected(String p_file) {
 		return;
 	};
 
-	editor->push_item(res.operator->());
+	EditorNode::get_singleton()->push_item(res.operator->());
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
-	RES current_res = RES(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
 
 	if (save_as) {
-		editor->save_resource_as(current_res);
+		EditorNode::get_singleton()->save_resource_as(current_res);
 	} else {
-		editor->save_resource(current_res);
+		EditorNode::get_singleton()->save_resource(current_res);
 	}
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
-	RES current_res = RES(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
 	current_res->set_path("");
-	editor->edit_current();
+	EditorNode::get_singleton()->edit_current();
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
+	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
-	RES current_res = RES(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
 
 	EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 }
 
 void InspectorDock::_paste_resource() {
-	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
+	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	if (r.is_valid()) {
-		editor->push_item(EditorSettings::get_singleton()->get_resource_clipboard().ptr(), String());
+		EditorNode::get_singleton()->push_item(EditorSettings::get_singleton()->get_resource_clipboard().ptr(), String());
 	}
 }
 
 void InspectorDock::_prepare_resource_extra_popup() {
-	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
+	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	PopupMenu *popup = resource_extra_button->get_popup();
 	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
 }
 
 void InspectorDock::_prepare_history() {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 
 	int history_to = MAX(0, editor_history->get_history_len() - 25);
 
 	history_menu->get_popup()->clear();
 
 	Ref<Texture2D> base_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	Set<ObjectID> already;
+	HashSet<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 		ObjectID id = editor_history->get_history_obj(i);
 		Object *obj = ObjectDB::get_instance(id);
@@ -338,12 +352,12 @@ void InspectorDock::_prepare_history() {
 
 void InspectorDock::_select_history(int p_idx) {
 	//push it to the top, it is not correct, but it's more useful
-	ObjectID id = EditorNode::get_singleton()->get_editor_history()->get_history_obj(p_idx);
+	ObjectID id = EditorNode::get_singleton()->get_editor_selection_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
 	if (!obj) {
 		return;
 	}
-	editor->push_item(obj);
+	EditorNode::get_singleton()->push_item(obj);
 }
 
 void InspectorDock::_resource_created() {
@@ -353,28 +367,28 @@ void InspectorDock::_resource_created() {
 	Resource *r = Object::cast_to<Resource>(c);
 	ERR_FAIL_COND(!r);
 
-	editor->push_item(r);
+	EditorNode::get_singleton()->push_item(r);
 }
 
-void InspectorDock::_resource_selected(const RES &p_res, const String &p_property) {
+void InspectorDock::_resource_selected(const Ref<Resource> &p_res, const String &p_property) {
 	if (p_res.is_null()) {
 		return;
 	}
 
-	RES r = p_res;
-	editor->push_item(r.operator->(), p_property);
+	Ref<Resource> r = p_res;
+	EditorNode::get_singleton()->push_item(r.operator->(), p_property);
 }
 
 void InspectorDock::_edit_forward() {
-	if (EditorNode::get_singleton()->get_editor_history()->next()) {
-		editor->edit_current();
+	if (EditorNode::get_singleton()->get_editor_selection_history()->next()) {
+		EditorNode::get_singleton()->edit_current();
 	}
 }
 
 void InspectorDock::_edit_back() {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1) {
-		editor->edit_current();
+		EditorNode::get_singleton()->edit_current();
 	}
 }
 
@@ -400,7 +414,7 @@ void InspectorDock::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			set_theme(editor->get_gui_base()->get_theme());
+			set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
 
 			resource_new_button->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
 			resource_load_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
@@ -437,6 +451,8 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_menu_collapseall", &InspectorDock::_menu_collapseall);
 	ClassDB::bind_method("_menu_expandall", &InspectorDock::_menu_expandall);
 
+	ClassDB::bind_method("edit_resource", &InspectorDock::edit_resource);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
@@ -460,7 +476,7 @@ void InspectorDock::clear() {
 }
 
 void InspectorDock::update(Object *p_object) {
-	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
+	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	backward_button->set_disabled(editor_history->is_at_beginning());
 	forward_button->set_disabled(editor_history->is_at_end());
 
@@ -499,8 +515,19 @@ void InspectorDock::update(Object *p_object) {
 	p->clear();
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/expand_all", TTR("Expand All")), EXPAND_ALL);
 	p->add_icon_shortcut(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All")), COLLAPSE_ALL);
-	p->add_separator();
 
+	p->add_separator(TTR("Property Name Style"));
+	p->add_radio_check_item(TTR("Raw"), PROPERTY_NAME_STYLE_RAW);
+	p->add_radio_check_item(TTR("Capitalized"), PROPERTY_NAME_STYLE_CAPITALIZED);
+	p->add_radio_check_item(TTR("Localized"), PROPERTY_NAME_STYLE_LOCALIZED);
+
+	if (!EditorPropertyNameProcessor::is_localization_available()) {
+		const int index = p->get_item_index(PROPERTY_NAME_STYLE_LOCALIZED);
+		p->set_item_disabled(index, true);
+		p->set_item_tooltip(index, TTR("Localization not available for current language."));
+	}
+
+	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Properties")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Properties")), OBJECT_PASTE_PARAMS);
 
@@ -534,12 +561,17 @@ void InspectorDock::go_back() {
 	_edit_back();
 }
 
-InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
+EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() const {
+	return property_name_style;
+}
+
+InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	singleton = this;
 	set_name("Inspector");
 
-	editor = p_editor;
 	editor_data = &p_editor_data;
+
+	property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	add_child(general_options_hb);
@@ -603,7 +635,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	HBoxContainer *subresource_hb = memnew(HBoxContainer);
 	add_child(subresource_hb);
-	editor_path = memnew(EditorPath(editor->get_editor_history()));
+	editor_path = memnew(EditorPath(EditorNode::get_singleton()->get_editor_selection_history()));
 	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subresource_hb->add_child(editor_path);
 
@@ -616,7 +648,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option), varray(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
-	editor->get_gui_base()->add_child(new_resource_dialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
 	new_resource_dialog->connect("create", callable_mp(this, &InspectorDock::_resource_created));
 
@@ -625,7 +657,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search->set_placeholder(TTR("Filter properties"));
+	search->set_placeholder(TTR("Filter Properties"));
 	search->set_clear_button_enabled(true);
 	property_tools_hb->add_child(search);
 
@@ -633,6 +665,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip(TTR("Manage object properties."));
+	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
 	object_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
 
 	warning = memnew(Button);
@@ -666,7 +699,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	warning_dialog = memnew(AcceptDialog);
-	editor->get_gui_base()->add_child(warning_dialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(warning_dialog);
 
 	load_resource_dialog = memnew(EditorFileDialog);
 	add_child(load_resource_dialog);
@@ -680,7 +713,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
-	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
+	inspector->set_hide_metadata(false);
+	inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 	inspector->set_undo_redo(&editor_data->get_undo_redo());

@@ -42,7 +42,7 @@ private:
 	ScriptsProfiler *scripts_profiler = nullptr;
 
 	String target_function;
-	Map<String, String> options;
+	HashMap<String, String> options;
 
 	Pair<String, int> to_breakpoint(const String &p_line);
 	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);

@@ -31,10 +31,12 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
@@ -48,7 +50,7 @@ public:
 	static bool is_property_value_different(const Variant &p_a, const Variant &p_b);
 	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 
-	static bool can_property_revert(Object *p_object, const StringName &p_property);
+	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
 };
 
 class EditorProperty : public Container {
@@ -60,23 +62,26 @@ public:
 		MENU_PASTE_PROPERTY,
 		MENU_COPY_PROPERTY_PATH,
 		MENU_PIN_VALUE,
+		MENU_OPEN_DOCUMENTATION,
 	};
 
 private:
 	String label;
 	int text_size;
 	friend class EditorInspector;
-	Object *object;
+	Object *object = nullptr;
 	StringName property;
+	String property_path;
+	String doc_path;
 
 	int property_usage;
 
-	bool read_only;
-	bool checkable;
-	bool checked;
-	bool draw_warning;
-	bool keying;
-	bool deletable;
+	bool read_only = false;
+	bool checkable = false;
+	bool checked = false;
+	bool draw_warning = false;
+	bool keying = false;
+	bool deletable = false;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -90,31 +95,31 @@ private:
 	Rect2 delete_rect;
 	bool delete_hover = false;
 
-	bool can_revert;
-	bool can_pin;
-	bool pin_hidden;
-	bool pinned;
+	bool can_revert = false;
+	bool can_pin = false;
+	bool pin_hidden = false;
+	bool pinned = false;
 
-	bool use_folding;
-	bool draw_top_bg;
+	bool use_folding = false;
+	bool draw_top_bg = true;
 
 	void _update_popup();
 	void _focusable_focused(int p_index);
 
-	bool selectable;
-	bool selected;
+	bool selectable = true;
+	bool selected = false;
 	int selected_focusable;
 
 	float split_ratio;
 
 	Vector<Control *> focusables;
-	Control *label_reference;
-	Control *bottom_editor;
-	PopupMenu *menu;
+	Control *label_reference = nullptr;
+	Control *bottom_editor = nullptr;
+	PopupMenu *menu = nullptr;
 
 	mutable String tooltip_text;
 
-	Map<StringName, Variant> cache;
+	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
 	void _update_pin_flags();
@@ -125,8 +130,11 @@ protected:
 	virtual void _set_read_only(bool p_read_only);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	const Color *_get_property_colors();
+
+	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
+	virtual StringName _get_revert_property() const;
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -140,7 +148,9 @@ public:
 	bool is_read_only() const;
 
 	Object *get_edited_object();
-	StringName get_edited_property();
+	StringName get_edited_property() const;
+
+	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
 	void update_revert_and_pin_status();
@@ -202,11 +212,13 @@ public:
 class EditorInspectorPlugin : public RefCounted {
 	GDCLASS(EditorInspectorPlugin, RefCounted);
 
+public:
 	friend class EditorInspector;
 	struct AddedEditor {
 		Control *property_editor = nullptr;
 		Vector<String> properties;
 		String label;
+		bool add_to_end = false;
 	};
 
 	List<AddedEditor> added_editors;
@@ -223,7 +235,7 @@ protected:
 
 public:
 	void add_custom_control(Control *control);
-	void add_property_editor(const String &p_for_property, Control *p_prop);
+	void add_property_editor(const String &p_for_property, Control *p_prop, bool p_add_to_end = false);
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
@@ -266,14 +278,14 @@ class EditorInspectorSection : public Container {
 	bool foldable = false;
 	int indent_depth = 0;
 
-	Timer *dropping_unfold_timer;
+	Timer *dropping_unfold_timer = nullptr;
 	bool dropping = false;
 
 	void _test_unfold();
 
 protected:
 	Object *object = nullptr;
-	VBoxContainer *vbox;
+	VBoxContainer *vbox = nullptr;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -294,7 +306,7 @@ public:
 class EditorInspectorArray : public EditorInspectorSection {
 	GDCLASS(EditorInspectorArray, EditorInspectorSection);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	enum Mode {
 		MODE_NONE,
@@ -306,16 +318,16 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 	int count = 0;
 
-	VBoxContainer *elements_vbox;
+	VBoxContainer *elements_vbox = nullptr;
 
-	Control *control_dropping;
+	Control *control_dropping = nullptr;
 	bool dropping = false;
 
-	Button *add_button;
+	Button *add_button = nullptr;
 
-	AcceptDialog *resize_dialog;
+	AcceptDialog *resize_dialog = nullptr;
 	int new_size = 0;
-	LineEdit *new_size_line_edit;
+	LineEdit *new_size_line_edit = nullptr;
 
 	// Pagination
 	int page_length = 5;
@@ -334,14 +346,14 @@ class EditorInspectorArray : public EditorInspectorSection {
 		OPTION_RESIZE_ARRAY,
 	};
 	int popup_array_index_pressed = -1;
-	PopupMenu *rmb_popup;
+	PopupMenu *rmb_popup = nullptr;
 
 	struct ArrayElement {
-		PanelContainer *panel;
-		MarginContainer *margin;
-		HBoxContainer *hbox;
-		TextureRect *move_texture_rect;
-		VBoxContainer *vbox;
+		PanelContainer *panel = nullptr;
+		MarginContainer *margin = nullptr;
+		HBoxContainer *hbox = nullptr;
+		TextureRect *move_texture_rect = nullptr;
+		VBoxContainer *vbox = nullptr;
 	};
 	LocalVector<ArrayElement> array_elements;
 
@@ -396,12 +408,12 @@ class EditorPaginator : public HBoxContainer {
 
 	int page = 0;
 	int max_page = 0;
-	Button *first_page_button;
-	Button *prev_page_button;
-	LineEdit *page_line_edit;
-	Label *page_count_label;
-	Button *next_page_button;
-	Button *last_page_button;
+	Button *first_page_button = nullptr;
+	Button *prev_page_button = nullptr;
+	LineEdit *page_line_edit = nullptr;
+	Label *page_count_label = nullptr;
+	Button *next_page_button = nullptr;
+	Button *last_page_button = nullptr;
 
 	void _first_page_button_pressed();
 	void _prev_page_button_pressed();
@@ -422,53 +434,59 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	enum {
 		MAX_PLUGINS = 1024
 	};
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];
 	static int inspector_plugin_count;
 
-	VBoxContainer *main_vbox;
+	VBoxContainer *main_vbox = nullptr;
 
-	//map use to cache the instantiated editors
-	Map<StringName, List<EditorProperty *>> editor_property_map;
+	// Map used to cache the instantiated editors.
+	HashMap<StringName, List<EditorProperty *>> editor_property_map;
 	List<EditorInspectorSection *> sections;
-	Set<StringName> pending;
+	HashSet<StringName> pending;
 
 	void _clear();
-	Object *object;
+	Object *object = nullptr;
 
 	//
 
-	LineEdit *search_box;
-	bool show_categories;
-	bool hide_script;
-	bool use_doc_hints;
-	bool capitalize_paths;
-	bool use_filter;
-	bool autoclear;
-	bool use_folding;
+	LineEdit *search_box = nullptr;
+	bool show_categories = false;
+	bool hide_script = true;
+	bool hide_metadata = true;
+	bool use_doc_hints = false;
+	EditorPropertyNameProcessor::Style property_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+	bool use_filter = false;
+	bool autoclear = false;
+	bool use_folding = false;
 	int changing;
-	bool update_all_pending;
-	bool read_only;
-	bool keying;
-	bool sub_inspector;
-	bool wide_editors;
-	bool deletable_properties;
+	bool update_all_pending = false;
+	bool read_only = false;
+	bool keying = false;
+	bool sub_inspector = false;
+	bool wide_editors = false;
+	bool deletable_properties = false;
 
 	float refresh_countdown;
-	bool update_tree_pending;
+	bool update_tree_pending = false;
 	StringName _prop_edited;
 	StringName property_selected;
 	int property_focusable;
 	int update_scroll_request;
 
-	Map<StringName, Map<StringName, String>> descr_cache;
-	Map<StringName, String> class_descr_cache;
-	Set<StringName> restart_request_props;
+	struct PropertyDocInfo {
+		String description;
+		String path;
+	};
 
-	Map<ObjectID, int> scroll_cache;
+	HashMap<StringName, HashMap<StringName, PropertyDocInfo>> doc_info_cache;
+	HashMap<StringName, String> class_descr_cache;
+	HashSet<StringName> restart_request_props;
+
+	HashMap<ObjectID, int> scroll_cache;
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
@@ -486,13 +504,13 @@ class EditorInspector : public ScrollContainer {
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
 
-	void _resource_selected(const String &p_path, RES p_resource);
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _node_removed(Node *p_node);
 
-	Map<StringName, int> per_array_page;
+	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
 
 	void _changed_callback();
@@ -510,6 +528,15 @@ class EditorInspector : public ScrollContainer {
 
 	void _update_inspector_bg();
 
+	ConfirmationDialog *add_meta_dialog = nullptr;
+	LineEdit *add_meta_name = nullptr;
+	OptionButton *add_meta_type = nullptr;
+	Label *add_meta_error = nullptr;
+
+	void _add_meta_confirm();
+	void _show_add_meta_dialog();
+	void _check_meta_name(String name);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -518,6 +545,7 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
+	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
@@ -533,13 +561,15 @@ public:
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
 
-	bool is_capitalize_paths_enabled() const;
-	void set_enable_capitalize_paths(bool p_capitalize);
+	EditorPropertyNameProcessor::Style get_property_name_style() const;
+	void set_property_name_style(EditorPropertyNameProcessor::Style p_style);
+
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
+	void set_hide_metadata(bool p_hide);
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "capsule_shape_3d.h"
+
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
@@ -79,6 +80,7 @@ void CapsuleShape3D::_update_shape() {
 }
 
 void CapsuleShape3D::set_radius(float p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CapsuleShape3D radius cannot be negative.");
 	radius = p_radius;
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
@@ -92,6 +94,7 @@ float CapsuleShape3D::get_radius() const {
 }
 
 void CapsuleShape3D::set_height(float p_height) {
+	ERR_FAIL_COND_MSG(p_height < 0, "CapsuleShape3D height cannot be negative.");
 	height = p_height;
 	if (radius > height * 0.5) {
 		radius = height * 0.5;
@@ -110,8 +113,8 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_LINKED_PROPERTY("radius", "height");
 	ADD_LINKED_PROPERTY("height", "radius");
 }

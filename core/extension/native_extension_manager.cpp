@@ -40,14 +40,14 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::load_extension(const 
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
-		for (int32_t i = minimum_level; i < level; i++) {
-			extension->initialize_library(NativeExtension::InitializationLevel(level));
+		// Initialize up to current level.
+		for (int32_t i = minimum_level; i <= level; i++) {
+			extension->initialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map[p_path] = extension;
@@ -64,14 +64,14 @@ NativeExtensionManager::LoadStatus NativeExtensionManager::unload_extension(cons
 
 	Ref<NativeExtension> extension = native_extension_map[p_path];
 
-	if (level >= 0) { //already initialized up to some level
+	if (level >= 0) { // Already initialized up to some level.
 		int32_t minimum_level = extension->get_minimum_library_initialization_level();
 		if (minimum_level < MIN(level, NativeExtension::INITIALIZATION_LEVEL_SCENE)) {
 			return LOAD_STATUS_NEEDS_RESTART;
 		}
-		//initialize up to current level
+		// Deinitialize down to current level.
 		for (int32_t i = level; i >= minimum_level; i--) {
-			extension->deinitialize_library(NativeExtension::InitializationLevel(level));
+			extension->deinitialize_library(NativeExtension::InitializationLevel(i));
 		}
 	}
 	native_extension_map.erase(p_path);
@@ -90,9 +90,9 @@ Vector<String> NativeExtensionManager::get_loaded_extensions() const {
 	return ret;
 }
 Ref<NativeExtension> NativeExtensionManager::get_extension(const String &p_path) {
-	Map<String, Ref<NativeExtension>>::Element *E = native_extension_map.find(p_path);
+	HashMap<String, Ref<NativeExtension>>::Iterator E = native_extension_map.find(p_path);
 	ERR_FAIL_COND_V(!E, Ref<NativeExtension>());
-	return E->get();
+	return E->value;
 }
 
 void NativeExtensionManager::initialize_extensions(NativeExtension::InitializationLevel p_level) {
@@ -112,8 +112,8 @@ void NativeExtensionManager::deinitialize_extensions(NativeExtension::Initializa
 }
 
 void NativeExtensionManager::load_extensions() {
-	FileAccessRef f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
-	while (f && !f->eof_reached()) {
+	Ref<FileAccess> f = FileAccess::open(NativeExtension::get_extension_list_config_file(), FileAccess::READ);
+	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);

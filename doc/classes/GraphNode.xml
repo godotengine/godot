@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="Container" version="4.0">
+<class name="GraphNode" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A GraphNode is a container with potentially several input and output slots allowing connections between GraphNodes. Slots can have different, incompatible types.
 	</brief_description>
@@ -15,12 +15,6 @@
 			<return type="void" />
 			<description>
 				Disables all input and output slots of the GraphNode.
-			</description>
-		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
 			</description>
 		</method>
 		<method name="clear_slot">
@@ -41,6 +35,13 @@
 			<return type="int" />
 			<description>
 				Returns the number of enabled input slots (connections) to the GraphNode.
+			</description>
+		</method>
+		<method name="get_connection_input_height">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the height of the input connection [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_input_position">
@@ -70,6 +71,13 @@
 				Returns the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
+		<method name="get_connection_output_height">
+			<return type="int" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns the height of the output connection [code]idx[/code].
+			</description>
+		</method>
 		<method name="get_connection_output_position">
 			<return type="Vector2" />
 			<argument index="0" name="idx" type="int" />
@@ -82,13 +90,6 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the type of the output connection [code]idx[/code].
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
@@ -119,6 +120,13 @@
 				Returns the right (output) type of the slot [code]idx[/code].
 			</description>
 		</method>
+		<method name="is_slot_draw_stylebox" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="idx" type="int" />
+			<description>
+				Returns true if the background [StyleBox] of the slot [code]idx[/code] is drawn.
+			</description>
+		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="idx" type="int" />
@@ -133,14 +141,6 @@
 				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
 			</description>
 		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 		<method name="set_slot">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -152,6 +152,7 @@
 			<argument index="6" name="color_right" type="Color" />
 			<argument index="7" name="custom_left" type="Texture2D" default="null" />
 			<argument index="8" name="custom_right" type="Texture2D" default="null" />
+			<argument index="9" name="enable" type="bool" default="true" />
 			<description>
 				Sets properties of the slot with ID [code]idx[/code].
 				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
@@ -176,6 +177,14 @@
 			<argument index="1" name="color_right" type="Color" />
 			<description>
 				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
+			</description>
+		</method>
+		<method name="set_slot_draw_stylebox">
+			<return type="void" />
+			<argument index="0" name="idx" type="int" />
+			<argument index="1" name="draw_stylebox" type="bool" />
+			<description>
+				Toggles the background [StyleBox] of the slot [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
@@ -301,6 +310,8 @@
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Color of the title text.
 		</theme_item>
+		<theme_item name="close_h_offset" data_type="constant" type="int" default="22">
+		</theme_item>
 		<theme_item name="close_offset" data_type="constant" type="int" default="22">
 			The vertical offset of the close button.
 		</theme_item>
@@ -331,7 +342,7 @@
 		<theme_item name="comment" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled.
 		</theme_item>
-		<theme_item name="commentfocus" data_type="style" type="StyleBox">
+		<theme_item name="comment_focus" data_type="style" type="StyleBox">
 			The [StyleBox] used when [member comment] is enabled and the [GraphNode] is focused.
 		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
@@ -340,8 +351,11 @@
 		<theme_item name="position" data_type="style" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_POSITION].
 		</theme_item>
-		<theme_item name="selectedframe" data_type="style" type="StyleBox">
+		<theme_item name="selected_frame" data_type="style" type="StyleBox">
 			The background used when the [GraphNode] is selected.
+		</theme_item>
+		<theme_item name="slot" data_type="style" type="StyleBox">
+			The [StyleBox] used for each slot of the [GraphNode].
 		</theme_item>
 	</theme_items>
 </class>

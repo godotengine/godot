@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType colored glyph layer support (body).
  *
- * Copyright (C) 2018-2021 by
+ * Copyright (C) 2018-2022 by
  * David Turner, Robert Wilhelm, Dominik Röttsches, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.
@@ -522,19 +522,29 @@
 
     else if ( apaint->format == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT )
     {
+      FT_Pos  tmp;
+
+
       if ( !read_color_line( child_table_p,
                              &apaint->u.radial_gradient.colorline ) )
         return 0;
 
+      /* In the OpenType specification, `r0` and `r1` are defined as   */
+      /* `UFWORD`.  Since FreeType doesn't have a corresponding 16.16  */
+      /* format we convert to `FWORD` and replace negative values with */
+      /* (32bit) `FT_INT_MAX`.                                         */
+
       apaint->u.radial_gradient.c0.x = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
       apaint->u.radial_gradient.c0.y = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
 
-      apaint->u.radial_gradient.r0 = FT_NEXT_USHORT( p ) << 16;
+      tmp                          = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
+      apaint->u.radial_gradient.r0 = tmp < 0 ? FT_INT_MAX : tmp;
 
       apaint->u.radial_gradient.c1.x = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
       apaint->u.radial_gradient.c1.y = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
 
-      apaint->u.radial_gradient.r1 = FT_NEXT_USHORT( p ) << 16;
+      tmp                          = INT_TO_FIXED( FT_NEXT_SHORT( p ) );
+      apaint->u.radial_gradient.r1 = tmp < 0 ? FT_INT_MAX : tmp;
 
       return 1;
     }
@@ -824,7 +834,7 @@
   {
     Colr*  colr;
 
-    FT_Byte  *p, *p1, *clip_base;
+    FT_Byte  *p, *p1, *clip_base, *limit;
 
     FT_Byte    clip_list_format;
     FT_ULong   num_clip_boxes, i;
@@ -847,15 +857,31 @@
 
     p = colr->clip_list;
 
+    /* Limit points to the first byte after the end of the color table.    */
+    /* Thus, in subsequent limit checks below we need to check whether the */
+    /* read pointer is strictly greater than a position offset by certain  */
+    /* field sizes to the left of that position.                           */
+    limit = (FT_Byte*)colr->table + colr->table_size;
+
+    /* Check whether we can extract one `uint8` and one `uint32`. */
+    if ( p > limit - ( 1 + 4 ) )
+      return 0;
+
     clip_base        = p;
     clip_list_format = FT_NEXT_BYTE ( p );
 
     /* Format byte used here to be able to upgrade ClipList for >16bit */
-    /* glyph ids; for now we can expect it to be 0. */
+    /* glyph ids; for now we can expect it to be 0.                    */
     if ( !( clip_list_format == 1 ) )
       return 0;
 
     num_clip_boxes = FT_NEXT_ULONG( p );
+
+    /* Check whether we can extract two `uint16` and one `Offset24`, */
+    /* `num_clip_boxes` times.                                       */
+    if ( colr->table_size / ( 2 + 2 + 3 ) < num_clip_boxes ||
+         p > limit - ( 2 + 2 + 3 ) * num_clip_boxes        )
+      return 0;
 
     for ( i = 0; i < num_clip_boxes; ++i )
     {
@@ -867,12 +893,17 @@
       {
         p1 = (FT_Byte*)( clip_base + clip_box_offset );
 
-        if ( p1 >= ( (FT_Byte*)colr->table + colr->table_size ) )
+        /* Check whether we can extract one `uint8`. */
+        if ( p1 > limit - 1 )
           return 0;
 
         format = FT_NEXT_BYTE( p1 );
 
         if ( format > 1 )
+          return 0;
+
+        /* Check whether we can extract four `FWORD`. */
+        if ( p1 > limit - ( 2 + 2 + 2 + 2 ) )
           return 0;
 
         /* `face->root.size->metrics.x_scale` and `y_scale` are factors   */

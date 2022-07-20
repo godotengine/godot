@@ -43,6 +43,7 @@ void CircleShape2D::_update_shape() {
 }
 
 void CircleShape2D::set_radius(real_t p_radius) {
+	ERR_FAIL_COND_MSG(p_radius < 0, "CircleShape2D radius cannot be negative.");
 	radius = p_radius;
 	_update_shape();
 }
@@ -55,7 +56,7 @@ void CircleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CircleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CircleShape2D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:px"), "set_radius", "get_radius");
 }
 
 Rect2 CircleShape2D::get_rect() const {

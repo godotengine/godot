@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" version="4.0">
+<class name="ItemList" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
@@ -7,6 +7,8 @@
 		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
 		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing [kbd]Enter[/kbd].
 		Item text only supports single-line strings, newline characters (e.g. [code]\n[/code]) in the string won't produce a newline. Text wrapping is enabled in [constant ICON_MODE_TOP] mode, but column's width is adjusted to fully fit its content by default. You need to set [member fixed_column_width] greater than zero to wrap the text.
+		All [code]set_*[/code] methods allow negative item index, which makes the item accessed from the last one.
+		[b]Incremental search:[/b] Like [PopupMenu] and [Tree], [ItemList] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,13 +36,6 @@
 			<return type="void" />
 			<description>
 				Removes all items from the list.
-			</description>
-		</method>
-		<method name="clear_item_opentype_features">
-			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<description>
-				Removes all OpenType features from the item's text.
 			</description>
 		</method>
 		<method name="deselect">
@@ -118,14 +113,6 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata value of the specified index.
-			</description>
-		</method>
-		<method name="get_item_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -300,15 +287,6 @@
 				Sets a value (of any type) to be stored with the item associated with the specified index.
 			</description>
 		</method>
-		<method name="set_item_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 		<method name="set_item_selectable">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -366,6 +344,7 @@
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
 			The width all columns will be adjusted to.
 			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
@@ -393,7 +372,6 @@
 			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
 			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
 		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
 			Whether all columns will have the same width.
 			If [code]true[/code], the width is equal to the largest column width of all columns.
@@ -401,24 +379,31 @@
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
 			Allows single or multiple item selection. See the [enum SelectMode] constants.
 		</member>
-		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextParagraph.OverrunBehavior" default="0">
-			Sets the clipping behavior when the text exceeds an item's bounding rectangle. See [enum TextParagraph.OverrunBehavior] for a description of all modes.
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
+			Sets the clipping behavior when the text exceeds an item's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
 	</members>
 	<signals>
+		<signal name="empty_clicked">
+			<argument index="0" name="at_position" type="Vector2" />
+			<argument index="1" name="mouse_button_index" type="int" />
+			<description>
+				Triggered when any mouse click is issued within the rect of the list but on empty space.
+			</description>
+		</signal>
 		<signal name="item_activated">
 			<argument index="0" name="index" type="int" />
 			<description>
 				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
-		<signal name="item_rmb_selected">
+		<signal name="item_clicked">
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="at_position" type="Vector2" />
+			<argument index="2" name="mouse_button_index" type="int" />
 			<description>
-				Triggered when specified list item has been selected via right mouse clicking.
+				Triggered when specified list item has been clicked with any mouse button.
 				The click position is also provided to allow appropriate popup of context menus at the correct location.
-				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
 		<signal name="item_selected">
@@ -433,18 +418,6 @@
 			<argument index="1" name="selected" type="bool" />
 			<description>
 				Triggered when a multiple selection is altered on a list allowing multiple selection.
-			</description>
-		</signal>
-		<signal name="nothing_selected">
-			<description>
-				Triggered when a left mouse click is issued within the rect of the list but on empty space.
-			</description>
-		</signal>
-		<signal name="rmb_clicked">
-			<argument index="0" name="at_position" type="Vector2" />
-			<description>
-				Triggered when a right mouse click is issued within the rect of the list but on empty space.
-				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
 	</signals>
@@ -475,7 +448,7 @@
 		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.1)">
 			[Color] of the guideline. The guideline is a line drawn between each row of items.
 		</theme_item>
-		<theme_item name="hseparation" data_type="constant" type="int" default="4">
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal spacing between items.
 		</theme_item>
 		<theme_item name="icon_margin" data_type="constant" type="int" default="4">
@@ -487,7 +460,7 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
 		</theme_item>
-		<theme_item name="vseparation" data_type="constant" type="int" default="2">
+		<theme_item name="v_separation" data_type="constant" type="int" default="2">
 			The vertical spacing between items.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">

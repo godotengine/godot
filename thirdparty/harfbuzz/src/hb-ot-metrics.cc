@@ -238,6 +238,145 @@ hb_ot_metrics_get_position (hb_font_t           *font,
   }
 }
 
+/**
+ * hb_ot_metrics_get_position_with_fallback:
+ * @font: an #hb_font_t object.
+ * @metrics_tag: tag of metrics value you like to fetch.
+ * @position: (out) (optional): result of metrics value from the font.
+ *
+ * Fetches metrics value corresponding to @metrics_tag from @font,
+ * and synthesizes a value if it the value is missing in the font.
+ *
+ * Since: 4.0.0
+ **/
+void
+hb_ot_metrics_get_position_with_fallback (hb_font_t           *font,
+					  hb_ot_metrics_tag_t  metrics_tag,
+					  hb_position_t       *position     /* OUT */)
+{
+  hb_font_extents_t font_extents;
+  hb_codepoint_t glyph;
+  hb_glyph_extents_t extents;
+
+  if (hb_ot_metrics_get_position (font, metrics_tag, position))
+    {
+      if ((metrics_tag != HB_OT_METRICS_TAG_STRIKEOUT_SIZE &&
+           metrics_tag != HB_OT_METRICS_TAG_UNDERLINE_SIZE) ||
+          *position != 0)
+        return;
+    }
+
+  switch (metrics_tag)
+  {
+  case HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER:
+  case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_ASCENT:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_LTR, &font_extents);
+    *position = font_extents.ascender;
+    break;
+
+  case HB_OT_METRICS_TAG_VERTICAL_ASCENDER:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_TTB, &font_extents);
+    *position = font_extents.ascender;
+    break;
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER:
+  case HB_OT_METRICS_TAG_HORIZONTAL_CLIPPING_DESCENT:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_LTR, &font_extents);
+    *position = font_extents.descender;
+    break;
+
+  case HB_OT_METRICS_TAG_VERTICAL_DESCENDER:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_TTB, &font_extents);
+    *position = font_extents.ascender;
+    break;
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_LTR, &font_extents);
+    *position = font_extents.line_gap;
+    break;
+
+  case HB_OT_METRICS_TAG_VERTICAL_LINE_GAP:
+    hb_font_get_extents_for_direction (font, HB_DIRECTION_TTB, &font_extents);
+    *position = font_extents.line_gap;
+    break;
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RISE:
+  case HB_OT_METRICS_TAG_VERTICAL_CARET_RISE:
+    *position = 1;
+    break;
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_RUN:
+  case HB_OT_METRICS_TAG_VERTICAL_CARET_RUN:
+    *position = 0;
+    break;
+
+  case HB_OT_METRICS_TAG_HORIZONTAL_CARET_OFFSET:
+  case HB_OT_METRICS_TAG_VERTICAL_CARET_OFFSET:
+    *position = 0;
+    break;
+
+  case HB_OT_METRICS_TAG_X_HEIGHT:
+    if (hb_font_get_nominal_glyph (font, 'x', &glyph) &&
+        hb_font_get_glyph_extents (font, glyph, &extents))
+      *position = extents.y_bearing;
+    else
+      *position = font->y_scale / 2;
+    break;
+
+  case HB_OT_METRICS_TAG_CAP_HEIGHT:
+    if (hb_font_get_nominal_glyph (font, 'O', &glyph) &&
+        hb_font_get_glyph_extents (font, glyph, &extents))
+      *position = extents.height + 2 * extents.y_bearing;
+    else
+      *position = font->y_scale * 2 / 3;
+    break;
+
+  case HB_OT_METRICS_TAG_STRIKEOUT_SIZE:
+  case HB_OT_METRICS_TAG_UNDERLINE_SIZE:
+    *position = font->y_scale / 18;
+    break;
+
+  case HB_OT_METRICS_TAG_STRIKEOUT_OFFSET:
+    {
+      hb_position_t ascender;
+      hb_ot_metrics_get_position_with_fallback (font,
+                                                HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
+                                                &ascender);
+      *position = ascender / 2;
+    }
+    break;
+
+  case HB_OT_METRICS_TAG_UNDERLINE_OFFSET:
+    *position = - font->y_scale / 18;
+    break;
+
+  case HB_OT_METRICS_TAG_SUBSCRIPT_EM_X_SIZE:
+  case HB_OT_METRICS_TAG_SUPERSCRIPT_EM_X_SIZE:
+    *position = font->x_scale * 10 / 12;
+    break;
+
+  case HB_OT_METRICS_TAG_SUBSCRIPT_EM_Y_SIZE:
+  case HB_OT_METRICS_TAG_SUPERSCRIPT_EM_Y_SIZE:
+    *position = font->y_scale * 10 / 12;
+    break;
+
+  case HB_OT_METRICS_TAG_SUBSCRIPT_EM_X_OFFSET:
+  case HB_OT_METRICS_TAG_SUPERSCRIPT_EM_X_OFFSET:
+    *position = 0;
+    break;
+
+  case HB_OT_METRICS_TAG_SUBSCRIPT_EM_Y_OFFSET:
+  case HB_OT_METRICS_TAG_SUPERSCRIPT_EM_Y_OFFSET:
+    *position = font->y_scale / 5;
+    break;
+
+  case _HB_OT_METRICS_TAG_MAX_VALUE:
+  default:
+    *position = 0;
+    break;
+  }
+}
+
 #ifndef HB_NO_VAR
 /**
  * hb_ot_metrics_get_variation:

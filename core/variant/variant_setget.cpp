@@ -624,6 +624,11 @@ struct VariantIndexedSetGet_Array {
 		PtrToArg<Variant>::encode(v[index], member);
 	}
 	static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {
+		if (VariantGetInternalPtr<Array>::get_ptr(base)->is_read_only()) {
+			*valid = false;
+			*oob = true;
+			return;
+		}
 		int64_t size = VariantGetInternalPtr<Array>::get_ptr(base)->size();
 		if (index < 0) {
 			index += size;
@@ -638,6 +643,10 @@ struct VariantIndexedSetGet_Array {
 		*valid = true;
 	}
 	static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {
+		if (VariantGetInternalPtr<Array>::get_ptr(base)->is_read_only()) {
+			*oob = true;
+			return;
+		}
 		int64_t size = VariantGetInternalPtr<Array>::get_ptr(base)->size();
 		if (index < 0) {
 			index += size;
@@ -766,11 +775,20 @@ struct VariantIndexedSetGet_String {
 			PtrToArg<Variant>::encode(*ptr, member);                                                                                \
 		}                                                                                                                           \
 		static void set(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) {                               \
+			if (VariantGetInternalPtr<m_base_type>::get_ptr(base)->is_read_only()) {                                                \
+				*valid = false;                                                                                                     \
+				*oob = true;                                                                                                        \
+				return;                                                                                                             \
+			}                                                                                                                       \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
 			*oob = false;                                                                                                           \
 			*valid = true;                                                                                                          \
 		}                                                                                                                           \
 		static void validated_set(Variant *base, int64_t index, const Variant *value, bool *oob) {                                  \
+			if (VariantGetInternalPtr<m_base_type>::get_ptr(base)->is_read_only()) {                                                \
+				*oob = true;                                                                                                        \
+				return;                                                                                                             \
+			}                                                                                                                       \
 			(*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index] = *value;                                                   \
 			*oob = false;                                                                                                           \
 		}                                                                                                                           \
@@ -789,8 +807,8 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3i, int64_t, int32_t, 3)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
-INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .elements, 3)
-INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_axis, get_axis, 3)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .columns, 3)
+INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_column, get_column, 3)
 
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedByteArray, int64_t, uint8_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt32Array, int64_t, int32_t)
@@ -805,16 +823,16 @@ INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 INDEXED_SETGET_STRUCT_DICT(Dictionary)
 
 struct VariantIndexedSetterGetterInfo {
-	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob);
-	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob);
+	void (*setter)(Variant *base, int64_t index, const Variant *value, bool *valid, bool *oob) = nullptr;
+	void (*getter)(const Variant *base, int64_t index, Variant *value, bool *oob) = nullptr;
 
-	Variant::ValidatedIndexedSetter validated_setter;
-	Variant::ValidatedIndexedGetter validated_getter;
+	Variant::ValidatedIndexedSetter validated_setter = nullptr;
+	Variant::ValidatedIndexedGetter validated_getter = nullptr;
 
-	Variant::PTRIndexedSetter ptr_setter;
-	Variant::PTRIndexedGetter ptr_getter;
+	Variant::PTRIndexedSetter ptr_setter = nullptr;
+	Variant::PTRIndexedGetter ptr_getter = nullptr;
 
-	uint64_t (*get_indexed_size)(const Variant *base);
+	uint64_t (*get_indexed_size)(const Variant *base) = nullptr;
 
 	Variant::Type index_type;
 
@@ -946,6 +964,10 @@ struct VariantKeyedSetGetDictionary {
 		PtrToArg<Variant>::encode(*ptr, value);
 	}
 	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
+		if (VariantGetInternalPtr<Dictionary>::get_ptr(base)->is_read_only()) {
+			*r_valid = false;
+			return;
+		}
 		(*VariantGetInternalPtr<Dictionary>::get_ptr(base))[*key] = *value;
 		*r_valid = true;
 	}
@@ -1018,13 +1040,13 @@ struct VariantKeyedSetGetObject {
 };
 
 struct VariantKeyedSetterGetterInfo {
-	Variant::ValidatedKeyedSetter validated_setter;
-	Variant::ValidatedKeyedGetter validated_getter;
-	Variant::ValidatedKeyedChecker validated_checker;
+	Variant::ValidatedKeyedSetter validated_setter = nullptr;
+	Variant::ValidatedKeyedGetter validated_getter = nullptr;
+	Variant::ValidatedKeyedChecker validated_checker = nullptr;
 
-	Variant::PTRKeyedSetter ptr_setter;
-	Variant::PTRKeyedGetter ptr_getter;
-	Variant::PTRKeyedChecker ptr_checker;
+	Variant::PTRKeyedSetter ptr_setter = nullptr;
+	Variant::PTRKeyedGetter ptr_getter = nullptr;
+	Variant::PTRKeyedChecker ptr_checker = nullptr;
 
 	bool valid = false;
 };
@@ -1277,7 +1299,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1504,7 +1526,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -1686,7 +1708,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = _get_obj().obj->callp(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_valid = false;
@@ -1865,6 +1887,110 @@ Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 			return operator Vector<Color>().duplicate();
 		default:
 			return *this;
+	}
+}
+
+void Variant::sub(const Variant &a, const Variant &b, Variant &r_dst) {
+	if (a.type != b.type) {
+		return;
+	}
+
+	switch (a.type) {
+		case NIL: {
+			r_dst = Variant();
+		}
+			return;
+		case INT: {
+			int64_t va = a._data._int;
+			int64_t vb = b._data._int;
+			r_dst = int(va - vb);
+		}
+			return;
+		case FLOAT: {
+			double ra = a._data._float;
+			double rb = b._data._float;
+			r_dst = ra - rb;
+		}
+			return;
+		case VECTOR2: {
+			r_dst = *reinterpret_cast<const Vector2 *>(a._data._mem) - *reinterpret_cast<const Vector2 *>(b._data._mem);
+		}
+			return;
+		case VECTOR2I: {
+			int32_t vax = reinterpret_cast<const Vector2i *>(a._data._mem)->x;
+			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
+			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
+			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
+			r_dst = Vector2i(int32_t(vax - vbx), int32_t(vay - vby));
+		}
+			return;
+		case RECT2: {
+			const Rect2 *ra = reinterpret_cast<const Rect2 *>(a._data._mem);
+			const Rect2 *rb = reinterpret_cast<const Rect2 *>(b._data._mem);
+			r_dst = Rect2(ra->position - rb->position, ra->size - rb->size);
+		}
+			return;
+		case RECT2I: {
+			const Rect2i *ra = reinterpret_cast<const Rect2i *>(a._data._mem);
+			const Rect2i *rb = reinterpret_cast<const Rect2i *>(b._data._mem);
+
+			int32_t vax = ra->position.x;
+			int32_t vay = ra->position.y;
+			int32_t vbx = ra->size.x;
+			int32_t vby = ra->size.y;
+			int32_t vcx = rb->position.x;
+			int32_t vcy = rb->position.y;
+			int32_t vdx = rb->size.x;
+			int32_t vdy = rb->size.y;
+
+			r_dst = Rect2i(int32_t(vax - vbx), int32_t(vay - vby), int32_t(vcx - vdx), int32_t(vcy - vdy));
+		}
+			return;
+		case VECTOR3: {
+			r_dst = *reinterpret_cast<const Vector3 *>(a._data._mem) - *reinterpret_cast<const Vector3 *>(b._data._mem);
+		}
+			return;
+		case VECTOR3I: {
+			int32_t vax = reinterpret_cast<const Vector3i *>(a._data._mem)->x;
+			int32_t vbx = reinterpret_cast<const Vector3i *>(b._data._mem)->x;
+			int32_t vay = reinterpret_cast<const Vector3i *>(a._data._mem)->y;
+			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
+			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
+			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
+			r_dst = Vector3i(int32_t(vax - vbx), int32_t(vay - vby), int32_t(vaz - vbz));
+		}
+			return;
+		case AABB: {
+			const ::AABB *ra = reinterpret_cast<const ::AABB *>(a._data._mem);
+			const ::AABB *rb = reinterpret_cast<const ::AABB *>(b._data._mem);
+			r_dst = ::AABB(ra->position - rb->position, ra->size - rb->size);
+		}
+			return;
+		case QUATERNION: {
+			Quaternion empty_rot;
+			const Quaternion *qa = reinterpret_cast<const Quaternion *>(a._data._mem);
+			const Quaternion *qb = reinterpret_cast<const Quaternion *>(b._data._mem);
+			r_dst = (*qb).inverse() * *qa;
+		}
+			return;
+		case COLOR: {
+			const Color *ca = reinterpret_cast<const Color *>(a._data._mem);
+			const Color *cb = reinterpret_cast<const Color *>(b._data._mem);
+			float new_r = ca->r - cb->r;
+			float new_g = ca->g - cb->g;
+			float new_b = ca->b - cb->b;
+			float new_a = ca->a - cb->a;
+			new_r = new_r > 1.0 ? 1.0 : new_r;
+			new_g = new_g > 1.0 ? 1.0 : new_g;
+			new_b = new_b > 1.0 ? 1.0 : new_b;
+			new_a = new_a > 1.0 ? 1.0 : new_a;
+			r_dst = Color(new_r, new_g, new_b, new_a);
+		}
+			return;
+		default: {
+			r_dst = a;
+		}
+			return;
 	}
 }
 

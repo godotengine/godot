@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="RefCounted" version="4.0">
+<class name="XRPositionalTracker" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked object.
 	</brief_description>
@@ -72,8 +72,8 @@
 			- [code]left_hand[/code] identifies the controller held in the players left hand
 			- [code]right_hand[/code] identifies the controller held in the players right hand
 		</member>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
+		<member name="profile" type="String" setter="set_tracker_profile" getter="get_tracker_profile" default="&quot;&quot;">
+			The profile associated with this tracker, interface dependent but will indicate the type of controller being tracked.
 		</member>
 		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
 			The type of tracker.
@@ -110,6 +110,12 @@
 			<argument index="0" name="pose" type="XRPose" />
 			<description>
 				Emitted when the state of a pose tracked by this tracker changes.
+			</description>
+		</signal>
+		<signal name="profile_changed">
+			<argument index="0" name="role" type="String" />
+			<description>
+				Emitted when the profile of our tracker changes.
 			</description>
 		</signal>
 	</signals>

@@ -45,7 +45,7 @@ struct BlitToScreen;
 
 	If the user wants to enable AR/VR the choose the interface they want to use and initialize it.
 
-	Note that we may make this into a fully instantiable class for GDNative support.
+	Note that we may make this into a fully instantiable class for GDExtension support.
 */
 
 class XRInterface : public RefCounted {
@@ -120,6 +120,7 @@ public:
 	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual CameraMatrix get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
+	virtual RID get_vrs_texture(); /* obtain VRS texture */
 
 	// note, external color/depth/vrs texture support will be added here soon.
 
@@ -133,6 +134,12 @@ public:
 
 	XRInterface();
 	~XRInterface();
+
+private:
+	struct VRSData {
+		RID vrs_texture;
+		Size2i size;
+	} vrs;
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);

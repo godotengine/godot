@@ -35,8 +35,6 @@
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
 
-class EditorNode;
-
 // Edits a y(x) curve
 class CurveEditor : public Control {
 	GDCLASS(CurveEditor, Control);
@@ -101,8 +99,8 @@ private:
 	Transform2D _world_to_view;
 
 	Ref<Curve> _curve_ref;
-	PopupMenu *_context_menu;
-	PopupMenu *_presets_menu;
+	PopupMenu *_context_menu = nullptr;
+	PopupMenu *_presets_menu = nullptr;
 
 	Array _undo_data;
 	bool _has_undo_data;
@@ -130,7 +128,7 @@ class CurveEditorPlugin : public EditorPlugin {
 	GDCLASS(CurveEditorPlugin, EditorPlugin);
 
 public:
-	CurveEditorPlugin(EditorNode *p_node);
+	CurveEditorPlugin();
 
 	virtual String get_name() const override { return "Curve"; }
 };

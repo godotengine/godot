@@ -275,6 +275,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		PackedInt32Array indices = surfaces[i].arrays[RS::ARRAY_INDEX];
 		Vector<Vector3> normals = surfaces[i].arrays[RS::ARRAY_NORMAL];
 		Vector<Vector2> uvs = surfaces[i].arrays[RS::ARRAY_TEX_UV];
+		Vector<Vector2> uv2s = surfaces[i].arrays[RS::ARRAY_TEX_UV2];
 
 		unsigned int index_count = indices.size();
 		unsigned int vertex_count = vertices.size();
@@ -287,7 +288,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		const int *indices_ptr = indices.ptr();
 
 		if (normals.is_empty()) {
-			normals.resize(vertices.size());
+			normals.resize(index_count);
 			Vector3 *n_ptr = normals.ptrw();
 			for (unsigned int j = 0; j < index_count; j += 3) {
 				const Vector3 &v0 = vertices_ptr[indices_ptr[j + 0]];
@@ -305,7 +306,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		float normal_split_threshold = Math::cos(Math::deg2rad(p_normal_split_angle));
 		const Vector3 *normals_ptr = normals.ptr();
 
-		Map<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
+		HashMap<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
 
 		LocalVector<int> vertex_remap;
 		LocalVector<int> vertex_inverse_remap;
@@ -313,22 +314,26 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 		LocalVector<Vector3> merged_normals;
 		LocalVector<int> merged_normals_counts;
 		const Vector2 *uvs_ptr = uvs.ptr();
+		const Vector2 *uv2s_ptr = uv2s.ptr();
 
 		for (unsigned int j = 0; j < vertex_count; j++) {
 			const Vector3 &v = vertices_ptr[j];
 			const Vector3 &n = normals_ptr[j];
 
-			Map<Vector3, LocalVector<Pair<int, int>>>::Element *E = unique_vertices.find(v);
+			HashMap<Vector3, LocalVector<Pair<int, int>>>::Iterator E = unique_vertices.find(v);
 
 			if (E) {
-				const LocalVector<Pair<int, int>> &close_verts = E->get();
+				const LocalVector<Pair<int, int>> &close_verts = E->value;
 
 				bool found = false;
 				for (unsigned int k = 0; k < close_verts.size(); k++) {
 					const Pair<int, int> &idx = close_verts[k];
 
-					// TODO check more attributes?
-					if ((!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2) && normals[idx.second].dot(n) > normal_merge_threshold) {
+					bool is_uvs_close = (!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2);
+					bool is_uv2s_close = (!uv2s_ptr || uv2s_ptr[j].distance_squared_to(uv2s_ptr[idx.second]) < CMP_EPSILON2);
+					ERR_FAIL_INDEX(idx.second, normals.size());
+					bool is_normals_close = normals[idx.second].dot(n) > normal_merge_threshold;
+					if (is_uvs_close && is_uv2s_close && is_normals_close) {
 						vertex_remap.push_back(idx.first);
 						merged_normals[idx.first] += normals[idx.second];
 						merged_normals_counts[idx.first]++;
@@ -415,7 +420,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				continue;
 			}
 
-			if (new_index_count <= 0 || (new_index_count >= (index_count * 0.75f))) {
+			if (new_index_count == 0 || (new_index_count >= (index_count * 0.75f))) {
 				break;
 			}
 
@@ -517,7 +522,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					Vector3 normal = n0 * w + n1 * u + n2 * v;
 
 					Vector2 orig_uv = ray_uvs[j];
-					real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
+					const real_t orig_bary[3] = { 1.0f - orig_uv.x - orig_uv.y, orig_uv.x, orig_uv.y };
 					for (int k = 0; k < 3; k++) {
 						int idx = orig_tri_id * 3 + k;
 						real_t weight = orig_bary[k];
@@ -702,15 +707,15 @@ void ImporterMesh::create_shadow_mesh() {
 		Vector<Vector3> vertices = surfaces[i].arrays[RS::ARRAY_VERTEX];
 		int vertex_count = vertices.size();
 		{
-			Map<Vector3, int> unique_vertices;
+			HashMap<Vector3, int> unique_vertices;
 			const Vector3 *vptr = vertices.ptr();
 			for (int j = 0; j < vertex_count; j++) {
 				const Vector3 &v = vptr[j];
 
-				Map<Vector3, int>::Element *E = unique_vertices.find(v);
+				HashMap<Vector3, int>::Iterator E = unique_vertices.find(v);
 
 				if (E) {
-					vertex_remap.push_back(E->get());
+					vertex_remap.push_back(E->value);
 				} else {
 					int vcount = unique_vertices.size();
 					unique_vertices[v] = vcount;
@@ -894,16 +899,16 @@ Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Mesh::ConvexDecomposit
 	Vector<uint32_t> indices;
 	indices.resize(face_count * 3);
 	{
-		Map<Vector3, uint32_t> vertex_map;
+		HashMap<Vector3, uint32_t> vertex_map;
 		Vector3 *vertex_w = vertices.ptrw();
 		uint32_t *index_w = indices.ptrw();
 		for (int i = 0; i < face_count; i++) {
 			for (int j = 0; j < 3; j++) {
 				const Vector3 &vertex = faces[i].vertex[j];
-				Map<Vector3, uint32_t>::Element *found_vertex = vertex_map.find(vertex);
+				HashMap<Vector3, uint32_t>::Iterator found_vertex = vertex_map.find(vertex);
 				uint32_t index;
 				if (found_vertex) {
-					index = found_vertex->get();
+					index = found_vertex->value;
 				} else {
 					index = ++vertex_count;
 					vertex_map[vertex] = index;
@@ -956,7 +961,7 @@ Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 		return Ref<NavigationMesh>();
 	}
 
-	Map<Vector3, int> unique_vertices;
+	HashMap<Vector3, int> unique_vertices;
 	LocalVector<int> face_indices;
 
 	for (int i = 0; i < faces.size(); i++) {
@@ -1019,7 +1024,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 
 	// Keep only the scale
 	Basis basis = p_base_transform.get_basis();
-	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
+	Vector3 scale = Vector3(basis.get_column(0).length(), basis.get_column(1).length(), basis.get_column(2).length());
 
 	Transform3D transform;
 	transform.scale(scale);
@@ -1041,6 +1046,10 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		int vc = rvertices.size();
 
 		PackedVector3Array rnormals = arrays[Mesh::ARRAY_NORMAL];
+
+		if (!rnormals.size()) {
+			continue;
+		}
 
 		int vertex_ofs = vertices.size() / 3;
 
@@ -1082,6 +1091,9 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 
 		} else {
 			for (int j = 0; j < ic / 3; j++) {
+				ERR_FAIL_INDEX_V(rindices[j * 3 + 0], rvertices.size(), ERR_INVALID_DATA);
+				ERR_FAIL_INDEX_V(rindices[j * 3 + 1], rvertices.size(), ERR_INVALID_DATA);
+				ERR_FAIL_INDEX_V(rindices[j * 3 + 2], rvertices.size(), ERR_INVALID_DATA);
 				Vector3 p0 = transform.xform(rvertices[rindices[j * 3 + 0]]);
 				Vector3 p1 = transform.xform(rvertices[rindices[j * 3 + 1]]);
 				Vector3 p2 = transform.xform(rvertices[rindices[j * 3 + 2]]);
@@ -1181,7 +1193,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	for (unsigned int i = 0; i < surfaces_tools.size(); i++) {
 		surfaces_tools[i]->index();
 		Array arrays = surfaces_tools[i]->commit_to_arrays();
-		add_surface(surfaces_tools[i]->get_primitive(), arrays, Array(), Dictionary(), surfaces_tools[i]->get_material(), surfaces_tools[i]->get_meta("name"));
+		add_surface(surfaces_tools[i]->get_primitive_type(), arrays, Array(), Dictionary(), surfaces_tools[i]->get_material(), surfaces_tools[i]->get_meta("name"));
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));
@@ -1234,6 +1246,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
+	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
 

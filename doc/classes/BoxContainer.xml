@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BoxContainer" inherits="Container" version="4.0">
+<class name="BoxContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for box containers.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Arranges child [Control] nodes vertically or horizontally, and rearranges them automatically when their minimum size changes.
 	</description>
 	<tutorials>
+		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_spacer">

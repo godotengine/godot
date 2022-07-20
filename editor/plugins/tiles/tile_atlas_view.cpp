@@ -94,6 +94,8 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 }
 
 void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
+	// Don't allow zoom to go below 1% or above 10000%
+	zoom_widget->set_zoom(CLAMP(zoom_widget->get_zoom(), 0.01f, 100.f));
 	float zoom = zoom_widget->get_zoom();
 
 	// Compute the minimum sizes.
@@ -348,7 +350,7 @@ void TileAtlasView::_draw_alternatives() {
 				bool transposed = tile_data->get_transpose();
 
 				// Update the y to max value.
-				Vector2i offset_pos = current_pos;
+				Vector2i offset_pos;
 				if (transposed) {
 					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
 					y_increment = MAX(y_increment, texture_region_size.x);
@@ -478,7 +480,7 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 
 			// Update the rect.
 			if (!alternative_tiles_rect_cache.has(tile_id)) {
-				alternative_tiles_rect_cache[tile_id] = Map<int, Rect2i>();
+				alternative_tiles_rect_cache[tile_id] = HashMap<int, Rect2i>();
 			}
 			alternative_tiles_rect_cache[tile_id][alternative_id] = current;
 
@@ -492,7 +494,7 @@ void TileAtlasView::_update_alternative_tiles_rect_cache() {
 }
 
 Vector3i TileAtlasView::get_alternative_tile_at_pos(const Vector2 p_pos) const {
-	for (const KeyValue<Vector2, Map<int, Rect2i>> &E_coords : alternative_tiles_rect_cache) {
+	for (const KeyValue<Vector2, HashMap<int, Rect2i>> &E_coords : alternative_tiles_rect_cache) {
 		for (const KeyValue<int, Rect2i> &E_alternative : E_coords.value) {
 			if (E_alternative.value.has_point(p_pos)) {
 				return Vector3i(E_coords.key.x, E_coords.key.y, E_alternative.key);
@@ -522,13 +524,13 @@ void TileAtlasView::update() {
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-			break;
+		} break;
 
-		case NOTIFICATION_READY:
+		case NOTIFICATION_READY: {
 			button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
-			break;
+		} break;
 	}
 }
 
@@ -542,7 +544,7 @@ TileAtlasView::TileAtlasView() {
 	Panel *panel = memnew(Panel);
 	panel->set_clip_contents(true);
 	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(panel);
@@ -611,32 +613,32 @@ TileAtlasView::TileAtlasView() {
 
 	background_left = memnew(Control);
 	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	background_left->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	background_left->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	background_left->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	background_left->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_left));
 	base_tiles_root_control->add_child(background_left);
 
 	base_tiles_drawing_root = memnew(Control);
 	base_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	base_tiles_root_control->add_child(base_tiles_drawing_root);
 
 	base_tiles_draw = memnew(Control);
 	base_tiles_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_draw->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tiles_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_tiles_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles));
 	base_tiles_drawing_root->add_child(base_tiles_draw);
 
 	base_tiles_texture_grid = memnew(Control);
 	base_tiles_texture_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_texture_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tiles_texture_grid->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_tiles_texture_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_texture_grid));
 	base_tiles_drawing_root->add_child(base_tiles_texture_grid);
 
 	base_tiles_shape_grid = memnew(Control);
 	base_tiles_shape_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_tiles_shape_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
 	base_tiles_drawing_root->add_child(base_tiles_shape_grid);
 

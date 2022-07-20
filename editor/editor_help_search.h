@@ -31,7 +31,7 @@
 #ifndef EDITOR_HELP_SEARCH_H
 #define EDITOR_HELP_SEARCH_H
 
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/rb_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -55,12 +55,12 @@ class EditorHelpSearch : public ConfirmationDialog {
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
 
-	LineEdit *search_box;
-	Button *case_sensitive_button;
-	Button *hierarchy_button;
-	OptionButton *filter_combo;
-	Tree *results_tree;
-	bool old_search;
+	LineEdit *search_box = nullptr;
+	Button *case_sensitive_button = nullptr;
+	Button *hierarchy_button = nullptr;
+	OptionButton *filter_combo = nullptr;
+	Tree *results_tree = nullptr;
+	bool old_search = false;
 	String old_term;
 
 	class Runner;
@@ -99,7 +99,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	int phase = 0;
 
 	struct ClassMatch {
-		DocData::ClassDoc *doc;
+		DocData::ClassDoc *doc = nullptr;
 		bool name = false;
 		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
@@ -114,19 +114,19 @@ class EditorHelpSearch::Runner : public RefCounted {
 		}
 	};
 
-	Control *ui_service;
-	Tree *results_tree;
+	Control *ui_service = nullptr;
+	Tree *results_tree = nullptr;
 	String term;
 	int search_flags;
 
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
-	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	HashMap<String, DocData::ClassDoc>::Iterator iterator_doc;
+	HashMap<String, ClassMatch> matches;
+	HashMap<String, ClassMatch>::Iterator iterator_match;
 	TreeItem *root_item = nullptr;
-	Map<String, TreeItem *> class_items;
+	HashMap<String, TreeItem *> class_items;
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 

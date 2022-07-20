@@ -144,17 +144,35 @@ TEST_CASE("[Color] Conversion methods") {
 			"The string representation should match the expected value.");
 }
 
+TEST_CASE("[Color] Linear <-> sRGB conversion") {
+	const Color color = Color(0.35, 0.5, 0.6, 0.7);
+	const Color color_linear = color.srgb_to_linear();
+	const Color color_srgb = color.linear_to_srgb();
+	CHECK_MESSAGE(
+			color_linear.is_equal_approx(Color(0.100481, 0.214041, 0.318547, 0.7)),
+			"The color converted to linear color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_srgb.is_equal_approx(Color(0.62621, 0.735357, 0.797738, 0.7)),
+			"The color converted to sRGB color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_linear.linear_to_srgb().is_equal_approx(Color(0.35, 0.5, 0.6, 0.7)),
+			"The linear color converted back to sRGB color space should match the expected value.");
+	CHECK_MESSAGE(
+			color_srgb.srgb_to_linear().is_equal_approx(Color(0.35, 0.5, 0.6, 0.7)),
+			"The sRGB color converted back to linear color space should match the expected value.");
+}
+
 TEST_CASE("[Color] Named colors") {
 	CHECK_MESSAGE(
-			Color::named("red").is_equal_approx(Color(1, 0, 0)),
+			Color::named("red").is_equal_approx(Color::hex(0xFF0000FF)),
 			"The named color \"red\" should match the expected value.");
 
 	// Named colors have their names automatically normalized.
 	CHECK_MESSAGE(
-			Color::named("white_smoke").is_equal_approx(Color(0.96, 0.96, 0.96)),
+			Color::named("white_smoke").is_equal_approx(Color::hex(0xF5F5F5FF)),
 			"The named color \"white_smoke\" should match the expected value.");
 	CHECK_MESSAGE(
-			Color::named("Slate Blue").is_equal_approx(Color(0.42, 0.35, 0.80)),
+			Color::named("Slate Blue").is_equal_approx(Color::hex(0x6A5ACDFF)),
 			"The named color \"Slate Blue\" should match the expected value.");
 
 	ERR_PRINT_OFF;

@@ -31,7 +31,9 @@
 #ifndef JSONRPC_REGISTER_TYPES_H
 #define JSONRPC_REGISTER_TYPES_H
 
-void register_jsonrpc_types();
-void unregister_jsonrpc_types();
+#include "modules/register_module_types.h"
+
+void initialize_jsonrpc_module(ModuleInitializationLevel p_level);
+void uninitialize_jsonrpc_module(ModuleInitializationLevel p_level);
 
 #endif // JSONRPC_REGISTER_TYPES_H

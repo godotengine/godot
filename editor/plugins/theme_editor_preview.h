@@ -38,15 +38,15 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/resources/theme.h"
 
-class EditorNode;
+class ColorPickerButton;
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
 
-	ScrollContainer *preview_container;
-	ColorRect *preview_bg;
-	MarginContainer *preview_overlay;
-	Control *picker_overlay;
+	ScrollContainer *preview_container = nullptr;
+	ColorRect *preview_bg = nullptr;
+	MarginContainer *preview_overlay = nullptr;
+	Control *picker_overlay = nullptr;
 	Control *hovered_control = nullptr;
 
 	struct ThemeCache {
@@ -71,9 +71,9 @@ class ThemeEditorPreview : public VBoxContainer {
 	void _reset_picker_overlay();
 
 protected:
-	HBoxContainer *preview_toolbar;
-	MarginContainer *preview_content;
-	Button *picker_button;
+	HBoxContainer *preview_toolbar = nullptr;
+	MarginContainer *preview_content = nullptr;
+	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);
 
@@ -89,6 +89,11 @@ public:
 class DefaultThemeEditorPreview : public ThemeEditorPreview {
 	GDCLASS(DefaultThemeEditorPreview, ThemeEditorPreview);
 
+	ColorPickerButton *test_color_picker_button = nullptr;
+
+protected:
+	void _notification(int p_what);
+
 public:
 	DefaultThemeEditorPreview();
 };
@@ -98,7 +103,7 @@ class SceneThemeEditorPreview : public ThemeEditorPreview {
 
 	Ref<PackedScene> loaded_scene;
 
-	Button *reload_scene_button;
+	Button *reload_scene_button = nullptr;
 
 	void _reload_scene();
 

@@ -58,8 +58,8 @@ private:
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
 	// conversion fast and save memory.
 	mutable bool params_cache_dirty = true;
-	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
-	Map<StringName, Map<int, Ref<Texture2D>>> default_textures;
+	mutable HashMap<StringName, StringName> params_cache; //map a shader param to a material param..
+	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
 
 	virtual void _update_shader() const; //used for visual shader
 protected:
@@ -86,9 +86,9 @@ public:
 			get_param_list(nullptr);
 		}
 
-		const Map<StringName, StringName>::Element *E = params_cache.find(p_param);
+		const HashMap<StringName, StringName>::Iterator E = params_cache.find(p_param);
 		if (E) {
-			return E->get();
+			return E->value;
 		}
 		return StringName();
 	}
@@ -103,7 +103,7 @@ VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
@@ -111,9 +111,9 @@ public:
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
 public:
-	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
-	virtual bool recognize(const RES &p_resource) const;
+	virtual Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
+	virtual bool recognize(const Ref<Resource> &p_resource) const;
 };
 
 #endif // SHADER_H

@@ -66,7 +66,7 @@
 /* --------------------------------------------------------------------- */
 
 /* 64 KByte. */
-#define CHUNK_SIZE	0x10000
+#define CHUNK_SIZE	(sljit_uw)0x10000u
 
 /*
    alloc_chunk / free_chunk :
@@ -112,7 +112,7 @@ static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 
 static SLJIT_INLINE int get_map_jit_flag()
 {
-	sljit_sw page_size;
+	size_t page_size;
 	void *ptr;
 	struct utsname name;
 	static int map_jit_flag = -1;
@@ -139,8 +139,9 @@ static SLJIT_INLINE int get_map_jit_flag()
 #endif /* MAP_ANON */
 #else /* !SLJIT_CONFIG_X86 */
 #if !(defined SLJIT_CONFIG_ARM && SLJIT_CONFIG_ARM)
-#error Unsupported architecture
+#error "Unsupported architecture"
 #endif /* SLJIT_CONFIG_ARM */
+#include <AvailabilityMacros.h>
 #include <pthread.h>
 
 #define SLJIT_MAP_JIT	(MAP_JIT)
@@ -149,7 +150,14 @@ static SLJIT_INLINE int get_map_jit_flag()
 
 static SLJIT_INLINE void apple_update_wx_flags(sljit_s32 enable_exec)
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 110000
 	pthread_jit_write_protect_np(enable_exec);
+#elif defined(__clang__)
+	if (__builtin_available(macOS 11.0, *))
+		pthread_jit_write_protect_np(enable_exec);
+#else
+#error "Must target Big Sur or newer"
+#endif /* BigSur */
 }
 #endif /* SLJIT_CONFIG_X86 */
 #else /* !TARGET_OS_OSX */
@@ -187,10 +195,13 @@ static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 	if (retval == MAP_FAILED)
 		return NULL;
 
+#ifdef __FreeBSD__
+        /* HardenedBSD's mmap lies, so check permissions again */
 	if (mprotect(retval, size, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
 		munmap(retval, size);
 		return NULL;
 	}
+#endif /* FreeBSD */
 
 	SLJIT_UPDATE_WX_FLAGS(retval, (uint8_t *)retval + size, 0);
 
@@ -227,7 +238,7 @@ struct free_block {
 #define AS_FREE_BLOCK(base, offset) \
 	((struct free_block*)(((sljit_u8*)base) + offset))
 #define MEM_START(base)		((void*)(((sljit_u8*)base) + sizeof(struct block_header)))
-#define ALIGN_SIZE(size)	(((size) + sizeof(struct block_header) + 7) & ~7)
+#define ALIGN_SIZE(size)	(((size) + sizeof(struct block_header) + 7u) & ~(sljit_uw)7)
 
 static struct free_block* free_blocks;
 static sljit_uw allocated_size;

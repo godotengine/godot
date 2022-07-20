@@ -41,15 +41,23 @@ class Path3D : public Node3D {
 
 	void _curve_changed();
 
+	RID debug_instance;
+	Ref<ArrayMesh> debug_mesh;
+
+private:
+	void _update_debug_mesh();
+
 protected:
 	void _notification(int p_what);
+
 	static void _bind_methods();
 
 public:
 	void set_curve(const Ref<Curve3D> &p_curve);
 	Ref<Curve3D> get_curve() const;
 
-	Path3D() {}
+	Path3D();
+	~Path3D();
 };
 
 class PathFollow3D : public Node3D {
@@ -66,7 +74,7 @@ public:
 
 private:
 	Path3D *path = nullptr;
-	real_t delta_offset = 0.0; // Change in offset since last _update_transform.
+	real_t prev_offset = 0.0; // Offset during the last _update_transform.
 	real_t offset = 0.0;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;

@@ -112,9 +112,9 @@ Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p
 
 	// We use our gravity and magnetometer vectors to construct our matrix
 	Basis acc_mag_m3;
-	acc_mag_m3.elements[0] = -magneto_east;
-	acc_mag_m3.elements[1] = up;
-	acc_mag_m3.elements[2] = magneto;
+	acc_mag_m3.rows[0] = -magneto_east;
+	acc_mag_m3.rows[1] = up;
+	acc_mag_m3.rows[2] = magneto;
 
 	return acc_mag_m3;
 };
@@ -175,9 +175,9 @@ void MobileVRInterface::set_position_from_sensors() {
 	if (has_gyro) {
 		// start with applying our gyro (do NOT smooth our gyro!)
 		Basis rotate;
-		rotate.rotate(orientation.get_axis(0), gyro.x * delta_time);
-		rotate.rotate(orientation.get_axis(1), gyro.y * delta_time);
-		rotate.rotate(orientation.get_axis(2), gyro.z * delta_time);
+		rotate.rotate(orientation.get_column(0), gyro.x * delta_time);
+		rotate.rotate(orientation.get_column(1), gyro.y * delta_time);
+		rotate.rotate(orientation.get_column(2), gyro.z * delta_time);
 		orientation = rotate * orientation;
 
 		tracking_state = XRInterface::XR_NORMAL_TRACKING;

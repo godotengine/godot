@@ -31,7 +31,9 @@
 #ifndef FREETYPE_REGISTER_TYPES_H
 #define FREETYPE_REGISTER_TYPES_H
 
-void register_freetype_types();
-void unregister_freetype_types();
+#include "modules/register_module_types.h"
+
+void initialize_freetype_module(ModuleInitializationLevel p_level);
+void uninitialize_freetype_module(ModuleInitializationLevel p_level);
 
 #endif // FREETYPE_REGISTER_TYPES_H

@@ -64,7 +64,7 @@ public:
 	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
 
-	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc((float)Math_PI * p_x); }
 	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
@@ -102,6 +102,9 @@ public:
 
 	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
 	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
+
+	static _ALWAYS_INLINE_ double log1p(double p_x) { return ::log1p(p_x); }
+	static _ALWAYS_INLINE_ float log1p(float p_x) { return ::log1pf(p_x); }
 
 	static _ALWAYS_INLINE_ double log2(double p_x) { return ::log2(p_x); }
 	static _ALWAYS_INLINE_ float log2(float p_x) { return ::log2f(p_x); }
@@ -187,7 +190,7 @@ public:
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		value += 0.0;
@@ -195,7 +198,7 @@ public:
 	}
 	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) {
 		float value = Math::fmod(p_x, p_y);
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		value += 0.0f;
@@ -220,20 +223,56 @@ public:
 
 	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 		int64_t value = p_x % p_y;
-		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
 		}
 		return value;
 	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
 
 	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+
+	static _ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+		return 0.5 *
+				((p_from * 2.0) +
+						(-p_pre + p_to) * p_weight +
+						(2.0 * p_pre - 5.0 * p_from + 4.0 * p_to - p_post) * (p_weight * p_weight) +
+						(-p_pre + 3.0 * p_from - 3.0 * p_to + p_post) * (p_weight * p_weight * p_weight));
+	}
+	static _ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
+		return 0.5f *
+				((p_from * 2.0f) +
+						(-p_pre + p_to) * p_weight +
+						(2.0f * p_pre - 5.0f * p_from + 4.0f * p_to - p_post) * (p_weight * p_weight) +
+						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
+	}
+
+	static _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+		/* Formula from Wikipedia article on Bezier curves. */
+		double omt = (1.0 - p_t);
+		double omt2 = omt * omt;
+		double omt3 = omt2 * omt;
+		double t2 = p_t * p_t;
+		double t3 = t2 * p_t;
+
+		return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
+	}
+	static _ALWAYS_INLINE_ float bezier_interpolate(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
+		/* Formula from Wikipedia article on Bezier curves. */
+		float omt = (1.0f - p_t);
+		float omt2 = omt * omt;
+		float omt3 = omt2 * omt;
+		float t2 = p_t * p_t;
+		float t3 = t2 * p_t;
+
+		return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0f + p_control_2 * omt * t2 * 3.0f + p_end * t3;
+	}
 
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
 		double difference = fmod(p_to - p_from, Math_TAU);
@@ -270,10 +309,10 @@ public:
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
 	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
@@ -284,11 +323,19 @@ public:
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		double result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float range = max - min;
-		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		float result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_equal_approx(result, max)) {
+			return min;
+		}
+		return result;
 	}
 
 	static _ALWAYS_INLINE_ float fract(float value) {
@@ -307,7 +354,7 @@ public:
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
-	static int range_step_decimals(double p_step);
+	static int range_step_decimals(double p_step); // For editor use only.
 	static double snapped(double p_value, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
@@ -330,9 +377,9 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		float tolerance = CMP_EPSILON * abs(a);
-		if (tolerance < CMP_EPSILON) {
-			tolerance = CMP_EPSILON;
+		float tolerance = (float)CMP_EPSILON * abs(a);
+		if (tolerance < (float)CMP_EPSILON) {
+			tolerance = (float)CMP_EPSILON;
 		}
 		return abs(a - b) < tolerance;
 	}
@@ -347,7 +394,7 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
-		return abs(s) < CMP_EPSILON;
+		return abs(s) < (float)CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
@@ -458,16 +505,16 @@ public:
 		uint32_t x = ci.ui;
 		uint32_t sign = (unsigned short)(x >> 31);
 		uint32_t mantissa;
-		uint32_t exp;
+		uint32_t exponent;
 		uint16_t hf;
 
 		// get mantissa
 		mantissa = x & ((1 << 23) - 1);
 		// get exponent bits
-		exp = x & (0xFF << 23);
-		if (exp >= 0x47800000) {
+		exponent = x & (0xFF << 23);
+		if (exponent >= 0x47800000) {
 			// check if the original single precision float number is a NaN
-			if (mantissa && (exp == (0xFF << 23))) {
+			if (mantissa && (exponent == (0xFF << 23))) {
 				// we have a single precision NaN
 				mantissa = (1 << 23) - 1;
 			} else {
@@ -478,17 +525,18 @@ public:
 					(uint16_t)(mantissa >> 13);
 		}
 		// check if exponent is <= -15
-		else if (exp <= 0x38000000) {
-			/*// store a denorm half-float value or zero
-		exp = (0x38000000 - exp) >> 23;
-		mantissa >>= (14 + exp);
+		else if (exponent <= 0x38000000) {
+			/*
+			// store a denorm half-float value or zero
+			exponent = (0x38000000 - exponent) >> 23;
+			mantissa >>= (14 + exponent);
 
-		hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
-		*/
+			hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
+			*/
 			hf = 0; //denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
-					(uint16_t)((exp - 0x38000000) >> 13) |
+					(uint16_t)((exponent - 0x38000000) >> 13) |
 					(uint16_t)(mantissa >> 13);
 		}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="RefCounted" version="4.0">
+<class name="XMLParser" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
@@ -32,7 +32,7 @@
 		<method name="get_current_line" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the current line in the parsed file (currently not implemented).
+				Gets the current line in the parsed file, counting from 0.
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">

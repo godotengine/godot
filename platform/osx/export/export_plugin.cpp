@@ -28,11 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "export_plugin.h"
 
 #include "codesign.h"
+
 #include "editor/editor_node.h"
-#include "export_plugin.h"
+#include "editor/editor_paths.h"
+
+#include "modules/modules_enabled.gen.h" // For regex.
 
 void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	if (p_preset->get("texture_format/s3tc")) {
@@ -48,7 +51,7 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back("64");
 }
 
-bool EditorExportPlatformOSX::get_export_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorExportPlatformOSX::get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	// These options are not supported by built-in codesign, used on non macOS host.
 	if (!OS::get_singleton()->has_feature("macos")) {
 		if (p_option == "codesign/identity" || p_option == "codesign/timestamp" || p_option == "codesign/hardened_runtime" || p_option == "codesign/custom_options" || p_option.begins_with("notarization/")) {
@@ -69,8 +72,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
@@ -78,18 +80,30 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/location_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the location information"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/location_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/address_book_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the address book"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/address_book_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/calendar_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the calendar"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/calendar_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photos_library_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the photo library"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photos_library_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/desktop_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Desktop folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/desktop_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/documents_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Documents folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/documents_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/downloads_folder_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use Downloads folder"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/downloads_folder_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/network_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use network volumes"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
@@ -238,26 +252,28 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
-			it->create_from_image(copy);
+			it->set_image(copy);
 			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
-			FileAccess *f = FileAccess::open(path, FileAccess::READ);
-			if (!f) {
-				// Clean up generated file.
-				DirAccess::remove_file_or_error(path);
-				ERR_FAIL();
-			}
+			{
+				Ref<FileAccess> f = FileAccess::open(path, FileAccess::READ);
+				if (f.is_null()) {
+					// Clean up generated file.
+					DirAccess::remove_file_or_error(path);
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not open icon file \"%s\"."), path));
+					return;
+				}
 
-			int ofs = data.size();
-			uint64_t len = f->get_length();
-			data.resize(data.size() + len + 8);
-			f->get_buffer(&data.write[ofs + 8], len);
-			memdelete(f);
-			len += 8;
-			len = BSWAP32(len);
-			memcpy(&data.write[ofs], icon_infos[i].name, 4);
-			encode_uint32(len, &data.write[ofs + 4]);
+				int ofs = data.size();
+				uint64_t len = f->get_length();
+				data.resize(data.size() + len + 8);
+				f->get_buffer(&data.write[ofs + 8], len);
+				len += 8;
+				len = BSWAP32(len);
+				memcpy(&data.write[ofs], icon_infos[i].name, 4);
+				encode_uint32(len, &data.write[ofs + 4]);
+			}
 
 			// Clean up generated file.
 			DirAccess::remove_file_or_error(path);
@@ -313,9 +329,7 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 		if (lines[i].find("$binary") != -1) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
 		} else if (lines[i].find("$name") != -1) {
-			strnew += lines[i].replace("$name", p_binary) + "\n";
-		} else if (lines[i].find("$info") != -1) {
-			strnew += lines[i].replace("$info", p_preset->get("application/info")) + "\n";
+			strnew += lines[i].replace("$name", ProjectSettings::get_singleton()->get("application/config/name")) + "\n";
 		} else if (lines[i].find("$bundle_identifier") != -1) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].find("$short_version") != -1) {
@@ -428,18 +442,25 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 
 	String str;
 	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
+		return err;
+	}
 
 	print_verbose("altool (" + p_path + "):\n" + str);
-	if (str.find("RequestUUID") == -1) {
-		EditorNode::add_io_error("altool: " + str);
+	int rq_offset = str.find("RequestUUID");
+	if (rq_offset == -1) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed."));
 		return FAILED;
 	} else {
-		print_line(TTR("Note: The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
-		print_line("      " + TTR("You can check progress manually by opening a Terminal and running the following command:"));
-		print_line("          \"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
-		print_line("      " + TTR("Run the following command to staple notarization ticket to the exported application (optional):"));
-		print_line("          \"xcrun stapler staple <app path>\"");
+		int next_nl = str.find("\n", rq_offset);
+		String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 14, -1) : str.substr(rq_offset + 14, next_nl - rq_offset - 14);
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour. When the process is completed, you'll receive an email."));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check progress manually by opening a Terminal and running the following command:"));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun altool --notarization-history 0 -u <your email> -p <app-specific pwd>\"");
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
+		add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 	}
 
 #endif
@@ -447,7 +468,7 @@ Error EditorExportPlatformOSX::_notarize(const Ref<EditorExportPreset> &p_preset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path) {
+Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn) {
 	bool force_builtin_codesign = EditorSettings::get_singleton()->get("export/macos/force_builtin_codesign");
 	bool ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
 
@@ -456,22 +477,22 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 #ifdef MODULE_REGEX_ENABLED
 
 #ifdef OSX_ENABLED
-		if (p_preset->get("codesign/timestamp")) {
-			WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+		if (p_preset->get("codesign/timestamp") && p_warn) {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Timestamping is not compatible with ad-hoc signature, and was disabled!"));
 		}
-		if (p_preset->get("codesign/hardened_runtime")) {
-			WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+		if (p_preset->get("codesign/hardened_runtime") && p_warn) {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"));
 		}
 #endif
 
 		String error_msg;
 		Error err = CodeSign::codesign(false, p_preset->get("codesign/replace_existing_signature"), p_path, p_ent_path, error_msg);
 		if (err != OK) {
-			EditorNode::add_io_error("Built-in CodeSign: " + error_msg);
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Built-in CodeSign failed with error \"%s\"."), error_msg));
 			return FAILED;
 		}
 #else
-		ERR_FAIL_V_MSG(FAILED, "Built-in CodeSign require regex module");
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Built-in CodeSign require regex module."));
 #endif
 		return OK;
 	} else {
@@ -479,14 +500,18 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		List<String> args;
 		if (p_preset->get("codesign/timestamp")) {
 			if (ad_hoc) {
-				WARN_PRINT("Timestamping is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Timestamping is not compatible with ad-hoc signature, and was disabled!"));
+				}
 			} else {
 				args.push_back("--timestamp");
 			}
 		}
 		if (p_preset->get("codesign/hardened_runtime")) {
 			if (ad_hoc) {
-				WARN_PRINT("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!");
+				if (p_warn) {
+					add_message(EXPORT_MESSAGE_INFO, TTR("Code Signing"), TTR("Hardened Runtime is not compatible with ad-hoc signature, and was disabled!"));
+				}
 			} else {
 				args.push_back("--options");
 				args.push_back("runtime");
@@ -523,15 +548,18 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 
 		String str;
 		Error err = OS::get_singleton()->execute("codesign", args, &str, nullptr, true);
-		ERR_FAIL_COND_V(err != OK, err);
+		if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
+			return err;
+		}
 
 		print_verbose("codesign (" + p_path + "):\n" + str);
 		if (str.find("no identity found") != -1) {
-			EditorNode::add_io_error("CodeSign: " + TTR("No identity found."));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
 		}
 		if ((str.find("unrecognized blob type") != -1) || (str.find("cannot read entitlement data") != -1)) {
-			EditorNode::add_io_error("CodeSign: " + TTR("Invalid entitlements file."));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid entitlements file."));
 			return FAILED;
 		}
 		return OK;
@@ -549,7 +577,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 	}
 
 	Error dir_access_error;
-	DirAccessRef dir_access{ DirAccess::open(p_path, &dir_access_error) };
+	Ref<DirAccess> dir_access{ DirAccess::open(p_path, &dir_access_error) };
 
 	if (dir_access_error != OK) {
 		return dir_access_error;
@@ -566,7 +594,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 		}
 
 		if (extensions_to_sign.find(current_file.get_extension()) > -1) {
-			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path) };
+			Error code_sign_error{ _code_sign(p_preset, current_file_path, p_ent_path, false) };
 			if (code_sign_error != OK) {
 				return code_sign_error;
 			}
@@ -576,7 +604,7 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 				return code_sign_error;
 			}
 		} else if (p_should_error_on_non_code) {
-			ERR_PRINT(vformat("Cannot sign file %s.", current_file));
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign file %s."), current_file));
 			return Error::FAILED;
 		}
 
@@ -587,14 +615,14 @@ Error EditorExportPlatformOSX::_code_sign_directory(const Ref<EditorExportPreset
 	return OK;
 }
 
-Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, const String &p_src_path,
+Error EditorExportPlatformOSX::_copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path,
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 		bool p_should_error_on_non_code_sign) {
 	Error err{ OK };
 	if (dir_access->dir_exists(p_src_path)) {
 #ifndef UNIX_ENABLED
-		WARN_PRINT("Relative symlinks are not supported, exported " + p_src_path.get_file() + " might be broken!");
+		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
 		err = dir_access->make_dir_recursive(p_in_app_path);
@@ -610,14 +638,14 @@ Error EditorExportPlatformOSX::_copy_and_sign_files(DirAccessRef &dir_access, co
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
 		} else {
-			err = _code_sign(p_preset, p_in_app_path, p_ent_path);
+			err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
 		}
 	}
 	return err;
 }
 
 Error EditorExportPlatformOSX::_export_osx_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin,
-		const String &p_app_path_name, DirAccessRef &dir_access,
+		const String &p_app_path_name, Ref<DirAccess> &dir_access,
 		bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 		const String &p_ent_path) {
 	Error error{ OK };
@@ -651,17 +679,36 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 
 	String str;
 	Error err = OS::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("Could not start hdiutil executable."));
+		return err;
+	}
 
 	print_verbose("hdiutil returned: " + str);
 	if (str.find("create failed") != -1) {
 		if (str.find("File exists") != -1) {
-			EditorNode::add_io_error("hdiutil: " + TTR("DMG creation failed, file already exists."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
 		} else {
-			EditorNode::add_io_error("hdiutil: " + TTR("DMG create failed."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed."));
 		}
 		return FAILED;
 	}
+
+	return OK;
+}
+
+Error EditorExportPlatformOSX::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
+		return ERR_CANT_CREATE;
+	}
+
+	f->store_line("#!/bin/sh");
+	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
+	f->store_line("function realpath() { python -c \"import os,sys; print(os.path.realpath(sys.argv[1]))\" \"$0\"; }");
+	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
+	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
 
 	return OK;
 }
@@ -683,17 +730,18 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		String err;
 		src_pkg_name = find_export_template("osx.zip", &err);
 		if (src_pkg_name.is_empty()) {
-			EditorNode::add_io_error(err);
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found."));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
 
 	if (!DirAccess::exists(p_path.get_base_dir())) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = nullptr;
-	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating app bundle"), 0)) {
 		return ERR_SKIP;
@@ -701,7 +749,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-		EditorNode::add_io_error(TTR("Could not find template app to export:") + "\n" + src_pkg_name);
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not find template app to export: \"%s\"."), src_pkg_name));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -710,9 +758,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
 	String pkg_name;
-	if (p_preset->get("application/name") != "") {
-		pkg_name = p_preset->get("application/name"); // app_name
-	} else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
+	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
@@ -728,30 +774,41 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	} else if (p_path.ends_with("app")) {
 		export_format = "app";
 	} else {
-		EditorNode::add_io_error("Invalid export format");
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid export format."));
 		return ERR_CANT_CREATE;
 	}
 
 	// Create our application bundle.
 	String tmp_app_dir_name = pkg_name + ".app";
+	String tmp_base_path_name;
 	String tmp_app_path_name;
+	String scr_path;
 	if (export_format == "app") {
+		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
+		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_app_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(tmp_app_dir_name);
+		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name);
+		tmp_app_path_name = tmp_base_path_name.plus_file(tmp_app_dir_name);
+		scr_path = tmp_base_path_name.plus_file(pkg_name + ".command");
 	}
+
 	print_verbose("Exporting to " + tmp_app_path_name);
 
 	Error err = OK;
 
-	DirAccessRef tmp_app_dir = DirAccess::create_for_path(tmp_app_path_name);
-	if (!tmp_app_dir) {
+	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
+	if (tmp_app_dir.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory: \"%s\"."), tmp_base_path_name));
 		err = ERR_CANT_CREATE;
 	}
 
-	if (DirAccess::exists(tmp_app_dir_name)) {
+	DirAccess::remove_file_or_error(scr_path);
+	if (DirAccess::exists(tmp_app_path_name)) {
+		String old_dir = tmp_app_dir->get_current_dir();
 		if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
 			tmp_app_dir->erase_contents_recursive();
+			tmp_app_dir->change_dir(old_dir);
 		}
 	}
 
@@ -761,37 +818,142 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/MacOS");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/MacOS"));
+		}
 	}
 
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Frameworks"));
+		}
 	}
 
 	if ((err == OK) && helpers.size() > 0) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Helpers");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Helpers");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Helpers"));
+		}
 	}
 
 	if (err == OK) {
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Resources");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Resources"));
+		}
 	}
+
+	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
+	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
+	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
+	Dictionary address_book_usage_descriptions = p_preset->get("privacy/address_book_usage_description_localized");
+	Dictionary calendar_usage_descriptions = p_preset->get("privacy/calendar_usage_description_localized");
+	Dictionary photos_library_usage_descriptions = p_preset->get("privacy/photos_library_usage_description_localized");
+	Dictionary desktop_folder_usage_descriptions = p_preset->get("privacy/desktop_folder_usage_description_localized");
+	Dictionary documents_folder_usage_descriptions = p_preset->get("privacy/documents_folder_usage_description_localized");
+	Dictionary downloads_folder_usage_descriptions = p_preset->get("privacy/downloads_folder_usage_description_localized");
+	Dictionary network_volumes_usage_descriptions = p_preset->get("privacy/network_volumes_usage_description_localized");
+	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
+	Dictionary copyrights = p_preset->get("application/copyright_localized");
 
 	Vector<String> translations = ProjectSettings::get_singleton()->get("internationalization/locale/translations");
 	if (translations.size() > 0) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
-			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			f->store_line("/* Localized versions of Info.plist keys */");
+			f->store_line("");
+			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
+			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
+				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
+				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
+				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
+				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
+				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
+				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+			}
+			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+			}
+			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
 		}
 
 		for (const String &E : translations) {
 			Ref<Translation> tr = ResourceLoader::load(E);
 			if (tr.is_valid()) {
-				String fname = tmp_app_path_name + "/Contents/Resources/" + tr->get_locale() + ".lproj";
+				String lang = tr->get_locale();
+				String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 				tmp_app_dir->make_dir_recursive(fname);
-				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+				f->store_line("/* Localized versions of Info.plist keys */");
+				f->store_line("");
+				if (appnames.has(lang)) {
+					f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				}
+				if (microphone_usage_descriptions.has(lang)) {
+					f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (camera_usage_descriptions.has(lang)) {
+					f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (location_usage_descriptions.has(lang)) {
+					f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (address_book_usage_descriptions.has(lang)) {
+					f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (calendar_usage_descriptions.has(lang)) {
+					f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (photos_library_usage_descriptions.has(lang)) {
+					f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (desktop_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (documents_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (downloads_folder_usage_descriptions.has(lang)) {
+					f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (network_volumes_usage_descriptions.has(lang)) {
+					f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (removable_volumes_usage_descriptions.has(lang)) {
+					f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+				}
+				if (copyrights.has(lang)) {
+					f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
+				}
 			}
 		}
 	}
@@ -807,6 +969,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
 
 		String file = String::utf8(fname);
 
@@ -823,16 +988,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		if (((info.external_fa >> 16L) & 0120000) == 0120000) {
 #ifndef UNIX_ENABLED
-			WARN_PRINT(vformat("Relative symlinks are not supported on this OS, exported project might be broken!"));
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Relative symlinks are not supported on this OS, the exported project might be broken!"));
 #endif
 			// Handle symlinks in the archive.
 			file = tmp_app_path_name.plus_file(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
 			}
 			if (err == OK) {
 				String lnk_data = String::utf8((const char *)data.ptr(), data.size());
 				err = tmp_app_dir->create_link(lnk_data, file);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not created symlink \"%s\" -> \"%s\"."), lnk_data, file));
+				}
 				print_verbose(vformat("ADDING SYMLINK %s => %s\n", file, lnk_data));
 			}
 
@@ -865,12 +1036,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			if (!iconpath.is_empty()) {
 				if (iconpath.get_extension() == "icns") {
-					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
-					if (icon) {
+					Ref<FileAccess> icon = FileAccess::open(iconpath, FileAccess::READ);
+					if (icon.is_valid()) {
 						data.resize(icon->get_length());
 						icon->get_buffer(&data.write[0], icon->get_length());
-						icon->close();
-						memdelete(icon);
 					}
 				} else {
 					Ref<Image> icon;
@@ -909,18 +1078,21 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			file = tmp_app_path_name.plus_file(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
 			}
 			if (err == OK) {
-				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
-				if (f) {
+				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
-					f->close();
+					f.unref();
 					if (is_execute) {
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
 					}
-					memdelete(f);
 				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
 					err = ERR_CANT_CREATE;
 				}
 			}
@@ -933,8 +1105,20 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		ERR_PRINT(vformat("Requested template binary '%s' not found. It might be missing from your template archive.", binary_to_use));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template binary \"%s\" not found. It might be missing from your template archive."), binary_to_use));
 		err = ERR_FILE_NOT_FOUND;
+	}
+
+	// Save console script.
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_script");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console script."));
+			}
+		}
 	}
 
 	if (err == OK) {
@@ -944,7 +1128,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 		Vector<SharedObject> shared_objects;
-		err = save_pack(p_preset, pack_path, &shared_objects);
+		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
 		// See if we can code sign our new package.
 		bool sign_enabled = p_preset->get("codesign/enable");
@@ -954,8 +1138,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (sign_enabled && (ent_path.is_empty())) {
 			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
 
-			FileAccess *ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
-			if (ent_f) {
+			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
+			if (ent_f.is_valid()) {
 				ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 				ent_f->store_line("<plist version=\"1.0\">");
@@ -1076,16 +1260,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 				ent_f->store_line("</dict>");
 				ent_f->store_line("</plist>");
-
-				ent_f->close();
-				memdelete(ent_f);
 			} else {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create entitlements file."));
 				err = ERR_CANT_CREATE;
 			}
 
 			if ((err == OK) && helpers.size() > 0) {
 				ent_f = FileAccess::open(hlp_ent_path, FileAccess::WRITE);
-				if (ent_f) {
+				if (ent_f.is_valid()) {
 					ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 					ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
 					ent_f->store_line("<plist version=\"1.0\">");
@@ -1096,22 +1278,20 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					ent_f->store_line("<true/>");
 					ent_f->store_line("</dict>");
 					ent_f->store_line("</plist>");
-
-					ent_f->close();
-					memdelete(ent_f);
 				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create helper entitlements file."));
 					err = ERR_CANT_CREATE;
 				}
 			}
 		}
 
 		if ((err == OK) && helpers.size() > 0) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < helpers.size(); i++) {
 				String hlp_path = helpers[i];
 				err = da->copy(hlp_path, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file());
 				if (err == OK && sign_enabled) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), hlp_ent_path, false);
 				}
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
 			}
@@ -1127,17 +1307,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			ad_hoc = (sign_identity == "" || sign_identity == "-");
 			bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 			if ((!dylibs_found.is_empty() || !shared_objects.is_empty()) && sign_enabled && ad_hoc && !lib_validation) {
-				ERR_PRINT("Application with an ad-hoc signature require 'Disable Library Validation' entitlement to load dynamic libraries.");
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
 				err = ERR_CANT_CREATE;
 			}
 		}
 
 		if (err == OK) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
 				String src_path = ProjectSettings::get_singleton()->globalize_path(shared_objects[i].path);
-				String path_in_app{ tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file() };
-				err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				if (shared_objects[i].target.is_empty()) {
+					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
+				} else {
+					String path_in_app = tmp_app_path_name.plus_file(shared_objects[i].target).plus_file(src_path.get_file());
+					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, false);
+				}
 				if (err != OK) {
 					break;
 				}
@@ -1155,7 +1340,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (sign_enabled) {
 			for (int i = 0; i < dylibs_found.size(); i++) {
 				if (err == OK) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path);
+					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path, false);
 				}
 			}
 		}
@@ -1173,14 +1358,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (ep.step(TTR("Making DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
+				err = _create_dmg(p_path, pkg_name, tmp_base_path_name);
 			}
 			// Sign DMG.
 			if (err == OK && sign_enabled && !ad_hoc) {
 				if (ep.step(TTR("Code signing DMG"), 3)) {
 					return ERR_SKIP;
 				}
-				err = _code_sign(p_preset, p_path, ent_path);
+				err = _code_sign(p_preset, p_path, ent_path, false);
 			}
 		} else if (export_format == "zip") {
 			// Create ZIP.
@@ -1192,11 +1377,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					OS::get_singleton()->move_to_trash(p_path);
 				}
 
-				FileAccess *dst_f = nullptr;
-				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
+				Ref<FileAccess> io_fa_dst;
+				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
 				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
-				_zip_folder_recursive(zip, EditorPaths::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+				_zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
 				zipClose(zip, nullptr);
 			}
@@ -1206,7 +1391,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		bool noto_enabled = p_preset->get("notarization/enable");
 		if (err == OK && noto_enabled) {
 			if (export_format == "app") {
-				WARN_PRINT("Notarization require app to be archived first, select DMG or ZIP export format instead.");
+				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
@@ -1224,10 +1409,10 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			tmp_app_dir->remove(ent_path);
 		}
 		if (export_format != "app") {
-			if (tmp_app_dir->change_dir(tmp_app_path_name) == OK) {
+			if (tmp_app_dir->change_dir(tmp_base_path_name) == OK) {
 				tmp_app_dir->erase_contents_recursive();
 				tmp_app_dir->change_dir("..");
-				tmp_app_dir->remove(tmp_app_dir_name);
+				tmp_app_dir->remove(pkg_name);
 			}
 		}
 	}
@@ -1236,9 +1421,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
 
-	DirAccessRef da = DirAccess::open(dir);
+	Ref<DirAccess> da = DirAccess::open(dir);
 	da->list_dir_begin();
 	String f = da->get_next();
 	while (!f.is_empty()) {
@@ -1290,7 +1475,7 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers");
+			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
 			OS::Time time = OS::get_singleton()->get_time();
 			OS::Date date = OS::get_singleton()->get_date();
@@ -1329,9 +1514,10 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
 					0);
 
-			FileAccessRef fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
-			if (!fa) {
-				ERR_FAIL_MSG(vformat("Can't open file to read from path \"%s\".", dir.plus_file(f)));
+			Ref<FileAccess> fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
+			if (fa.is_null()) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.plus_file(f)));
+				return;
 			}
 			const int bufsize = 16384;
 			uint8_t buf[bufsize];
@@ -1403,7 +1589,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 
 	if (noto_enabled) {
 		if (ad_hoc) {
-			err += TTR("Notarization: Notarization with the ad-hoc signature is not supported.") + "\n";
+			err += TTR("Notarization: Notarization with an ad-hoc signature is not supported.") + "\n";
 			valid = false;
 		}
 		if (!sign_enabled) {
@@ -1427,9 +1613,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 			valid = false;
 		}
 	} else {
-		err += TTR("Warning: Notarization is disabled. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+		err += TTR("Warning: Notarization is disabled. The exported project will be blocked by Gatekeeper if it's downloaded from an unknown source.") + "\n";
 		if (!sign_enabled) {
-			err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+			err += TTR("Code signing is disabled. The exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
 		} else {
 			if ((bool)p_preset->get("codesign/hardened_runtime") && ad_hoc) {
 				err += TTR("Hardened Runtime is not compatible with ad-hoc signature, and will be disabled!") + "\n";
@@ -1440,9 +1626,9 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 #else
-	err += TTR("Warning: Notarization is not supported on this OS. Exported project will be blocked by Gatekeeper, if it's downloaded from an unknown source.") + "\n";
+	err += TTR("Warning: Notarization is not supported from this OS. The exported project will be blocked by Gatekeeper if it's downloaded from an unknown source.") + "\n";
 	if (!sign_enabled) {
-		err += TTR("Code signing is disabled. Exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
+		err += TTR("Code signing is disabled. The exported project will not run on Macs with enabled Gatekeeper and Apple Silicon powered Macs.") + "\n";
 	}
 #endif
 
@@ -1480,9 +1666,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformOSX::EditorExportPlatformOSX() {
-	Ref<Image> img = memnew(Image(_osx_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
+	logo = ImageTexture::create_from_image(memnew(Image(_osx_logo)));
 }
 
 EditorExportPlatformOSX::~EditorExportPlatformOSX() {

@@ -68,7 +68,7 @@ public:
 };
 
 class EventSignalCallable : public CallableCustom {
-	Object *owner;
+	Object *owner = nullptr;
 	const CSharpScript::EventSignal *event_signal;
 
 public:

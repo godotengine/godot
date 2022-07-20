@@ -78,13 +78,18 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 
 	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
 	unsigned int internal_buffer_end = -1;
-	uint64_t mix_offset;
+	uint64_t mix_offset = 0;
 
 protected:
-	void _begin_resample();
+	void begin_resample();
 	// Returns the number of frames that were mixed.
-	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) = 0;
-	virtual float get_stream_sampling_rate() = 0;
+	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
+	virtual float get_stream_sampling_rate();
+
+	GDVIRTUAL2R(int, _mix_resampled, GDNativePtr<AudioFrame>, int)
+	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+
+	static void _bind_methods();
 
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
@@ -120,7 +125,7 @@ class AudioStreamMicrophone : public AudioStream {
 	GDCLASS(AudioStreamMicrophone, AudioStream);
 	friend class AudioStreamPlaybackMicrophone;
 
-	Set<AudioStreamPlaybackMicrophone *> playbacks;
+	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
 
 protected:
 	static void _bind_methods();
@@ -140,8 +145,8 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlaybackResampled);
 	friend class AudioStreamMicrophone;
 
-	bool active;
-	unsigned int input_ofs;
+	bool active = false;
+	unsigned int input_ofs = 0;
 
 	Ref<AudioStreamMicrophone> microphone;
 
@@ -187,10 +192,10 @@ private:
 		float weight;
 	};
 
-	Set<AudioStreamPlaybackRandomizer *> playbacks;
+	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
-	float random_pitch_scale;
-	float random_volume_offset_db;
+	float random_pitch_scale = 1.1f;
+	float random_volume_offset_db = 5.0f;
 
 	Ref<AudioStreamPlayback> instance_playback_random();
 	Ref<AudioStreamPlayback> instance_playback_no_repeats();

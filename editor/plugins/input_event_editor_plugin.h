@@ -33,17 +33,16 @@
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_plugin.h"
 
-class EditorNode;
+class InputEventConfigContainer : public VBoxContainer {
+	GDCLASS(InputEventConfigContainer, VBoxContainer);
 
-class InputEventConfigContainer : public HBoxContainer {
-	GDCLASS(InputEventConfigContainer, HBoxContainer);
-
-	Label *input_event_text;
-	Button *open_config_button;
+	Label *input_event_text = nullptr;
+	Button *open_config_button = nullptr;
 
 	Ref<InputEvent> input_event;
-	InputEventConfigurationDialog *config_dialog;
+	InputEventConfigurationDialog *config_dialog = nullptr;
 
 	void _config_dialog_confirmed();
 	void _configure_pressed();
@@ -51,10 +50,10 @@ class InputEventConfigContainer : public HBoxContainer {
 	void _event_changed();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	void set_event(const Ref<InputEvent> &p_event);
 
 	InputEventConfigContainer();
@@ -74,7 +73,7 @@ class InputEventEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "InputEvent"; }
 
-	InputEventEditorPlugin(EditorNode *p_node);
+	InputEventEditorPlugin();
 };
 
 #endif // INPUT_EVENT_EDITOR_PLUGIN_H

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlugin" inherits="RefCounted" version="4.0">
+<class name="EditorExportPlugin" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A script that is executed when exporting the project.
 	</brief_description>
@@ -108,6 +108,7 @@
 			<return type="void" />
 			<argument index="0" name="path" type="String" />
 			<argument index="1" name="tags" type="PackedStringArray" />
+			<argument index="2" name="target" type="String" />
 			<description>
 				Adds a shared object or a directory containing only shared objects with the given [code]tags[/code] and destination [code]path[/code].
 				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.

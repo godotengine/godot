@@ -36,26 +36,26 @@ using Platform::Exception;
 
 void ContextEGL_UWP::release_current() {
 	eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mEglContext);
-};
+}
 
 void ContextEGL_UWP::make_current() {
 	eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
-};
+}
 
 int ContextEGL_UWP::get_window_width() {
 	return width;
-};
+}
 
 int ContextEGL_UWP::get_window_height() {
 	return height;
-};
+}
 
 void ContextEGL_UWP::reset() {
 	cleanup();
 
 	window = CoreWindow::GetForCurrentThread();
 	initialize();
-};
+}
 
 void ContextEGL_UWP::swap_buffers() {
 	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE) {
@@ -66,7 +66,7 @@ void ContextEGL_UWP::swap_buffers() {
 
 		// tell rasterizer to reload textures and stuff?
 	}
-};
+}
 
 Error ContextEGL_UWP::initialize() {
 	EGLint configAttribList[] = {
@@ -170,7 +170,7 @@ Error ContextEGL_UWP::initialize() {
 		}
 	} catch (...) {
 		return FAILED;
-	};
+	}
 
 	mEglDisplay = display;
 	mEglSurface = surface;
@@ -180,7 +180,7 @@ Error ContextEGL_UWP::initialize() {
 	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
 
 	return OK;
-};
+}
 
 void ContextEGL_UWP::cleanup() {
 	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE) {
@@ -197,7 +197,7 @@ void ContextEGL_UWP::cleanup() {
 		eglTerminate(mEglDisplay);
 		mEglDisplay = EGL_NO_DISPLAY;
 	}
-};
+}
 
 ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 		mEglDisplay(EGL_NO_DISPLAY),
@@ -209,4 +209,4 @@ ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 
 ContextEGL_UWP::~ContextEGL_UWP() {
 	cleanup();
-};
+}

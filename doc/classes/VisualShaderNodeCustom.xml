@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeCustom" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Virtual class to define custom [VisualShaderNode]s for use in the Visual Shader Editor.
 	</brief_description>
@@ -41,6 +41,17 @@
 			<return type="String" />
 			<description>
 				Override this method to define the description of the associated custom node in the Visual Shader Editor's members dialog.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
+		<method name="_get_func_code" qualifiers="virtual const">
+			<return type="String" />
+			<argument index="0" name="mode" type="int" enum="Shader.Mode" />
+			<argument index="1" name="type" type="int" enum="VisualShader.Type" />
+			<description>
+				Override this method to add a shader code to the beginning of each shader function (once). The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
+				If there are multiple custom nodes of different types which use this feature the order of each insertion is undefined.
+				You can customize the generated code based on the shader [code]mode[/code] (see [enum Shader.Mode]) and/or [code]type[/code] (see [enum VisualShader.Type]).
 				Defining this method is [b]optional[/b].
 			</description>
 		</method>
@@ -114,11 +125,20 @@
 				Defining this method is [b]optional[/b]. If not overridden, no return icon is shown.
 			</description>
 		</method>
+		<method name="_is_available" qualifiers="virtual const">
+			<return type="bool" />
+			<argument index="0" name="mode" type="int" enum="Shader.Mode" />
+			<argument index="1" name="type" type="int" enum="VisualShader.Type" />
+			<description>
+				Override this method to prevent the node to be visible in the member dialog for the certain [code]mode[/code] (see [enum Shader.Mode]) and/or [code]type[/code] (see [enum VisualShader.Type]).
+				Defining this method is [b]optional[/b]. If not overridden, it's [code]true[/code].
+			</description>
+		</method>
 		<method name="_is_highend" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, it's false.
+				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code].
 			</description>
 		</method>
 	</methods>

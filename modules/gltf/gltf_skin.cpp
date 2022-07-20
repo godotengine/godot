@@ -59,8 +59,8 @@ void GLTFSkin::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "non_joints"), "set_non_joints", "get_non_joints"); // Vector<GLTFNodeIndex>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "roots"), "set_roots", "get_roots"); // Vector<GLTFNodeIndex>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_bone_i", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_bone_i", "get_joint_i_to_bone_i"); // Map<int,
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_name", "get_joint_i_to_name"); // Map<int,
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_bone_i", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_bone_i", "get_joint_i_to_bone_i"); // RBMap<int,
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_name", "get_joint_i_to_name"); // RBMap<int,
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_skin"), "set_godot_skin", "get_godot_skin"); // Ref<Skin>
 }
 
@@ -130,16 +130,16 @@ void GLTFSkin::set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i) {
 
 Dictionary GLTFSkin::get_joint_i_to_name() {
 	Dictionary ret;
-	Map<int, StringName>::Element *elem = joint_i_to_name.front();
+	HashMap<int, StringName>::Iterator elem = joint_i_to_name.begin();
 	while (elem) {
-		ret[elem->key()] = String(elem->value());
-		elem = elem->next();
+		ret[elem->key] = String(elem->value);
+		++elem;
 	}
 	return ret;
 }
 
 void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
-	joint_i_to_name = Map<int, StringName>();
+	joint_i_to_name = HashMap<int, StringName>();
 	Array keys = p_joint_i_to_name.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		joint_i_to_name[keys[i]] = p_joint_i_to_name[keys[i]];

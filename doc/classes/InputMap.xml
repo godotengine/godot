@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputMap" inherits="Object" version="4.0">
+<class name="InputMap" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Singleton that manages [InputEventAction].
 	</brief_description>
@@ -45,6 +45,7 @@
 			<argument index="0" name="action" type="StringName" />
 			<description>
 				Returns an array of [InputEvent]s associated with a given action.
+				[b]Note:[/b] When used in the editor (e.g. a tool script or [EditorPlugin]), this method will return events for the editor action. If you want to access your project's input binds from the editor, read the [code]input/*[/code] settings from [ProjectSettings].
 			</description>
 		</method>
 		<method name="action_has_event">
@@ -86,7 +87,7 @@
 			<argument index="2" name="exact_match" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
-				If [code]exact_match[/code] is [code]false[/code], it ignores the input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				If [code]exact_match[/code] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="get_actions">

@@ -211,7 +211,7 @@ void ImmediateMesh::surface_end() {
 				value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
 				value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
 				if (t.d > 0) {
-					value |= 3 << 30;
+					value |= 3UL << 30;
 				}
 
 				*tangent = value;

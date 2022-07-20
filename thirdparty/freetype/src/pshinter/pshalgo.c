@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (body).
  *
- * Copyright (C) 2001-2021 by
+ * Copyright (C) 2001-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -182,13 +182,13 @@
     count = hints->num_hints;
 
     /* allocate our tables */
-    if ( FT_NEW_ARRAY( table->sort,  2 * count     ) ||
-         FT_NEW_ARRAY( table->hints,     count     ) ||
-         FT_NEW_ARRAY( table->zones, 2 * count + 1 ) )
+    if ( FT_QNEW_ARRAY( table->sort,  2 * count     ) ||
+         FT_QNEW_ARRAY( table->hints,     count     ) ||
+         FT_QNEW_ARRAY( table->zones, 2 * count + 1 ) )
       goto Exit;
 
     table->max_hints   = count;
-    table->sort_global = table->sort + count;
+    table->sort_global = FT_OFFSET( table->sort, count );
     table->num_hints   = 0;
     table->num_zones   = 0;
     table->zone        = NULL;
@@ -1167,8 +1167,8 @@
     memory = glyph->memory = globals->memory;
 
     /* allocate and setup points + contours arrays */
-    if ( FT_NEW_ARRAY( glyph->points,   outline->n_points   ) ||
-         FT_NEW_ARRAY( glyph->contours, outline->n_contours ) )
+    if ( FT_QNEW_ARRAY( glyph->points,   outline->n_points   ) ||
+         FT_QNEW_ARRAY( glyph->contours, outline->n_contours ) )
       goto Exit;
 
     glyph->num_points   = (FT_UInt)outline->n_points;
@@ -1228,8 +1228,9 @@
         FT_Pos  dxi, dyi, dxo, dyo;
 
 
+        point->flags = 0;
         if ( !( outline->tags[n] & FT_CURVE_TAG_ON ) )
-          point->flags = PSH_POINT_OFF;
+          psh_point_set_off( point );
 
         dxi = vec[n].x - vec[n_prev].x;
         dyi = vec[n].y - vec[n_prev].y;
@@ -1242,14 +1243,14 @@
         point->dir_out = psh_compute_dir( dxo, dyo );
 
         /* detect smooth points */
-        if ( point->flags & PSH_POINT_OFF )
-          point->flags |= PSH_POINT_SMOOTH;
+        if ( psh_point_is_off( point ) )
+          psh_point_set_smooth( point );
 
         else if ( point->dir_in == point->dir_out )
         {
           if ( point->dir_out != PSH_DIR_NONE           ||
                psh_corner_is_flat( dxi, dyi, dxo, dyo ) )
-            point->flags |= PSH_POINT_SMOOTH;
+            psh_point_set_smooth( point );
         }
       }
     }
@@ -1547,8 +1548,9 @@
   /* the accepted shift for strong points in fractional pixels */
 #define PSH_STRONG_THRESHOLD  32
 
-  /* the maximum shift value in font units */
-#define PSH_STRONG_THRESHOLD_MAXIMUM  30
+  /* the maximum shift value in font units tuned to distinguish */
+  /* between stems and serifs in URW+ font collection           */
+#define PSH_STRONG_THRESHOLD_MAXIMUM  12
 
 
   /* find strong points in a glyph */
@@ -1797,7 +1799,7 @@
       FT_Error  error;
 
 
-      if ( FT_NEW_ARRAY( strongs, num_strongs ) )
+      if ( FT_QNEW_ARRAY( strongs, num_strongs ) )
         return;
     }
 
@@ -2110,14 +2112,17 @@
       FT_Fixed  old_x_scale = x_scale;
       FT_Fixed  old_y_scale = y_scale;
 
-      FT_Fixed  scaled;
-      FT_Fixed  fitted;
+      FT_Fixed  scaled = 0;
+      FT_Fixed  fitted = 0;
 
       FT_Bool  rescale = FALSE;
 
 
-      scaled = FT_MulFix( globals->blues.normal_top.zones->org_ref, y_scale );
-      fitted = FT_PIX_ROUND( scaled );
+      if ( globals->blues.normal_top.count )
+      {
+        scaled = FT_MulFix( globals->blues.normal_top.zones->org_ref, y_scale );
+        fitted = FT_PIX_ROUND( scaled );
+      }
 
       if ( fitted != 0 && scaled != fitted )
       {

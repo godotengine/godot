@@ -38,7 +38,7 @@
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)
 
-	bool is_initialized;
+	bool is_initialized = false;
 
 protected:
 	static EditorVCSInterface *singleton;

@@ -54,7 +54,7 @@ class GDMonoMethod : public IMonoClassMember {
 
 	friend class GDMonoClass;
 
-	MonoMethod *mono_method;
+	MonoMethod *mono_method = nullptr;
 
 public:
 	virtual GDMonoClass *get_enclosing_class() const final;

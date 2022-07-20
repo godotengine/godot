@@ -47,34 +47,34 @@ class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	static ProjectSettingsEditor *singleton;
-	ProjectSettings *ps;
-	Timer *timer;
+	ProjectSettings *ps = nullptr;
+	Timer *timer = nullptr;
 
-	TabContainer *tab_container;
-	SectionedInspector *general_settings_inspector;
-	ActionMapEditor *action_map_editor;
-	LocalizationEditor *localization_editor;
-	EditorAutoloadSettings *autoload_settings;
-	ShaderGlobalsEditor *shaders_global_variables_editor;
-	EditorPluginSettings *plugin_settings;
+	TabContainer *tab_container = nullptr;
+	SectionedInspector *general_settings_inspector = nullptr;
+	ActionMapEditor *action_map_editor = nullptr;
+	LocalizationEditor *localization_editor = nullptr;
+	EditorAutoloadSettings *autoload_settings = nullptr;
+	ShaderGlobalsEditor *shaders_global_variables_editor = nullptr;
+	EditorPluginSettings *plugin_settings = nullptr;
 
-	LineEdit *search_box;
-	CheckButton *advanced;
+	LineEdit *search_box = nullptr;
+	CheckButton *advanced = nullptr;
 
-	LineEdit *property_box;
-	OptionButton *feature_box;
-	OptionButton *type_box;
-	Button *add_button;
-	Button *del_button;
+	LineEdit *property_box = nullptr;
+	OptionButton *feature_box = nullptr;
+	OptionButton *type_box = nullptr;
+	Button *add_button = nullptr;
+	Button *del_button = nullptr;
 
-	Label *restart_label;
-	TextureRect *restart_icon;
-	PanelContainer *restart_container;
-	Button *restart_close_button;
+	Label *restart_label = nullptr;
+	TextureRect *restart_icon = nullptr;
+	PanelContainer *restart_container = nullptr;
+	Button *restart_close_button = nullptr;
 
-	ImportDefaultsEditor *import_defaults_editor;
-	EditorData *data;
-	UndoRedo *undo_redo;
+	ImportDefaultsEditor *import_defaults_editor = nullptr;
+	EditorData *data = nullptr;
+	UndoRedo *undo_redo = nullptr;
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _property_box_changed(const String &p_text);
@@ -82,7 +82,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _feature_selected(int p_index);
 	void _select_type(Variant::Type p_type);
 
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	String _get_setting_name() const;
 	void _setting_edited(const String &p_name);

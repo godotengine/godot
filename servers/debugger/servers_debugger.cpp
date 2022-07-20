@@ -89,7 +89,7 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 	Array arr;
 	arr.push_back(frame_number);
 	arr.push_back(frame_time);
-	arr.push_back(idle_time);
+	arr.push_back(process_time);
 	arr.push_back(physics_time);
 	arr.push_back(physics_frame_time);
 	arr.push_back(script_time);
@@ -120,7 +120,7 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, 7, "ServersProfilerFrame");
 	frame_number = p_arr[0];
 	frame_time = p_arr[1];
-	idle_time = p_arr[2];
+	process_time = p_arr[2];
 	physics_time = p_arr[3];
 	physics_frame_time = p_arr[4];
 	script_time = p_arr[5];
@@ -199,7 +199,7 @@ class ServersDebugger::ScriptsProfiler : public EngineProfiler {
 	};
 	Vector<ScriptLanguage::ProfilingInfo> info;
 	Vector<ScriptLanguage::ProfilingInfo *> ptrs;
-	Map<StringName, int> sig_map;
+	HashMap<StringName, int> sig_map;
 	int max_frame_functions = 16;
 
 public:
@@ -277,11 +277,11 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 	typedef ServersDebugger::ServerInfo ServerInfo;
 	typedef ServersDebugger::ServerFunctionInfo ServerFunctionInfo;
 
-	Map<StringName, ServerInfo> server_data;
+	HashMap<StringName, ServerInfo> server_data;
 	ScriptsProfiler scripts_profiler;
 
 	double frame_time = 0;
-	double idle_time = 0;
+	double process_time = 0;
 	double physics_time = 0;
 	double physics_frame_time = 0;
 
@@ -289,16 +289,16 @@ class ServersDebugger::ServersProfiler : public EngineProfiler {
 		ServersDebugger::ServersProfilerFrame frame;
 		frame.frame_number = Engine::get_singleton()->get_process_frames();
 		frame.frame_time = frame_time;
-		frame.idle_time = idle_time;
+		frame.process_time = process_time;
 		frame.physics_time = physics_time;
 		frame.physics_frame_time = physics_frame_time;
-		Map<StringName, ServerInfo>::Element *E = server_data.front();
+		HashMap<StringName, ServerInfo>::Iterator E = server_data.begin();
 		while (E) {
 			if (!p_final) {
-				frame.servers.push_back(E->get());
+				frame.servers.push_back(E->value);
 			}
-			E->get().functions.clear();
-			E = E->next();
+			E->value.functions.clear();
+			++E;
 		}
 		uint64_t time = 0;
 		scripts_profiler.write_frame_data(frame.script_functions, time, p_final);
@@ -340,9 +340,9 @@ public:
 		srv.functions.push_back(fi);
 	}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		frame_time = p_frame_time;
-		idle_time = p_idle_time;
+		process_time = p_process_time;
 		physics_time = p_physics_time;
 		physics_frame_time = p_physics_frame_time;
 		_send_frame_data(false);
@@ -357,7 +357,7 @@ class ServersDebugger::VisualProfiler : public EngineProfiler {
 	typedef ServersDebugger::ServerInfo ServerInfo;
 	typedef ServersDebugger::ServerFunctionInfo ServerFunctionInfo;
 
-	Map<StringName, ServerInfo> server_data;
+	HashMap<StringName, ServerInfo> server_data;
 
 public:
 	void toggle(bool p_enable, const Array &p_opts) {
@@ -366,7 +366,7 @@ public:
 
 	void add(const Array &p_data) {}
 
-	void tick(double p_frame_time, double p_idle_time, double p_physics_time, double p_physics_frame_time) {
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
 		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		ServersDebugger::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {

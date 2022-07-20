@@ -38,6 +38,7 @@
 class Main {
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
+	static uint32_t hide_print_fps_attempts;
 	static uint32_t frames;
 	static uint32_t frame;
 	static bool force_redraw_requested;
@@ -45,11 +46,11 @@ class Main {
 	static bool agile_input_event_flushing;
 
 public:
-	static bool is_project_manager();
 	static bool is_cmdline_tool();
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(Thread::ID p_main_tid_override = 0);
+	static String get_rendering_driver_name();
 #ifdef TESTS_ENABLED
 	static Error test_setup();
 	static void test_cleanup();

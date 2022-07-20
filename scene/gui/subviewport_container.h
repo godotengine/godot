@@ -38,6 +38,7 @@ class SubViewportContainer : public Container {
 
 	bool stretch = false;
 	int shrink = 1;
+	void _notify_viewports(int p_notification);
 
 protected:
 	void _notification(int p_what);
@@ -56,6 +57,8 @@ public:
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
+
+	TypedArray<String> get_configuration_warnings() const override;
 
 	SubViewportContainer();
 };

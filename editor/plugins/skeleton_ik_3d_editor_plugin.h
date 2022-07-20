@@ -33,16 +33,14 @@
 
 #include "editor/editor_plugin.h"
 
-class EditorNode;
 class SkeletonIK3D;
 
 class SkeletonIK3DEditorPlugin : public EditorPlugin {
 	GDCLASS(SkeletonIK3DEditorPlugin, EditorPlugin);
 
-	SkeletonIK3D *skeleton_ik;
+	SkeletonIK3D *skeleton_ik = nullptr;
 
-	Button *play_btn;
-	EditorNode *editor;
+	Button *play_btn = nullptr;
 
 	void _play();
 
@@ -56,7 +54,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	SkeletonIK3DEditorPlugin(EditorNode *p_node);
+	SkeletonIK3DEditorPlugin();
 	~SkeletonIK3DEditorPlugin();
 };
 

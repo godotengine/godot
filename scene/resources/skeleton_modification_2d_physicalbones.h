@@ -52,7 +52,7 @@ private:
 
 	bool _simulation_state_dirty = false;
 	TypedArray<StringName> _simulation_state_dirty_names;
-	bool _simulation_state_dirty_process;
+	bool _simulation_state_dirty_process = false;
 	void _update_simulation_state();
 
 protected:

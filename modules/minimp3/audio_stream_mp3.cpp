@@ -38,7 +38,9 @@
 #include "core/io/file_access.h"
 
 int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!active, 0);
+	if (!active) {
+		return 0;
+	}
 
 	int todo = p_frames;
 
@@ -83,7 +85,7 @@ void AudioStreamPlaybackMP3::start(float p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
-	_begin_resample();
+	begin_resample();
 }
 
 void AudioStreamPlaybackMP3::stop() {

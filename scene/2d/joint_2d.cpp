@@ -50,6 +50,7 @@ void Joint2D::_disconnect_signals() {
 void Joint2D::_body_exit_tree() {
 	_disconnect_signals();
 	_update_joint(true);
+	update_configuration_warnings();
 }
 
 void Joint2D::_update_joint(bool p_only_free) {
@@ -64,7 +65,6 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree()) {
 		PhysicsServer2D::get_singleton()->joint_clear(joint);
 		warning = String();
-		update_configuration_warnings();
 		return;
 	}
 
@@ -77,15 +77,15 @@ void Joint2D::_update_joint(bool p_only_free) {
 	bool valid = false;
 
 	if (node_a && !body_a && node_b && !body_b) {
-		warning = TTR("Node A and Node B must be PhysicsBody2Ds");
+		warning = RTR("Node A and Node B must be PhysicsBody2Ds");
 	} else if (node_a && !body_a) {
-		warning = TTR("Node A must be a PhysicsBody2D");
+		warning = RTR("Node A must be a PhysicsBody2D");
 	} else if (node_b && !body_b) {
-		warning = TTR("Node B must be a PhysicsBody2D");
+		warning = RTR("Node B must be a PhysicsBody2D");
 	} else if (!body_a || !body_b) {
-		warning = TTR("Joint is not connected to two PhysicsBody2Ds");
+		warning = RTR("Joint is not connected to two PhysicsBody2Ds");
 	} else if (body_a == body_b) {
-		warning = TTR("Node A and Node B must be different PhysicsBody2Ds");
+		warning = RTR("Node A and Node B must be different PhysicsBody2Ds");
 	} else {
 		warning = String();
 		valid = true;
@@ -128,7 +128,7 @@ void Joint2D::set_node_a(const NodePath &p_node_a) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -145,7 +145,7 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 		return;
 	}
 
-	if (joint.is_valid()) {
+	if (is_configured()) {
 		_disconnect_signals();
 	}
 
@@ -159,14 +159,18 @@ NodePath Joint2D::get_node_b() const {
 
 void Joint2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (is_configured()) {
+				_disconnect_signals();
+			}
 			_update_joint();
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
-			if (joint.is_valid()) {
+			if (is_configured()) {
 				_disconnect_signals();
-				_update_joint(true);
 			}
+			_update_joint(true);
 		} break;
 	}
 }
@@ -186,7 +190,9 @@ void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
 	if (exclude_from_collision == p_enable) {
 		return;
 	}
-
+	if (is_configured()) {
+		_disconnect_signals();
+	}
 	_update_joint(true);
 	exclude_from_collision = p_enable;
 	_update_joint();
@@ -337,8 +343,8 @@ void GrooveJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initial_offset", "offset"), &GrooveJoint2D::set_initial_offset);
 	ClassDB::bind_method(D_METHOD("get_initial_offset"), &GrooveJoint2D::get_initial_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_initial_offset", "get_initial_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_initial_offset", "get_initial_offset");
 }
 
 GrooveJoint2D::GrooveJoint2D() {
@@ -434,8 +440,8 @@ void DampedSpringJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_damping", "damping"), &DampedSpringJoint2D::set_damping);
 	ClassDB::bind_method(D_METHOD("get_damping"), &DampedSpringJoint2D::get_damping);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp"), "set_rest_length", "get_rest_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_RANGE, "0,65535,1,exp,suffix:px"), "set_rest_length", "get_rest_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stiffness", PROPERTY_HINT_RANGE, "0.1,64,0.1,exp"), "set_stiffness", "get_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0.01,16,0.01,exp"), "set_damping", "get_damping");
 }
