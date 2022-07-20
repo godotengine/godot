@@ -889,12 +889,12 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	Ref<VisualShader> vs = es.shader;
 	if (vs.is_valid()) {
 		es.visual_shader_editor = memnew(VisualShaderEditor);
-		es.visual_shader_editor->edit(vs.ptr());
 		shader_tabs->add_child(es.visual_shader_editor);
+		es.visual_shader_editor->edit(vs.ptr());
 	} else {
 		es.shader_editor = memnew(ShaderEditor);
-		es.shader_editor->edit(s);
 		shader_tabs->add_child(es.shader_editor);
+		es.shader_editor->edit(s);
 	}
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
 	edited_shaders.push_back(es);
