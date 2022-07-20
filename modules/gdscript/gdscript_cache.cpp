@@ -183,20 +183,26 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	return script;
 }
 
-Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
+Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
 	MutexLock lock(singleton->lock);
 
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 
+	Ref<GDScript> script;
 	r_error = OK;
 	if (singleton->full_gdscript_cache.has(p_path)) {
-		return singleton->full_gdscript_cache[p_path];
+		script = Ref<GDScript>(singleton->full_gdscript_cache[p_path]);
+		if (!p_update_from_disk) {
+			return script;
+		}
 	}
 
-	Ref<GDScript> script = get_shallow_script(p_path);
-	ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
+	if (script.is_null()) {
+		script = get_shallow_script(p_path);
+		ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
+	}
 
 	r_error = script->load_source_code(p_path);
 
