@@ -52,6 +52,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
@@ -6983,7 +6984,7 @@ void Node3DEditor::_update_theme() {
 	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
 	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
 
-	context_menu_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), SNAME("EditorStyles")));
+	context_menu_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), SNAME("EditorStyles")));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -7072,11 +7073,11 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 }
 
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
-	hbc_context_menu->add_child(p_control);
+	context_menu_hbox->add_child(p_control);
 }
 
 void Node3DEditor::remove_control_from_menu_panel(Control *p_control) {
-	hbc_context_menu->remove_child(p_control);
+	context_menu_hbox->remove_child(p_control);
 }
 
 void Node3DEditor::set_can_preview(Camera3D *p_preview) {
@@ -7529,8 +7530,13 @@ Node3DEditor::Node3DEditor() {
 
 	camera_override_viewport_id = 0;
 
-	hbc_menu = memnew(HBoxContainer);
-	vbc->add_child(hbc_menu);
+	// A fluid container for all toolbars.
+	HFlowContainer *main_flow = memnew(HFlowContainer);
+	vbc->add_child(main_flow);
+
+	// Main toolbars.
+	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
+	main_flow->add_child(main_menu_hbox);
 
 	Vector<Variant> button_binds;
 	button_binds.resize(1);
@@ -7540,11 +7546,11 @@ Node3DEditor::Node3DEditor() {
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	Control *margin_left = memnew(Control);
-	hbc_menu->add_child(margin_left);
+	main_menu_hbox->add_child(margin_left);
 	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_MODE_SELECT]);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_flat(true);
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
@@ -7553,10 +7559,10 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), Key::Q));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_MODE_MOVE]);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_MOVE;
@@ -7565,7 +7571,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_MOVE]->set_shortcut_context(this);
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_MODE_ROTATE]);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_ROTATE;
@@ -7574,7 +7580,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut_context(this);
 
 	tool_button[TOOL_MODE_SCALE] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_MODE_SCALE]);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_SCALE;
@@ -7582,10 +7588,10 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), Key::R));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LIST_SELECT;
@@ -7593,7 +7599,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show list of selectable nodes at position clicked."));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
+	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	tool_button[TOOL_LOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_LOCK_SELECTED;
 	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
@@ -7602,7 +7608,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD | Key::L));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
+	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
 	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
@@ -7611,7 +7617,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::L));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_GROUP_SELECTED]);
+	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_GROUP_SELECTED;
 	tool_button[TOOL_GROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
@@ -7620,7 +7626,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD | Key::G));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
-	hbc_menu->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
+	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_flat(true);
 	button_binds.write[0] = MENU_UNGROUP_SELECTED;
 	tool_button[TOOL_UNGROUP_SELECTED]->connect("pressed", callable_mp(this, &Node3DEditor::_menu_item_pressed), button_binds);
@@ -7628,10 +7634,10 @@ Node3DEditor::Node3DEditor() {
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G));
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
+	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LOCAL_COORDS;
@@ -7640,7 +7646,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
+	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_USE_SNAP;
@@ -7648,10 +7654,10 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), Key::Y));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA] = memnew(Button);
-	hbc_menu->add_child(tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]);
+	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_flat(true);
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->set_disabled(true);
@@ -7659,7 +7665,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_OVERRIDE_CAMERA]->connect("toggled", callable_mp(this, &Node3DEditor::_menu_item_toggled), button_binds);
 	_update_camera_override_button(false);
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 	sun_button = memnew(Button);
 	sun_button->set_tooltip(TTR("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
@@ -7667,7 +7673,7 @@ Node3DEditor::Node3DEditor() {
 	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
 	sun_button->set_disabled(true);
 
-	hbc_menu->add_child(sun_button);
+	main_menu_hbox->add_child(sun_button);
 
 	environ_button = memnew(Button);
 	environ_button->set_tooltip(TTR("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
@@ -7676,16 +7682,16 @@ Node3DEditor::Node3DEditor() {
 	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), varray(), CONNECT_DEFERRED);
 	environ_button->set_disabled(true);
 
-	hbc_menu->add_child(environ_button);
+	main_menu_hbox->add_child(environ_button);
 
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip(TTR("Edit Sun and Environment settings."));
 	sun_environ_settings->set_flat(true);
 	sun_environ_settings->connect("pressed", callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
-	hbc_menu->add_child(sun_environ_settings);
+	main_menu_hbox->add_child(sun_environ_settings);
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	// Drag and drop support;
 	preview_node = memnew(Node3D);
@@ -7719,7 +7725,7 @@ Node3DEditor::Node3DEditor() {
 	transform_menu->set_text(TTR("Transform"));
 	transform_menu->set_switch_on_hover(true);
 	transform_menu->set_shortcut_context(this);
-	hbc_menu->add_child(transform_menu);
+	main_menu_hbox->add_child(transform_menu);
 
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
@@ -7735,14 +7741,14 @@ Node3DEditor::Node3DEditor() {
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
-	hbc_menu->add_child(view_menu);
+	main_menu_hbox->add_child(view_menu);
 
-	hbc_menu->add_child(memnew(VSeparator));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
-	context_menu_container = memnew(PanelContainer);
-	hbc_context_menu = memnew(HBoxContainer);
-	context_menu_container->add_child(hbc_context_menu);
-	hbc_menu->add_child(context_menu_container);
+	context_menu_panel = memnew(PanelContainer);
+	context_menu_hbox = memnew(HBoxContainer);
+	context_menu_panel->add_child(context_menu_hbox);
+	main_flow->add_child(context_menu_panel);
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_menu->get_popup();
