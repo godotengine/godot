@@ -216,7 +216,6 @@ def configure(env):
             env["AR"] = "gcc-ar"
 
     env.Append(CCFLAGS=["-pipe"])
-    env.Append(LINKFLAGS=["-pipe"])
 
     ## Dependencies
 
