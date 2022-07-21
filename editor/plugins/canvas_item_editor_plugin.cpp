@@ -2282,7 +2282,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 
 				selection_menu_additive_selection = b->is_shift_pressed();
-				selection_menu->set_position(get_screen_position() + b->get_position());
+				selection_menu->set_position(viewport->get_screen_transform().xform(b->get_position()));
 				selection_menu->reset_size();
 				selection_menu->popup();
 				return true;
@@ -5376,7 +5376,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	add_child(selection_menu);
 	selection_menu->set_min_size(Vector2(100, 0));
 	selection_menu->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_selection_result_pressed));
-	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide));
+	selection_menu->connect("popup_hide", callable_mp(this, &CanvasItemEditor::_selection_menu_hide), varray(), CONNECT_DEFERRED);
 
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
