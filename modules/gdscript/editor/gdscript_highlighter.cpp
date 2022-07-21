@@ -84,10 +84,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	const int line_length = str.length();
 	Color prev_color;
 
-	if (in_region != -1 && str.length() == 0) {
+	if (in_region != -1 && line_length == 0) {
 		color_region_cache[p_line] = in_region;
 	}
-	for (int j = 0; j < str.length(); j++) {
+	for (int j = 0; j < line_length; j++) {
 		Dictionary highlighter_info;
 
 		color = font_color;
@@ -244,7 +244,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			is_hex_notation = false;
 		}
 
-		// disallow anything not a 0 or 1
+		// disallow anything not 0 or 1 in binary notation
 		if (is_bin_notation && (is_binary_digit(str[j]))) {
 			is_number = true;
 		} else if (is_bin_notation) {
@@ -285,7 +285,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		if (!in_keyword && is_char && !prev_is_char) {
 			int to = j;
-			while (to < str.length() && !is_symbol(str[to])) {
+			while (to < line_length && !is_symbol(str[to])) {
 				to++;
 			}
 
@@ -318,12 +318,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				in_signal_declaration = true;
 			} else {
 				int k = j;
-				while (k < str.length() && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+				while (k < line_length && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
 					k++;
 				}
 
 				// check for space between name and bracket
-				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+				while (k < line_length && (str[k] == '\t' || str[k] == ' ')) {
 					k++;
 				}
 
@@ -378,7 +378,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (in_variable_declaration || in_function_args) {
 				int k = j;
 				// Skip space
-				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+				while (k < line_length && (str[k] == '\t' || str[k] == ' ')) {
 					k++;
 				}
 
@@ -401,8 +401,20 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_node_path = false;
 		}
 
-		if (!in_node_ref && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
-			in_node_ref = true;
+		// '$' always sets in_node_ref to true, while '%' only does when not used as a binary operator
+		if (!in_node_ref && in_region == -1) {
+			if (str[j] == '$') {
+				in_node_ref = true;
+			} else if (str[j] == '%') {
+				int k = MAX(j - 1, 0);
+				while (k > 0 && (str[k] == '\t' || str[k] == ' ')) {
+					k--;
+				}
+
+				if ((is_symbol(str[k])) && previous_type != REGION && str[k] != ')' && str[k] != ']' && str[k] != '}') {
+					in_node_ref = true;
+				}
+			}
 		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
 			in_node_ref = false;
 		}
@@ -419,12 +431,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_string_name = false;
 		}
 
-		if (in_node_path) {
-			next_type = NODE_PATH;
-			color = node_path_color;
-		} else if (in_node_ref) {
+		if (in_node_ref) {
 			next_type = NODE_REF;
 			color = node_ref_color;
+		} else if (in_node_path) {
+			next_type = NODE_PATH;
+			color = node_path_color;
 		} else if (in_annotation) {
 			next_type = ANNOTATION;
 			color = annotation_color;
