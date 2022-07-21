@@ -47,7 +47,7 @@
 #include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_marshal.h"
-#include "../utils/osx_utils.h"
+#include "../utils/macos_utils.h"
 #include "code_completion.h"
 #include "godotsharp_export.h"
 
@@ -198,10 +198,10 @@ MonoString *godot_icall_Internal_SimplifyGodotPath(MonoString *p_path) {
 	return GDMonoMarshal::mono_string_from_godot(path.simplify_path());
 }
 
-MonoBoolean godot_icall_Internal_IsOsxAppBundleInstalled(MonoString *p_bundle_id) {
-#ifdef OSX_ENABLED
+MonoBoolean godot_icall_Internal_IsMacOSAppBundleInstalled(MonoString *p_bundle_id) {
+#ifdef MACOS_ENABLED
 	String bundle_id = GDMonoMarshal::mono_string_to_godot(p_bundle_id);
-	return (MonoBoolean)osx_is_app_bundle_installed(bundle_id);
+	return (MonoBoolean)macos_is_app_bundle_installed(bundle_id);
 #else
 	(void)p_bundle_id; // UNUSED
 	return (MonoBoolean) false;
@@ -366,7 +366,7 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_UpdateApiAssembliesFromPrebuilt", godot_icall_Internal_UpdateApiAssembliesFromPrebuilt);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_FullTemplatesDir", godot_icall_Internal_FullTemplatesDir);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_SimplifyGodotPath", godot_icall_Internal_SimplifyGodotPath);
-	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_IsOsxAppBundleInstalled", godot_icall_Internal_IsOsxAppBundleInstalled);
+	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_IsMacOSAppBundleInstalled", godot_icall_Internal_IsMacOSAppBundleInstalled);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotIs32Bits", godot_icall_Internal_GodotIs32Bits);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotIsRealTDouble", godot_icall_Internal_GodotIsRealTDouble);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.Internal::internal_GodotMainIteration", godot_icall_Internal_GodotMainIteration);

@@ -407,7 +407,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* Ctrl + Hover symbols */
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	if (k->get_keycode() == Key::META) {
 #else
 	if (k->get_keycode() == Key::CTRL) {

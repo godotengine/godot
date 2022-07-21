@@ -24,7 +24,7 @@ jobs:
             target: release_debug
             tools: true
             tests: true
-            bin: "./bin/godot.osx.opt.tools.64"
+            bin: "./bin/godot.macos.opt.tools.64"
 
           - name: Template (target=release, tools=no)
             cache-name: macos-template
@@ -49,7 +49,7 @@ jobs:
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
-          platform: osx
+          platform: macos
           target: ${{ matrix.target }}
           tools: ${{ matrix.tools }}
           tests: ${{ matrix.tests }}
