@@ -232,6 +232,16 @@ else:
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
 
+if selected_platform == "macos":
+    # Alias for forward compatibility.
+    print('Platform "macos" is still called "osx" in Godot 3.x. Building for platform "osx".')
+    selected_platform = "osx"
+
+if selected_platform == "ios":
+    # Alias for forward compatibility.
+    print('Platform "ios" is still called "iphone" in Godot 3.x. Building for platform "iphone".')
+    selected_platform = "iphone"
+
 if selected_platform in ["linux", "bsd", "linuxbsd"]:
     if selected_platform == "linuxbsd":
         # Alias for forward compatibility.
