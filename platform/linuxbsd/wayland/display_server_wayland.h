@@ -46,14 +46,12 @@
 
 #include "wayland-cursor.h"
 
-#include "wayland.gen.h"
-
-#include "pointer_constraints.gen.h"
-#include "relative_pointer.gen.h"
-
-#include "wlr_data_control.gen.h"
-
-#include "xdg_shell.gen.h"
+// Protocols.
+#include "protocol/pointer_constraints.gen.h"
+#include "protocol/relative_pointer.gen.h"
+#include "protocol/wayland.gen.h"
+#include "protocol/wlr_data_control.gen.h"
+#include "protocol/xdg_shell.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
 #include "linux/input-event-codes.h"

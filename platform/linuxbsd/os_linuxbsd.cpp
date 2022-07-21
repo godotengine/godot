@@ -35,11 +35,11 @@
 #include "servers/display_server.h"
 
 #ifdef X11_ENABLED
-#include "display_server_x11.h"
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef WAYLAND_ENABLED
-#include "display_server_wayland.h"
+#include "wayland/display_server_wayland.h"
 #endif
 
 #ifdef HAVE_MNTENT
