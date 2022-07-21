@@ -12,7 +12,8 @@ WAYLAND_BUILDERS = {
     ),
     "WAYLAND_API_CODE": Builder(
         action=Action(
-            "wayland-scanner -c private-code ${SOURCE} ${TARGET}", 'Building Wayland protocol marshalling code: "${TARGET}"',
+            "wayland-scanner -c private-code ${SOURCE} ${TARGET}",
+            'Building Wayland protocol marshalling code: "${TARGET}"',
         ),
         single_source=True,
     ),
