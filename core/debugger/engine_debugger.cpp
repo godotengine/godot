@@ -43,6 +43,8 @@ HashMap<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
 HashMap<StringName, EngineDebugger::Capture> EngineDebugger::captures;
 HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 
+void (*EngineDebugger::allow_focus_steal_fn)();
+
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
 	ERR_FAIL_COND_MSG(profilers.has(p_name), "Profiler already registered: " + p_name);
 	profilers.insert(p_name, p_func);
@@ -133,7 +135,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 	singleton->poll_events(true);
 }
 
-void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
+void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints, void (*p_allow_focus_steal_fn)()) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.is_empty()) {
 		return;
@@ -174,6 +176,8 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 
 		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
 	}
+
+	allow_focus_steal_fn = p_allow_focus_steal_fn;
 }
 
 void EngineDebugger::deinitialize() {
