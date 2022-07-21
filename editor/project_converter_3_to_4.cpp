@@ -1973,6 +1973,9 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
+	valid = valid & test_conversion_single_additional("\tvar aa = state.intersect_ray( a, b, c, d, e, f )", "\tvar ray_query = PhysicsRayQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D ray, you need to figure it out yourself!\n\tray_query.from = a\n\tray_query.to = b\n\tray_query.exclude = c\n\tray_query.collision_mask = d\n\tray_query.collide_with_bodies = e\n\tray_query.collide_with_areas = f\n\tvar aa = state.intersect_ray(ray_query)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("\tvar aa = state.intersect_point( a, b, c, d, e, f )", "\tvar point_query = PhysicsPointQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D point, you need to figure it out yourself!\n\tpoint_query.position = a\n\tpoint_query.exclude = c\n\tpoint_query.collision_mask = d\n\tpoint_query.collide_with_bodies = e\n\tpoint_query.collide_with_areas = f\n\tvar aa = state.intersect_point(point_query, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+
 	valid = valid & test_conversion_single_additional("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
@@ -2804,6 +2807,98 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 			}
 		}
 
+		// -- r.intersect_ray( a, b, c, d, e )  ->  var ray_query = ... ray_query.from = from ... r.intersect_ray(ray_query)         PhysicsDirectSpaceState2D & PhysicsDirectSpaceState3D
+		if (line.find("intersect_ray(") != -1) {
+			int start = line.find("intersect_ray(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				String base_obj = get_object_of_execution(line.substr(0, start));
+				String starting_space = get_starting_space(line);
+
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() >= 2) {
+					String line_new;
+
+					line_new += starting_space + "var ray_query = PhysicsRayQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D ray, you need to figure it out yourself!\n";
+
+					// from & to
+					line_new += starting_space + "ray_query.from = " + parts[0] + "\n";
+					line_new += starting_space + "ray_query.to = " + parts[1] + "\n";
+
+					// exclude
+					if (parts.size() >= 3) {
+						line_new += starting_space + "ray_query.exclude = " + parts[2] + "\n";
+					}
+
+					// collision_layer
+					if (parts.size() >= 4) {
+						line_new += starting_space + "ray_query.collision_mask = " + parts[3] + "\n";
+					}
+
+					// collide_with_bodies
+					if (parts.size() >= 5) {
+						line_new += starting_space + "ray_query.collide_with_bodies = " + parts[4] + "\n";
+					}
+
+					// collide_with_areas
+					if (parts.size() >= 6) {
+						line_new += starting_space + "ray_query.collide_with_areas = " + parts[5] + "\n";
+					}
+
+					line = line_new + line.substr(0, start) + "intersect_ray(ray_query)" + line.substr(end + start);
+				}
+			}
+		}
+
+		// -- r.intersect_point( a, b, c, d, e )  ->  var point_query = ... point_query.position = position ... r.intersect_point(point_query)         PhysicsDirectSpaceState2D & PhysicsDirectSpaceState3D
+		if (line.find("intersect_point(") != -1) {
+			int start = line.find("intersect_point(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				String base_obj = get_object_of_execution(line.substr(0, start));
+				String starting_space = get_starting_space(line);
+
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() >= 1) {
+					String line_new;
+
+					String max_results;
+
+					line_new += starting_space + "var point_query = PhysicsPointQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D point, you need to figure it out yourself!\n";
+
+					// position
+					line_new += starting_space + "point_query.position = " + parts[0] + "\n";
+
+					// max_results
+					if (parts.size() >= 2) {
+						max_results = ", " + parts[1];
+					}
+
+					// exclude
+					if (parts.size() >= 3) {
+						line_new += starting_space + "point_query.exclude = " + parts[2] + "\n";
+					}
+
+					// collision_layer
+					if (parts.size() >= 4) {
+						line_new += starting_space + "point_query.collision_mask = " + parts[3] + "\n";
+					}
+
+					// collide_with_bodies
+					if (parts.size() >= 5) {
+						line_new += starting_space + "point_query.collide_with_bodies = " + parts[4] + "\n";
+					}
+
+					// collide_with_areas
+					if (parts.size() >= 6) {
+						line_new += starting_space + "point_query.collide_with_areas = " + parts[5] + "\n";
+					}
+
+					line = line_new + line.substr(0, start) + "intersect_point(point_query" + max_results + ")" + line.substr(end + start);
+				}
+			}
+		}
+
 		// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
 		if (line.find("sort_custom(") != -1) {
 			int start = line.find("sort_custom(");
@@ -3245,6 +3340,98 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 					}
 
 					line = line_new + line.substr(0, start) + "move_and_slide()" + line.substr(end + start);
+				}
+			}
+		}
+
+		// -- r.intersect_ray( a, b, c, d, e )  ->  var ray_query = ... ray_query.from = from ... r.intersect_ray(ray_query)         PhysicsDirectSpaceState2D & PhysicsDirectSpaceState3D
+		if (line.find("intersect_ray(") != -1) {
+			int start = line.find("intersect_ray(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				String base_obj = get_object_of_execution(line.substr(0, start));
+				String starting_space = get_starting_space(line);
+
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() >= 2) {
+					String line_new;
+
+					line_new += starting_space + "var ray_query = PhysicsRayQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D ray, you need to figure it out yourself!\n";
+
+					// from & to
+					line_new += starting_space + "ray_query.from = " + parts[0] + "\n";
+					line_new += starting_space + "ray_query.to = " + parts[1] + "\n";
+
+					// exclude
+					if (parts.size() >= 3) {
+						line_new += starting_space + "ray_query.exclude = " + parts[2] + "\n";
+					}
+
+					// collision_layer
+					if (parts.size() >= 4) {
+						line_new += starting_space + "ray_query.collision_mask = " + parts[3] + "\n";
+					}
+
+					// collide_with_bodies
+					if (parts.size() >= 5) {
+						line_new += starting_space + "ray_query.collide_with_bodies = " + parts[4] + "\n";
+					}
+
+					// collide_with_areas
+					if (parts.size() >= 6) {
+						line_new += starting_space + "ray_query.collide_with_areas = " + parts[5] + "\n";
+					}
+
+					line = line_new + line.substr(0, start) + "intersect_ray(ray_query)" + line.substr(end + start);
+				}
+			}
+		}
+
+		// -- r.intersect_point( a, b, c, d, e )  ->  var point_query = ... point_query.position = position ... r.intersect_point(point_query)         PhysicsDirectSpaceState2D & PhysicsDirectSpaceState3D
+		if (line.find("intersect_point(") != -1) {
+			int start = line.find("intersect_point(");
+			int end = get_end_parenthess(line.substr(start)) + 1;
+			if (end > -1) {
+				String base_obj = get_object_of_execution(line.substr(0, start));
+				String starting_space = get_starting_space(line);
+
+				Vector<String> parts = parse_arguments(line.substr(start, end));
+				if (parts.size() >= 1) {
+					String line_new;
+
+					String max_results;
+
+					line_new += starting_space + "var point_query = PhysicsPointQueryParameters2D.new()  # TODOConverter40 no idea if this is 2D or 3D point, you need to figure it out yourself!\n";
+
+					// position
+					line_new += starting_space + "point_query.position = " + parts[0] + "\n";
+
+					// max_results
+					if (parts.size() >= 2) {
+						max_results = ", " + parts[1];
+					}
+
+					// exclude
+					if (parts.size() >= 3) {
+						line_new += starting_space + "point_query.exclude = " + parts[2] + "\n";
+					}
+
+					// collision_layer
+					if (parts.size() >= 4) {
+						line_new += starting_space + "point_query.collision_mask = " + parts[3] + "\n";
+					}
+
+					// collide_with_bodies
+					if (parts.size() >= 5) {
+						line_new += starting_space + "point_query.collide_with_bodies = " + parts[4] + "\n";
+					}
+
+					// collide_with_areas
+					if (parts.size() >= 6) {
+						line_new += starting_space + "point_query.collide_with_areas = " + parts[5] + "\n";
+					}
+
+					line = line_new + line.substr(0, start) + "intersect_point(point_query" + max_results + ")" + line.substr(end + start);
 				}
 			}
 		}
