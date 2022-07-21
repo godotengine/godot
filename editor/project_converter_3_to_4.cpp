@@ -2209,7 +2209,7 @@ bool ProjectConverter3To4::test_array_names() {
 
 			// Callable is special class, to which normal classes may be renamed
 			if (!ClassDB::class_exists(StringName(new_class)) && new_class != "Callable") {
-				ERR_PRINT(String("Class `") + new_class + "` doesn't exists in Godot 4.0, so cannot be used in convertion.");
+				ERR_PRINT(String("Class `") + new_class + "` doesn't exists in Godot 4.0, so cannot be used in conversion.");
 				valid = false; // This probably should be only a warning, but not 100% sure - this would need to be added to CI
 			}
 			current_index++;
@@ -2295,7 +2295,7 @@ bool ProjectConverter3To4::test_array_names() {
 }
 
 // Validate in one array if names don't do cyclic renames `Node` -> `Node2D` | `Node2D` -> `2DNode`
-// Also checks if in name contains spaces at the end or beggining
+// Also checks if in name contains spaces at the end or beginning
 bool ProjectConverter3To4::test_single_array(const char *array[][2], bool ignore_second_check) {
 	bool valid = true;
 	int current_index = 0;
