@@ -95,7 +95,7 @@ void VRS::create_vrs_texture(const int p_base_width, const int p_base_height, co
 	// TODO find a way to skip this if VRS is not supported, but we don't have access to VulkanContext here, even though we're in vulkan.. hmmm
 
 	// TODO we should find some way to store this properly, we're assuming 16x16 as this seems to be the standard but in our vrs_capacities we
-	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistantly set when creating
+	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistently set when creating
 	// our frame buffer. Also it is important that we make the resulting size we calculate down below available to the end user so they know the size
 	// of the VRS buffer to supply.
 	Size2i texel_size = Size2i(16, 16);

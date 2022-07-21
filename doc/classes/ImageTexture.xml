@@ -47,7 +47,7 @@
 			<argument index="0" name="image" type="Image" />
 			<description>
 				Replaces the texture's data with a new [Image]. This will re-allocate new memory for the texture.
-				If you want to update the image, but don't need to change its paramters (format, size), use [method update] instead for better performance.
+				If you want to update the image, but don't need to change its parameters (format, size), use [method update] instead for better performance.
 			</description>
 		</method>
 		<method name="set_size_override">

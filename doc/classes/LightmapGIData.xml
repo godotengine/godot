@@ -22,7 +22,7 @@
 		<method name="clear_users">
 			<return type="void" />
 			<description>
-				Clear all objects that are considred baked within this [LightmapGIData].
+				Clear all objects that are considered baked within this [LightmapGIData].
 			</description>
 		</method>
 		<method name="get_user_count" qualifiers="const">
