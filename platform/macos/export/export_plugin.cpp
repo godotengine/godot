@@ -706,9 +706,20 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 
 	f->store_line("#!/bin/sh");
 	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
-	f->store_line("function realpath() { python -c \"import os,sys; print(os.path.realpath(sys.argv[1]))\" \"$0\"; }");
-	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
-	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
+	f->store_line("");
+	f->store_line("function app_realpath() {");
+	f->store_line("    SOURCE=$1");
+	f->store_line("    while [ -h \"$SOURCE\" ]; do");
+	f->store_line("        DIR=$(dirname \"$SOURCE\")");
+	f->store_line("        SOURCE=$(readlink \"$SOURCE\")");
+	f->store_line("        [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE");
+	f->store_line("    done");
+	f->store_line("    echo \"$( cd -P \"$( dirname \"$SOURCE\" )\" >/dev/null 2>&1 && pwd )\"");
+	f->store_line("}");
+	f->store_line("");
+	f->store_line("BASE_PATH=\"$(app_realpath \"${BASH_SOURCE[0]}\")\"");
+	f->store_line("\"$BASE_PATH/" + p_pkg_name + "\" \"$@\"");
+	f->store_line("");
 
 	return OK;
 }
