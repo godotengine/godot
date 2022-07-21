@@ -52,7 +52,7 @@ struct _NO_DISCARD_ Plane {
 
 	_FORCE_INLINE_ bool is_point_over(const Vector3 &p_point) const; ///< Point is over plane
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_point) const;
-	_FORCE_INLINE_ bool has_point(const Vector3 &p_point, real_t _epsilon = CMP_EPSILON) const;
+	_FORCE_INLINE_ bool has_point(const Vector3 &p_point, real_t p_tolerance = CMP_EPSILON) const;
 
 	/* intersections */
 
@@ -97,10 +97,10 @@ real_t Plane::distance_to(const Vector3 &p_point) const {
 	return (normal.dot(p_point) - d);
 }
 
-bool Plane::has_point(const Vector3 &p_point, real_t _epsilon) const {
+bool Plane::has_point(const Vector3 &p_point, real_t p_tolerance) const {
 	real_t dist = normal.dot(p_point) - d;
 	dist = ABS(dist);
-	return (dist <= _epsilon);
+	return (dist <= p_tolerance);
 }
 
 Plane::Plane(const Vector3 &p_normal, real_t p_d) :

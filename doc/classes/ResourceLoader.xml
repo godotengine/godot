@@ -18,7 +18,7 @@
 			<argument index="1" name="at_front" type="bool" default="false" />
 			<description>
 				Registers a new [ResourceFormatLoader]. The ResourceLoader will use the ResourceFormatLoader as described in [method load].
-				This method is performed implictly for ResourceFormatLoaders written in GDScript (see [ResourceFormatLoader] for more information).
+				This method is performed implicitly for ResourceFormatLoaders written in GDScript (see [ResourceFormatLoader] for more information).
 			</description>
 		</method>
 		<method name="exists">

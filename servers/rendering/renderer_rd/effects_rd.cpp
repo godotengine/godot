@@ -1304,7 +1304,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 	{
 		Vector<String> FSR_upscale_modes;
 
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 		// MoltenVK does not support some of the operations used by the normal mode of FSR. Fallback works just fine though.
 		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
 #else

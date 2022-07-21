@@ -292,7 +292,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	path = path.plus_file("blender");
 #endif
 
-#if defined(OSX_ENABLED)
+#if defined(MACOS_ENABLED)
 	if (!FileAccess::exists(path)) {
 		path = path.plus_file("Blender");
 	}
@@ -468,7 +468,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		// Autodetect
 		auto_detected_path = "";
 
-#if defined(OSX_ENABLED)
+#if defined(MACOS_ENABLED)
 
 		{
 			Vector<String> mdfind_paths;

@@ -1732,7 +1732,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Plane, is_equal_approx, sarray("to_plane"), varray());
 	bind_method(Plane, is_point_over, sarray("plane"), varray());
 	bind_method(Plane, distance_to, sarray("point"), varray());
-	bind_method(Plane, has_point, sarray("point", "epsilon"), varray(CMP_EPSILON));
+	bind_method(Plane, has_point, sarray("point", "tolerance"), varray(CMP_EPSILON));
 	bind_method(Plane, project, sarray("point"), varray());
 	bind_methodv(Plane, intersect_3, &Plane::intersect_3_bind, sarray("b", "c"), varray());
 	bind_methodv(Plane, intersects_ray, &Plane::intersects_ray_bind, sarray("from", "dir"), varray());

@@ -380,7 +380,7 @@ namespace GodotTools.Export
 
         private static bool PlatformHasTemplateDir(string platform)
         {
-            // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
+            // macOS export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
             return !new[] { OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform);
         }
 

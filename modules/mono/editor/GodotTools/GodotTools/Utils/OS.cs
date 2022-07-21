@@ -37,13 +37,13 @@ namespace GodotTools.Utils
         public static class Platforms
         {
             public const string Windows = "windows";
-            public const string MacOS = "osx";
+            public const string MacOS = "macos";
             public const string LinuxBSD = "linuxbsd";
             public const string Server = "server";
             public const string UWP = "uwp";
             public const string Haiku = "haiku";
             public const string Android = "android";
-            public const string iOS = "iphone";
+            public const string iOS = "ios";
             public const string HTML5 = "javascript";
         }
 

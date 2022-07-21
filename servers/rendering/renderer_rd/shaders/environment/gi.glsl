@@ -659,7 +659,7 @@ void main() {
 	if (sc_use_vrs) {
 		ivec2 vrs_pos;
 
-		// Currenty we use a 16x16 texel, possibly some day make this configurable.
+		// Currently we use a 16x16 texel, possibly some day make this configurable.
 		if (sc_half_res) {
 			vrs_pos = pos >> 3;
 		} else {

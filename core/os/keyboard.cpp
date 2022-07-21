@@ -61,7 +61,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::PAGEDOWN              ,"PageDown"},
 	{Key::SHIFT                 ,"Shift"},
 	{Key::CTRL                  ,"Ctrl"},
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	{Key::META                  ,"Command"},
 #else
 	{Key::META                  ,"Meta"},

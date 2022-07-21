@@ -272,7 +272,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		} else {
 			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
-			p_log->add_text(TTR("Completed sucessfully."));
+			p_log->add_text(TTR("Completed successfully."));
 			if (msg_count > 0) {
 				has_messages = true;
 			}
@@ -698,12 +698,12 @@ String EditorExportPlugin::get_ios_cpp_code() const {
 	return ios_cpp_code;
 }
 
-void EditorExportPlugin::add_osx_plugin_file(const String &p_path) {
-	osx_plugin_files.push_back(p_path);
+void EditorExportPlugin::add_macos_plugin_file(const String &p_path) {
+	macos_plugin_files.push_back(p_path);
 }
 
-const Vector<String> &EditorExportPlugin::get_osx_plugin_files() const {
-	return osx_plugin_files;
+const Vector<String> &EditorExportPlugin::get_macos_plugin_files() const {
+	return macos_plugin_files;
 }
 
 void EditorExportPlugin::add_ios_project_static_lib(const String &p_path) {
@@ -746,7 +746,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_ios_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
-	ClassDB::bind_method(D_METHOD("add_osx_plugin_file", "path"), &EditorExportPlugin::add_osx_plugin_file);
+	ClassDB::bind_method(D_METHOD("add_macos_plugin_file", "path"), &EditorExportPlugin::add_macos_plugin_file);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
