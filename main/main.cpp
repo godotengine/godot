@@ -148,7 +148,7 @@ static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
-static OS::ProcessID allow_focus_steal_pid = 0;
+static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
@@ -1140,9 +1140,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--allow_focus_steal_pid") { // not exposed to user
+		} else if (I->get() == "--editor-pid") { // not exposed to user
 			if (I->next()) {
-				allow_focus_steal_pid = I->next()->get().to_int();
+				editor_pid = I->next()->get().to_int();
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
@@ -1272,7 +1272,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE,
 					"0, 200, 1, or_greater"));
 
-	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints);
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
+		if (editor_pid) {
+			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
+		}
+	});
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -1835,10 +1839,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 	if (init_always_on_top) {
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
-	}
-
-	if (allow_focus_steal_pid) {
-		DisplayServer::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
 	MAIN_PRINT("Main: Load Boot Image");
