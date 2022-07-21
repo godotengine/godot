@@ -40,6 +40,9 @@ def get_flags():
     return [
         ("arch", detect_arch()),
         ("use_volk", False),
+        # Benefits of LTO for macOS (size, performance) haven't been clearly established yet.
+        # So for now we override the default value which may be set when using `production=yes`.
+        ("lto", "none"),
     ]
 
 
@@ -165,6 +168,15 @@ def configure(env):
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
+
+    # LTO
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += ".san"

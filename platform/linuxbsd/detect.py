@@ -31,7 +31,6 @@ def get_opts():
     return [
         EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_thinlto", "Use ThinLTO (LLVM only, requires linker=lld, implies use_lto=yes)", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -129,13 +128,6 @@ def configure(env):
         else:
             env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
 
-    if env["use_thinlto"]:
-        if not env["use_llvm"] or env["linker"] != "lld":
-            print("ThinLTO is only compatible with LLVM and the LLD linker, use `use_llvm=yes linker=lld`.")
-            sys.exit(255)
-        else:
-            env["use_lto"] = True  # ThinLTO implies LTO
-
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -178,8 +170,12 @@ def configure(env):
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
-    if env["use_lto"]:
-        if env["use_thinlto"]:
+    # LTO
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            if not env["use_llvm"]:
+                print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+                sys.exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
         elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
