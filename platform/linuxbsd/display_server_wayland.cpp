@@ -418,64 +418,6 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 	}
 }
 
-void DisplayServerWayland::_delete_window(WindowID p_window) {
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		DEBUG_LOG_WAYLAND(vformat("Deleting popup %d.", p_window));
-	} else {
-		DEBUG_LOG_WAYLAND(vformat("Deleting window %d.", p_window));
-	}
-
-	if (window_get_flag(WINDOW_FLAG_POPUP, p_window) && wls.popup_menu_stack.size() > 0) {
-		WindowID &top_id = wls.popup_menu_stack.front()->get();
-		if (top_id != p_window) {
-			print_error(vformat("Deleting popup menu %d which is not the topmost in the stack.", top_id));
-		}
-
-		wls.popup_menu_stack.pop_front();
-	}
-
-	while (wd.children.size()) {
-		// Unparent all children of the window.
-		window_set_transient(wd.children.front()->get(), INVALID_WINDOW_ID);
-	}
-
-	if (wd.parent != INVALID_WINDOW_ID) {
-		window_set_transient(p_window, INVALID_WINDOW_ID);
-	}
-
-#ifdef VULKAN_ENABLED
-	if (wls.context_vulkan && wd.visible) {
-		wls.context_vulkan->window_destroy(p_window);
-		wd.visible = false;
-	}
-#endif
-
-	if (wd.xdg_popup) {
-		xdg_popup_destroy(wd.xdg_popup);
-		wd.xdg_popup = nullptr;
-	}
-
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_destroy(wd.xdg_toplevel);
-		wd.xdg_toplevel = nullptr;
-	}
-
-	if (wd.xdg_surface) {
-		xdg_surface_destroy(wd.xdg_surface);
-		wd.xdg_surface = nullptr;
-	}
-
-	if (wd.wl_surface) {
-		wl_surface_destroy(wd.wl_surface);
-		wd.wl_surface = nullptr;
-	}
-
-	wls.windows.erase(p_window);
-}
-
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState *)data;
 
@@ -1674,9 +1616,59 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 	MutexLock mutex_lock(wls.mutex);
 
+	ERR_FAIL_COND(!wls.windows.has(p_id));
+
 	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted.");
 
-	_delete_window(p_id);
+	WindowData &wd = wls.windows[p_id];
+
+	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
+		DEBUG_LOG_WAYLAND(vformat("Destroying popup %d.", p_id));
+	} else {
+		DEBUG_LOG_WAYLAND(vformat("Destroying window %d.", p_id));
+	}
+
+	if (window_get_flag(WINDOW_FLAG_POPUP, p_id) && wls.popup_menu_stack.size() > 0) {
+		WindowID &top_id = wls.popup_menu_stack.front()->get();
+		if (top_id != p_id) {
+			print_error(vformat("Destroying popup menu %d which is not the topmost in the stack.", top_id));
+		}
+
+		wls.popup_menu_stack.pop_front();
+	}
+
+	while (wd.children.size()) {
+		// Unparent all children of the window.
+		window_set_transient(wd.children.front()->get(), INVALID_WINDOW_ID);
+	}
+
+	if (wd.parent != INVALID_WINDOW_ID) {
+		window_set_transient(p_id, INVALID_WINDOW_ID);
+	}
+
+#ifdef VULKAN_ENABLED
+	if (wls.context_vulkan && wd.visible) {
+		wls.context_vulkan->window_destroy(p_id);
+	}
+#endif
+
+	if (wd.xdg_popup) {
+		xdg_popup_destroy(wd.xdg_popup);
+	}
+
+	if (wd.xdg_toplevel) {
+		xdg_toplevel_destroy(wd.xdg_toplevel);
+	}
+
+	if (wd.xdg_surface) {
+		xdg_surface_destroy(wd.xdg_surface);
+	}
+
+	if (wd.wl_surface) {
+		wl_surface_destroy(wd.wl_surface);
+	}
+
+	wls.windows.erase(p_id);
 }
 
 DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
@@ -2422,7 +2414,29 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// Destroy all windows.
 	for (KeyValue<WindowID, WindowData> &E : wls.windows) {
 		WindowID id = E.key;
-		_delete_window(id);
+		WindowData &wd = E.value;
+
+#ifdef VULKAN_ENABLED
+		if (wls.context_vulkan && wd.visible) {
+			wls.context_vulkan->window_destroy(id);
+		}
+#endif
+
+		if (wd.xdg_popup) {
+			xdg_popup_destroy(wd.xdg_popup);
+		}
+
+		if (wd.xdg_toplevel) {
+			xdg_toplevel_destroy(wd.xdg_toplevel);
+		}
+
+		if (wd.xdg_surface) {
+			xdg_surface_destroy(wd.xdg_surface);
+		}
+
+		if (wd.wl_surface) {
+			wl_surface_destroy(wd.wl_surface);
+		}
 	}
 
 	for (SeatState &seat : wls.seats) {

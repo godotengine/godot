@@ -298,7 +298,6 @@ class DisplayServerWayland : public DisplayServer {
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	void _send_window_event(WindowID p_window, WindowEvent p_event);
-	void _delete_window(WindowID p_window);
 
 	static void _poll_events_thread(void *p_wls);
 
