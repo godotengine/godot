@@ -3441,9 +3441,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 
 		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// debugger break did not happen
-
+			// Debug break did not happen, usually because it is unsupported for additional threads.
 			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+
+			// Submit error to debugger also, which works for additional threads, even though debugging does not.
+			if (EngineDebugger::is_active()) {
+				EngineDebugger::get_singleton()->send_error(err_func, err_file, err_line, "Breakpoint could not be triggered due to engine limitations.", err_text, false, ERR_HANDLER_SCRIPT, true);
+			}
 		}
 
 		// Get a default return type in case of failure

@@ -79,8 +79,8 @@ private:
 
 	// Make handlers and send_message thread safe.
 	Mutex mutex;
-	bool flushing = false;
-	Thread::ID flush_thread = 0;
+	SafeFlag flushing;
+	SafeNumeric<Thread::ID> flush_thread;
 
 	PrintHandlerList phl;
 	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);
@@ -106,7 +106,7 @@ public:
 	// Overrides
 	void poll_events(bool p_is_idle);
 	void send_message(const String &p_message, const Array &p_args);
-	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, bool p_thread_safe);
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);

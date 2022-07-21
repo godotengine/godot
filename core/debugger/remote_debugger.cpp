@@ -191,7 +191,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 	}
 
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
-	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
+	if (rd->flushing.is_set() && Thread::get_caller_id() == rd->flush_thread.get()) { // Can't handle recursive errors during flush.
 		return;
 	}
 
@@ -211,7 +211,7 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 
-	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive prints during flush.
+	if (rd->flushing.is_set() && Thread::get_caller_id() == rd->flush_thread.get()) { // Can't handle recursive prints during flush.
 		return;
 	}
 
@@ -268,8 +268,8 @@ RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String
 }
 
 void RemoteDebugger::flush_output() {
-	flush_thread = Thread::get_caller_id();
-	flushing = true;
+	flush_thread.set(Thread::get_caller_id());
+	flushing.set();
 	MutexLock lock(mutex);
 	if (!is_peer_connected()) {
 		return;
@@ -339,7 +339,7 @@ void RemoteDebugger::flush_output() {
 		warn_count = 0;
 		n_warnings_dropped = 0;
 	}
-	flushing = false;
+	flushing.clear();
 }
 
 void RemoteDebugger::send_message(const String &p_message, const Array &p_args) {
@@ -349,7 +349,7 @@ void RemoteDebugger::send_message(const String &p_message, const Array &p_args) 
 	}
 }
 
-void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
+void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, bool p_thread_safe) {
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
@@ -362,9 +362,13 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.min = (time / 60000) % 60;
 	oe.sec = (time / 1000) % 60;
 	oe.msec = time % 1000;
-	oe.callstack.append_array(script_debugger->get_error_stack_info());
 
-	if (flushing && Thread::get_caller_id() == flush_thread) { // Can't handle recursive errors during flush.
+	if (!p_thread_safe) {
+		// this isn't thread safe
+		oe.callstack.append_array(script_debugger->get_error_stack_info());
+	}
+
+	if (flushing.is_set() && Thread::get_caller_id() == flush_thread.get()) { // Can't handle recursive errors during flush.
 		return;
 	}
 
@@ -651,6 +655,7 @@ Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
+	flush_thread.set(0);
 	peer = p_peer;
 	max_chars_per_second = GLOBAL_GET("network/limits/debugger/max_chars_per_second");
 	max_errors_per_second = GLOBAL_GET("network/limits/debugger/max_errors_per_second");
