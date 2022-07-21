@@ -1968,7 +1968,7 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("(Disconnect(A,B,C) != OK):", "(Disconnect(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename csharp");
 	valid = valid & test_conversion_single_additional("(IsConnected(A,B,C) != OK):", "(IsConnected(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename");
 
-	valid = valid & test_conversion_single_additional("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\"display/window/size/fullscreen\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
 	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_motion_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tvar aa = roman(r.move_and_slide()) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
@@ -2015,7 +2015,7 @@ bool ProjectConverter3To4::test_conversion() {
 
 	valid = valid & test_conversion_single_additional("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
-	valid = valid & test_conversion_single_additional("yield(this, \"timeout\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("yield(this, \\\"timeout\\\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
 	valid = valid & test_conversion_single_additional(" Transform.xform(Vector3(a,b,c)) ", " Transform * Vector3(a,b,c) ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional(" Transform.xform_inv(Vector3(a,b,c)) ", " Vector3(a,b,c) * Transform ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
@@ -2043,7 +2043,8 @@ bool ProjectConverter3To4::test_conversion() {
 	valid = valid & test_conversion_single_additional("'.a'", "'.a'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("\t._input(_event)", "\tsuper._input(_event)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 
-	valid = valid & test_conversion_single_additional("(start(A,B,C,D,E,F,G) != OK):", "(start(A,Callable(B,C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("(start(A,B) != OK):", "(start(Callable(A,B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
+	valid = valid & test_conversion_single_additional("(start(A,B,C,D,E,F,G) != OK):", "(start(Callable(A,B).bind(C,D,E,F,G)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("(connect(A,B,C,D,E,F,G) != OK):", "(connect(A,Callable(B,C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
 	valid = valid & test_conversion_single_additional("disconnect(A,B,C) != OK):", "disconnect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename");
@@ -2706,7 +2707,7 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 		line = reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
 
 		// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
-		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
+		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", $1)", true);
 
 		// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
 		if (line.find("move_and_slide(") != -1) {
@@ -2862,7 +2863,7 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 			if (end > -1) {
 				Vector<String> parts = parse_arguments(line.substr(start, end));
 				if (parts.size() == 2) {
-					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
+					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\\\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
 				}
 			}
 		}
@@ -2941,14 +2942,17 @@ void ProjectConverter3To4::rename_gdscript_functions(String &file_content) {
 				}
 			}
 		}
-		// -- start(a,b,c) -> start(a,Callable(b,c))      Thread
+		// -- start(a,b) -> start(Callable(a,b))      Thread
+		// -- start(a,b,c,d) -> start(Callable(a,b).bind(c,d))      Thread
 		if (line.find("start(") != -1) {
 			int start = line.find("start(");
 			int end = get_end_parenthess(line.substr(start)) + 1;
 			if (end > -1) {
 				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 3) {
-					line = line.substr(0, start) + "start(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
+				} else if (parts.size() >= 3) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + ").bind(" + connect_arguments(parts, 2).substr(1) + "))" + line.substr(end + start);
 				}
 			}
 		}
@@ -3148,7 +3152,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 		line = reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
 
 		// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
-		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
+		line = reg_os_fullscreen.sub(line, "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", $1)", true);
 
 		// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_motion_velocity(a) ... r.move_and_slide()         KinematicBody
 		if (line.find("move_and_slide(") != -1) {
@@ -3295,7 +3299,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 			if (end > -1) {
 				Vector<String> parts = parse_arguments(line.substr(start, end));
 				if (parts.size() == 2) {
-					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
+					line = line.substr(0, start) + "await " + parts[0] + "." + parts[1].replace("\\\"", "").replace("\'", "").replace(" ", "") + line.substr(end + start);
 				}
 			}
 		}
@@ -3370,14 +3374,17 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 				}
 			}
 		}
-		// -- start(a,b,c) -> start(a,Callable(b,c))      Thread
+		// -- start(a,b) -> start(Callable(a,b))      Thread
+		// -- start(a,b,c,d) -> start(Callable(a,b).bind(c,d))      Thread
 		if (line.find("start(") != -1) {
 			int start = line.find("start(");
 			int end = get_end_parenthess(line.substr(start)) + 1;
 			if (end > -1) {
 				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() >= 3) {
-					line = line.substr(0, start) + "start(" + parts[0] + ",Callable(" + parts[1] + "," + parts[2] + ")" + connect_arguments(parts, 3) + ")" + line.substr(end + start);
+				if (parts.size() == 2) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + "))" + line.substr(end + start);
+				} else if (parts.size() >= 3) {
+					line = line.substr(0, start) + "start(Callable(" + parts[0] + "," + parts[1] + ").bind(" + connect_arguments(parts, 2).substr(1) + ")" + line.substr(end + start);
 				}
 			}
 		}
