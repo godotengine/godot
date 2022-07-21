@@ -616,8 +616,17 @@
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
 		</member>
+		<member name="gui/common/default_scroll_damping" type="float" setter="" getter="" default="1.0">
+			Default value for [member ScrollContainer.scroll_damping], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
+		<member name="gui/common/default_scroll_pan_gesture_sensitivity" type="float" setter="" getter="" default="1.0">
+			Default value for [member ScrollContainer.pan_gesture_sensitivity], which will be used for all [ScrollContainer]s unless overridden.
+		</member>
+		<member name="gui/common/default_scroll_wheel_sensitivity" type="float" setter="" getter="" default="1.0">
+			Default value for [member ScrollContainer.scroll_wheel_sensitivity], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
 			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
