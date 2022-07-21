@@ -1752,7 +1752,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, dot, sarray("with"), varray());
 	bind_method(Quaternion, slerp, sarray("to", "weight"), varray());
 	bind_method(Quaternion, slerpni, sarray("to", "weight"), varray());
-	bind_method(Quaternion, cubic_slerp, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Quaternion, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight", "flip_to_shortest_path"), varray(true));
 	bind_method(Quaternion, get_euler, sarray(), varray());
 	bind_method(Quaternion, get_axis, sarray(), varray());
 	bind_method(Quaternion, get_angle, sarray(), varray());

@@ -84,10 +84,16 @@ real_t Quaternion::length() const {
 }
 
 void Quaternion::normalize() {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_MSG(length_squared() == 0, "Length of the quaternion can't be zero.");
+#endif
 	*this /= length();
 }
 
 Quaternion Quaternion::normalized() const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(length_squared() == 0, Quaternion(), "Length of the quaternion can't be zero.");
+#endif
 	return *this / length();
 }
 
@@ -103,19 +109,33 @@ Quaternion Quaternion::inverse() const {
 }
 
 Quaternion Quaternion::log() const {
-	Quaternion src = *this;
-	Vector3 src_v = src.get_axis() * src.get_angle();
-	return Quaternion(src_v.x, src_v.y, src_v.z, 0);
+	Vector3 v = vector_part();
+	real_t vLength = v.length();
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(vLength == 0, Quaternion(), "Length of the vector part can't be zero.");
+#endif
+
+	real_t s = w;
+
+	real_t scalarPart = Math::log(length());
+	Vector3 vecPart = v / vLength * acos(s / length());
+
+	return Quaternion(vecPart.x, vecPart.y, vecPart.z, scalarPart);
 }
 
 Quaternion Quaternion::exp() const {
-	Quaternion src = *this;
-	Vector3 src_v = Vector3(src.x, src.y, src.z);
-	float theta = src_v.length();
-	if (theta < CMP_EPSILON) {
-		return Quaternion(0, 0, 0, 1);
-	}
-	return Quaternion(src_v.normalized(), theta);
+	Vector3 v = vector_part();
+	real_t vLength = v.length();
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V_MSG(vLength == 0, Quaternion(), "Length of the vector part can't be zero.");
+#endif
+
+	real_t s = w;
+
+	real_t scalarPart = cos(vLength);
+	Vector3 vecPart = v / vLength * sin(vLength);
+
+	return Math::exp(s) * Quaternion(vecPart.x, vecPart.y, vecPart.z, scalarPart);
 }
 
 Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
@@ -189,16 +209,60 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
-#endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0f - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+static real_t cubic_interpolate_real(const real_t p_pre_a, const real_t p_a, const real_t p_b, const real_t p_post_b, real_t p_c) {
+	// This is cloned straight from animation.cpp
+
+	real_t p0 = p_pre_a;
+	real_t p1 = p_a;
+	real_t p2 = p_b;
+	real_t p3 = p_post_b;
+
+	real_t t = p_c;
+	real_t t2 = t * t;
+	real_t t3 = t2 * t;
+
+	return 0.5f *
+			((p1 * 2.0f) +
+					(-p0 + p2) * t +
+					(2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
+					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+}
+
+static Quaternion flip_to_shortest(const Quaternion &compared, const Quaternion &flip) {
+	if (compared.dot(flip) < 0.0f) {
+		// Return flipped
+		return Quaternion(-flip.x, -flip.y, -flip.z, -flip.w);
+	} else {
+		// No flipping necessary
+		return flip;
+	}
+}
+
+Quaternion Quaternion::cubic_interpolate(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t, const bool flip_to_shortest_path) const {
+	Quaternion q0;
+	Quaternion q1;
+	Quaternion q2;
+	Quaternion q3;
+
+	if (flip_to_shortest_path) {
+		// Flip quaternions to shortest path if necessary (p_q1 used as the reference)
+		q0 = flip_to_shortest(*this, p_prep);
+		q1 = *this;
+		q2 = flip_to_shortest(*this, p_q);
+		q3 = flip_to_shortest(q2, p_postq); // Need to compare with possibly already flipped q2
+	} else {
+		q0 = p_prep;
+		q1 = *this;
+		q2 = p_q;
+		q3 = p_postq;
+	}
+
+	return Quaternion(
+			cubic_interpolate_real(q0.x, q1.x, q2.x, q3.x, p_t),
+			cubic_interpolate_real(q0.y, q1.y, q2.y, q3.y, p_t),
+			cubic_interpolate_real(q0.z, q1.z, q2.z, q3.z, p_t),
+			cubic_interpolate_real(q0.w, q1.w, q2.w, q3.w, p_t))
+			.normalized();
 }
 
 Quaternion::operator String() const {
@@ -213,7 +277,7 @@ Vector3 Quaternion::get_axis() const {
 	return Vector3(x * r, y * r, z * r);
 }
 
-float Quaternion::get_angle() const {
+real_t Quaternion::get_angle() const {
 	return 2 * Math::acos(w);
 }
 
