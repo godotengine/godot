@@ -128,3 +128,9 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 	rect_dirty = false;
 	return rect;
 }
+
+RendererCanvasRender::Item::CommandMesh::~CommandMesh() {
+	if (mesh_instance.is_valid()) {
+		RSG::mesh_storage->mesh_instance_free(mesh_instance);
+	}
+}

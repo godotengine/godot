@@ -144,11 +144,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	ERR_FAIL_COND_V_MSG(current_options == nullptr && current_options_dict == nullptr, Variant(), "get_option_value called from a function where option values are not available.");
 	ERR_FAIL_COND_V_MSG(current_options && !current_options->has(p_name), Variant(), "get_option_value called with unexisting option argument: " + String(p_name));
 	ERR_FAIL_COND_V_MSG(current_options_dict && !current_options_dict->has(p_name), Variant(), "get_option_value called with unexisting option argument: " + String(p_name));
-	if (current_options) {
-		(*current_options)[p_name];
+	if (current_options && current_options->has(p_name)) {
+		return (*current_options)[p_name];
 	}
-	if (current_options_dict) {
-		(*current_options_dict)[p_name];
+	if (current_options_dict && current_options_dict->has(p_name)) {
+		return (*current_options_dict)[p_name];
 	}
 	return Variant();
 }
@@ -1972,7 +1972,7 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	}
 }
 
-Node *ResourceImporterScene::pre_import(const String &p_source_file) {
+Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
 
@@ -1997,8 +1997,13 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
+	int bake_fps = 30;
+	if (p_options.has(SNAME("animation/fps"))) {
+		bake_fps = p_options[SNAME("animation/fps")];
+	}
+
 	Error err = OK;
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, HashMap<StringName, Variant>(), 15, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_options, bake_fps, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}

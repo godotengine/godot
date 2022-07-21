@@ -77,7 +77,7 @@
 			<return type="float" />
 			<argument index="0" name="point" type="Vector3" />
 			<description>
-				Returns the shortest distance from the plane to the position [code]point[/code].
+				Returns the shortest distance from the plane to the position [code]point[/code]. If the point is above the plane, the distance will be positive. If below, the distance will be negative.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">

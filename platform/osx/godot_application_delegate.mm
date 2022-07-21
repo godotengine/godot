@@ -67,6 +67,52 @@
 	}
 }
 
+- (id)init {
+	self = [super init];
+
+	NSAppleEventManager *aem = [NSAppleEventManager sharedAppleEventManager];
+	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenDocuments];
+
+	return self;
+}
+
+- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+	OS_OSX *os = (OS_OSX *)OS::get_singleton();
+	if (!event || !os) {
+		return;
+	}
+
+	List<String> args;
+	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
+		// Opening URL scheme.
+		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+		args.push_back(vformat("--uri=\"%s\"", String::utf8([url UTF8String])));
+	}
+
+	if (([event eventClass] == kCoreEventClass) && ([event eventID] == kAEOpenDocuments)) {
+		// Opening file association.
+		NSAppleEventDescriptor *files = [event paramDescriptorForKeyword:keyDirectObject];
+		if (files) {
+			NSInteger count = [files numberOfItems];
+			for (NSInteger i = 1; i <= count; i++) {
+				NSURL *url = [NSURL URLWithString:[[files descriptorAtIndex:i] stringValue]];
+				args.push_back(String::utf8([url.path UTF8String]));
+			}
+		}
+	}
+
+	if (!args.is_empty()) {
+		if (os->get_main_loop()) {
+			// Application is already running, open a new instance with the URL/files as command line arguments.
+			os->create_instance(args);
+		} else {
+			// Application is just started, add to the list of command line arguments and continue.
+			os->set_cmdline_platform_args(args);
+		}
+	}
+}
+
 - (void)applicationDidResignActive:(NSNotification *)notification {
 	DisplayServerOSX *ds = (DisplayServerOSX *)DisplayServer::get_singleton();
 	if (ds) {
@@ -97,25 +143,6 @@
 	} else {
 		return nullptr;
 	}
-}
-
-- (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
-	// Note: may be called called before main loop init!
-	OS_OSX *os = (OS_OSX *)OS::get_singleton();
-	if (os) {
-		os->set_open_with_filename(String::utf8([filename UTF8String]));
-	}
-
-#ifdef TOOLS_ENABLED
-	// Open new instance.
-	if (os && os->get_main_loop()) {
-		List<String> args;
-		args.push_back(os->get_open_with_filename());
-		String exec = os->get_executable_path();
-		os->create_process(exec, args);
-	}
-#endif
-	return YES;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {

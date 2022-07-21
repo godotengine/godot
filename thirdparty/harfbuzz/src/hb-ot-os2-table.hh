@@ -224,9 +224,11 @@ struct OS2
     *max_cp = hb_min (0xFFFFu, codepoints->get_max ());
   }
 
-  /* https://github.com/Microsoft/Font-Validator/blob/520aaae/OTFontFileVal/val_OS2.cs#L644-L681 */
+  /* https://github.com/Microsoft/Font-Validator/blob/520aaae/OTFontFileVal/val_OS2.cs#L644-L681
+   * https://docs.microsoft.com/en-us/typography/legacy/legacy_arabic_fonts */
   enum font_page_t
   {
+    FONT_PAGE_NONE		= 0,
     FONT_PAGE_HEBREW		= 0xB100, /* Hebrew Windows 3.1 font page */
     FONT_PAGE_SIMP_ARABIC	= 0xB200, /* Simplified Arabic Windows 3.1 font page */
     FONT_PAGE_TRAD_ARABIC	= 0xB300, /* Traditional Arabic Windows 3.1 font page */

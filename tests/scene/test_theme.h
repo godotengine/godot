@@ -46,7 +46,7 @@ public:
 	} const valid_data[Theme::DATA_TYPE_MAX] = {
 		{ Theme::DATA_TYPE_COLOR, Color() },
 		{ Theme::DATA_TYPE_CONSTANT, 42 },
-		{ Theme::DATA_TYPE_FONT, Ref<Font>(memnew(Font)) },
+		{ Theme::DATA_TYPE_FONT, Ref<FontFile>(memnew(FontFile)) },
 		{ Theme::DATA_TYPE_FONT_SIZE, 42 },
 		{ Theme::DATA_TYPE_ICON, Ref<Texture>(memnew(ImageTexture)) },
 		{ Theme::DATA_TYPE_STYLEBOX, Ref<StyleBox>(memnew(StyleBoxFlat)) },

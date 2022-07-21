@@ -34,14 +34,20 @@
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
-Ref<FileAccess> FileAccessAndroid::create_android() {
-	return memnew(FileAccessAndroid);
+String FileAccessAndroid::get_path() const {
+	return path_src;
+}
+
+String FileAccessAndroid::get_path_absolute() const {
+	return absolute_path;
 }
 
 Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	_close();
 
+	path_src = p_path;
 	String path = fix_path(p_path).simplify_path();
+	absolute_path = path;
 	if (path.begins_with("/")) {
 		path = path.substr(1, path.length());
 	} else if (path.begins_with("res://")) {
@@ -134,7 +140,7 @@ uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 }
 
 Error FileAccessAndroid::get_error() const {
-	return eof ? ERR_FILE_EOF : OK; //not sure what else it may happen
+	return eof ? ERR_FILE_EOF : OK; // not sure what else it may happen
 }
 
 void FileAccessAndroid::flush() {

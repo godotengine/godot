@@ -34,6 +34,8 @@ import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.WINDOW_SERVICE;
 
 import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.io.directory.DirectoryAccessHandler;
+import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.tts.GodotTTS;
@@ -164,9 +166,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private Sensor mMagnetometer;
 	private Sensor mGyroscope;
 
-	public static GodotIO io;
-	public static GodotNetUtils netUtils;
-	public static GodotTTS tts;
+	public GodotIO io;
+	public GodotNetUtils netUtils;
+	public GodotTTS tts;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -458,16 +460,26 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
-		GodotLib.io = io;
 		netUtils = new GodotNetUtils(activity);
 		tts = new GodotTTS(activity);
+		Context context = getContext();
+		DirectoryAccessHandler directoryAccessHandler = new DirectoryAccessHandler(context);
+		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-		GodotLib.initialize(activity, this, activity.getAssets(), use_apk_expansion);
+		GodotLib.initialize(activity,
+				this,
+				activity.getAssets(),
+				io,
+				netUtils,
+				directoryAccessHandler,
+				fileAccessHandler,
+				use_apk_expansion,
+				tts);
 
 		result_callback = null;
 

@@ -1002,6 +1002,12 @@ hb_font_make_immutable (hb_font_t *font);
 HB_EXTERN hb_bool_t
 hb_font_is_immutable (hb_font_t *font);
 
+HB_EXTERN unsigned int
+hb_font_get_serial (hb_font_t *font);
+
+HB_EXTERN void
+hb_font_changed (hb_font_t *font);
+
 HB_EXTERN void
 hb_font_set_parent (hb_font_t *font,
 		    hb_font_t *parent);

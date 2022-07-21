@@ -76,7 +76,7 @@ void SceneCreateDialog::accept_create() {
 void SceneCreateDialog::browse_types() {
 	select_node_dialog->popup_create(true);
 	select_node_dialog->set_title(TTR("Pick Root Node Type"));
-	select_node_dialog->get_ok_button()->set_text(TTR("Pick"));
+	select_node_dialog->set_ok_button_text(TTR("Pick"));
 }
 
 void SceneCreateDialog::on_type_picked() {
@@ -171,7 +171,7 @@ Node *SceneCreateDialog::create_scene_root() {
 			break;
 		case ROOT_USER_INTERFACE: {
 			Control *gui = memnew(Control);
-			gui->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+			gui->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 			root = gui;
 		} break;
 		case ROOT_OTHER:

@@ -242,7 +242,7 @@ struct hmtxvmtx
 	return side_bearing;
 
       if (var_table.get_length ())
-	return side_bearing + var_table->get_side_bearing_var (glyph, font->coords, font->num_coords); // TODO Optimize?!
+	return side_bearing + var_table->get_side_bearing_var (glyph, font->coords, font->num_coords);
 
       return _glyf_get_side_bearing_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
 #else
@@ -284,7 +284,8 @@ struct hmtxvmtx
     }
 
     unsigned int get_advance (hb_codepoint_t  glyph,
-			      hb_font_t      *font) const
+			      hb_font_t      *font,
+			      VariationStore::cache_t *store_cache = nullptr) const
     {
       unsigned int advance = get_advance (glyph);
 
@@ -293,7 +294,7 @@ struct hmtxvmtx
 	return advance;
 
       if (var_table.get_length ())
-	return advance + roundf (var_table->get_advance_var (glyph, font)); // TODO Optimize?!
+	return advance + roundf (var_table->get_advance_var (glyph, font, store_cache)); // TODO Optimize?!
 
       return _glyf_get_advance_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
 #else
@@ -310,7 +311,7 @@ struct hmtxvmtx
 
     unsigned int default_advance;
 
-    private:
+    public:
     hb_blob_ptr_t<hmtxvmtx> table;
     hb_blob_ptr_t<HVARVVAR> var_table;
   };

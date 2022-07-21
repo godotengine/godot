@@ -34,12 +34,12 @@
 
 #include "core/os/os.h"
 #include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
 
 #include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "storage/config.h"
 #include "storage/material_storage.h"
+#include "storage/mesh_storage.h"
 #include "storage/texture_storage.h"
 
 #ifndef GLES_OVER_GL
@@ -1416,9 +1416,8 @@ RasterizerCanvasGLES3 *RasterizerCanvasGLES3::get_singleton() {
 	return singleton;
 }
 
-RasterizerCanvasGLES3::RasterizerCanvasGLES3(RasterizerStorageGLES3 *p_storage) {
+RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 	singleton = this;
-	storage = p_storage;
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 

@@ -34,7 +34,6 @@
 #include "../openxr_api.h"
 #include "../openxr_util.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
@@ -439,7 +438,6 @@ bool OpenXRVulkanExtension::copy_render_target_to_image(RID p_from_render_target
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
 	ERR_FAIL_NULL_V(data, false);
 	ERR_FAIL_COND_V(p_from_render_target.is_null(), false);
-	ERR_FAIL_NULL_V(RendererStorageRD::base_singleton, false);
 
 	RID source_image = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(p_from_render_target);
 	ERR_FAIL_COND_V(source_image.is_null(), false);

@@ -161,6 +161,14 @@ bool AcceptDialog::has_autowrap() {
 	return label->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
 }
 
+void AcceptDialog::set_ok_button_text(String p_ok_button_text) {
+	ok->set_text(p_ok_button_text);
+}
+
+String AcceptDialog::get_ok_button_text() const {
+	return ok->get_text();
+}
+
 void AcceptDialog::register_text_enter(Control *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
@@ -262,7 +270,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 	String c = p_cancel;
 	if (p_cancel.is_empty()) {
-		c = RTR("Cancel");
+		c = "Cancel";
 	}
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
@@ -306,10 +314,14 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_ok_button_text", "text"), &AcceptDialog::set_ok_button_text);
+	ClassDB::bind_method(D_METHOD("get_ok_button_text"), &AcceptDialog::get_ok_button_text);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("cancelled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");
 
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
@@ -349,7 +361,7 @@ AcceptDialog::AcceptDialog() {
 
 	hbc->add_spacer();
 	ok = memnew(Button);
-	ok->set_text(RTR("OK"));
+	ok->set_text("OK");
 	hbc->add_child(ok);
 	hbc->add_spacer();
 
@@ -365,8 +377,20 @@ AcceptDialog::~AcceptDialog() {
 
 // ConfirmationDialog
 
+void ConfirmationDialog::set_cancel_button_text(String p_cancel_button_text) {
+	cancel->set_text(p_cancel_button_text);
+}
+
+String ConfirmationDialog::get_cancel_button_text() const {
+	return cancel->get_text();
+}
+
 void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
+	ClassDB::bind_method(D_METHOD("set_cancel_button_text"), &ConfirmationDialog::set_cancel_button_text);
+	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");
 }
 
 Button *ConfirmationDialog::get_cancel_button() {

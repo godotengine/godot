@@ -186,11 +186,6 @@ private:
 		ItemFontSize() { type = ITEM_FONT_SIZE; }
 	};
 
-	struct ItemFontFeatures : public Item {
-		Dictionary opentype_features;
-		ItemFontFeatures() { type = ITEM_FONT_FEATURES; }
-	};
-
 	struct ItemColor : public Item {
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
@@ -464,11 +459,11 @@ private:
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
 
+	Item *_find_indentable(Item *p_item);
 	Item *_get_item_at_pos(Item *p_item_from, Item *p_item_to, int p_position);
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
-	Ref<Font> _find_font(Item *p_item);
 	int _find_font_size(Item *p_item);
-	Dictionary _find_font_features(Item *p_item);
+	Ref<Font> _find_font(Item *p_item);
 	int _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
@@ -525,7 +520,6 @@ public:
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	void push_font(const Ref<Font> &p_font);
 	void push_font_size(int p_font_size);
-	void push_font_features(const Dictionary &p_features);
 	void push_outline_size(int p_font_size);
 	void push_normal();
 	void push_bold();

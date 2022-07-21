@@ -1158,6 +1158,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						rs->canvas_item_set_transform(canvas_item, xform);
 
 						rs->canvas_item_set_light_mask(canvas_item, get_light_mask());
+						rs->canvas_item_set_z_as_relative_to_parent(canvas_item, true);
 						rs->canvas_item_set_z_index(canvas_item, z_index);
 
 						rs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(get_texture_filter()));

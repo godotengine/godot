@@ -106,6 +106,29 @@ struct VariantCaster<const T &> {
 		static void initialize(m_enum &value) { value = (m_enum)0; }         \
 	};
 
+#define VARIANT_BITFIELD_CAST(m_enum)                                                  \
+	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                    \
+	template <>                                                                        \
+	struct VariantCaster<BitField<m_enum>> {                                           \
+		static _FORCE_INLINE_ BitField<m_enum> cast(const Variant &p_variant) {        \
+			return BitField<m_enum>(p_variant.operator int64_t());                     \
+		}                                                                              \
+	};                                                                                 \
+	template <>                                                                        \
+	struct PtrToArg<BitField<m_enum>> {                                                \
+		_FORCE_INLINE_ static BitField<m_enum> convert(const void *p_ptr) {            \
+			return BitField<m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));        \
+		}                                                                              \
+		typedef int64_t EncodeT;                                                       \
+		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, const void *p_ptr) { \
+			*(int64_t *)p_ptr = p_val;                                                 \
+		}                                                                              \
+	};                                                                                 \
+	template <>                                                                        \
+	struct ZeroInitializer<BitField<m_enum>> {                                         \
+		static void initialize(BitField<m_enum> &value) { value = 0; }                 \
+	};
+
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 

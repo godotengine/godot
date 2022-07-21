@@ -201,10 +201,12 @@ class DisplayServerX11 : public DisplayServer {
 		HashMap<int, Vector2> pen_pressure_range;
 		HashMap<int, Vector2> pen_tilt_x_range;
 		HashMap<int, Vector2> pen_tilt_y_range;
+		HashMap<int, bool> pen_inverted_devices;
 		XIEventMask all_event_mask;
 		HashMap<int, Vector2> state;
 		double pressure;
 		bool pressure_supported;
+		bool pen_inverted;
 		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;

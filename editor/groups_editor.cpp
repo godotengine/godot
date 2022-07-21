@@ -432,7 +432,7 @@ GroupDialog::GroupDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	vbc->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	vbc->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
@@ -562,13 +562,13 @@ GroupDialog::GroupDialog() {
 	group_empty->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);
-	group_empty->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	group_empty->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 
 	set_title(TTR("Group Editor"));
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
-	error->get_ok_button()->set_text(TTR("Close"));
+	error->set_ok_button_text(TTR("Close"));
 
 	_add_group_text_changed("");
 }

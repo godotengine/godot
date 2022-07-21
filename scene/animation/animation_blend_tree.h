@@ -77,8 +77,23 @@ private:
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
 
-class AnimationNodeOneShot : public AnimationNode {
-	GDCLASS(AnimationNodeOneShot, AnimationNode);
+class AnimationNodeSync : public AnimationNode {
+	GDCLASS(AnimationNodeSync, AnimationNode);
+
+protected:
+	bool sync = false;
+
+	static void _bind_methods();
+
+public:
+	void set_use_sync(bool p_sync);
+	bool is_using_sync() const;
+
+	AnimationNodeSync();
+};
+
+class AnimationNodeOneShot : public AnimationNodeSync {
+	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
 public:
 	enum MixMode {
@@ -94,8 +109,6 @@ private:
 	float autorestart_delay = 1.0;
 	float autorestart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
-
-	bool sync = false;
 
 	/*	bool active;
 	bool do_start;
@@ -134,9 +147,6 @@ public:
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
 
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
@@ -145,11 +155,10 @@ public:
 
 VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 
-class AnimationNodeAdd2 : public AnimationNode {
-	GDCLASS(AnimationNodeAdd2, AnimationNode);
+class AnimationNodeAdd2 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeAdd2, AnimationNodeSync);
 
 	StringName add_amount = PNAME("add_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -159,9 +168,6 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
 
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
@@ -169,11 +175,10 @@ public:
 	AnimationNodeAdd2();
 };
 
-class AnimationNodeAdd3 : public AnimationNode {
-	GDCLASS(AnimationNodeAdd3, AnimationNode);
+class AnimationNodeAdd3 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeAdd3, AnimationNodeSync);
 
 	StringName add_amount = PNAME("add_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -184,20 +189,16 @@ public:
 
 	virtual String get_caption() const override;
 
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
 	virtual bool has_filter() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
 	AnimationNodeAdd3();
 };
 
-class AnimationNodeBlend2 : public AnimationNode {
-	GDCLASS(AnimationNodeBlend2, AnimationNode);
+class AnimationNodeBlend2 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeBlend2, AnimationNodeSync);
 
 	StringName blend_amount = PNAME("blend_amount");
-	bool sync = false;
 
 protected:
 	static void _bind_methods();
@@ -209,18 +210,14 @@ public:
 	virtual String get_caption() const override;
 	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
 
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
-
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
 };
 
-class AnimationNodeBlend3 : public AnimationNode {
-	GDCLASS(AnimationNodeBlend3, AnimationNode);
+class AnimationNodeBlend3 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeBlend3, AnimationNodeSync);
 
 	StringName blend_amount = PNAME("blend_amount");
-	bool sync;
 
 protected:
 	static void _bind_methods();
@@ -230,9 +227,6 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-
-	void set_use_sync(bool p_sync);
-	bool is_using_sync() const;
 
 	double process(double p_time, bool p_seek, bool p_seek_root) override;
 	AnimationNodeBlend3();
@@ -276,8 +270,8 @@ public:
 	AnimationNodeTimeSeek();
 };
 
-class AnimationNodeTransition : public AnimationNode {
-	GDCLASS(AnimationNodeTransition, AnimationNode);
+class AnimationNodeTransition : public AnimationNodeSync {
+	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
 	enum {
 		MAX_INPUTS = 32
@@ -304,6 +298,7 @@ class AnimationNodeTransition : public AnimationNode {
 	StringName prev_current = "prev_current";
 
 	float xfade = 0.0;
+	bool from_start = true;
 
 	void _update_inputs();
 
@@ -328,6 +323,9 @@ public:
 
 	void set_cross_fade_time(float p_fade);
 	float get_cross_fade_time() const;
+
+	void set_from_start(bool p_from_start);
+	bool is_from_start() const;
 
 	double process(double p_time, bool p_seek, bool p_seek_root) override;
 

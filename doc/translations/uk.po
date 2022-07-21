@@ -10125,7 +10125,13 @@ msgid "If [code]true[/code], audio plays when added to scene tree."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
-msgid "Bus on which this audio is playing."
+msgid ""
+"Bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml
@@ -10290,7 +10296,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
-msgid "The bus on which this audio is playing."
+msgid ""
+"The bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
 msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
@@ -12302,10 +12314,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_physics_process[/code] callback."
 msgstr ""
 
 #: doc/classes/Camera2D.xml doc/classes/ClippedCamera.xml
+#: doc/classes/InterpolatedCamera.xml
 msgid "The camera updates with the [code]_process[/code] callback."
 msgstr ""
 
@@ -19604,13 +19618,17 @@ msgstr ""
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "Amount of extra bias for shadow splits that are far away. If self-shadowing "
-"occurs only on the splits far away, increasing this value can fix them."
+"occurs only on the splits far away, increasing this value can fix them. This "
+"is ignored when [member directional_shadow_mode] is [constant "
+"SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "If [code]true[/code], shadow detail is sacrificed in exchange for smoother "
-"transitions between splits."
+"transitions between splits. Enabling shadow blend splitting also has a "
+"moderate performance cost. This is ignored when [member "
+"directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -19620,7 +19638,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
-msgid "The maximum distance for shadow splits."
+msgid ""
+"The maximum distance for shadow splits. Increasing this value will make "
+"directional shadows visible from further away, at the cost of lower overall "
+"shadow detail and performance (since more objects need to be included in the "
+"directional shadow rendering)."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -19637,23 +19659,23 @@ msgstr ""
 msgid ""
 "The distance from camera to shadow split 1. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 1 to split 2. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or "
-"[code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
+"SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
 "The distance from shadow split 2 to split 3. Relative to [member "
 "directional_shadow_max_distance]. Only used when [member "
-"directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code]."
+"directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
 
 #: doc/classes/DirectionalLight.xml
@@ -28598,13 +28620,14 @@ msgstr ""
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
-"If set to a value greater than [code]0.0[/code], the HTTP request will time "
-"out after [code]timeout[/code] seconds have passed and the request is not "
-"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
-"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
-"application from getting stuck if the request fails to get a response in a "
-"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
-"the download from failing if it takes too much time."
+"If set to a value greater than [code]0.0[/code] before the request starts, "
+"the HTTP request will time out after [code]timeout[/code] seconds have "
+"passed and the request is not [i]completed[/i] yet. For small HTTP requests "
+"such as REST API usage, set [member timeout] to a value between [code]10.0[/"
+"code] and [code]30.0[/code] to prevent the application from getting stuck if "
+"the request fails to get a response in a timely manner. For file downloads, "
+"leave this to [code]0.0[/code] to prevent the download from failing if it "
+"takes too much time."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
@@ -30019,7 +30042,10 @@ msgid ""
 "input at the cost of increased CPU usage. In applications where drawing "
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
-"actual input."
+"actual input.\n"
+"[b]Note:[/b] Input accumulation is [i]enabled[/i] by default. It is "
+"recommended to keep it enabled for games which don't require very reactive "
+"input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -30593,10 +30619,14 @@ msgstr ""
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event is only emitted once per frame rendered "
-"at most. If you need more precise input reporting, set [member Input."
-"use_accumulated_input] to [code]false[/code] to make events emitted as often "
-"as possible. If you use InputEventMouseMotion to draw lines, consider "
+"[b]Note:[/b] The behavior of this event is affected by the value of [member "
+"Input.use_accumulated_input]. When set to [code]true[/code] (default), mouse/"
+"pen motion events received from the OS will be merged to emit an accumulated "
+"event only once per frame rendered at most. When set to [code]false[/code], "
+"the events will be emitted as received, which means that they can be emitted "
+"multiple times per frame rendered, allowing for precise input reporting at "
+"the expense of CPU usage.\n"
+"[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
 "avoid visible gaps in lines if the user is moving the mouse quickly."
@@ -30605,6 +30635,12 @@ msgstr ""
 #: doc/classes/InputEventMouseMotion.xml
 msgid "Mouse and input coordinates"
 msgstr "Мишка і координати введення"
+
+#: doc/classes/InputEventMouseMotion.xml
+msgid ""
+"Returns [code]true[/code] when using the eraser end of a stylus pen.\n"
+"[b]Note:[/b] This property is implemented on Linux, macOS and Windows."
+msgstr ""
 
 #: doc/classes/InputEventMouseMotion.xml
 msgid ""
@@ -30916,6 +30952,11 @@ msgstr ""
 msgid ""
 "If [code]true[/code], and a target is set, the camera will move "
 "automatically."
+msgstr ""
+
+#: doc/classes/InterpolatedCamera.xml
+msgid ""
+"The camera's process callback. See [enum InterpolatedCameraProcessMode]."
 msgstr ""
 
 #: doc/classes/InterpolatedCamera.xml
@@ -36354,7 +36395,7 @@ msgid ""
 "maximum distance is exceeded, it recalculates the ideal path."
 msgstr ""
 
-#: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
+#: doc/classes/NavigationAgent.xml
 msgid ""
 "The radius of the avoidance agent. This is the \"body\" of the avoidance "
 "agent and not the avoidance maneuver starting radius (which is controlled by "
@@ -36465,6 +36506,14 @@ msgid ""
 "A bitfield determining all navigation map layers the [NavigationAgent2D] "
 "belongs to. On path requests the agent will ignore navmeshes without at "
 "least one matching layer."
+msgstr ""
+
+#: doc/classes/NavigationAgent2D.xml
+msgid ""
+"The radius of the avoidance agent. This is the \"body\" of the avoidance "
+"agent and not the avoidance maneuver starting radius (which is controlled by "
+"[member neighbor_dist]).\n"
+"Does not affect normal pathfinding."
 msgstr ""
 
 #: doc/classes/NavigationMesh.xml
@@ -45536,6 +45585,13 @@ msgstr ""
 msgid "Changes the byte at the given index."
 msgstr ""
 
+#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
+#: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
+#: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
+#: doc/classes/PoolVector3Array.xml
+msgid "Sorts the elements of the array in ascending order."
+msgstr ""
+
 #: doc/classes/PoolByteArray.xml
 msgid ""
 "Returns the slice of the [PoolByteArray] between indices (inclusive) as a "
@@ -50086,8 +50142,8 @@ msgstr ""
 
 #: doc/classes/ProjectSettings.xml
 msgid ""
-"Size for shadow atlas (used for OmniLights and SpotLights). See "
-"documentation."
+"Size for shadow atlas (used for OmniLights and SpotLights). The value will "
+"be rounded up to the nearest power of 2. See shadow mapping documentation."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -54465,7 +54521,8 @@ msgid ""
 "SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A "
 "[SceneTreeTween] might become invalid when it has finished tweening, is "
 "killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid "
-"[SceneTreeTween]s can't have [Tweener]s appended."
+"[SceneTreeTween]s can't have [Tweener]s appended. You can however still use "
+"[method interpolate_value]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -54505,15 +54562,16 @@ msgstr ""
 msgid ""
 "Sets the number of times the tweening sequence will be repeated, i.e. "
 "[code]set_loops(2)[/code] will run the animation twice.\n"
-"Calling this method without arguments will make the [Tween] run infinitely, "
-"until either it is killed with [method kill], the [Tween]'s bound node is "
-"freed, or all the animated objects have been freed (which makes further "
-"animation impossible).\n"
+"Calling this method without arguments will make the [SceneTreeTween] run "
+"infinitely, until either it is killed with [method kill], the "
+"[SceneTreeTween]'s bound node is freed, or all the animated objects have "
+"been freed (which makes further animation impossible).\n"
 "[b]Warning:[/b] Make sure to always add some duration/delay when using "
 "infinite loops. To prevent the game freezing, 0-duration looped animations "
 "(e.g. a single [CallbackTweener] with no delay) are stopped after a small "
-"number of loops, which may produce unexpected results. If a [Tween]'s "
-"lifetime depends on some node, always use [method bind_node]."
+"number of loops, which may produce unexpected results. If a "
+"[SceneTreeTween]'s lifetime depends on some node, always use [method "
+"bind_node]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -55990,7 +56048,26 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
+msgid ""
+"Rotation part of the global transformation in radians, specified in terms of "
+"YXZ-Euler angles in the format (X angle, Y angle, Z angle).\n"
+"[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a "
+"vector. The three Euler angles, which are the three independent parameters "
+"of the Euler-angle parametrization of the rotation matrix, are stored in a "
+"[Vector3] data structure not because the rotation is a vector, but only "
+"because [Vector3] exists as a convenient data-structure to store 3 floating-"
+"point numbers. Therefore, applying affine operations on the rotation "
+"\"vector\" is not meaningful."
+msgstr ""
+
+#: doc/classes/Spatial.xml
 msgid "World space (global) [Transform] of this node."
+msgstr ""
+
+#: doc/classes/Spatial.xml
+msgid ""
+"Global position of this node. This is equivalent to [code]global_transform."
+"origin[/code]."
 msgstr ""
 
 #: doc/classes/Spatial.xml
@@ -58462,7 +58539,31 @@ msgstr ""
 #: doc/classes/String.xml
 msgid ""
 "Formats the string by replacing all occurrences of [code]placeholder[/code] "
-"with [code]values[/code]."
+"with the elements of [code]values[/code].\n"
+"[code]values[/code] can be a [Dictionary] or an [Array]. Any underscores in "
+"[code]placeholder[/code] will be replaced with the corresponding keys in "
+"advance. Array elements use their index as keys.\n"
+"[codeblock]\n"
+"# Prints: Waiting for Godot is a play by Samuel Beckett, and Godot Engine is "
+"named after it.\n"
+"var use_array_values = \"Waiting for {0} is a play by {1}, and {0} Engine is "
+"named after it.\"\n"
+"print(use_array_values.format([\"Godot\", \"Samuel Beckett\"]))\n"
+"\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {id} is {name}.\".format({\"id\": 42, \"name\": \"Godot\"}))\n"
+"[/codeblock]\n"
+"Some additional handling is performed when [code]values[/code] is an array. "
+"If [code]placeholder[/code] does not contain an underscore, the elements of "
+"the array will be used to replace one occurrence of the placeholder in turn; "
+"If an array element is another 2-element array, it'll be interpreted as a "
+"key-value pair.\n"
+"[codeblock]\n"
+"# Prints: User 42 is Godot.\n"
+"print(\"User {} is {}.\".format([42, \"Godot\"], \"{}\"))\n"
+"print(\"User {id} is {name}.\".format([[\"id\", 42], [\"name\", "
+"\"Godot\"]]))\n"
+"[/codeblock]"
 msgstr ""
 
 #: doc/classes/String.xml
@@ -59059,9 +59160,11 @@ msgstr ""
 
 #: doc/classes/StyleBox.xml
 msgid ""
-"Draws this stylebox using a [CanvasItem] with given [RID].\n"
-"You can get a [RID] value using [method Object.get_instance_id] on a "
-"[CanvasItem]-derived node."
+"Draws this stylebox using a canvas item identified by the given [RID].\n"
+"The [RID] value can either be the result of [method CanvasItem."
+"get_canvas_item] called on an existing [CanvasItem]-derived node, or "
+"directly from creating a canvas item in the [VisualServer] with [method "
+"VisualServer.canvas_item_create]."
 msgstr ""
 
 #: doc/classes/StyleBox.xml
@@ -60605,6 +60708,11 @@ msgstr ""
 #: doc/classes/TextEdit.xml
 msgid "If [code]true[/code], a right-click displays the context menu."
 msgstr ""
+
+#: doc/classes/TextEdit.xml
+#, fuzzy
+msgid "If [code]true[/code], allow drag and drop of selected text."
+msgstr "Повертає косинус параметра."
 
 #: doc/classes/TextEdit.xml
 msgid ""
@@ -66006,11 +66114,11 @@ msgstr ""
 #: doc/classes/VehicleBody.xml
 msgid ""
 "Accelerates the vehicle by applying an engine force. The vehicle is only "
-"speed up if the wheels that have [member VehicleWheel.use_as_traction] set "
-"to [code]true[/code] and are in contact with a surface. The [member "
-"RigidBody.mass] of the vehicle has an effect on the acceleration of the "
-"vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 "
-"range for acceleration.\n"
+"sped up if the wheels that have [member VehicleWheel.use_as_traction] set to "
+"[code]true[/code] and are in contact with a surface. The [member RigidBody."
+"mass] of the vehicle has an effect on the acceleration of the vehicle. For a "
+"vehicle with a mass set to 1000, try a value in the 25 - 50 range for "
+"acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "
 "you will need to add logic for this if you wish to simulate gears.\n"
 "A negative value will result in the vehicle reversing."
@@ -66090,8 +66198,8 @@ msgstr ""
 
 #: doc/classes/VehicleWheel.xml
 msgid ""
-"Accelerates the wheel by applying an engine force. The wheel is only speed "
-"up if it is in contact with a surface. The [member RigidBody.mass] of the "
+"Accelerates the wheel by applying an engine force. The wheel is only sped up "
+"if it is in contact with a surface. The [member RigidBody.mass] of the "
 "vehicle has an effect on the acceleration of the vehicle. For a vehicle with "
 "a mass set to 1000, try a value in the 25 - 50 range for acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "
@@ -66698,9 +66806,10 @@ msgstr ""
 msgid ""
 "The shadow atlas' resolution (used for omni and spot lights). The value will "
 "be rounded up to the nearest power of 2.\n"
-"[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-"
-"created viewports default to a value of 0, this value must be set above 0 "
-"manually."
+"[b]Note:[/b] If this is set to [code]0[/code], both point [i]and[/i] "
+"directional shadows won't be visible. Since user-created viewports default "
+"to a value of [code]0[/code], this value must be set above [code]0[/code] "
+"manually (typically at least [code]256[/code])."
 msgstr ""
 
 #: doc/classes/Viewport.xml
@@ -66729,7 +66838,11 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Viewport.xml
-msgid "The rendering mode of viewport."
+msgid ""
+"The rendering mode of viewport.\n"
+"[b]Note:[/b] If set to [constant USAGE_2D] or [constant "
+"USAGE_2D_NO_SAMPLING], [member hdr] will have no effect when enabled since "
+"HDR is not supported for 2D."
 msgstr ""
 
 #: doc/classes/Viewport.xml

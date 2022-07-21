@@ -96,17 +96,6 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations[p_next] = anim;
 }
 
-Vector<String> SpriteFrames::_get_animation_list() const {
-	Vector<String> ret;
-	List<StringName> al;
-	get_animation_list(&al);
-	for (const StringName &E : al) {
-		ret.push_back(E);
-	}
-
-	return ret;
-}
-
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
 	for (const KeyValue<StringName, Anim> &E : animations) {
 		r_animations->push_back(E.key);
@@ -147,31 +136,22 @@ bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	return E->value.loop;
 }
 
-void SpriteFrames::_set_frames(const Array &p_frames) {
-	clear_all();
-	HashMap<StringName, Anim>::Iterator E = animations.find(SceneStringNames::get_singleton()->_default);
-	ERR_FAIL_COND(!E);
-
-	E->value.frames.resize(p_frames.size());
-	for (int i = 0; i < E->value.frames.size(); i++) {
-		E->value.frames.write[i] = p_frames[i];
-	}
-}
-
-Array SpriteFrames::_get_frames() const {
-	return Array();
-}
-
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (const KeyValue<StringName, Anim> &E : animations) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &name : sorted_names) {
+		const Anim &anim = animations[name];
 		Dictionary d;
-		d["name"] = E.key;
-		d["speed"] = E.value.speed;
-		d["loop"] = E.value.loop;
+		d["name"] = name;
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E.value.frames.size(); i++) {
-			frames.push_back(E.value.frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			frames.push_back(anim.frames[i]);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -225,15 +205,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear", "anim"), &SpriteFrames::clear);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SpriteFrames::clear_all);
 
-	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
-	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
-
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_frames", "_get_frames"); //compatibility
+	// `animations` property is for serialization.
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {

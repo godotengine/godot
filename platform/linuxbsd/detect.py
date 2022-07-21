@@ -15,95 +15,9 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    # Check the minimal dependencies
-    pkgconfig_error = os.system("pkg-config --version > /dev/null")
-    if pkgconfig_error:
+    pkgconf_error = os.system("pkg-config --version > /dev/null")
+    if pkgconf_error:
         print("Error: pkg-config not found. Aborting.")
-        return False
-
-    # TODO: Make X11 and Wayland coesist peacefully.
-    #    if env["x11"]:
-    #        return check_x11_dependencies()
-    #
-    #    if env["wayland"]:
-    #        return check_wayland_dependencies()
-    #
-    return True
-
-
-def check_x11_dependencies():
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null")
-    if x11_error:
-        print("Error: X11 libraries not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xcursor library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xinerama library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xext --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xext library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null")
-    if x11_error:
-        print("Error: XrandR library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null")
-    if x11_error:
-        print("Error: XRender library not found. Aborting.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null")
-    if x11_error:
-        print("Error: Xi library not found. Aborting.")
-        return False
-
-    return True
-
-
-def check_wayland_dependencies():
-    wayland_error = os.system("pkg-config wayland-client --modversion > /dev/null")
-    if wayland_error:
-        print("Error: wayland-client library not found. Aborting.")
-        return False
-
-    wayland_error = os.system("pkg-config wayland-cursor --modversion > /dev/null")
-    if wayland_error:
-        print("Error: wayland-cursor library not found. Aborting.")
-        return False
-
-    wayland_error = os.system("pkg-config wayland-scanner --modversion > /dev/null")
-    if wayland_error:
-        print("Error: wayland-scanner not found. Aborting.")
-        return False
-
-    # We need at least version 1.20
-    min_wayland_client_version = "1.20"
-
-    import subprocess
-
-    wayland_client_version = subprocess.check_output(["pkg-config", "wayland-client", "--modversion"]).decode("utf-8")
-    if wayland_client_version < min_wayland_client_version:
-        # Abort as system wayland-client was requested but too old
-        print(
-            "wayland-client: System version {0} does not match minimal requirements ({1}). Aborting.".format(
-                wayland_client_version, min_wayland_client_version
-            )
-        )
-        return False
-
-    wayland_error = os.system("pkg-config xkbcommon --modversion > /dev/null")
-    if wayland_error:
-        print("Error: xkbcommon library not found. Aborting.")
         return False
 
     return True
@@ -267,7 +181,6 @@ def configure(env):
             env["AR"] = "gcc-ar"
 
     env.Append(CCFLAGS=["-pipe"])
-    env.Append(LINKFLAGS=["-pipe"])
 
     ## Dependencies
 
@@ -445,9 +358,9 @@ def configure(env):
             # No pkgconfig file so far, hardcode expected lib name.
             env.Append(LIBS=["glslang", "SPIRV"])
 
-    # TODO: Make this work, maybe reporting a missing conditional
-    # env.Append(CPPDEFINES=["GLES3_ENABLED"])
-    # env.Append(LIBS=["GL"])
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        env.ParseConfig("pkg-config gl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 

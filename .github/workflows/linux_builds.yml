@@ -212,7 +212,7 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         run: |
           cd godot-cpp/test
-          scons target=${{ matrix.target }} -j2
+          scons target=${{ matrix.target }}
           cd ../..
 
       - name: Prepare artifact

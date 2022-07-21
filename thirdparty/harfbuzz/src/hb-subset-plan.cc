@@ -41,9 +41,9 @@
 #include "hb-ot-math-table.hh"
 
 using OT::Layout::GSUB::GSUB;
+using OT::Layout::GPOS;
 
-
-typedef hb_hashmap_t<unsigned, hb_set_t *> script_langsys_map;
+typedef hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
 static inline void
 _add_cff_seac_components (const OT::cff1::accelerator_t &cff,
@@ -204,7 +204,7 @@ static inline void
 				     hb_map_t  *layout_variation_idx_map)
 {
   hb_blob_ptr_t<OT::GDEF> gdef = hb_sanitize_context_t ().reference_table<OT::GDEF> (face);
-  hb_blob_ptr_t<OT::GPOS> gpos = hb_sanitize_context_t ().reference_table<OT::GPOS> (face);
+  hb_blob_ptr_t<GPOS> gpos = hb_sanitize_context_t ().reference_table<GPOS> (face);
 
   if (!gdef->has_data ())
   {
@@ -347,13 +347,42 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
   }
 }
 
+#ifndef HB_COMPOSITE_OPERATIONS_PER_GLYPH
+#define HB_COMPOSITE_OPERATIONS_PER_GLYPH 64
+#endif
+
+static unsigned
+_glyf_add_gid_and_children (const OT::glyf_accelerator_t &glyf,
+			    hb_codepoint_t gid,
+			    hb_set_t *gids_to_retain,
+			    int operation_count,
+			    unsigned depth = 0)
+{
+  if (unlikely (depth++ > HB_MAX_NESTING_LEVEL)) return operation_count;
+  if (unlikely (--operation_count < 0)) return operation_count;
+  /* Check if is already visited */
+  if (gids_to_retain->has (gid)) return operation_count;
+
+  gids_to_retain->add (gid);
+
+  for (auto item : glyf.glyph_for_gid (gid).get_composite_iterator ())
+    operation_count =
+      _glyf_add_gid_and_children (glyf,
+				  item.glyphIndex,
+				  gids_to_retain,
+				  operation_count,
+				  depth);
+
+  return operation_count;
+}
+
 static void
 _populate_gids_to_retain (hb_subset_plan_t* plan,
 			  bool close_over_gsub,
 			  bool close_over_gpos,
 			  bool close_over_gdef)
 {
-  OT::glyf::accelerator_t glyf (plan->source);
+  OT::glyf_accelerator_t glyf (plan->source);
 #ifndef HB_NO_SUBSET_CFF
   OT::cff1::accelerator_t cff (plan->source);
 #endif
@@ -374,7 +403,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
         plan->gsub_langsys);
 
   if (close_over_gpos)
-    _closure_glyphs_lookups_features<OT::GPOS> (
+    _closure_glyphs_lookups_features<GPOS> (
         plan->source,
         plan->_glyphset_gsub,
         plan->layout_features,
@@ -398,7 +427,8 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
    * composite glyphs. */
   if (glyf.has_data ())
     for (hb_codepoint_t gid : cur_glyphset)
-      glyf.add_gid_and_children (gid, plan->_glyphset);
+      _glyf_add_gid_and_children (glyf, gid, plan->_glyphset,
+				  cur_glyphset.get_population () * HB_COMPOSITE_OPERATIONS_PER_GLYPH);
   else
     plan->_glyphset->union_ (cur_glyphset);
 #ifndef HB_NO_SUBSET_CFF
@@ -630,9 +660,6 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
 
   if (plan->gsub_langsys)
   {
-    for (auto _ : plan->gsub_langsys->iter ())
-      hb_set_destroy (_.second);
-
     hb_object_destroy (plan->gsub_langsys);
     plan->gsub_langsys->fini_shallow ();
     hb_free (plan->gsub_langsys);
@@ -640,9 +667,6 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
 
   if (plan->gpos_langsys)
   {
-    for (auto _ : plan->gpos_langsys->iter ())
-      hb_set_destroy (_.second);
-
     hb_object_destroy (plan->gpos_langsys);
     plan->gpos_langsys->fini_shallow ();
     hb_free (plan->gpos_langsys);

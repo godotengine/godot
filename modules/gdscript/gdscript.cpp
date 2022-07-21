@@ -536,6 +536,9 @@ void GDScript::_update_doc() {
 	List<PropertyInfo> props;
 	_get_script_property_list(&props, false);
 	for (int i = 0; i < props.size(); i++) {
+		if (props[i].usage & PROPERTY_USAGE_CATEGORY || props[i].usage & PROPERTY_USAGE_GROUP || props[i].usage & PROPERTY_USAGE_SUBGROUP) {
+			continue;
+		}
 		ScriptMemberInfo scr_member_info;
 		scr_member_info.propinfo = props[i];
 		scr_member_info.propinfo.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
@@ -1050,7 +1053,7 @@ Error GDScript::load_source_code(const String &p_path) {
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w)) {
+	if (s.parse_utf8((const char *)w) != OK) {
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
@@ -1524,7 +1527,6 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
 			MethodInfo mi;
 			mi.name = E.key;
-			mi.flags |= METHOD_FLAG_FROM_SCRIPT;
 			for (int i = 0; i < E.value->get_argument_count(); i++) {
 				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
 			}

@@ -31,7 +31,6 @@
 #ifndef RENDERING_SERVER_DEFAULT_H
 #define RENDERING_SERVER_DEFAULT_H
 
-#include "core/math/octree.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
 #include "renderer_canvas_cull.h"
@@ -524,8 +523,8 @@ public:
 #undef ServerName
 #undef server_name
 
-#define ServerName RendererStorage
-#define server_name RSG::storage
+#define ServerName RendererFog
+#define server_name RSG::fog
 
 	FUNCRIDSPLIT(fog_volume)
 
@@ -534,6 +533,12 @@ public:
 	FUNC2(fog_volume_set_material, RID, RID)
 
 	/* VISIBILITY_NOTIFIER */
+
+#undef ServerName
+#undef server_name
+
+#define ServerName RendererUtilities
+#define server_name RSG::utilities
 
 	FUNCRIDSPLIT(visibility_notifier)
 	FUNC2(visibility_notifier_set_aabb, RID, const AABB &)
@@ -610,9 +615,9 @@ public:
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
-	FUNC3(viewport_set_shadow_atlas_size, RID, int, bool)
+	FUNC3(viewport_set_positional_shadow_atlas_size, RID, int, bool)
 	FUNC3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
-	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
+	FUNC3(viewport_set_positional_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_taa, RID, bool)
@@ -631,6 +636,9 @@ public:
 	FUNC1RC(RID, viewport_find_from_screen_attachment, DisplayServer::WindowID)
 
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
+
+	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
+	FUNC2(viewport_set_vrs_texture, RID, RID)
 
 	/* ENVIRONMENT API */
 
@@ -710,8 +718,8 @@ public:
 	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	FUNC1(shadows_quality_set, ShadowQuality);
-	FUNC1(directional_shadow_quality_set, ShadowQuality);
+	FUNC1(positional_soft_shadow_filter_set_quality, ShadowQuality);
+	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
 

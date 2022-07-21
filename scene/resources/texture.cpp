@@ -139,7 +139,7 @@ void ImageTexture::reload_from_file() {
 	img.instantiate();
 
 	if (ImageLoader::load_image(path, img) == OK) {
-		create_from_image(img);
+		set_image(img);
 	} else {
 		Resource::reload_from_file();
 		notify_property_list_changed();
@@ -149,7 +149,7 @@ void ImageTexture::reload_from_file() {
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "image") {
-		create_from_image(p_value);
+		set_image(p_value);
 		return true;
 	}
 	return false;
@@ -167,7 +167,16 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 }
 
-void ImageTexture::create_from_image(const Ref<Image> &p_image) {
+Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
+	ERR_FAIL_COND_V_MSG(p_image.is_null() || p_image->is_empty(), Ref<ImageTexture>(), "Invalid image");
+
+	Ref<ImageTexture> image_texture;
+	image_texture.instantiate();
+	image_texture->set_image(p_image);
+	return image_texture;
+}
+
+void ImageTexture::set_image(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
 	w = p_image->get_width();
 	h = p_image->get_height();
@@ -291,8 +300,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void ImageTexture::set_size_override(const Size2 &p_size) {
-	Size2 s = p_size;
+void ImageTexture::set_size_override(const Size2i &p_size) {
+	Size2i s = p_size;
 	if (s.x != 0) {
 		w = s.x;
 	}
@@ -311,9 +320,10 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 }
 
 void ImageTexture::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
+	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
+	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
@@ -2148,7 +2158,7 @@ void GradientTexture1D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture1D::_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,16384,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 }
@@ -3016,12 +3026,12 @@ Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
 }
 
 void ImageTextureLayered::update_layer(const Ref<Image> &p_image, int p_layer) {
-	ERR_FAIL_COND(texture.is_valid());
-	ERR_FAIL_COND(p_image.is_null());
-	ERR_FAIL_COND(p_image->get_format() != format);
-	ERR_FAIL_COND(p_image->get_width() != width || p_image->get_height() != height);
-	ERR_FAIL_INDEX(p_layer, layers);
-	ERR_FAIL_COND(p_image->has_mipmaps() != mipmaps);
+	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != format, "Image format must match texture's image format.");
+	ERR_FAIL_COND_MSG(p_image->get_width() != width || p_image->get_height() != height, "Image size must match texture's image size.");
+	ERR_FAIL_COND_MSG(p_image->has_mipmaps() != mipmaps, "Image mipmap configuration must match texture's image mipmap configuration.");
+	ERR_FAIL_INDEX_MSG(p_layer, layers, "Layer index is out of bounds.");
 	RS::get_singleton()->texture_2d_update(texture, p_image, p_layer);
 }
 

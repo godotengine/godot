@@ -37,15 +37,14 @@
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
 			The currently selected color.
 		</member>
+		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
+			The currently selected color mode. See [enum ColorModeType].
+		</member>
 		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode" default="false">
 			If [code]true[/code], the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], shows an alpha channel slider (opacity).
-		</member>
-		<member name="hsv_mode" type="bool" setter="set_hsv_mode" getter="is_hsv_mode" default="false">
-			If [code]true[/code], allows editing the color with Hue/Saturation/Value sliders.
-			[b]Note:[/b] Cannot be enabled if raw mode is on.
 		</member>
 		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
 			The shape of the color space view. See [enum PickerShapeType].
@@ -55,10 +54,6 @@
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
 			If [code]true[/code], saved color presets are visible.
-		</member>
-		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode" default="false">
-			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
-			[b]Note:[/b] Cannot be enabled if HSV mode is on.
 		</member>
 	</members>
 	<signals>
@@ -82,6 +77,20 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="MODE_RGB" value="0" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue sliders.
+		</constant>
+		<constant name="MODE_HSV" value="1" enum="ColorModeType">
+			Allows editing the color with Hue/Saturation/Value sliders.
+		</constant>
+		<constant name="MODE_RAW" value="2" enum="ColorModeType">
+			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		</constant>
+		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
+			Allows editing the color with Hue/Saturation/Lightness sliders.
+			OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma and hue.
+			[url=https://bottosson.github.io/posts/colorpicker/]Okhsv and Okhsl color spaces[/url]
+		</constant>
 		<constant name="SHAPE_HSV_RECTANGLE" value="0" enum="PickerShapeType">
 			HSV Color Model rectangle color space.
 		</constant>

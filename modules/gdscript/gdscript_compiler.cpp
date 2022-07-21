@@ -43,7 +43,7 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 		return false;
 	}
 
-	if (codegen.locals.has(p_name)) {
+	if (codegen.parameters.has(p_name) || codegen.locals.has(p_name)) {
 		return false; //shadowed
 	}
 
@@ -2452,6 +2452,25 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				}
 #endif
 			} break;
+
+			case GDScriptParser::ClassNode::Member::GROUP: {
+				const GDScriptParser::AnnotationNode *annotation = member.annotation;
+				StringName name = annotation->export_info.name;
+
+				// This is not a normal member, but we need this to keep indices in order.
+				GDScript::MemberInfo minfo;
+				minfo.index = p_script->member_indices.size();
+
+				PropertyInfo prop_info;
+				prop_info.name = name;
+				prop_info.usage = annotation->export_info.usage;
+				prop_info.hint_string = annotation->export_info.hint_string;
+
+				p_script->member_info[name] = prop_info;
+				p_script->member_indices[name] = minfo;
+				p_script->members.insert(name);
+			} break;
+
 			default:
 				break; // Nothing to do here.
 		}

@@ -10,29 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
-	</methods>
 	<members>
 		<member name="curve_step" type="float" setter="set_curve_step" getter="get_curve_step" default="0.5">
 			Step (in pixels) used to approximate Bézier curves.
@@ -41,7 +18,7 @@
 			Depths of the mesh, if set to [code]0.0[/code] only front surface, is generated, and UV layout is changed to use full texture for the front face only.
 		</member>
 		<member name="font" type="Font" setter="set_font" getter="get_font">
-			[Font] used for the [TextMesh]'s text.
+			Font configuration used to display text.
 		</member>
 		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
 			Font size of the [TextMesh]'s text.

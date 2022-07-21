@@ -32,6 +32,7 @@
 #define MESH_STORAGE_DUMMY_H
 
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererDummy {
 
@@ -121,7 +122,11 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override {}
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override { return Transform2D(); }
 
-	virtual void skeleton_update_dependency(RID p_base, RendererStorage::DependencyTracker *p_instance) override {}
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
+
+	/* OCCLUDER */
+
+	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {}
 };
 
 } // namespace RendererDummy

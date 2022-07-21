@@ -470,7 +470,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) {
 			p_instance->mesh_instance = RSG::mesh_storage->mesh_instance_create(p_instance->base);
 
 		} else {
-			RSG::storage->free(p_instance->mesh_instance);
+			RSG::mesh_storage->mesh_instance_free(p_instance->mesh_instance);
 			p_instance->mesh_instance = RID();
 		}
 
@@ -506,7 +506,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		if (instance->mesh_instance.is_valid()) {
-			RSG::storage->free(instance->mesh_instance);
+			RSG::mesh_storage->mesh_free(instance->mesh_instance);
 			instance->mesh_instance = RID();
 			// no need to set instance data flag here, as it was freed above
 		}
@@ -538,7 +538,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 			} break;
 			case RS::INSTANCE_PARTICLES_COLLISION: {
 				InstanceParticlesCollisionData *collision = static_cast<InstanceParticlesCollisionData *>(instance->base_data);
-				RSG::storage->free(collision->instance);
+				RSG::utilities->free(collision->instance);
 			} break;
 			case RS::INSTANCE_FOG_VOLUME: {
 				InstanceFogVolumeData *volume = static_cast<InstanceFogVolumeData *>(instance->base_data);
@@ -607,7 +607,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 	instance->base = RID();
 
 	if (p_base.is_valid()) {
-		instance->base_type = RSG::storage->get_base_type(p_base);
+		instance->base_type = RSG::utilities->get_base_type(p_base);
 
 		// fix up a specific malfunctioning case before the switch, so it can be handled
 		if (instance->base_type == RS::INSTANCE_NONE && RendererSceneOcclusionCull::get_singleton()->is_occluder(p_base)) {
@@ -724,7 +724,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		//forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
-		RSG::storage->base_update_dependency(p_base, &instance->dependency_tracker);
+		RSG::utilities->base_update_dependency(p_base, &instance->dependency_tracker);
 	}
 
 	_instance_queue_update(instance, true, true);
@@ -1876,10 +1876,10 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) {
 
 		} break;
 		case RenderingServer::INSTANCE_FOG_VOLUME: {
-			new_aabb = RSG::storage->fog_volume_get_aabb(p_instance->base);
+			new_aabb = RSG::fog->fog_volume_get_aabb(p_instance->base);
 		} break;
 		case RenderingServer::INSTANCE_VISIBLITY_NOTIFIER: {
-			new_aabb = RSG::storage->visibility_notifier_get_aabb(p_instance->base);
+			new_aabb = RSG::utilities->visibility_notifier_get_aabb(p_instance->base);
 		} break;
 		case RenderingServer::INSTANCE_LIGHT: {
 			new_aabb = RSG::light_storage->light_get_aabb(p_instance->base);
@@ -3677,7 +3677,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 		p_instance->dependency_tracker.update_begin();
 
 		if (p_instance->base.is_valid()) {
-			RSG::storage->base_update_dependency(p_instance->base, &p_instance->dependency_tracker);
+			RSG::utilities->base_update_dependency(p_instance->base, &p_instance->dependency_tracker);
 		}
 
 		if (p_instance->material_override.is_valid()) {
@@ -3785,7 +3785,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 							can_cast_shadows = false;
 						}
 
-						RSG::storage->base_update_dependency(mesh, &p_instance->dependency_tracker);
+						RSG::utilities->base_update_dependency(mesh, &p_instance->dependency_tracker);
 					}
 				} else if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
 					bool cast_shadows = false;
@@ -3885,7 +3885,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 }
 
 void RendererSceneCull::update_dirty_instances() {
-	RSG::storage->update_dirty_resources();
+	RSG::utilities->update_dirty_resources();
 
 	while (_instance_update_list.first()) {
 		_update_dirty_instance(_instance_update_list.first()->self());
@@ -3978,12 +3978,12 @@ void RendererSceneCull::update_visibility_notifiers() {
 		if (visibility_notifier->just_visible) {
 			visibility_notifier->just_visible = false;
 
-			RSG::storage->visibility_notifier_call(visibility_notifier->base, true, RSG::threaded);
+			RSG::utilities->visibility_notifier_call(visibility_notifier->base, true, RSG::threaded);
 		} else {
 			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
 				visible_notifier_list.remove(E);
 
-				RSG::storage->visibility_notifier_call(visibility_notifier->base, false, RSG::threaded);
+				RSG::utilities->visibility_notifier_call(visibility_notifier->base, false, RSG::threaded);
 			}
 		}
 

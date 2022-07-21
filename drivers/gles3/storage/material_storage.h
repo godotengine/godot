@@ -37,10 +37,10 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include "../shaders/canvas.glsl.gen.h"
 #include "../shaders/cubemap_filter.glsl.gen.h"
@@ -125,7 +125,7 @@ struct Material {
 	RID next_pass;
 	SelfList<Material> update_element;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 
 	Material() :
 			update_element(this) {}
@@ -453,6 +453,48 @@ public:
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.basis.rows[0][0];
+		p_array[1] = p_mtx.basis.rows[1][0];
+		p_array[2] = p_mtx.basis.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.basis.rows[0][1];
+		p_array[5] = p_mtx.basis.rows[1][1];
+		p_array[6] = p_mtx.basis.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.basis.rows[0][2];
+		p_array[9] = p_mtx.basis.rows[1][2];
+		p_array[10] = p_mtx.basis.rows[2][2];
+		p_array[11] = 0;
+		p_array[12] = p_mtx.origin.x;
+		p_array[13] = p_mtx.origin.y;
+		p_array[14] = p_mtx.origin.z;
+		p_array[15] = 1;
+	}
+
+	static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+		p_array[0] = p_mtx.rows[0][0];
+		p_array[1] = p_mtx.rows[1][0];
+		p_array[2] = p_mtx.rows[2][0];
+		p_array[3] = 0;
+		p_array[4] = p_mtx.rows[0][1];
+		p_array[5] = p_mtx.rows[1][1];
+		p_array[6] = p_mtx.rows[2][1];
+		p_array[7] = 0;
+		p_array[8] = p_mtx.rows[0][2];
+		p_array[9] = p_mtx.rows[1][2];
+		p_array[10] = p_mtx.rows[2][2];
+		p_array[11] = 0;
+	}
+
+	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+			}
+		}
+	}
+
 	struct Shaders {
 		CanvasShaderGLES3 canvas_shader;
 		SkyShaderGLES3 sky_shader;
@@ -534,7 +576,7 @@ public:
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
-	virtual void material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) override;
+	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override;
 
 	_FORCE_INLINE_ uint32_t material_get_shader_id(RID p_material) {
 		Material *material = material_owner.get_or_null(p_material);

@@ -44,26 +44,6 @@ struct _MinSizeCache {
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		int value = p_value;
-		if (value == -1) {
-			if (opentype_features.has(tag)) {
-				opentype_features.erase(tag);
-				_shape();
-				update();
-			}
-		} else {
-			if (!opentype_features.has(tag) || (int)opentype_features[tag] != value) {
-				opentype_features[tag] = value;
-				_shape();
-				update();
-			}
-		}
-		notify_property_list_changed();
-		return true;
-	}
 
 	if (!str.begins_with("slot/")) {
 		return false;
@@ -106,18 +86,6 @@ bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 
 bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 	String str = p_name;
-	if (str.begins_with("opentype_features/")) {
-		String name = str.get_slicec('/', 1);
-		int32_t tag = TS->name_to_tag(name);
-		if (opentype_features.has(tag)) {
-			r_ret = opentype_features[tag];
-			return true;
-		} else {
-			r_ret = -1;
-			return true;
-		}
-	}
-
 	if (!str.begins_with("slot/")) {
 		return false;
 	}
@@ -156,12 +124,6 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
-		String name = TS->tag_to_name(*ftr);
-		p_list->push_back(PropertyInfo(Variant::INT, "opentype_features/" + name));
-	}
-	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
-
 	int idx = 0;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -471,7 +433,7 @@ void GraphNode::_shape() {
 	} else {
 		title_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	title_buf->add_string(title, font, font_size, opentype_features, (!language.is_empty()) ? language : TranslationServer::get_singleton()->get_tool_locale());
+	title_buf->add_string(title, font, font_size, language);
 }
 
 #ifdef TOOLS_ENABLED
@@ -724,29 +686,6 @@ void GraphNode::set_text_direction(Control::TextDirection p_text_direction) {
 
 Control::TextDirection GraphNode::get_text_direction() const {
 	return text_direction;
-}
-
-void GraphNode::clear_opentype_features() {
-	opentype_features.clear();
-	_shape();
-	update();
-}
-
-void GraphNode::set_opentype_feature(const String &p_name, int p_value) {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
-		opentype_features[tag] = p_value;
-		_shape();
-		update();
-	}
-}
-
-int GraphNode::get_opentype_feature(const String &p_name) const {
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!opentype_features.has(tag)) {
-		return -1;
-	}
-	return opentype_features[tag];
 }
 
 void GraphNode::set_language(const String &p_language) {
@@ -1043,9 +982,6 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &GraphNode::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &GraphNode::get_text_direction);
-	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &GraphNode::set_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &GraphNode::get_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &GraphNode::clear_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &GraphNode::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &GraphNode::get_language);
 
@@ -1105,14 +1041,16 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_overlay"), &GraphNode::get_overlay);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_position_offset", "get_position_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_close"), "set_show_close_button", "is_close_button_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
+
+	ADD_GROUP("BiDi", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));

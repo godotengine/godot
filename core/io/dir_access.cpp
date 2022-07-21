@@ -181,6 +181,10 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	return OK;
 }
 
+DirAccess::AccessType DirAccess::get_access_type() const {
+	return _access_type;
+}
+
 String DirAccess::fix_path(String p_path) const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES: {

@@ -31,7 +31,6 @@
 #ifndef RENDERER_GI_H
 #define RENDERER_GI_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererGI {
@@ -75,9 +74,6 @@ public:
 
 	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) = 0;
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const = 0;
-
-	virtual void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) = 0;
-	virtual float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const = 0;
 
 	virtual uint32_t voxel_gi_get_version(RID p_probe) const = 0;
 };

@@ -203,6 +203,9 @@
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
 			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
 		</member>
+		<member name="application/boot_splash/minimum_display_time" type="int" setter="" getter="" default="0">
+			Minimum boot splash display time (in milliseconds). It is not recommended to set too high values for this setting.
+		</member>
 		<member name="application/boot_splash/show_image" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], displays the image specified in [member application/boot_splash/image] when the engine starts. If [code]false[/code], only displays the plain color specified in [member application/boot_splash/bg_color].
 		</member>
@@ -628,7 +631,7 @@
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
 		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontData.antialiased].
+			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontFile.antialiased].
 		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
@@ -636,7 +639,7 @@
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
-			Default font hinting mode. See [member FontData.hinting].
+			Default font hinting mode. See [member FontFile.hinting].
 		</member>
 		<member name="gui/theme/default_font_multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
@@ -644,7 +647,7 @@
 			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph sub-pixel positioning mode. See [member FontData.subpixel_positioning].
+			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 		</member>
@@ -1895,41 +1898,41 @@
 		<member name="rendering/shadows/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/shadows/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/directional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
-		<member name="rendering/shadows/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/16_bits" type="bool" setter="" getter="" default="true">
+		<member name="rendering/shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_0_subdiv" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_1_subdiv" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_2_subdiv" type="int" setter="" getter="" default="3">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/quadrant_3_subdiv" type="int" setter="" getter="" default="4">
+		<member name="rendering/shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size" type="int" setter="" getter="" default="4096">
+		<member name="rendering/shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
 			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
 		</member>
-		<member name="rendering/shadows/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
-			Lower-end override for [member rendering/shadows/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
+			Lower-end override for [member rendering/shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/shadows/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
+		<member name="rendering/shadows/positional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
-		<member name="rendering/shadows/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/shadows/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/shadows/positional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/shadows/positional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/textures/decals/filter" type="int" setter="" getter="" default="3">
 		</member>
@@ -1964,6 +1967,12 @@
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
+		</member>
+		<member name="rendering/vrs/mode" type="int" setter="" getter="" default="0">
+			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.
+		</member>
+		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
+			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
 		</member>
 		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>

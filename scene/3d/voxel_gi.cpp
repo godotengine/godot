@@ -272,7 +272,8 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 }
 
 void VoxelGI::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
+	// Prevent very small extents as these break baking if other extents are set very high.
+	extents = Vector3(MAX(1.0, p_extents.x), MAX(1.0, p_extents.y), MAX(1.0, p_extents.z));
 	update_gizmos();
 }
 

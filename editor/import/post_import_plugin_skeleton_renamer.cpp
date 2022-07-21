@@ -39,6 +39,8 @@
 void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/bone_renamer/rename_bones"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/bone_renamer/unique_node/make_unique"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "retarget/bone_renamer/unique_node/skeleton_name"), "GeneralSkeleton"));
 	}
 }
 
@@ -136,6 +138,38 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 				Callable::CallError ce;
 				nd->callp("_notify_skeleton_bones_renamed", argptrs, argcount, ce);
 			}
+		}
+
+		// Make unique skeleton.
+		if (bool(p_options["retarget/bone_renamer/unique_node/make_unique"])) {
+			String unique_name = String(p_options["retarget/bone_renamer/unique_node/skeleton_name"]);
+			ERR_FAIL_COND_MSG(unique_name == String(), "Skeleton unique name cannot be empty.");
+
+			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+			while (nodes.size()) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+				List<StringName> anims;
+				ap->get_animation_list(&anims);
+				for (const StringName &name : anims) {
+					Ref<Animation> anim = ap->get_animation(name);
+					int track_len = anim->get_track_count();
+					for (int i = 0; i < track_len; i++) {
+						if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
+							continue;
+						}
+						String track_path = String(anim->track_get_path(i).get_concatenated_names());
+						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						if (node) {
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (track_skeleton && track_skeleton == skeleton) {
+								anim->track_set_path(i, String("%") + unique_name + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+							}
+						}
+					}
+				}
+			}
+			skeleton->set_name(unique_name);
+			skeleton->set_unique_name_in_owner(true);
 		}
 	}
 }

@@ -270,7 +270,7 @@ bool GPUParticles3D::get_interpolate() const {
 }
 
 TypedArray<String> GPUParticles3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+	TypedArray<String> warnings = GeometryInstance3D::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		warnings.push_back(RTR("GPU-based particles are not supported by the OpenGL video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose."));

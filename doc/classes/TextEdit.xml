@@ -85,12 +85,6 @@
 				Performs a full reset of [TextEdit], including undo history.
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="clear_undo_history">
 			<return type="void" />
 			<description>
@@ -353,13 +347,6 @@
 			<argument index="1" name="visible_amount" type="int" />
 			<description>
 				Returns the count to the next visible line from [code]line[/code] to [code]line + visible_amount[/code]. Can also count backwards. For example if a [TextEdit] has 5 lines with lines 2 and 3 hidden, calling this with [code]line = 1, visible_amount = 1[/code] would return 3.
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
 			</description>
 		</method>
 		<method name="get_pos_at_line_column" qualifiers="const">
@@ -859,14 +846,6 @@
 				Sets the text for [code]gutter[/code] on [code]line[/code].
 			</description>
 		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 		<method name="set_overtype_mode_enabled">
 			<return type="void" />
 			<argument index="0" name="enabled" type="bool" />
@@ -998,13 +977,16 @@
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
+		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
+			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines.
+		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
 		</member>
 		<member name="scroll_past_end_of_file" type="bool" setter="set_scroll_past_end_of_file_enabled" getter="is_scroll_past_end_of_file_enabled" default="false">
 			Allow scrolling past the last line into "virtual" space.
 		</member>
-		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
+		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enabled" getter="is_smooth_scroll_enabled" default="false">
 			Scroll smoothly over the text rather then jumping to the next location.
 		</member>
 		<member name="scroll_v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">

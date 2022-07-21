@@ -37,7 +37,7 @@
 #include "hb-shaper-impl.hh"
 
 #include "hb-ot-shape.hh"
-#include "hb-ot-shape-complex.hh"
+#include "hb-ot-shaper.hh"
 #include "hb-ot-shape-fallback.hh"
 #include "hb-ot-shape-normalize.hh"
 
@@ -86,14 +86,14 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 						, apply_morx (_hb_apply_morx (face, props))
 #endif
 {
-  shaper = hb_ot_shape_complex_categorize (this);
+  shaper = hb_ot_shaper_categorize (this);
 
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
   script_fallback_mark_positioning = shaper->fallback_position;
 
   /* https://github.com/harfbuzz/harfbuzz/issues/1528 */
-  if (apply_morx && shaper != &_hb_ot_complex_shaper_default)
-    shaper = &_hb_ot_complex_shaper_dumber;
+  if (apply_morx && shaper != &_hb_ot_shaper_default)
+    shaper = &_hb_ot_shaper_dumber;
 }
 
 void
@@ -927,7 +927,7 @@ hb_ot_substitute_default (const hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_substitute_complex (const hb_ot_shape_context_t *c)
+hb_ot_substitute_plan (const hb_ot_shape_context_t *c)
 {
   hb_buffer_t *buffer = c->buffer;
 
@@ -946,7 +946,7 @@ hb_ot_substitute_pre (const hb_ot_shape_context_t *c)
 
   _hb_buffer_allocate_gsubgpos_vars (c->buffer);
 
-  hb_ot_substitute_complex (c);
+  hb_ot_substitute_plan (c);
 
 #ifndef HB_NO_AAT_SHAPE
   if (c->plan->apply_morx && c->plan->apply_gpos)
@@ -1039,7 +1039,7 @@ hb_ot_position_default (const hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_position_complex (const hb_ot_shape_context_t *c)
+hb_ot_position_plan (const hb_ot_shape_context_t *c)
 {
   unsigned int count = c->buffer->len;
   hb_glyph_info_t *info = c->buffer->info;
@@ -1124,7 +1124,7 @@ hb_ot_position (const hb_ot_shape_context_t *c)
 
   hb_ot_position_default (c);
 
-  hb_ot_position_complex (c);
+  hb_ot_position_plan (c);
 
   if (HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction))
     hb_buffer_reverse (c->buffer);
@@ -1159,8 +1159,6 @@ hb_propagate_flags (hb_buffer_t *buffer)
 static void
 hb_ot_shape_internal (hb_ot_shape_context_t *c)
 {
-  c->buffer->enter ();
-
   /* Save the original direction, we use it later. */
   c->target_direction = c->buffer->props.direction;
 

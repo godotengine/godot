@@ -42,7 +42,7 @@
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/renderer_storage.h"
+#include "servers/rendering/storage/utilities.h"
 #include "servers/xr/xr_interface.h"
 
 class RendererSceneCull : public RendererScene {
@@ -470,32 +470,32 @@ public:
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check;
 
-		RendererStorage::DependencyTracker dependency_tracker;
+		DependencyTracker dependency_tracker;
 
-		static void dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 			switch (p_notification) {
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA:
-				case RendererStorage::DEPENDENCY_CHANGED_AABB: {
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case Dependency::DEPENDENCY_CHANGED_AABB: {
 					singleton->_instance_queue_update(instance, true, false);
 
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MATERIAL: {
+				case Dependency::DEPENDENCY_CHANGED_MATERIAL: {
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MESH:
-				case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
-				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
-				case RendererStorage::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_MESH:
+				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
+				case Dependency::DEPENDENCY_CHANGED_DECAL:
+				case Dependency::DEPENDENCY_CHANGED_LIGHT:
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_BONES: {
 					//ignored
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);
@@ -506,7 +506,7 @@ public:
 			}
 		}
 
-		static void dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_deleted(const RID &p_dependency, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 
 			if (p_dependency == instance->base) {
@@ -1150,8 +1150,8 @@ public:
 	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	PASS1(shadows_quality_set, RS::ShadowQuality)
-	PASS1(directional_shadow_quality_set, RS::ShadowQuality)
+	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
+	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 

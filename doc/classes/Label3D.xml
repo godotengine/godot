@@ -9,12 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="clear_opentype_features">
-			<return type="void" />
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="generate_triangle_mesh" qualifiers="const">
 			<return type="TriangleMesh" />
 			<description>
@@ -28,27 +22,12 @@
 				Returns the value of the specified flag.
 			</description>
 		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code].
-			</description>
-		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
 			<argument index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum Label3D.DrawFlags] for a list of flags.
-			</description>
-		</method>
-		<method name="set_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tag" type="String" />
-			<argument index="1" name="value" type="int" />
-			<description>
-				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 	</methods>
@@ -72,7 +51,7 @@
 			If [code]true[/code], the label is rendered at the same size regardless of distance.
 		</member>
 		<member name="font" type="Font" setter="set_font" getter="get_font">
-			[Font] used for the [Label3D]'s text.
+			Font configuration used to display text.
 		</member>
 		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
 			Font size of the [Label3D]'s text.
@@ -96,7 +75,7 @@
 			The text drawing offset (in pixels).
 		</member>
 		<member name="outline_modulate" type="Color" setter="set_outline_modulate" getter="get_outline_modulate" default="Color(0, 0, 0, 1)">
-			The tint of [Font]'s outline.
+			The tint of text outline.
 		</member>
 		<member name="outline_render_priority" type="int" setter="set_outline_render_priority" getter="get_outline_render_priority" default="-1">
 			Sets the render priority for the text outline. Higher priority objects will be sorted in front of lower priority objects.

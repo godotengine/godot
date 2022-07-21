@@ -13,7 +13,7 @@
 #include "hb.hh"
 
 static const hb_script_t
-_hb_ucd_sc_map[162] =
+_hb_ucd_sc_map[163] =
 {
                    HB_SCRIPT_COMMON,              HB_SCRIPT_INHERITED,
                   HB_SCRIPT_UNKNOWN,                 HB_SCRIPT_ARABIC,
@@ -96,6 +96,7 @@ _hb_ucd_sc_map[162] =
                    HB_SCRIPT_YEZIDI,           HB_SCRIPT_CYPRO_MINOAN,
                HB_SCRIPT_OLD_UYGHUR,                 HB_SCRIPT_TANGSA,
                      HB_SCRIPT_TOTO,               HB_SCRIPT_VITHKUQI,
+                     HB_SCRIPT_MATH,
 };
 static const uint16_t
 _hb_ucd_dm1_p0_map[825] =

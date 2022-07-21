@@ -302,12 +302,9 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
 	}
 
-	NodePath from_path = multiplayer->get_root_path().rel_path_to(p_from->get_path());
-	ERR_FAIL_COND_MSG(from_path.is_empty(), "Unable to send RPC. Relative path is empty. THIS IS LIKELY A BUG IN THE ENGINE!");
-
 	// See if all peers have cached path (if so, call can be fast).
 	int psc_id;
-	const bool has_all_peers = multiplayer->send_object_cache(p_from, from_path, p_to, psc_id);
+	const bool has_all_peers = multiplayer->send_object_cache(p_from, p_to, psc_id);
 
 	// Create base packet, lots of hardcode because it must be tight.
 
@@ -414,6 +411,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
+		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_from->get_path());
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_gles3.h"
+#include "storage/utilities.h"
 
 #ifdef GLES3_ENABLED
 
@@ -99,8 +100,9 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	canvas->set_time(time_total);
 	scene->set_time(time_total, frame_step);
 
-	storage->info.render_final = storage->info.render;
-	storage->info.render.reset();
+	GLES3::Utilities *utilities = GLES3::Utilities::get_singleton();
+	utilities->info.render_final = utilities->info.render;
+	utilities->info.render.reset();
 
 	//scene->iteration();
 }
@@ -197,14 +199,15 @@ void RasterizerGLES3::initialize() {
 void RasterizerGLES3::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
-	memdelete(storage);
 	memdelete(gi);
+	memdelete(fog);
 	memdelete(copy_effects);
 	memdelete(light_storage);
 	memdelete(particles_storage);
 	memdelete(mesh_storage);
 	memdelete(material_storage);
 	memdelete(texture_storage);
+	memdelete(utilities);
 	memdelete(config);
 }
 
@@ -265,6 +268,7 @@ RasterizerGLES3::RasterizerGLES3() {
 
 	// OpenGL needs to be initialized before initializing the Rasterizers
 	config = memnew(GLES3::Config);
+	utilities = memnew(GLES3::Utilities);
 	texture_storage = memnew(GLES3::TextureStorage);
 	material_storage = memnew(GLES3::MaterialStorage);
 	mesh_storage = memnew(GLES3::MeshStorage);
@@ -272,9 +276,9 @@ RasterizerGLES3::RasterizerGLES3() {
 	light_storage = memnew(GLES3::LightStorage);
 	copy_effects = memnew(GLES3::CopyEffects);
 	gi = memnew(GLES3::GI);
-	storage = memnew(RasterizerStorageGLES3);
-	canvas = memnew(RasterizerCanvasGLES3(storage));
-	scene = memnew(RasterizerSceneGLES3(storage));
+	fog = memnew(GLES3::Fog);
+	canvas = memnew(RasterizerCanvasGLES3());
+	scene = memnew(RasterizerSceneGLES3());
 }
 
 RasterizerGLES3::~RasterizerGLES3() {

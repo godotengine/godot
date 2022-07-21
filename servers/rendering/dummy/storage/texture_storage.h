@@ -38,6 +38,8 @@ namespace RendererDummy {
 
 class TextureStorage : public RendererTextureStorage {
 private:
+	static TextureStorage *singleton;
+
 	struct DummyTexture {
 		Ref<Image> image;
 	};
@@ -45,10 +47,11 @@ private:
 
 public:
 	static TextureStorage *get_singleton() {
-		// Here we cheat until we can retire RasterizerStorageDummy::free()
-
-		return (TextureStorage *)RSG::texture_storage;
+		return singleton;
 	};
+
+	TextureStorage();
+	~TextureStorage();
 
 	virtual bool can_create_resources_async() const override { return false; }
 
@@ -166,6 +169,9 @@ public:
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) override {}
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
+
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override{};
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override{};
 };
 
 } // namespace RendererDummy

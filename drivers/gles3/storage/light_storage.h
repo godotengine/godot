@@ -37,8 +37,8 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/storage/light_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include "platform_config.h"
 #ifndef OPENGL_INCLUDE_H
@@ -72,7 +72,7 @@ struct Light {
 	RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
 	uint64_t version = 0;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* REFLECTION PROBE */
@@ -93,7 +93,7 @@ struct ReflectionProbe {
 	uint32_t cull_mask = (1 << 20) - 1;
 	float mesh_lod_threshold = 0.01;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* LIGHTMAP */
@@ -115,7 +115,7 @@ struct Lightmap {
 		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 	};
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 class LightStorage : public RendererLightStorage {
@@ -321,6 +321,23 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override;
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 	virtual float lightmap_get_probe_capture_update_speed() const override;
+
+	/* LIGHT SHADOW MAPPING */
+	/*
+	struct CanvasOccluder {
+		RID self;
+
+		GLuint vertex_id; // 0 means, unconfigured
+		GLuint index_id; // 0 means, unconfigured
+		LocalVector<Vector2> lines;
+		int len;
+	};
+
+	RID_Owner<CanvasOccluder> canvas_occluder_owner;
+
+	RID canvas_light_occluder_create();
+	void canvas_light_occluder_set_polylines(RID p_occluder, const LocalVector<Vector2> &p_lines);
+	*/
 };
 
 } // namespace GLES3

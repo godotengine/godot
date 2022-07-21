@@ -179,7 +179,7 @@ private:
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
-	Multiplayer::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
+	Multiplayer::RPCConfig _member_get_rpc_config(IMonoClassMember *p_member) const;
 
 protected:
 	static void _bind_methods();
@@ -502,6 +502,7 @@ public:
 
 	/* TODO? */ void get_public_functions(List<MethodInfo> *p_functions) const override {}
 	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {}
+	/* TODO? */ void get_public_annotations(List<MethodInfo> *p_annotations) const override {}
 
 	void reload_all_scripts() override;
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;

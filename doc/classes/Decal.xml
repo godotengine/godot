@@ -89,15 +89,19 @@
 		</member>
 		<member name="texture_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the base [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for [Decal] textures is set globally with [member ProjectSettings.rendering/textures/decals/filter].
 		</member>
 		<member name="texture_emission" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the emission [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for [Decal] textures is set globally with [member ProjectSettings.rendering/textures/decals/filter].
 		</member>
 		<member name="texture_normal" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the per-pixel normal map for the decal. Use this to add extra detail to decals.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for [Decal] textures is set globally with [member ProjectSettings.rendering/textures/decals/filter].
 		</member>
 		<member name="texture_orm" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] storing ambient occlusion, roughness, and metallic for the decal. Use this to add extra detail to decals.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for [Decal] textures is set globally with [member ProjectSettings.rendering/textures/decals/filter].
 		</member>
 		<member name="upper_fade" type="float" setter="set_upper_fade" getter="get_upper_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).

@@ -43,6 +43,11 @@ Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath 
 }
 
 void MultiplayerSynchronizer::_stop() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->replication_stop(node, this);
@@ -50,9 +55,42 @@ void MultiplayerSynchronizer::_stop() {
 }
 
 void MultiplayerSynchronizer::_start() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->replication_start(node, this);
+		_update_process();
+	}
+}
+
+void MultiplayerSynchronizer::_update_process() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
+	if (!node) {
+		return;
+	}
+	set_process_internal(false);
+	set_physics_process_internal(false);
+	if (!visibility_filters.size()) {
+		return;
+	}
+	switch (visibility_update_mode) {
+		case VISIBILITY_PROCESS_IDLE:
+			set_process_internal(true);
+			break;
+		case VISIBILITY_PROCESS_PHYSICS:
+			set_physics_process_internal(true);
+			break;
+		case VISIBILITY_PROCESS_NONE:
+			break;
 	}
 }
 
@@ -85,6 +123,66 @@ Error MultiplayerSynchronizer::set_state(const List<NodePath> &p_properties, Obj
 	return OK;
 }
 
+bool MultiplayerSynchronizer::is_visibility_public() const {
+	return peer_visibility.has(0);
+}
+
+void MultiplayerSynchronizer::set_visibility_public(bool p_visible) {
+	set_visibility_for(0, p_visible);
+}
+
+bool MultiplayerSynchronizer::is_visible_to(int p_peer) {
+	if (visibility_filters.size()) {
+		Variant arg = p_peer;
+		const Variant *argv[1] = { &arg };
+		for (Callable filter : visibility_filters) {
+			Variant ret;
+			Callable::CallError err;
+			filter.call(argv, 1, ret, err);
+			ERR_FAIL_COND_V(err.error != Callable::CallError::CALL_OK || ret.get_type() != Variant::BOOL, false);
+			if (!ret.operator bool()) {
+				return false;
+			}
+		}
+	}
+	return peer_visibility.has(0) || peer_visibility.has(p_peer);
+}
+
+void MultiplayerSynchronizer::add_visibility_filter(Callable p_callback) {
+	visibility_filters.insert(p_callback);
+	_update_process();
+}
+
+void MultiplayerSynchronizer::remove_visibility_filter(Callable p_callback) {
+	visibility_filters.erase(p_callback);
+	_update_process();
+}
+
+void MultiplayerSynchronizer::set_visibility_for(int p_peer, bool p_visible) {
+	if (peer_visibility.has(p_peer) == p_visible) {
+		return;
+	}
+	if (p_visible) {
+		peer_visibility.insert(p_peer);
+	} else {
+		peer_visibility.erase(p_peer);
+	}
+	update_visibility(p_peer);
+}
+
+bool MultiplayerSynchronizer::get_visibility_for(int p_peer) const {
+	return peer_visibility.has(p_peer);
+}
+
+void MultiplayerSynchronizer::set_visibility_update_mode(VisibilityUpdateMode p_mode) {
+	visibility_update_mode = p_mode;
+	_update_process();
+}
+
+MultiplayerSynchronizer::VisibilityUpdateMode MultiplayerSynchronizer::get_visibility_update_mode() const {
+	return visibility_update_mode;
+}
+
 void MultiplayerSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &MultiplayerSynchronizer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &MultiplayerSynchronizer::get_root_path);
@@ -95,9 +193,29 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_replication_config", "config"), &MultiplayerSynchronizer::set_replication_config);
 	ClassDB::bind_method(D_METHOD("get_replication_config"), &MultiplayerSynchronizer::get_replication_config);
 
+	ClassDB::bind_method(D_METHOD("set_visibility_update_mode", "mode"), &MultiplayerSynchronizer::set_visibility_update_mode);
+	ClassDB::bind_method(D_METHOD("get_visibility_update_mode"), &MultiplayerSynchronizer::get_visibility_update_mode);
+	ClassDB::bind_method(D_METHOD("update_visibility", "for_peer"), &MultiplayerSynchronizer::update_visibility, DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("set_visibility_public", "visible"), &MultiplayerSynchronizer::set_visibility_public);
+	ClassDB::bind_method(D_METHOD("is_visibility_public"), &MultiplayerSynchronizer::is_visibility_public);
+
+	ClassDB::bind_method(D_METHOD("add_visibility_filter", "filter"), &MultiplayerSynchronizer::add_visibility_filter);
+	ClassDB::bind_method(D_METHOD("remove_visibility_filter", "filter"), &MultiplayerSynchronizer::remove_visibility_filter);
+	ClassDB::bind_method(D_METHOD("set_visibility_for", "peer", "visible"), &MultiplayerSynchronizer::set_visibility_for);
+	ClassDB::bind_method(D_METHOD("get_visibility_for", "peer"), &MultiplayerSynchronizer::get_visibility_for);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig"), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
+
+	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_NONE);
+
+	ADD_SIGNAL(MethodInfo("visibility_changed", PropertyInfo(Variant::INT, "for_peer")));
 }
 
 void MultiplayerSynchronizer::_notification(int p_what) {
@@ -117,6 +235,11 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_stop();
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			update_visibility(0);
 		} break;
 	}
 }
@@ -142,6 +265,18 @@ Ref<SceneReplicationConfig> MultiplayerSynchronizer::get_replication_config() {
 	return replication_config;
 }
 
+void MultiplayerSynchronizer::update_visibility(int p_for_peer) {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
+	if (node && get_multiplayer()->has_multiplayer_peer() && is_multiplayer_authority()) {
+		emit_signal(SNAME("visibility_changed"), p_for_peer);
+	}
+}
+
 void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
 	_stop();
 	root_path = p_path;
@@ -161,4 +296,9 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 	get_multiplayer()->replication_stop(node, this);
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
 	get_multiplayer()->replication_start(node, this);
+}
+
+MultiplayerSynchronizer::MultiplayerSynchronizer() {
+	// Publicly visible by default.
+	peer_visibility.insert(0);
 }

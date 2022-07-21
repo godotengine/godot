@@ -113,7 +113,7 @@ int (*mbedtls_mutex_lock)( mbedtls_threading_mutex_t * ) = threading_mutex_lock_
 int (*mbedtls_mutex_unlock)( mbedtls_threading_mutex_t * ) = threading_mutex_unlock_pthread;
 
 /*
- * With phtreads we can statically initialize mutexes
+ * With pthreads we can statically initialize mutexes
  */
 #define MUTEX_INIT  = { PTHREAD_MUTEX_INITIALIZER, 1 }
 

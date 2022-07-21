@@ -33,6 +33,9 @@
 #include "core/templates/sort_array.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "storage/config.h"
+#include "storage/light_storage.h"
+#include "storage/mesh_storage.h"
+#include "storage/texture_storage.h"
 
 #ifdef GLES3_ENABLED
 
@@ -45,7 +48,7 @@ RasterizerSceneGLES3 *RasterizerSceneGLES3::get_singleton() {
 }
 
 RendererSceneRender::GeometryInstance *RasterizerSceneGLES3::geometry_instance_create(RID p_base) {
-	RS::InstanceType type = storage->get_base_type(p_base);
+	RS::InstanceType type = RSG::utilities->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
 
 	GeometryInstanceGLES3 *ginstance = geometry_instance_alloc.alloc();
@@ -285,16 +288,16 @@ void RasterizerSceneGLES3::_update_dirty_geometry_instances() {
 	}
 }
 
-void RasterizerSceneGLES3::_geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker) {
+void RasterizerSceneGLES3::_geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker) {
 	switch (p_notification) {
-		case RendererStorage::DEPENDENCY_CHANGED_MATERIAL:
-		case RendererStorage::DEPENDENCY_CHANGED_MESH:
-		case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
-		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
-		case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA: {
+		case Dependency::DEPENDENCY_CHANGED_MATERIAL:
+		case Dependency::DEPENDENCY_CHANGED_MESH:
+		case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+		case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
+		case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA: {
 			static_cast<RasterizerSceneGLES3 *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 		} break;
-		case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
+		case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
 			GeometryInstanceGLES3 *ginstance = static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata);
 			if (ginstance->data->base_type == RS::INSTANCE_MULTIMESH) {
 				ginstance->instance_count = GLES3::MeshStorage::get_singleton()->multimesh_get_instances_to_draw(ginstance->data->base);
@@ -306,7 +309,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_changed(RendererStorage
 	}
 }
 
-void RasterizerSceneGLES3::_geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker) {
+void RasterizerSceneGLES3::_geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker) {
 	static_cast<RasterizerSceneGLES3 *>(singleton)->_geometry_instance_mark_dirty(static_cast<GeometryInstance *>(p_tracker->userdata));
 }
 
@@ -376,7 +379,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 	sdcache->surface_index = p_surface;
 
 	if (ginstance->data->dirty_dependencies) {
-		storage->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
+		RSG::utilities->base_update_dependency(p_mesh, &ginstance->data->dependency_tracker);
 	}
 
 	//shadow
@@ -1310,10 +1313,10 @@ void RasterizerSceneGLES3::camera_effects_set_dof_blur(RID p_camera_effects, boo
 void RasterizerSceneGLES3::camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {
 }
 
-void RasterizerSceneGLES3::shadows_quality_set(RS::ShadowQuality p_quality) {
+void RasterizerSceneGLES3::positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 }
 
-void RasterizerSceneGLES3::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
+void RasterizerSceneGLES3::directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 }
 
 RID RasterizerSceneGLES3::light_instance_create(RID p_light) {
@@ -1609,10 +1612,10 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	correction.set_depth_correction(p_flip_y);
 	CameraMatrix projection = correction * p_render_data->cam_projection;
 	//store camera into ubo
-	RasterizerStorageGLES3::store_camera(projection, scene_state.ubo.projection_matrix);
-	RasterizerStorageGLES3::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
-	RasterizerStorageGLES3::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
-	RasterizerStorageGLES3::store_transform(p_render_data->inv_cam_transform, scene_state.ubo.view_matrix);
+	GLES3::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
+	GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
+	GLES3::MaterialStorage::store_transform(p_render_data->cam_transform, scene_state.ubo.inv_view_matrix);
+	GLES3::MaterialStorage::store_transform(p_render_data->inv_cam_transform, scene_state.ubo.view_matrix);
 
 	scene_state.ubo.directional_light_count = p_render_data->directional_light_count;
 
@@ -1659,7 +1662,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 
 			Basis sky_transform = env->sky_orientation;
 			sky_transform = sky_transform.inverse() * p_render_data->cam_transform.basis;
-			RasterizerStorageGLES3::store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
+			GLES3::MaterialStorage::store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
 			scene_state.ubo.use_ambient_cubemap = (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ambient_src == RS::ENV_AMBIENT_SOURCE_SKY;
 			scene_state.ubo.use_ambient_light = scene_state.ubo.use_ambient_cubemap || ambient_src == RS::ENV_AMBIENT_SOURCE_COLOR;
 		}
@@ -1974,7 +1977,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	if (p_render_buffers.is_valid()) {
 		clear_color = texture_storage->render_target_get_clear_request_color(rb->render_target);
 	} else {
-		clear_color = storage->get_default_clear_color();
+		clear_color = texture_storage->get_default_clear_color();
 	}
 
 	Environment *env = environment_owner.get_or_null(p_environment);
@@ -2657,11 +2660,9 @@ void RasterizerSceneGLES3::decals_set_filter(RS::DecalFilter p_filter) {
 void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter p_filter) {
 }
 
-RasterizerSceneGLES3::RasterizerSceneGLES3(RasterizerStorageGLES3 *p_storage) {
+RasterizerSceneGLES3::RasterizerSceneGLES3() {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
-
-	storage = p_storage;
 
 	{
 		// Setup Lights
@@ -2870,15 +2871,15 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	// Scene Shader
 	GLES3::MaterialStorage::get_singleton()->shaders.scene_shader.version_free(scene_globals.shader_default_version);
 	GLES3::MaterialStorage::get_singleton()->shaders.cubemap_filter_shader.version_free(scene_globals.cubemap_filter_shader_version);
-	storage->free(scene_globals.default_material);
-	storage->free(scene_globals.default_shader);
+	RSG::material_storage->material_free(scene_globals.default_material);
+	RSG::material_storage->shader_free(scene_globals.default_shader);
 
 	// Sky Shader
 	GLES3::MaterialStorage::get_singleton()->shaders.sky_shader.version_free(sky_globals.shader_default_version);
-	storage->free(sky_globals.default_material);
-	storage->free(sky_globals.default_shader);
-	storage->free(sky_globals.fog_material);
-	storage->free(sky_globals.fog_shader);
+	RSG::material_storage->material_free(sky_globals.default_material);
+	RSG::material_storage->shader_free(sky_globals.default_shader);
+	RSG::material_storage->material_free(sky_globals.fog_material);
+	RSG::material_storage->shader_free(sky_globals.fog_shader);
 	glDeleteBuffers(1, &sky_globals.screen_triangle);
 	glDeleteVertexArrays(1, &sky_globals.screen_triangle_array);
 	glDeleteTextures(1, &sky_globals.radical_inverse_vdc_cache_tex);

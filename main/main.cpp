@@ -621,9 +621,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	/* argument parsing and main creation */
 	List<String> args;
 	List<String> main_args;
+	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
+	// Add command line arguments.
 	for (int i = 0; i < argc; i++) {
 		args.push_back(String::utf8(argv[i]));
+	}
+
+	// Add arguments received from macOS LaunchService (URL schemas, file associations).
+	for (const String &arg : platform_args) {
+		args.push_back(arg);
 	}
 
 	List<String>::Element *I = args.front();
@@ -1037,10 +1044,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (I->next()) {
 				String p = I->next()->get();
-				if (OS::get_singleton()->set_cwd(p) == OK) {
-					//nothing
-				} else {
-					project_path = I->next()->get(); //use project_path instead
+				if (OS::get_singleton()->set_cwd(p) != OK) {
+					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
+					goto error;
 				}
 				N = I->next()->next();
 			} else {
@@ -2191,6 +2197,13 @@ bool Main::start() {
 #endif
 	}
 
+	uint64_t minimum_time_msec = GLOBAL_DEF("application/boot_splash/minimum_display_time", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/minimum_display_time",
+			PropertyInfo(Variant::INT,
+					"application/boot_splash/minimum_display_time",
+					PROPERTY_HINT_RANGE,
+					"0,100,1,or_greater,suffix:ms")); // No negative numbers.
+
 #ifdef TOOLS_ENABLED
 	if (!doc_tool_path.is_empty()) {
 		// Needed to instance editor-only classes for their default values
@@ -2711,6 +2724,15 @@ bool Main::start() {
 	if (movie_writer) {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, write_movie_path);
 	}
+
+	if (minimum_time_msec) {
+		uint64_t minimum_time = 1000 * minimum_time_msec;
+		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
+		if (elapsed_time < minimum_time) {
+			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
+		}
+	}
+
 	return true;
 }
 

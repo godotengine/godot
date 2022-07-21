@@ -97,6 +97,9 @@ public:
 	void set_autowrap(bool p_autowrap);
 	bool has_autowrap();
 
+	void set_ok_button_text(String p_ok_button_text);
+	String get_ok_button_text() const;
+
 	AcceptDialog();
 	~AcceptDialog();
 };
@@ -110,6 +113,10 @@ protected:
 
 public:
 	Button *get_cancel_button();
+
+	void set_cancel_button_text(String p_cancel_button_text);
+	String get_cancel_button_text() const;
+
 	ConfirmationDialog();
 };
 

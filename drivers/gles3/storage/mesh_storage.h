@@ -37,6 +37,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/storage/mesh_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 #include "platform_config.h"
 #ifndef OPENGL_INCLUDE_H
@@ -126,7 +127,7 @@ struct Mesh {
 	RID shadow_mesh;
 	HashSet<Mesh *> shadow_owners;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* Mesh Instance */
@@ -179,7 +180,7 @@ struct MultiMesh {
 	bool dirty = false;
 	MultiMesh *dirty_list = nullptr;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct Skeleton {
@@ -194,7 +195,7 @@ struct Skeleton {
 
 	uint64_t version = 1;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 class MeshStorage : public RendererMeshStorage {
@@ -531,7 +532,11 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override;
 
-	virtual void skeleton_update_dependency(RID p_base, RendererStorage::DependencyTracker *p_instance) override;
+	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
+
+	/* OCCLUDER */
+
+	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
 };
 
 } // namespace GLES3

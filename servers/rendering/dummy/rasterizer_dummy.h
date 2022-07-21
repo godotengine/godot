@@ -34,15 +34,16 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/dummy/environment/fog.h"
 #include "servers/rendering/dummy/environment/gi.h"
 #include "servers/rendering/dummy/rasterizer_canvas_dummy.h"
 #include "servers/rendering/dummy/rasterizer_scene_dummy.h"
-#include "servers/rendering/dummy/rasterizer_storage_dummy.h"
 #include "servers/rendering/dummy/storage/light_storage.h"
 #include "servers/rendering/dummy/storage/material_storage.h"
 #include "servers/rendering/dummy/storage/mesh_storage.h"
 #include "servers/rendering/dummy/storage/particles_storage.h"
 #include "servers/rendering/dummy/storage/texture_storage.h"
+#include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
@@ -53,23 +54,25 @@ private:
 
 protected:
 	RasterizerCanvasDummy canvas;
+	RendererDummy::Utilities utilities;
 	RendererDummy::LightStorage light_storage;
 	RendererDummy::MaterialStorage material_storage;
 	RendererDummy::MeshStorage mesh_storage;
 	RendererDummy::ParticlesStorage particles_storage;
 	RendererDummy::TextureStorage texture_storage;
 	RendererDummy::GI gi;
-	RasterizerStorageDummy storage;
+	RendererDummy::Fog fog;
 	RasterizerSceneDummy scene;
 
 public:
+	RendererUtilities *get_utilities() override { return &utilities; };
 	RendererLightStorage *get_light_storage() override { return &light_storage; };
 	RendererMaterialStorage *get_material_storage() override { return &material_storage; };
 	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; };
 	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; };
 	RendererTextureStorage *get_texture_storage() override { return &texture_storage; };
 	RendererGI *get_gi() override { return &gi; };
-	RendererStorage *get_storage() override { return &storage; }
+	RendererFog *get_fog() override { return &fog; };
 	RendererCanvasRender *get_canvas() override { return &canvas; }
 	RendererSceneRender *get_scene() override { return &scene; }
 

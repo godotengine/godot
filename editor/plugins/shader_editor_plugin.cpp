@@ -706,7 +706,7 @@ ShaderEditor::ShaderEditor() {
 	shader_editor = memnew(ShaderTextEditor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
-	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	shader_editor->connect("show_warnings_panel", callable_mp(this, &ShaderEditor::_show_warnings_panel));
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
@@ -797,7 +797,7 @@ ShaderEditor::ShaderEditor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);
-	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_box->add_child(shader_editor);
 
@@ -830,7 +830,7 @@ ShaderEditor::ShaderEditor() {
 	vbc->add_child(dl);
 
 	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload_shader_from_disk));
-	disk_changed->get_ok_button()->set_text(TTR("Reload"));
+	disk_changed->set_ok_button_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
 	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));
@@ -889,12 +889,12 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	Ref<VisualShader> vs = es.shader;
 	if (vs.is_valid()) {
 		es.visual_shader_editor = memnew(VisualShaderEditor);
-		es.visual_shader_editor->edit(vs.ptr());
 		shader_tabs->add_child(es.visual_shader_editor);
+		es.visual_shader_editor->edit(vs.ptr());
 	} else {
 		es.shader_editor = memnew(ShaderEditor);
-		es.shader_editor->edit(s);
 		shader_tabs->add_child(es.shader_editor);
+		es.shader_editor->edit(s);
 	}
 	shader_tabs->set_current_tab(shader_tabs->get_tab_count() - 1);
 	edited_shaders.push_back(es);
@@ -918,6 +918,15 @@ ShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_sha
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
 		if (edited_shaders[i].shader == p_for_shader) {
 			return edited_shaders[i].shader_editor;
+		}
+	}
+	return nullptr;
+}
+
+VisualShaderEditor *ShaderEditorPlugin::get_visual_shader_editor(const Ref<Shader> &p_for_shader) {
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader == p_for_shader) {
+			return edited_shaders[i].visual_shader_editor;
 		}
 	}
 	return nullptr;
@@ -950,6 +959,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	memdelete(c);
 	edited_shaders.remove_at(index);
 	_update_shader_list();
+	EditorNode::get_singleton()->get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
 }
 
 void ShaderEditorPlugin::_resource_saved(Object *obj) {

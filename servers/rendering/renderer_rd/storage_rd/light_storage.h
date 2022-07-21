@@ -35,6 +35,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/storage/light_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -61,7 +62,7 @@ struct Light {
 	RS::LightDirectionalSkyMode directional_sky_mode = RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY;
 	uint64_t version = 0;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* REFLECTION PROBE */
@@ -82,7 +83,7 @@ struct ReflectionProbe {
 	uint32_t cull_mask = (1 << 20) - 1;
 	float mesh_lod_threshold = 0.01;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 /* LIGHTMAP */
@@ -104,7 +105,7 @@ struct Lightmap {
 		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 	};
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 class LightStorage : public RendererLightStorage {

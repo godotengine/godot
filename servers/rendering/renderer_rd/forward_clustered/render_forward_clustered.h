@@ -36,8 +36,8 @@
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_clustered.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
 namespace RendererSceneRenderImplementation {
 
@@ -107,11 +107,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID depth_normal_roughness_voxelgi_fb;
 		RID color_only_fb;
 		RID specular_only_fb;
+
+		RID vrs;
+
 		int width, height;
 		HashMap<uint32_t, RID> color_framebuffers;
 
 		// for multiview
-		uint32_t view_count;
+		uint32_t view_count = 1;
 		RID color_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
 		RID depth_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
 		RID color_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -120,13 +123,14 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID normal_roughness_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID voxelgi_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID voxelgi_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
+		RID vrs_views[RendererSceneRender::MAX_RENDER_VIEWS];
 
 		RID render_sdfgi_uniform_set;
 		void ensure_specular();
 		void ensure_voxelgi();
 		void ensure_velocity();
 		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count);
+		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 
 		~RenderBufferDataForwardClustered();
@@ -541,7 +545,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			bool mirror = false;
 			bool dirty_dependencies = false;
 
-			RendererStorage::DependencyTracker dependency_tracker;
+			DependencyTracker dependency_tracker;
 		};
 
 		Data *data = nullptr;
@@ -550,8 +554,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 				dirty_list_element(this) {}
 	};
 
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceForwardClustered>::List geometry_instance_dirty_list;
 
@@ -683,7 +687,7 @@ public:
 
 	virtual bool free(RID p_rid) override;
 
-	RenderForwardClustered(RendererStorageRD *p_storage);
+	RenderForwardClustered();
 	~RenderForwardClustered();
 };
 } // namespace RendererSceneRenderImplementation

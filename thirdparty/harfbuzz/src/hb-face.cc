@@ -190,7 +190,7 @@ _hb_face_for_data_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void
 }
 
 /**
- * hb_face_create: (Xconstructor)
+ * hb_face_create:
  * @blob: #hb_blob_t to work upon
  * @index: The index of the face within @blob
  *
@@ -342,7 +342,7 @@ hb_face_set_user_data (hb_face_t          *face,
  * Since: 0.9.2
  **/
 void *
-hb_face_get_user_data (const hb_face_t    *face,
+hb_face_get_user_data (hb_face_t          *face,
 		       hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (face, key);

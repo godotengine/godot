@@ -3080,9 +3080,9 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 
 		// We'll assume that we use either URI or bufferView, so let's warn the user
 		// if their image somehow uses both. And fail if it has neither.
-		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specific an 'uri' or 'bufferView'.");
+		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specify an 'uri' or 'bufferView'.");
 		if (d.has("uri") && d.has("bufferView")) {
-			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'bufferView' will take precedence.");
+			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'uri' will take precedence.");
 		}
 
 		String mimetype;
@@ -3202,12 +3202,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			state->images.push_back(Ref<Texture2D>());
 			continue;
 		}
-
-		Ref<ImageTexture> t;
-		t.instantiate();
-		t->create_from_image(img);
-
-		state->images.push_back(t);
+		state->images.push_back(ImageTexture::create_from_image(img));
 	}
 
 	print_verbose("glTF: Total images: " + itos(state->images.size()));
@@ -3428,7 +3423,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					}
 				}
 				orm_image->generate_mipmaps();
-				orm_texture->create_from_image(orm_image);
+				orm_texture->set_image(orm_image);
 				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
 					orm_texture->set_name(material->get_name() + "_orm");
@@ -3476,7 +3471,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 								img->set_pixel(x, y, c);
 							}
 						}
-						tex->create_from_image(img);
+						tex->set_image(img);
 					}
 				}
 			}
@@ -3784,13 +3779,8 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	}
 	rm_img->generate_mipmaps();
 	r_spec_gloss->diffuse_img->generate_mipmaps();
-	Ref<ImageTexture> diffuse_image_texture;
-	diffuse_image_texture.instantiate();
-	diffuse_image_texture->create_from_image(r_spec_gloss->diffuse_img);
-	p_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_image_texture);
-	Ref<ImageTexture> rm_image_texture;
-	rm_image_texture.instantiate();
-	rm_image_texture->create_from_image(rm_img);
+	p_material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, ImageTexture::create_from_image(r_spec_gloss->diffuse_img));
+	Ref<ImageTexture> rm_image_texture = ImageTexture::create_from_image(rm_img);
 	if (has_roughness) {
 		p_material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, rm_image_texture);
 		p_material->set_roughness_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_GREEN);
@@ -5176,19 +5166,16 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex 
 	}
 
 	const float range = CLAMP(l->range, 0, 4096);
-	// Doubling the range will double the effective brightness, so we need double attenuation (half brightness).
-	// We want to have double intensity give double brightness, so we need half the attenuation.
-	const float attenuation = range / (intensity * 2048);
 	if (l->light_type == "point") {
 		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
 		light->set_param(OmniLight3D::PARAM_RANGE, range);
 		light->set_color(l->color);
 		return light;
 	}
 	if (l->light_type == "spot") {
 		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
 		light->set_param(SpotLight3D::PARAM_RANGE, range);
 		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad2deg(l->outer_cone_angle));
 		light->set_color(l->color);
@@ -5253,14 +5240,12 @@ GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_lig
 		l->light_type = "point";
 		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
 		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
-		float attenuation = p_light->get_param(OmniLight3D::PARAM_ATTENUATION);
-		l->intensity = l->range / (attenuation * 2048);
+		l->intensity = light->get_param(OmniLight3D::PARAM_ENERGY);
 	} else if (cast_to<SpotLight3D>(p_light)) {
 		l->light_type = "spot";
 		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
 		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
-		float attenuation = light->get_param(SpotLight3D::PARAM_ATTENUATION);
-		l->intensity = l->range / (attenuation * 2048);
+		l->intensity = light->get_param(SpotLight3D::PARAM_ENERGY);
 		l->outer_cone_angle = Math::deg2rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
 
 		// This equation is the inverse of the import equation (which has a desmos link).

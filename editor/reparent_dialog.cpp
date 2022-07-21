@@ -89,7 +89,7 @@ ReparentDialog::ReparentDialog() {
 
 	//cancel->connect("pressed", this,"_cancel");
 
-	get_ok_button()->set_text(TTR("Reparent"));
+	set_ok_button_text(TTR("Reparent"));
 }
 
 ReparentDialog::~ReparentDialog() {

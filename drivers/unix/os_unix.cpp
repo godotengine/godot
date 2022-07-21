@@ -313,7 +313,12 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
 			}
-			(*r_pipe) += String::utf8(buf);
+			String pipe_out;
+			if (pipe_out.parse_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+			}
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}

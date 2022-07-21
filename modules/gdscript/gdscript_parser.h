@@ -325,6 +325,7 @@ public:
 		Vector<Variant> resolved_arguments;
 
 		AnnotationInfo *info = nullptr;
+		PropertyInfo export_info;
 
 		bool apply(GDScriptParser *p_this, Node *p_target) const;
 		bool applies_to(uint32_t p_target_kinds) const;
@@ -500,6 +501,7 @@ public:
 				VARIABLE,
 				ENUM,
 				ENUM_VALUE, // For unnamed enums.
+				GROUP, // For member grouping.
 			};
 
 			Type type = UNDEFINED;
@@ -511,6 +513,7 @@ public:
 				SignalNode *signal;
 				VariableNode *variable;
 				EnumNode *m_enum;
+				AnnotationNode *annotation;
 			};
 			EnumNode::Value enum_value;
 
@@ -532,6 +535,8 @@ public:
 						return "enum";
 					case ENUM_VALUE:
 						return "enum value";
+					case GROUP:
+						return "group";
 				}
 				return "";
 			}
@@ -552,6 +557,8 @@ public:
 						return m_enum->start_line;
 					case SIGNAL:
 						return signal->start_line;
+					case GROUP:
+						return annotation->start_line;
 					case UNDEFINED:
 						ERR_FAIL_V_MSG(-1, "Reaching undefined member type.");
 				}
@@ -585,6 +592,9 @@ public:
 						type.builtin_type = Variant::SIGNAL;
 						// TODO: Add parameter info.
 						return type;
+					}
+					case GROUP: {
+						return DataType();
 					}
 					case UNDEFINED:
 						return DataType();
@@ -621,6 +631,10 @@ public:
 			Member(const EnumNode::Value &p_enum_value) {
 				type = ENUM_VALUE;
 				enum_value = p_enum_value;
+			}
+			Member(AnnotationNode *p_annotation) {
+				type = GROUP;
+				annotation = p_annotation;
 			}
 		};
 
@@ -667,6 +681,10 @@ public:
 		void add_member(const EnumNode::Value &p_enum_value) {
 			members_indices[p_enum_value.identifier->name] = members.size();
 			members.push_back(Member(p_enum_value));
+		}
+		void add_member_group(AnnotationNode *p_annotation_node) {
+			members_indices[p_annotation_node->export_info.name] = members.size();
+			members.push_back(Member(p_annotation_node));
 		}
 
 		ClassNode() {
@@ -1238,6 +1256,7 @@ private:
 			SIGNAL = 1 << 4,
 			FUNCTION = 1 << 5,
 			STATEMENT = 1 << 6,
+			STANDALONE = 1 << 7,
 			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION,
 		};
 		uint32_t target_kind = 0; // Flags.
@@ -1282,6 +1301,12 @@ private:
 	};
 	static ParseRule *get_rule(GDScriptTokenizer::Token::Type p_token_type);
 
+	List<Node *> nodes_in_progress;
+	void complete_extents(Node *p_node);
+	void update_extents(Node *p_node);
+	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
+	void reset_extents(Node *p_node, Node *p_from);
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
@@ -1289,13 +1314,8 @@ private:
 		node->next = list;
 		list = node;
 
-		// TODO: Properly set positions for all nodes.
-		node->start_line = previous.start_line;
-		node->end_line = previous.end_line;
-		node->start_column = previous.start_column;
-		node->end_column = previous.end_column;
-		node->leftmost_column = previous.leftmost_column;
-		node->rightmost_column = previous.rightmost_column;
+		reset_extents(node, previous);
+		nodes_in_progress.push_back(node);
 
 		return node;
 	}
@@ -1340,7 +1360,7 @@ private:
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
-	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, int p_optional_arguments = 0, bool p_is_vararg = false);
+	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target);
@@ -1348,6 +1368,8 @@ private:
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	template <PropertyUsageFlags t_usage>
+	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	template <Multiplayer::RPCMode t_mode>
 	bool network_annotations(const AnnotationNode *p_annotation, Node *p_target);
@@ -1413,6 +1435,7 @@ public:
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
+	bool annotation_exists(const String &p_annotation_name) const;
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<String> get_dependencies() const {

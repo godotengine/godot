@@ -37,7 +37,6 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
@@ -47,8 +46,8 @@
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/storage/utilities.h"
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 struct RenderDataRD;
@@ -84,16 +83,13 @@ public:
 		bool interior = false;
 		bool use_two_bounces = false;
 
-		float anisotropy_strength = 0.5;
-
 		uint32_t version = 1;
 		uint32_t data_version = 1;
 
-		RendererStorage::Dependency dependency;
+		Dependency dependency;
 	};
 
 private:
-	RendererStorageRD *storage = nullptr;
 	static GI *singleton;
 
 	/* VOXEL GI STORAGE */
@@ -418,9 +414,6 @@ public:
 	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) override;
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override;
 
-	virtual void voxel_gi_set_anisotropy_strength(RID p_voxel_gi, float p_strength) override;
-	virtual float voxel_gi_get_anisotropy_strength(RID p_voxel_gi) const override;
-
 	virtual uint32_t voxel_gi_get_version(RID p_probe) const override;
 	uint32_t voxel_gi_get_data_version(RID p_probe);
 
@@ -435,7 +428,6 @@ public:
 
 	struct VoxelGIInstance {
 		// access to our containers
-		RendererStorageRD *storage = nullptr;
 		GI *gi = nullptr;
 
 		RID probe;
@@ -549,7 +541,8 @@ public:
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
 
 			RID sdf_store_uniform_set;
-			RID sdf_direct_light_uniform_set;
+			RID sdf_direct_light_static_uniform_set;
+			RID sdf_direct_light_dynamic_uniform_set;
 			RID scroll_uniform_set;
 			RID scroll_occlusion_uniform_set;
 			RID integrate_uniform_set;
@@ -559,7 +552,6 @@ public:
 		};
 
 		// access to our containers
-		RendererStorageRD *storage = nullptr;
 		GI *gi = nullptr;
 
 		// used for rendering (voxelization)
@@ -669,13 +661,13 @@ public:
 
 		/* GI buffers */
 		RID ambient_buffer;
+		RID ambient_slice[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID reflection_buffer;
-		RID ambient_view[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID reflection_view[RendererSceneRender::MAX_RENDER_VIEWS];
-		RID uniform_set[RendererSceneRender::MAX_RENDER_VIEWS];
+		RID reflection_slice[RendererSceneRender::MAX_RENDER_VIEWS];
 		bool using_half_size_gi = false;
 		uint32_t view_count = 1;
 
+		RID uniform_set[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID scene_data_ubo;
 
 		void free();
@@ -738,36 +730,33 @@ public:
 	};
 
 	struct PushConstant {
-		uint32_t view_index;
 		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
 		uint32_t orthogonal;
+		uint32_t view_index;
 
 		float proj_info[4];
 
 		float z_near;
 		float z_far;
-		float pad1;
 		float pad2;
+		float pad3;
 	};
 
 	RID sdfgi_ubo;
+
 	enum Mode {
 		MODE_VOXEL_GI,
 		MODE_SDFGI,
 		MODE_COMBINED,
-		MODE_HALF_RES_VOXEL_GI,
-		MODE_HALF_RES_SDFGI,
-		MODE_HALF_RES_COMBINED,
-
-		MODE_VOXEL_GI_MULTIVIEW,
-		MODE_SDFGI_MULTIVIEW,
-		MODE_COMBINED_MULTIVIEW,
-		MODE_HALF_RES_VOXEL_GI_MULTIVIEW,
-		MODE_HALF_RES_SDFGI_MULTIVIEW,
-		MODE_HALF_RES_COMBINED_MULTIVIEW,
-
 		MODE_MAX
+	};
+
+	enum ShaderSpecializations {
+		SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
+		SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
+		SHADER_SPECIALIZATION_USE_VRS = 1 << 2,
+		SHADER_SPECIALIZATION_VARIATIONS = 0x07,
 	};
 
 	RID default_voxel_gi_buffer;
@@ -775,18 +764,18 @@ public:
 	bool half_resolution = false;
 	GiShaderRD shader;
 	RID shader_version;
-	RID pipelines[MODE_MAX];
+	RID pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
 	GI();
 	~GI();
 
-	void init(RendererStorageRD *p_storage, RendererSceneSkyRD *p_sky);
+	void init(RendererSceneSkyRD *p_sky);
 	void free();
 
 	SDFGI *create_sdfgi(RendererSceneEnvironmentRD *p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used, RendererSceneRenderRD *p_scene_render);
-	void process_gi(RID p_render_buffers, RID *p_normal_roughness_views, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
+	void process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render);
 
 	RID voxel_gi_instance_create(RID p_base);
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);

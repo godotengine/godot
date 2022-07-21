@@ -489,6 +489,7 @@ public:
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
+	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;

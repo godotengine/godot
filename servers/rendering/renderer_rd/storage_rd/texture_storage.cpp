@@ -191,7 +191,7 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default cubemap
+	{ //create default black cubemap array
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -219,7 +219,35 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default cubemap array
+	{ //create default white cubemap array
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 6;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 255);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			for (int i = 0; i < 6; i++) {
+				vpv.push_back(pv);
+			}
+			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
+	{ //create default black cubemap
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -247,7 +275,7 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default cubemap white array
+	{ //create default white cubemap
 
 		RD::TextureFormat tformat;
 		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -349,7 +377,6 @@ TextureStorage::TextureStorage() {
 
 		Vector<uint8_t> pv;
 		pv.resize(16 * 4);
-
 		for (int i = 0; i < 16; i++) {
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
@@ -358,11 +385,33 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			//take the chance and initialize decal atlas to something
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(pv);
 			decal_atlas.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 			decal_atlas.texture_srgb = decal_atlas.texture;
+		}
+	}
+
+	{ //create default VRS
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8_UINT;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 1;
+		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+		Vector<uint8_t> pv;
+		pv.resize(4 * 4);
+		for (int i = 0; i < 4 * 4; i++) {
+			pv.set(i, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_VRS] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 	}
 
@@ -1712,7 +1761,7 @@ void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->extents = p_extents;
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
@@ -1736,7 +1785,7 @@ void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID
 		texture_add_to_decal_atlas(decal->textures[p_type]);
 	}
 
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_DECAL);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_DECAL);
 }
 
 void TextureStorage::decal_set_emission_energy(RID p_decal, float p_energy) {
@@ -1761,7 +1810,7 @@ void TextureStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->cull_mask = p_layers;
-	decal->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_AABB);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void TextureStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
@@ -2750,4 +2799,32 @@ void TextureStorage::render_target_set_backbuffer_uniform_set(RID p_render_targe
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
 	rt->backbuffer_uniform_set = p_uniform_set;
+}
+
+void TextureStorage::render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->vrs_mode = p_mode;
+}
+
+void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->vrs_texture = p_texture;
+}
+
+RS::ViewportVRSMode TextureStorage::render_target_get_vrs_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_VRS_DISABLED);
+
+	return rt->vrs_mode;
+}
+
+RID TextureStorage::render_target_get_vrs_texture(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->vrs_texture;
 }

@@ -491,8 +491,8 @@ public:
 		SHADOW_QUALITY_MAX
 	};
 
-	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
-	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
+	virtual void positional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
+	virtual void directional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
@@ -856,8 +856,8 @@ public:
 
 	virtual void viewport_set_sdf_oversize_and_scale(RID p_viewport, ViewportSDFOversize p_oversize, ViewportSDFScale p_scale) = 0;
 
-	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
-	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
+	virtual void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
+	virtual void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
 	enum ViewportMSAA {
 		VIEWPORT_MSAA_DISABLED,
@@ -945,6 +945,16 @@ public:
 	virtual double viewport_get_measured_render_time_gpu(RID p_viewport) const = 0;
 
 	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const = 0;
+
+	enum ViewportVRSMode {
+		VIEWPORT_VRS_DISABLED,
+		VIEWPORT_VRS_TEXTURE,
+		VIEWPORT_VRS_XR,
+		VIEWPORT_VRS_MAX,
+	};
+
+	virtual void viewport_set_vrs_mode(RID p_viewport, ViewportVRSMode p_mode) = 0;
+	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
 	/* SKY API */
 
@@ -1609,6 +1619,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
+VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);

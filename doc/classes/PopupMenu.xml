@@ -182,13 +182,6 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
-		<method name="clear_item_opentype_features">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<description>
-				Removes all OpenType features form the item's text.
-			</description>
-		</method>
 		<method name="get_current_index" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -242,14 +235,6 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
-			</description>
-		</method>
-		<method name="get_item_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
@@ -450,15 +435,6 @@
 			<argument index="1" name="state" type="int" />
 			<description>
 				Sets the state of a multistate item. See [method add_multistate_item] for details.
-			</description>
-		</method>
-		<method name="set_item_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="index" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_item_shortcut">

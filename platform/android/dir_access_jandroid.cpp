@@ -31,30 +31,32 @@
 #include "dir_access_jandroid.h"
 
 #include "core/string/print_string.h"
-#include "file_access_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-jobject DirAccessJAndroid::io = nullptr;
+jobject DirAccessJAndroid::dir_access_handler = nullptr;
 jclass DirAccessJAndroid::cls = nullptr;
 jmethodID DirAccessJAndroid::_dir_open = nullptr;
 jmethodID DirAccessJAndroid::_dir_next = nullptr;
 jmethodID DirAccessJAndroid::_dir_close = nullptr;
 jmethodID DirAccessJAndroid::_dir_is_dir = nullptr;
-
-Ref<DirAccess> DirAccessJAndroid::create_fs() {
-	return memnew(DirAccessJAndroid);
-}
+jmethodID DirAccessJAndroid::_dir_exists = nullptr;
+jmethodID DirAccessJAndroid::_file_exists = nullptr;
+jmethodID DirAccessJAndroid::_get_drive_count = nullptr;
+jmethodID DirAccessJAndroid::_get_drive = nullptr;
+jmethodID DirAccessJAndroid::_make_dir = nullptr;
+jmethodID DirAccessJAndroid::_get_space_left = nullptr;
+jmethodID DirAccessJAndroid::_rename = nullptr;
+jmethodID DirAccessJAndroid::_remove = nullptr;
+jmethodID DirAccessJAndroid::_current_is_hidden = nullptr;
 
 Error DirAccessJAndroid::list_dir_begin() {
 	list_dir_end();
-	JNIEnv *env = get_jni_env();
-
-	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
-	int res = env->CallIntMethod(io, _dir_open, js);
+	int res = dir_open(current_dir);
 	if (res <= 0) {
 		return ERR_CANT_OPEN;
 	}
+
 	id = res;
 
 	return OK;
@@ -62,169 +64,236 @@ Error DirAccessJAndroid::list_dir_begin() {
 
 String DirAccessJAndroid::get_next() {
 	ERR_FAIL_COND_V(id == 0, "");
+	if (_dir_next) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, "");
+		jstring str = (jstring)env->CallObjectMethod(dir_access_handler, _dir_next, get_access_type(), id);
+		if (!str) {
+			return "";
+		}
 
-	JNIEnv *env = get_jni_env();
-	jstring str = (jstring)env->CallObjectMethod(io, _dir_next, id);
-	if (!str) {
+		String ret = jstring_to_string((jstring)str, env);
+		env->DeleteLocalRef((jobject)str);
+		return ret;
+	} else {
 		return "";
 	}
-	String ret = jstring_to_string((jstring)str, env);
-	env->DeleteLocalRef((jobject)str);
-	return ret;
 }
 
 bool DirAccessJAndroid::current_is_dir() const {
-	JNIEnv *env = get_jni_env();
-
-	return env->CallBooleanMethod(io, _dir_is_dir, id);
+	if (_dir_is_dir) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+		return env->CallBooleanMethod(dir_access_handler, _dir_is_dir, get_access_type(), id);
+	} else {
+		return false;
+	}
 }
 
 bool DirAccessJAndroid::current_is_hidden() const {
-	return current != "." && current != ".." && current.begins_with(".");
+	if (_current_is_hidden) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+		return env->CallBooleanMethod(dir_access_handler, _current_is_hidden, get_access_type(), id);
+	}
+	return false;
 }
 
 void DirAccessJAndroid::list_dir_end() {
 	if (id == 0) {
 		return;
 	}
-	JNIEnv *env = get_jni_env();
-	env->CallVoidMethod(io, _dir_close, id);
+
+	dir_close(id);
 	id = 0;
 }
 
 int DirAccessJAndroid::get_drive_count() {
-	return 0;
+	if (_get_drive_count) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 0);
+		return env->CallIntMethod(dir_access_handler, _get_drive_count, get_access_type());
+	} else {
+		return 0;
+	}
 }
 
 String DirAccessJAndroid::get_drive(int p_drive) {
-	return "";
+	if (_get_drive) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, "");
+		jstring j_drive = (jstring)env->CallObjectMethod(dir_access_handler, _get_drive, get_access_type(), p_drive);
+		if (!j_drive) {
+			return "";
+		}
+
+		String drive = jstring_to_string(j_drive, env);
+		env->DeleteLocalRef(j_drive);
+		return drive;
+	} else {
+		return "";
+	}
 }
 
 Error DirAccessJAndroid::change_dir(String p_dir) {
-	JNIEnv *env = get_jni_env();
-
-	if (p_dir.is_empty() || p_dir == "." || (p_dir == ".." && current_dir.is_empty())) {
+	String new_dir = get_absolute_path(p_dir);
+	if (new_dir == current_dir) {
 		return OK;
 	}
 
-	String new_dir;
-
-	if (p_dir != "res://" && p_dir.length() > 1 && p_dir.ends_with("/")) {
-		p_dir = p_dir.substr(0, p_dir.length() - 1);
-	}
-
-	if (p_dir.begins_with("/")) {
-		new_dir = p_dir.substr(1, p_dir.length());
-	} else if (p_dir.begins_with("res://")) {
-		new_dir = p_dir.substr(6, p_dir.length());
-	} else if (current_dir.is_empty()) {
-		new_dir = p_dir;
-	} else {
-		new_dir = current_dir.plus_file(p_dir);
-	}
-
-	//test if newdir exists
-	new_dir = new_dir.simplify_path();
-
-	jstring js = env->NewStringUTF(new_dir.utf8().get_data());
-	int res = env->CallIntMethod(io, _dir_open, js);
-	env->DeleteLocalRef(js);
-	if (res <= 0) {
+	if (!dir_exists(new_dir)) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	env->CallVoidMethod(io, _dir_close, res);
-
 	current_dir = new_dir;
-
 	return OK;
 }
 
-String DirAccessJAndroid::get_current_dir(bool p_include_drive) const {
-	return "res://" + current_dir;
+String DirAccessJAndroid::get_absolute_path(String p_path) {
+	if (current_dir != "" && p_path == current_dir) {
+		return current_dir;
+	}
+
+	if (p_path.is_relative_path()) {
+		p_path = get_current_dir().plus_file(p_path);
+	}
+
+	p_path = fix_path(p_path);
+	p_path = p_path.simplify_path();
+	return p_path;
 }
 
 bool DirAccessJAndroid::file_exists(String p_file) {
-	String sd;
-	if (current_dir.is_empty()) {
-		sd = p_file;
+	if (_file_exists) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
+
+		String path = get_absolute_path(p_file);
+		jstring j_path = env->NewStringUTF(path.utf8().get_data());
+		bool result = env->CallBooleanMethod(dir_access_handler, _file_exists, get_access_type(), j_path);
+		env->DeleteLocalRef(j_path);
+		return result;
 	} else {
-		sd = current_dir.plus_file(p_file);
+		return false;
 	}
-
-	Ref<FileAccessAndroid> f;
-	f.instantiate();
-	bool exists = f->file_exists(sd);
-
-	return exists;
 }
 
 bool DirAccessJAndroid::dir_exists(String p_dir) {
-	JNIEnv *env = get_jni_env();
+	if (_dir_exists) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, false);
 
-	String sd;
-
-	if (current_dir.is_empty()) {
-		sd = p_dir;
+		String path = get_absolute_path(p_dir);
+		jstring j_path = env->NewStringUTF(path.utf8().get_data());
+		bool result = env->CallBooleanMethod(dir_access_handler, _dir_exists, get_access_type(), j_path);
+		env->DeleteLocalRef(j_path);
+		return result;
 	} else {
-		if (p_dir.is_relative_path()) {
-			sd = current_dir.plus_file(p_dir);
-		} else {
-			sd = fix_path(p_dir);
-		}
-	}
-
-	String path = sd.simplify_path();
-
-	if (path.begins_with("/")) {
-		path = path.substr(1, path.length());
-	} else if (path.begins_with("res://")) {
-		path = path.substr(6, path.length());
-	}
-
-	jstring js = env->NewStringUTF(path.utf8().get_data());
-	int res = env->CallIntMethod(io, _dir_open, js);
-	env->DeleteLocalRef(js);
-	if (res <= 0) {
 		return false;
 	}
+}
 
-	env->CallVoidMethod(io, _dir_close, res);
+Error DirAccessJAndroid::make_dir_recursive(String p_dir) {
+	// Check if the directory exists already
+	if (dir_exists(p_dir)) {
+		return ERR_ALREADY_EXISTS;
+	}
 
-	return true;
+	if (_make_dir) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, ERR_UNCONFIGURED);
+
+		String path = get_absolute_path(p_dir);
+		jstring j_dir = env->NewStringUTF(path.utf8().get_data());
+		bool result = env->CallBooleanMethod(dir_access_handler, _make_dir, get_access_type(), j_dir);
+		env->DeleteLocalRef(j_dir);
+		if (result) {
+			return OK;
+		} else {
+			return FAILED;
+		}
+	} else {
+		return ERR_UNCONFIGURED;
+	}
 }
 
 Error DirAccessJAndroid::make_dir(String p_dir) {
-	ERR_FAIL_V(ERR_UNAVAILABLE);
+	return make_dir_recursive(p_dir);
 }
 
 Error DirAccessJAndroid::rename(String p_from, String p_to) {
-	ERR_FAIL_V(ERR_UNAVAILABLE);
+	if (_rename) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, ERR_UNCONFIGURED);
+
+		String from_path = get_absolute_path(p_from);
+		jstring j_from = env->NewStringUTF(from_path.utf8().get_data());
+
+		String to_path = get_absolute_path(p_to);
+		jstring j_to = env->NewStringUTF(to_path.utf8().get_data());
+
+		bool result = env->CallBooleanMethod(dir_access_handler, _rename, get_access_type(), j_from, j_to);
+		env->DeleteLocalRef(j_from);
+		env->DeleteLocalRef(j_to);
+		if (result) {
+			return OK;
+		} else {
+			return FAILED;
+		}
+	} else {
+		return ERR_UNCONFIGURED;
+	}
 }
 
 Error DirAccessJAndroid::remove(String p_name) {
-	ERR_FAIL_V(ERR_UNAVAILABLE);
-}
+	if (_remove) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, ERR_UNCONFIGURED);
 
-String DirAccessJAndroid::get_filesystem_type() const {
-	return "APK";
+		String path = get_absolute_path(p_name);
+		jstring j_name = env->NewStringUTF(path.utf8().get_data());
+		bool result = env->CallBooleanMethod(dir_access_handler, _remove, get_access_type(), j_name);
+		env->DeleteLocalRef(j_name);
+		if (result) {
+			return OK;
+		} else {
+			return FAILED;
+		}
+	} else {
+		return ERR_UNCONFIGURED;
+	}
 }
 
 uint64_t DirAccessJAndroid::get_space_left() {
-	return 0;
+	if (_get_space_left) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 0);
+		return env->CallLongMethod(dir_access_handler, _get_space_left, get_access_type());
+	} else {
+		return 0;
+	}
 }
 
-void DirAccessJAndroid::setup(jobject p_io) {
+void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	JNIEnv *env = get_jni_env();
-	io = p_io;
+	dir_access_handler = env->NewGlobalRef(p_dir_access_handler);
 
-	jclass c = env->GetObjectClass(io);
+	jclass c = env->GetObjectClass(dir_access_handler);
 	cls = (jclass)env->NewGlobalRef(c);
 
-	_dir_open = env->GetMethodID(cls, "dir_open", "(Ljava/lang/String;)I");
-	_dir_next = env->GetMethodID(cls, "dir_next", "(I)Ljava/lang/String;");
-	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
-	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
+	_dir_open = env->GetMethodID(cls, "dirOpen", "(ILjava/lang/String;)I");
+	_dir_next = env->GetMethodID(cls, "dirNext", "(II)Ljava/lang/String;");
+	_dir_close = env->GetMethodID(cls, "dirClose", "(II)V");
+	_dir_is_dir = env->GetMethodID(cls, "dirIsDir", "(II)Z");
+	_dir_exists = env->GetMethodID(cls, "dirExists", "(ILjava/lang/String;)Z");
+	_file_exists = env->GetMethodID(cls, "fileExists", "(ILjava/lang/String;)Z");
+	_get_drive_count = env->GetMethodID(cls, "getDriveCount", "(I)I");
+	_get_drive = env->GetMethodID(cls, "getDrive", "(II)Ljava/lang/String;");
+	_make_dir = env->GetMethodID(cls, "makeDir", "(ILjava/lang/String;)Z");
+	_get_space_left = env->GetMethodID(cls, "getSpaceLeft", "(I)J");
+	_rename = env->GetMethodID(cls, "rename", "(ILjava/lang/String;Ljava/lang/String;)Z");
+	_remove = env->GetMethodID(cls, "remove", "(ILjava/lang/String;)Z");
+	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(II)Z");
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {
@@ -232,4 +301,27 @@ DirAccessJAndroid::DirAccessJAndroid() {
 
 DirAccessJAndroid::~DirAccessJAndroid() {
 	list_dir_end();
+}
+
+int DirAccessJAndroid::dir_open(String p_path) {
+	if (_dir_open) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND_V(env == nullptr, 0);
+
+		String path = get_absolute_path(p_path);
+		jstring js = env->NewStringUTF(path.utf8().get_data());
+		int dirId = env->CallIntMethod(dir_access_handler, _dir_open, get_access_type(), js);
+		env->DeleteLocalRef(js);
+		return dirId;
+	} else {
+		return 0;
+	}
+}
+
+void DirAccessJAndroid::dir_close(int p_id) {
+	if (_dir_close) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_COND(env == nullptr);
+		env->CallVoidMethod(dir_access_handler, _dir_close, get_access_type(), p_id);
+	}
 }

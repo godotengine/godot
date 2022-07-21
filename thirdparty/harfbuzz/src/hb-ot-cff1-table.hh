@@ -406,6 +406,8 @@ struct Charset1_2 {
   void collect_glyph_to_sid_map (hb_map_t *mapping, unsigned int num_glyphs) const
   {
     hb_codepoint_t gid = 1;
+    if (gid >= num_glyphs)
+      return;
     for (unsigned i = 0;; i++)
     {
       hb_codepoint_t sid = ranges[i].first;
@@ -1138,7 +1140,8 @@ struct cff1
 	  cff1_top_dict_interp_env_t env (fontDictStr);
 	  cff1_font_dict_interpreter_t font_interp (env);
 	  font = fontDicts.push ();
-	  if (unlikely (font == &Crap (cff1_font_dict_values_t))) { fini (); return; }
+	  if (unlikely (fontDicts.in_error ())) { fini (); return; }
+
 	  font->init ();
 	  if (unlikely (!font_interp.interpret (*font))) { fini (); return; }
 	  PRIVDICTVAL *priv = &privateDicts[i];
@@ -1333,7 +1336,7 @@ struct cff1
       if (names)
       {
 	names->fini ();
-	free (names);
+	hb_free (names);
       }
 
       SUPER::fini ();
@@ -1379,7 +1382,7 @@ struct cff1
       hb_sorted_vector_t<gname_t> *names = glyph_names.get ();
       if (unlikely (!names))
       {
-	names = (hb_sorted_vector_t<gname_t> *) calloc (sizeof (hb_sorted_vector_t<gname_t>), 1);
+	names = (hb_sorted_vector_t<gname_t> *) hb_calloc (sizeof (hb_sorted_vector_t<gname_t>), 1);
 	if (likely (names))
 	{
 	  names->init ();
@@ -1409,14 +1412,14 @@ struct cff1
 	  if (names)
 	  {
 	    names->fini ();
-	    free (names);
+	    hb_free (names);
 	  }
 	  goto retry;
 	}
-       }
+      }
 
       gname_t key = { hb_bytes_t (name, len), 0 };
-      const gname_t *gname = glyph_names->bsearch (key);
+      const gname_t *gname = names ? names->bsearch (key) : nullptr;
       if (!gname) return false;
       hb_codepoint_t gid = sid_to_glyph (gname->sid);
       if (!gid && gname->sid) return false;

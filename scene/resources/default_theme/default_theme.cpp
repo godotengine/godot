@@ -76,7 +76,6 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 
 // See also `editor_generate_icon()` in `editor/editor_themes.cpp`.
 static Ref<ImageTexture> generate_icon(int p_index) {
-	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
 #ifdef MODULE_SVG_ENABLED
@@ -87,9 +86,8 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	ImageLoaderSVG img_loader;
 	img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, false);
 #endif
-	icon->create_from_image(img);
 
-	return icon;
+	return ImageTexture::create_from_image(img);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -467,6 +465,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
+	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
 	theme->set_color("completion_font_color", "CodeEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "CodeEdit", control_font_color);
 	theme->set_color("font_selected_color", "CodeEdit", Color(0, 0, 0));
@@ -917,8 +916,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel", "TooltipPanel",
 			make_flat_stylebox(Color(0, 0, 0, 0.5), 2 * default_margin, 0.5 * default_margin, 2 * default_margin, 0.5 * default_margin));
 
-	theme->set_font("font", "TooltipLabel", Ref<Font>());
 	theme->set_font_size("font_size", "TooltipLabel", -1);
+	theme->set_font("font", "TooltipLabel", Ref<Font>());
 
 	theme->set_color("font_color", "TooltipLabel", control_font_color);
 	theme->set_color("font_shadow_color", "TooltipLabel", Color(0, 0, 0, 0));
@@ -938,7 +937,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("italics_font", "RichTextLabel", italics_font);
 	theme->set_font("bold_italics_font", "RichTextLabel", bold_italics_font);
 	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
-
 	theme->set_font_size("normal_font_size", "RichTextLabel", -1);
 	theme->set_font_size("bold_font_size", "RichTextLabel", -1);
 	theme->set_font_size("italics_font_size", "RichTextLabel", -1);
@@ -1033,9 +1031,9 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 	Ref<StyleBox> default_style;
 	Ref<Texture2D> default_icon;
 	Ref<Font> default_font;
-	Ref<Font> bold_font;
-	Ref<Font> bold_italics_font;
-	Ref<Font> italics_font;
+	Ref<FontVariation> bold_font;
+	Ref<FontVariation> bold_italics_font;
+	Ref<FontVariation> italics_font;
 	float default_scale = CLAMP(p_scale, 0.5, 8.0);
 
 	if (p_font.is_valid()) {
@@ -1045,48 +1043,31 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		// Use the default DynamicFont (separate from the editor font).
 		// The default DynamicFont is chosen to have a small file size since it's
 		// embedded in both editor and export template binaries.
-		Ref<Font> dynamic_font;
+		Ref<FontFile> dynamic_font;
 		dynamic_font.instantiate();
-
-		Ref<FontData> dynamic_font_data;
-		dynamic_font_data.instantiate();
-		dynamic_font_data->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
-		dynamic_font_data->set_subpixel_positioning(p_font_subpixel);
-		dynamic_font_data->set_hinting(p_font_hinting);
-		dynamic_font_data->set_antialiased(p_font_antialiased);
-		dynamic_font_data->set_multichannel_signed_distance_field(p_font_msdf);
-		dynamic_font_data->set_generate_mipmaps(p_font_generate_mipmaps);
-
-		dynamic_font->add_data(dynamic_font_data);
+		dynamic_font->set_data_ptr(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size);
+		dynamic_font->set_subpixel_positioning(p_font_subpixel);
+		dynamic_font->set_hinting(p_font_hinting);
+		dynamic_font->set_antialiased(p_font_antialiased);
+		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
+		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
 
 		default_font = dynamic_font;
 	}
 
 	if (default_font.is_valid()) {
 		bold_font.instantiate();
-		for (int i = 0; i < default_font->get_data_count(); i++) {
-			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			// Try to match OpenSans ExtraBold.
-			data->set_embolden(1.2);
-			bold_font->add_data(data);
-		}
+		bold_font->set_base_font(default_font);
+		bold_font->set_variation_embolden(1.2);
 
 		bold_italics_font.instantiate();
-		for (int i = 0; i < default_font->get_data_count(); i++) {
-			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			// Try to match OpenSans ExtraBold Italic.
-			data->set_embolden(1.2);
-			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
-			bold_italics_font->add_data(data);
-		}
+		bold_italics_font->set_base_font(default_font);
+		bold_italics_font->set_variation_embolden(1.2);
+		bold_italics_font->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 
 		italics_font.instantiate();
-		for (int i = 0; i < default_font->get_data_count(); i++) {
-			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			// Try to match OpenSans Italic.
-			data->set_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
-			italics_font->add_data(data);
-		}
+		italics_font->set_base_font(default_font);
+		italics_font->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 	}
 
 	fill_default_theme(t, default_font, bold_font, bold_italics_font, italics_font, default_icon, default_style, default_scale);

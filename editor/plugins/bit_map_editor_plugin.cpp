@@ -33,11 +33,7 @@
 #include "editor/editor_scale.h"
 
 void BitMapEditor::setup(const Ref<BitMap> &p_bitmap) {
-	Ref<ImageTexture> texture;
-	texture.instantiate();
-	texture->create_from_image(p_bitmap->convert_to_image());
-	texture_rect->set_texture(texture);
-
+	texture_rect->set_texture(ImageTexture::create_from_image(p_bitmap->convert_to_image()));
 	size_label->set_text(vformat(String::utf8("%s×%s"), p_bitmap->get_size().width, p_bitmap->get_size().height));
 }
 

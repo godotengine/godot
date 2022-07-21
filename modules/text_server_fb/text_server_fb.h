@@ -144,16 +144,13 @@ class TextServerFallback : public TextServerExtension {
 		Vector2 advance;
 	};
 
-	struct FontDataForSizeFallback {
+	struct FontForSizeFallback {
 		double ascent = 0.0;
 		double descent = 0.0;
 		double underline_position = 0.0;
 		double underline_thickness = 0.0;
 		double scale = 1.0;
 		double oversampling = 1.0;
-
-		int spacing_glyph = 0;
-		int spacing_space = 0;
 
 		Vector2i size;
 
@@ -166,7 +163,7 @@ class TextServerFallback : public TextServerExtension {
 		FT_StreamRec stream;
 #endif
 
-		~FontDataForSizeFallback() {
+		~FontForSizeFallback() {
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
 				FT_Done_Face(face);
@@ -175,7 +172,7 @@ class TextServerFallback : public TextServerExtension {
 		}
 	};
 
-	struct FontDataFallback {
+	struct FontFallback {
 		Mutex mutex;
 
 		bool antialiased = true;
@@ -192,11 +189,11 @@ class TextServerFallback : public TextServerExtension {
 		double embolden = 0.0;
 		Transform2D transform;
 
-		uint32_t style_flags = 0;
+		BitField<TextServer::FontStyle> style_flags = 0;
 		String font_name;
 		String style_name;
 
-		HashMap<Vector2i, FontDataForSizeFallback *, VariantHasher, VariantComparator> cache;
+		HashMap<Vector2i, FontForSizeFallback *, VariantHasher, VariantComparator> cache;
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
@@ -213,28 +210,28 @@ class TextServerFallback : public TextServerExtension {
 
 		mutable ThreadWorkPool work_pool;
 
-		~FontDataFallback() {
+		~FontFallback() {
 			work_pool.finish();
-			for (const KeyValue<Vector2i, FontDataForSizeFallback *> &E : cache) {
+			for (const KeyValue<Vector2i, FontForSizeFallback *> &E : cache) {
 				memdelete(E.value);
 			}
 			cache.clear();
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontDataForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
+	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeFallback *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontDataFallback *p_font_data, FontDataForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontFallback *p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontDataForSizeFallback *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontDataFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontDataFallback *p_font_data, const Vector2i &p_size) const;
-	_FORCE_INLINE_ void _font_clear_cache(FontDataFallback *p_font_data);
+	_FORCE_INLINE_ bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size) const;
+	_FORCE_INLINE_ void _font_clear_cache(FontFallback *p_font_data);
 	void _generateMTSDF_threaded(uint32_t y, void *p_td) const;
 
-	_FORCE_INLINE_ Vector2i _get_size(const FontDataFallback *p_font_data, int p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size(const FontFallback *p_font_data, int p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -244,7 +241,7 @@ class TextServerFallback : public TextServerExtension {
 		}
 	}
 
-	_FORCE_INLINE_ Vector2i _get_size_outline(const FontDataFallback *p_font_data, const Vector2i &p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size_outline(const FontFallback *p_font_data, const Vector2i &p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -312,6 +309,7 @@ class TextServerFallback : public TextServerExtension {
 		double descent = 0.0; // Descent for horizontal layout, 1/2 of width for vertical.
 		double width = 0.0; // Width for horizontal layout, height for vertical.
 		double width_trimmed = 0.0;
+		int extra_spacing[4] = { 0, 0, 0, 0 };
 
 		double upos = 0.0;
 		double uthk = 0.0;
@@ -326,7 +324,7 @@ class TextServerFallback : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
-	mutable RID_PtrOwner<FontDataFallback> font_owner;
+	mutable RID_PtrOwner<FontFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
 
 	void _realign(ShapedTextDataFallback *p_sd) const;
@@ -370,8 +368,8 @@ public:
 
 	virtual int64_t font_get_face_count(const RID &p_font_rid) const override;
 
-	virtual void font_set_style(const RID &p_font_rid, int64_t /*FontStyle*/ p_style) override;
-	virtual int64_t /*FontStyle*/ font_get_style(const RID &p_font_rid) const override;
+	virtual void font_set_style(const RID &p_font_rid, BitField<FontStyle> p_style) override;
+	virtual BitField<FontStyle> font_get_style(const RID &p_font_rid) const override;
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
@@ -436,9 +434,6 @@ public:
 
 	virtual void font_set_scale(const RID &p_font_rid, int64_t p_size, double p_scale) override;
 	virtual double font_get_scale(const RID &p_font_rid, int64_t p_size) const override;
-
-	virtual void font_set_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing, int64_t p_value) override;
-	virtual int64_t font_get_spacing(const RID &p_font_rid, int64_t p_size, SpacingType p_spacing) const override;
 
 	virtual int64_t font_get_texture_count(const RID &p_font_rid, const Vector2i &p_size) const override;
 	virtual void font_clear_textures(const RID &p_font_rid, const Vector2i &p_size) override;
@@ -536,6 +531,9 @@ public:
 	virtual void shaped_text_set_preserve_control(const RID &p_shaped, bool p_enabled) override;
 	virtual bool shaped_text_get_preserve_control(const RID &p_shaped) const override;
 
+	virtual void shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) override;
+	virtual int64_t shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const override;
+
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) override;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
@@ -547,7 +545,7 @@ public:
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const override;
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const override;
 
-	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, int64_t /*JustificationFlag*/ p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
+	virtual double shaped_text_fit_to_width(const RID &p_shaped, double p_width, BitField<TextServer::JustificationFlag> p_jst_flags = JUSTIFICATION_WORD_BOUND | JUSTIFICATION_KASHIDA) override;
 	virtual double shaped_text_tab_align(const RID &p_shaped, const PackedFloat32Array &p_tab_stops) override;
 
 	virtual bool shaped_text_shape(const RID &p_shaped) override;
@@ -559,7 +557,7 @@ public:
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const override;
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
 
-	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, int64_t p_trim_flags) override;
+	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const override;
 

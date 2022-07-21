@@ -121,12 +121,12 @@ void OS_OSX::delete_main_loop() {
 	main_loop = nullptr;
 }
 
-String OS_OSX::get_open_with_filename() const {
-	return open_with_filename;
+void OS_OSX::set_cmdline_platform_args(const List<String> &p_args) {
+	launch_service_args = p_args;
 }
 
-void OS_OSX::set_open_with_filename(const String &p_path) {
-	open_with_filename = p_path;
+List<String> OS_OSX::get_cmdline_platform_args() const {
+	return launch_service_args;
 }
 
 String OS_OSX::get_name() const {

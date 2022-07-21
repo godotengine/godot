@@ -311,7 +311,7 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, font_size, tabs[p_tab].opentype_features, !tabs[p_tab].language.is_empty() ? tabs[p_tab].language : TranslationServer::get_singleton()->get_tool_locale());
+	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, font, font_size, tabs[p_tab].language);
 }
 
 void TabBar::_notification(int p_what) {
@@ -665,48 +665,6 @@ void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_dir
 Control::TextDirection TabBar::get_tab_text_direction(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Control::TEXT_DIRECTION_INHERITED);
 	return tabs[p_tab].text_direction;
-}
-
-void TabBar::clear_tab_opentype_features(int p_tab) {
-	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs.write[p_tab].opentype_features.clear();
-
-	_shape(p_tab);
-	_update_cache();
-	_ensure_no_over_offset();
-	if (scroll_to_selected) {
-		ensure_tab_visible(current);
-	}
-	update();
-	update_minimum_size();
-}
-
-void TabBar::set_tab_opentype_feature(int p_tab, const String &p_name, int p_value) {
-	ERR_FAIL_INDEX(p_tab, tabs.size());
-
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!tabs[p_tab].opentype_features.has(tag) || (int)tabs[p_tab].opentype_features[tag] != p_value) {
-		tabs.write[p_tab].opentype_features[tag] = p_value;
-
-		_shape(p_tab);
-		_update_cache();
-		_ensure_no_over_offset();
-		if (scroll_to_selected) {
-			ensure_tab_visible(current);
-		}
-		update();
-		update_minimum_size();
-	}
-}
-
-int TabBar::get_tab_opentype_feature(int p_tab, const String &p_name) const {
-	ERR_FAIL_INDEX_V(p_tab, tabs.size(), -1);
-
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!tabs[p_tab].opentype_features.has(tag)) {
-		return -1;
-	}
-	return tabs[p_tab].opentype_features[tag];
 }
 
 void TabBar::set_tab_language(int p_tab, const String &p_language) {
@@ -1553,9 +1511,6 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &TabBar::get_tab_text_direction);
-	ClassDB::bind_method(D_METHOD("set_tab_opentype_feature", "tab_idx", "tag", "values"), &TabBar::set_tab_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_tab_opentype_feature", "tab_idx", "tag"), &TabBar::get_tab_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_tab_opentype_features", "tab_idx"), &TabBar::clear_tab_opentype_features);
 	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &TabBar::set_tab_language);
 	ClassDB::bind_method(D_METHOD("get_tab_language", "tab_idx"), &TabBar::get_tab_language);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabBar::set_tab_icon);

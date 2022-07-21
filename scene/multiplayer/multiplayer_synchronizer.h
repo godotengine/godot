@@ -38,14 +38,25 @@
 class MultiplayerSynchronizer : public Node {
 	GDCLASS(MultiplayerSynchronizer, Node);
 
+public:
+	enum VisibilityUpdateMode {
+		VISIBILITY_PROCESS_IDLE,
+		VISIBILITY_PROCESS_PHYSICS,
+		VISIBILITY_PROCESS_NONE,
+	};
+
 private:
 	Ref<SceneReplicationConfig> replication_config;
 	NodePath root_path = NodePath(".."); // Start with parent, like with AnimationPlayer.
 	uint64_t interval_msec = 0;
+	VisibilityUpdateMode visibility_update_mode = VISIBILITY_PROCESS_IDLE;
+	HashSet<Callable> visibility_filters;
+	HashSet<int> peer_visibility;
 
 	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);
 	void _start();
 	void _stop();
+	void _update_process();
 
 protected:
 	static void _bind_methods();
@@ -66,7 +77,19 @@ public:
 	NodePath get_root_path() const;
 	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true) override;
 
-	MultiplayerSynchronizer() {}
+	bool is_visibility_public() const;
+	void set_visibility_public(bool p_public);
+	bool is_visible_to(int p_peer);
+	void set_visibility_for(int p_peer, bool p_visible);
+	bool get_visibility_for(int p_peer) const;
+	void update_visibility(int p_for_peer);
+	void set_visibility_update_mode(VisibilityUpdateMode p_mode);
+	void add_visibility_filter(Callable p_callback);
+	void remove_visibility_filter(Callable p_callback);
+	VisibilityUpdateMode get_visibility_update_mode() const;
+
+	MultiplayerSynchronizer();
 };
 
+VARIANT_ENUM_CAST(MultiplayerSynchronizer::VisibilityUpdateMode);
 #endif // MULTIPLAYER_SYNCHRONIZER_H

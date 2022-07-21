@@ -52,7 +52,7 @@ String ResourceImporterImageFont::get_save_extension() const {
 }
 
 String ResourceImporterImageFont::get_resource_type() const {
-	return "FontData";
+	return "FontFile";
 }
 
 bool ResourceImporterImageFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -64,6 +64,9 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "font_size"), 14));
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), Array()));
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }
 
@@ -92,8 +95,9 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	int rows = p_options["rows"];
 	int base_size = p_options["font_size"];
 	Vector<String> ranges = p_options["character_ranges"];
+	Array fallbacks = p_options["fallbacks"];
 
-	Ref<FontData> font;
+	Ref<FontFile> font;
 	font.instantiate();
 	font->set_antialiased(false);
 	font->set_generate_mipmaps(false);
@@ -103,6 +107,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_force_autohinter(false);
 	font->set_hinting(TextServer::HINTING_NONE);
 	font->set_oversampling(1.0f);
+	font->set_fallbacks(fallbacks);
 
 	Ref<Image> img;
 	img.instantiate();
@@ -145,10 +150,10 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range.");
 		}
 	}
-	font->set_ascent(0, base_size, 0.5 * chr_height);
-	font->set_descent(0, base_size, 0.5 * chr_height);
+	font->set_cache_ascent(0, base_size, 0.5 * chr_height);
+	font->set_cache_descent(0, base_size, 0.5 * chr_height);
 
-	int flg = ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	int flg = 0;
 	if ((bool)p_options["compress"]) {
 		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
 	}

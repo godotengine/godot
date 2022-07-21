@@ -34,15 +34,13 @@
  * hb_hashmap_t
  */
 
+extern HB_INTERNAL const hb_codepoint_t minus_1;
+
 template <typename K, typename V,
-	  typename k_invalid_t = K,
-	  typename v_invalid_t = V,
-	  k_invalid_t kINVALID = std::is_pointer<K>::value ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
-	  v_invalid_t vINVALID = std::is_pointer<V>::value ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
+	  bool minus_one = false>
 struct hb_hashmap_t
 {
   hb_hashmap_t ()  { init (); }
-  hb_hashmap_t (std::nullptr_t) : hb_hashmap_t () {}
   ~hb_hashmap_t () { fini (); }
 
   hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t () { resize (population); hb_copy (o, *this); }
@@ -68,38 +66,44 @@ struct hb_hashmap_t
   struct item_t
   {
     K key;
+    uint32_t hash : 30;
+    uint32_t is_used_ : 1;
+    uint32_t is_tombstone_ : 1;
     V value;
-    uint32_t hash;
+
+    bool is_used () const { return is_used_; }
+    void set_used (bool is_used) { is_used_ = is_used; }
+    bool is_tombstone () const { return is_tombstone_; }
+    void set_tombstone (bool is_tombstone) { is_tombstone_ = is_tombstone; }
+    bool is_real () const { return is_used_ && !is_tombstone_; }
+
+    template <bool v = minus_one,
+	      hb_enable_if (v == false)>
+    static inline const V& default_value () { return Null(V); };
+    template <bool v = minus_one,
+	      hb_enable_if (v == true)>
+    static inline const V& default_value ()
+    {
+      static_assert (hb_is_same (V, hb_codepoint_t), "");
+      return minus_1;
+    };
 
     void clear ()
     {
       new (std::addressof (key)) K ();
-      key = hb_coerce<K> (kINVALID);
       new (std::addressof (value)) V ();
-      value = hb_coerce<V> (vINVALID);
       hash = 0;
+      is_used_ = false;
+      is_tombstone_ = false;
     }
 
     bool operator == (const K &o) { return hb_deref (key) == hb_deref (o); }
     bool operator == (const item_t &o) { return *this == o.key; }
-    bool is_unused () const
-    {
-      const K inv = hb_coerce<K> (kINVALID);
-      return key == inv;
-    }
-    bool is_tombstone () const
-    {
-      const K kinv = hb_coerce<K> (kINVALID);
-      const V vinv = hb_coerce<V> (vINVALID);
-      return key != kinv && value == vinv;
-    }
-    bool is_real () const
-    {
-      const K kinv = hb_coerce<K> (kINVALID);
-      const V vinv = hb_coerce<V> (vINVALID);
-      return key != kinv && value != vinv;
-    }
     hb_pair_t<K, V> get_pair() const { return hb_pair_t<K, V> (key, value); }
+    hb_pair_t<const K &, const V &> get_pair_ref() const { return hb_pair_t<const K &, const V &> (key, value); }
+
+    uint32_t total_hash () const
+    { return (hash * 31) + hb_hash (value); }
   };
 
   hb_object_header_t header;
@@ -200,27 +204,39 @@ struct hb_hashmap_t
     return true;
   }
 
-  bool set (K key, const V& value) { return set_with_hash (key, hb_hash (key), value); }
-  bool set (K key, V&& value) { return set_with_hash (key, hb_hash (key), std::move (value)); }
+  template <typename VV>
+  bool set (K key, VV&& value) { return set_with_hash (key, hb_hash (key), std::forward<VV> (value)); }
 
-  V get (K key) const
+  const V& get (K key) const
   {
-    if (unlikely (!items)) return hb_coerce<V> (vINVALID);
+    if (unlikely (!items)) return item_t::default_value ();
     unsigned int i = bucket_for (key);
-    return items[i].is_real () && items[i] == key ? items[i].value : hb_coerce<V> (vINVALID);
+    return items[i].is_real () && items[i] == key ? items[i].value : item_t::default_value ();
   }
 
-  void del (K key) { set (key, hb_coerce<V> (vINVALID)); }
+  void del (K key) { set_with_hash (key, hb_hash (key), item_t::default_value (), true); }
 
   /* Has interface. */
-  typedef V value_t;
+  typedef const V& value_t;
   value_t operator [] (K k) const { return get (k); }
-  bool has (K k, V *vp = nullptr) const
+  bool has (K key, const V **vp = nullptr) const
   {
-    V v = (*this)[k];
-    if (vp) *vp = v;
-    const V vinv = hb_coerce<V> (vINVALID);
-    return v != vinv;
+    if (unlikely (!items))
+    {
+      if (vp) *vp = &item_t::default_value ();
+      return false;
+    }
+    unsigned int i = bucket_for (key);
+    if (items[i].is_real () && items[i] == key)
+    {
+      if (vp) *vp = &items[i].value;
+      return true;
+    }
+    else
+    {
+      if (vp) *vp = &item_t::default_value ();
+      return false;
+    }
   }
   /* Projection. */
   V operator () (K k) const { return get (k); }
@@ -242,8 +258,9 @@ struct hb_hashmap_t
   uint32_t hash () const
   {
     uint32_t h = 0;
-    for (auto pair : iter ())
-      h ^= (hb_hash (pair.first) * 31) + hb_hash (pair.second);
+    for (const auto &item : + hb_array (items, mask ? mask + 1 : 0)
+			    | hb_filter (&item_t::is_real))
+      h ^= item.total_hash ();
     return h;
   }
 
@@ -271,6 +288,12 @@ struct hb_hashmap_t
     | hb_filter (&item_t::is_real)
     | hb_map (&item_t::get_pair)
   )
+  auto iter_ref () const HB_AUTO_RETURN
+  (
+    + hb_array (items, mask ? mask + 1 : 0)
+    | hb_filter (&item_t::is_real)
+    | hb_map (&item_t::get_pair_ref)
+  )
   auto keys () const HB_AUTO_RETURN
   (
     + hb_array (items, mask ? mask + 1 : 0)
@@ -293,19 +316,16 @@ struct hb_hashmap_t
   protected:
 
   template <typename VV>
-  bool set_with_hash (K key, uint32_t hash, VV&& value)
+  bool set_with_hash (K key, uint32_t hash, VV&& value, bool is_delete=false)
   {
     if (unlikely (!successful)) return false;
-    const K kinv = hb_coerce<K> (kINVALID);
-    if (unlikely (key == kinv)) return true;
     if (unlikely ((occupancy + occupancy / 2) >= mask && !resize ())) return false;
     unsigned int i = bucket_for_hash (key, hash);
 
-    const V vinv = hb_coerce<V> (vINVALID);
-    if (value == vinv && items[i].key != key)
+    if (is_delete && items[i].key != key)
       return true; /* Trying to delete non-existent key. */
 
-    if (!items[i].is_unused ())
+    if (items[i].is_used ())
     {
       occupancy--;
       if (!items[i].is_tombstone ())
@@ -313,27 +333,30 @@ struct hb_hashmap_t
     }
 
     items[i].key = key;
-    items[i].value = value;
+    items[i].value = std::forward<VV> (value);
     items[i].hash = hash;
+    items[i].set_used (true);
+    items[i].set_tombstone (is_delete);
 
     occupancy++;
-    if (!items[i].is_tombstone ())
+    if (!is_delete)
       population++;
 
     return true;
   }
 
-  unsigned int bucket_for (K key) const
+  unsigned int bucket_for (const K &key) const
   {
     return bucket_for_hash (key, hb_hash (key));
   }
 
-  unsigned int bucket_for_hash (K key, uint32_t hash) const
+  unsigned int bucket_for_hash (const K &key, uint32_t hash) const
   {
+    hash &= 0x3FFFFFFF; // We only store lower 30bit of hash
     unsigned int i = hash % prime;
     unsigned int step = 0;
     unsigned int tombstone = (unsigned) -1;
-    while (!items[i].is_unused ())
+    while (items[i].is_used ())
     {
       if (items[i].hash == hash && items[i] == key)
 	return i;
@@ -402,21 +425,14 @@ struct hb_hashmap_t
 
 struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 			       hb_codepoint_t,
-			       hb_codepoint_t,
-			       hb_codepoint_t,
-			       HB_MAP_VALUE_INVALID,
-			       HB_MAP_VALUE_INVALID>
+			       true>
 {
   using hashmap = hb_hashmap_t<hb_codepoint_t,
 			       hb_codepoint_t,
-			       hb_codepoint_t,
-			       hb_codepoint_t,
-			       HB_MAP_VALUE_INVALID,
-			       HB_MAP_VALUE_INVALID>;
+			       true>;
 
   ~hb_map_t () = default;
   hb_map_t () : hashmap () {}
-  hb_map_t (std::nullptr_t) : hb_map_t () {}
   hb_map_t (const hb_map_t &o) : hashmap ((hashmap &) o) {}
   hb_map_t (hb_map_t &&o) : hashmap (std::move ((hashmap &) o)) {}
   hb_map_t& operator= (const hb_map_t&) = default;

@@ -32,7 +32,7 @@
 		<method name="get_current_line" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the current line in the parsed file (currently not implemented).
+				Gets the current line in the parsed file, counting from 0.
 			</description>
 		</method>
 		<method name="get_named_attribute_value" qualifiers="const">

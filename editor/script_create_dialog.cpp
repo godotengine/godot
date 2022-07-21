@@ -481,7 +481,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	if (p_save) {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 		file_browse->set_title(TTR("Open Script / Choose Location"));
-		file_browse->get_ok_button()->set_text(TTR("Open"));
+		file_browse->set_ok_button_text(TTR("Open"));
 	} else {
 		file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 		file_browse->set_title(TTR("Open Script"));
@@ -528,7 +528,7 @@ void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->set_base_type(base_type);
 	select_class->popup_create(true);
 	select_class->set_title(vformat(TTR("Inherit %s"), base_type));
-	select_class->get_ok_button()->set_text(TTR("Inherit"));
+	select_class->set_ok_button_text(TTR("Inherit"));
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
@@ -750,7 +750,7 @@ void ScriptCreateDialog::_update_dialog() {
 	parent_browse_button->set_disabled(!is_new_file || !can_inherit_from_file);
 	template_inactive_message = "";
 	String button_text = is_new_file ? TTR("Create") : TTR("Load");
-	get_ok_button()->set_text(button_text);
+	set_ok_button_text(button_text);
 
 	if (is_new_file) {
 		if (is_built_in) {
@@ -1088,7 +1088,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_browse->connect("file_selected", callable_mp(this, &ScriptCreateDialog::_file_selected));
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_browse);
-	get_ok_button()->set_text(TTR("Create"));
+	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

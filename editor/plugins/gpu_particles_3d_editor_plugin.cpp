@@ -215,7 +215,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_fill->add_item(TTR("Volume"));
 	emd_vb->add_margin_child(TTR("Emission Source:"), emission_fill);
 
-	emission_dialog->get_ok_button()->set_text(TTR("Create"));
+	emission_dialog->set_ok_button_text(TTR("Create"));
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
@@ -363,10 +363,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	}
 
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
-
-	Ref<ImageTexture> tex;
-	tex.instantiate();
-	tex->create_from_image(image);
+	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
 	Ref<ParticlesMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
@@ -392,12 +389,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		}
 
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-
-		Ref<ImageTexture> tex2;
-		tex2.instantiate();
-		tex2->create_from_image(image2);
-
-		material->set_emission_normal_texture(tex2);
+		material->set_emission_normal_texture(ImageTexture::create_from_image(image2));
 	} else {
 		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
 		material->set_emission_point_count(point_count);

@@ -105,7 +105,6 @@ private:
 	int scroll_offset = 0;
 	int max_length = 0; // 0 for no maximum.
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextDirection input_direction = TEXT_DIRECTION_LTR;
@@ -160,7 +159,9 @@ private:
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
-	Timer *caret_blink_timer = nullptr;
+	float caret_blink_speed = 0.65;
+	double caret_blink_timer = 0.0;
+	bool caret_blinking = false;
 
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
@@ -208,9 +209,6 @@ protected:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &property) const override;
 
 public:
@@ -245,10 +243,6 @@ public:
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;

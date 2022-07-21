@@ -31,7 +31,6 @@
 #include "world_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/math/octree.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/scene_string_names.h"

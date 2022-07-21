@@ -1838,12 +1838,8 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-	Ref<Image> img = memnew(Image(_iphone_logo));
-	logo.instantiate();
-	logo->create_from_image(img);
-
+	logo = ImageTexture::create_from_image(memnew(Image(_iphone_logo)));
 	plugins_changed.set();
-
 	check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 }
 

@@ -289,7 +289,7 @@ hb_buffer_set_content_type (hb_buffer_t              *buffer,
 			    hb_buffer_content_type_t  content_type);
 
 HB_EXTERN hb_buffer_content_type_t
-hb_buffer_get_content_type (hb_buffer_t *buffer);
+hb_buffer_get_content_type (const hb_buffer_t *buffer);
 
 
 HB_EXTERN void
@@ -297,21 +297,21 @@ hb_buffer_set_unicode_funcs (hb_buffer_t        *buffer,
 			     hb_unicode_funcs_t *unicode_funcs);
 
 HB_EXTERN hb_unicode_funcs_t *
-hb_buffer_get_unicode_funcs (hb_buffer_t        *buffer);
+hb_buffer_get_unicode_funcs (const hb_buffer_t  *buffer);
 
 HB_EXTERN void
 hb_buffer_set_direction (hb_buffer_t    *buffer,
 			 hb_direction_t  direction);
 
 HB_EXTERN hb_direction_t
-hb_buffer_get_direction (hb_buffer_t *buffer);
+hb_buffer_get_direction (const hb_buffer_t *buffer);
 
 HB_EXTERN void
 hb_buffer_set_script (hb_buffer_t *buffer,
 		      hb_script_t  script);
 
 HB_EXTERN hb_script_t
-hb_buffer_get_script (hb_buffer_t *buffer);
+hb_buffer_get_script (const hb_buffer_t *buffer);
 
 HB_EXTERN void
 hb_buffer_set_language (hb_buffer_t   *buffer,
@@ -319,14 +319,14 @@ hb_buffer_set_language (hb_buffer_t   *buffer,
 
 
 HB_EXTERN hb_language_t
-hb_buffer_get_language (hb_buffer_t *buffer);
+hb_buffer_get_language (const hb_buffer_t *buffer);
 
 HB_EXTERN void
 hb_buffer_set_segment_properties (hb_buffer_t *buffer,
 				  const hb_segment_properties_t *props);
 
 HB_EXTERN void
-hb_buffer_get_segment_properties (hb_buffer_t *buffer,
+hb_buffer_get_segment_properties (const hb_buffer_t *buffer,
 				  hb_segment_properties_t *props);
 
 HB_EXTERN void
@@ -373,6 +373,7 @@ hb_buffer_guess_segment_properties (hb_buffer_t *buffer);
  *                      flag indicating that the @HB_GLYPH_FLAG_UNSAFE_TO_CONCAT
  *                      glyph-flag should be produced by the shaper. By default
  *                      it will not be produced since it incurs a cost. Since: 4.0.0
+ * @HB_BUFFER_FLAG_DEFINED: All currently defined flags: Since: 4.4.0
  *
  * Flags for #hb_buffer_t.
  *
@@ -386,7 +387,9 @@ typedef enum { /*< flags >*/
   HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES	= 0x00000008u,
   HB_BUFFER_FLAG_DO_NOT_INSERT_DOTTED_CIRCLE	= 0x00000010u,
   HB_BUFFER_FLAG_VERIFY				= 0x00000020u,
-  HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT	= 0x00000040u
+  HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT	= 0x00000040u,
+
+  HB_BUFFER_FLAG_DEFINED			= 0x0000007Fu
 } hb_buffer_flags_t;
 
 HB_EXTERN void
@@ -394,7 +397,7 @@ hb_buffer_set_flags (hb_buffer_t       *buffer,
 		     hb_buffer_flags_t  flags);
 
 HB_EXTERN hb_buffer_flags_t
-hb_buffer_get_flags (hb_buffer_t *buffer);
+hb_buffer_get_flags (const hb_buffer_t *buffer);
 
 /**
  * hb_buffer_cluster_level_t:
@@ -436,7 +439,7 @@ hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
 			     hb_buffer_cluster_level_t  cluster_level);
 
 HB_EXTERN hb_buffer_cluster_level_t
-hb_buffer_get_cluster_level (hb_buffer_t *buffer);
+hb_buffer_get_cluster_level (const hb_buffer_t *buffer);
 
 /**
  * HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT:
@@ -453,21 +456,21 @@ hb_buffer_set_replacement_codepoint (hb_buffer_t    *buffer,
 				     hb_codepoint_t  replacement);
 
 HB_EXTERN hb_codepoint_t
-hb_buffer_get_replacement_codepoint (hb_buffer_t    *buffer);
+hb_buffer_get_replacement_codepoint (const hb_buffer_t *buffer);
 
 HB_EXTERN void
 hb_buffer_set_invisible_glyph (hb_buffer_t    *buffer,
 			       hb_codepoint_t  invisible);
 
 HB_EXTERN hb_codepoint_t
-hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer);
+hb_buffer_get_invisible_glyph (const hb_buffer_t *buffer);
 
 HB_EXTERN void
 hb_buffer_set_not_found_glyph (hb_buffer_t    *buffer,
 			       hb_codepoint_t  not_found);
 
 HB_EXTERN hb_codepoint_t
-hb_buffer_get_not_found_glyph (hb_buffer_t    *buffer);
+hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer);
 
 
 /*
@@ -549,7 +552,7 @@ hb_buffer_set_length (hb_buffer_t  *buffer,
 		      unsigned int  length);
 
 HB_EXTERN unsigned int
-hb_buffer_get_length (hb_buffer_t *buffer);
+hb_buffer_get_length (const hb_buffer_t *buffer);
 
 /* Getting glyphs out of the buffer */
 
@@ -583,6 +586,7 @@ hb_buffer_normalize_glyphs (hb_buffer_t *buffer);
  * @HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS: serialize glyph flags. Since: 1.5.0
  * @HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES: do not serialize glyph advances,
  *  glyph offsets will reflect absolute glyph positions. Since: 1.8.0
+ * @HB_BUFFER_SERIALIZE_FLAG_DEFINED: All currently defined flags. Since: 4.4.0
  *
  * Flags that control what glyph information are serialized in hb_buffer_serialize_glyphs().
  *
@@ -595,7 +599,9 @@ typedef enum { /*< flags >*/
   HB_BUFFER_SERIALIZE_FLAG_NO_GLYPH_NAMES	= 0x00000004u,
   HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS	= 0x00000008u,
   HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS		= 0x00000010u,
-  HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES		= 0x00000020u
+  HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES		= 0x00000020u,
+
+  HB_BUFFER_SERIALIZE_FLAG_DEFINED		= 0x0000003Fu
 } hb_buffer_serialize_flags_t;
 
 /**

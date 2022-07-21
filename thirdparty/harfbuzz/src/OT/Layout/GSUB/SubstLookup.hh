@@ -10,7 +10,7 @@ namespace GSUB {
 
 struct SubstLookup : Lookup
 {
-  typedef SubstLookupSubTable SubTable;
+  using SubTable = SubstLookupSubTable;
 
   bool sanitize (hb_sanitize_context_t *c) const
   { return Lookup::sanitize<SubTable> (c); }
@@ -73,8 +73,6 @@ struct SubstLookup : Lookup
       return hb_closure_lookups_context_t::default_return_value ();
     }
 
-    c->set_recurse_func (dispatch_closure_lookups_recurse_func);
-
     hb_closure_lookups_context_t::return_t ret = dispatch (c);
     return ret;
   }
@@ -99,8 +97,6 @@ struct SubstLookup : Lookup
     if (!accel->may_have (c->glyphs[0])) return false;
       return dispatch (c);
   }
-
-  static inline bool apply_recurse_func (hb_ot_apply_context_t *c, unsigned int lookup_index);
 
   bool serialize_single (hb_serialize_context_t *c,
                          uint32_t lookup_props,
@@ -205,8 +201,6 @@ struct SubstLookup : Lookup
 
     return ret;
   }
-
-  HB_INTERNAL static hb_closure_lookups_context_t::return_t dispatch_closure_lookups_recurse_func (hb_closure_lookups_context_t *c, unsigned lookup_index);
 
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const

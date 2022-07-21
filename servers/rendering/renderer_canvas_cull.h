@@ -53,6 +53,7 @@ public:
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 		int ysort_index;
+		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
 
 		Vector<Item *> child_items;
 
@@ -84,6 +85,7 @@ public:
 			ysort_xform = Transform2D();
 			ysort_pos = Vector2();
 			ysort_index = 0;
+			ysort_parent_abs_z_index = 0;
 		}
 	};
 

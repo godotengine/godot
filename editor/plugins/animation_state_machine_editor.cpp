@@ -1224,7 +1224,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = selected_nodes.has(E) ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 		s.width += strsize;
 		s.height += MAX(font->get_height(font_size), play->get_height());
 		s.width += sep + play->get_width();
@@ -1379,7 +1379,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = selected_nodes.has(name) ? style_selected : style;
-		int strsize = font->get_string_size(name, font_size).width;
+		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 		NodeRect &nr = node_rects.write[i];
 
 		Vector2 offset = nr.node.position;
@@ -1969,7 +1969,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos = memnew(Control);
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
-	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_WIDE);
+	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
 
 	v_scroll = memnew(VScrollBar);
@@ -2022,7 +2022,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(name_edit_popup);
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
-	name_edit->set_anchors_and_offsets_preset(PRESET_WIDE);
+	name_edit->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	name_edit->connect("text_submitted", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

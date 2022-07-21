@@ -575,7 +575,7 @@ void DependencyRemoveDialog::_bind_methods() {
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
-	get_ok_button()->set_text(TTR("Remove"));
+	set_ok_button_text(TTR("Remove"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
@@ -641,8 +641,8 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	set_min_size(Size2(500, 220) * EDSCALE);
-	get_ok_button()->set_text(TTR("Open Anyway"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Open Anyway"));
+	set_cancel_button_text(TTR("Close"));
 
 	text = memnew(Label);
 	vb->add_child(text);
@@ -780,7 +780,7 @@ void OrphanResourcesDialog::_bind_methods() {
 OrphanResourcesDialog::OrphanResourcesDialog() {
 	set_title(TTR("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
-	get_ok_button()->set_text(TTR("Delete"));
+	set_ok_button_text(TTR("Delete"));
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);

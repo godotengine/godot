@@ -388,9 +388,7 @@ String FileAccess::get_as_utf8_string() const {
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w)) {
-		return String();
-	}
+	s.parse_utf8((const char *)w);
 	return s;
 }
 
@@ -516,7 +514,6 @@ String FileAccess::get_pascal_string() {
 
 	String ret;
 	ret.parse_utf8(cs.ptr());
-
 	return ret;
 }
 

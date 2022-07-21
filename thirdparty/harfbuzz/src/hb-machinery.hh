@@ -176,7 +176,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   void init0 () {} /* Init, when memory is already set to 0. No-op for us. */
   void init ()  { instance.set_relaxed (nullptr); }
-  void fini ()  { do_destroy (instance.get ()); }
+  void fini ()  { do_destroy (instance.get ()); init (); }
 
   void free_instance ()
   {

@@ -39,6 +39,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
 #include "scene/gui/center_container.h"
 #include "scene/property_utils.h"
@@ -322,7 +323,7 @@ void EditorProperty::_notification(int p_what) {
 				Ref<Texture2D> pinned_icon = get_theme_icon(SNAME("Pin"), SNAME("EditorIcons"));
 				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
-				int text_w = font->get_string_size(label, font_size, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w).x;
+				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
 				if (rtl) {
 					draw_texture(pinned_icon, Vector2(size.width - ofs - text_w - total_icon_w, y), color);
@@ -408,6 +409,10 @@ Object *EditorProperty::get_edited_object() {
 
 StringName EditorProperty::get_edited_property() const {
 	return property;
+}
+
+void EditorProperty::set_doc_path(const String &p_doc_path) {
+	doc_path = p_doc_path;
 }
 
 void EditorProperty::update_property() {
@@ -906,6 +911,10 @@ void EditorProperty::menu_option(int p_option) {
 			emit_signal(SNAME("property_pinned"), property, !pinned);
 			update();
 		} break;
+		case MENU_OPEN_DOCUMENTATION: {
+			ScriptEditor::get_singleton()->goto_help(doc_path);
+			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+		} break;
 	}
 }
 
@@ -985,20 +994,25 @@ void EditorProperty::_update_popup() {
 		add_child(menu);
 		menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
 	}
-	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/copy_property"), MENU_COPY_PROPERTY);
-	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/paste_property"), MENU_PASTE_PROPERTY);
-	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property"), MENU_COPY_PROPERTY);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/paste_property"), MENU_PASTE_PROPERTY);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
 	menu->set_item_disabled(MENU_PASTE_PROPERTY, is_read_only());
 	if (!pin_hidden) {
 		menu->add_separator();
 		if (can_pin) {
-			menu->add_check_item(TTR("Pin value"), MENU_PIN_VALUE);
+			menu->add_icon_check_item(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), TTR("Pin Value"), MENU_PIN_VALUE);
 			menu->set_item_checked(menu->get_item_index(MENU_PIN_VALUE), pinned);
-			menu->set_item_tooltip(menu->get_item_index(MENU_PIN_VALUE), TTR("Pinning a value forces it to be saved even if it's equal to the default."));
 		} else {
-			menu->add_check_item(vformat(TTR("Pin value [Disabled because '%s' is editor-only]"), property), MENU_PIN_VALUE);
+			menu->add_icon_check_item(get_theme_icon(SNAME("Pin"), SNAME("EditorIcons")), vformat(TTR("Pin Value [Disabled because '%s' is editor-only]"), property), MENU_PIN_VALUE);
 			menu->set_item_disabled(menu->get_item_index(MENU_PIN_VALUE), true);
 		}
+		menu->set_item_tooltip(menu->get_item_index(MENU_PIN_VALUE), TTR("Pinning a value forces it to be saved even if it's equal to the default."));
+	}
+
+	if (!doc_path.is_empty()) {
+		menu->add_separator();
+		menu->add_icon_item(get_theme_icon(SNAME("Help"), SNAME("EditorIcons")), TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
 }
 
@@ -1087,7 +1101,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 
-			int w = font->get_string_size(label, font_size).width;
+			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
 				w += hs + icon->get_width();
 			}
@@ -2844,7 +2858,7 @@ void EditorInspector::update_tree() {
 			restart_request_props.insert(p.name);
 		}
 
-		String doc_hint;
+		PropertyDocInfo doc_info;
 
 		if (use_doc_hints) {
 			// Build the doc hint, to use as tooltip.
@@ -2856,16 +2870,15 @@ void EditorInspector::update_tree() {
 			}
 
 			StringName propname = property_prefix + p.name;
-			String descr;
 			bool found = false;
 
 			// Search for the property description in the cache.
-			HashMap<StringName, HashMap<StringName, String>>::Iterator E = descr_cache.find(classname);
+			HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
 			if (E) {
-				HashMap<StringName, String>::Iterator F = E->value.find(propname);
+				HashMap<StringName, PropertyDocInfo>::Iterator F = E->value.find(propname);
 				if (F) {
 					found = true;
-					descr = F->value;
+					doc_info = F->value;
 				}
 			}
 
@@ -2873,10 +2886,11 @@ void EditorInspector::update_tree() {
 				// Build the property description String and add it to the cache.
 				DocTools *dd = EditorHelp::get_doc_data();
 				HashMap<String, DocData::ClassDoc>::Iterator F = dd->class_list.find(classname);
-				while (F && descr.is_empty()) {
+				while (F && doc_info.description.is_empty()) {
 					for (int i = 0; i < F->value.properties.size(); i++) {
 						if (F->value.properties[i].name == propname.operator String()) {
-							descr = DTR(F->value.properties[i].description);
+							doc_info.description = DTR(F->value.properties[i].description);
+							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							break;
 						}
 					}
@@ -2885,7 +2899,8 @@ void EditorInspector::update_tree() {
 					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
 						for (int i = 0; i < F->value.theme_properties.size(); i++) {
 							if (F->value.theme_properties[i].name == slices[1]) {
-								descr = DTR(F->value.theme_properties[i].description);
+								doc_info.description = DTR(F->value.theme_properties[i].description);
+								doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
 								break;
 							}
 						}
@@ -2897,10 +2912,9 @@ void EditorInspector::update_tree() {
 						break;
 					}
 				}
-				descr_cache[classname][propname] = descr;
-			}
 
-			doc_hint = descr;
+				doc_info_cache[classname][propname] = doc_info;
+			}
 		}
 
 		Vector<EditorInspectorPlugin::AddedEditor> editors;
@@ -2983,11 +2997,12 @@ void EditorInspector::update_tree() {
 				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), varray(), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), varray(), CONNECT_DEFERRED);
-				if (!doc_hint.is_empty()) {
-					ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
+				if (!doc_info.description.is_empty()) {
+					ep->set_tooltip(property_prefix + p.name + "::" + doc_info.description);
 				} else {
 					ep->set_tooltip(property_prefix + p.name);
 				}
+				ep->set_doc_path(doc_info.path);
 				ep->update_property();
 				ep->_update_pin_flags();
 				ep->update_revert_and_pin_status();
@@ -3429,6 +3444,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 
 		if (editor_property_map.has(p_path)) {
 			for (EditorProperty *E : editor_property_map[p_path]) {
+				E->set_checked(p_checked);
 				E->update_property();
 				E->update_revert_and_pin_status();
 				E->update_cache();
@@ -3472,7 +3488,7 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 void EditorInspector::_property_selected(const String &p_path, int p_focusable) {
 	property_selected = p_path;
 	property_focusable = p_focusable;
-	//deselect the others
+	// Deselect the others.
 	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
 		if (F.key == property_selected) {
 			continue;
@@ -3780,7 +3796,7 @@ void EditorInspector::_show_add_meta_dialog() {
 			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
 		}
 		hbc->add_child(add_meta_type);
-		add_meta_dialog->get_ok_button()->set_text(TTR("Add"));
+		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));

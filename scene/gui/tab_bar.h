@@ -57,7 +57,6 @@ private:
 		String text;
 		String xl_text;
 
-		Dictionary opentype_features;
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 
@@ -136,10 +135,6 @@ public:
 
 	void set_tab_text_direction(int p_tab, TextDirection p_text_direction);
 	TextDirection get_tab_text_direction(int p_tab) const;
-
-	void set_tab_opentype_feature(int p_tab, const String &p_name, int p_value);
-	int get_tab_opentype_feature(int p_tab, const String &p_name) const;
-	void clear_tab_opentype_features(int p_tab);
 
 	void set_tab_language(int p_tab, const String &p_language);
 	String get_tab_language(int p_tab) const;

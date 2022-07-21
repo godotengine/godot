@@ -31,7 +31,6 @@
 #ifndef PARTICLES_STORAGE_H
 #define PARTICLES_STORAGE_H
 
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering_server.h"
 
 class RendererParticlesStorage {

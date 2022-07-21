@@ -188,11 +188,10 @@ private:
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
-	HBoxContainer *hb = nullptr;
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_menu_container = nullptr;
-	HBoxContainer *hbc_context_menu = nullptr;
+	PanelContainer *context_menu_panel = nullptr;
+	HBoxContainer *context_menu_hbox = nullptr;
 
 	Transform2D transform;
 	GridVisibility grid_visibility = GRID_VISIBILITY_SHOW_WHEN_SNAPPING;
@@ -347,6 +346,7 @@ private:
 	bool is_hovering_v_guide = false;
 
 	bool updating_value_dialog = false;
+	Transform2D original_transform;
 
 	Point2 box_selecting_to;
 
@@ -433,6 +433,7 @@ private:
 	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_hover();
+	void _draw_transform_message();
 
 	void _draw_viewport();
 
@@ -453,8 +454,8 @@ private:
 	void _update_cursor();
 
 	void _selection_changed();
-
 	void _focus_selection(int p_op);
+	void _reset_drag();
 
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
@@ -500,8 +501,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-	HBoxContainer *get_panel_hb() { return hb; }
 
 	static CanvasItemEditor *singleton;
 

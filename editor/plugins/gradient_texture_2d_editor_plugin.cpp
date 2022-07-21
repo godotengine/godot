@@ -117,17 +117,15 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 			const Ref<Texture2D> fill_to_icon = get_theme_icon(SNAME("EditorPathSharpHandle"), SNAME("EditorIcons"));
 			handle_size = fill_from_icon->get_size();
 
-			const int MAX_HEIGHT = 250 * EDSCALE;
 			Size2 rect_size = get_size();
 
 			// Get the size and position to draw the texture and handles at.
-			size = Size2(texture->get_width() * MAX_HEIGHT / texture->get_height(), MAX_HEIGHT);
+			size = Size2(texture->get_width() * rect_size.height / texture->get_height(), rect_size.height);
 			if (size.width > rect_size.width) {
 				size.width = rect_size.width;
-				size.height = texture->get_height() * rect_size.width / texture->get_width();
+				size.height = texture->get_height() * size.width / texture->get_width();
 			}
-			offset = Point2(Math::round((rect_size.width - size.width) / 2), 0) + handle_size / 2;
-			set_custom_minimum_size(Size2(0, size.height));
+			offset = ((rect_size - size + handle_size) / 2).round();
 			size -= handle_size;
 			checkerboard->set_rect(Rect2(offset, size));
 
@@ -183,6 +181,8 @@ GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
 	checkerboard->set_draw_behind_parent(true);
 	add_child(checkerboard);
+
+	set_custom_minimum_size(Size2(0, 250 * EDSCALE));
 }
 
 ///////////////////////

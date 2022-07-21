@@ -1332,7 +1332,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
 	for (const String &E : ext) {
-		file_dialog->add_filter(vformat("*.%s; %s", E, TTR("Audio Bus Layout")));
+		file_dialog->add_filter("*." + E, TTR("Audio Bus Layout"));
 	}
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
@@ -1394,7 +1394,7 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", font_size).x);
+			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}

@@ -1359,6 +1359,10 @@ void SceneTreeDialog::_select() {
 	}
 }
 
+void SceneTreeDialog::_selected_changed() {
+	get_ok_button()->set_disabled(!tree->get_selected());
+}
+
 void SceneTreeDialog::_filter_changed(const String &p_filter) {
 	tree->set_filter(p_filter);
 }
@@ -1386,6 +1390,10 @@ SceneTreeDialog::SceneTreeDialog() {
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
 	vbc->add_child(tree);
+
+	// Disable the OK button when no node is selected.
+	get_ok_button()->set_disabled(!tree->get_selected());
+	tree->connect("node_selected", callable_mp(this, &SceneTreeDialog::_selected_changed));
 }
 
 SceneTreeDialog::~SceneTreeDialog() {

@@ -836,7 +836,7 @@ EditorPropertyLayersGrid::EditorPropertyLayersGrid() {
 	rename_dialog->add_child(rename_dialog_vb);
 	rename_dialog_text = memnew(LineEdit);
 	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
-	rename_dialog->get_ok_button()->set_text(TTR("Rename"));
+	rename_dialog->set_ok_button_text(TTR("Rename"));
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", callable_mp(this, &EditorPropertyLayersGrid::_rename_operation_confirm));
@@ -3010,12 +3010,7 @@ void EditorPropertyColor::_popup_closed() {
 void EditorPropertyColor::_picker_created() {
 	// get default color picker mode from editor settings
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	if (default_color_mode == 1) {
-		picker->get_picker()->set_hsv_mode(true);
-	} else if (default_color_mode == 2) {
-		picker->get_picker()->set_raw_mode(true);
-	}
-
+	picker->get_picker()->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
 	picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
@@ -3175,7 +3170,20 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
-	return nodes.size() == 1;
+	if (nodes.size() != 1) {
+		return false;
+	}
+
+	Node *dropped_node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+	ERR_FAIL_NULL_V(dropped_node, false);
+
+	for (const StringName &E : valid_types) {
+		if (dropped_node->is_class(E)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void EditorPropertyNodePath::update_property() {

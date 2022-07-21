@@ -32,6 +32,7 @@
 #define LABEL_H
 
 #include "scene/gui/control.h"
+#include "scene/resources/label_settings.h"
 
 class Label : public Control {
 	GDCLASS(Label, Control);
@@ -53,7 +54,6 @@ private:
 	RID text_rid;
 	Vector<RID> lines_rid;
 
-	Dictionary opentype_features;
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -66,17 +66,16 @@ private:
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
 
+	Ref<LabelSettings> settings;
+
 	void _update_visible();
 	void _shape();
+	void _invalidate();
 
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -90,12 +89,11 @@ public:
 	void set_text(const String &p_string);
 	String get_text() const;
 
+	void set_label_settings(const Ref<LabelSettings> &p_settings);
+	Ref<LabelSettings> get_label_settings() const;
+
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
-
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
 
 	void set_language(const String &p_language);
 	String get_language() const;

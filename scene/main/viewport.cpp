@@ -219,7 +219,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->get_theme_constant(SNAME("close_h_offset"));
 		int close_v_ofs = p_window->get_theme_constant(SNAME("close_v_offset"));
 
-		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size, Dictionary(), TranslationServer::get_singleton()->get_tool_locale());
+		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size);
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
 		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		int x = (r.size.width - title_text.get_size().x) / 2;
@@ -1037,44 +1037,44 @@ Ref<ViewportTexture> Viewport::get_texture() const {
 	return default_texture;
 }
 
-void Viewport::set_shadow_atlas_size(int p_size) {
-	shadow_atlas_size = p_size;
-	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, p_size, shadow_atlas_16_bits);
+void Viewport::set_positional_shadow_atlas_size(int p_size) {
+	positional_shadow_atlas_size = p_size;
+	RS::get_singleton()->viewport_set_positional_shadow_atlas_size(viewport, p_size, positional_shadow_atlas_16_bits);
 }
 
-int Viewport::get_shadow_atlas_size() const {
-	return shadow_atlas_size;
+int Viewport::get_positional_shadow_atlas_size() const {
+	return positional_shadow_atlas_size;
 }
 
-void Viewport::set_shadow_atlas_16_bits(bool p_16_bits) {
-	if (shadow_atlas_16_bits == p_16_bits) {
+void Viewport::set_positional_shadow_atlas_16_bits(bool p_16_bits) {
+	if (positional_shadow_atlas_16_bits == p_16_bits) {
 		return;
 	}
 
-	shadow_atlas_16_bits = p_16_bits;
-	RS::get_singleton()->viewport_set_shadow_atlas_size(viewport, shadow_atlas_size, shadow_atlas_16_bits);
+	positional_shadow_atlas_16_bits = p_16_bits;
+	RS::get_singleton()->viewport_set_positional_shadow_atlas_size(viewport, positional_shadow_atlas_size, positional_shadow_atlas_16_bits);
 }
 
-bool Viewport::get_shadow_atlas_16_bits() const {
-	return shadow_atlas_16_bits;
+bool Viewport::get_positional_shadow_atlas_16_bits() const {
+	return positional_shadow_atlas_16_bits;
 }
-void Viewport::set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv) {
+void Viewport::set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, PositionalShadowAtlasQuadrantSubdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdiv, SHADOW_ATLAS_QUADRANT_SUBDIV_MAX);
 
-	if (shadow_atlas_quadrant_subdiv[p_quadrant] == p_subdiv) {
+	if (positional_shadow_atlas_quadrant_subdiv[p_quadrant] == p_subdiv) {
 		return;
 	}
 
-	shadow_atlas_quadrant_subdiv[p_quadrant] = p_subdiv;
+	positional_shadow_atlas_quadrant_subdiv[p_quadrant] = p_subdiv;
 	static const int subdiv[SHADOW_ATLAS_QUADRANT_SUBDIV_MAX] = { 0, 1, 4, 16, 64, 256, 1024 };
 
-	RS::get_singleton()->viewport_set_shadow_atlas_quadrant_subdivision(viewport, p_quadrant, subdiv[p_subdiv]);
+	RS::get_singleton()->viewport_set_positional_shadow_atlas_quadrant_subdivision(viewport, p_quadrant, subdiv[p_subdiv]);
 }
 
-Viewport::ShadowAtlasQuadrantSubdiv Viewport::get_shadow_atlas_quadrant_subdiv(int p_quadrant) const {
+Viewport::PositionalShadowAtlasQuadrantSubdiv Viewport::get_positional_shadow_atlas_quadrant_subdiv(int p_quadrant) const {
 	ERR_FAIL_INDEX_V(p_quadrant, 4, SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
-	return shadow_atlas_quadrant_subdiv[p_quadrant];
+	return positional_shadow_atlas_quadrant_subdiv[p_quadrant];
 }
 
 Transform2D Viewport::_get_input_pre_xform() const {
@@ -1215,7 +1215,7 @@ void Viewport::_gui_show_tooltip() {
 		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
 
-	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
@@ -3080,6 +3080,41 @@ Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_textu
 	return default_canvas_item_texture_repeat;
 }
 
+void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
+	// Note, set this even if not supported on this hardware, it will only be used if it is but we want to save the value as set by the user.
+	vrs_mode = p_vrs_mode;
+
+	switch (p_vrs_mode) {
+		case VRS_TEXTURE: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_TEXTURE);
+		} break;
+		case VRS_XR: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_XR);
+		} break;
+		default: {
+			RS::get_singleton()->viewport_set_vrs_mode(viewport, RS::VIEWPORT_VRS_DISABLED);
+		} break;
+	}
+
+	notify_property_list_changed();
+}
+
+Viewport::VRSMode Viewport::get_vrs_mode() const {
+	return vrs_mode;
+}
+
+void Viewport::set_vrs_texture(Ref<Texture2D> p_texture) {
+	vrs_texture = p_texture;
+
+	// TODO need to add something here in case the RID changes
+	RID tex = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RS::get_singleton()->viewport_set_vrs_texture(viewport, tex);
+}
+
+Ref<Texture2D> Viewport::get_vrs_texture() const {
+	return vrs_texture;
+}
+
 DisplayServer::WindowID Viewport::get_window_id() const {
 	return DisplayServer::MAIN_WINDOW_ID;
 }
@@ -3667,11 +3702,11 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window"), &Viewport::_gui_remove_focus_for_window);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size", "size"), &Viewport::set_shadow_atlas_size);
-	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_size", "size"), &Viewport::set_positional_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_size"), &Viewport::get_positional_shadow_atlas_size);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_atlas_16_bits", "enable"), &Viewport::set_shadow_atlas_16_bits);
-	ClassDB::bind_method(D_METHOD("get_shadow_atlas_16_bits"), &Viewport::get_shadow_atlas_16_bits);
+	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_16_bits", "enable"), &Viewport::set_positional_shadow_atlas_16_bits);
+	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_16_bits"), &Viewport::get_positional_shadow_atlas_16_bits);
 
 	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
 	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
@@ -3682,8 +3717,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snap_2d_vertices_to_pixel", "enabled"), &Viewport::set_snap_2d_vertices_to_pixel);
 	ClassDB::bind_method(D_METHOD("is_snap_2d_vertices_to_pixel_enabled"), &Viewport::is_snap_2d_vertices_to_pixel_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
-	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
+	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_positional_shadow_atlas_quadrant_subdiv);
+	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_positional_shadow_atlas_quadrant_subdiv);
 
 	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &Viewport::set_input_as_handled);
 	ClassDB::bind_method(D_METHOD("is_input_handled"), &Viewport::is_input_handled);
@@ -3741,6 +3776,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fsr_mipmap_bias", "fsr_mipmap_bias"), &Viewport::set_fsr_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("get_fsr_mipmap_bias"), &Viewport::get_fsr_mipmap_bias);
 
+	ClassDB::bind_method(D_METHOD("set_vrs_mode", "mode"), &Viewport::set_vrs_mode);
+	ClassDB::bind_method(D_METHOD("get_vrs_mode"), &Viewport::get_vrs_mode);
+
+	ClassDB::bind_method(D_METHOD("set_vrs_texture", "texture"), &Viewport::set_vrs_texture);
+	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
@@ -3766,6 +3807,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.1"), "set_fsr_mipmap_bias", "get_fsr_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 #endif
+	ADD_GROUP("Variable Rate Shading", "vrs_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_vrs_texture", "get_vrs_texture");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
@@ -3783,13 +3827,13 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
-	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_atlas_16_bits"), "set_shadow_atlas_16_bits", "get_shadow_atlas_16_bits");
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_1", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_2", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_3", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 3);
+	ADD_GROUP("Positional Shadow Atlas", "positional_shadow_atlas_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "positional_shadow_atlas_size"), "set_positional_shadow_atlas_size", "get_positional_shadow_atlas_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "positional_shadow_atlas_16_bits"), "set_positional_shadow_atlas_16_bits", "get_positional_shadow_atlas_16_bits");
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_0", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_1", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_2", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "positional_shadow_atlas_quad_3", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_positional_shadow_atlas_quadrant_subdiv", "get_positional_shadow_atlas_quadrant_subdiv", 3);
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_canvas_transform", "get_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_canvas_transform", "get_global_canvas_transform");
 
@@ -3876,6 +3920,17 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(SDF_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDF_SCALE_25_PERCENT);
 	BIND_ENUM_CONSTANT(SDF_SCALE_MAX);
+
+	BIND_ENUM_CONSTANT(VRS_DISABLED);
+	BIND_ENUM_CONSTANT(VRS_TEXTURE);
+	BIND_ENUM_CONSTANT(VRS_XR);
+	BIND_ENUM_CONSTANT(VRS_MAX);
+}
+
+void Viewport::_validate_property(PropertyInfo &property) const {
+	if (vrs_mode != VRS_TEXTURE && (property.name == "vrs_texture")) {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 Viewport::Viewport() {
@@ -3891,15 +3946,15 @@ Viewport::Viewport() {
 
 	canvas_layers.insert(nullptr); // This eases picking code (interpreted as the canvas of the Viewport).
 
-	set_shadow_atlas_size(shadow_atlas_size);
+	set_positional_shadow_atlas_size(positional_shadow_atlas_size);
 
 	for (int i = 0; i < 4; i++) {
-		shadow_atlas_quadrant_subdiv[i] = SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
+		positional_shadow_atlas_quadrant_subdiv[i] = SHADOW_ATLAS_QUADRANT_SUBDIV_MAX;
 	}
-	set_shadow_atlas_quadrant_subdiv(0, SHADOW_ATLAS_QUADRANT_SUBDIV_4);
-	set_shadow_atlas_quadrant_subdiv(1, SHADOW_ATLAS_QUADRANT_SUBDIV_4);
-	set_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
-	set_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
+	set_positional_shadow_atlas_quadrant_subdiv(0, SHADOW_ATLAS_QUADRANT_SUBDIV_4);
+	set_positional_shadow_atlas_quadrant_subdiv(1, SHADOW_ATLAS_QUADRANT_SUBDIV_4);
+	set_positional_shadow_atlas_quadrant_subdiv(2, SHADOW_ATLAS_QUADRANT_SUBDIV_16);
+	set_positional_shadow_atlas_quadrant_subdiv(3, SHADOW_ATLAS_QUADRANT_SUBDIV_64);
 
 	set_mesh_lod_threshold(mesh_lod_threshold);
 

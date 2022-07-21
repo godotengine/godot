@@ -74,14 +74,7 @@ int main(int argc, char **argv) {
 	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	if (os.get_open_with_filename() != "") {
-		char *argv_c = (char *)malloc(os.get_open_with_filename().utf8().size());
-		memcpy(argv_c, os.get_open_with_filename().utf8().get_data(), os.get_open_with_filename().utf8().size());
-		err = Main::setup(argv[0], 1, &argv_c);
-		free(argv_c);
-	} else {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
+	err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
 
 	if (err == ERR_HELP) { // Returned by --help and --version, so success.
 		return 0;

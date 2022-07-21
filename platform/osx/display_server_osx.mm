@@ -1178,10 +1178,7 @@ Ref<Texture2D> DisplayServerOSX::global_menu_get_item_icon(const String &p_menu_
 			GodotMenuItem *obj = [menu_item representedObject];
 			if (obj) {
 				if (obj->img.is_valid()) {
-					Ref<ImageTexture> txt;
-					txt.instantiate();
-					txt->create_from_image(obj->img);
-					return txt;
+					return ImageTexture::create_from_image(obj->img);
 				}
 			}
 		}
@@ -2010,6 +2007,10 @@ void DisplayServerOSX::window_set_current_screen(int p_screen, WindowID p_window
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
 
 	bool was_fullscreen = false;
 	if (wd.fullscreen) {
@@ -2920,7 +2921,9 @@ void DisplayServerOSX::make_rendering_thread() {
 
 void DisplayServerOSX::swap_buffers() {
 #if defined(GLES3_ENABLED)
-	gl_manager->swap_buffers();
+	if (gl_manager) {
+		gl_manager->swap_buffers();
+	}
 #endif
 }
 

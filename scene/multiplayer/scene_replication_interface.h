@@ -40,10 +40,13 @@ class SceneReplicationInterface : public MultiplayerReplicationInterface {
 
 private:
 	void _send_sync(int p_peer, uint64_t p_msec);
-	Error _send_spawn(Node *p_node, MultiplayerSpawner *p_spawner, int p_peer);
-	Error _send_despawn(Node *p_node, int p_peer);
+	Error _make_spawn_packet(Node *p_node, int &r_len);
+	Error _make_despawn_packet(Node *p_node, int &r_len);
 	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
 
+	void _visibility_changed(int p_peer, ObjectID p_oid);
+	Error _update_sync_visibility(int p_peer, const ObjectID &p_oid);
+	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
 	void _free_remotes(int p_peer);
 
 	Ref<SceneReplicationState> rep_state;

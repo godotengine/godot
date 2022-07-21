@@ -685,7 +685,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	timer->set_one_shot(true);
 	add_child(timer);
 
-	get_ok_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(true);
 
 	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);

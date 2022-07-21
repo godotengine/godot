@@ -95,7 +95,7 @@ public:
 		SCALING_3D_MODE_MAX
 	};
 
-	enum ShadowAtlasQuadrantSubdiv {
+	enum PositionalShadowAtlasQuadrantSubdiv {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_4,
@@ -197,6 +197,13 @@ public:
 		SUBWINDOW_CANVAS_LAYER = 1024
 	};
 
+	enum VRSMode {
+		VRS_DISABLED,
+		VRS_TEXTURE,
+		VRS_XR,
+		VRS_MAX
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -286,9 +293,9 @@ private:
 
 	DebugDraw debug_draw = DEBUG_DRAW_DISABLED;
 
-	int shadow_atlas_size = 2048;
-	bool shadow_atlas_16_bits = true;
-	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
+	int positional_shadow_atlas_size = 2048;
+	bool positional_shadow_atlas_16_bits = true;
+	PositionalShadowAtlasQuadrantSubdiv positional_shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa = MSAA_DISABLED;
 	ScreenSpaceAA screen_space_aa = SCREEN_SPACE_AA_DISABLED;
@@ -332,6 +339,10 @@ private:
 		Window *window = nullptr;
 		RID canvas_item;
 	};
+
+	// VRS
+	VRSMode vrs_mode = VRS_DISABLED;
+	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
 		// info used when this is a window
@@ -502,14 +513,14 @@ public:
 
 	Ref<ViewportTexture> get_texture() const;
 
-	void set_shadow_atlas_size(int p_size);
-	int get_shadow_atlas_size() const;
+	void set_positional_shadow_atlas_size(int p_size);
+	int get_positional_shadow_atlas_size() const;
 
-	void set_shadow_atlas_16_bits(bool p_16_bits);
-	bool get_shadow_atlas_16_bits() const;
+	void set_positional_shadow_atlas_16_bits(bool p_16_bits);
+	bool get_positional_shadow_atlas_16_bits() const;
 
-	void set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadrantSubdiv p_subdiv);
-	ShadowAtlasQuadrantSubdiv get_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
+	void set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, PositionalShadowAtlasQuadrantSubdiv p_subdiv);
+	PositionalShadowAtlasQuadrantSubdiv get_positional_shadow_atlas_quadrant_subdiv(int p_quadrant) const;
 
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
@@ -604,6 +615,14 @@ public:
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
 
+	// VRS
+
+	void set_vrs_mode(VRSMode p_vrs_mode);
+	VRSMode get_vrs_mode() const;
+
+	void set_vrs_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_vrs_texture() const;
+
 	virtual DisplayServer::WindowID get_window_id() const = 0;
 
 	void set_embedding_subwindows(bool p_embed);
@@ -690,6 +709,7 @@ public:
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
+	virtual void _validate_property(PropertyInfo &property) const override;
 	Viewport();
 	~Viewport();
 };
@@ -746,12 +766,13 @@ public:
 };
 VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
-VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
+VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);
+VARIANT_ENUM_CAST(Viewport::VRSMode);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);

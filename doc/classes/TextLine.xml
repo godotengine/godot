@@ -22,11 +22,10 @@
 		<method name="add_string">
 			<return type="bool" />
 			<argument index="0" name="text" type="String" />
-			<argument index="1" name="fonts" type="Font" />
-			<argument index="2" name="size" type="int" />
-			<argument index="3" name="opentype_features" type="Dictionary" default="{}" />
-			<argument index="4" name="language" type="String" default="&quot;&quot;" />
-			<argument index="5" name="meta" type="Variant" default="null" />
+			<argument index="1" name="font" type="Font" />
+			<argument index="2" name="font_size" type="int" />
+			<argument index="3" name="language" type="String" default="&quot;&quot;" />
+			<argument index="4" name="meta" type="Variant" default="null" />
 			<description>
 				Adds text span and font to draw it.
 			</description>
@@ -149,8 +148,8 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="3">
-			Line Alignment rules. For more info see [TextServer].
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" default="3">
+			Line alignment rules. For more info see [TextServer].
 		</member>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
 			Text orientation.

@@ -571,7 +571,7 @@ struct GDEF
     static_assert (((unsigned int) HB_OT_LAYOUT_GLYPH_PROPS_MARK == (unsigned int) LookupFlag::IgnoreMarks), "");
 
     switch (klass) {
-    default:			return 0;
+    default:			return HB_OT_LAYOUT_GLYPH_CLASS_UNCLASSIFIED;
     case BaseGlyph:		return HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH;
     case LigatureGlyph:		return HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
     case MarkGlyph:

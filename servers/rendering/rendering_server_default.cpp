@@ -48,7 +48,7 @@ void RenderingServerDefault::_free(RID p_rid) {
 	if (unlikely(p_rid.is_null())) {
 		return;
 	}
-	if (RSG::storage->free(p_rid)) {
+	if (RSG::utilities->free(p_rid)) {
 		return;
 	}
 	if (RSG::canvas->free(p_rid)) {
@@ -116,35 +116,35 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 	RS::get_singleton()->emit_signal(SNAME("frame_post_draw"));
 
-	if (RSG::storage->get_captured_timestamps_count()) {
+	if (RSG::utilities->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;
-		if (RSG::storage->capturing_timestamps) {
-			new_profile.resize(RSG::storage->get_captured_timestamps_count());
+		if (RSG::utilities->capturing_timestamps) {
+			new_profile.resize(RSG::utilities->get_captured_timestamps_count());
 		}
 
-		uint64_t base_cpu = RSG::storage->get_captured_timestamp_cpu_time(0);
-		uint64_t base_gpu = RSG::storage->get_captured_timestamp_gpu_time(0);
-		for (uint32_t i = 0; i < RSG::storage->get_captured_timestamps_count(); i++) {
-			uint64_t time_cpu = RSG::storage->get_captured_timestamp_cpu_time(i);
-			uint64_t time_gpu = RSG::storage->get_captured_timestamp_gpu_time(i);
+		uint64_t base_cpu = RSG::utilities->get_captured_timestamp_cpu_time(0);
+		uint64_t base_gpu = RSG::utilities->get_captured_timestamp_gpu_time(0);
+		for (uint32_t i = 0; i < RSG::utilities->get_captured_timestamps_count(); i++) {
+			uint64_t time_cpu = RSG::utilities->get_captured_timestamp_cpu_time(i);
+			uint64_t time_gpu = RSG::utilities->get_captured_timestamp_gpu_time(i);
 
-			String name = RSG::storage->get_captured_timestamp_name(i);
+			String name = RSG::utilities->get_captured_timestamp_name(i);
 
 			if (name.begins_with("vp_")) {
 				RSG::viewport->handle_timestamp(name, time_cpu, time_gpu);
 			}
 
-			if (RSG::storage->capturing_timestamps) {
+			if (RSG::utilities->capturing_timestamps) {
 				new_profile.write[i].gpu_msec = double((time_gpu - base_gpu) / 1000) / 1000.0;
 				new_profile.write[i].cpu_msec = double(time_cpu - base_cpu) / 1000.0;
-				new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
+				new_profile.write[i].name = RSG::utilities->get_captured_timestamp_name(i);
 			}
 		}
 
 		frame_profile = new_profile;
 	}
 
-	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
+	frame_profile_frame = RSG::utilities->get_captured_timestamps_frame();
 
 	if (print_gpu_profile) {
 		if (print_frame_profile_ticks_from == 0) {
@@ -191,7 +191,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		}
 	}
 
-	RSG::storage->update_memory_info();
+	RSG::utilities->update_memory_info();
 }
 
 double RenderingServerDefault::get_frame_setup_time_cpu() const {
@@ -250,27 +250,27 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
 	}
-	return RSG::storage->get_rendering_info(p_info);
+	return RSG::utilities->get_rendering_info(p_info);
 }
 
 String RenderingServerDefault::get_video_adapter_name() const {
-	return RSG::storage->get_video_adapter_name();
+	return RSG::utilities->get_video_adapter_name();
 }
 
 String RenderingServerDefault::get_video_adapter_vendor() const {
-	return RSG::storage->get_video_adapter_vendor();
+	return RSG::utilities->get_video_adapter_vendor();
 }
 
 RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
-	return RSG::storage->get_video_adapter_type();
+	return RSG::utilities->get_video_adapter_type();
 }
 
 String RenderingServerDefault::get_video_adapter_api_version() const {
-	return RSG::storage->get_video_adapter_api_version();
+	return RSG::utilities->get_video_adapter_api_version();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {
-	RSG::storage->capturing_timestamps = p_enable;
+	RSG::utilities->capturing_timestamps = p_enable;
 }
 
 uint64_t RenderingServerDefault::get_frame_profile_frame() {
@@ -301,7 +301,7 @@ void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_posit
 }
 
 void RenderingServerDefault::set_print_gpu_profile(bool p_enable) {
-	RSG::storage->capturing_timestamps = p_enable;
+	RSG::utilities->capturing_timestamps = p_enable;
 	print_gpu_profile = p_enable;
 }
 
@@ -313,15 +313,15 @@ RID RenderingServerDefault::get_test_cube() {
 }
 
 bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
-	if (RSG::storage) {
-		return RSG::storage->has_os_feature(p_feature);
+	if (RSG::utilities) {
+		return RSG::utilities->has_os_feature(p_feature);
 	} else {
 		return false;
 	}
 }
 
 void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
-	RSG::storage->set_debug_generate_wireframes(p_generate);
+	RSG::utilities->set_debug_generate_wireframes(p_generate);
 }
 
 bool RenderingServerDefault::is_low_end() const {
@@ -399,13 +399,14 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 	RendererSceneCull *sr = memnew(RendererSceneCull);
 	RSG::scene = sr;
 	RSG::rasterizer = RendererCompositor::create();
+	RSG::utilities = RSG::rasterizer->get_utilities();
 	RSG::light_storage = RSG::rasterizer->get_light_storage();
 	RSG::material_storage = RSG::rasterizer->get_material_storage();
 	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
 	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
 	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
 	RSG::gi = RSG::rasterizer->get_gi();
-	RSG::storage = RSG::rasterizer->get_storage();
+	RSG::fog = RSG::rasterizer->get_fog();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());
 

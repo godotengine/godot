@@ -195,6 +195,7 @@ void DisplayServerIPhone::window_set_drop_files_callback(const Callable &p_calla
 }
 
 void DisplayServerIPhone::process_events() {
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerIPhone::_dispatch_input_events(const Ref<InputEvent> &p_event) {

@@ -241,17 +241,12 @@ struct hb_directwrite_font_data_t {};
 hb_directwrite_font_data_t *
 _hb_directwrite_shaper_font_data_create (hb_font_t *font)
 {
-  hb_directwrite_font_data_t *data = new hb_directwrite_font_data_t;
-  if (unlikely (!data))
-    return nullptr;
-
-  return data;
+  return (hb_directwrite_font_data_t *) HB_SHAPER_DATA_SUCCEEDED;
 }
 
 void
 _hb_directwrite_shaper_font_data_destroy (hb_directwrite_font_data_t *data)
 {
-  delete data;
 }
 
 

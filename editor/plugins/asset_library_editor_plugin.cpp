@@ -161,18 +161,13 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = previews->get_theme_icon(SNAME("PlayOverlay"), SNAME("EditorIcons"))->get_image();
 						Ref<Image> thumbnail = p_image->get_image();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						Point2i overlay_pos = Point2i((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
-
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
+						preview_images[i].button->set_icon(ImageTexture::create_from_image(thumbnail));
 
-						Ref<ImageTexture> tex;
-						tex.instantiate();
-						tex->create_from_image(thumbnail);
-
-						preview_images[i].button->set_icon(tex);
 						// Make it clearer that clicking it will open an external link
 						preview_images[i].button->set_default_cursor_shape(Control::CURSOR_POINTING_HAND);
 					} else {
@@ -312,8 +307,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	preview_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	previews->add_child(preview_hb);
-	get_ok_button()->set_text(TTR("Download"));
-	get_cancel_button()->set_text(TTR("Close"));
+	set_ok_button_text(TTR("Download"));
+	set_cancel_button_text(TTR("Close"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -790,9 +785,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 				} break;
 			}
 
-			Ref<ImageTexture> tex;
-			tex.instantiate();
-			tex->create_from_image(image);
+			Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, tex);
 			image_set = true;
@@ -1300,14 +1293,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
 				if (download_item->can_install()) {
-					description->get_ok_button()->set_text(TTR("Install"));
+					description->set_ok_button_text(TTR("Install"));
 					description->get_ok_button()->set_disabled(false);
 				} else {
-					description->get_ok_button()->set_text(TTR("Downloading..."));
+					description->set_ok_button_text(TTR("Downloading..."));
 					description->get_ok_button()->set_disabled(true);
 				}
 			} else {
-				description->get_ok_button()->set_text(TTR("Download"));
+				description->set_ok_button_text(TTR("Download"));
 				description->get_ok_button()->set_disabled(false);
 			}
 
@@ -1591,7 +1584,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open = memnew(EditorFileDialog);
 
 	asset_open->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
-	asset_open->add_filter("*.zip ; " + TTR("Assets ZIP File"));
+	asset_open->add_filter("*.zip", TTR("Assets ZIP File"));
 	asset_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(asset_open);
 	asset_open->connect("file_selected", callable_mp(this, &EditorAssetLibrary::_asset_file_selected));
@@ -1623,7 +1616,7 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	EditorNode::get_singleton()->get_main_control()->add_child(addon_library);
-	addon_library->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }
 

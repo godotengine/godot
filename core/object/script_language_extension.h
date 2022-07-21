@@ -580,6 +580,15 @@ public:
 			p_constants->push_back(Pair<String, Variant>(d["name"], d["value"]));
 		}
 	}
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_public_annotations)
+	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
+		TypedArray<Dictionary> ret;
+		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+			p_annotations->push_back(mi);
+		}
+	}
 
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)

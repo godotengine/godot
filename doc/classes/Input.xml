@@ -375,6 +375,7 @@
 		<member name="use_accumulated_input" type="bool" setter="set_use_accumulated_input" getter="is_using_accumulated_input">
 			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
 			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage. In applications where drawing freehand lines is required, input accumulation should generally be disabled while the user is drawing the line to get results that closely follow the actual input.
+			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
 		</member>
 	</members>
 	<signals>

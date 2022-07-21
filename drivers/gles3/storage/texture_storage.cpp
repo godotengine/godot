@@ -183,6 +183,12 @@ TextureStorage::TextureStorage() {
 			texture.gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 		}
 	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+#ifdef GLES_OVER_GL
+	glEnable(GL_PROGRAM_POINT_SIZE);
+#endif
 }
 
 TextureStorage::~TextureStorage() {
@@ -242,6 +248,55 @@ void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS:
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ct->texture_repeat = p_repeat;
+}
+
+/* CANVAS SHADOW */
+
+RID TextureStorage::canvas_light_shadow_buffer_create(int p_width) {
+	Config *config = Config::get_singleton();
+	CanvasLightShadow *cls = memnew(CanvasLightShadow);
+
+	if (p_width > config->max_texture_size) {
+		p_width = config->max_texture_size;
+	}
+
+	cls->size = p_width;
+	cls->height = 16;
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenFramebuffers(1, &cls->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
+
+	glGenRenderbuffers(1, &cls->depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, cls->size, cls->height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
+
+	glGenTextures(1, &cls->distance);
+	glBindTexture(GL_TEXTURE_2D, cls->distance);
+	if (config->use_rgba_2d_shadows) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	} else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, GL_RED, GL_FLOAT, nullptr);
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cls->distance, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	//printf("errnum: %x\n",status);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		memdelete(cls);
+		ERR_FAIL_COND_V(status != GL_FRAMEBUFFER_COMPLETE, RID());
+	}
+
+	return canvas_light_shadow_owner.make_rid(cls);
 }
 
 /* Texture API */

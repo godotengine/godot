@@ -2346,7 +2346,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 
 	for (Material *E : shader->owners) {
 		Material *material = E;
-		material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
 	}
 }
@@ -2436,7 +2436,7 @@ void MaterialStorage::_material_uniform_set_erased(void *p_material) {
 			// if a texture is deleted, so re-create it.
 			MaterialStorage::get_singleton()->_material_queue_update(material, false, true);
 		}
-		material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 	}
 }
 
@@ -2466,7 +2466,7 @@ void MaterialStorage::_update_queued_materials() {
 
 		if (uniforms_changed) {
 			//some implementations such as 3D renderer cache the matreial uniform set, so update is required
-			material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+			material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		}
 	}
 }
@@ -2507,7 +2507,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	}
 
 	if (p_shader.is_null()) {
-		material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		material->shader_id = 0;
 		return;
 	}
@@ -2530,7 +2530,7 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	material->data->set_next_pass(material->next_pass);
 	material->data->set_render_priority(material->priority);
 	//updating happens later
-	material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 	_material_queue_update(material, true, true);
 }
 
@@ -2576,7 +2576,7 @@ void MaterialStorage::material_set_next_pass(RID p_material, RID p_next_material
 		material->data->set_next_pass(p_next_material);
 	}
 
-	material->dependency.changed_notify(RendererStorage::DEPENDENCY_CHANGED_MATERIAL);
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
 void MaterialStorage::material_set_render_priority(RID p_material, int priority) {
@@ -2626,7 +2626,7 @@ void MaterialStorage::material_get_instance_shader_parameters(RID p_material, Li
 	}
 }
 
-void MaterialStorage::material_update_dependency(RID p_material, RendererStorage::DependencyTracker *p_instance) {
+void MaterialStorage::material_update_dependency(RID p_material, DependencyTracker *p_instance) {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_COND(!material);
 	p_instance->update_dependency(&material->dependency);

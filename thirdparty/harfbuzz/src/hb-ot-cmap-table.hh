@@ -27,6 +27,8 @@
 #ifndef HB_OT_CMAP_TABLE_HH
 #define HB_OT_CMAP_TABLE_HH
 
+#include "hb-ot-os2-table.hh"
+#include "hb-ot-shaper-arabic-pua.hh"
 #include "hb-open-type.hh"
 #include "hb-set.hh"
 
@@ -1476,32 +1478,46 @@ struct SubtableUnicodesCache {
 
  private:
   const void* base;
-  hb_hashmap_t<intptr_t, hb_set_t*> cached_unicodes;
+  hb_hashmap_t<intptr_t, hb::unique_ptr<hb_set_t>> cached_unicodes;
 
  public:
   SubtableUnicodesCache(const void* cmap_base)
       : base(cmap_base), cached_unicodes() {}
-  ~SubtableUnicodesCache()
-  {
-    for (hb_set_t* s : cached_unicodes.values()) {
-      hb_set_destroy (s);
-    }
-  }
 
-  hb_set_t* set_for(const EncodingRecord* record)
+  hb_set_t* set_for (const EncodingRecord* record)
   {
-    if (!cached_unicodes.has ((intptr_t) record)) {
-      hb_set_t* new_set = hb_set_create ();
-      if (!cached_unicodes.set ((intptr_t) record, new_set)) {
-        hb_set_destroy (new_set);
+    if (!cached_unicodes.has ((intptr_t) record))
+    {
+      hb_set_t *s = hb_set_create ();
+      if (unlikely (s->in_error ()))
+	return hb_set_get_empty ();
+	
+      (base+record->subtable).collect_unicodes (s);
+
+      if (unlikely (!cached_unicodes.set ((intptr_t) record, hb::unique_ptr<hb_set_t> {s})))
         return hb_set_get_empty ();
-      }
-      (base+record->subtable).collect_unicodes (cached_unicodes.get ((intptr_t) record));
+
+      return s;
     }
     return cached_unicodes.get ((intptr_t) record);
   }
 
 };
+
+static inline uint_fast16_t
+_hb_symbol_pua_map (unsigned codepoint)
+{
+  if (codepoint <= 0x00FFu)
+  {
+    /* For symbol-encoded OpenType fonts, we duplicate the
+     * U+F000..F0FF range at U+0000..U+00FF.  That's what
+     * Windows seems to do, and that's hinted about at:
+     * https://docs.microsoft.com/en-us/typography/opentype/spec/recom
+     * under "Non-Standard (Symbol) Fonts". */
+    return 0xF000u + codepoint;
+  }
+  return 0;
+}
 
 struct cmap
 {
@@ -1726,7 +1742,24 @@ struct cmap
 
       this->get_glyph_data = subtable;
       if (unlikely (symbol))
-	this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable>;
+      {
+	switch ((unsigned) face->table.OS2->get_font_page ()) {
+	case OS2::font_page_t::FONT_PAGE_NONE:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_symbol_pua_map>;
+	  break;
+#ifndef HB_NO_OT_SHAPER_ARABIC_FALLBACK
+	case OS2::font_page_t::FONT_PAGE_SIMP_ARABIC:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_arabic_pua_simp_map>;
+	  break;
+	case OS2::font_page_t::FONT_PAGE_TRAD_ARABIC:
+	  this->get_glyph_funcZ = get_glyph_from_symbol<CmapSubtable, _hb_arabic_pua_trad_map>;
+	  break;
+#endif
+	default:
+	  this->get_glyph_funcZ = get_glyph_from<CmapSubtable>;
+	  break;
+	}
+      }
       else
       {
 	switch (subtable->u.format) {
@@ -1808,6 +1841,7 @@ struct cmap
     typedef bool (*hb_cmap_get_glyph_func_t) (const void *obj,
 					      hb_codepoint_t codepoint,
 					      hb_codepoint_t *glyph);
+    typedef uint_fast16_t (*hb_pua_remap_func_t) (unsigned);
 
     template <typename Type>
     HB_INTERNAL static bool get_glyph_from (const void *obj,
@@ -1818,7 +1852,7 @@ struct cmap
       return typed_obj->get_glyph (codepoint, glyph);
     }
 
-    template <typename Type>
+    template <typename Type, hb_pua_remap_func_t remap>
     HB_INTERNAL static bool get_glyph_from_symbol (const void *obj,
 						   hb_codepoint_t codepoint,
 						   hb_codepoint_t *glyph)
@@ -1827,15 +1861,8 @@ struct cmap
       if (likely (typed_obj->get_glyph (codepoint, glyph)))
 	return true;
 
-      if (codepoint <= 0x00FFu)
-      {
-	/* For symbol-encoded OpenType fonts, we duplicate the
-	 * U+F000..F0FF range at U+0000..U+00FF.  That's what
-	 * Windows seems to do, and that's hinted about at:
-	 * https://docs.microsoft.com/en-us/typography/opentype/spec/recom
-	 * under "Non-Standard (Symbol) Fonts". */
-	return typed_obj->get_glyph (0xF000u + codepoint, glyph);
-      }
+      if (hb_codepoint_t c = remap (codepoint))
+	return typed_obj->get_glyph (c, glyph);
 
       return false;
     }

@@ -102,9 +102,9 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
   /* Check that breaking up shaping at safe-to-break is indeed safe. */
 
   hb_buffer_t *fragment = hb_buffer_create_similar (buffer);
-  hb_buffer_set_flags (fragment, hb_buffer_get_flags (fragment) & ~HB_BUFFER_FLAG_VERIFY);
+  hb_buffer_set_flags (fragment, (hb_buffer_flags_t (hb_buffer_get_flags (fragment) & ~HB_BUFFER_FLAG_VERIFY)));
   hb_buffer_t *reconstruction = hb_buffer_create_similar (buffer);
-  hb_buffer_set_flags (reconstruction, hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY);
+  hb_buffer_set_flags (reconstruction, (hb_buffer_flags_t (hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY)));
 
   unsigned int num_glyphs;
   hb_glyph_info_t *info = hb_buffer_get_glyph_infos (buffer, &num_glyphs);
@@ -168,6 +168,12 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
       hb_buffer_destroy (reconstruction);
       hb_buffer_destroy (fragment);
       return false;
+    }
+    else if (!fragment->successful || fragment->shaping_failed)
+    {
+      hb_buffer_destroy (reconstruction);
+      hb_buffer_destroy (fragment);
+      return true;
     }
     hb_buffer_append (reconstruction, fragment, 0, -1);
 
@@ -238,10 +244,10 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
 
   hb_buffer_t *fragments[2] {hb_buffer_create_similar (buffer),
 			     hb_buffer_create_similar (buffer)};
-  hb_buffer_set_flags (fragments[0], hb_buffer_get_flags (fragments[0]) & ~HB_BUFFER_FLAG_VERIFY);
-  hb_buffer_set_flags (fragments[1], hb_buffer_get_flags (fragments[1]) & ~HB_BUFFER_FLAG_VERIFY);
+  hb_buffer_set_flags (fragments[0], (hb_buffer_flags_t (hb_buffer_get_flags (fragments[0]) & ~HB_BUFFER_FLAG_VERIFY)));
+  hb_buffer_set_flags (fragments[1], (hb_buffer_flags_t (hb_buffer_get_flags (fragments[1]) & ~HB_BUFFER_FLAG_VERIFY)));
   hb_buffer_t *reconstruction = hb_buffer_create_similar (buffer);
-  hb_buffer_set_flags (reconstruction, hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY);
+  hb_buffer_set_flags (reconstruction, (hb_buffer_flags_t (hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY)));
   hb_segment_properties_t props;
   hb_buffer_get_segment_properties (buffer, &props);
   hb_buffer_set_segment_properties (fragments[0], &props);
@@ -317,10 +323,20 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
     ret = false;
     goto out;
   }
+  else if (!fragments[0]->successful || fragments[0]->shaping_failed)
+  {
+    ret = true;
+    goto out;
+  }
   if (!hb_shape_full (font, fragments[1], features, num_features, shapers))
   {
     buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "shaping failed while shaping fragment.");
     ret = false;
+    goto out;
+  }
+  else if (!fragments[1]->successful || fragments[1]->shaping_failed)
+  {
+    ret = true;
     goto out;
   }
 
@@ -402,6 +418,7 @@ hb_buffer_t::verify (hb_buffer_t        *text_buffer,
     ret = false;
   if (!ret)
   {
+#ifndef HB_NO_BUFFER_SERIALIZE
     unsigned len = text_buffer->len;
     hb_vector_t<char> bytes;
     if (likely (bytes.resize (len * 10 + 16)))
@@ -414,6 +431,7 @@ hb_buffer_t::verify (hb_buffer_t        *text_buffer,
 				   HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS);
       buffer_verify_error (this, font, BUFFER_VERIFY_ERROR "text was: %s.", bytes.arrayZ);
     }
+#endif
   }
   return ret;
 }

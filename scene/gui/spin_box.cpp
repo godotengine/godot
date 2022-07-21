@@ -167,7 +167,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
-			float diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8f) * SIGN(drag.diff_y);
+			double diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8) * SIGN(drag.diff_y);
 			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -319,7 +319,7 @@ SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
-	line_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	line_edit->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 

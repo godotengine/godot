@@ -134,6 +134,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_get_public_functions);
 	GDVIRTUAL_BIND(_get_public_constants);
+	GDVIRTUAL_BIND(_get_public_annotations);
 
 	GDVIRTUAL_BIND(_profiling_start);
 	GDVIRTUAL_BIND(_profiling_stop);
@@ -160,6 +161,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_SIGNAL);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ENUM);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ANNOTATION);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_MAX);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);

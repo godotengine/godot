@@ -36,6 +36,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/templates/hashfuncs.h"
+#include "core/version.h"
 #include "drivers/vulkan/vulkan_context.h"
 
 #include "thirdparty/misc/smolv.h"
@@ -106,7 +107,7 @@ RenderingDeviceVulkan::Buffer *RenderingDeviceVulkan::_get_buffer_from_owner(RID
 	return buffer;
 }
 
-static void update_external_dependency_for_store(VkSubpassDependency &dependency, bool is_sampled, bool is_storage, bool is_depth) {
+static void update_external_dependency_for_store(VkSubpassDependency2KHR &dependency, bool is_sampled, bool is_storage, bool is_depth) {
 	// Transitioning from write to read, protect the shaders that may use this next
 	// Allow for copies/image layout transitions
 	dependency.dstStageMask |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -1758,6 +1759,10 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_create_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	}
 
+	if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+		image_create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+	}
+
 	if (p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT) {
 		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
@@ -3362,17 +3367,24 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
 			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
 			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT; // From Section 7.1 of Vulkan API Spec v1.1.148
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | // From Section 7.1 of Vulkan API Spec v1.1.148
+			VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
 
 	VkPipelineStageFlags reading_stages = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
-	VkSubpassDependency dependencies[2] = { { VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, default_access_mask, 0 },
-		{ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, default_access_mask, 0, 0 } };
-	VkSubpassDependency &dependency_from_external = dependencies[0];
-	VkSubpassDependency &dependency_to_external = dependencies[1];
+	VkSubpassDependency2KHR dependencies[2] = {
+		{ VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR, nullptr, VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, default_access_mask, 0, 0 },
+		{ VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR, nullptr, 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, default_access_mask, 0, 0, 0 }
+	};
+	VkSubpassDependency2KHR &dependency_from_external = dependencies[0];
+	VkSubpassDependency2KHR &dependency_to_external = dependencies[1];
 	LocalVector<int32_t> attachment_last_pass;
 	attachment_last_pass.resize(p_attachments.size());
 
-	Vector<VkAttachmentDescription> attachments;
+	// These are only used if we use multiview but we need to define them in scope.
+	const uint32_t view_mask = (1 << p_view_count) - 1;
+	const uint32_t correlation_mask = (1 << p_view_count) - 1;
+
+	Vector<VkAttachmentDescription2KHR> attachments;
 	Vector<int> attachment_remap;
 
 	for (int i = 0; i < p_attachments.size(); i++) {
@@ -3383,10 +3395,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		ERR_FAIL_INDEX_V(p_attachments[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
 		ERR_FAIL_INDEX_V(p_attachments[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
-		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)),
-				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth, input or stencil) bit set.");
+		ERR_FAIL_COND_V_MSG(!(p_attachments[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT)),
+				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (color, depth-stencil, input or VRS) bit set.");
 
-		VkAttachmentDescription description = {};
+		VkAttachmentDescription2KHR description = {};
+		description.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+		description.pNext = nullptr;
 		description.flags = 0;
 		description.format = vulkan_formats[p_attachments[i].format];
 		description.samples = rasterization_sample_count[p_attachments[i].samples];
@@ -3395,83 +3409,95 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		bool is_storage = p_attachments[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
 		bool is_depth = p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-		// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
-		// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
-		// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
-		// stage
+		// We can setup a framebuffer where we write to our VRS texture to set it up.
+		// We make the assumption here that if our texture is actually used as our VRS attachment,
+		// it is used as such for each subpass. This is fairly certain seeing the restrictions on subpasses.
+		bool is_vrs = p_attachments[i].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && i == p_passes[0].vrs_attachment;
 
-		switch (is_depth ? p_initial_depth_action : p_initial_action) {
-			case INITIAL_ACTION_CLEAR_REGION:
-			case INITIAL_ACTION_CLEAR: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-					dependency_from_external.srcStageMask |= reading_stages;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					dependency_from_external.srcStageMask |= reading_stages;
+		if (is_vrs) {
+			// For VRS we only read, there is no writing to this texture
+			description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+			description.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		} else {
+			// For each UNDEFINED, assume the prior use was a *read*, as we'd be discarding the output of a write
+			// Also, each UNDEFINED will do an immediate layout transition (write), s.t. we must ensure execution synchronization vs.
+			// the read. If this is a performance issue, one could track the actual last accessor of each resource, adding only that
+			// stage
+
+			switch (is_depth ? p_initial_depth_action : p_initial_action) {
+				case INITIAL_ACTION_CLEAR_REGION:
+				case INITIAL_ACTION_CLEAR: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+						description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+						description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+						dependency_from_external.srcStageMask |= reading_stages;
+					} else {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						dependency_from_external.srcStageMask |= reading_stages;
+					}
+				} break;
+				case INITIAL_ACTION_KEEP: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+						description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+						description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+						dependency_from_external.srcStageMask |= reading_stages;
+					} else {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						dependency_from_external.srcStageMask |= reading_stages;
+					}
+				} break;
+				case INITIAL_ACTION_DROP: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						dependency_from_external.srcStageMask |= reading_stages;
+					} else {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						dependency_from_external.srcStageMask |= reading_stages;
+					}
+				} break;
+				case INITIAL_ACTION_CLEAR_REGION_CONTINUE:
+				case INITIAL_ACTION_CONTINUE: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+						description.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+						description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+					} else {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						dependency_from_external.srcStageMask |= reading_stages;
+					}
+				} break;
+				default: {
+					ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
 				}
-			} break;
-			case INITIAL_ACTION_KEEP: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					dependency_from_external.srcStageMask |= reading_stages;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					dependency_from_external.srcStageMask |= reading_stages;
-				}
-			} break;
-			case INITIAL_ACTION_DROP: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					dependency_from_external.srcStageMask |= reading_stages;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					dependency_from_external.srcStageMask |= reading_stages;
-				}
-			} break;
-			case INITIAL_ACTION_CLEAR_REGION_CONTINUE:
-			case INITIAL_ACTION_CONTINUE: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					dependency_from_external.srcStageMask |= reading_stages;
-				}
-			} break;
-			default: {
-				ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
 			}
 		}
 
@@ -3483,6 +3509,10 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			if (is_depth) {
 				//likely missing depth resolve?
 				if (p_passes[last_pass].depth_attachment == i) {
+					used_last = true;
+				}
+			} else if (is_vrs) {
+				if (p_passes[last_pass].vrs_attachment == i) {
 					used_last = true;
 				}
 			} else {
@@ -3526,58 +3556,69 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		switch (is_depth ? final_depth_action : final_action) {
-			case FINAL_ACTION_READ: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, false);
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, true);
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					// TODO: What does this mean about the next usage (and thus appropriate dependency masks
-				}
-			} break;
-			case FINAL_ACTION_DISCARD: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-				}
-			} break;
-			case FINAL_ACTION_CONTINUE: {
-				if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-				}
+		if (is_vrs) {
+			// We don't change our VRS texture during this process
 
-			} break;
-			default: {
-				ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
+			description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			// TODO do we need to update our external dependency ?
+			// update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, false);
+		} else {
+			switch (is_depth ? final_depth_action : final_action) {
+				case FINAL_ACTION_READ: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+						update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, false);
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+						update_external_dependency_for_store(dependency_to_external, is_sampled, is_storage, true);
+					} else {
+						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+						// TODO: What does this mean about the next usage (and thus appropriate dependency masks
+					}
+				} break;
+				case FINAL_ACTION_DISCARD: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+					} else {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+					}
+				} break;
+				case FINAL_ACTION_CONTINUE: {
+					if (p_attachments[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					} else if (p_attachments[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+						description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+					} else {
+						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+						description.finalLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+					}
+
+				} break;
+				default: {
+					ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
+				}
 			}
 		}
 
@@ -3586,12 +3627,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		attachments.push_back(description);
 	}
 
-	LocalVector<VkSubpassDescription> subpasses;
-	LocalVector<LocalVector<VkAttachmentReference>> color_reference_array;
-	LocalVector<LocalVector<VkAttachmentReference>> input_reference_array;
-	LocalVector<LocalVector<VkAttachmentReference>> resolve_reference_array;
+	LocalVector<VkSubpassDescription2KHR> subpasses;
+	LocalVector<LocalVector<VkAttachmentReference2KHR>> color_reference_array;
+	LocalVector<LocalVector<VkAttachmentReference2KHR>> input_reference_array;
+	LocalVector<LocalVector<VkAttachmentReference2KHR>> resolve_reference_array;
 	LocalVector<LocalVector<uint32_t>> preserve_reference_array;
-	LocalVector<VkAttachmentReference> depth_reference_array;
+	LocalVector<VkAttachmentReference2KHR> depth_reference_array;
+	LocalVector<VkAttachmentReference2KHR> vrs_reference_array;
+	LocalVector<VkFragmentShadingRateAttachmentInfoKHR> vrs_attachment_info_array;
 
 	subpasses.resize(p_passes.size());
 	color_reference_array.resize(p_passes.size());
@@ -3599,20 +3642,25 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	resolve_reference_array.resize(p_passes.size());
 	preserve_reference_array.resize(p_passes.size());
 	depth_reference_array.resize(p_passes.size());
+	vrs_reference_array.resize(p_passes.size());
+	vrs_attachment_info_array.resize(p_passes.size());
 
-	LocalVector<VkSubpassDependency> subpass_dependencies;
+	LocalVector<VkSubpassDependency2KHR> subpass_dependencies;
 
 	for (int i = 0; i < p_passes.size(); i++) {
 		const FramebufferPass *pass = &p_passes[i];
 
-		LocalVector<VkAttachmentReference> &color_references = color_reference_array[i];
+		LocalVector<VkAttachmentReference2KHR> &color_references = color_reference_array[i];
 
 		TextureSamples texture_samples = TEXTURE_SAMPLES_1;
 		bool is_multisample_first = true;
+		void *subpass_nextptr = nullptr;
 
 		for (int j = 0; j < pass->color_attachments.size(); j++) {
 			int32_t attachment = pass->color_attachments[j];
-			VkAttachmentReference reference;
+			VkAttachmentReference2KHR reference;
+			reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			reference.pNext = nullptr;
 			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
 				reference.attachment = VK_ATTACHMENT_UNUSED;
 				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -3631,14 +3679,17 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
+			reference.aspectMask = 0;
 			color_references.push_back(reference);
 		}
 
-		LocalVector<VkAttachmentReference> &input_references = input_reference_array[i];
+		LocalVector<VkAttachmentReference2KHR> &input_references = input_reference_array[i];
 
 		for (int j = 0; j < pass->input_attachments.size(); j++) {
 			int32_t attachment = pass->input_attachments[j];
-			VkAttachmentReference reference;
+			VkAttachmentReference2KHR reference;
+			reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			reference.pNext = nullptr;
 			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
 				reference.attachment = VK_ATTACHMENT_UNUSED;
 				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -3650,10 +3701,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
+			reference.aspectMask = 0; // TODO we need to set this here, possibly VK_IMAGE_ASPECT_COLOR_BIT ??
 			input_references.push_back(reference);
 		}
 
-		LocalVector<VkAttachmentReference> &resolve_references = resolve_reference_array[i];
+		LocalVector<VkAttachmentReference2KHR> &resolve_references = resolve_reference_array[i];
 
 		if (pass->resolve_attachments.size() > 0) {
 			ERR_FAIL_COND_V_MSG(pass->resolve_attachments.size() != pass->color_attachments.size(), VK_NULL_HANDLE, "The amount of resolve attachments (" + itos(pass->resolve_attachments.size()) + ") must match the number of color attachments (" + itos(pass->color_attachments.size()) + ").");
@@ -3661,7 +3713,9 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		}
 		for (int j = 0; j < pass->resolve_attachments.size(); j++) {
 			int32_t attachment = pass->resolve_attachments[j];
-			VkAttachmentReference reference;
+			VkAttachmentReference2KHR reference;
+			reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			reference.pNext = nullptr;
 			if (attachment == FramebufferPass::ATTACHMENT_UNUSED) {
 				reference.attachment = VK_ATTACHMENT_UNUSED;
 				reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -3676,10 +3730,13 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachment_last_pass[attachment] = i;
 			}
+			reference.aspectMask = 0;
 			resolve_references.push_back(reference);
 		}
 
-		VkAttachmentReference &depth_stencil_reference = depth_reference_array[i];
+		VkAttachmentReference2KHR &depth_stencil_reference = depth_reference_array[i];
+		depth_stencil_reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+		depth_stencil_reference.pNext = nullptr;
 
 		if (pass->depth_attachment != FramebufferPass::ATTACHMENT_UNUSED) {
 			int32_t attachment = pass->depth_attachment;
@@ -3688,6 +3745,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer depth format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
 			depth_stencil_reference.attachment = attachment_remap[attachment];
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			depth_stencil_reference.aspectMask = 0;
 			attachment_last_pass[attachment] = i;
 
 			if (is_multisample_first) {
@@ -3700,6 +3758,32 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		} else {
 			depth_stencil_reference.attachment = VK_ATTACHMENT_UNUSED;
 			depth_stencil_reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+
+		if (context->get_vrs_capabilities().attachment_vrs_supported && pass->vrs_attachment != FramebufferPass::ATTACHMENT_UNUSED) {
+			int32_t attachment = pass->vrs_attachment;
+			ERR_FAIL_INDEX_V_MSG(attachment, p_attachments.size(), VK_NULL_HANDLE, "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), VRS attachment.");
+			ERR_FAIL_COND_V_MSG(!(p_attachments[attachment].usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT), VK_NULL_HANDLE, "Invalid framebuffer VRS format attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it's marked as VRS, but it's not a VRS attachment.");
+			ERR_FAIL_COND_V_MSG(attachment_last_pass[attachment] == i, VK_NULL_HANDLE, "Invalid framebuffer VRS attachment(" + itos(attachment) + "), in pass (" + itos(i) + "), it already was used for something else before in this pass.");
+
+			VkAttachmentReference2KHR &vrs_reference = vrs_reference_array[i];
+			vrs_reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			vrs_reference.pNext = nullptr;
+			vrs_reference.attachment = attachment_remap[attachment];
+			vrs_reference.layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+			vrs_reference.aspectMask = 0;
+
+			Size2i texel_size = context->get_vrs_capabilities().max_texel_size;
+
+			VkFragmentShadingRateAttachmentInfoKHR &vrs_attachment_info = vrs_attachment_info_array[i];
+			vrs_attachment_info.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+			vrs_attachment_info.pNext = nullptr;
+			vrs_attachment_info.pFragmentShadingRateAttachment = &vrs_reference;
+			vrs_attachment_info.shadingRateAttachmentTexelSize = { uint32_t(texel_size.x), uint32_t(texel_size.y) };
+
+			attachment_last_pass[attachment] = i;
+
+			subpass_nextptr = &vrs_attachment_info;
 		}
 
 		LocalVector<uint32_t> &preserve_references = preserve_reference_array[i];
@@ -3718,9 +3802,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		VkSubpassDescription &subpass = subpasses[i];
+		VkSubpassDescription2KHR &subpass = subpasses[i];
+		subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
+		subpass.pNext = subpass_nextptr;
 		subpass.flags = 0;
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.viewMask = view_mask;
 		subpass.inputAttachmentCount = input_references.size();
 		if (input_references.size()) {
 			subpass.pInputAttachments = input_references.ptr();
@@ -3757,7 +3844,9 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		}
 
 		if (i > 0) {
-			VkSubpassDependency dependency;
+			VkSubpassDependency2KHR dependency;
+			dependency.sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2_KHR;
+			dependency.pNext = nullptr;
 			dependency.srcSubpass = i - 1;
 			dependency.dstSubpass = i;
 			dependency.srcStageMask = 0;
@@ -3767,6 +3856,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 			dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			dependency.viewOffset = 0;
 			subpass_dependencies.push_back(dependency);
 		}
 		/*
@@ -3784,10 +3874,11 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		*/
 	}
 
-	VkRenderPassCreateInfo render_pass_create_info;
-	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	VkRenderPassCreateInfo2KHR render_pass_create_info;
+	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
 	render_pass_create_info.pNext = nullptr;
 	render_pass_create_info.flags = 0;
+
 	render_pass_create_info.attachmentCount = attachments.size();
 	render_pass_create_info.pAttachments = attachments.ptr();
 	render_pass_create_info.subpassCount = subpasses.size();
@@ -3804,13 +3895,15 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		render_pass_create_info.pDependencies = nullptr;
 	}
 
-	// These are only used if we use multiview but we need to define them in scope.
-	const uint32_t view_mask = (1 << p_view_count) - 1;
-	const uint32_t correlation_mask = (1 << p_view_count) - 1;
+	render_pass_create_info.correlatedViewMaskCount = 1;
+	render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+
 	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
 
 	if (p_view_count > 1) {
+		// this may no longer be needed with the new settings already including this
+
 		const VulkanContext::MultiviewCapabilities capabilities = context->get_multiview_capabilities();
 
 		// For now this only works with multiview!
@@ -3837,8 +3930,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	}
 
 	VkRenderPass render_pass;
-	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
-	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass failed with error " + itos(res) + ".");
+	VkResult res = context->vkCreateRenderPass2KHR(device, &render_pass_create_info, nullptr, &render_pass);
+	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
 	return render_pass;
 }
@@ -3899,7 +3992,9 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 		return E->get();
 	}
 
-	VkSubpassDescription subpass;
+	VkSubpassDescription2KHR subpass;
+	subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
+	subpass.pNext = nullptr;
 	subpass.flags = 0;
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.inputAttachmentCount = 0; //unsupported for now
@@ -3911,8 +4006,8 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	subpass.preserveAttachmentCount = 0;
 	subpass.pPreserveAttachments = nullptr;
 
-	VkRenderPassCreateInfo render_pass_create_info;
-	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	VkRenderPassCreateInfo2KHR render_pass_create_info;
+	render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
 	render_pass_create_info.pNext = nullptr;
 	render_pass_create_info.flags = 0;
 	render_pass_create_info.attachmentCount = 0;
@@ -3921,11 +4016,13 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	render_pass_create_info.pSubpasses = &subpass;
 	render_pass_create_info.dependencyCount = 0;
 	render_pass_create_info.pDependencies = nullptr;
+	render_pass_create_info.correlatedViewMaskCount = 0;
+	render_pass_create_info.pCorrelatedViewMasks = nullptr;
 
 	VkRenderPass render_pass;
-	VkResult res = vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass);
+	VkResult res = context->vkCreateRenderPass2KHR(device, &render_pass_create_info, nullptr, &render_pass);
 
-	ERR_FAIL_COND_V_MSG(res, 0, "vkCreateRenderPass for empty fb failed with error " + itos(res) + ".");
+	ERR_FAIL_COND_V_MSG(res, 0, "vkCreateRenderPass2KHR for empty fb failed with error " + itos(res) + ".");
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -3978,6 +4075,8 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 
 		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
+		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+			pass.vrs_attachment = i;
 		} else {
 			pass.color_attachments.push_back(texture ? i : FramebufferPass::ATTACHMENT_UNUSED);
 		}
@@ -4008,6 +4107,10 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 				size.width = texture->width;
 				size.height = texture->height;
 				size_set = true;
+			} else if (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+				// If this is not the first attachement we assume this is used as the VRS attachment
+				// in this case this texture will be 1/16th the size of the color attachement.
+				// So we skip the size check
 			} else {
 				ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, RID(),
 						"All textures in a framebuffer should be the same size.");
@@ -4556,7 +4659,7 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 #define SHADER_BINARY_VERSION 3
 
 String RenderingDeviceVulkan::shader_get_binary_cache_key() const {
-	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION);
+	return "Vulkan-SV" + itos(SHADER_BINARY_VERSION) + "-" + String(VERSION_NUMBER) + "-" + String(VERSION_HASH);
 }
 
 struct RenderingDeviceVulkanShaderBinaryDataBinding {
@@ -4730,7 +4833,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 					}
 
 					if (may_be_writable) {
-						info.writable = !(bool)(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+						info.writable = !(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
 					} else {
 						info.writable = false;
 					}
@@ -4756,6 +4859,10 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 								//also, verify that it's the same size
 								ERR_FAIL_COND_V_MSG(uniform_info[set][k].length != info.length, Vector<uint8_t>(),
 										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+
+								//also, verify that it has the same writability
+								ERR_FAIL_COND_V_MSG(uniform_info[set][k].writable != info.writable, Vector<uint8_t>(),
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
 
 								//just append stage mask and return
 								uniform_info.write[set].write[k].stages |= 1 << stage;
@@ -5056,7 +5163,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'V' || binptr[2] != 'B' || binptr[3] != 'D', RID());
 
 	uint32_t bin_version = decode_uint32(binptr + 4);
-	ERR_FAIL_COND_V(bin_version > SHADER_BINARY_VERSION, RID());
+	ERR_FAIL_COND_V(bin_version != SHADER_BINARY_VERSION, RID());
 
 	uint32_t bin_data_size = decode_uint32(binptr + 8);
 
@@ -6552,11 +6659,28 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
 	dynamic_state_create_info.pDynamicStates = dynamic_states.ptr();
 
+	void *graphics_pipeline_nextptr = nullptr;
+
+	VkPipelineFragmentShadingRateStateCreateInfoKHR vrs_create_info;
+	if (context->get_vrs_capabilities().attachment_vrs_supported) {
+		// If VRS is used, this defines how the different VRS types are combined.
+		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) VRS
+		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment VRS
+
+		vrs_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR;
+		vrs_create_info.pNext = nullptr;
+		vrs_create_info.fragmentSize = { 4, 4 };
+		vrs_create_info.combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; // We don't use pipeline/primitive VRS so this really doesn't matter
+		vrs_create_info.combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR; // always use the outcome of attachment VRS if enabled
+
+		graphics_pipeline_nextptr = &vrs_create_info;
+	}
+
 	//finally, pipeline create info
 	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;
 
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	graphics_pipeline_create_info.pNext = nullptr;
+	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	graphics_pipeline_create_info.flags = 0;
 
 	Vector<VkPipelineShaderStageCreateInfo> pipeline_stages = shader->pipeline_stages;
@@ -6721,7 +6845,7 @@ RID RenderingDeviceVulkan::compute_pipeline_create(RID p_shader, const Vector<Pi
 				const PipelineSpecializationConstant &psc = p_specialization_constants[j];
 				if (psc.constant_id == sc.constant.constant_id) {
 					ERR_FAIL_COND_V_MSG(psc.type != sc.constant.type, RID(), "Specialization constant provided for id (" + itos(sc.constant.constant_id) + ") is of the wrong type.");
-					data_ptr[i] = sc.constant.int_value;
+					data_ptr[i] = psc.int_value;
 					break;
 				}
 			}
@@ -6905,8 +7029,10 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 			Texture *texture = texture_owner.get_or_null(p_framebuffer->texture_ids[i]);
 			if (texture) {
 				attachments.push_back(texture->view);
-				ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
-				ERR_FAIL_COND_V(texture->height != p_framebuffer->size.height, ERR_BUG);
+				if (!(texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) { // VRS attachment will be a different size.
+					ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
+					ERR_FAIL_COND_V(texture->height != p_framebuffer->size.height, ERR_BUG);
+				}
 			}
 		}
 		framebuffer_create_info.attachmentCount = attachments.size();
@@ -7041,7 +7167,6 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 }
 
 void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil) {
-	ERR_FAIL_COND_MSG(p_clear_color && p_clear_colors.size() != framebuffer->texture_ids.size(), "Clear color values supplied (" + itos(p_clear_colors.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(framebuffer->texture_ids.size()) + ").");
 	Vector<VkClearAttachment> clear_attachments;
 	int color_index = 0;
 	int texture_index = 0;
@@ -7130,11 +7255,14 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 		}
 	}
 
-	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
+	if (p_initial_color_action == INITIAL_ACTION_CLEAR || needs_clear_color) { //check clear values
 		int color_count = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
-			if (!texture || !(texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+			// We only check for our VRS usage bit if this is not the first texture id.
+			// If it is the first we're likely populating our VRS texture.
+			// Bit dirty but..
+			if (!texture || (!(texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(i != 0 && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT))) {
 				color_count++;
 			}
 		}
@@ -7227,7 +7355,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		}
 	}
 
-	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
+	if (p_initial_color_action == INITIAL_ACTION_CLEAR || needs_clear_color) { //check clear values
 
 		int color_count = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
@@ -8995,17 +9123,6 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	{
 		device_capabilities.version_major = p_context->get_vulkan_major();
 		device_capabilities.version_minor = p_context->get_vulkan_minor();
-
-		// get info about subgroups
-		VulkanContext::SubgroupCapabilities subgroup_capabilities = p_context->get_subgroup_capabilities();
-		device_capabilities.subgroup_size = subgroup_capabilities.size;
-		device_capabilities.subgroup_in_shaders = subgroup_capabilities.supported_stages_flags_rd();
-		device_capabilities.subgroup_operations = subgroup_capabilities.supported_operations_flags_rd();
-
-		// get info about further features
-		VulkanContext::MultiviewCapabilities multiview_capabilies = p_context->get_multiview_capabilities();
-		device_capabilities.supports_multiview = multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
-		device_capabilities.supports_fsr_half_float = p_context->get_shader_capabilities().shader_float16_is_supported && p_context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
 	}
 
 	context = p_context;
@@ -9354,7 +9471,7 @@ String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) cons
 	return frames[frame].timestamp_result_names[p_index];
 }
 
-uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) {
+uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) const {
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return limits.maxBoundDescriptorSets;
@@ -9424,7 +9541,18 @@ uint64_t RenderingDeviceVulkan::limit_get(Limit p_limit) {
 			return limits.maxComputeWorkGroupSize[1];
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxComputeWorkGroupSize[2];
-
+		case LIMIT_SUBGROUP_SIZE: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.size;
+		}
+		case LIMIT_SUBGROUP_IN_SHADERS: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.supported_stages_flags_rd();
+		}
+		case LIMIT_SUBGROUP_OPERATIONS: {
+			VulkanContext::SubgroupCapabilities subgroup_capabilities = context->get_subgroup_capabilities();
+			return subgroup_capabilities.supported_operations_flags_rd();
+		}
 		default:
 			ERR_FAIL_V(0);
 	}
@@ -9522,6 +9650,25 @@ RenderingDevice *RenderingDeviceVulkan::create_local_device() {
 	RenderingDeviceVulkan *rd = memnew(RenderingDeviceVulkan);
 	rd->initialize(context, true);
 	return rd;
+}
+
+bool RenderingDeviceVulkan::has_feature(const Features p_feature) const {
+	switch (p_feature) {
+		case SUPPORTS_MULTIVIEW: {
+			VulkanContext::MultiviewCapabilities multiview_capabilies = context->get_multiview_capabilities();
+			return multiview_capabilies.is_supported && multiview_capabilies.max_view_count > 1;
+		} break;
+		case SUPPORTS_FSR_HALF_FLOAT: {
+			return context->get_shader_capabilities().shader_float16_is_supported && context->get_storage_buffer_capabilities().storage_buffer_16_bit_access_is_supported;
+		} break;
+		case SUPPORTS_ATTACHMENT_VRS: {
+			VulkanContext::VRSCapabilities vrs_capabilities = context->get_vrs_capabilities();
+			return vrs_capabilities.attachment_vrs_supported;
+		} break;
+		default: {
+			return false;
+		}
+	}
 }
 
 RenderingDeviceVulkan::RenderingDeviceVulkan() {

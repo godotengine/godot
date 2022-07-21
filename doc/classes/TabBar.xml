@@ -17,13 +17,6 @@
 				Adds a new tab.
 			</description>
 		</method>
-		<method name="clear_tab_opentype_features">
-			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<description>
-				Removes all OpenType features from the tab title.
-			</description>
-		</method>
 		<method name="ensure_tab_visible">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -75,14 +68,6 @@
 			<return type="int" />
 			<description>
 				Returns the number of hidden tabs offsetted to the left.
-			</description>
-		</method>
-		<method name="get_tab_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the tab title.
 			</description>
 		</method>
 		<method name="get_tab_rect" qualifiers="const">
@@ -173,15 +158,6 @@
 			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
-			</description>
-		</method>
-		<method name="set_tab_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="tab_idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="values" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the tab title. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_tab_text_direction">

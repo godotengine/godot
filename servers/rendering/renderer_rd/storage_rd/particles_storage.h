@@ -37,9 +37,9 @@
 #include "servers/rendering/renderer_rd/shaders/particles.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/particles_copy.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
-#include "servers/rendering/renderer_storage.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/particles_storage.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace RendererRD {
 
@@ -226,7 +226,7 @@ struct Particles {
 
 	HashSet<RID> collisions;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 
 	double trail_length = 1.0;
 	bool trails_enabled = false;
@@ -254,7 +254,7 @@ struct ParticlesCollision {
 
 	RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
-	RendererStorage::Dependency dependency;
+	Dependency dependency;
 };
 
 struct ParticlesCollisionInstance {

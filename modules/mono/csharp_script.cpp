@@ -2866,6 +2866,12 @@ int CSharpScript::_try_get_member_export_hint(IMonoClassMember *p_member, Manage
 
 		r_hint = PROPERTY_HINT_RESOURCE_TYPE;
 		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
+	} else if (p_variant_type == Variant::OBJECT && CACHED_CLASS(Node)->is_assignable_from(p_type.type_class)) {
+		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(p_type.type_class);
+		CRASH_COND(field_native_class == nullptr);
+
+		r_hint = PROPERTY_HINT_NODE_TYPE;
+		r_hint_string = String(NATIVE_GDMONOCLASS_NAME(field_native_class));
 	} else if (p_allow_generics && p_variant_type == Variant::ARRAY) {
 		// Nested arrays are not supported in the inspector
 
@@ -3063,16 +3069,11 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			Vector<GDMonoMethod *> methods = top->get_all_methods();
 			for (int i = 0; i < methods.size(); i++) {
 				if (!methods[i]->is_static()) {
-					Multiplayer::RPCMode mode = p_script->_member_get_rpc_mode(methods[i]);
-					if (Multiplayer::RPC_MODE_DISABLED != mode) {
-						Multiplayer::RPCConfig nd;
-						nd.name = methods[i]->get_name();
-						nd.rpc_mode = mode;
-						// TODO Transfer mode, channel
-						nd.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE;
-						nd.channel = 0;
-						if (-1 == p_script->rpc_functions.find(nd)) {
-							p_script->rpc_functions.push_back(nd);
+					Multiplayer::RPCConfig rpc_config = p_script->_member_get_rpc_config(methods[i]);
+					if (rpc_config.rpc_mode != Multiplayer::RPC_MODE_DISABLED) {
+						// RPC annotations can only be used once per method
+						if (p_script->rpc_functions.find(rpc_config) == -1) {
+							p_script->rpc_functions.push_back(rpc_config);
 						}
 					}
 				}
@@ -3507,15 +3508,19 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 	return -1;
 }
 
-Multiplayer::RPCMode CSharpScript::_member_get_rpc_mode(IMonoClassMember *p_member) const {
-	if (p_member->has_attribute(CACHED_CLASS(AnyPeerAttribute))) {
-		return Multiplayer::RPC_MODE_ANY_PEER;
-	}
-	if (p_member->has_attribute(CACHED_CLASS(AuthorityAttribute))) {
-		return Multiplayer::RPC_MODE_AUTHORITY;
+Multiplayer::RPCConfig CSharpScript::_member_get_rpc_config(IMonoClassMember *p_member) const {
+	Multiplayer::RPCConfig rpc_config;
+
+	MonoObject *rpc_attribute = p_member->get_attribute(CACHED_CLASS(RPCAttribute));
+	if (rpc_attribute != nullptr) {
+		rpc_config.name = p_member->get_name();
+		rpc_config.rpc_mode = (Multiplayer::RPCMode)CACHED_PROPERTY(RPCAttribute, Mode)->get_int_value(rpc_attribute);
+		rpc_config.call_local = CACHED_PROPERTY(RPCAttribute, CallLocal)->get_bool_value(rpc_attribute);
+		rpc_config.transfer_mode = (Multiplayer::TransferMode)CACHED_PROPERTY(RPCAttribute, TransferMode)->get_int_value(rpc_attribute);
+		rpc_config.channel = CACHED_PROPERTY(RPCAttribute, TransferChannel)->get_int_value(rpc_attribute);
 	}
 
-	return Multiplayer::RPC_MODE_DISABLED;
+	return rpc_config;
 }
 
 const Vector<Multiplayer::RPCConfig> CSharpScript::get_rpc_methods() const {

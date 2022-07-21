@@ -502,7 +502,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
-					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE, false);
+					double t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, blend_weights[j], FILTER_IGNORE, true);
 					if (first || t < mind) {
 						mind = t;
 						first = false;
@@ -513,8 +513,7 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 			}
 
 			if (!found) {
-				//ignore
-				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, false);
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
 			}
 		}
 	} else {
@@ -539,16 +538,22 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, false);
+				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, true);
 			}
 
-			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, true);
 			length_internal = from + mind;
 
 			closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
+			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+		}
+
+		for (int i = 0; i < blend_points_used; i++) {
+			if (i != closest) {
+				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+			}
 		}
 	}
 
@@ -604,6 +609,14 @@ AnimationNodeBlendSpace2D::BlendMode AnimationNodeBlendSpace2D::get_blend_mode()
 	return blend_mode;
 }
 
+void AnimationNodeBlendSpace2D::set_use_sync(bool p_sync) {
+	sync = p_sync;
+}
+
+bool AnimationNodeBlendSpace2D::is_using_sync() const {
+	return sync;
+}
+
 void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_point", "node", "pos", "at_index"), &AnimationNodeBlendSpace2D::add_blend_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_blend_point_position", "point", "pos"), &AnimationNodeBlendSpace2D::set_blend_point_position);
@@ -644,6 +657,9 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &AnimationNodeBlendSpace2D::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &AnimationNodeBlendSpace2D::get_blend_mode);
 
+	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace2D::set_use_sync);
+	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace2D::is_using_sync);
+
 	ClassDB::bind_method(D_METHOD("_update_triangles"), &AnimationNodeBlendSpace2D::_update_triangles);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_triangles", "get_auto_triangles");
@@ -661,6 +677,7 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "x_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_x_label", "get_x_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_y_label", "get_y_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NO_EDITOR), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
 
 	ADD_SIGNAL(MethodInfo("triangles_updated"));
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);

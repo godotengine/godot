@@ -43,11 +43,11 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.opentype_features, (!item.language.is_empty()) ? item.language : TranslationServer::get_singleton()->get_tool_locale());
+	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-		item.text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 	} else {
-		item.text_buf->set_flags(TextServer::BREAK_NONE);
+		item.text_buf->set_break_flags(TextServer::BREAK_NONE);
 	}
 	item.text_buf->set_text_overrun_behavior(text_overrun_behavior);
 	item.text_buf->set_max_lines_visible(max_text_lines);
@@ -115,35 +115,6 @@ void ItemList::set_item_text_direction(int p_idx, Control::TextDirection p_text_
 Control::TextDirection ItemList::get_item_text_direction(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), TEXT_DIRECTION_INHERITED);
 	return items[p_idx].text_direction;
-}
-
-void ItemList::clear_item_opentype_features(int p_idx) {
-	ERR_FAIL_INDEX(p_idx, items.size());
-	items.write[p_idx].opentype_features.clear();
-	_shape(p_idx);
-	update();
-}
-
-void ItemList::set_item_opentype_feature(int p_idx, const String &p_name, int p_value) {
-	if (p_idx < 0) {
-		p_idx += get_item_count();
-	}
-	ERR_FAIL_INDEX(p_idx, items.size());
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!items[p_idx].opentype_features.has(tag) || (int)items[p_idx].opentype_features[tag] != p_value) {
-		items.write[p_idx].opentype_features[tag] = p_value;
-		_shape(p_idx);
-		update();
-	}
-}
-
-int ItemList::get_item_opentype_feature(int p_idx, const String &p_name) const {
-	ERR_FAIL_INDEX_V(p_idx, items.size(), -1);
-	int32_t tag = TS->name_to_tag(p_name);
-	if (!items[p_idx].opentype_features.has(tag)) {
-		return -1;
-	}
-	return items[p_idx].opentype_features[tag];
 }
 
 void ItemList::set_item_language(int p_idx, const String &p_language) {
@@ -499,10 +470,10 @@ void ItemList::set_max_text_lines(int p_lines) {
 		max_text_lines = p_lines;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 				items.write[i].text_buf->set_max_lines_visible(p_lines);
 			} else {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_NONE);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
 			}
 		}
 		shape_changed = true;
@@ -540,9 +511,9 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 		icon_mode = p_mode;
 		for (int i = 0; i < items.size(); i++) {
 			if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND);
 			} else {
-				items.write[i].text_buf->set_flags(TextServer::BREAK_NONE);
+				items.write[i].text_buf->set_break_flags(TextServer::BREAK_NONE);
 			}
 		}
 		shape_changed = true;
@@ -1655,10 +1626,6 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_text_direction", "idx", "direction"), &ItemList::set_item_text_direction);
 	ClassDB::bind_method(D_METHOD("get_item_text_direction", "idx"), &ItemList::get_item_text_direction);
-
-	ClassDB::bind_method(D_METHOD("set_item_opentype_feature", "idx", "tag", "value"), &ItemList::set_item_opentype_feature);
-	ClassDB::bind_method(D_METHOD("get_item_opentype_feature", "idx", "tag"), &ItemList::get_item_opentype_feature);
-	ClassDB::bind_method(D_METHOD("clear_item_opentype_features", "idx"), &ItemList::clear_item_opentype_features);
 
 	ClassDB::bind_method(D_METHOD("set_item_language", "idx", "language"), &ItemList::set_item_language);
 	ClassDB::bind_method(D_METHOD("get_item_language", "idx"), &ItemList::get_item_language);

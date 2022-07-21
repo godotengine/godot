@@ -126,7 +126,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 		}
 
 		Rect2 highlight_label_rect = highlight_rect;
-		highlight_label_rect.size = theme_cache.preview_picker_font->get_string_size(highlight_name, theme_cache.font_size);
+		highlight_label_rect.size = theme_cache.preview_picker_font->get_string_size(highlight_name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size);
 
 		int margin_top = theme_cache.preview_picker_label->get_margin(SIDE_TOP);
 		int margin_left = theme_cache.preview_picker_label->get_margin(SIDE_LEFT);
@@ -246,7 +246,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	preview_bg = memnew(ColorRect);
-	preview_bg->set_anchors_and_offsets_preset(PRESET_WIDE);
+	preview_bg->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 

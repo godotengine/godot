@@ -891,7 +891,7 @@ Expression::ENode *Expression::_parse_expression() {
 				case TK_PERIOD: {
 					//named indexing or function call
 					_get_token(tk);
-					if (tk.type != TK_IDENTIFIER) {
+					if (tk.type != TK_IDENTIFIER && tk.type != TK_BUILTIN_FUNC) {
 						_set_error("Expected identifier after '.'");
 						return nullptr;
 					}

@@ -34,7 +34,18 @@
 #include "servers/rendering_server.h"
 
 class RendererTextureStorage {
+private:
+	Color default_clear_color;
+
 public:
+	void set_default_clear_color(const Color &p_color) {
+		default_clear_color = p_color;
+	}
+
+	Color get_default_clear_color() const {
+		return default_clear_color;
+	}
+
 	/* Canvas Texture API */
 
 	virtual RID canvas_texture_allocate() = 0;
@@ -132,6 +143,9 @@ public:
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) = 0;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) = 0;
+
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 };
 
 #endif // !TEXTURE_STORAGE_H

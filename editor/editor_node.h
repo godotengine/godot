@@ -173,7 +173,6 @@ private:
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SETTINGS,
 		RUN_USER_DATA_FOLDER,
-		RUN_WRITE_MOVIE,
 		RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
 		RUN_VCS_METADATA,
@@ -669,7 +668,6 @@ private:
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
 	void _immediate_dialog_confirmed();
-	void _update_write_movie_icon();
 	void _select_default_main_screen_plugin();
 
 	void _bottom_panel_switch(bool p_enable, int p_idx);

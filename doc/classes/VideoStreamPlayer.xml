@@ -58,7 +58,7 @@
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
 			Audio bus to use for sound playback.
 		</member>
-		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="true">
+		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="false">
 			If [code]true[/code], the video scales to the control size. Otherwise, the control minimum size will be automatically adjusted to match the video stream's dimensions.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">

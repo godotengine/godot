@@ -764,8 +764,8 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), font_size).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), font_size).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 

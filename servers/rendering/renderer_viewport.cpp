@@ -175,7 +175,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_begin_" + itos(p_viewport->self.get_id());
-		RSG::storage->capture_timestamp(rt_id);
+		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 
@@ -212,7 +212,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		_configure_3d_render_buffers(p_viewport);
 	}
 
-	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::storage->get_default_clear_color();
+	Color bgcolor = p_viewport->transparent_bg ? Color(0, 0, 0, 0) : RSG::texture_storage->get_default_clear_color();
 
 	if (p_viewport->clear_mode != RS::VIEWPORT_CLEAR_NEVER) {
 		RSG::texture_storage->render_target_request_clear(p_viewport->render_target, bgcolor);
@@ -521,7 +521,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	if (p_viewport->measure_render_time) {
 		String rt_id = "vp_end_" + itos(p_viewport->self.get_id());
-		RSG::storage->capture_timestamp(rt_id);
+		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 }
@@ -1016,7 +1016,7 @@ void RendererViewport::viewport_set_canvas_stacking(RID p_viewport, RID p_canvas
 	viewport->canvas_map[p_canvas].sublayer = p_sublayer;
 }
 
-void RendererViewport::viewport_set_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits) {
+void RendererViewport::viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
@@ -1026,7 +1026,7 @@ void RendererViewport::viewport_set_shadow_atlas_size(RID p_viewport, int p_size
 	RSG::scene->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size, viewport->shadow_atlas_16_bits);
 }
 
-void RendererViewport::viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) {
+void RendererViewport::viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
@@ -1207,6 +1207,22 @@ RID RendererViewport::viewport_find_from_screen_attachment(DisplayServer::Window
 	return RID();
 }
 
+void RendererViewport::viewport_set_vrs_mode(RID p_viewport, RS::ViewportVRSMode p_mode) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	RSG::texture_storage->render_target_set_vrs_mode(viewport->render_target, p_mode);
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_vrs_texture(RID p_viewport, RID p_texture) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	RSG::texture_storage->render_target_set_vrs_texture(viewport->render_target, p_texture);
+	_configure_3d_render_buffers(viewport);
+}
+
 bool RendererViewport::free(RID p_rid) {
 	if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);
@@ -1259,7 +1275,7 @@ void RendererViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time,
 }
 
 void RendererViewport::set_default_clear_color(const Color &p_color) {
-	RSG::storage->set_default_clear_color(p_color);
+	RSG::texture_storage->set_default_clear_color(p_color);
 }
 
 // Workaround for setting this on thread.

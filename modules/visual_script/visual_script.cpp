@@ -2435,6 +2435,9 @@ void VisualScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) c
 void VisualScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 }
 
+void VisualScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) const {
+}
+
 void VisualScriptLanguage::profiling_start() {
 }
 

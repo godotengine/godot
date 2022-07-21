@@ -19,6 +19,8 @@ namespace GSUB {
 
 struct GSUB : GSUBGPOS
 {
+  using Lookup = SubstLookup;
+
   static constexpr hb_tag_t tableTag = HB_OT_TAG_GSUB;
 
   const SubstLookup& get_lookup (unsigned int i) const

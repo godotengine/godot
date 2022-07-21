@@ -203,22 +203,27 @@ private:
 	int code_completion_max_lines = 7;
 	int code_completion_scroll_width = 0;
 	Color code_completion_scroll_color = Color(0, 0, 0, 0);
+	Color code_completion_scroll_hovered_color = Color(0, 0, 0, 0);
 	Color code_completion_background_color = Color(0, 0, 0, 0);
 	Color code_completion_selected_color = Color(0, 0, 0, 0);
 	Color code_completion_existing_color = Color(0, 0, 0, 0);
 
 	bool code_completion_active = false;
+	bool is_code_completion_scroll_hovered = false;
+	bool is_code_completion_scroll_pressed = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_longest_line = 0;
 	Rect2i code_completion_rect;
+	Rect2i code_completion_scroll_rect;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 
+	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
 
 	/* Line length guidelines */

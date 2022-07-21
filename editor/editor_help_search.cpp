@@ -185,7 +185,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	set_title(TTR("Search Help"));
 
 	get_ok_button()->set_disabled(true);
-	get_ok_button()->set_text(TTR("Open"));
+	set_ok_button_text(TTR("Open"));
 
 	// Split search and results area.
 	VBoxContainer *vbox = memnew(VBoxContainer);

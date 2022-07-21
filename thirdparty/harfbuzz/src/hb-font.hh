@@ -68,13 +68,13 @@ struct hb_font_funcs_t
 #define HB_FONT_FUNC_IMPLEMENT(name) void *name;
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
-  } user_data;
+  } *user_data;
 
   struct {
 #define HB_FONT_FUNC_IMPLEMENT(name) hb_destroy_func_t name;
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
-  } destroy;
+  } *destroy;
 
   /* Don't access these directly.  Call font->get_*() instead. */
   union get_t {
@@ -104,6 +104,8 @@ DECLARE_NULL_INSTANCE (hb_font_funcs_t);
 struct hb_font_t
 {
   hb_object_header_t header;
+  unsigned int serial;
+  unsigned int serial_coords;
 
   hb_font_t *parent;
   hb_face_t *face;
@@ -112,6 +114,8 @@ struct hb_font_t
   int32_t y_scale;
   float slant;
   float slant_xy;
+  float x_multf;
+  float y_multf;
   int64_t x_mult;
   int64_t y_mult;
 
@@ -137,12 +141,12 @@ struct hb_font_t
   { return HB_DIRECTION_IS_VERTICAL(direction) ? y_mult : x_mult; }
   hb_position_t em_scale_x (int16_t v) { return em_mult (v, x_mult); }
   hb_position_t em_scale_y (int16_t v) { return em_mult (v, y_mult); }
-  hb_position_t em_scalef_x (float v) { return em_scalef (v, x_scale); }
-  hb_position_t em_scalef_y (float v) { return em_scalef (v, y_scale); }
-  float em_fscale_x (int16_t v) { return em_fscale (v, x_scale); }
-  float em_fscale_y (int16_t v) { return em_fscale (v, y_scale); }
-  float em_fscalef_x (float v) { return em_fscalef (v, x_scale); }
-  float em_fscalef_y (float v) { return em_fscalef (v, y_scale); }
+  hb_position_t em_scalef_x (float v) { return em_multf (v, x_multf); }
+  hb_position_t em_scalef_y (float v) { return em_multf (v, y_multf); }
+  float em_fscale_x (int16_t v) { return em_fmult (v, x_multf); }
+  float em_fscale_y (int16_t v) { return em_fmult (v, y_multf); }
+  float em_fscalef_x (float v) { return em_fmultf (v, x_multf); }
+  float em_fscalef_y (float v) { return em_fmultf (v, y_multf); }
   hb_position_t em_scale_dir (int16_t v, hb_direction_t direction)
   { return em_mult (v, dir_mult (direction)); }
 
@@ -205,14 +209,14 @@ struct hb_font_t
     memset (extents, 0, sizeof (*extents));
     return klass->get.f.font_h_extents (this, user_data,
 					extents,
-					klass->user_data.font_h_extents);
+					!klass->user_data ? nullptr : klass->user_data->font_h_extents);
   }
   hb_bool_t get_font_v_extents (hb_font_extents_t *extents)
   {
     memset (extents, 0, sizeof (*extents));
     return klass->get.f.font_v_extents (this, user_data,
 					extents,
-					klass->user_data.font_v_extents);
+					!klass->user_data ? nullptr : klass->user_data->font_v_extents);
   }
 
   bool has_glyph (hb_codepoint_t unicode)
@@ -228,7 +232,7 @@ struct hb_font_t
     *glyph = not_found;
     return klass->get.f.nominal_glyph (this, user_data,
 				       unicode, glyph,
-				       klass->user_data.nominal_glyph);
+				       !klass->user_data ? nullptr : klass->user_data->nominal_glyph);
   }
   unsigned int get_nominal_glyphs (unsigned int count,
 				   const hb_codepoint_t *first_unicode,
@@ -240,7 +244,7 @@ struct hb_font_t
 					count,
 					first_unicode, unicode_stride,
 					first_glyph, glyph_stride,
-					klass->user_data.nominal_glyphs);
+					!klass->user_data ? nullptr : klass->user_data->nominal_glyphs);
   }
 
   hb_bool_t get_variation_glyph (hb_codepoint_t unicode, hb_codepoint_t variation_selector,
@@ -250,21 +254,21 @@ struct hb_font_t
     *glyph = not_found;
     return klass->get.f.variation_glyph (this, user_data,
 					 unicode, variation_selector, glyph,
-					 klass->user_data.variation_glyph);
+					 !klass->user_data ? nullptr : klass->user_data->variation_glyph);
   }
 
   hb_position_t get_glyph_h_advance (hb_codepoint_t glyph)
   {
     return klass->get.f.glyph_h_advance (this, user_data,
 					 glyph,
-					 klass->user_data.glyph_h_advance);
+					 !klass->user_data ? nullptr : klass->user_data->glyph_h_advance);
   }
 
   hb_position_t get_glyph_v_advance (hb_codepoint_t glyph)
   {
     return klass->get.f.glyph_v_advance (this, user_data,
 					 glyph,
-					 klass->user_data.glyph_v_advance);
+					 !klass->user_data ? nullptr : klass->user_data->glyph_v_advance);
   }
 
   void get_glyph_h_advances (unsigned int count,
@@ -277,7 +281,7 @@ struct hb_font_t
 					  count,
 					  first_glyph, glyph_stride,
 					  first_advance, advance_stride,
-					  klass->user_data.glyph_h_advances);
+					  !klass->user_data ? nullptr : klass->user_data->glyph_h_advances);
   }
 
   void get_glyph_v_advances (unsigned int count,
@@ -290,7 +294,7 @@ struct hb_font_t
 					  count,
 					  first_glyph, glyph_stride,
 					  first_advance, advance_stride,
-					  klass->user_data.glyph_v_advances);
+					  !klass->user_data ? nullptr : klass->user_data->glyph_v_advances);
   }
 
   hb_bool_t get_glyph_h_origin (hb_codepoint_t glyph,
@@ -299,7 +303,7 @@ struct hb_font_t
     *x = *y = 0;
     return klass->get.f.glyph_h_origin (this, user_data,
 					glyph, x, y,
-					klass->user_data.glyph_h_origin);
+					!klass->user_data ? nullptr : klass->user_data->glyph_h_origin);
   }
 
   hb_bool_t get_glyph_v_origin (hb_codepoint_t glyph,
@@ -308,7 +312,7 @@ struct hb_font_t
     *x = *y = 0;
     return klass->get.f.glyph_v_origin (this, user_data,
 					glyph, x, y,
-					klass->user_data.glyph_v_origin);
+					!klass->user_data ? nullptr : klass->user_data->glyph_v_origin);
   }
 
   hb_position_t get_glyph_h_kerning (hb_codepoint_t left_glyph,
@@ -319,7 +323,7 @@ struct hb_font_t
 #else
     return klass->get.f.glyph_h_kerning (this, user_data,
 					 left_glyph, right_glyph,
-					 klass->user_data.glyph_h_kerning);
+					 !klass->user_data ? nullptr : klass->user_data->glyph_h_kerning);
 #endif
   }
 
@@ -331,7 +335,7 @@ struct hb_font_t
 #else
     return klass->get.f.glyph_v_kerning (this, user_data,
 					 top_glyph, bottom_glyph,
-					 klass->user_data.glyph_v_kerning);
+					 !klass->user_data ? nullptr : klass->user_data->glyph_v_kerning);
 #endif
   }
 
@@ -342,7 +346,7 @@ struct hb_font_t
     return klass->get.f.glyph_extents (this, user_data,
 				       glyph,
 				       extents,
-				       klass->user_data.glyph_extents);
+				       !klass->user_data ? nullptr : klass->user_data->glyph_extents);
   }
 
   hb_bool_t get_glyph_contour_point (hb_codepoint_t glyph, unsigned int point_index,
@@ -352,7 +356,7 @@ struct hb_font_t
     return klass->get.f.glyph_contour_point (this, user_data,
 					     glyph, point_index,
 					     x, y,
-					     klass->user_data.glyph_contour_point);
+					     !klass->user_data ? nullptr : klass->user_data->glyph_contour_point);
   }
 
   hb_bool_t get_glyph_name (hb_codepoint_t glyph,
@@ -362,7 +366,7 @@ struct hb_font_t
     return klass->get.f.glyph_name (this, user_data,
 				    glyph,
 				    name, size,
-				    klass->user_data.glyph_name);
+				    !klass->user_data ? nullptr : klass->user_data->glyph_name);
   }
 
   hb_bool_t get_glyph_from_name (const char *name, int len, /* -1 means nul-terminated */
@@ -373,7 +377,7 @@ struct hb_font_t
     return klass->get.f.glyph_from_name (this, user_data,
 					 name, len,
 					 glyph,
-					 klass->user_data.glyph_from_name);
+					 !klass->user_data ? nullptr : klass->user_data->glyph_from_name);
   }
 
   void get_glyph_shape (hb_codepoint_t glyph,
@@ -382,7 +386,7 @@ struct hb_font_t
     klass->get.f.glyph_shape (this, user_data,
 			      glyph,
 			      draw_funcs, draw_data,
-			      klass->user_data.glyph_shape);
+			      !klass->user_data ? nullptr : klass->user_data->glyph_shape);
   }
 
 
@@ -444,7 +448,6 @@ struct hb_font_t
   {
     *x = get_glyph_h_advance (glyph) / 2;
 
-    /* TODO cache this somehow?! */
     hb_font_extents_t extents;
     get_h_extents_with_fallback (&extents);
     *y = extents.ascender;
@@ -628,20 +631,26 @@ struct hb_font_t
 
   void mults_changed ()
   {
-    signed upem = face->get_upem ();
-    x_mult = ((int64_t) x_scale << 16) / upem;
-    y_mult = ((int64_t) y_scale << 16) / upem;
+    float upem = face->get_upem ();
+    x_multf = x_scale / upem;
+    y_multf = y_scale / upem;
+    bool x_neg = x_scale < 0;
+    x_mult = (x_neg ? -((int64_t) -x_scale << 16) : ((int64_t) x_scale << 16)) / upem;
+    bool y_neg = y_scale < 0;
+    y_mult = (y_neg ? -((int64_t) -y_scale << 16) : ((int64_t) y_scale << 16)) / upem;
     slant_xy = y_scale ? slant * x_scale / y_scale : 0.f;
+
+    data.fini ();
   }
 
   hb_position_t em_mult (int16_t v, int64_t mult)
   { return (hb_position_t) ((v * mult + 32768) >> 16); }
-  hb_position_t em_scalef (float v, int scale)
-  { return (hb_position_t) roundf (em_fscalef (v, scale)); }
-  float em_fscalef (float v, int scale)
-  { return v * scale / face->get_upem (); }
-  float em_fscale (int16_t v, int scale)
-  { return (float) v * scale / face->get_upem (); }
+  hb_position_t em_multf (float v, float mult)
+  { return (hb_position_t) roundf (em_fmultf (v, mult)); }
+  float em_fmultf (float v, float mult)
+  { return v * mult; }
+  float em_fmult (int16_t v, float mult)
+  { return (float) v * mult; }
 };
 DECLARE_NULL_INSTANCE (hb_font_t);
 

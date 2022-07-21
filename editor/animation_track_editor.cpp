@@ -1577,10 +1577,10 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			int decimals = 2;
 			bool step_found = false;
 
-			const float period_width = font->get_char_size('.', 0, font_size).width;
-			float max_digit_width = font->get_char_size('0', 0, font_size).width;
+			const float period_width = font->get_char_size('.', font_size).width;
+			float max_digit_width = font->get_char_size('0', font_size).width;
 			for (int i = 1; i <= 9; i++) {
-				const float digit_width = font->get_char_size('0' + i, 0, font_size).width;
+				const float digit_width = font->get_char_size('0' + i, font_size).width;
 				max_digit_width = MAX(digit_width, max_digit_width);
 			}
 			const int max_sc = int(Math::ceil(zoomw / scale));
@@ -1628,7 +1628,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
 							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-							prev_frame_ofs = i + font->get_string_size(itos(frame), font_size).x + 5 * EDSCALE;
+							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 5 * EDSCALE;
 						}
 					}
 				}
@@ -1890,7 +1890,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
-	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
+	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect("draw", callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
 
 	add_track = memnew(MenuButton);
@@ -2919,7 +2919,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			add_child(path_popup);
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
-			path->set_anchors_and_offsets_preset(PRESET_WIDE);
+			path->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 			path->connect("text_submitted", callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
@@ -3212,7 +3212,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_position);
-	play_position->set_anchors_and_offsets_preset(PRESET_WIDE);
+	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect("draw", callable_mp(this, &AnimationTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
 	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
@@ -3696,7 +3696,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 		insert_confirm_bezier->set_visible(all_bezier);
 		insert_confirm_reset->set_visible(reset_allowed);
 
-		insert_confirm->get_ok_button()->set_text(TTR("Create"));
+		insert_confirm->set_ok_button_text(TTR("Create"));
 		insert_confirm->popup_centered();
 	} else {
 		_insert_track(reset_allowed && EDITOR_GET("editors/animation/default_create_reset_tracks"), all_bezier && EDITOR_GET("editors/animation/default_create_bezier_tracks"));
@@ -3725,11 +3725,11 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	}
 }
 
-void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_beziers) {
+void AnimationTrackEditor::_insert_track(bool p_reset_wanted, bool p_create_beziers) {
 	undo_redo->create_action(TTR("Anim Insert"));
 
 	Ref<Animation> reset_anim;
-	if (p_create_reset) {
+	if (p_reset_wanted) {
 		reset_anim = _create_and_get_reset_animation();
 	}
 
@@ -3739,7 +3739,7 @@ void AnimationTrackEditor::_insert_track(bool p_create_reset, bool p_create_bezi
 		if (insert_data.front()->get().advance) {
 			advance = true;
 		}
-		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, p_create_reset, reset_anim, p_create_beziers);
+		next_tracks = _confirm_insert(insert_data.front()->get(), next_tracks, p_reset_wanted, reset_anim, p_create_beziers);
 		insert_data.pop_front();
 	}
 
@@ -4207,9 +4207,42 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 	return subindices;
 }
 
-AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers) {
+AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_reset_wanted, Ref<Animation> p_reset_anim, bool p_create_beziers) {
 	bool created = false;
-	if (p_id.track_idx < 0) {
+
+	bool create_normal_track = p_id.track_idx < 0;
+	bool create_reset_track = p_reset_wanted && track_type_is_resettable(p_id.type);
+
+	Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
+	if (create_normal_track || create_reset_track) {
+		if (p_id.type == Animation::TYPE_VALUE || p_id.type == Animation::TYPE_BEZIER) {
+			// Hack.
+			NodePath np;
+			animation->add_track(p_id.type);
+			animation->track_set_path(animation->get_track_count() - 1, p_id.path);
+			PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
+			animation->remove_track(animation->get_track_count() - 1); // Hack.
+
+			if (h.type == Variant::FLOAT ||
+					h.type == Variant::VECTOR2 ||
+					h.type == Variant::RECT2 ||
+					h.type == Variant::VECTOR3 ||
+					h.type == Variant::AABB ||
+					h.type == Variant::QUATERNION ||
+					h.type == Variant::COLOR ||
+					h.type == Variant::PLANE ||
+					h.type == Variant::TRANSFORM2D ||
+					h.type == Variant::TRANSFORM3D) {
+				update_mode = Animation::UPDATE_CONTINUOUS;
+			}
+
+			if (h.usage & PROPERTY_USAGE_ANIMATE_AS_TRIGGER) {
+				update_mode = Animation::UPDATE_TRIGGER;
+			}
+		}
+	}
+
+	if (create_normal_track) {
 		if (p_create_beziers) {
 			bool valid;
 			Vector<String> subindices = _get_bezier_subindices_for_type(p_id.value.get_type(), &valid);
@@ -4219,7 +4252,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 					id.type = Animation::TYPE_BEZIER;
 					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
 					id.path = String(p_id.path) + subindices[i];
-					p_next_tracks = _confirm_insert(id, p_next_tracks, p_create_reset, p_reset_anim, false);
+					p_next_tracks = _confirm_insert(id, p_next_tracks, p_reset_wanted, p_reset_anim, false);
 				}
 
 				return p_next_tracks;
@@ -4227,37 +4260,6 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		}
 		created = true;
 		undo_redo->create_action(TTR("Anim Insert Track & Key"));
-		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
-
-		if (p_id.type == Animation::TYPE_VALUE || p_id.type == Animation::TYPE_BEZIER) {
-			// Wants a new track.
-
-			{
-				// Hack.
-				NodePath np;
-				animation->add_track(p_id.type);
-				animation->track_set_path(animation->get_track_count() - 1, p_id.path);
-				PropertyInfo h = _find_hint_for_track(animation->get_track_count() - 1, np);
-				animation->remove_track(animation->get_track_count() - 1); // Hack.
-
-				if (h.type == Variant::FLOAT ||
-						h.type == Variant::VECTOR2 ||
-						h.type == Variant::RECT2 ||
-						h.type == Variant::VECTOR3 ||
-						h.type == Variant::AABB ||
-						h.type == Variant::QUATERNION ||
-						h.type == Variant::COLOR ||
-						h.type == Variant::PLANE ||
-						h.type == Variant::TRANSFORM2D ||
-						h.type == Variant::TRANSFORM3D) {
-					update_mode = Animation::UPDATE_CONTINUOUS;
-				}
-
-				if (h.usage & PROPERTY_USAGE_ANIMATE_AS_TRIGGER) {
-					update_mode = Animation::UPDATE_TRIGGER;
-				}
-			}
-		}
 
 		p_id.track_idx = p_next_tracks.normal;
 
@@ -4320,8 +4322,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		}
 	}
 
-	if (p_create_reset && track_type_is_resettable(p_id.type)) {
-		bool create_reset_track = true;
+	if (create_reset_track) {
 		Animation *reset_anim = p_reset_anim.ptr();
 		for (int i = 0; i < reset_anim->get_track_count(); i++) {
 			if (reset_anim->track_get_path(i) == p_id.path) {
@@ -4332,6 +4333,9 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		if (create_reset_track) {
 			undo_redo->add_do_method(reset_anim, "add_track", p_id.type);
 			undo_redo->add_do_method(reset_anim, "track_set_path", p_next_tracks.reset, p_id.path);
+			if (p_id.type == Animation::TYPE_VALUE) {
+				undo_redo->add_do_method(reset_anim, "value_track_set_update_mode", p_next_tracks.reset, update_mode);
+			}
 			undo_redo->add_do_method(reset_anim, "track_insert_key", p_next_tracks.reset, 0.0f, value);
 			undo_redo->add_undo_method(reset_anim, "remove_track", reset_anim->get_track_count());
 			p_next_tracks.reset++;
@@ -6241,7 +6245,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	info_message->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	main_panel->add_child(info_message);
 
 	timeline = memnew(AnimationTimelineEdit);
@@ -6473,7 +6477,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_max_angle->set_step(0.1);
 	optimize_max_angle->set_value(22);
 
-	optimize_dialog->get_ok_button()->set_text(TTR("Optimize"));
+	optimize_dialog->set_ok_button_text(TTR("Optimize"));
 	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
 
 	//
@@ -6498,7 +6502,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	cleanup_vb->add_child(cleanup_all);
 
 	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO!)"));
-	cleanup_dialog->get_ok_button()->set_text(TTR("Clean-Up"));
+	cleanup_dialog->set_ok_button_text(TTR("Clean-Up"));
 
 	cleanup_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
 
@@ -6518,7 +6522,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_dialog = memnew(ConfirmationDialog);
 	add_child(track_copy_dialog);
 	track_copy_dialog->set_title(TTR("Select Tracks to Copy"));
-	track_copy_dialog->get_ok_button()->set_text(TTR("Copy"));
+	track_copy_dialog->set_ok_button_text(TTR("Copy"));
 
 	VBoxContainer *track_vbox = memnew(VBoxContainer);
 	track_copy_dialog->add_child(track_vbox);

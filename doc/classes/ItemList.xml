@@ -38,13 +38,6 @@
 				Removes all items from the list.
 			</description>
 		</method>
-		<method name="clear_item_opentype_features">
-			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<description>
-				Removes all OpenType features from the item's text.
-			</description>
-		</method>
 		<method name="deselect">
 			<return type="void" />
 			<argument index="0" name="idx" type="int" />
@@ -120,14 +113,6 @@
 			<argument index="0" name="idx" type="int" />
 			<description>
 				Returns the metadata value of the specified index.
-			</description>
-		</method>
-		<method name="get_item_opentype_feature" qualifiers="const">
-			<return type="int" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<description>
-				Returns OpenType feature [code]tag[/code] of the item's text.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -300,15 +285,6 @@
 			<argument index="1" name="metadata" type="Variant" />
 			<description>
 				Sets a value (of any type) to be stored with the item associated with the specified index.
-			</description>
-		</method>
-		<method name="set_item_opentype_feature">
-			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="tag" type="String" />
-			<argument index="2" name="value" type="int" />
-			<description>
-				Sets OpenType feature [code]tag[/code] for the item's text. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 			</description>
 		</method>
 		<method name="set_item_selectable">

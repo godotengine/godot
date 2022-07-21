@@ -520,9 +520,8 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	material_storage->material_free(default_material);
 }
 
-void SceneShaderForwardClustered::init(RendererStorageRD *p_storage, const String p_defines) {
+void SceneShaderForwardClustered::init(const String p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	storage = p_storage;
 
 	{
 		Vector<String> shader_versions;
