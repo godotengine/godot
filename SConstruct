@@ -123,7 +123,7 @@ opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)",
 opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
-opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
+opts.Add(EnumVariable("lto", "Link-time optimization (for production builds)", "none", ("none", "thin", "full")))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
@@ -402,34 +402,6 @@ if selected_platform in platform_list:
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
-    # 'dev' and 'production' are aliases to set default options if they haven't been set
-    # manually by the user.
-    if env["dev"]:
-        env["verbose"] = methods.get_cmdline_bool("verbose", True)
-        env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = methods.get_cmdline_bool("werror", True)
-    if env["production"]:
-        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-        env["use_lto"] = methods.get_cmdline_bool("use_lto", True)
-        print("use_lto is: " + str(env["use_lto"]))
-        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-        if not env["tools"] and env["target"] == "debug":
-            print(
-                "WARNING: Requested `production` build with `tools=no target=debug`, "
-                "this will give you a full debug template (use `target=release_debug` "
-                "for an optimized template with debug features)."
-            )
-        if env.msvc:
-            print(
-                "WARNING: For `production` Windows builds, you should use MinGW with GCC "
-                "or Clang instead of Visual Studio, as they can better optimize the "
-                "GDScript VM in a very significant way. MSVC LTO also doesn't work "
-                "reliably for our use case."
-                "If you want to use MSVC nevertheless for production builds, set "
-                "`debug_symbols=no use_lto=no` instead of the `production=yes` option."
-            )
-            Exit(255)
-
     env.extra_suffix = ""
 
     if env["extra_suffix"] != "":
@@ -474,6 +446,45 @@ if selected_platform in platform_list:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
         env.Prepend(CCFLAGS=["/std:c++14"])
+
+    # 'dev' and 'production' are aliases to set default options if they haven't been set
+    # manually by the user.
+    if env["dev"]:
+        env["verbose"] = methods.get_cmdline_bool("verbose", True)
+        env["warnings"] = ARGUMENTS.get("warnings", "extra")
+        env["werror"] = methods.get_cmdline_bool("werror", True)
+    if env["production"]:
+        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+        env["lto"] = ARGUMENTS.get("lto", "full")
+        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+        if not env["tools"] and env["target"] == "debug":
+            print(
+                "WARNING: Requested `production` build with `tools=no target=debug`, "
+                "this will give you a full debug template (use `target=release_debug` "
+                "for an optimized template with debug features)."
+            )
+        if env.msvc:
+            print(
+                "WARNING: For `production` Windows builds, you should use MinGW with GCC "
+                "or Clang instead of Visual Studio, as they can better optimize the "
+                "GDScript VM in a very significant way. MSVC LTO also doesn't work "
+                "reliably for our use case."
+                "If you want to use MSVC nevertheless for production builds, set "
+                "`debug_symbols=no lto=none` instead of the `production=yes` option."
+            )
+            Exit(255)
+    if env["lto"] != "none":
+        print("Using LTO: " + env["lto"])
+
+    # Handle renamed options.
+    if "use_lto" in ARGUMENTS or "use_thinlto" in ARGUMENTS:
+        print("Error: The `use_lto` and `use_thinlto` boolean options have been unified to `lto=<none|thin|full>`.")
+        print("       Please adjust your scripts accordingly.")
+        Exit(255)
+    if "use_lld" in ARGUMENTS:
+        print("Error: The `use_lld` boolean option has been replaced by `linker=<default|bfd|gold|lld|mold>`.")
+        print("       Please adjust your scripts accordingly.")
+        Exit(255)
 
     # Configure compiler warnings
     if env.msvc:  # MSVC

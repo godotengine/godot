@@ -42,6 +42,9 @@ def get_opts():
 def get_flags():
     return [
         ("tools", False),
+        # Disable by default even if production is set, as it makes linking in Xcode
+        # on exports very slow and that's not what most users expect.
+        ("lto", "none"),
     ]
 
 
@@ -64,11 +67,16 @@ def configure(env):
         env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
         env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1)])
 
-    if env["use_lto"]:
-        env.Append(CCFLAGS=["-flto"])
-        env.Append(LINKFLAGS=["-flto"])
+    # LTO
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
-    ## Architecture
+    # Architecture
     if env["arch"] == "x86":  # i386
         env["bits"] = "32"
     elif env["arch"] == "x86_64":
