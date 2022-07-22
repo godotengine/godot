@@ -1222,6 +1222,8 @@
 		<member name="VisualScriptCustomNodes" type="VisualScriptCustomNodes" setter="" getter="">
 			The [VisualScriptCustomNodes] singleton.
 		</member>
+		<member name="WorkerThreadPool" type="WorkerThreadPool" setter="" getter="">
+		</member>
 		<member name="XRServer" type="XRServer" setter="" getter="">
 			The [XRServer] singleton.
 		</member>

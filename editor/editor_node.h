@@ -95,6 +95,7 @@ class TabContainer;
 class TextureProgressBar;
 class VSplitContainer;
 class Window;
+class EditorBuildProfileManager;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -163,6 +164,7 @@ private:
 		EDIT_REDO,
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
+		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -377,6 +379,7 @@ private:
 	EditorFileDialog *file = nullptr;
 	ExportTemplateManager *export_template_manager = nullptr;
 	EditorFeatureProfileManager *feature_profile_manager = nullptr;
+	EditorBuildProfileManager *build_profile_manager = nullptr;
 	EditorFileDialog *file_templates = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
