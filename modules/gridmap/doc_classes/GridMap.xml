@@ -48,6 +48,13 @@
 				The [MeshLibrary] item index located at the grid-based X, Y and Z coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
 			</description>
 		</method>
+		<method name="get_cell_itemv" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="position" type="Vector3" />
+			<description>
+				The [MeshLibrary] item index located at the grid-based coordinates given by a Vector3. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
+			</description>
+		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
 			<return type="int" />
 			<argument index="0" name="x" type="int" />
@@ -55,6 +62,13 @@
 			<argument index="2" name="z" type="int" />
 			<description>
 				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is returned if the cell is empty.
+			</description>
+		</method>
+		<method name="get_cell_item_orientationv" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="position" type="Vector3" />
+			<description>
+				The orientation of the cell at the grid-based coordinates, given by a Vector3. -1 is returned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -121,6 +135,17 @@
 			<argument index="4" name="orientation" type="int" default="0" />
 			<description>
 				Sets the mesh index for the cell referenced by its grid-based X, Y and Z coordinates.
+				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
+				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
+			</description>
+		</method>
+		<method name="set_cell_itemv">
+			<return type="void" />
+			<argument index="0" name="position" type="Vector3" />
+			<argument index="1" name="item" type="int" />
+			<argument index="2" name="orientation" type="int" default="0" />
+			<description>
+				Sets the mesh index for the cell referenced by its grid-based coordinates, given by a Vector3.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
 				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
 			</description>

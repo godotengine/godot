@@ -302,6 +302,10 @@ bool GridMap::get_center_z() const {
 	return center_z;
 }
 
+void GridMap::set_cell_itemv(const Vector3 &p_pos, int p_item, int p_rot) {
+	set_cell_item(p_pos.x, p_pos.y, p_pos.z, p_item, p_rot);
+}
+
 void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	if (baked_meshes.size() && !recreating_octants) {
 		//if you set a cell item, baked meshes go good bye
@@ -381,6 +385,10 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	cell_map[key] = c;
 }
 
+int GridMap::get_cell_itemv(const Vector3 &p_pos) const {
+	return get_cell_item(p_pos.x, p_pos.y, p_pos.z);
+}
+
 int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
 	ERR_FAIL_INDEX_V(ABS(p_x), 1 << 20, INVALID_CELL_ITEM);
 	ERR_FAIL_INDEX_V(ABS(p_y), 1 << 20, INVALID_CELL_ITEM);
@@ -395,6 +403,10 @@ int GridMap::get_cell_item(int p_x, int p_y, int p_z) const {
 		return INVALID_CELL_ITEM;
 	}
 	return cell_map[key].item;
+}
+
+int GridMap::get_cell_item_orientationv(const Vector3 &p_pos) const {
+	return get_cell_item_orientation(p_pos.x, p_pos.y, p_pos.z);
 }
 
 int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
@@ -939,8 +951,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_octant_size"), &GridMap::get_octant_size);
 
 	ClassDB::bind_method(D_METHOD("set_cell_item", "x", "y", "z", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell_itemv", "position", "item", "orientation"), &GridMap::set_cell_itemv, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_cell_item", "x", "y", "z"), &GridMap::get_cell_item);
+	ClassDB::bind_method(D_METHOD("get_cell_itemv", "position"), &GridMap::get_cell_itemv);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "x", "y", "z"), &GridMap::get_cell_item_orientation);
+	ClassDB::bind_method(D_METHOD("get_cell_item_orientationv", "position"), &GridMap::get_cell_item_orientationv);
 
 	ClassDB::bind_method(D_METHOD("world_to_map", "pos"), &GridMap::world_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_world", "x", "y", "z"), &GridMap::map_to_world);
