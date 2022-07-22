@@ -5,10 +5,10 @@
 	</brief_description>
 	<description>
 		The OpenXR interface allows Godot to interact with OpenXR runtimes and make it possible to create XR experiences and games.
-		Due to the needs of OpenXR this interface works slightly different then other plugin based XR interfaces. It needs to be initialised when Godot starts. You need to enable OpenXR, settings for this can be found in your games project settings under the XR heading. You do need to mark a viewport for use with XR in order for Godot to know which render result should be output to the headset.
+		Due to the needs of OpenXR this interface works slightly different than other plugin based XR interfaces. It needs to be initialised when Godot starts. You need to enable OpenXR, settings for this can be found in your games project settings under the XR heading. You do need to mark a viewport for use with XR in order for Godot to know which render result should be output to the headset.
 	</description>
 	<tutorials>
-		<link title="OpenXR documentation">$DOCS_URL/tutorials/vr/openxr/index.html</link>
+		<link title="Setting up XR">$DOCS_URL/tutorials/xr/setting_up_xr.html</link>
 	</tutorials>
 	<signals>
 		<signal name="pose_recentered">
