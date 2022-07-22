@@ -80,8 +80,8 @@ void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_strin
 	float fw, fh;
 	picture->size(&fw, &fh);
 
-	uint32_t width = MIN(fw * p_scale, 16 * 1024);
-	uint32_t height = MIN(fh * p_scale, 16 * 1024);
+	uint32_t width = MIN(round(fw * p_scale), 16 * 1024);
+	uint32_t height = MIN(round(fh * p_scale), 16 * 1024);
 	picture->size(width, height);
 
 	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
