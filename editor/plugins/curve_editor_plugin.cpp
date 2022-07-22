@@ -805,7 +805,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	img_ref.instantiate();
 	Image &im = **img_ref;
 
-	im.create(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);
+	im.initialize_data(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);
 
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 

@@ -47,9 +47,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 	merged_mapping.clear();
 
 	if (p_atlas_sources.size() >= 2) {
-		Ref<Image> output_image;
-		output_image.instantiate();
-		output_image->create(1, 1, false, Image::FORMAT_RGBA8);
+		Ref<Image> output_image = Image::create_empty(1, 1, false, Image::FORMAT_RGBA8);
 
 		// Compute the new texture region size.
 		Vector2i new_texture_region_size;

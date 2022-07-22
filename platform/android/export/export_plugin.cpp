@@ -1551,7 +1551,7 @@ String EditorExportPlatformAndroid::load_splash_refs(Ref<Image> &splash_image, R
 
 	print_verbose("Creating splash background color image.");
 	splash_bg_color_image.instantiate();
-	splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
+	splash_bg_color_image->initialize_data(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
 	splash_bg_color_image->fill(bg_color);
 
 	String processed_splash_config_xml = vformat(SPLASH_CONFIG_XML_CONTENT, bool_to_string(apply_filter));

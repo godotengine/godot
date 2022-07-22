@@ -308,9 +308,7 @@ void EditorProfiler::_update_plot() {
 		}
 	}
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
+	Ref<Image> img = Image::create_from_data(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 		if (graph_texture.is_null()) {

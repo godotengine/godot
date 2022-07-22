@@ -140,7 +140,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 		}
 	}
 
-	p_image->create(width, height, false, Image::FORMAT_RGBE9995, imgdata);
+	p_image->set_data(width, height, false, Image::FORMAT_RGBE9995, imgdata);
 
 	return OK;
 }
