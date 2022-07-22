@@ -7,7 +7,7 @@
 		The AR/VR server is the heart of our Advanced and Virtual Reality solution and handles all the processing.
 	</description>
 	<tutorials>
-		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_interface">
