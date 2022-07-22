@@ -103,6 +103,7 @@ public:
 		float mesh_lod_threshold = 1.0;
 
 		uint64_t last_pass = 0;
+		bool visible = true;
 
 		RS::ViewportDebugDraw debug_draw;
 
@@ -210,6 +211,7 @@ private:
 	int occlusion_rays_per_thread = 512;
 
 	void _resize_occlusion_culling_buffer(const Size2i &p_size);
+	bool _check_viewport_visible(Viewport *p_viewport, const uint64_t p_pass, Ref<XRInterface> &p_xr_interface);
 
 public:
 	RID viewport_allocate();

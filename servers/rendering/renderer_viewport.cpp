@@ -526,6 +526,67 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 }
 
+bool RendererViewport::_check_viewport_visible(Viewport *p_viewport, const uint64_t p_pass, Ref<XRInterface> &p_xr_interface) {
+	if (p_viewport->last_pass == p_pass && p_pass) {
+		return p_viewport->visible; // Returns the computed cached value.
+	}
+
+	p_viewport->last_pass = p_pass;
+	p_viewport->visible = false;
+
+	if (p_viewport->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
+		return false;
+	}
+
+	if (!p_viewport->render_target.is_valid()) {
+		return false;
+	}
+	//ERR_CONTINUE(!p_viewport->render_target.is_valid());
+
+	p_viewport->visible = p_viewport->viewport_to_screen_rect != Rect2();
+
+	if (p_viewport->use_xr) {
+		if (p_xr_interface.is_valid()) {
+			// Override our size, make sure it matches our required size and is created as a stereo target
+			Size2 xr_size = p_xr_interface->get_render_target_size();
+
+			// Would have been nice if we could call viewport_set_size here,
+			// but alas that takes our RID and we now have our pointer,
+			// also we only check if view_count changes in render_target_set_size so we need to call that for this to reliably change
+			p_viewport->occlusion_buffer_dirty = p_viewport->occlusion_buffer_dirty || (p_viewport->size != xr_size);
+			p_viewport->size = xr_size;
+			uint32_t view_count = p_xr_interface->get_view_count();
+			RSG::texture_storage->render_target_set_size(p_viewport->render_target, p_viewport->size.x, p_viewport->size.y, view_count);
+
+			// Inform xr interface we're about to render its viewport, if this returns false we don't render
+			p_viewport->visible = p_xr_interface->pre_draw_viewport(p_viewport->render_target);
+		} else {
+			// don't render anything
+			p_viewport->visible = false;
+			p_viewport->size = Size2();
+		}
+	}
+
+	if (p_viewport->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || p_viewport->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
+		p_viewport->visible = true;
+	}
+
+	if (p_viewport->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::texture_storage->render_target_was_used(p_viewport->render_target)) {
+		p_viewport->visible = true;
+	}
+
+	if (p_viewport->update_mode == RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
+		Viewport *parent = viewport_owner.get_or_null(p_viewport->parent);
+		if (parent) {
+			p_viewport->visible = _check_viewport_visible(parent, p_pass, p_xr_interface);
+		}
+	}
+
+	p_viewport->visible = p_viewport->visible && p_viewport->size.x > 1 && p_viewport->size.y > 1;
+
+	return p_viewport->visible;
+}
+
 void RendererViewport::draw_viewports() {
 	timestamp_vp_map.clear();
 
@@ -554,65 +615,6 @@ void RendererViewport::draw_viewports() {
 	//determine what is visible
 	draw_viewports_pass++;
 
-	for (int i = active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
-
-		Viewport *vp = active_viewports[i];
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
-			continue;
-		}
-
-		if (!vp->render_target.is_valid()) {
-			continue;
-		}
-		//ERR_CONTINUE(!vp->render_target.is_valid());
-
-		bool visible = vp->viewport_to_screen_rect != Rect2();
-
-		if (vp->use_xr) {
-			if (xr_interface.is_valid()) {
-				// Override our size, make sure it matches our required size and is created as a stereo target
-				Size2 xr_size = xr_interface->get_render_target_size();
-
-				// Would have been nice if we could call viewport_set_size here,
-				// but alas that takes our RID and we now have our pointer,
-				// also we only check if view_count changes in render_target_set_size so we need to call that for this to reliably change
-				vp->occlusion_buffer_dirty = vp->occlusion_buffer_dirty || (vp->size != xr_size);
-				vp->size = xr_size;
-				uint32_t view_count = xr_interface->get_view_count();
-				RSG::texture_storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
-
-				// Inform xr interface we're about to render its viewport, if this returns false we don't render
-				visible = xr_interface->pre_draw_viewport(vp->render_target);
-			} else {
-				// don't render anything
-				visible = false;
-				vp->size = Size2();
-			}
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
-			visible = true;
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::texture_storage->render_target_was_used(vp->render_target)) {
-			visible = true;
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
-			Viewport *parent = viewport_owner.get_or_null(vp->parent);
-			if (parent && parent->last_pass == draw_viewports_pass) {
-				visible = true;
-			}
-		}
-
-		visible = visible && vp->size.x > 1 && vp->size.y > 1;
-
-		if (visible) {
-			vp->last_pass = draw_viewports_pass;
-		}
-	}
-
 	int vertices_drawn = 0;
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
@@ -620,7 +622,8 @@ void RendererViewport::draw_viewports() {
 	for (int i = 0; i < active_viewports.size(); i++) {
 		Viewport *vp = active_viewports[i];
 
-		if (vp->last_pass != draw_viewports_pass) {
+		bool visible = _check_viewport_visible(vp, draw_viewports_pass, xr_interface);
+		if (!visible) {
 			continue; //should not draw
 		}
 
