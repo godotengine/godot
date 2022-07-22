@@ -865,6 +865,22 @@ String ResourceLoaderBinary::get_unicode_string() {
 	return s;
 }
 
+void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes) {
+	open(p_f, false, true);
+	if (error) {
+		return;
+	}
+
+	for (int i = 0; i < internal_resources.size(); i++) {
+		p_f->seek(internal_resources[i].offset);
+		String t = get_unicode_string();
+		ERR_FAIL_COND(p_f->get_error() != OK);
+		if (t != String()) {
+			p_classes->insert(t);
+		}
+	}
+}
+
 void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
 	open(p_f, false, true);
 	if (error) {
@@ -1335,6 +1351,16 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	da->remove(p_path);
 	da->rename(p_path + ".depren", p_path);
 	return OK;
+}
+
+void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	loader.get_classes_used(f, r_classes);
 }
 
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {

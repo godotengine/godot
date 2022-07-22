@@ -17,6 +17,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_classes_used" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<argument index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_dependencies" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<argument index="0" name="path" type="String" />
