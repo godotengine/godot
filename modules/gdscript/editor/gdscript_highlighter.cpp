@@ -46,6 +46,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 	bool prev_is_char = false;
 	bool prev_is_number = false;
+	bool prev_is_binary_op = false;
 	bool in_keyword = false;
 	bool in_word = false;
 	bool in_function_name = false;
@@ -84,16 +85,17 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	const int line_length = str.length();
 	Color prev_color;
 
-	if (in_region != -1 && str.length() == 0) {
+	if (in_region != -1 && line_length == 0) {
 		color_region_cache[p_line] = in_region;
 	}
-	for (int j = 0; j < str.length(); j++) {
+	for (int j = 0; j < line_length; j++) {
 		Dictionary highlighter_info;
 
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
 		bool is_number = is_digit(str[j]);
+		bool is_binary_op = false;
 
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
@@ -244,7 +246,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			is_hex_notation = false;
 		}
 
-		// disallow anything not a 0 or 1
+		// disallow anything not a 0 or 1 in binary notation
 		if (is_bin_notation && (is_binary_digit(str[j]))) {
 			is_number = true;
 		} else if (is_bin_notation) {
@@ -285,7 +287,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		if (!in_keyword && is_char && !prev_is_char) {
 			int to = j;
-			while (to < str.length() && !is_symbol(str[to])) {
+			while (to < line_length && !is_symbol(str[to])) {
 				to++;
 			}
 
@@ -318,12 +320,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				in_signal_declaration = true;
 			} else {
 				int k = j;
-				while (k < str.length() && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+				while (k < line_length && !is_symbol(str[k]) && !is_whitespace(str[k])) {
 					k++;
 				}
 
 				// check for space between name and bracket
-				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+				while (k < line_length && is_whitespace(str[k])) {
 					k++;
 				}
 
@@ -336,7 +338,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				// Check for lambda.
 				if (in_function_name && previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 					k = j - 1;
-					while (k > 0 && (str[k] == '\t' || str[k] == ' ')) {
+					while (k > 0 && is_whitespace(str[k])) {
 						k--;
 					}
 
@@ -349,7 +351,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		if (!in_function_name && !in_member_variable && !in_keyword && !is_number && in_word) {
 			int k = j;
-			while (k > 0 && !is_symbol(str[k]) && str[k] != '\t' && str[k] != ' ') {
+			while (k > 0 && !is_symbol(str[k]) && !is_whitespace(str[k])) {
 				k--;
 			}
 
@@ -378,7 +380,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (in_variable_declaration || in_function_args) {
 				int k = j;
 				// Skip space
-				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
+				while (k < line_length && is_whitespace(str[k])) {
 					k++;
 				}
 
@@ -395,13 +397,41 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
-		if (!in_node_path && in_region == -1 && (str[j] == '^')) {
+		if (j > 0 && (str[j] == '&' || str[j] == '^' || str[j] == '%' || str[j] == '+' || str[j] == '-' || str[j] == '~')) {
+			int k = j - 1;
+			while (k > 0 && is_whitespace(str[k])) {
+				k--;
+			}
+			if (!is_symbol(str[k]) || str[k] == '"' || str[k] == '\'' || str[k] == ')' || str[k] == ']' || str[k] == '}') {
+				is_binary_op = true;
+			}
+		}
+
+		// Highlight '+' and '-' like numbers when unary
+		if ((str[j] == '+' || str[j] == '-' || str[j] == '~') && !is_binary_op) {
+			is_number = true;
+			is_a_symbol = false;
+		}
+
+		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand
+		if (!in_string_name && in_region == -1 && str[j] == '&' && !is_binary_op) {
+			if (j >= 2 && str[j - 1] == '&' && str[j - 2] != '&' && prev_is_binary_op) {
+				is_binary_op = true;
+			} else if (j == 0 || (j > 0 && str[j - 1] != '&') || prev_is_binary_op) {
+				in_string_name = true;
+			}
+		} else if (in_region != -1 || is_a_symbol) {
+			in_string_name = false;
+		}
+
+		// '^^' has no special meaning, so unlike StringName, when binary, use NodePath color for the last caret
+		if (!in_node_path && in_region == -1 && str[j] == '^' && !is_binary_op && (j == 0 || (j > 0 && str[j - 1] != '^') || prev_is_binary_op)) {
 			in_node_path = true;
-		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
+		} else if (in_region != -1 || is_a_symbol) {
 			in_node_path = false;
 		}
 
-		if (!in_node_ref && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
+		if (!in_node_ref && in_region == -1 && (str[j] == '$' || (str[j] == '%' && !is_binary_op))) {
 			in_node_ref = true;
 		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
 			in_node_ref = false;
@@ -413,16 +443,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_annotation = false;
 		}
 
-		if (!in_string_name && in_region == -1 && str[j] == '&') {
-			in_string_name = true;
-		} else if (in_region != -1 || is_a_symbol) {
-			in_string_name = false;
-		}
-
-		if (in_node_path) {
-			next_type = NODE_PATH;
-			color = node_path_color;
-		} else if (in_node_ref) {
+		if (in_node_ref) {
 			next_type = NODE_REF;
 			color = node_ref_color;
 		} else if (in_annotation) {
@@ -431,6 +452,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_string_name) {
 			next_type = STRING_NAME;
 			color = string_name_color;
+		} else if (in_node_path) {
+			next_type = NODE_PATH;
+			color = node_path_color;
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
@@ -487,6 +511,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		prev_is_char = is_char;
 		prev_is_number = is_number;
+		prev_is_binary_op = is_binary_op;
 
 		if (color != prev_color) {
 			prev_color = color;
