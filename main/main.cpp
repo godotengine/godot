@@ -410,6 +410,8 @@ Error Main::test_setup() {
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
 
+	register_core_settings(); //here globals are present
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
