@@ -127,6 +127,7 @@ void BaseButton::_notification(int p_what) {
 			status.hovering = false;
 			status.press_attempt = false;
 			status.pressing_inside = false;
+			status.shortcut_press = false;
 		} break;
 	}
 }
@@ -160,6 +161,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
+					status.shortcut_press = false;
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
@@ -185,6 +187,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		status.shortcut_press = false;
 		emit_signal(SNAME("button_up"));
 	}
 
@@ -209,6 +212,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		status.shortcut_press = false;
 	}
 	queue_redraw();
 }
@@ -284,7 +288,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 			pressing = status.pressed;
 		}
 
-		if (pressing) {
+		if ((shortcut_feedback || !status.shortcut_press) && pressing) {
 			return DRAW_PRESSED;
 		} else {
 			return DRAW_NORMAL;
@@ -350,6 +354,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+		status.shortcut_press = true;
 		on_action_event(p_event);
 		accept_event();
 	}
@@ -389,6 +394,14 @@ bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
 
+void BaseButton::set_shortcut_feedback(bool p_feedback) {
+	shortcut_feedback = p_feedback;
+}
+
+bool BaseButton::is_shortcut_feedback() const {
+	return shortcut_feedback;
+}
+
 void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
@@ -414,6 +427,9 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
+	ClassDB::bind_method(D_METHOD("set_shortcut_feedback", "enabled"), &BaseButton::set_shortcut_feedback);
+	ClassDB::bind_method(D_METHOD("is_shortcut_feedback"), &BaseButton::is_shortcut_feedback);
+
 	GDVIRTUAL_BIND(_pressed);
 	GDVIRTUAL_BIND(_toggled, "button_pressed");
 
@@ -430,6 +446,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
