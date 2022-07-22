@@ -66,6 +66,13 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular()
 		}
 
 		specular = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		if (view_count == 1) {
+			specular_views[0] = specular;
+		} else {
+			for (uint32_t v = 0; v < view_count; v++) {
+				specular_views[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), specular, v, 0);
+			}
+		}
 
 		if (msaa == RS::VIEWPORT_MSAA_DISABLED) {
 			{
@@ -79,6 +86,14 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular()
 			tf.samples = texture_samples;
 			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			specular_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+			if (view_count == 1) {
+				specular_msaa_views[0] = specular_msaa;
+			} else {
+				for (uint32_t v = 0; v < view_count; v++) {
+					specular_msaa_views[v] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), specular_msaa, v, 0);
+				}
+			}
 
 			{
 				Vector<RID> fb;
@@ -175,6 +190,8 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::clear() {
 	for (uint32_t v = 0; v < RendererSceneRender::MAX_RENDER_VIEWS; v++) {
 		color_views[v] = RID();
 		depth_views[v] = RID();
+		specular_views[v] = RID();
+		specular_msaa_views[v] = RID();
 		color_msaa_views[v] = RID();
 		depth_msaa_views[v] = RID();
 		normal_roughness_views[v] = RID();
@@ -1749,9 +1766,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		for (uint32_t v = 0; v < render_buffer->view_count; v++) {
 			RD::get_singleton()->texture_resolve_multisample(render_buffer->color_msaa_views[v], render_buffer->color_views[v]);
 		}
-		// TODO mame this do multiview
 		if (using_separate_specular) {
-			RD::get_singleton()->texture_resolve_multisample(render_buffer->specular_msaa, render_buffer->specular);
+			for (uint32_t v = 0; v < render_buffer->view_count; v++) {
+				RD::get_singleton()->texture_resolve_multisample(render_buffer->specular_msaa_views[v], render_buffer->specular_views[v]);
+			}
 		}
 	}
 
@@ -1772,12 +1790,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		if (using_ssr) {
 			RENDER_TIMESTAMP("Screen-Space Reflections");
 			RD::get_singleton()->draw_command_begin_label("Process Screen-Space Reflections");
-			_process_ssr(p_render_data->render_buffers, color_only_framebuffer, render_buffer->normal_roughness_buffer, render_buffer->specular, render_buffer->specular, Color(0, 0, 0, 1), p_render_data->environment, p_render_data->cam_projection, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED);
+			_process_ssr(p_render_data->render_buffers, color_only_framebuffer, render_buffer->normal_roughness_views, render_buffer->specular, render_buffer->specular_views, Color(0, 0, 0, 1), p_render_data->environment, p_render_data->view_projection, p_render_data->view_eye_offset, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED);
 			RD::get_singleton()->draw_command_end_label();
 		} else {
 			//just mix specular back
 			RENDER_TIMESTAMP("Merge Specular");
-			RendererCompositorRD::singleton->get_effects()->merge_specular(color_only_framebuffer, render_buffer->specular, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED ? RID() : render_buffer->color, RID());
+			copy_effects->merge_specular(color_only_framebuffer, render_buffer->specular, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED ? RID() : render_buffer->color, RID(), p_render_data->view_count);
 		}
 	}
 

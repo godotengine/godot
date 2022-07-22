@@ -37,6 +37,7 @@
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
@@ -141,7 +142,7 @@ protected:
 	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) = 0;
 
 	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
-	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
+	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
 	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
 	void _process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection, const Transform3D &p_transform);
 	void _copy_framebuffer_to_ssil(RID p_render_buffers);
@@ -163,6 +164,7 @@ protected:
 	PagedArrayPool<GeometryInstance *> cull_argument_pool;
 	PagedArray<GeometryInstance *> cull_argument; //need this to exist
 
+	RendererRD::SSEffects *ss_effects = nullptr;
 	RendererRD::GI gi;
 	RendererSceneSkyRD sky;
 
@@ -418,7 +420,6 @@ private:
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
-	bool ssao_using_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
 	float ssao_fadeout_from = 50.0;
@@ -561,47 +562,14 @@ private:
 
 			RID downsample_uniform_set;
 
-			RID last_frame;
-			Vector<RID> last_frame_slices;
-
 			CameraMatrix last_frame_projection;
 			Transform3D last_frame_transform;
 
-			struct SSAO {
-				RID ao_deinterleaved;
-				Vector<RID> ao_deinterleaved_slices;
-				RID ao_pong;
-				Vector<RID> ao_pong_slices;
-				RID ao_final;
-				RID importance_map[2];
-				RID depth_texture_view;
-
-				RID gather_uniform_set;
-				RID importance_map_uniform_set;
-			} ssao;
-
-			struct SSIL {
-				RID ssil_final;
-				RID deinterleaved;
-				Vector<RID> deinterleaved_slices;
-				RID pong;
-				Vector<RID> pong_slices;
-				RID edges;
-				Vector<RID> edges_slices;
-				RID importance_map[2];
-				RID depth_texture_view;
-
-				RID gather_uniform_set;
-				RID importance_map_uniform_set;
-				RID projection_uniform_set;
-			} ssil;
+			RendererRD::SSEffects::SSAORenderBuffers ssao;
+			RendererRD::SSEffects::SSILRenderBuffers ssil;
 		} ss_effects;
 
-		struct SSR {
-			RID normal_scaled;
-			RID depth_scaled;
-			RID blur_radius[2];
-		} ssr;
+		RendererRD::SSEffects::SSRRenderBuffers ssr;
 
 		struct TAA {
 			RID history;

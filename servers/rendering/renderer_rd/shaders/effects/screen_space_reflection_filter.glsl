@@ -22,13 +22,15 @@ layout(push_constant, std430) uniform Params {
 	bool orthogonal;
 	float edge_tolerance;
 	int increment;
-	uint pad;
+	uint view_index;
 
 	ivec2 screen_size;
 	bool vertical;
 	uint steps;
 }
 params;
+
+#include "screen_space_reflection_inc.glsl"
 
 #define GAUSS_TABLE_SIZE 15
 
@@ -63,14 +65,6 @@ float gauss_weight(float p_val) {
 }
 
 #define M_PI 3.14159265359
-
-vec3 reconstructCSPosition(vec2 S, float z) {
-	if (params.orthogonal) {
-		return vec3((S.xy * params.proj_info.xy + params.proj_info.zw), z);
-	} else {
-		return vec3((S.xy * params.proj_info.xy + params.proj_info.zw) * z, z);
-	}
-}
 
 void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, ivec2 texcoord, ivec2 increment, vec3 p_pos, vec3 normal, float p_limit_radius) {
 	for (int i = 1; i < params.steps; i++) {
@@ -110,7 +104,7 @@ void main() {
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC.xy, params.screen_size))) { //too large, do nothing
 		return;
 	}
 
@@ -130,13 +124,13 @@ void main() {
 	ivec2 direction = ivec2(params.increment, 0);
 #endif
 	float depth = imageLoad(source_depth, ssC).r;
-	vec3 pos = reconstructCSPosition(vec2(ssC) + 0.5, depth);
+	vec3 pos = reconstructCSPosition(vec2(ssC.xy) + 0.5, depth);
 	vec3 normal = imageLoad(source_normal, ssC).xyz * 2.0 - 1.0;
 	normal = normalize(normal);
 	normal.y = -normal.y;
 
-	do_filter(accum, accum_radius, divisor, ssC, direction, pos, normal, radius);
-	do_filter(accum, accum_radius, divisor, ssC, -direction, pos, normal, radius);
+	do_filter(accum, accum_radius, divisor, ssC.xy, direction, pos, normal, radius);
+	do_filter(accum, accum_radius, divisor, ssC.xy, -direction, pos, normal, radius);
 
 	if (divisor > 0.0) {
 		accum /= divisor;
