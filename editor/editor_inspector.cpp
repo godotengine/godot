@@ -2026,8 +2026,8 @@ void EditorInspectorArray::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), SNAME("Editor"));
-			odd_style->set_bg_color(color.lightened(0.15));
-			even_style->set_bg_color(color.darkened(0.15));
+			odd_style->set_bg_color(color.darkened(-0.08));
+			even_style->set_bg_color(color.darkened(0.08));
 
 			for (int i = 0; i < (int)array_elements.size(); i++) {
 				ArrayElement &ae = array_elements[i];
