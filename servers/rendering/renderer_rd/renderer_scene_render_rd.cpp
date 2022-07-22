@@ -2001,7 +2001,8 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 
 	if (rb->ssr.depth_scaled.is_null()) {
 		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+		// Use 16-bit texture to improve performance.
+		tf.format = RD::DATA_FORMAT_R16_SFLOAT;
 		tf.width = rb->internal_width / 2;
 		tf.height = rb->internal_height / 2;
 		tf.texture_type = RD::TEXTURE_TYPE_2D;

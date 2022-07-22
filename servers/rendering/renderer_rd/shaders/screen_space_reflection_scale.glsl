@@ -10,7 +10,7 @@ layout(set = 0, binding = 0) uniform sampler2D source_ssr;
 layout(set = 1, binding = 0) uniform sampler2D source_depth;
 layout(set = 1, binding = 1) uniform sampler2D source_normal;
 layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_ssr;
-layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_depth;
+layout(r16f, set = 3, binding = 0) uniform restrict writeonly image2D dest_depth;
 layout(rgba8, set = 3, binding = 1) uniform restrict writeonly image2D dest_normal;
 
 layout(push_constant, std430) uniform Params {
