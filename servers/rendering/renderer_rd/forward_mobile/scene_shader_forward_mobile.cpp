@@ -39,6 +39,10 @@ using namespace RendererSceneRenderImplementation;
 
 /* ShaderData */
 
+void SceneShaderForwardMobile::ShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	//compile
 

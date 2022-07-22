@@ -2341,6 +2341,7 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	}
 
 	if (shader->data) {
+		shader->data->set_path_hint(shader->path_hint);
 		shader->data->set_code(p_code);
 	}
 
@@ -2348,6 +2349,16 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		Material *material = E;
 		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
+	}
+}
+
+void MaterialStorage::shader_set_path_hint(RID p_shader, const String &p_path) {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	shader->path_hint = p_path;
+	if (shader->data) {
+		shader->data->set_path_hint(p_path);
 	}
 }
 

@@ -73,6 +73,7 @@ struct Material;
 struct Shader {
 	ShaderData *data = nullptr;
 	String code;
+	String path_hint;
 	RS::ShaderMode mode;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
@@ -542,6 +543,7 @@ public:
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
 

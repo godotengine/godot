@@ -2034,6 +2034,10 @@ void FileSystemDock::_resource_created() {
 		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 1);
 		make_shader_dialog->popup_centered();
 		return;
+	} else if (type_name == "ShaderInclude") {
+		make_shader_dialog->config(fpath.plus_file("new_shader_include"), false, false, 2);
+		make_shader_dialog->popup_centered();
+		return;
 	}
 
 	Variant c = new_resource_dialog->instance_selected();

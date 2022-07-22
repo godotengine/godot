@@ -38,6 +38,7 @@
 #include "core/templates/rb_map.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
+#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
 #include "shader_warnings.h"
@@ -867,6 +868,11 @@ public:
 
 	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
 
+	struct FilePosition {
+		String file;
+		int line = 0;
+	};
+
 private:
 	struct KeyWord {
 		TokenType token;
@@ -883,6 +889,8 @@ private:
 	bool error_set = false;
 	String error_str;
 	int error_line = 0;
+
+	Vector<FilePosition> include_positions;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -951,6 +959,7 @@ private:
 		error_line = tk_line;
 		error_set = true;
 		error_str = p_str;
+		include_positions.write[include_positions.size() - 1].line = tk_line;
 	}
 
 	void _set_expected_error(const String &p_what) {
@@ -1070,7 +1079,7 @@ private:
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
@@ -1098,12 +1107,14 @@ public:
 		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
 		HashSet<String> shader_types;
 		GlobalVariableGetTypeFunc global_variable_type_func = nullptr;
+		bool is_include = false;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
 	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
+	Vector<FilePosition> get_include_positions();
 	int get_error_line();
 
 	ShaderNode *get_shader();

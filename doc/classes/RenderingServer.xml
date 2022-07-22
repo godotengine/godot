@@ -2748,6 +2748,13 @@
 				Returns the parameters of a shader.
 			</description>
 		</method>
+		<method name="shader_set_code">
+			<return type="void" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="code" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="shader_set_default_texture_param">
 			<return type="void" />
 			<argument index="0" name="shader" type="RID" />
@@ -2757,6 +2764,13 @@
 			<description>
 				Sets a shader's default texture. Overwrites the texture given by name.
 				[b]Note:[/b] If the sampler array is used use [code]index[/code] to access the specified texture.
+			</description>
+		</method>
+		<method name="shader_set_path_hint">
+			<return type="void" />
+			<argument index="0" name="shader" type="RID" />
+			<argument index="1" name="path" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">

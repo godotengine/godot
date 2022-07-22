@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering_server.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
@@ -573,6 +574,37 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 				}
 
 				return _make_token(TK_OP_MOD);
+			} break;
+			case '@': {
+				if (GETCHAR(0) == '@' && GETCHAR(1) == '>') {
+					char_idx += 2;
+
+					LocalVector<char32_t> incp;
+					while (GETCHAR(0) != '\n') {
+						incp.push_back(GETCHAR(0));
+						char_idx++;
+					}
+					incp.push_back(0); // Zero end it.
+					String include_path(incp.ptr());
+					include_positions.write[include_positions.size() - 1].line = tk_line;
+					FilePosition fp;
+					fp.file = include_path;
+					fp.line = 0;
+					tk_line = 0;
+					include_positions.push_back(fp);
+
+				} else if (GETCHAR(0) == '@' && GETCHAR(1) == '<') {
+					if (include_positions.size() == 1) {
+						return _make_token(TK_ERROR, "Invalid include exit hint @@< without matching enter hint.");
+					}
+					char_idx += 2;
+
+					include_positions.resize(include_positions.size() - 1); // Pop back.
+					tk_line = include_positions[include_positions.size() - 1].line; // Restore line.
+
+				} else {
+					return _make_token(TK_ERROR, "Invalid include enter/exit hint token (@@> and @@<)");
+				}
 			} break;
 			default: {
 				char_idx--; //go back one, since we have no idea what this is
@@ -1121,6 +1153,9 @@ void ShaderLanguage::clear() {
 	completion_struct = StringName();
 	completion_base = TYPE_VOID;
 	completion_base_array = false;
+
+	include_positions.clear();
+	include_positions.push_back(FilePosition());
 
 #ifdef DEBUG_ENABLED
 	keyword_completion_context = CF_GLOBAL_SPACE;
@@ -7677,35 +7712,39 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
-	Token tk = _get_token();
+Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include) {
+	Token tk;
 	TkPos prev_pos;
 	Token next;
 
-	if (tk.type != TK_SHADER_TYPE) {
-		_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
+	if (!p_is_include) {
+		tk = _get_token();
+
+		if (tk.type != TK_SHADER_TYPE) {
+			_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
 #ifdef DEBUG_ENABLED
-	keyword_completion_context = CF_UNSPECIFIED;
+		keyword_completion_context = CF_UNSPECIFIED;
 #endif // DEBUG_ENABLED
 
-	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
-	if (shader_type_identifier == StringName()) {
-		_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	if (!p_shader_types.has(shader_type_identifier)) {
-		_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	prev_pos = _get_tkpos();
-	tk = _get_token();
+		_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
+		if (shader_type_identifier == StringName()) {
+			_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		if (!p_shader_types.has(shader_type_identifier)) {
+			_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		prev_pos = _get_tkpos();
+		tk = _get_token();
 
-	if (tk.type != TK_SEMICOLON) {
-		_set_tkpos(prev_pos);
-		_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
-		return ERR_PARSE_ERROR;
+		if (tk.type != TK_SEMICOLON) {
+			_set_tkpos(prev_pos);
+			_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
+			return ERR_PARSE_ERROR;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
@@ -9511,12 +9550,13 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 
 	code = p_code;
 	global_var_get_type_func = p_info.global_variable_type_func;
+
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	Error err = _parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types, p_info.is_include);
 
 #ifdef DEBUG_ENABLED
 	if (check_warnings) {
@@ -9540,7 +9580,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 	global_var_get_type_func = p_info.global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
-	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types);
+	_parse_shader(p_info.functions, p_info.render_modes, p_info.shader_types, p_info.is_include);
 
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
@@ -10064,6 +10104,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 String ShaderLanguage::get_error_text() {
 	return error_str;
+}
+
+Vector<ShaderLanguage::FilePosition> ShaderLanguage::get_include_positions() {
+	return include_positions;
 }
 
 int ShaderLanguage::get_error_line() {
