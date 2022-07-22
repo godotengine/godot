@@ -3007,14 +3007,6 @@ void EditorPropertyColor::_popup_closed() {
 	}
 }
 
-void EditorPropertyColor::_picker_created() {
-	// get default color picker mode from editor settings
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	picker->get_picker()->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-	picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
-}
-
 void EditorPropertyColor::_picker_opening() {
 	last_color = picker->get_pick_color();
 }
@@ -3059,7 +3051,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
-	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created));
+	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(picker->get_picker()));
 	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
 

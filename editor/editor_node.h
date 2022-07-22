@@ -786,6 +786,8 @@ public:
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
 
+	void setup_color_picker(ColorPicker *picker);
+
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
 
