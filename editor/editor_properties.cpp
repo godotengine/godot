@@ -3177,6 +3177,11 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 	Node *dropped_node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
 	ERR_FAIL_NULL_V(dropped_node, false);
 
+	if (valid_types.is_empty()) {
+		// No type requirements specified so any type is valid.
+		return true;
+	}
+
 	for (const StringName &E : valid_types) {
 		if (dropped_node->is_class(E)) {
 			return true;
