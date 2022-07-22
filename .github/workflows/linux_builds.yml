@@ -31,12 +31,12 @@ jobs:
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes, ld.gold)
+          - name: Editor with doubles and GCC sanitizers (target=debug, tools=yes, float=64, tests=yes, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: debug
             tools: true
             tests: true
-            sconsflags: float=64 use_asan=yes use_ubsan=yes LINKFLAGS="-fuse-ld=gold"
+            sconsflags: float=64 use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
@@ -46,12 +46,12 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Editor with clang sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, use_lld=yes)
+          - name: Editor with clang sanitizers (target=debug, tools=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
             target: debug
             tools: true
             tests: true
-            sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes use_lld=yes
+            sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
             bin: "./bin/godot.linuxbsd.tools.64.llvm.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
