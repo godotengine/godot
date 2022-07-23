@@ -214,16 +214,6 @@ static real_t cubic_interpolate_real(const real_t p_pre_a, const real_t p_a, con
 					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 }
 
-static Quaternion flip_to_shortest(const Quaternion &compared, const Quaternion &flip) {
-	if (compared.dot(flip) < 0.0f) {
-		// Return flipped
-		return Quaternion(-flip.x, -flip.y, -flip.z, -flip.w);
-	} else {
-		// No flipping necessary
-		return flip;
-	}
-}
-
 Quaternion Quaternion::cubic_interpolate(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t, const bool flip_to_shortest_path) const {
 	Quaternion q0;
 	Quaternion q1;
@@ -231,17 +221,37 @@ Quaternion Quaternion::cubic_interpolate(const Quaternion &p_q, const Quaternion
 	Quaternion q3;
 
 	if (flip_to_shortest_path) {
-		// Flip quaternions to shortest path if necessary (p_q1 used as the reference)
-		q0 = flip_to_shortest(*this, p_prep);
+		// Flip quaternions to shortest path if necessary (this used as the reference (never flipped))
+		q0 = this->dot(p_prep) < 0.0f ? -p_prep : p_prep;
 		q1 = *this;
-		q2 = flip_to_shortest(*this, p_q);
-		q3 = flip_to_shortest(q2, p_postq); // Need to compare with possibly already flipped q2
+		if (this->dot(p_q) < 0.0f) {
+			q2 = -p_q;
+			// When comparing with already flipped q2, we need to flip q3 also when dot product is 0
+			// This keeps flipping between subsequent quaternions consistent.
+			q3 = q2.dot(p_postq) <= 0.0f ? -p_postq : p_postq;
+		} else {
+			q2 = p_q;
+			q3 = q2.dot(p_postq) < 0.0f ? -p_postq : p_postq;
+		}
 	} else {
 		q0 = p_prep;
 		q1 = *this;
 		q2 = p_q;
 		q3 = p_postq;
 	}
+
+	// TODO: Remove test output
+#if false
+	if (q0.dot(q1) == 0) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "q0.dot(q1) == 0");
+	}
+	if (q1.dot(q2) == 0) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "q1.dot(q2) == 0");
+	}
+	if (q2.dot(q3) == 0) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "q2.dot(q3) == 0");
+	}
+#endif
 
 	return Quaternion(
 			cubic_interpolate_real(q0.x, q1.x, q2.x, q3.x, p_t),
