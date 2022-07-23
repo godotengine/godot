@@ -3028,7 +3028,8 @@
 			<argument index="0" name="viewport" type="RID" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the viewport renders to hdr.
+				If [code]true[/code], the viewport renders to high dynamic range (HDR) instead of standard dynamic range (SDR). See also [method viewport_set_use_32_bpc_depth].
+				[b]Note:[/b] Only available on the GLES3 backend.
 			</description>
 		</method>
 		<method name="viewport_set_hide_canvas">
@@ -3136,6 +3137,15 @@
 			<argument index="1" name="usage" type="int" enum="VisualServer.ViewportUsage" />
 			<description>
 				Sets the viewport's 2D/3D mode. See [enum ViewportUsage] constants for options.
+			</description>
+		</method>
+		<method name="viewport_set_use_32_bpc_depth">
+			<return type="void" />
+			<argument index="0" name="viewport" type="RID" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], allocates the viewport's framebuffer with full floating-point precision (32-bit) instead of half floating-point precision (16-bit). Only effective if [method viewport_set_use_32_bpc_depth] is used on the same [Viewport] to set HDR to [code]true[/code].
+				[b]Note:[/b] Only available on the GLES3 backend.
 			</description>
 		</method>
 		<method name="viewport_set_use_arvr">
