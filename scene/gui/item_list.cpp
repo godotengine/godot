@@ -34,6 +34,27 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 
+bool ItemList::ItemCustomSort::operator()(const Item &p_l, const Item &p_r) const {
+	Dictionary left;
+	left["metadata"] = p_l.metadata;
+	left["text"] = p_l.text;
+
+	Dictionary right;
+	right["metadata"] = p_r.metadata;
+	right["text"] = p_r.text;
+
+	Variant vl = Variant(left);
+	Variant vr = Variant(right);
+
+	const Variant *args[2] = { &vl, &vr };
+	Callable::CallError err;
+	Variant res;
+	func.call(args, 2, res, err);
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 2, err));
+	return res;
+}
+
 void ItemList::_shape(int p_idx) {
 	Item &item = items.write[p_idx];
 
@@ -1443,6 +1464,21 @@ void ItemList::sort_items_by_text() {
 	}
 }
 
+void ItemList::sort_items_custom(const Callable &p_callable) {
+	items.sort_custom<ItemCustomSort, true>(p_callable);
+	update();
+	shape_changed = true;
+
+	if (select_mode == SELECT_SINGLE) {
+		for (int i = 0; i < items.size(); i++) {
+			if (items[i].selected) {
+				select(i);
+				return;
+			}
+		}
+	}
+}
+
 int ItemList::find_metadata(const Variant &p_metadata) const {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].metadata == p_metadata) {
@@ -1675,6 +1711,7 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &ItemList::clear);
 	ClassDB::bind_method(D_METHOD("sort_items_by_text"), &ItemList::sort_items_by_text);
+	ClassDB::bind_method(D_METHOD("sort_items_custom", "func"), &ItemList::sort_items_custom);
 
 	ClassDB::bind_method(D_METHOD("set_fixed_column_width", "width"), &ItemList::set_fixed_column_width);
 	ClassDB::bind_method(D_METHOD("get_fixed_column_width"), &ItemList::get_fixed_column_width);

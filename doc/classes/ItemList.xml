@@ -333,6 +333,40 @@
 				Sorts items in the list by their text.
 			</description>
 		</method>
+		<method name="sort_items_custom">
+			<return type="void" />
+			<argument index="0" name="func" type="Callable" />
+			<description>
+				Sorts the items in the list using a custom method. The custom method receives two arguments (a pair of dictionaries from the item list) and must return either [code]true[/code] or [code]false[/code]. For two items [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], item [code]b[/code] will be after item [code]a[/code] in the list.
+				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				[codeblocks]
+				[gdscript]
+				extends ItemList
+
+				# inverse of sort_items_by_text
+				func sort_ascending(a : Dictionary, b : Dictionary) -&gt; bool:
+				    if a["text"] &lt; b["text"]:
+				        return true
+				    return false
+
+				func _ready():
+				    add_item("text1")
+				    add_item("text2")
+				    add_item("text3")
+
+				    sort_items_custom(sort_ascending)
+				    # list becomes text3, text2, text1
+
+				    # Descending, lambda version.
+				    sort_items_custom(func(a, b): return a["text"] &gt; b["text"])
+				    # list becomes text1, text2, text3
+				[/gdscript]
+				[/codeblocks]
+				The [Dictionary] arguments for [code]func[/code] has the follow key-values:
+				[code]metadata[/code]: The item's metadata. See [method get_item_metadata]
+				[code]text[/code]: The item's text. See [method get_item_text]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">

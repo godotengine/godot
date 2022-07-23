@@ -82,6 +82,12 @@ private:
 		}
 	};
 
+	struct ItemCustomSort {
+		const Callable &func;
+
+		bool operator()(const Item &p_l, const Item &p_r) const;
+	};
+
 	int current = -1;
 
 	bool shape_changed = true;
@@ -234,6 +240,7 @@ public:
 	void ensure_current_is_visible();
 
 	void sort_items_by_text();
+	void sort_items_custom(const Callable &p_callable);
 	int find_metadata(const Variant &p_metadata) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
