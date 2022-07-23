@@ -2028,6 +2028,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	Object *prev_inspected_object = get_inspector()->get_edited_object();
 
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/navigation/stay_in_script_editor_on_node_selected"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
@@ -2066,6 +2067,9 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
 			inspector_dock->update(current_node);
+			if (!inspector_only) {
+				inspector_only = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
+			}
 		} else {
 			node_dock->set_node(nullptr);
 			scene_tree_dock->set_selected(nullptr);

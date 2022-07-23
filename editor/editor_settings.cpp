@@ -439,6 +439,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/navigation/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/navigation/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
 	_initial_set("text_editor/navigation/mouse_extra_buttons_navigate_history", true);
 	_initial_set("text_editor/navigation/drag_and_drop_selection", true);
+	_initial_set("text_editor/navigation/stay_in_script_editor_on_node_selected", true);
 
 	// Appearance
 	_initial_set("text_editor/appearance/show_line_numbers", true);
