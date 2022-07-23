@@ -46,7 +46,7 @@
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
-VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
+VkResult VulkanContext::vk_create_render_pass2_khr(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
 	if (!fpCreateRenderPass2KHR) {
 		fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR");
 	}
@@ -1855,7 +1855,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pCorrelatedViewMasks*/ &view_masks,
 		};
 
-		err = vkCreateRenderPass2KHR(device, &rp_info, nullptr, &window->render_pass);
+		err = vk_create_render_pass2_khr(device, &rp_info, nullptr, &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {

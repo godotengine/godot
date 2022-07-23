@@ -268,7 +268,7 @@ protected:
 
 public:
 	// Extension calls
-	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
+	VkResult vk_create_render_pass2_khr(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; };
 	uint32_t get_vulkan_minor() const { return vulkan_minor; };
