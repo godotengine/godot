@@ -39,7 +39,6 @@
 
 #include "vk_enum_string_helper.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
