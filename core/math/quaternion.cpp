@@ -195,25 +195,6 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) c
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-static real_t cubic_interpolate_real(const real_t p_pre_a, const real_t p_a, const real_t p_b, const real_t p_post_b, real_t p_c) {
-	// This is cloned straight from animation.cpp
-
-	real_t p0 = p_pre_a;
-	real_t p1 = p_a;
-	real_t p2 = p_b;
-	real_t p3 = p_post_b;
-
-	real_t t = p_c;
-	real_t t2 = t * t;
-	real_t t3 = t2 * t;
-
-	return 0.5f *
-			((p1 * 2.0f) +
-					(-p0 + p2) * t +
-					(2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 +
-					(-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
-}
-
 Quaternion Quaternion::cubic_interpolate(const Quaternion &p_q, const Quaternion &p_prep, const Quaternion &p_postq, const real_t &p_t, const bool flip_to_shortest_path) const {
 	Quaternion q0;
 	Quaternion q1;
@@ -254,10 +235,10 @@ Quaternion Quaternion::cubic_interpolate(const Quaternion &p_q, const Quaternion
 #endif
 
 	return Quaternion(
-			cubic_interpolate_real(q0.x, q1.x, q2.x, q3.x, p_t),
-			cubic_interpolate_real(q0.y, q1.y, q2.y, q3.y, p_t),
-			cubic_interpolate_real(q0.z, q1.z, q2.z, q3.z, p_t),
-			cubic_interpolate_real(q0.w, q1.w, q2.w, q3.w, p_t))
+			Math::cubic_interpolate(q1.x, q2.x, q0.x, q3.x, p_t),
+			Math::cubic_interpolate(q1.y, q2.y, q0.y, q3.y, p_t),
+			Math::cubic_interpolate(q1.z, q2.z, q0.z, q3.z, p_t),
+			Math::cubic_interpolate(q1.w, q2.w, q0.w, q3.w, p_t))
 			.normalized();
 }
 
