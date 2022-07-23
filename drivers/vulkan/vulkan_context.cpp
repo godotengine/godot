@@ -39,8 +39,8 @@
 
 #include "vk_enum_string_helper.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
