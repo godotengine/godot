@@ -1234,13 +1234,23 @@ void Viewport::_gui_show_tooltip() {
 	Rect2i vr = window->get_usable_parent_rect();
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
-		r.position.x = vr.position.x + vr.size.x - r.size.x;
+		// Place it in the opposite direction. If it fails, just hug the border.
+		r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
+
+		if (r.position.x < vr.position.x) {
+			r.position.x = vr.position.x + vr.size.x - r.size.x;
+		}
 	} else if (r.position.x < vr.position.x) {
 		r.position.x = vr.position.x;
 	}
 
 	if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
-		r.position.y = vr.position.y + vr.size.y - r.size.y;
+		// Same as above.
+		r.position.y = gui.tooltip_pos.y - r.size.y - tooltip_offset.y;
+
+		if (r.position.y < vr.position.y) {
+			r.position.y = vr.position.y + vr.size.y - r.size.y;
+		}
 	} else if (r.position.y < vr.position.y) {
 		r.position.y = vr.position.y;
 	}
