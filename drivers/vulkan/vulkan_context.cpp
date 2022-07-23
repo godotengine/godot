@@ -210,19 +210,19 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 
 VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers) {
 	for (uint32_t i = 0; i < check_count; i++) {
-		VkBool32 found = 0;
+		VkBool32 found = false;
 		for (uint32_t j = 0; j < layer_count; j++) {
 			if (!strcmp(check_names[i], layers[j].layerName)) {
-				found = 1;
+				found = true;
 				break;
 			}
 		}
 		if (!found) {
 			WARN_PRINT("Can't find layer: " + String(check_names[i]));
-			return 0;
+			return false;
 		}
 	}
-	return 1;
+	return true;
 }
 
 Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const char *const **names) {
