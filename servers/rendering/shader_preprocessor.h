@@ -136,7 +136,6 @@ private:
 		int include_depth = 0;
 		String current_include;
 		String current_shader_type;
-		int shader_type_pos = -1;
 		String error;
 		List<FilePosition> include_positions;
 		RBMap<String, Vector<SkippedCondition *>> skipped_conditions;
@@ -179,7 +178,6 @@ private:
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);
 	void set_error(const String &p_error, int p_line);
-	bool check_directive_before_type(Tokenizer *p_tokenizer, const String &p_directive);
 
 	static Define *create_define(const String &p_body);
 

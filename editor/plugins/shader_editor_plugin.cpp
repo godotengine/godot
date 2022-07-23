@@ -381,7 +381,7 @@ void ShaderTextEditor::_validate_script() {
 		//preprocessor error
 		ERR_FAIL_COND(err_positions.size() == 0);
 
-		String error_text;
+		String error_text = error_pp;
 		int error_line = err_positions.front()->get().line;
 		if (err_positions.size() == 1) {
 			// Error in main file
@@ -1198,12 +1198,12 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		Ref<VisualShader> vs = es.shader;
 		if (vs.is_valid()) {
 			es.visual_shader_editor = memnew(VisualShaderEditor);
-			es.visual_shader_editor->edit(vs.ptr());
 			shader_tabs->add_child(es.visual_shader_editor);
+			es.visual_shader_editor->edit(vs.ptr());
 		} else {
 			es.shader_editor = memnew(ShaderEditor);
-			es.shader_editor->edit(s);
 			shader_tabs->add_child(es.shader_editor);
+			es.shader_editor->edit(s);
 			es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list_status));
 		}
 	}

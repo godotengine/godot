@@ -344,41 +344,23 @@ void ShaderPreprocessor::process_directive(Tokenizer *p_tokenizer) {
 	}
 
 	if (directive == "if") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_if(p_tokenizer);
-		}
+		process_if(p_tokenizer);
 	} else if (directive == "ifdef") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_ifdef(p_tokenizer);
-		}
+		process_ifdef(p_tokenizer);
 	} else if (directive == "ifndef") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_ifndef(p_tokenizer);
-		}
+		process_ifndef(p_tokenizer);
 	} else if (directive == "else") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_else(p_tokenizer);
-		}
+		process_else(p_tokenizer);
 	} else if (directive == "endif") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_endif(p_tokenizer);
-		}
+		process_endif(p_tokenizer);
 	} else if (directive == "define") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_define(p_tokenizer);
-		}
+		process_define(p_tokenizer);
 	} else if (directive == "undef") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_undef(p_tokenizer);
-		}
+		process_undef(p_tokenizer);
 	} else if (directive == "include") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_include(p_tokenizer);
-		}
+		process_include(p_tokenizer);
 	} else if (directive == "pragma") {
-		if (check_directive_before_type(p_tokenizer, directive)) {
-			process_pragma(p_tokenizer);
-		}
+		process_pragma(p_tokenizer);
 	} else {
 		set_error(RTR("Unknown directive."), p_tokenizer->get_line());
 	}
@@ -878,14 +860,6 @@ void ShaderPreprocessor::set_error(const String &p_error, int p_line) {
 		fp.line = p_line + 1;
 		state->include_positions.push_back(fp);
 	}
-}
-
-bool ShaderPreprocessor::check_directive_before_type(Tokenizer *p_tokenizer, const String &p_directive) {
-	if (p_tokenizer->get_index() < state->shader_type_pos) {
-		set_error(vformat(RTR("`#%s` may not be defined before `shader_type`."), p_directive), p_tokenizer->get_line());
-		return false;
-	}
-	return true;
 }
 
 ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_body) {
