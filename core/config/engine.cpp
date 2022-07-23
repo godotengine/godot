@@ -115,6 +115,17 @@ void Engine::increment_frames_drawn() {
 	frames_drawn++;
 }
 
+double Engine::get_frames_per_second(FPSMetric p_metric) const {
+	switch (p_metric) {
+		case FPS_METRIC_AVERAGE:
+			return _fps_average;
+		case FPS_METRIC_ROLLING_AVERAGE:
+			return _fps_rolling_average;
+		default:
+			ERR_FAIL_V_MSG(1.0, "Invalid FPS metric: " + itos(p_metric));
+	}
+}
+
 uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }

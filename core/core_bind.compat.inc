@@ -59,6 +59,16 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }
 
+// Engine
+
+double Engine::_get_frames_per_second_compat_63356() const {
+	return get_frames_per_second(Engine::FPS_METRIC_AVERAGE);
+}
+
+void Engine::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_frames_per_second"), &Engine::_get_frames_per_second_compat_63356);
+}
+
 } // namespace CoreBind
 
 #endif // DISABLE_DEPRECATED

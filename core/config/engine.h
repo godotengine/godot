@@ -53,6 +53,12 @@ public:
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
+	enum FPSMetric {
+		FPS_METRIC_AVERAGE,
+		FPS_METRIC_ROLLING_AVERAGE,
+		FPS_METRIC_MAX,
+	};
+
 private:
 	friend class Main;
 
@@ -64,7 +70,12 @@ private:
 	int ips = 60;
 	int user_ips = 60;
 	double physics_jitter_fix = 0.5;
-	double _fps = 1;
+
+	// Assume to be rendering at 60 FPS at first, so that the FPS counters can
+	// smoothly interpolate from that value (which is more realistic than going up from 1 FPS).
+	double _fps_average = 60.0;
+	double _fps_rolling_average = 60.0;
+
 	int _max_fps = 0;
 	int _audio_output_latency = 0;
 	double _time_scale = 1.0;
@@ -131,7 +142,7 @@ public:
 	virtual void set_audio_output_latency(int p_msec);
 	virtual int get_audio_output_latency() const;
 
-	virtual double get_frames_per_second() const { return _fps; }
+	virtual double get_frames_per_second(FPSMetric p_metric = FPS_METRIC_AVERAGE) const;
 
 	uint64_t get_frames_drawn();
 
