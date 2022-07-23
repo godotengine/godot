@@ -376,6 +376,7 @@ void ShaderTextEditor::_validate_script() {
 		get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
 	set_error("");
+	set_error_count(0);
 
 	if (last_compile_result != OK) {
 		//preprocessor error
