@@ -48,11 +48,11 @@
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
 VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
-	if (fpCreateRenderPass2KHR == nullptr) {
+	if (!fpCreateRenderPass2KHR) {
 		fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR");
 	}
 
-	if (fpCreateRenderPass2KHR == nullptr) {
+	if (!fpCreateRenderPass2KHR) {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	} else {
 		return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
@@ -65,39 +65,39 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
 		void *pUserData) {
 	// This error needs to be ignored because the AMD allocator will mix up memory types on IGP processors.
-	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") != nullptr &&
-			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "Mapping an image with layout") &&
+			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device")) {
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(pCallbackData->pMessage, "Invalid SPIR-V binary version 1.3") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "Invalid SPIR-V binary version 1.3")) {
 		return VK_FALSE;
 	}
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(pCallbackData->pMessage, "Shader requires flag") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "Shader requires flag")) {
 		return VK_FALSE;
 	}
 
 	// This needs to be ignored because Validator is wrong here.
-	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != nullptr &&
-			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") &&
+			strstr(pCallbackData->pMessage, "must be a memory object")) {
 		return VK_FALSE;
 	}
 
 	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
-	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32")) {
 		return VK_FALSE;
 	}
 
 #ifdef WINDOWS_ENABLED
 	// Some software installs Vulkan overlays in Windows registry and never cleans them up on uninstall.
 	// So we get spammy error level messages from the loader about those - make them verbose instead.
-	if (strstr(pCallbackData->pMessage, "loader_get_json: Failed to open JSON file") != nullptr) {
+	if (strstr(pCallbackData->pMessage, "loader_get_json: Failed to open JSON file")) {
 		messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
 	}
 #endif
 
-	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
+	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw")) {
 		return VK_FALSE;
 	}
 
@@ -238,7 +238,7 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 
 	// Clear out-arguments
 	*count = 0;
-	if (names != nullptr) {
+	if (names) {
 		*names = nullptr;
 	}
 
@@ -264,7 +264,7 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 	for (uint32_t i = 0; i < instance_validation_layers_alt.size(); i++) {
 		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].ptr(), instance_layer_count, instance_layers)) {
 			*count = instance_validation_layers_alt[i].size();
-			if (names != nullptr) {
+			if (names) {
 				*names = instance_validation_layers_alt[i].ptr();
 			}
 			break;
@@ -282,7 +282,7 @@ Error VulkanContext::_obtain_vulkan_version() {
 	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkApplicationInfo.html#_description
 	// For Vulkan 1.0 vkEnumerateInstanceVersion is not available, including not in the loader we compile against on Android.
 	_vkEnumerateInstanceVersion func = (_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
-	if (func != nullptr) {
+	if (func) {
 		uint32_t api_version;
 		VkResult res = func(&api_version);
 		if (res == VK_SUCCESS) {
@@ -329,6 +329,7 @@ Error VulkanContext::_initialize_extensions() {
 			free(instance_extensions);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
+
 		for (uint32_t i = 0; i < instance_extension_count; i++) {
 			if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				surfaceExtFound = 1;
@@ -539,11 +540,11 @@ Error VulkanContext::_check_capabilities() {
 
 	// Check for extended features.
 	PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2");
-	if (vkGetPhysicalDeviceFeatures2_func == nullptr) {
+	if (!vkGetPhysicalDeviceFeatures2_func) {
 		// In Vulkan 1.0 might be accessible under its original extension name.
 		vkGetPhysicalDeviceFeatures2_func = (PFN_vkGetPhysicalDeviceFeatures2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR");
 	}
-	if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
+	if (vkGetPhysicalDeviceFeatures2_func) {
 		// Check our extended features.
 		VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {
 			/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
@@ -602,11 +603,11 @@ Error VulkanContext::_check_capabilities() {
 
 	// Check extended properties.
 	PFN_vkGetPhysicalDeviceProperties2 device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2");
-	if (device_properties_func == nullptr) {
+	if (!device_properties_func) {
 		// In Vulkan 1.0 might be accessible under its original extension name.
 		device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR");
 	}
-	if (device_properties_func != nullptr) {
+	if (device_properties_func) {
 		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties;
 		VkPhysicalDeviceMultiviewProperties multiviewProperties;
 		VkPhysicalDeviceSubgroupProperties subgroupProperties;
@@ -798,10 +799,10 @@ Error VulkanContext::_create_instance() {
 				(PFN_vkCmdInsertDebugUtilsLabelEXT)vkGetInstanceProcAddr(inst, "vkCmdInsertDebugUtilsLabelEXT");
 		SetDebugUtilsObjectNameEXT =
 				(PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(inst, "vkSetDebugUtilsObjectNameEXT");
-		if (nullptr == CreateDebugUtilsMessengerEXT || nullptr == DestroyDebugUtilsMessengerEXT ||
-				nullptr == SubmitDebugUtilsMessageEXT || nullptr == CmdBeginDebugUtilsLabelEXT ||
-				nullptr == CmdEndDebugUtilsLabelEXT || nullptr == CmdInsertDebugUtilsLabelEXT ||
-				nullptr == SetDebugUtilsObjectNameEXT) {
+		if (!CreateDebugUtilsMessengerEXT || !DestroyDebugUtilsMessengerEXT ||
+				!SubmitDebugUtilsMessageEXT || !CmdBeginDebugUtilsLabelEXT ||
+				!CmdEndDebugUtilsLabelEXT || !CmdInsertDebugUtilsLabelEXT ||
+				!SetDebugUtilsObjectNameEXT) {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
 					"GetProcAddr: Failed to init VK_EXT_debug_utils\n"
 					"GetProcAddr: Failure");
@@ -828,7 +829,7 @@ Error VulkanContext::_create_instance() {
 		DebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(inst, "vkDebugReportMessageEXT");
 		DestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugReportCallbackEXT");
 
-		if (nullptr == CreateDebugReportCallbackEXT || nullptr == DebugReportMessageEXT || nullptr == DestroyDebugReportCallbackEXT) {
+		if (!CreateDebugReportCallbackEXT || !DebugReportMessageEXT || !DestroyDebugReportCallbackEXT) {
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE,
 					"GetProcAddr: Failed to init VK_EXT_debug_report\n"
 					"GetProcAddr: Failure");
@@ -946,7 +947,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 				} break;
 			}
 			uint32_t vendor_idx = 0;
-			while (vendor_names[vendor_idx].name != nullptr) {
+			while (vendor_names[vendor_idx].name) {
 				if (props.vendorID == vendor_names[vendor_idx].id) {
 					vendor = vendor_names[vendor_idx].name;
 					break;
@@ -1020,7 +1021,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	{
 		device_vendor = "Unknown";
 		uint32_t vendor_idx = 0;
-		while (vendor_names[vendor_idx].name != nullptr) {
+		while (vendor_names[vendor_idx].name) {
 			if (gpu_props.vendorID == vendor_names[vendor_idx].id) {
 				device_vendor = vendor_names[vendor_idx].name;
 				break;
@@ -2086,7 +2087,7 @@ Error VulkanContext::swap_buffers() {
 	const VkCommandBuffer *commands_ptr = nullptr;
 	uint32_t commands_to_submit = 0;
 
-	if (command_buffer_queue[0] == nullptr) {
+	if (!command_buffer_queue[0]) {
 		// No setup command, but commands to submit, submit from the first and skip command.
 		if (command_buffer_count > 1) {
 			commands_ptr = command_buffer_queue.ptr() + 1;
