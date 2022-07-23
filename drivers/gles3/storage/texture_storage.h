@@ -577,6 +577,6 @@ inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
 
 } // namespace GLES3
 
-#endif // !GLES3_ENABLED
+#endif // GLES3_ENABLED
 
-#endif // !TEXTURE_STORAGE_GLES3_H
+#endif // TEXTURE_STORAGE_GLES3_H

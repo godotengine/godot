@@ -362,4 +362,4 @@ public:
 	~PlaceholderMesh();
 };
 
-#endif
+#endif // MESH_H

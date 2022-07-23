@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lsp.hpp                                                              */
+/*  godot_lsp.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -1975,4 +1975,4 @@ static String marked_documentation(const String &p_bbcode) {
 }
 } // namespace lsp
 
-#endif
+#endif // GODOT_LSP_H

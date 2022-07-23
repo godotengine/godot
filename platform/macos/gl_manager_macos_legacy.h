@@ -94,4 +94,5 @@ public:
 };
 
 #endif // MACOS_ENABLED && GLES3_ENABLED
+
 #endif // GL_MANAGER_MACOS_LEGACY_H

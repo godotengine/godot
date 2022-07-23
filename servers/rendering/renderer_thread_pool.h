@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERERTHREADPOOL_H
-#define RENDERERTHREADPOOL_H
+#ifndef RENDERER_THREAD_POOL_H
+#define RENDERER_THREAD_POOL_H
 
 #include "core/templates/thread_work_pool.h"
 
@@ -42,4 +42,4 @@ public:
 	~RendererThreadPool();
 };
 
-#endif // RENDERERTHREADPOOL_H
+#endif // RENDERER_THREAD_POOL_H

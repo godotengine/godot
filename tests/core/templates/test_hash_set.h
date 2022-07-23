@@ -225,4 +225,4 @@ TEST_CASE("[HashSet] Copy") {
 
 } // namespace TestHashSet
 
-#endif // TEST_HASH_MAP_H
+#endif // TEST_HASH_SET_H

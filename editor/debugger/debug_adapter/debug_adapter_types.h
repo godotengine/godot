@@ -278,4 +278,4 @@ struct Variable {
 
 } // namespace DAP
 
-#endif
+#endif // DEBUG_ADAPTER_TYPES_H

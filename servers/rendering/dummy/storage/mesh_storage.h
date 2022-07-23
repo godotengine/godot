@@ -131,4 +131,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !MESH_STORAGE_DUMMY_H
+#endif // MESH_STORAGE_DUMMY_H

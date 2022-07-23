@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reverb.h                                                             */
+/*  editor_quick_open.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,95 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REVERB_H
-#define REVERB_H
+#ifndef EDITOR_QUICK_OPEN_H
+#define EDITOR_QUICK_OPEN_H
 
-#include "core/math/audio_frame.h"
-#include "core/os/memory.h"
-#include "core/typedefs.h"
+#include "core/templates/oa_hash_map.h"
+#include "editor/editor_file_system.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
 
-class Reverb {
-public:
-	enum {
-		INPUT_BUFFER_MAX_SIZE = 1024,
+class EditorQuickOpen : public ConfirmationDialog {
+	GDCLASS(EditorQuickOpen, ConfirmationDialog);
 
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
+	StringName base_type;
+	bool allow_multi_select = false;
+
+	Vector<String> files;
+	OAHashMap<String, Ref<Texture2D>> icons;
+
+	struct Entry {
+		String path;
+		float score = 0;
 	};
 
-private:
-	enum {
-		MAX_COMBS = 8,
-		MAX_ALLPASS = 4,
-		MAX_ECHO_MS = 500
-
+	struct EntryComparator {
+		_FORCE_INLINE_ bool operator()(const Entry &A, const Entry &B) const {
+			return A.score > B.score;
+		}
 	};
 
-	static const float comb_tunings[MAX_COMBS];
-	static const float allpass_tunings[MAX_ALLPASS];
+	void _update_search();
+	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
+	float _score_path(const String &p_search, const String &p_path);
 
-	struct Comb {
-		int size = 0;
-		float *buffer = nullptr;
-		float feedback = 0;
-		float damp = 0; //lowpass
-		float damp_h = 0; //history
-		int pos = 0;
-		int extra_spread_frames = 0;
+	void _confirmed();
+	virtual void cancel_pressed() override;
+	void _cleanup();
 
-		Comb() {}
-	};
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _text_changed(const String &p_newtext);
 
-	struct AllPass {
-		int size = 0;
-		float *buffer = nullptr;
-		int pos = 0;
-		int extra_spread_frames = 0;
-		AllPass() {}
-	};
+	void _theme_changed();
 
-	Comb comb[MAX_COMBS];
-	AllPass allpass[MAX_ALLPASS];
-	float *input_buffer = nullptr;
-	float *echo_buffer = nullptr;
-	int echo_buffer_size = 0;
-	int echo_buffer_pos = 0;
-
-	float hpf_h1 = 0.0f;
-	float hpf_h2 = 0.0f;
-
-	struct Parameters {
-		float room_size;
-		float damp;
-		float wet;
-		float dry;
-		float mix_rate;
-		float extra_spread_base;
-		float extra_spread;
-		float predelay;
-		float predelay_fb;
-		float hpf;
-	} params;
-
-	void configure_buffers();
-	void update_parameters();
-	void clear_buffers();
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
-	void set_room_size(float p_size);
-	void set_damp(float p_damp);
-	void set_wet(float p_wet);
-	void set_dry(float p_dry);
-	void set_predelay(float p_predelay); // in ms
-	void set_predelay_feedback(float p_predelay_fb); // in ms
-	void set_highpass(float p_frq);
-	void set_mix_rate(float p_mix_rate);
-	void set_extra_spread(float p_spread);
-	void set_extra_spread_base(float p_sec);
+	StringName get_base_type() const;
 
-	void process(float *p_src, float *p_dst, int p_frames);
+	String get_selected() const;
+	Vector<String> get_selected_files() const;
 
-	Reverb();
-
-	~Reverb();
+	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_dontclear = false);
+	EditorQuickOpen();
 };
 
-#endif // REVERB_H
+#endif // EDITOR_QUICK_OPEN_H

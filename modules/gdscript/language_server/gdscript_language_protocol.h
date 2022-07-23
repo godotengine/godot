@@ -36,7 +36,7 @@
 #include "core/io/tcp_server.h"
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
-#include "lsp.hpp"
+#include "godot_lsp.h"
 
 #include "modules/modules_enabled.gen.h" // For jsonrpc.
 #ifdef MODULE_JSONRPC_ENABLED

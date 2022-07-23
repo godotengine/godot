@@ -505,4 +505,4 @@ private:
 
 } // namespace RendererRD
 
-#endif // !SS_EFFECTS_RD_H
+#endif // SS_EFFECTS_RD_H

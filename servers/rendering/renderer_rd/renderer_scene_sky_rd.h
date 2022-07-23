@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_SKY_RD_H
-#define RENDERING_SERVER_SCENE_SKY_RD_H
+#ifndef RENDERER_SCENE_SKY_RD_H
+#define RENDERER_SCENE_SKY_RD_H
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -318,4 +318,4 @@ public:
 	RID sky_get_radiance_texture_rd(RID p_sky) const;
 };
 
-#endif /* RENDERING_SERVER_SCENE_SKY_RD_H */
+#endif // RENDERER_SCENE_SKY_RD_H

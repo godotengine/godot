@@ -75,4 +75,4 @@ public:
 	virtual Ref<VideoStreamPlayback> instantiate_playback() = 0;
 };
 
-#endif
+#endif // VIDEO_STREAM_H

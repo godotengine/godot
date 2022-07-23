@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_LAMBDA_CALLABLE
-#define GDSCRIPT_LAMBDA_CALLABLE
+#ifndef GDSCRIPT_LAMBDA_CALLABLE_H
+#define GDSCRIPT_LAMBDA_CALLABLE_H
 
 #include "core/object/ref_counted.h"
 #include "core/templates/vector.h"
@@ -87,4 +87,4 @@ public:
 	virtual ~GDScriptLambdaSelfCallable() = default;
 };
 
-#endif // GDSCRIPT_LAMBDA_CALLABLE
+#endif // GDSCRIPT_LAMBDA_CALLABLE_H

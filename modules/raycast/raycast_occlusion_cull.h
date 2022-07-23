@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OCCLUSION_CULL_RAYCASTER_H
-#define OCCLUSION_CULL_RAYCASTER_H
+#ifndef RAYCAST_OCCLUSION_CULL_H
+#define RAYCAST_OCCLUSION_CULL_H
 
 #include "core/io/image.h"
 #include "core/math/projection.h"
@@ -192,4 +192,4 @@ public:
 	~RaycastOcclusionCull();
 };
 
-#endif // OCCLUSION_CULL_RAYCASTER_H
+#endif // RAYCAST_OCCLUSION_CULL_H

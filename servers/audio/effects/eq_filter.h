@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  quick_open.h                                                         */
+/*  eq_filter.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,75 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_H
-#define EDITOR_QUICK_OPEN_H
+#ifndef EQ_FILTER_H
+#define EQ_FILTER_H
 
-#include "core/templates/oa_hash_map.h"
-#include "editor/editor_file_system.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "core/templates/vector.h"
+#include "core/typedefs.h"
 
-class EditorQuickOpen : public ConfirmationDialog {
-	GDCLASS(EditorQuickOpen, ConfirmationDialog);
-
-	LineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
-	StringName base_type;
-	bool allow_multi_select = false;
-
-	Vector<String> files;
-	OAHashMap<String, Ref<Texture2D>> icons;
-
-	struct Entry {
-		String path;
-		float score = 0;
+class EQ {
+public:
+	enum Preset {
+		PRESET_6_BANDS,
+		PRESET_8_BANDS,
+		PRESET_10_BANDS,
+		PRESET_21_BANDS,
+		PRESET_31_BANDS
 	};
 
-	struct EntryComparator {
-		_FORCE_INLINE_ bool operator()(const Entry &A, const Entry &B) const {
-			return A.score > B.score;
-		}
+	class BandProcess {
+		friend class EQ;
+		float c1, c2, c3;
+		struct History {
+			float a1, a2, a3;
+			float b1, b2, b3;
+
+		} history;
+
+	public:
+		inline void process_one(float &p_data);
+
+		BandProcess();
 	};
 
-	void _update_search();
-	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
-	float _score_path(const String &p_search, const String &p_path);
+private:
+	struct Band {
+		float freq;
+		float c1, c2, c3;
+	};
 
-	void _confirmed();
-	virtual void cancel_pressed() override;
-	void _cleanup();
+	Vector<Band> band;
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _text_changed(const String &p_newtext);
+	float mix_rate;
 
-	void _theme_changed();
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+	void recalculate_band_coefficients();
 
 public:
-	StringName get_base_type() const;
+	void set_mix_rate(float p_mix_rate);
 
-	String get_selected() const;
-	Vector<String> get_selected_files() const;
+	int get_band_count() const;
+	void set_preset_band_mode(Preset p_preset);
+	void set_bands(const Vector<float> &p_bands);
+	BandProcess get_band_processor(int p_band) const;
+	float get_band_frequency(int p_band);
 
-	void popup_dialog(const StringName &p_base, bool p_enable_multi = false, bool p_dontclear = false);
-	EditorQuickOpen();
+	EQ();
+	~EQ();
 };
 
-#endif // EDITOR_QUICK_OPEN_H
+/* Inline Function */
+
+inline void EQ::BandProcess::process_one(float &p_data) {
+	history.a1 = p_data;
+
+	history.b1 = c1 * (history.a1 - history.a3) + c3 * history.b2 - c2 * history.b3;
+
+	p_data = history.b1;
+
+	history.a3 = history.a2;
+	history.a2 = history.a1;
+	history.b3 = history.b2;
+	history.b2 = history.b1;
+}
+
+#endif // EQ_FILTER_H

@@ -176,4 +176,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !TEXTURE_STORAGE_DUMMY_H
+#endif // TEXTURE_STORAGE_DUMMY_H

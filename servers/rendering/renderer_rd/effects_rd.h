@@ -246,4 +246,4 @@ public:
 	~EffectsRD();
 };
 
-#endif // !RASTERIZER_EFFECTS_RD_H
+#endif // EFFECTS_RD_H

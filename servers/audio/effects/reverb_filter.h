@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  eq.h                                                                 */
+/*  reverb_filter.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,75 +28,95 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EQ_FILTER_H
-#define EQ_FILTER_H
+#ifndef REVERB_FILTER_H
+#define REVERB_FILTER_H
 
-#include "core/templates/vector.h"
+#include "core/math/audio_frame.h"
+#include "core/os/memory.h"
 #include "core/typedefs.h"
 
-class EQ {
+class Reverb {
 public:
-	enum Preset {
-		PRESET_6_BANDS,
-		PRESET_8_BANDS,
-		PRESET_10_BANDS,
-		PRESET_21_BANDS,
-		PRESET_31_BANDS
-	};
+	enum {
+		INPUT_BUFFER_MAX_SIZE = 1024,
 
-	class BandProcess {
-		friend class EQ;
-		float c1, c2, c3;
-		struct History {
-			float a1, a2, a3;
-			float b1, b2, b3;
-
-		} history;
-
-	public:
-		inline void process_one(float &p_data);
-
-		BandProcess();
 	};
 
 private:
-	struct Band {
-		float freq;
-		float c1, c2, c3;
+	enum {
+		MAX_COMBS = 8,
+		MAX_ALLPASS = 4,
+		MAX_ECHO_MS = 500
+
 	};
 
-	Vector<Band> band;
+	static const float comb_tunings[MAX_COMBS];
+	static const float allpass_tunings[MAX_ALLPASS];
 
-	float mix_rate;
+	struct Comb {
+		int size = 0;
+		float *buffer = nullptr;
+		float feedback = 0;
+		float damp = 0; //lowpass
+		float damp_h = 0; //history
+		int pos = 0;
+		int extra_spread_frames = 0;
 
-	void recalculate_band_coefficients();
+		Comb() {}
+	};
+
+	struct AllPass {
+		int size = 0;
+		float *buffer = nullptr;
+		int pos = 0;
+		int extra_spread_frames = 0;
+		AllPass() {}
+	};
+
+	Comb comb[MAX_COMBS];
+	AllPass allpass[MAX_ALLPASS];
+	float *input_buffer = nullptr;
+	float *echo_buffer = nullptr;
+	int echo_buffer_size = 0;
+	int echo_buffer_pos = 0;
+
+	float hpf_h1 = 0.0f;
+	float hpf_h2 = 0.0f;
+
+	struct Parameters {
+		float room_size;
+		float damp;
+		float wet;
+		float dry;
+		float mix_rate;
+		float extra_spread_base;
+		float extra_spread;
+		float predelay;
+		float predelay_fb;
+		float hpf;
+	} params;
+
+	void configure_buffers();
+	void update_parameters();
+	void clear_buffers();
 
 public:
+	void set_room_size(float p_size);
+	void set_damp(float p_damp);
+	void set_wet(float p_wet);
+	void set_dry(float p_dry);
+	void set_predelay(float p_predelay); // in ms
+	void set_predelay_feedback(float p_predelay_fb); // in ms
+	void set_highpass(float p_frq);
 	void set_mix_rate(float p_mix_rate);
+	void set_extra_spread(float p_spread);
+	void set_extra_spread_base(float p_sec);
 
-	int get_band_count() const;
-	void set_preset_band_mode(Preset p_preset);
-	void set_bands(const Vector<float> &p_bands);
-	BandProcess get_band_processor(int p_band) const;
-	float get_band_frequency(int p_band);
+	void process(float *p_src, float *p_dst, int p_frames);
 
-	EQ();
-	~EQ();
+	Reverb();
+
+	~Reverb();
 };
 
-/* Inline Function */
-
-inline void EQ::BandProcess::process_one(float &p_data) {
-	history.a1 = p_data;
-
-	history.b1 = c1 * (history.a1 - history.a3) + c3 * history.b2 - c2 * history.b3;
-
-	p_data = history.b1;
-
-	history.a3 = history.a2;
-	history.a2 = history.a1;
-	history.b3 = history.b2;
-	history.b2 = history.b1;
-}
-
-#endif // EQ_FILTER_H
+#endif // REVERB_FILTER_H

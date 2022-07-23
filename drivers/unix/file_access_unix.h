@@ -86,5 +86,6 @@ public:
 	virtual ~FileAccessUnix();
 };
 
-#endif
-#endif
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+
+#endif // FILE_ACCESS_UNIX_H

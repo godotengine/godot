@@ -352,4 +352,4 @@ public:
 
 VARIANT_ENUM_CAST(VisualShaderNodeParticleEmit::EmitFlags)
 
-#endif
+#endif // VISUAL_SHADER_PARTICLE_NODES_H

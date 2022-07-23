@@ -758,4 +758,4 @@ public:
 	}
 };
 
-#endif // MAP_H
+#endif // RB_MAP_H

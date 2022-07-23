@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENARIO_FX_H
-#define SCENARIO_FX_H
+#ifndef WORLD_ENVIRONMENT_H
+#define WORLD_ENVIRONMENT_H
 
 #include "scene/main/node.h"
 #include "scene/resources/camera_effects.h"
@@ -60,4 +60,4 @@ public:
 	WorldEnvironment();
 };
 
-#endif
+#endif // WORLD_ENVIRONMENT_H

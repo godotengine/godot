@@ -330,4 +330,4 @@ public:
 	virtual ~VulkanContext();
 };
 
-#endif // VULKAN_DEVICE_H
+#endif // VULKAN_CONTEXT_H

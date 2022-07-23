@@ -80,4 +80,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !FOG_RD_H
+#endif // FOG_RD_H

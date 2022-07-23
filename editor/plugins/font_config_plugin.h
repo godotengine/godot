@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OT_FEATURES_PLUGIN_H
-#define OT_FEATURES_PLUGIN_H
+#ifndef FONT_CONFIG_PLUGIN_H
+#define FONT_CONFIG_PLUGIN_H
 
 #include "core/io/marshalls.h"
 #include "editor/editor_plugin.h"
@@ -258,4 +258,4 @@ public:
 	virtual String get_name() const override { return "Font"; }
 };
 
-#endif // OT_FEATURES_PLUGIN_H
+#endif // FONT_CONFIG_PLUGIN_H

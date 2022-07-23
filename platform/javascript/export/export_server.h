@@ -248,4 +248,4 @@ public:
 	}
 };
 
-#endif
+#endif // JAVASCRIPT_EXPORT_SERVER_H

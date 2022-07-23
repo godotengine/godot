@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reverb.cpp                                                           */
+/*  reverb_filter.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "reverb.h"
+#include "reverb_filter.h"
 
 #include "core/math/math_funcs.h"
 

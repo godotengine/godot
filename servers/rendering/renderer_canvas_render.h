@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERCANVASRENDER_H
-#define RENDERINGSERVERCANVASRENDER_H
+#ifndef RENDERER_CANVAS_RENDER_H
+#define RENDERER_CANVAS_RENDER_H
 
 #include "servers/rendering_server.h"
 
@@ -520,4 +520,4 @@ public:
 	virtual ~RendererCanvasRender() {}
 };
 
-#endif // RENDERINGSERVERCANVASRENDER_H
+#endif // RENDERER_CANVAS_RENDER_H

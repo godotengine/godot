@@ -599,4 +599,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !MATERIAL_STORAGE_GLES3_H
+#endif // MATERIAL_STORAGE_GLES3_H

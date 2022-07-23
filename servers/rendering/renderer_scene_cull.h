@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_CULL_H
-#define RENDERING_SERVER_SCENE_CULL_H
+#ifndef RENDERER_SCENE_CULL_H
+#define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/bin_sorted_array.h"
@@ -1183,4 +1183,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // RENDERING_SERVER_SCENE_CULL_H
+#endif // RENDERER_SCENE_CULL_H

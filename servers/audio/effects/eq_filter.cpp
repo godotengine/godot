@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  eq.cpp                                                               */
+/*  eq_filter.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Author: reduzio@gmail.com (C) 2006
+#include "eq_filter.h"
 
-#include "eq.h"
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+
 #include <math.h>
 
 #define POW2(v) ((v) * (v))
