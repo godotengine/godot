@@ -40,6 +40,8 @@
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 
+class AudioStream;
+
 class AudioStreamPlayback : public RefCounted {
 	GDCLASS(AudioStreamPlayback, RefCounted);
 
@@ -52,6 +54,7 @@ protected:
 	GDVIRTUAL0RC(float, _get_playback_position)
 	GDVIRTUAL1(_seek, float)
 	GDVIRTUAL3R(int, _mix, GDNativePtr<AudioFrame>, float, int)
+	GDVIRTUAL0(_tag_used_streams)
 public:
 	virtual void start(float p_from_pos = 0.0);
 	virtual void stop();
@@ -61,6 +64,8 @@ public:
 
 	virtual float get_playback_position() const;
 	virtual void seek(float p_time);
+
+	virtual void tag_used_streams();
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 };
@@ -72,7 +77,7 @@ class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 		FP_BITS = 16, //fixed point used for resampling
 		FP_LEN = (1 << FP_BITS),
 		FP_MASK = FP_LEN - 1,
-		INTERNAL_BUFFER_LEN = 256,
+		INTERNAL_BUFFER_LEN = 128, // 128 warrants 3ms positional jitter at much at 44100hz
 		CUBIC_INTERP_HISTORY = 4
 	};
 
@@ -101,20 +106,42 @@ class AudioStream : public Resource {
 	GDCLASS(AudioStream, Resource);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 
+	enum {
+		MAX_TAGGED_OFFSETS = 8
+	};
+
+	uint64_t tagged_frame = 0;
+	uint64_t offset_count = 0;
+	float tagged_offsets[MAX_TAGGED_OFFSETS];
+
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instance_playback)
+	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback)
 	GDVIRTUAL0RC(String, _get_stream_name)
 	GDVIRTUAL0RC(float, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
+	GDVIRTUAL0RC(double, _get_bpm)
+	GDVIRTUAL0RC(bool, _has_loop)
+	GDVIRTUAL0RC(int, _get_bar_beats)
+	GDVIRTUAL0RC(int, _get_beat_count)
 
 public:
-	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual Ref<AudioStreamPlayback> instantiate_playback();
 	virtual String get_stream_name() const;
+
+	virtual double get_bpm() const;
+	virtual bool has_loop() const;
+	virtual int get_bar_beats() const;
+	virtual int get_beat_count() const;
 
 	virtual float get_length() const;
 	virtual bool is_monophonic() const;
+
+	void tag_used(float p_offset);
+	uint64_t get_tagged_frame() const;
+	uint32_t get_tagged_frame_count() const;
+	float get_tagged_frame_offset(int p_index) const;
 };
 
 // Microphone
@@ -131,7 +158,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
@@ -153,6 +180,7 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
 	virtual float get_stream_sampling_rate() override;
+	virtual float get_playback_position() const override;
 
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
@@ -163,8 +191,9 @@ public:
 
 	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
+
+	virtual void tag_used_streams() override;
 
 	~AudioStreamPlaybackMicrophone();
 	AudioStreamPlaybackMicrophone();
@@ -233,7 +262,7 @@ public:
 	void set_playback_mode(PlaybackMode p_playback_mode);
 	PlaybackMode get_playback_mode() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
 	virtual float get_length() const override; //if supported, otherwise return 0
@@ -264,6 +293,8 @@ public:
 	virtual void seek(float p_time) override;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
+
+	virtual void tag_used_streams() override;
 
 	~AudioStreamPlaybackRandomizer();
 };

@@ -275,6 +275,12 @@
 				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
+		<method name="set_enable_tagging_used_audio_streams">
+			<return type="void" />
+			<argument index="0" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void" />
 			<argument index="0" name="bus_idx" type="int" />
