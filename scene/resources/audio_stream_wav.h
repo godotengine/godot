@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream_sample.h                                                */
+/*  audio_stream_wav.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_SAMPLE_H
-#define AUDIO_STREAM_SAMPLE_H
+#ifndef AUDIO_STREAM_WAV_H
+#define AUDIO_STREAM_WAV_H
 
 #include "servers/audio/audio_stream.h"
 
-class AudioStreamSample;
+class AudioStreamWAV;
 
-class AudioStreamPlaybackSample : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);
+class AudioStreamPlaybackWAV : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackWAV, AudioStreamPlayback);
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
@@ -57,8 +57,8 @@ class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	int64_t offset = 0;
 	int sign = 1;
 	bool active = false;
-	friend class AudioStreamSample;
-	Ref<AudioStreamSample> base;
+	friend class AudioStreamWAV;
+	Ref<AudioStreamWAV> base;
 
 	template <class Depth, bool is_stereo, bool is_ima_adpcm>
 	void do_resample(const Depth *p_src, AudioFrame *p_dst, int64_t &offset, int32_t &increment, uint32_t amount, IMA_ADPCM_State *ima_adpcm);
@@ -77,11 +77,11 @@ public:
 
 	virtual void tag_used_streams() override;
 
-	AudioStreamPlaybackSample();
+	AudioStreamPlaybackWAV();
 };
 
-class AudioStreamSample : public AudioStream {
-	GDCLASS(AudioStreamSample, AudioStream);
+class AudioStreamWAV : public AudioStream {
+	GDCLASS(AudioStreamWAV, AudioStream);
 	RES_BASE_EXTENSION("sample")
 
 public:
@@ -100,7 +100,7 @@ public:
 	};
 
 private:
-	friend class AudioStreamPlaybackSample;
+	friend class AudioStreamPlaybackWAV;
 
 	enum {
 		DATA_PAD = 16 //padding for interpolation
@@ -149,11 +149,11 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
-	AudioStreamSample();
-	~AudioStreamSample();
+	AudioStreamWAV();
+	~AudioStreamWAV();
 };
 
-VARIANT_ENUM_CAST(AudioStreamSample::Format)
-VARIANT_ENUM_CAST(AudioStreamSample::LoopMode)
+VARIANT_ENUM_CAST(AudioStreamWAV::Format)
+VARIANT_ENUM_CAST(AudioStreamWAV::LoopMode)
 
-#endif // AUDIO_STREAM_SAMPLE_H
+#endif // AUDIO_STREAM_WAV_H

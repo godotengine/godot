@@ -120,7 +120,7 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_PIN", "JOINT_TYPE_PIN" }, // PhysicsServer2D
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
-	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, //AudioStreamSample
+	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
 	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
@@ -1251,6 +1251,7 @@ static const char *class_renames[][2] = {
 	{ "AnimationTreePlayer", "AnimationTree" },
 	{ "Area", "Area3D" }, // Be careful, this will be used everywhere
 	{ "AudioStreamRandomPitch", "AudioStreamRandomizer" },
+	{ "AudioStreamSample", "AudioStreamWAV" },
 	{ "BakedLightmap", "LightmapGI" },
 	{ "BakedLightmapData", "LightmapGIData" },
 	{ "BitmapFont", "FontFile" },
