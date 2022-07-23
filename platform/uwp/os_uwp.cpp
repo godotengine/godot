@@ -588,6 +588,7 @@ uint64_t OS_UWP::get_ticks_usec() const {
 void OS_UWP::process_events() {
 	joypad->process_controllers();
 	process_key_events();
+	input->flush_buffered_events();
 }
 
 void OS_UWP::process_key_events() {
