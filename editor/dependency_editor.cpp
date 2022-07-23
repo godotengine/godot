@@ -52,6 +52,9 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 
 	search->set_title(TTR("Search Replacement For:") + " " + replacing.get_file());
 
+	// Set directory to closest existing directory.
+	search->set_current_dir(replacing.get_base_dir());
+
 	search->clear_filters();
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
