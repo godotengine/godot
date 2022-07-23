@@ -109,33 +109,19 @@ Quaternion Quaternion::inverse() const {
 }
 
 Quaternion Quaternion::log() const {
-	Vector3 v = vector_part();
-	real_t vLength = v.length();
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(vLength == 0, Quaternion(), "Length of the vector part can't be zero.");
-#endif
-
-	real_t s = w;
-
-	real_t scalarPart = Math::log(length());
-	Vector3 vecPart = v / vLength * acos(s / length());
-
-	return Quaternion(vecPart.x, vecPart.y, vecPart.z, scalarPart);
+	Quaternion src = *this;
+	Vector3 src_v = src.get_axis() * src.get_angle();
+	return Quaternion(src_v.x, src_v.y, src_v.z, 0);
 }
 
 Quaternion Quaternion::exp() const {
-	Vector3 v = vector_part();
-	real_t vLength = v.length();
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(vLength == 0, Quaternion(), "Length of the vector part can't be zero.");
-#endif
-
-	real_t s = w;
-
-	real_t scalarPart = cos(vLength);
-	Vector3 vecPart = v / vLength * sin(vLength);
-
-	return Math::exp(s) * Quaternion(vecPart.x, vecPart.y, vecPart.z, scalarPart);
+	Quaternion src = *this;
+	Vector3 src_v = Vector3(src.x, src.y, src.z);
+	float theta = src_v.length();
+	if (theta < CMP_EPSILON) {
+		return Quaternion(0, 0, 0, 1);
+	}
+	return Quaternion(src_v.normalized(), theta);
 }
 
 Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {

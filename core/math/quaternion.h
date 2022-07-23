@@ -162,10 +162,6 @@ struct _NO_DISCARD_ Quaternion {
 			w = s * 0.5f;
 		}
 	}
-
-	Vector3 vector_part() const {
-		return Vector3(x, y, z);
-	}
 };
 
 real_t Quaternion::dot(const Quaternion &p_q) const {
