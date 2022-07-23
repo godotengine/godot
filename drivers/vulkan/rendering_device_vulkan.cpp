@@ -3951,7 +3951,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	}
 
 	VkRenderPass render_pass;
-	VkResult res = context->vkCreateRenderPass2KHR(device, &render_pass_create_info, nullptr, &render_pass);
+	VkResult res = context->create_render_pass2(device, &render_pass_create_info, nullptr, &render_pass);
 	ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
 	return render_pass;
@@ -4042,7 +4042,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	render_pass_create_info.pCorrelatedViewMasks = nullptr;
 
 	VkRenderPass render_pass;
-	VkResult res = context->vkCreateRenderPass2KHR(device, &render_pass_create_info, nullptr, &render_pass);
+	VkResult res = context->create_render_pass2(device, &render_pass_create_info, nullptr, &render_pass);
 
 	ERR_FAIL_COND_V_MSG(res, 0, "vkCreateRenderPass2KHR for empty fb failed with error " + itos(res) + ".");
 

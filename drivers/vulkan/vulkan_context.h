@@ -32,9 +32,7 @@
 #define VULKAN_CONTEXT_H
 
 #include "core/error/error_list.h"
-#include "core/os/mutex.h"
 #include "core/string/ustring.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -50,7 +48,7 @@
 class VulkanContext {
 public:
 	struct SubgroupCapabilities {
-		uint32_t size;
+		uint32_t size = 0;
 		VkShaderStageFlags supportedStages;
 		VkSubgroupFeatureFlags supportedOperations;
 		VkBool32 quadOperationsInAllStages;
@@ -62,45 +60,45 @@ public:
 	};
 
 	struct MultiviewCapabilities {
-		bool is_supported;
-		bool geometry_shader_is_supported;
-		bool tessellation_shader_is_supported;
-		uint32_t max_view_count;
-		uint32_t max_instance_count;
+		bool is_supported = false;
+		bool geometry_shader_is_supported = false;
+		bool tessellation_shader_is_supported = false;
+		uint32_t max_view_count = 0;
+		uint32_t max_instance_count = 0;
 	};
 
 	struct VRSCapabilities {
-		bool pipeline_vrs_supported; // We can specify our fragment rate on a pipeline level
-		bool primitive_vrs_supported; // We can specify our fragment rate on each drawcall
-		bool attachment_vrs_supported; // We can provide a density map attachment on our framebuffer
+		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level
+		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall
+		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
 	};
 
 	struct ShaderCapabilities {
-		bool shader_float16_is_supported;
-		bool shader_int8_is_supported;
+		bool shader_float16_is_supported = false;
+		bool shader_int8_is_supported = false;
 	};
 
 	struct StorageBufferCapabilities {
-		bool storage_buffer_16_bit_access_is_supported;
-		bool uniform_and_storage_buffer_16_bit_access_is_supported;
-		bool storage_push_constant_16_is_supported;
-		bool storage_input_output_16;
+		bool storage_buffer_16_bit_access_is_supported = false;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported = false;
+		bool storage_push_constant_16_is_supported = false;
+		bool storage_input_output_16 = false;
 	};
 
 private:
-	enum {
+	enum : uint8_t {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
 		FRAME_LAG = 2
 	};
 
-	static VulkanHooks *vulkan_hooks;
+	inline static VulkanHooks *vulkan_hooks = nullptr;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
-	VkPhysicalDeviceProperties gpu_props;
+	VkPhysicalDeviceProperties gpu_props{};
 	uint32_t queue_family_count = 0;
 	VkQueueFamilyProperties *queue_props = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
@@ -111,11 +109,11 @@ private:
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
 	uint32_t vulkan_patch = 0;
-	SubgroupCapabilities subgroup_capabilities;
-	MultiviewCapabilities multiview_capabilities;
+	SubgroupCapabilities subgroup_capabilities{};
+	MultiviewCapabilities multiview_capabilities{};
 	VRSCapabilities vrs_capabilities;
-	ShaderCapabilities shader_capabilities;
-	StorageBufferCapabilities storage_buffer_capabilities;
+	ShaderCapabilities shader_capabilities{};
+	StorageBufferCapabilities storage_buffer_capabilities{};
 
 	String device_vendor;
 	String device_name;
@@ -138,15 +136,15 @@ private:
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
-	VkPhysicalDeviceMemoryProperties memory_properties;
-	VkPhysicalDeviceFeatures physical_device_features;
+	VkPhysicalDeviceMemoryProperties memory_properties{};
+	VkPhysicalDeviceFeatures physical_device_features{};
 
-	typedef struct {
+	struct SwapchainImageResources {
 		VkImage image;
 		VkCommandBuffer graphics_to_present_cmd;
 		VkImageView view;
 		VkFramebuffer framebuffer;
-	} SwapchainImageResources;
+	};
 
 	struct Window {
 		VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -225,7 +223,7 @@ private:
 	Error _initialize_extensions();
 	Error _check_capabilities();
 
-	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers);
+	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, const VkLayerProperties *layers) const;
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -250,11 +248,11 @@ private:
 
 	Error _create_device();
 
-	Error _clean_up_swap_chain(Window *window);
+	Error _clean_up_swap_chain(Window *window) const;
 
 	Error _update_swap_chain(Window *window);
 
-	Error _create_swap_chain();
+	Error _create_swap_chain(); // FIXME: Declared, but doesn't implemented.
 	Error _create_semaphores();
 
 protected:
@@ -264,28 +262,28 @@ protected:
 
 	virtual bool _use_validation_layers();
 
-	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
+	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names) const;
 
 public:
 	// Extension calls
-	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
+	VkResult create_render_pass2(VkDevice p_device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
-	uint32_t get_vulkan_major() const { return vulkan_major; };
-	uint32_t get_vulkan_minor() const { return vulkan_minor; };
-	const SubgroupCapabilities &get_subgroup_capabilities() const { return subgroup_capabilities; };
-	const MultiviewCapabilities &get_multiview_capabilities() const { return multiview_capabilities; };
-	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
-	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
-	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	uint32_t get_vulkan_major() const { return vulkan_major; }
+	uint32_t get_vulkan_minor() const { return vulkan_minor; }
+	SubgroupCapabilities get_subgroup_capabilities() const { return subgroup_capabilities; }
+	MultiviewCapabilities get_multiview_capabilities() const { return multiview_capabilities; }
+	VRSCapabilities get_vrs_capabilities() const { return vrs_capabilities; }
+	ShaderCapabilities get_shader_capabilities() const { return shader_capabilities; }
+	StorageBufferCapabilities get_storage_buffer_capabilities() const { return storage_buffer_capabilities; }
 
-	VkDevice get_device();
-	VkPhysicalDevice get_physical_device();
-	VkInstance get_instance() { return inst; }
-	int get_swapchain_image_count() const;
+	VkDevice get_device() const;
+	VkPhysicalDevice get_physical_device() const;
+	VkInstance get_instance() const { return inst; }
+	uint32_t get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
 
-	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; };
+	static void set_vulkan_hooks(VulkanHooks *p_vulkan_hooks) { vulkan_hooks = p_vulkan_hooks; }
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
@@ -306,16 +304,16 @@ public:
 
 	void set_setup_buffer(VkCommandBuffer p_command_buffer);
 	void append_command_buffer(VkCommandBuffer p_command_buffer);
-	void resize_notify();
+	static void resize_notify();
 	void flush(bool p_flush_setup = false, bool p_flush_pending = false);
 	Error prepare_buffers();
 	Error swap_buffers();
 	Error initialize();
 
-	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
-	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
-	void command_end_label(VkCommandBuffer p_command_buffer);
-	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+	void command_begin_label(VkCommandBuffer p_command_buffer, const String &p_label_name, Color p_color) const;
+	void command_insert_label(VkCommandBuffer p_command_buffer, const String &p_label_name, const Color p_color) const;
+	void command_end_label(VkCommandBuffer p_command_buffer) const;
+	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name) const;
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
@@ -328,6 +326,9 @@ public:
 
 	VulkanContext();
 	virtual ~VulkanContext();
+
+	VulkanContext(const VulkanContext &) = delete;
+	VulkanContext &operator=(const VulkanContext &) = delete;
 };
 
 #endif // VULKAN_CONTEXT_H
