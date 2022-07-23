@@ -60,6 +60,7 @@ class GLTFState : public Resource {
 	Vector<uint8_t> glb_data;
 
 	bool use_named_skin_binds = false;
+	bool use_khr_texture_transform = false;
 	bool discard_meshes_and_materials = false;
 
 	Vector<Ref<GLTFNode>> nodes;
