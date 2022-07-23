@@ -101,4 +101,5 @@ public:
 	int get_sparse_values_byte_offset();
 	void set_sparse_values_byte_offset(int p_sparse_values_byte_offset);
 };
+
 #endif // GLTF_ACCESSOR_H

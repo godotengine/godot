@@ -104,4 +104,4 @@ public:
 			OpenXRExtensionWrapper(p_openxr_api){};
 };
 
-#endif // ~OPENXR_EXTENSION_WRAPPER_H
+#endif // OPENXR_EXTENSION_WRAPPER_H

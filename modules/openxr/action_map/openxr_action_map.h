@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ACTION_SETS_H
-#define OPENXR_ACTION_SETS_H
+#ifndef OPENXR_ACTION_MAP_H
+#define OPENXR_ACTION_MAP_H
 
 #include "core/io/resource.h"
 
@@ -79,4 +79,4 @@ public:
 	~OpenXRActionMap();
 };
 
-#endif // !OPENXR_ACTION_SETS_H
+#endif // OPENXR_ACTION_MAP_H

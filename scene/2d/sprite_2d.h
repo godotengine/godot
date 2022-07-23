@@ -125,4 +125,4 @@ public:
 	~Sprite2D();
 };
 
-#endif // SPRITE_H
+#endif // SPRITE_2D_H

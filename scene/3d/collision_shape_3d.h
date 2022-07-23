@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COLLISION_SHAPE_H
-#define COLLISION_SHAPE_H
+#ifndef COLLISION_SHAPE_3D_H
+#define COLLISION_SHAPE_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/shape_3d.h"
@@ -68,4 +68,4 @@ public:
 	~CollisionShape3D();
 };
 
-#endif // BODY_VOLUME_H
+#endif // COLLISION_SHAPE_3D_H

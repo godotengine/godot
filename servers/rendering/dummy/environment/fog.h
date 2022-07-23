@@ -52,4 +52,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !FOG_DUMMY_H
+#endif // FOG_DUMMY_H

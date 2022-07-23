@@ -582,4 +582,4 @@ typedef GDNativeBool (*GDNativeInitializationFunction)(const GDNativeInterface *
 }
 #endif
 
-#endif
+#endif // GDNATIVE_INTERFACE_H

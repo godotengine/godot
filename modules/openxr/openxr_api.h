@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_DRIVER_H
-#define OPENXR_DRIVER_H
+#ifndef OPENXR_API_H
+#define OPENXR_API_H
 
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
@@ -292,4 +292,4 @@ public:
 	~OpenXRAPI();
 };
 
-#endif // !OPENXR_DRIVER_H
+#endif // OPENXR_API_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADERTYPES_H
-#define SHADERTYPES_H
+#ifndef SHADER_TYPES_H
+#define SHADER_TYPES_H
 
 #include "core/templates/rb_map.h"
 #include "servers/rendering_server.h"
@@ -59,4 +59,4 @@ public:
 	ShaderTypes();
 };
 
-#endif // SHADERTYPES_H
+#endif // SHADER_TYPES_H

@@ -61,4 +61,4 @@ public:
 	~StaticRaycasterEmbree();
 };
 
-#endif
+#endif // STATIC_RAYCASTER_H

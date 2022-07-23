@@ -116,4 +116,4 @@ public:
 	AnimationLibraryEditor();
 };
 
-#endif // ANIMATIONPLAYERLIBRARYEDITOR_H
+#endif // ANIMATION_LIBRARY_EDITOR_H

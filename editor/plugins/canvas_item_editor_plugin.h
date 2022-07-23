@@ -630,4 +630,4 @@ public:
 	~CanvasItemEditorViewport();
 };
 
-#endif //CANVAS_ITEM_EDITOR_PLUGIN_H
+#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

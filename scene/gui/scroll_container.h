@@ -116,4 +116,4 @@ public:
 
 VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
 
-#endif
+#endif // SCROLL_CONTAINER_H

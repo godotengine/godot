@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERA_MATRIX_H
-#define CAMERA_MATRIX_H
+#ifndef PROJECTION_H
+#define PROJECTION_H
 
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
@@ -164,4 +164,4 @@ Vector3 Projection::xform(const Vector3 &p_vec3) const {
 	return ret / w;
 }
 
-#endif // CAMERA_MATRIX_H
+#endif // PROJECTION_H

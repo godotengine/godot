@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RSSR_SCENE_SHADER_FM_H
-#define RSSR_SCENE_SHADER_FM_H
+#ifndef SCENE_SHADER_FORWARD_MOBILE_H
+#define SCENE_SHADER_FORWARD_MOBILE_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/scene_forward_mobile.glsl.gen.h"
@@ -212,4 +212,5 @@ public:
 };
 
 } // namespace RendererSceneRenderImplementation
-#endif // !RSSR_SCENE_SHADER_FM_H
+
+#endif // SCENE_SHADER_FORWARD_MOBILE_H

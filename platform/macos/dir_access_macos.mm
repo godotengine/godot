@@ -78,4 +78,4 @@ bool DirAccessMacOS::is_hidden(const String &p_name) {
 	return [hidden boolValue];
 }
 
-#endif //posix_enabled
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED

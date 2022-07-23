@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef display_server_ios_h
-#define display_server_ios_h
+#ifndef DISPLAY_SERVER_IOS_H
+#define DISPLAY_SERVER_IOS_H
 
 #include "core/input/input.h"
 #include "servers/display_server.h"
@@ -214,4 +214,4 @@ public:
 	void resize_window(CGSize size);
 };
 
-#endif /* DISPLAY_SERVER_IOS_H */
+#endif // DISPLAY_SERVER_IOS_H

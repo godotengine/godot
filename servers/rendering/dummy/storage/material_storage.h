@@ -95,4 +95,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !MATERIAL_STORAGE_DUMMY_H
+#endif // MATERIAL_STORAGE_DUMMY_H

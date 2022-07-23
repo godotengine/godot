@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONVEX_POLYGON_SHAPE_H
-#define CONVEX_POLYGON_SHAPE_H
+#ifndef CONVEX_POLYGON_SHAPE_3D_H
+#define CONVEX_POLYGON_SHAPE_3D_H
 
 #include "scene/resources/shape_3d.h"
 
@@ -52,4 +52,4 @@ public:
 	ConvexPolygonShape3D();
 };
 
-#endif // CONVEX_POLYGON_SHAPE_H
+#endif // CONVEX_POLYGON_SHAPE_3D_H

@@ -71,4 +71,5 @@ private:
 	bool loop = false;
 	HashMap<int, Track> tracks;
 };
+
 #endif // GLTF_ANIMATION_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_RD_H
-#define RENDERING_SERVER_SCENE_RENDER_RD_H
+#ifndef RENDERER_SCENE_RENDER_RD_H
+#define RENDERER_SCENE_RENDER_RD_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -1489,4 +1489,4 @@ public:
 	~RendererSceneRenderRD();
 };
 
-#endif // RASTERIZER_SCENE_RD_H
+#endif // RENDERER_SCENE_RENDER_RD_H

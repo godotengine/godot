@@ -155,4 +155,4 @@ public:
 	ButtonGroup();
 };
 
-#endif
+#endif // BASE_BUTTON_H

@@ -34,4 +34,4 @@
 #include "GLES3/gl3.h"
 #include "webgl/webgl2.h"
 
-#endif
+#endif // GODOT_WEBGL2_H

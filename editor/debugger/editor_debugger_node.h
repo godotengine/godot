@@ -205,4 +205,5 @@ public:
 	void add_debugger_plugin(const Ref<Script> &p_script);
 	void remove_debugger_plugin(const Ref<Script> &p_script);
 };
+
 #endif // EDITOR_DEBUGGER_NODE_H

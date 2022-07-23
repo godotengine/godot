@@ -54,4 +54,4 @@ public:
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 };
 
-#endif
+#endif // WINDOWS_EXPORT_PLUGIN_H

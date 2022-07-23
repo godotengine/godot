@@ -105,4 +105,4 @@ public:
 	~OptionButton();
 };
 
-#endif
+#endif // OPTION_BUTTON_H

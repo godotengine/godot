@@ -36,4 +36,4 @@
 void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level);
 void uninitialize_lightmapper_rd_module(ModuleInitializationLevel p_level);
 
-#endif // XATLAS_UNWRAP_REGISTER_TYPES_H
+#endif // LIGHTMAPPER_RD_REGISTER_TYPES_H

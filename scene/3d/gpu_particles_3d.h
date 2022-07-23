@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_H
-#define PARTICLES_H
+#ifndef GPU_PARTICLES_3D_H
+#define GPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/skin.h"
@@ -179,4 +179,4 @@ VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
 VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
 
-#endif // PARTICLES_H
+#endif // GPU_PARTICLES_3D_H

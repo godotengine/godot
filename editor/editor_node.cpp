@@ -91,6 +91,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
@@ -200,7 +201,6 @@
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
-#include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
 
