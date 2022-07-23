@@ -44,7 +44,6 @@
 #include <string.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define APP_SHORT_NAME "GodotEngine"
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
