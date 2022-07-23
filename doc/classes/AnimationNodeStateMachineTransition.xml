@@ -37,6 +37,9 @@
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.
 		</member>
+		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
+			Ease curve for better control over cross-fade between this state and the next.
+		</member>
 		<member name="xfade_time" type="float" setter="set_xfade_time" getter="get_xfade_time" default="0.0">
 			The time to cross-fade between this state and the next.
 		</member>
