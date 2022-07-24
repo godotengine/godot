@@ -151,7 +151,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 		}
 	}
 
-	String error_message(type_string +
+	const String error_message(type_string +
 			" - Message Id Number: " + String::num_int64(pCallbackData->messageIdNumber) +
 			" | Message Id Name: " + pCallbackData->pMessageIdName +
 			"\n\t" + pCallbackData->pMessage +
@@ -181,7 +181,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
-		VkDebugReportFlagsEXT flags,
+		const VkDebugReportFlagsEXT flags,
 		VkDebugReportObjectTypeEXT objectType,
 		uint64_t object,
 		size_t location,
@@ -209,7 +209,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 	return VK_FALSE;
 }
 
-VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers) {
+VkBool32 VulkanContext::_check_layers(const uint32_t check_count, const char *const *check_names, const uint32_t layer_count, const VkLayerProperties *layers) {
 	for (uint32_t i = 0; i < check_count; i++) {
 		VkBool32 found = false;
 		for (uint32_t j = 0; j < layer_count; j++) {
@@ -995,7 +995,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 			}
 		}
 
-		int32_t user_device_index = Engine::get_singleton()->get_gpu_index(); // Force user selected GPU.
+		const int32_t user_device_index = Engine::get_singleton()->get_gpu_index(); // Force user selected GPU.
 		if (user_device_index >= 0 && user_device_index < (int32_t)gpu_count) {
 			device_index = user_device_index;
 		}
@@ -1401,7 +1401,7 @@ Error VulkanContext::_create_semaphores() {
 
 	// Create semaphores to synchronize acquiring presentable buffers before
 	// rendering and waiting for drawing to be complete before presenting.
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {
+	constexpr VkSemaphoreCreateInfo semaphoreCreateInfo = {
 		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 		/*pNext*/ nullptr,
 		/*flags*/ 0,
@@ -1409,7 +1409,7 @@ Error VulkanContext::_create_semaphores() {
 
 	// Create fences that we can use to throttle if we get too far
 	// ahead of the image presents.
-	VkFenceCreateInfo fence_ci = {
+	constexpr VkFenceCreateInfo fence_ci = {
 		/*sType*/ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
 		/*pNext*/ nullptr,
 		/*flags*/ VK_FENCE_CREATE_SIGNALED_BIT
@@ -1442,7 +1442,7 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!device_initialized) {
-		Error err = _create_physical_device(p_surface);
+		const Error err = _create_physical_device(p_surface);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
@@ -1450,7 +1450,7 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 		// We use a single GPU, but we need a surface to initialize the
 		// queues, so this process must be deferred until a surface
 		// is created.
-		Error err = _initialize_queues(p_surface);
+		const Error err = _initialize_queues(p_surface);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
@@ -1459,17 +1459,17 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, Display
 	window.width = p_width;
 	window.height = p_height;
 	window.vsync_mode = p_vsync_mode;
-	Error err = _update_swap_chain(&window);
+	const Error err = _update_swap_chain(&window);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {
+	constexpr VkSemaphoreCreateInfo semaphoreCreateInfo = {
 		/*sType*/ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 		/*pNext*/ nullptr,
 		/*flags*/ 0,
 	};
 
-	for (uint32_t i = 0; i < FRAME_LAG; i++) {
-		VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &window.image_acquired_semaphores[i]);
+	for (auto &image_acquired_semaphore : window.image_acquired_semaphores) {
+		const VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_acquired_semaphore);
 		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
 	}
 
@@ -1899,7 +1899,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 					&window->swapchain_image_resources[i].graphics_to_present_cmd);
 			ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-			const VkCommandBufferBeginInfo cmd_buf_info = {
+			constexpr VkCommandBufferBeginInfo cmd_buf_info = {
 				/*sType*/ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 				/*pNext*/ nullptr,
 				/*flags*/ VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
@@ -2134,7 +2134,7 @@ Error VulkanContext::swap_buffers() {
 		// If we are using separate queues, change image ownership to the
 		// present queue before presenting, waiting for the draw complete
 		// semaphore and signalling the ownership released semaphore when finished.
-		VkFence nullFence = VK_NULL_HANDLE;
+		const VkFence nullFence = VK_NULL_HANDLE;
 		pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submit_info.waitSemaphoreCount = 1;
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
@@ -2284,11 +2284,11 @@ Error VulkanContext::swap_buffers() {
 void VulkanContext::resize_notify() {
 }
 
-VkDevice VulkanContext::get_device() {
+VkDevice VulkanContext::get_device() const {
 	return device;
 }
 
-VkPhysicalDevice VulkanContext::get_physical_device() {
+VkPhysicalDevice VulkanContext::get_physical_device() const {
 	return gpu;
 }
 
@@ -2370,7 +2370,7 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 	submit_info.signalSemaphoreCount = 0;
 	submit_info.pSignalSemaphores = nullptr;
 
-	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
+	const VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
 	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
 		print_line("Vulkan: Out of host memory!");
 	}
@@ -2394,12 +2394,12 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(RID p_local_device) {
-	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
+	const LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }
 
-void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) const {
 	if (!enabled_debug_utils) {
 		return;
 	}
@@ -2416,7 +2416,7 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 	CmdBeginDebugUtilsLabelEXT(p_command_buffer, &label);
 }
 
-void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) {
+void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) const {
 	if (!enabled_debug_utils) {
 		return;
 	}
@@ -2432,18 +2432,18 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	CmdInsertDebugUtilsLabelEXT(p_command_buffer, &label);
 }
 
-void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) {
+void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) const {
 	if (!enabled_debug_utils) {
 		return;
 	}
 	CmdEndDebugUtilsLabelEXT(p_command_buffer);
 }
 
-void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) {
+void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) const {
 	if (!enabled_debug_utils) {
 		return;
 	}
-	CharString obj_data = p_object_name.utf8();
+	const CharString obj_data = p_object_name.utf8();
 	VkDebugUtilsObjectNameInfoEXT name_info;
 	name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 	name_info.pNext = nullptr;

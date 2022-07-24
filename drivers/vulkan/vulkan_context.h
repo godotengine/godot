@@ -100,7 +100,7 @@ private:
 	static VulkanHooks *vulkan_hooks;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
-	VkPhysicalDeviceProperties gpu_props;
+	VkPhysicalDeviceProperties gpu_props{};
 	uint32_t queue_family_count = 0;
 	VkQueueFamilyProperties *queue_props = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
@@ -111,11 +111,11 @@ private:
 	uint32_t vulkan_major = 1;
 	uint32_t vulkan_minor = 0;
 	uint32_t vulkan_patch = 0;
-	SubgroupCapabilities subgroup_capabilities;
-	MultiviewCapabilities multiview_capabilities;
+	SubgroupCapabilities subgroup_capabilities{};
+	MultiviewCapabilities multiview_capabilities{};
 	VRSCapabilities vrs_capabilities;
-	ShaderCapabilities shader_capabilities;
-	StorageBufferCapabilities storage_buffer_capabilities;
+	ShaderCapabilities shader_capabilities{};
+	StorageBufferCapabilities storage_buffer_capabilities{};
 
 	String device_vendor;
 	String device_name;
@@ -138,8 +138,8 @@ private:
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
 	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
-	VkPhysicalDeviceMemoryProperties memory_properties;
-	VkPhysicalDeviceFeatures physical_device_features;
+	VkPhysicalDeviceMemoryProperties memory_properties{};
+	VkPhysicalDeviceFeatures physical_device_features{};
 
 	typedef struct {
 		VkImage image;
@@ -225,7 +225,7 @@ private:
 	Error _initialize_extensions();
 	Error _check_capabilities();
 
-	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, VkLayerProperties *layers);
+	VkBool32 _check_layers(const uint32_t check_count, const char *const *check_names, const uint32_t layer_count, const VkLayerProperties *layers);
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -278,8 +278,8 @@ public:
 	ShaderCapabilities get_shader_capabilities() const { return shader_capabilities; };
 	StorageBufferCapabilities get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
 
-	VkDevice get_device();
-	VkPhysicalDevice get_physical_device();
+	VkDevice get_device() const;
+	VkPhysicalDevice get_physical_device() const;
 	VkInstance get_instance() { return inst; }
 	int get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
@@ -312,10 +312,10 @@ public:
 	Error swap_buffers();
 	Error initialize();
 
-	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
-	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color);
-	void command_end_label(VkCommandBuffer p_command_buffer);
-	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+	void command_begin_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) const;
+	void command_insert_label(VkCommandBuffer p_command_buffer, String p_label_name, const Color p_color) const;
+	void command_end_label(VkCommandBuffer p_command_buffer) const;
+	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name) const;
 
 	String get_device_vendor_name() const;
 	String get_device_name() const;
