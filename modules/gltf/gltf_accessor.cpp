@@ -30,8 +30,6 @@
 
 #include "gltf_accessor.h"
 
-#include "gltf_document_extension.h"
-
 void GLTFAccessor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer_view"), &GLTFAccessor::get_buffer_view);
 	ClassDB::bind_method(D_METHOD("set_buffer_view", "buffer_view"), &GLTFAccessor::set_buffer_view);
@@ -67,7 +65,7 @@ void GLTFAccessor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "component_type"), "set_component_type", "get_component_type"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalized"), "set_normalized", "get_normalized"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "set_count", "get_count"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFDocument::GLTFType
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type"); // GLTFType
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "min"), "set_min", "get_min"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT64_ARRAY, "max"), "set_max", "get_max"); // Vector<real_t>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sparse_count"), "set_sparse_count", "get_sparse_count"); // int
@@ -123,7 +121,7 @@ int GLTFAccessor::get_type() {
 }
 
 void GLTFAccessor::set_type(int p_type) {
-	type = (GLTFDocument::GLTFType)p_type; // TODO: Register enum
+	type = (GLTFType)p_type; // TODO: Register enum
 }
 
 Vector<double> GLTFAccessor::get_min() {

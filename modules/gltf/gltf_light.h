@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/resource.h"
+#include "scene/3d/light_3d.h"
 
 class GLTFLight : public Resource {
 	GDCLASS(GLTFLight, Resource)

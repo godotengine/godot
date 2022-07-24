@@ -32,7 +32,7 @@
 #define GLTF_SKIN_H
 
 #include "core/io/resource.h"
-#include "gltf_document.h"
+#include "gltf_defines.h"
 
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
