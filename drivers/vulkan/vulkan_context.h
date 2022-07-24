@@ -326,6 +326,9 @@ public:
 
 	VulkanContext();
 	virtual ~VulkanContext();
+
+	VulkanContext(const VulkanContext &) = delete;
+	VulkanContext &operator=(const VulkanContext &) = delete;
 };
 
 #endif // VULKAN_CONTEXT_H
