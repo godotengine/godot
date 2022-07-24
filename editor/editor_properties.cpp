@@ -52,7 +52,7 @@ void EditorPropertyNil::update_property() {
 
 EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
-	label->set_text("[null]");
+	label->set_text("<null>");
 	add_child(label);
 }
 
@@ -1382,7 +1382,7 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_disabled(false);
 		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
-		edit->set_text(TTR("[Empty]"));
+		edit->set_text(TTR("<empty>"));
 		edit->set_disabled(true);
 		edit->set_icon(Ref<Texture2D>());
 	}

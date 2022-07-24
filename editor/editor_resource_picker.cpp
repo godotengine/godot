@@ -61,7 +61,7 @@ void EditorResourcePicker::_update_resource() {
 
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_icon(Ref<Texture2D>());
-			assign_button->set_text(TTR("[empty]"));
+			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
 			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
@@ -1113,7 +1113,7 @@ void EditorAudioStreamPicker::_update_resource() {
 void EditorAudioStreamPicker::_preview_draw() {
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (!audio_stream.is_valid()) {
-		get_assign_button()->set_text(TTR("[empty]"));
+		get_assign_button()->set_text(TTR("<empty>"));
 		return;
 	}
 
