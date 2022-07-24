@@ -1800,7 +1800,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*finalLayout*/ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 
 		};
-		constexpr VkAttachmentReference2KHR color_reference = {
+		const VkAttachmentReference2KHR color_reference = {
 			/*sType*/ VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR,
 			/*pNext*/ nullptr,
 			/*attachment*/ 0,
@@ -1808,7 +1808,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*aspectMask*/ 0,
 		};
 
-		constexpr VkSubpassDescription2KHR subpass = {
+		const VkSubpassDescription2KHR subpass = {
 			/*sType*/ VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR,
 			/*pNext*/ nullptr,
 			/*flags*/ 0,
