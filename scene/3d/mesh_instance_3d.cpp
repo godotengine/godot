@@ -337,6 +337,8 @@ void MeshInstance3D::set_surface_override_material(int p_surface, const Ref<Mate
 	} else {
 		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, RID());
 	}
+
+	notify_property_list_changed();
 }
 
 Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const {
@@ -460,6 +462,28 @@ void MeshInstance3D::create_debug_tangents() {
 		}
 #endif
 	}
+}
+
+void MeshInstance3D::_validate_property(PropertyInfo &property) const {
+	if (property.name.begins_with("material_override") && !get_material_override().is_valid() && (get_surface_override_material_count() == 0 || get_active_material(0).is_null())) {
+		// To avoid choice paralysis with material assignment, hide material override
+		// if no material is defined on the mesh resource itself or as a surface override.
+		// However, only hide material override if there is none currently set.
+		// Using material override on a mesh with no materials via script is still valid.
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		return;
+	}
+
+	if (property.name.begins_with("material_overlay") && !get_material_overlay().is_valid() && (get_surface_override_material_count() == 0 || get_active_material(0).is_null())) {
+		// To avoid choice paralysis with material assignment, hide material overlay
+		// if no material is defined on the mesh resource itself or as a surface override.
+		// However, only hide material overlay if there is none currently set.
+		// Using material overlay on a mesh with no materials via script is still valid.
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		return;
+	}
+
+	GeometryInstance3D::_validate_property(property);
 }
 
 void MeshInstance3D::_bind_methods() {

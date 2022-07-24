@@ -149,6 +149,10 @@ VisualInstance3D::~VisualInstance3D() {
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
 	material_override = p_material;
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+
+	// Not used within GeometryInstance, but used by MeshInstance3D's `_validate_property()`
+	// to only display material override/overlay if relevant.
+	notify_property_list_changed();
 }
 
 Ref<Material> GeometryInstance3D::get_material_override() const {
@@ -158,6 +162,10 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 void GeometryInstance3D::set_material_overlay(const Ref<Material> &p_material) {
 	material_overlay = p_material;
 	RS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+
+	// Not used within GeometryInstance, but used by MeshInstance3D's `_validate_property()`
+	// to only display material override/overlay if relevant.
+	notify_property_list_changed();
 }
 
 Ref<Material> GeometryInstance3D::get_material_overlay() const {
