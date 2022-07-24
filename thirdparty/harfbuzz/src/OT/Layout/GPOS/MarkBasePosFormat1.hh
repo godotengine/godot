@@ -12,26 +12,27 @@ typedef AnchorMatrix BaseArray;         /* base-major--
                                          * mark-minor--
                                          * ordered by class--zero-based. */
 
-struct MarkBasePosFormat1
+template <typename Types>
+struct MarkBasePosFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 markCoverage;           /* Offset to MarkCoverage table--from
                                          * beginning of MarkBasePos subtable */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 baseCoverage;           /* Offset to BaseCoverage table--from
                                          * beginning of MarkBasePos subtable */
   HBUINT16      classCount;             /* Number of classes defined for marks */
-  Offset16To<MarkArray>
+  typename Types::template OffsetTo<MarkArray>
                 markArray;              /* Offset to MarkArray table--from
                                          * beginning of MarkBasePos subtable */
-  Offset16To<BaseArray>
+  typename Types::template OffsetTo<BaseArray>
                 baseArray;              /* Offset to BaseArray table--from
                                          * beginning of MarkBasePos subtable */
 
   public:
-  DEFINE_SIZE_STATIC (12);
+  DEFINE_SIZE_STATIC (4 + 4 * Types::size);
 
     bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -117,6 +118,7 @@ struct MarkBasePosFormat1
           0 == _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]) ||
           (skippy_iter.idx == 0 ||
            _hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx - 1]) ||
+           !_hb_glyph_info_multiplied (&buffer->info[skippy_iter.idx - 1]) ||
            _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx]) !=
            _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx - 1]) ||
            _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]) !=

@@ -7,11 +7,12 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
-struct PairPosFormat2
+template <typename Types>
+struct PairPosFormat2_4
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of subtable */
   ValueFormat   valueFormat1;           /* ValueRecord definition--for the
@@ -20,11 +21,11 @@ struct PairPosFormat2
   ValueFormat   valueFormat2;           /* ValueRecord definition--for the
                                          * second glyph of the pair--may be
                                          * zero (0) */
-  Offset16To<ClassDef>
+  typename Types::template OffsetTo<ClassDef>
                 classDef1;              /* Offset to ClassDef table--from
                                          * beginning of PairPos subtable--for
                                          * the first glyph of the pair */
-  Offset16To<ClassDef>
+  typename Types::template OffsetTo<ClassDef>
                 classDef2;              /* Offset to ClassDef table--from
                                          * beginning of PairPos subtable--for
                                          * the second glyph of the pair */
@@ -36,7 +37,7 @@ struct PairPosFormat2
                                          * class1-major, class2-minor,
                                          * Each entry has value1 and value2 */
   public:
-  DEFINE_SIZE_ARRAY (16, values);
+  DEFINE_SIZE_ARRAY (10 + 3 * Types::size, values);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

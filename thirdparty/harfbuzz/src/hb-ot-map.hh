@@ -139,19 +139,15 @@ struct hb_ot_map_t
     return map ? map->stage[table_index] : UINT_MAX;
   }
 
-  void get_stage_lookups (unsigned int table_index, unsigned int stage,
-			  const struct lookup_map_t **plookups, unsigned int *lookup_count) const
+  hb_array_t<const hb_ot_map_t::lookup_map_t>
+  get_stage_lookups (unsigned int table_index, unsigned int stage) const
   {
     if (unlikely (stage > stages[table_index].length))
-    {
-      *plookups = nullptr;
-      *lookup_count = 0;
-      return;
-    }
+      return hb_array<const hb_ot_map_t::lookup_map_t> (nullptr, 0);
+
     unsigned int start = stage ? stages[table_index][stage - 1].last_lookup : 0;
     unsigned int end   = stage < stages[table_index].length ? stages[table_index][stage].last_lookup : lookups[table_index].length;
-    *plookups = end == start ? nullptr : &lookups[table_index][start];
-    *lookup_count = end - start;
+    return lookups[table_index].as_array ().sub_array (start, end - start);
   }
 
   HB_INTERNAL void collect_lookups (unsigned int table_index, hb_set_t *lookups) const;
@@ -167,7 +163,7 @@ struct hb_ot_map_t
 
   private:
 
-  hb_mask_t global_mask;
+  hb_mask_t global_mask = 0;
 
   hb_sorted_vector_t<feature_map_t> features;
   hb_vector_t<lookup_map_t> lookups[2]; /* GSUB/GPOS */
@@ -204,13 +200,15 @@ struct hb_ot_map_builder_t
   public:
 
   HB_INTERNAL hb_ot_map_builder_t (hb_face_t *face_,
-				   const hb_segment_properties_t *props_);
+				   const hb_segment_properties_t &props_);
 
   HB_INTERNAL ~hb_ot_map_builder_t ();
 
   HB_INTERNAL void add_feature (hb_tag_t tag,
 				hb_ot_map_feature_flags_t flags=F_NONE,
 				unsigned int value=1);
+
+  HB_INTERNAL bool has_feature (hb_tag_t tag);
 
   void add_feature (const hb_ot_map_feature_t &feat)
   { add_feature (feat.tag, feat.flags); }
