@@ -752,23 +752,6 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
 }
 
-Viewport *Window::_get_embedder() const {
-	Viewport *vp = get_parent_viewport();
-
-	while (vp) {
-		if (vp->is_embedding_subwindows()) {
-			return vp;
-		}
-
-		if (vp->get_parent()) {
-			vp = vp->get_parent()->get_viewport();
-		} else {
-			vp = nullptr;
-		}
-	}
-	return nullptr;
-}
-
 void Window::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

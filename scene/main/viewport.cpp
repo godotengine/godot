@@ -305,7 +305,12 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	}
 
 	if (old_focus) {
-		_sub_window_update(old_focus);
+		Viewport *embedder = old_focus->_get_embedder();
+		if (embedder) {
+			embedder->_sub_window_update(old_focus);
+		} else {
+			old_focus->update_canvas_items();
+		}
 	}
 
 	_sub_window_update(p_window);
@@ -345,6 +350,23 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	}
 
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
+}
+
+Viewport *Viewport::_get_embedder() const {
+	Viewport *vp = get_parent_viewport();
+
+	while (vp) {
+		if (vp->is_embedding_subwindows()) {
+			return vp;
+		}
+
+		if (vp->get_parent()) {
+			vp = vp->get_parent()->get_viewport();
+		} else {
+			vp = nullptr;
+		}
+	}
+	return nullptr;
 }
 
 void Viewport::_notification(int p_what) {
