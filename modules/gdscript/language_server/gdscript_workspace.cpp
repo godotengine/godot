@@ -496,9 +496,9 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri;
-	path = path.replace(root_uri + "/", "res://");
-	path = path.http_unescape();
+	String path = p_uri.http_unescape();
+	String base_uri = root_uri.http_unescape();
+	path = path.replacen(base_uri + "/", "res://");
 	return path;
 }
 
