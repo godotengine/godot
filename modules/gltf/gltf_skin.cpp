@@ -30,6 +30,9 @@
 
 #include "gltf_skin.h"
 
+#include "gltf_template_convert.h"
+#include "scene/resources/skin.h"
+
 void GLTFSkin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skin_root"), &GLTFSkin::get_skin_root);
 	ClassDB::bind_method(D_METHOD("set_skin_root", "skin_root"), &GLTFSkin::set_skin_root);
@@ -81,11 +84,11 @@ void GLTFSkin::set_joints_original(Vector<GLTFNodeIndex> p_joints_original) {
 }
 
 Array GLTFSkin::get_inverse_binds() {
-	return GLTFDocument::to_array(inverse_binds);
+	return GLTFTemplateConvert::to_array(inverse_binds);
 }
 
 void GLTFSkin::set_inverse_binds(Array p_inverse_binds) {
-	GLTFDocument::set_from_array(inverse_binds, p_inverse_binds);
+	GLTFTemplateConvert::set_from_array(inverse_binds, p_inverse_binds);
 }
 
 Vector<GLTFNodeIndex> GLTFSkin::get_joints() {
@@ -121,11 +124,11 @@ void GLTFSkin::set_skeleton(int p_skeleton) {
 }
 
 Dictionary GLTFSkin::get_joint_i_to_bone_i() {
-	return GLTFDocument::to_dict(joint_i_to_bone_i);
+	return GLTFTemplateConvert::to_dict(joint_i_to_bone_i);
 }
 
 void GLTFSkin::set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i) {
-	GLTFDocument::set_from_dict(joint_i_to_bone_i, p_joint_i_to_bone_i);
+	GLTFTemplateConvert::set_from_dict(joint_i_to_bone_i, p_joint_i_to_bone_i);
 }
 
 Dictionary GLTFSkin::get_joint_i_to_name() {

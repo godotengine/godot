@@ -31,7 +31,6 @@
 #ifndef GLTF_DOCUMENT_EXTENSION_H
 #define GLTF_DOCUMENT_EXTENSION_H
 
-#include "gltf_accessor.h"
 #include "gltf_node.h"
 #include "gltf_state.h"
 
