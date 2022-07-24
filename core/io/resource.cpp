@@ -56,32 +56,32 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		p_take_over = false; // Can't take over an empty path
 	}
 
-	ResourceCache::lock.lock();
+	{
+		MutexLock m(ResourceCache::lock);
 
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources.erase(path_cache);
-	}
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources.erase(path_cache);
+		}
 
-	path_cache = "";
+		path_cache = "";
 
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+		Ref<Resource> existing = ResourceCache::get_ref(p_path);
 
-	if (existing.is_valid()) {
-		if (p_take_over) {
-			existing->path_cache = String();
-			ResourceCache::resources.erase(p_path);
-		} else {
-			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+		if (existing.is_valid()) {
+			if (p_take_over) {
+				existing->path_cache = String();
+				ResourceCache::resources.erase(p_path);
+			} else {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
+		}
+
+		path_cache = p_path;
+
+		if (!path_cache.is_empty()) {
+			ResourceCache::resources[path_cache] = this;
 		}
 	}
-
-	path_cache = p_path;
-
-	if (!path_cache.is_empty()) {
-		ResourceCache::resources[path_cache] = this;
-	}
-	ResourceCache::lock.unlock();
 
 	_resource_path_changed();
 }
@@ -375,15 +375,13 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 		return;
 	}
 
-	ResourceCache::lock.lock();
+	MutexLock m(ResourceCache::lock);
 
 	if (p_remapped) {
 		ResourceLoader::remapped_list.add(&remapped_list);
 	} else {
 		ResourceLoader::remapped_list.remove(&remapped_list);
 	}
-
-	ResourceCache::lock.unlock();
 }
 
 bool Resource::is_translation_remapped() const {
@@ -394,24 +392,20 @@ bool Resource::is_translation_remapped() const {
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, const String &p_id) {
 	if (p_id.is_empty()) {
-		ResourceCache::path_cache_lock.write_lock();
+		RWLockWrite w(ResourceCache::path_cache_lock);
 		ResourceCache::resource_path_cache[p_path].erase(get_path());
-		ResourceCache::path_cache_lock.write_unlock();
 	} else {
-		ResourceCache::path_cache_lock.write_lock();
+		RWLockWrite w(ResourceCache::path_cache_lock);
 		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
-		ResourceCache::path_cache_lock.write_unlock();
 	}
 }
 
 String Resource::get_id_for_path(const String &p_path) const {
-	ResourceCache::path_cache_lock.read_lock();
+	RWLockWrite r(ResourceCache::path_cache_lock);
 	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
 		String result = ResourceCache::resource_path_cache[p_path][get_path()];
-		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {
-		ResourceCache::path_cache_lock.read_unlock();
 		return "";
 	}
 }
@@ -450,9 +444,8 @@ Resource::Resource() :
 
 Resource::~Resource() {
 	if (!path_cache.is_empty()) {
-		ResourceCache::lock.lock();
+		MutexLock m(ResourceCache::lock);
 		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.unlock();
 	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned.");
@@ -486,18 +479,18 @@ void ResourceCache::reload_externals() {
 }
 
 bool ResourceCache::has(const String &p_path) {
-	lock.lock();
+	{
+		MutexLock m(lock);
 
-	Resource **res = resources.getptr(p_path);
+		Resource **res = resources.getptr(p_path);
 
-	if (res && (*res)->reference_get_count() == 0) {
-		// This resource is in the process of being deleted, ignore its existence.
-		(*res)->path_cache = String();
-		resources.erase(p_path);
-		res = nullptr;
+		if (res && (*res)->reference_get_count() == 0) {
+			// This resource is in the process of being deleted, ignore its existence.
+			(*res)->path_cache = String();
+			resources.erase(p_path);
+			res = nullptr;
+		}
 	}
-
-	lock.unlock();
 
 	if (!res) {
 		return false;
@@ -508,7 +501,7 @@ bool ResourceCache::has(const String &p_path) {
 
 Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 	Ref<Resource> ref;
-	lock.lock();
+	MutexLock m(lock);
 
 	Resource **res = resources.getptr(p_path);
 
@@ -523,30 +516,26 @@ Ref<Resource> ResourceCache::get_ref(const String &p_path) {
 		res = nullptr;
 	}
 
-	lock.unlock();
-
 	return ref;
 }
 
 void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
-	lock.lock();
+	MutexLock m(lock);
 	for (KeyValue<String, Resource *> &E : resources) {
 		p_resources->push_back(Ref<Resource>(E.value));
 	}
-	lock.unlock();
 }
 
 int ResourceCache::get_cached_resource_count() {
-	lock.lock();
+	MutexLock m(lock);
 	int rc = resources.size();
-	lock.unlock();
 
 	return rc;
 }
 
 void ResourceCache::dump(const char *p_file, bool p_short) {
 #ifdef DEBUG_ENABLED
-	lock.lock();
+	MutexLock m(lock);
 
 	HashMap<String, int> type_count;
 
@@ -577,8 +566,6 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 			f->store_line(E.key + " count: " + itos(E.value));
 		}
 	}
-
-	lock.unlock();
 #else
 	WARN_PRINT("ResourceCache::dump only with in debug builds.");
 #endif
