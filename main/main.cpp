@@ -1436,7 +1436,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
@@ -1966,7 +1966,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Enum text drivers */
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		if (i > 0) {
