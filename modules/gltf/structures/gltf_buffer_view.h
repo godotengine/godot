@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_skeleton.h                                                      */
+/*  gltf_buffer_view.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,74 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_SKELETON_H
-#define GLTF_SKELETON_H
+#ifndef GLTF_BUFFER_VIEW_H
+#define GLTF_BUFFER_VIEW_H
 
+#include "../gltf_defines.h"
 #include "core/io/resource.h"
-#include "gltf_defines.h"
 
-class GLTFSkeleton : public Resource {
-	GDCLASS(GLTFSkeleton, Resource);
+class GLTFBufferView : public Resource {
+	GDCLASS(GLTFBufferView, Resource);
 	friend class GLTFDocument;
 
 private:
-	// The *synthesized* skeletons joints
-	Vector<GLTFNodeIndex> joints;
-
-	// The roots of the skeleton. If there are multiple, each root must have the
-	// same parent (ie roots are siblings)
-	Vector<GLTFNodeIndex> roots;
-
-	// The created Skeleton3D for the scene
-	Skeleton3D *godot_skeleton = nullptr;
-
-	// Set of unique bone names for the skeleton
-	HashSet<String> unique_names;
-
-	HashMap<int32_t, GLTFNodeIndex> godot_bone_node;
-
-	Vector<BoneAttachment3D *> bone_attachments;
+	GLTFBufferIndex buffer = -1;
+	int byte_offset = 0;
+	int byte_length = 0;
+	int byte_stride = -1;
+	bool indices = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Vector<GLTFNodeIndex> get_joints();
-	void set_joints(Vector<GLTFNodeIndex> p_joints);
+	GLTFBufferIndex get_buffer();
+	void set_buffer(GLTFBufferIndex p_buffer);
 
-	Vector<GLTFNodeIndex> get_roots();
-	void set_roots(Vector<GLTFNodeIndex> p_roots);
+	int get_byte_offset();
+	void set_byte_offset(int p_byte_offset);
 
-	Skeleton3D *get_godot_skeleton();
+	int get_byte_length();
+	void set_byte_length(int p_byte_length);
 
-	// Skeleton *get_godot_skeleton() {
-	// 	return this->godot_skeleton;
-	// }
-	// void set_godot_skeleton(Skeleton p_*godot_skeleton) {
-	// 	this->godot_skeleton = p_godot_skeleton;
-	// }
+	int get_byte_stride();
+	void set_byte_stride(int p_byte_stride);
 
-	Array get_unique_names();
-	void set_unique_names(Array p_unique_names);
-
-	//RBMap<int32_t, GLTFNodeIndex> get_godot_bone_node() {
-	//	return this->godot_bone_node;
-	//}
-	//void set_godot_bone_node(RBMap<int32_t, GLTFNodeIndex> p_godot_bone_node) {
-	//	this->godot_bone_node = p_godot_bone_node;
-	//}
-	Dictionary get_godot_bone_node();
-	void set_godot_bone_node(Dictionary p_indict);
-
-	//Dictionary get_godot_bone_node() {
-	//	return VariantConversion::to_dict(this->godot_bone_node);
-	//}
-	//void set_godot_bone_node(Dictionary p_indict) {
-	//	VariantConversion::set_from_dict(this->godot_bone_node, p_indict);
-	//}
-
-	BoneAttachment3D *get_bone_attachment(int idx);
-
-	int32_t get_bone_attachment_count();
+	bool get_indices();
+	void set_indices(bool p_indices);
+	// matrices need to be transformed to this
 };
-#endif // GLTF_SKELETON_H
+#endif // GLTF_BUFFER_VIEW_H
