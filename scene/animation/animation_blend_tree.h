@@ -298,6 +298,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	StringName prev_current = "prev_current";
 
 	float xfade_time = 0.0;
+	Ref<Curve> xfade_curve;
 	bool from_start = true;
 
 	void _update_inputs();
@@ -323,6 +324,9 @@ public:
 
 	void set_xfade_time(float p_fade);
 	float get_xfade_time() const;
+
+	void set_xfade_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_xfade_curve() const;
 
 	void set_from_start(bool p_from_start);
 	bool is_from_start() const;
