@@ -280,15 +280,15 @@ void EditorFileServer::_thread_start(void *s) {
 			}
 		}
 
-		self->wait_mutex.lock();
+		MutexLock m(self->wait_mutex);
 		while (self->to_wait.size()) {
 			Thread *w = *self->to_wait.begin();
 			self->to_wait.erase(w);
-			self->wait_mutex.unlock();
+			m.unlock();
 			w->wait_to_finish();
-			self->wait_mutex.lock();
+			m.lock();
 		}
-		self->wait_mutex.unlock();
+		m.unlock();
 
 		OS::get_singleton()->delay_usec(100000);
 	}

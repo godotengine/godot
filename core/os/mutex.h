@@ -56,17 +56,56 @@ public:
 	}
 };
 
+enum LockMode {
+	LOCK_MODE_LOCK,
+	LOCK_MODE_TRY_LOCK,
+	LOCK_MODE_DEFER,
+};
+
 template <class MutexT>
 class MutexLock {
 	const MutexT &mutex;
+	bool has_ownership;
 
 public:
-	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
+	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex, LockMode p_lock_mode = LOCK_MODE_LOCK) :
 			mutex(p_mutex) {
-		mutex.lock();
+		switch (p_lock_mode) {
+			case LOCK_MODE_LOCK:
+				lock();
+				break;
+
+			case LOCK_MODE_TRY_LOCK:
+				try_lock();
+				break;
+
+			case LOCK_MODE_DEFER:
+				has_ownership = false;
+				break;
+		}
 	}
 
 	_ALWAYS_INLINE_ ~MutexLock() {
+		if (has_ownership) {
+			unlock();
+		}
+	}
+
+	_ALWAYS_INLINE_ void lock() {
+		mutex.lock();
+		has_ownership = true;
+	}
+
+	_ALWAYS_INLINE_ Error try_lock() {
+		Error err = mutex.try_lock();
+		if (err == OK) {
+			has_ownership = true;
+		}
+		return err;
+	}
+
+	_ALWAYS_INLINE_ void unlock() {
+		has_ownership = false;
 		mutex.unlock();
 	}
 };

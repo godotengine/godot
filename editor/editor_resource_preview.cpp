@@ -210,7 +210,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 }
 
 void EditorResourcePreview::_iterate() {
-	preview_mutex.lock();
+	MutexLock m(preview_mutex);
 
 	if (queue.size()) {
 		QueueItem item = queue.front()->get();
@@ -224,10 +224,8 @@ void EditorResourcePreview::_iterate() {
 			}
 
 			_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
-
-			preview_mutex.unlock();
 		} else {
-			preview_mutex.unlock();
+			m.unlock();
 
 			Ref<ImageTexture> texture;
 			Ref<ImageTexture> small_texture;
@@ -320,9 +318,6 @@ void EditorResourcePreview::_iterate() {
 				_preview_ready(item.path, texture, small_texture, item.id, item.function, item.userdata);
 			}
 		}
-
-	} else {
-		preview_mutex.unlock();
 	}
 }
 

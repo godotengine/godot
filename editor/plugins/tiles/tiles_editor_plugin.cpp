@@ -65,11 +65,11 @@ void TilesEditorPlugin::_thread() {
 	while (!pattern_thread_exit.is_set()) {
 		pattern_preview_sem.wait();
 
-		pattern_preview_mutex.lock();
+		MutexLock m(pattern_preview_mutex);
 		if (pattern_preview_queue.size()) {
 			QueueItem item = pattern_preview_queue.front()->get();
 			pattern_preview_queue.pop_front();
-			pattern_preview_mutex.unlock();
+			m.unlock();
 
 			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
@@ -130,8 +130,6 @@ void TilesEditorPlugin::_thread() {
 				item.callback.call(args_ptr, 2, r, error);
 
 				viewport->queue_delete();
-			} else {
-				pattern_preview_mutex.unlock();
 			}
 		}
 	}

@@ -241,7 +241,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
 
-	thread_load_mutex->lock();
+	MutexLock m(*thread_load_mutex);
 	if (load_task.error != OK) {
 		load_task.status = THREAD_LOAD_FAILED;
 	} else {
@@ -286,8 +286,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 			_loaded_callback(load_task.resource, load_task.local_path);
 		}
 	}
-
-	thread_load_mutex->unlock();
 }
 
 static String _validate_local_path(const String &p_path) {
@@ -303,23 +301,23 @@ static String _validate_local_path(const String &p_path) {
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode, const String &p_source_resource) {
 	String local_path = _validate_local_path(p_path);
 
-	thread_load_mutex->lock();
+	MutexLock m(*thread_load_mutex);
 
 	if (!p_source_resource.is_empty()) {
 		//must be loading from this resource
 		if (!thread_load_tasks.has(p_source_resource)) {
-			thread_load_mutex->unlock();
+			m.unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "There is no thread loading source resource '" + p_source_resource + "'.");
 		}
 		//must be loading from this thread
 		if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
-			thread_load_mutex->unlock();
+			m.unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
 		}
 
 		//must not be already added as s sub tasks
 		if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
-			thread_load_mutex->unlock();
+			m.unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Thread loading source resource '" + p_source_resource + "' already is loading '" + local_path + "'.");
 		}
 	}
@@ -329,7 +327,6 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		if (!p_source_resource.is_empty()) {
 			thread_load_tasks[p_source_resource].sub_tasks.insert(local_path);
 		}
-		thread_load_mutex->unlock();
 		return OK;
 	}
 
@@ -348,7 +345,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		{ //must check if resource is already loaded before attempting to load it in a thread
 
 			if (load_task.loader_id == Thread::get_caller_id()) {
-				thread_load_mutex->unlock();
+				m.unlock();
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 			}
 
@@ -388,8 +385,6 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		load_task.loader_id = load_task.thread->get_id();
 	}
 
-	thread_load_mutex->unlock();
-
 	return OK;
 }
 
@@ -418,9 +413,8 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, float *r_progress) {
 	String local_path = _validate_local_path(p_path);
 
-	thread_load_mutex->lock();
+	MutexLock m(*thread_load_mutex);
 	if (!thread_load_tasks.has(local_path)) {
-		thread_load_mutex->unlock();
 		return THREAD_LOAD_INVALID_RESOURCE;
 	}
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
@@ -430,17 +424,14 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 		*r_progress = _dependency_get_progress(local_path);
 	}
 
-	thread_load_mutex->unlock();
-
 	return status;
 }
 
 Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	String local_path = _validate_local_path(p_path);
 
-	thread_load_mutex->lock();
+	MutexLock m(*thread_load_mutex);
 	if (!thread_load_tasks.has(local_path)) {
-		thread_load_mutex->unlock();
 		if (r_error) {
 			*r_error = ERR_INVALID_PARAMETER;
 		}
@@ -477,14 +468,13 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			print_lt("GET: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 		}
 
-		thread_load_mutex->unlock();
+		m.unlock();
 		semaphore->wait();
-		thread_load_mutex->lock();
+		m.lock();
 
 		thread_suspended_count--;
 
 		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
-			thread_load_mutex->unlock();
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
 			}
@@ -507,8 +497,6 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 		thread_load_tasks.erase(local_path);
 	}
 
-	thread_load_mutex->unlock();
-
 	return resource;
 }
 
@@ -520,7 +508,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 	String local_path = _validate_local_path(p_path);
 
 	if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-		thread_load_mutex->lock();
+		MutexLock m(*thread_load_mutex);
 
 		//Is it already being loaded? poll until done
 		if (thread_load_tasks.has(local_path)) {
@@ -529,11 +517,10 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 				if (r_error) {
 					*r_error = err;
 				}
-				thread_load_mutex->unlock();
 				return Ref<Resource>();
 			}
-			thread_load_mutex->unlock();
 
+			m.unlock();
 			return load_threaded_get(p_path, r_error);
 		}
 
@@ -542,8 +529,6 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
 		if (existing.is_valid()) {
-			thread_load_mutex->unlock();
-
 			if (r_error) {
 				*r_error = OK;
 			}
@@ -563,7 +548,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 		thread_load_tasks[local_path] = load_task;
 
-		thread_load_mutex->unlock();
+		m.unlock();
 
 		_thread_load_function(&thread_load_tasks[local_path]);
 
@@ -878,7 +863,7 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	ResourceCache::lock.lock();
+	MutexLock m(ResourceCache::lock);
 
 	List<Resource *> to_reload;
 	SelfList<Resource> *E = remapped_list.first();
@@ -888,7 +873,7 @@ void ResourceLoader::reload_translation_remaps() {
 		E = E->next();
 	}
 
-	ResourceCache::lock.unlock();
+	m.unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {

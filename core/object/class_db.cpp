@@ -890,9 +890,9 @@ void ClassDB::add_property_array(const StringName &p_class, const StringName &p_
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
-	lock.read_lock();
+	RWLockRead r(lock);
 	ClassInfo *type = classes.getptr(p_class);
-	lock.read_unlock();
+	r.read_unlock();
 
 	ERR_FAIL_COND(!type);
 

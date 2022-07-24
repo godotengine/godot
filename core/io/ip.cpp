@@ -82,11 +82,11 @@ struct _IP_ResolverPrivate {
 				continue;
 			}
 
-			mutex.lock();
+			MutexLock m(mutex);
 			List<IPAddress> response;
 			String hostname = queue[i].hostname;
 			IP::Type type = queue[i].type;
-			mutex.unlock();
+			m.unlock();
 
 			// We should not lock while resolving the hostname,
 			// only when modifying the queue.
@@ -132,21 +132,21 @@ Array IP::resolve_hostname_addresses(const String &p_hostname, Type p_type) {
 	List<IPAddress> res;
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 
-	resolver->mutex.lock();
+	MutexLock m(resolver->mutex);
 	if (resolver->cache.has(key)) {
 		res = resolver->cache[key];
 	} else {
 		// This should be run unlocked so the resolver thread can keep resolving
 		// other requests.
-		resolver->mutex.unlock();
+		m.unlock();
 		_resolve_hostname(res, p_hostname, p_type);
-		resolver->mutex.lock();
+		m.lock();
 		// We might be overriding another result, but we don't care as long as the result is valid.
 		if (res.size()) {
 			resolver->cache[key] = res;
 		}
 	}
-	resolver->mutex.unlock();
+	m.unlock();
 
 	Array result;
 	for (int i = 0; i < res.size(); ++i) {

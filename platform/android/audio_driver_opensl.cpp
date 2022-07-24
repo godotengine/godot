@@ -41,10 +41,11 @@ void AudioDriverOpenSL::_buffer_callback(
 		SLAndroidSimpleBufferQueueItf queueItf) {
 	bool mix = true;
 
+	MutexLock m(mutex, LOCK_MODE_DEFER);
 	if (pause) {
 		mix = false;
 	} else {
-		mix = mutex.try_lock() == OK;
+		mix = m.try_lock() == OK;
 	}
 
 	if (mix) {
@@ -57,7 +58,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	}
 
 	if (mix) {
-		mutex.unlock();
+		m.unlock();
 	}
 
 	const int32_t *src_buff = mixdown_buffer;

@@ -381,13 +381,13 @@ uint64_t FileAccessNetwork::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 		int32_t page = pos / page_size;
 
 		if (page != last_page) {
-			buffer_mutex.lock();
+			MutexLock m(buffer_mutex);
 			if (pages[page].buffer.is_empty()) {
 				waiting_on_page = page;
 				for (int32_t j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);
 				}
-				buffer_mutex.unlock();
+				m.unlock();
 				DEBUG_PRINT("wait");
 				page_sem.wait();
 				DEBUG_PRINT("done");
@@ -395,7 +395,7 @@ uint64_t FileAccessNetwork::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 				for (int32_t j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);
 				}
-				buffer_mutex.unlock();
+				m.unlock();
 			}
 
 			buff = pages.write[page].buffer.ptrw();

@@ -42,10 +42,10 @@ void WorkerThreadPool::Task::free_template_userdata() {
 WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 
 void WorkerThreadPool::_process_task_queue() {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	Task *task = task_queue.first()->self();
 	task_queue.remove(task_queue.first());
-	task_mutex.unlock();
+	m.unlock();
 	_process_task(task);
 }
 
@@ -103,16 +103,14 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 			if (finished_users == max_users) {
 				// Get rid of the group, because nobody else is using it.
-				task_mutex.lock();
+				MutexLock m(task_mutex);
 				group_allocator.free(p_task->group);
-				task_mutex.unlock();
 			}
 
 			// For groups, tasks get rid of themselves.
 
-			task_mutex.lock();
+			MutexLock m(task_mutex);
 			task_allocator.free(p_task);
-			task_mutex.unlock();
 		}
 	} else {
 		if (p_task->native_func) {
@@ -165,10 +163,10 @@ void WorkerThreadPool::_native_low_priority_thread_function(void *p_user) {
 }
 
 void WorkerThreadPool::_post_task(Task *p_task, bool p_high_priority) {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	p_task->low_priority = !p_high_priority;
 	if (!p_high_priority && use_native_low_priority_threads) {
-		task_mutex.unlock();
+		m.unlock();
 		p_task->low_priority_thread = native_thread_allocator.alloc();
 		p_task->low_priority_thread->start(_native_low_priority_thread_function, p_task); // Pask task directly to thread.
 
@@ -177,12 +175,11 @@ void WorkerThreadPool::_post_task(Task *p_task, bool p_high_priority) {
 		if (!p_high_priority) {
 			low_priority_threads_used.increment();
 		}
-		task_mutex.unlock();
+		m.unlock();
 		task_available_semaphore.post();
 	} else {
 		// Too many threads using low priority, must go to queue.
 		low_priority_task_queue.add_last(&p_task->task_elem);
-		task_mutex.unlock();
 	}
 }
 
@@ -191,7 +188,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	// Get a free task
 	Task *task = task_allocator.alloc();
 	TaskID id = last_task++;
@@ -201,7 +198,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	task->description = p_description;
 	task->template_userdata = p_template_userdata;
 	tasks.insert(id, task);
-	task_mutex.unlock();
+	m.unlock();
 
 	_post_task(task, p_high_priority);
 
@@ -213,31 +210,28 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bo
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	const Task *const *taskp = tasks.getptr(p_task_id);
 	if (!taskp) {
-		task_mutex.unlock();
 		ERR_FAIL_V_MSG(false, "Invalid Task ID"); // Invalid task
 	}
 
 	bool completed = (*taskp)->completed;
-	task_mutex.unlock();
 
 	return completed;
 }
 
 void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	Task **taskp = tasks.getptr(p_task_id);
 	if (!taskp) {
-		task_mutex.unlock();
 		ERR_FAIL_MSG("Invalid Task ID"); // Invalid task
 	}
 	Task *task = *taskp;
 
 	if (task->waiting) {
 		String description = task->description;
-		task_mutex.unlock();
+		m.unlock();
 		if (description.is_empty()) {
 			ERR_FAIL_MSG("Another thread is waiting on this task: " + itos(p_task_id)); // Invalid task
 		} else {
@@ -247,7 +241,7 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 
 	task->waiting = true;
 
-	task_mutex.unlock();
+	m.unlock();
 
 	if (use_native_low_priority_threads && task->low_priority) {
 		task->low_priority_thread->wait_to_finish();
@@ -274,10 +268,9 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 		}
 	}
 
-	task_mutex.lock();
+	m.lock();
 	tasks.erase(p_task_id);
 	task_allocator.free(task);
-	task_mutex.unlock();
 }
 
 WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description) {
@@ -286,7 +279,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 		p_tasks = threads.size();
 	}
 
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	Group *group = group_allocator.alloc();
 	GroupID id = last_task++;
 	group->max = p_elements;
@@ -320,7 +313,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 	}
 
 	groups[id] = group;
-	task_mutex.unlock();
+	m.unlock();
 
 	if (!p_high_priority && use_native_low_priority_threads) {
 		group->low_priority_native_tasks.resize(p_tasks);
@@ -345,7 +338,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::add_group_task(const Callable &p_act
 }
 
 uint32_t WorkerThreadPool::get_group_processed_element_count(GroupID p_group) const {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	const Group *const *groupp = groups.getptr(p_group);
 	if (!groupp) {
 		task_mutex.unlock();
@@ -356,21 +349,20 @@ uint32_t WorkerThreadPool::get_group_processed_element_count(GroupID p_group) co
 	return elements;
 }
 bool WorkerThreadPool::is_group_task_completed(GroupID p_group) const {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	const Group *const *groupp = groups.getptr(p_group);
 	if (!groupp) {
-		task_mutex.unlock();
+		m.unlock();
 		ERR_FAIL_V_MSG(false, "Invalid Group ID");
 	}
 	bool completed = (*groupp)->completed.is_set();
-	task_mutex.unlock();
 	return completed;
 }
 
 void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	Group **groupp = groups.getptr(p_group);
-	task_mutex.unlock();
+	m.unlock();
 	if (!groupp) {
 		ERR_FAIL_MSG("Invalid Group ID");
 	}
@@ -380,14 +372,14 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 		for (uint32_t i = 0; i < group->low_priority_native_tasks.size(); i++) {
 			group->low_priority_native_tasks[i]->low_priority_thread->wait_to_finish();
 			native_thread_allocator.free(group->low_priority_native_tasks[i]->low_priority_thread);
-			task_mutex.lock();
+			m.lock();
 			task_allocator.free(group->low_priority_native_tasks[i]);
-			task_mutex.unlock();
+			m.unlock();
 		}
 
-		task_mutex.lock();
+		m.lock();
 		group_allocator.free(group);
-		task_mutex.unlock();
+		m.unlock();
 	} else {
 		group->done_semaphore.wait();
 
@@ -396,9 +388,9 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 
 		if (finished_users == max_users) {
 			// All tasks using this group are gone (finished before the group), so clear the gorup too.
-			task_mutex.lock();
+			m.lock();
 			group_allocator.free(group);
-			task_mutex.unlock();
+			m.unlock();
 		}
 	}
 
@@ -433,13 +425,13 @@ void WorkerThreadPool::finish() {
 		return;
 	}
 
-	task_mutex.lock();
+	MutexLock m(task_mutex);
 	SelfList<Task> *E = low_priority_task_queue.first();
 	while (E) {
 		print_error("Task waiting was never re-claimed: " + E->self()->description);
 		E = E->next();
 	}
-	task_mutex.unlock();
+	m.unlock();
 
 	exit_threads.set_to(true);
 

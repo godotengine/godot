@@ -32,6 +32,7 @@
 #define RW_LOCK_H
 
 #include "core/error/error_list.h"
+#include "core/os/mutex.h"
 
 #if !defined(NO_THREADS)
 
@@ -89,26 +90,92 @@ public:
 
 class RWLockRead {
 	const RWLock &lock;
+	bool has_ownership;
 
 public:
-	RWLockRead(const RWLock &p_lock) :
+	RWLockRead(const RWLock &p_lock, LockMode p_lock_mode = LOCK_MODE_LOCK) :
 			lock(p_lock) {
-		lock.read_lock();
+		switch (p_lock_mode) {
+			case LOCK_MODE_LOCK:
+				read_lock();
+				break;
+
+			case LOCK_MODE_TRY_LOCK:
+				read_try_lock();
+				break;
+
+			case LOCK_MODE_DEFER:
+				has_ownership = false;
+				break;
+		}
 	}
 	~RWLockRead() {
+		if (has_ownership) {
+			read_unlock();
+		}
+	}
+
+	void read_lock() {
+		lock.read_lock();
+		has_ownership = true;
+	}
+
+	Error read_try_lock() {
+		Error err = lock.read_try_lock();
+		if (err == OK) {
+			has_ownership = true;
+		}
+		return err;
+	}
+
+	void read_unlock() {
+		has_ownership = false;
 		lock.read_unlock();
 	}
 };
 
 class RWLockWrite {
 	RWLock &lock;
+	bool has_ownership;
 
 public:
-	RWLockWrite(RWLock &p_lock) :
+	RWLockWrite(RWLock &p_lock, LockMode p_lock_mode = LOCK_MODE_LOCK) :
 			lock(p_lock) {
-		lock.write_lock();
+		switch (p_lock_mode) {
+			case LOCK_MODE_LOCK:
+				write_lock();
+				break;
+
+			case LOCK_MODE_TRY_LOCK:
+				write_try_lock();
+				break;
+
+			case LOCK_MODE_DEFER:
+				has_ownership = false;
+				break;
+		}
 	}
 	~RWLockWrite() {
+		if (has_ownership) {
+			write_unlock();
+		}
+	}
+
+	void write_lock() {
+		lock.write_lock();
+		has_ownership = true;
+	}
+
+	Error write_try_lock() {
+		Error err = lock.write_try_lock();
+		if (err == OK) {
+			has_ownership = true;
+		}
+		return err;
+	}
+
+	void write_unlock() {
+		has_ownership = false;
 		lock.write_unlock();
 	}
 };
