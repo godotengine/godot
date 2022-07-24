@@ -329,6 +329,7 @@ private:
 	bool _active = true;
 	bool _loaded = false;
 	bool _debug_sprawl = false;
+	bool _show_debug = true;
 
 	// if the pvs is generated, we can either cull using dynamic portals or PVS
 	bool _cull_using_pvs = false;
@@ -357,6 +358,8 @@ public:
 	void occluder_ensure_up_to_date_sphere(const PortalResources &p_resources, VSOccluder_Instance &r_occluder);
 	void occluder_ensure_up_to_date_polys(const PortalResources &p_resources, VSOccluder_Instance &r_occluder);
 	void occluder_refresh_room_within(uint32_t p_occluder_pool_id);
+
+	PortalRenderer();
 };
 
 inline void PortalRenderer::occluder_ensure_up_to_date_sphere(const PortalResources &p_resources, VSOccluder_Instance &r_occluder) {

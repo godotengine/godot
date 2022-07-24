@@ -152,12 +152,14 @@ void PortalRenderer::_debug_print_global_list() {
 }
 
 void PortalRenderer::_log(String p_string, int p_priority) {
-	// change this for more debug output ..
-	// not selectable at runtime yet.
-	if (p_priority >= 1) {
-		print_line(p_string);
-	} else {
-		print_verbose(p_string);
+	if (_show_debug) {
+		// change this for more debug output ..
+		// not selectable at runtime yet.
+		if (p_priority >= 1) {
+			print_line(p_string);
+		} else {
+			print_verbose(p_string);
+		}
 	}
 }
 
@@ -861,7 +863,7 @@ void PortalRenderer::rooms_finalize(bool p_generate_pvs, bool p_cull_using_pvs, 
 	// as this will worst case give wrong result for a frame
 	Engine::get_singleton()->set_portals_active(true);
 
-	print_line("Room conversion complete. " + itos(_room_pool_ids.size()) + " rooms, " + itos(_portal_pool_ids.size()) + " portals.");
+	_log("Room conversion complete. " + itos(_room_pool_ids.size()) + " rooms, " + itos(_portal_pool_ids.size()) + " portals.", 1);
 }
 
 bool PortalRenderer::sprawl_static_geometry(int p_static_id, const VSStatic &p_static, int p_room_id, const Vector<Vector3> &p_object_pts) {
@@ -1197,4 +1199,8 @@ String PortalRenderer::_rid_to_string(RID p_rid) {
 
 String PortalRenderer::_addr_to_string(const void *p_addr) {
 	return String::num_uint64((uint64_t)p_addr, 16);
+}
+
+PortalRenderer::PortalRenderer() {
+	_show_debug = GLOBAL_GET("rendering/portals/debug/logging");
 }

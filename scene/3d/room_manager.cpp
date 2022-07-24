@@ -463,23 +463,18 @@ bool RoomManager::get_merge_meshes() const {
 	return _settings_merge_meshes;
 }
 
-void RoomManager::show_warning(const String &p_string, const String &p_extra_string, bool p_alert) {
-	if (p_extra_string != "") {
-		WARN_PRINT(p_string + " " + p_extra_string);
-#ifdef TOOLS_ENABLED
-		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTRGET(p_string) + "\n" + TTRGET(p_extra_string));
-		}
-#endif
-	} else {
-		WARN_PRINT(p_string);
-		// OS::get_singleton()->alert(p_string, p_title);
-#ifdef TOOLS_ENABLED
-		if (p_alert && Engine::get_singleton()->is_editor_hint()) {
-			EditorNode::get_singleton()->show_warning(TTRGET(p_string));
-		}
-#endif
+void RoomManager::show_warning(const String &p_string, bool p_skippable, bool p_alert) {
+	if (p_skippable && !Engine::get_singleton()->is_editor_hint() && !_show_debug) {
+		return;
 	}
+
+	WARN_PRINT(p_string);
+	// OS::get_singleton()->alert(p_string, p_title);
+#ifdef TOOLS_ENABLED
+	if (p_alert && Engine::get_singleton()->is_editor_hint()) {
+		EditorNode::get_singleton()->show_warning(TTRGET(p_string));
+	}
+#endif
 }
 
 void RoomManager::debug_print_line(String p_string, int p_priority) {
@@ -657,15 +652,15 @@ void RoomManager::rooms_convert() {
 	}
 
 	if (_warning_portal_link_room_not_found) {
-		show_warning(TTR("Portal link room not found, check output log for details."));
+		show_warning(TTR("Portal link room not found, check output log for details."), true);
 	}
 
 	if (_warning_portal_autolink_failed) {
-		show_warning(TTR("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."));
+		show_warning(TTR("Portal autolink failed, check output log for details.\nCheck the portal is facing outwards from the source room."), true);
 	}
 
 	if (_warning_room_overlap_detected) {
-		show_warning(TTR("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."));
+		show_warning(TTR("Room overlap detected, cameras may work incorrectly in overlapping area.\nCheck output log for details."), true);
 	}
 }
 
@@ -1026,7 +1021,9 @@ void RoomManager::_autolink_portals(Spatial *p_roomlist, LocalVector<Portal *> &
 
 		// error condition
 		if (!autolink_found) {
-			WARN_PRINT("Portal AUTOLINK failed for " + portal->get_name() + " from " + source_room->get_name());
+			if (_show_debug) {
+				WARN_PRINT("Portal AUTOLINK failed for " + portal->get_name() + " from " + source_room->get_name());
+			}
 			_warning_portal_autolink_failed = true;
 
 #ifdef TOOLS_ENABLED
