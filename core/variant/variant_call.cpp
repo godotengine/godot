@@ -1730,7 +1730,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Plane, normalized, sarray(), varray());
 	bind_method(Plane, center, sarray(), varray());
 	bind_method(Plane, is_equal_approx, sarray("to_plane"), varray());
-	bind_method(Plane, is_point_over, sarray("plane"), varray());
+	bind_method(Plane, is_point_over, sarray("point"), varray());
 	bind_method(Plane, distance_to, sarray("point"), varray());
 	bind_method(Plane, has_point, sarray("point", "tolerance"), varray(CMP_EPSILON));
 	bind_method(Plane, project, sarray("point"), varray());
