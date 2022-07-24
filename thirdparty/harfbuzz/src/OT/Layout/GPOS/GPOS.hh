@@ -1,12 +1,15 @@
-#ifndef OT_LAYOUT_GPOS_HH
-#define OT_LAYOUT_GPOS_HH
+#ifndef OT_LAYOUT_GPOS_GPOS_HH
+#define OT_LAYOUT_GPOS_GPOS_HH
 
-#include "../../hb-ot-layout-common.hh"
-#include "../../hb-ot-layout-gsubgpos.hh"
-#include "GPOS/Common.hh"
-#include "GPOS/PosLookup.hh"
+#include "../../../hb-ot-layout-common.hh"
+#include "../../../hb-ot-layout-gsubgpos.hh"
+#include "Common.hh"
+#include "PosLookup.hh"
 
 namespace OT {
+
+using Layout::GPOS_impl::PosLookup;
+
 namespace Layout {
 
 static void
@@ -25,10 +28,10 @@ struct GPOS : GSUBGPOS
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_GPOS;
 
-  using Lookup = GPOS_impl::PosLookup;
+  using Lookup = PosLookup;
 
-  const GPOS_impl::PosLookup& get_lookup (unsigned int i) const
-  { return static_cast<const GPOS_impl::PosLookup &> (GSUBGPOS::get_lookup (i)); }
+  const PosLookup& get_lookup (unsigned int i) const
+  { return static_cast<const PosLookup &> (GSUBGPOS::get_lookup (i)); }
 
   static inline void position_start (hb_font_t *font, hb_buffer_t *buffer);
   static inline void position_finish_advances (hb_font_t *font, hb_buffer_t *buffer);
@@ -37,11 +40,14 @@ struct GPOS : GSUBGPOS
   bool subset (hb_subset_context_t *c) const
   {
     hb_subset_layout_context_t l (c, tableTag, c->plan->gpos_lookups, c->plan->gpos_langsys, c->plan->gpos_features);
-    return GSUBGPOS::subset<GPOS_impl::PosLookup> (&l);
+    return GSUBGPOS::subset<PosLookup> (&l);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
-  { return GSUBGPOS::sanitize<GPOS_impl::PosLookup> (c); }
+  {
+    TRACE_SANITIZE (this);
+    return_trace (GSUBGPOS::sanitize<PosLookup> (c));
+  }
 
   HB_INTERNAL bool is_blocklisted (hb_blob_t *blob,
                                    hb_face_t *face) const;
@@ -51,7 +57,7 @@ struct GPOS : GSUBGPOS
     for (unsigned i = 0; i < GSUBGPOS::get_lookup_count (); i++)
     {
       if (!c->gpos_lookups->has (i)) continue;
-      const GPOS_impl::PosLookup &l = get_lookup (i);
+      const PosLookup &l = get_lookup (i);
       l.dispatch (c);
     }
   }
@@ -59,7 +65,7 @@ struct GPOS : GSUBGPOS
   void closure_lookups (hb_face_t      *face,
                         const hb_set_t *glyphs,
                         hb_set_t       *lookup_indexes /* IN/OUT */) const
-  { GSUBGPOS::closure_lookups<GPOS_impl::PosLookup> (face, glyphs, lookup_indexes); }
+  { GSUBGPOS::closure_lookups<PosLookup> (face, glyphs, lookup_indexes); }
 
   typedef GSUBGPOS::accelerator_t<GPOS> accelerator_t;
 };
@@ -162,4 +168,4 @@ struct GPOS_accelerator_t : Layout::GPOS::accelerator_t {
 
 }
 
-#endif  /* OT_LAYOUT_GPOS_HH */
+#endif  /* OT_LAYOUT_GPOS_GPOS_HH */

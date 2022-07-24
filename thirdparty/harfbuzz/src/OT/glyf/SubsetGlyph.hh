@@ -42,8 +42,8 @@ struct SubsetGlyph
     for (auto &_ : Glyph (dest_glyph).get_composite_iterator ())
     {
       hb_codepoint_t new_gid;
-      if (plan->new_gid_for_old_gid (_.glyphIndex, &new_gid))
-	const_cast<CompositeGlyphRecord &> (_).glyphIndex = new_gid;
+      if (plan->new_gid_for_old_gid (_.get_gid(), &new_gid))
+	const_cast<CompositeGlyphRecord &> (_).set_gid (new_gid);
     }
 
     if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)

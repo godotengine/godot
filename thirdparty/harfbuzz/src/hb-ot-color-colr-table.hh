@@ -145,7 +145,7 @@ struct BaseGlyphRecord
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   public:
@@ -524,6 +524,7 @@ struct PaintSweepGradient
 };
 
 struct Paint;
+
 // Paint a non-COLR glyph, filled as indicated by paint.
 struct PaintGlyph
 {
@@ -1152,6 +1153,8 @@ struct Paint
   Variable<PaintSkewAroundCenter>		paintformat31;
   PaintComposite				paintformat32;
   } u;
+  public:
+  DEFINE_SIZE_MIN (2);
 };
 
 struct BaseGlyphPaintRecord

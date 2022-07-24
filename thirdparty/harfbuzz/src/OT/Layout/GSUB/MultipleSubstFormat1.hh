@@ -6,20 +6,21 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
-struct MultipleSubstFormat1
+template <typename Types>
+struct MultipleSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template OffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16OfOffset16To<Sequence>
+  Array16Of<typename Types::template OffsetTo<Sequence<Types>>>
                 sequence;               /* Array of Sequence tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (6, sequence);
+  DEFINE_SIZE_ARRAY (4 + Types::size, sequence);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -39,7 +40,7 @@ struct MultipleSubstFormat1
     | hb_filter (c->parent_active_glyphs (), hb_first)
     | hb_map (hb_second)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const Sequence &_) { _.closure (c); })
+    | hb_apply ([c] (const Sequence<Types> &_) { _.closure (c); })
     ;
   }
 
@@ -51,7 +52,7 @@ struct MultipleSubstFormat1
     + hb_zip (this+coverage, sequence)
     | hb_map (hb_second)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const Sequence &_) { _.collect_glyphs (c); })
+    | hb_apply ([c] (const Sequence<Types> &_) { _.collect_glyphs (c); })
     ;
   }
 

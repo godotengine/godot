@@ -105,19 +105,21 @@ struct Glyph
     if (unlikely (!points.resize (points.length + PHANTOM_COUNT))) return false;
     hb_array_t<contour_point_t> phantoms = points.sub_array (points.length - PHANTOM_COUNT, PHANTOM_COUNT);
     {
-      int h_delta = (int) header->xMin -
-		    glyf_accelerator.hmtx->get_side_bearing (gid);
+      int lsb = 0;
+      int h_delta = glyf_accelerator.hmtx->get_leading_bearing_without_var_unscaled (gid, &lsb) ?
+		    (int) header->xMin - lsb : 0;
+      int tsb = 0;
       int v_orig  = (int) header->yMax +
 #ifndef HB_NO_VERTICAL
-		    glyf_accelerator.vmtx->get_side_bearing (gid)
+		    ((void) glyf_accelerator.vmtx->get_leading_bearing_without_var_unscaled (gid, &tsb), tsb)
 #else
 		    0
 #endif
 		    ;
-      unsigned h_adv = glyf_accelerator.hmtx->get_advance (gid);
+      unsigned h_adv = glyf_accelerator.hmtx->get_advance_without_var_unscaled (gid);
       unsigned v_adv =
 #ifndef HB_NO_VERTICAL
-		       glyf_accelerator.vmtx->get_advance (gid)
+		       glyf_accelerator.vmtx->get_advance_without_var_unscaled (gid)
 #else
 		       - font->face->get_upem ()
 #endif
@@ -144,7 +146,7 @@ struct Glyph
       for (auto &item : get_composite_iterator ())
       {
         comp_points.reset ();
-	if (unlikely (!glyf_accelerator.glyph_for_gid (item.glyphIndex)
+	if (unlikely (!glyf_accelerator.glyph_for_gid (item.get_gid ())
 				       .get_points (font, glyf_accelerator, comp_points,
 						    phantom_only, depth + 1)))
 	  return false;
@@ -198,11 +200,11 @@ struct Glyph
     return !all_points.in_error ();
   }
 
-  bool get_extents (hb_font_t *font, const glyf_accelerator_t &glyf_accelerator,
-		    hb_glyph_extents_t *extents) const
+  bool get_extents_without_var_scaled (hb_font_t *font, const glyf_accelerator_t &glyf_accelerator,
+				       hb_glyph_extents_t *extents) const
   {
     if (type == EMPTY) return true; /* Empty glyph; zero extents. */
-    return header->get_extents (font, glyf_accelerator, gid, extents);
+    return header->get_extents_without_var_scaled (font, glyf_accelerator, gid, extents);
   }
 
   hb_bytes_t get_bytes () const { return bytes; }
