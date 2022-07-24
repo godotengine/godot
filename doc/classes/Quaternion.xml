@@ -74,14 +74,17 @@
 				[b]Note:[/b] This method has an abnormally high amount of floating-point error, so methods such as [code]is_zero_approx[/code] will not work reliably.
 			</description>
 		</method>
-		<method name="cubic_slerp" qualifiers="const">
+		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Quaternion" />
 			<argument index="0" name="b" type="Quaternion" />
 			<argument index="1" name="pre_a" type="Quaternion" />
 			<argument index="2" name="post_b" type="Quaternion" />
 			<argument index="3" name="weight" type="float" />
+			<argument index="4" name="flip_to_shortest_path" type="bool" default="true" />
 			<description>
-				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
+				Performs a component-wise cubic interpolation between quaternions [code]pre_a[/code], this quaternion, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
+				Optional parameter [code]flip_to_shortest_path[/code] enables/disables automatic flipping of the subsequent quaternions to follow the shortest path. This quaternion is used as a reference (will not be flipped).
+				[b]Note:[/b] Automatic flipping of subsequent quaternions will introduce "sign-flips" (quaternion suddenly changing it's sign) when interpolation interval on a series of quaternions changes (like in an animation). Usually this is not a problem, though, since quaternion's sign-flip does not change the corresponding orientation in 3D-space.
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
