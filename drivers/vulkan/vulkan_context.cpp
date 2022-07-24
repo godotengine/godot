@@ -42,8 +42,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
 // FIXME: `const VkDevice device` parameter shadows a field.
