@@ -208,10 +208,10 @@ private:
 	// only prints when user has set 'debug' in the room manager inspector
 	// also does not show in non editor builds
 	void debug_print_line(String p_string, int p_priority = 0);
+	void show_warning(const String &p_string, bool p_skippable = false, bool p_alert = true);
 
 public:
 	static String _find_name_before(Node *p_node, String p_postfix, bool p_allow_no_postfix = false);
-	static void show_warning(const String &p_string, const String &p_extra_string = "", bool p_alert = true);
 	static real_t _get_default_portal_margin() { return _default_portal_margin; }
 
 private:
