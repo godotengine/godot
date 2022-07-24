@@ -6113,7 +6113,8 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 
 void AnimationTrackEditor::_show_imported_anim_warning() {
 	// It looks terrible on a single line but the TTR extractor doesn't support line breaks yet.
-	EditorNode::get_singleton()->show_warning(TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo enable the ability to add custom tracks, navigate to the scene's import settings and set\n\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks\", then re-import.\nAlternatively, use an import preset that imports animations to separate files."),
+	EditorNode::get_singleton()->show_warning(
+			TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo modify this animation, navigate to the scene's Advanced Import settings and select the animation.\nSome options, including looping, are available here. To add custom tracks, enable \"Save To File\" and\n\"Keep Custom Tracks\"."),
 			TTR("Warning: Editing imported animation"));
 }
 
@@ -6299,6 +6300,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
+	imported_anim_warning->set_text(TTR("Imported Scene"));
 	imported_anim_warning->set_tooltip(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hb->add_child(imported_anim_warning);
