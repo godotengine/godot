@@ -1822,7 +1822,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 			float r = radius;
 			if (curve.is_valid() && curve->get_point_count() > 0) {
-				r *= curve->interpolate_baked(v);
+				r *= curve->sample_baked(v);
 			}
 			float x = sin(u * Math_TAU);
 			float z = cos(u * Math_TAU);
@@ -1863,7 +1863,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	// add top
 	float scale_pos = 1.0;
 	if (curve.is_valid() && curve->get_point_count() > 0) {
-		scale_pos = curve->interpolate_baked(0);
+		scale_pos = curve->sample_baked(0);
 	}
 
 	if (scale_pos > CMP_EPSILON) {
@@ -1925,7 +1925,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 	float scale_neg = 1.0;
 	if (curve.is_valid() && curve->get_point_count() > 0) {
-		scale_neg = curve->interpolate_baked(1.0);
+		scale_neg = curve->sample_baked(1.0);
 	}
 
 	// add bottom
@@ -2138,7 +2138,7 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 		float s = size;
 
 		if (curve.is_valid() && curve->get_point_count() > 0) {
-			s *= curve->interpolate_baked(v);
+			s *= curve->sample_baked(v);
 		}
 
 		points.push_back(Vector3(-s * 0.5, y, 0));

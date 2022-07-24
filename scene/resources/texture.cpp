@@ -1866,11 +1866,11 @@ void CurveTexture::_update() {
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
 				if (texture_mode == TEXTURE_MODE_RGB) {
-					wd[i * 3 + 0] = curve.interpolate_baked(t);
+					wd[i * 3 + 0] = curve.sample_baked(t);
 					wd[i * 3 + 1] = wd[i * 3 + 0];
 					wd[i * 3 + 2] = wd[i * 3 + 0];
 				} else {
-					wd[i] = curve.interpolate_baked(t);
+					wd[i] = curve.sample_baked(t);
 				}
 			}
 
@@ -2054,7 +2054,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_x = **_curve_x;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 0] = curve_x.interpolate_baked(t);
+				wd[i * 3 + 0] = curve_x.sample_baked(t);
 			}
 
 		} else {
@@ -2067,7 +2067,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_y = **_curve_y;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 1] = curve_y.interpolate_baked(t);
+				wd[i * 3 + 1] = curve_y.sample_baked(t);
 			}
 
 		} else {
@@ -2080,7 +2080,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_z = **_curve_z;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 2] = curve_z.interpolate_baked(t);
+				wd[i * 3 + 2] = curve_z.sample_baked(t);
 			}
 
 		} else {

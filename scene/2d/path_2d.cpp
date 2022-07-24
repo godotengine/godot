@@ -47,7 +47,7 @@ Rect2 Path2D::_edit_get_rect() const {
 	for (int i = 0; i < curve->get_point_count(); i++) {
 		for (int j = 0; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			Vector2 p = curve->interpolate(i, frac);
+			Vector2 p = curve->sample(i, frac);
 			aabb.expand_to(p);
 		}
 	}
@@ -70,7 +70,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 		for (int j = 1; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			s[1] = curve->interpolate(i, frac);
+			s[1] = curve->sample(i, frac);
 
 			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
 			if (p.distance_to(p_point) <= p_tolerance) {
@@ -112,7 +112,7 @@ void Path2D::_notification(int p_what) {
 			for (int i = 0; i < curve->get_point_count(); i++) {
 				for (int j = 0; j < 8; j++) {
 					real_t frac = j * (1.0 / 8.0);
-					Vector2 p = curve->interpolate(i, frac);
+					Vector2 p = curve->sample(i, frac);
 					_cached_draw_pts.set(count++, p);
 				}
 			}
@@ -175,7 +175,7 @@ void PathFollow2D::_update_transform() {
 	if (path_length == 0) {
 		return;
 	}
-	Vector2 pos = c->interpolate_baked(progress, cubic);
+	Vector2 pos = c->sample_baked(progress, cubic);
 
 	if (rotates) {
 		real_t ahead = progress + lookahead;
@@ -195,14 +195,14 @@ void PathFollow2D::_update_transform() {
 			}
 		}
 
-		Vector2 ahead_pos = c->interpolate_baked(ahead, cubic);
+		Vector2 ahead_pos = c->sample_baked(ahead, cubic);
 
 		Vector2 tangent_to_curve;
 		if (ahead_pos == pos) {
 			// This will happen at the end of non-looping or non-closed paths.
 			// We'll try a look behind instead, in order to get a meaningful angle.
 			tangent_to_curve =
-					(pos - c->interpolate_baked(progress - lookahead, cubic)).normalized();
+					(pos - c->sample_baked(progress - lookahead, cubic)).normalized();
 		} else {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}

@@ -313,7 +313,7 @@ void Curve::set_max_value(real_t p_max) {
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
-real_t Curve::interpolate(real_t p_offset) const {
+real_t Curve::sample(real_t p_offset) const {
 	if (_points.size() == 0) {
 		return 0;
 	}
@@ -333,10 +333,10 @@ real_t Curve::interpolate(real_t p_offset) const {
 		return _points[0].position.y;
 	}
 
-	return interpolate_local_nocheck(i, local);
+	return sample_local_nocheck(i, local);
 }
 
-real_t Curve::interpolate_local_nocheck(int p_index, real_t p_local_offset) const {
+real_t Curve::sample_local_nocheck(int p_index, real_t p_local_offset) const {
 	const Point a = _points[p_index];
 	const Point b = _points[p_index + 1];
 
@@ -440,7 +440,7 @@ void Curve::bake() {
 
 	for (int i = 1; i < _bake_resolution - 1; ++i) {
 		real_t x = i / static_cast<real_t>(_bake_resolution);
-		real_t y = interpolate(x);
+		real_t y = sample(x);
 		_baked_cache.write[i] = y;
 	}
 
@@ -459,7 +459,7 @@ void Curve::set_bake_resolution(int p_resolution) {
 	_baked_cache_dirty = true;
 }
 
-real_t Curve::interpolate_baked(real_t p_offset) const {
+real_t Curve::sample_baked(real_t p_offset) const {
 	if (_baked_cache_dirty) {
 		// Last-second bake if not done already
 		const_cast<Curve *>(this)->bake();
@@ -486,7 +486,7 @@ real_t Curve::interpolate_baked(real_t p_offset) const {
 		fi = 0;
 	}
 
-	// Interpolate
+	// Sample
 	if (i + 1 < _baked_cache.size()) {
 		real_t t = fi - i;
 		return Math::lerp(_baked_cache[i], _baked_cache[i + 1], t);
@@ -595,8 +595,8 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_position", "index"), &Curve::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_value", "index", "y"), &Curve::set_point_value);
 	ClassDB::bind_method(D_METHOD("set_point_offset", "index", "offset"), &Curve::set_point_offset);
-	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &Curve::interpolate);
-	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset"), &Curve::interpolate_baked);
+	ClassDB::bind_method(D_METHOD("sample", "offset"), &Curve::sample);
+	ClassDB::bind_method(D_METHOD("sample_baked", "offset"), &Curve::sample_baked);
 	ClassDB::bind_method(D_METHOD("get_point_left_tangent", "index"), &Curve::get_point_left_tangent);
 	ClassDB::bind_method(D_METHOD("get_point_right_tangent", "index"), &Curve::get_point_right_tangent);
 	ClassDB::bind_method(D_METHOD("get_point_left_mode", "index"), &Curve::get_point_left_mode);
@@ -720,7 +720,7 @@ void Curve2D::clear_points() {
 	}
 }
 
-Vector2 Curve2D::interpolate(int p_index, const real_t p_offset) const {
+Vector2 Curve2D::sample(int p_index, const real_t p_offset) const {
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector2());
 
@@ -738,14 +738,14 @@ Vector2 Curve2D::interpolate(int p_index, const real_t p_offset) const {
 	return p0.bezier_interpolate(p1, p2, p3, p_offset);
 }
 
-Vector2 Curve2D::interpolatef(real_t p_findex) const {
+Vector2 Curve2D::samplef(real_t p_findex) const {
 	if (p_findex < 0) {
 		p_findex = 0;
 	} else if (p_findex >= points.size()) {
 		p_findex = points.size();
 	}
 
-	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
+	return sample((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
 
 void Curve2D::mark_dirty() {
@@ -883,7 +883,7 @@ real_t Curve2D::get_baked_length() const {
 	return baked_max_ofs;
 }
 
-Vector2 Curve2D::interpolate_baked(real_t p_offset, bool p_cubic) const {
+Vector2 Curve2D::sample_baked(real_t p_offset, bool p_cubic) const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -923,7 +923,7 @@ Vector2 Curve2D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 	real_t offset_end = baked_dist_cache[idx + 1];
 
 	real_t idx_interval = offset_end - offset_begin;
-	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector2(), "failed to find baked segment");
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector2(), "Couldn't find baked segment.");
 
 	real_t frac = (p_offset - offset_begin) / idx_interval;
 
@@ -1176,14 +1176,14 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_out", "idx"), &Curve2D::get_point_out);
 	ClassDB::bind_method(D_METHOD("remove_point", "idx"), &Curve2D::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve2D::clear_points);
-	ClassDB::bind_method(D_METHOD("interpolate", "idx", "t"), &Curve2D::interpolate);
-	ClassDB::bind_method(D_METHOD("interpolatef", "fofs"), &Curve2D::interpolatef);
+	ClassDB::bind_method(D_METHOD("sample", "idx", "t"), &Curve2D::sample);
+	ClassDB::bind_method(D_METHOD("samplef", "fofs"), &Curve2D::samplef);
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve2D::bake,DEFVAL(10));
 	ClassDB::bind_method(D_METHOD("set_bake_interval", "distance"), &Curve2D::set_bake_interval);
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve2D::get_bake_interval);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve2D::get_baked_length);
-	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve2D::interpolate_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve2D::sample_baked, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve2D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve2D::get_closest_point);
 	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve2D::get_closest_offset);
@@ -1309,7 +1309,7 @@ void Curve3D::clear_points() {
 	}
 }
 
-Vector3 Curve3D::interpolate(int p_index, real_t p_offset) const {
+Vector3 Curve3D::sample(int p_index, real_t p_offset) const {
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector3());
 
@@ -1327,14 +1327,14 @@ Vector3 Curve3D::interpolate(int p_index, real_t p_offset) const {
 	return p0.bezier_interpolate(p1, p2, p3, p_offset);
 }
 
-Vector3 Curve3D::interpolatef(real_t p_findex) const {
+Vector3 Curve3D::samplef(real_t p_findex) const {
 	if (p_findex < 0) {
 		p_findex = 0;
 	} else if (p_findex >= points.size()) {
 		p_findex = points.size();
 	}
 
-	return interpolate((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
+	return sample((int)p_findex, Math::fmod(p_findex, (real_t)1.0));
 }
 
 void Curve3D::mark_dirty() {
@@ -1536,7 +1536,7 @@ real_t Curve3D::get_baked_length() const {
 	return baked_max_ofs;
 }
 
-Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
+Vector3 Curve3D::sample_baked(real_t p_offset, bool p_cubic) const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -1576,7 +1576,7 @@ Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 	real_t offset_end = baked_dist_cache[idx + 1];
 
 	real_t idx_interval = offset_end - offset_begin;
-	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(), "failed to find baked segment");
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(), "Couldn't find baked segment.");
 
 	real_t frac = (p_offset - offset_begin) / idx_interval;
 
@@ -1589,7 +1589,7 @@ Vector3 Curve3D::interpolate_baked(real_t p_offset, bool p_cubic) const {
 	}
 }
 
-real_t Curve3D::interpolate_baked_tilt(real_t p_offset) const {
+real_t Curve3D::sample_baked_tilt(real_t p_offset) const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -1629,14 +1629,14 @@ real_t Curve3D::interpolate_baked_tilt(real_t p_offset) const {
 	real_t offset_end = baked_dist_cache[idx + 1];
 
 	real_t idx_interval = offset_end - offset_begin;
-	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, 0, "failed to find baked segment");
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, 0, "Couldn't find baked segment.");
 
 	real_t frac = (p_offset - offset_begin) / idx_interval;
 
 	return Math::lerp(r[idx], r[idx + 1], (real_t)frac);
 }
 
-Vector3 Curve3D::interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt) const {
+Vector3 Curve3D::sample_baked_up_vector(real_t p_offset, bool p_apply_tilt) const {
 	if (baked_cache_dirty) {
 		_bake();
 	}
@@ -1671,7 +1671,7 @@ Vector3 Curve3D::interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt)
 	real_t offset_end = baked_dist_cache[idx + 1];
 
 	real_t idx_interval = offset_end - offset_begin;
-	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(0, 1, 0), "failed to find baked segment");
+	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(0, 1, 0), "Couldn't find baked segment.");
 
 	real_t frac = (p_offset - offset_begin) / idx_interval;
 
@@ -1983,8 +1983,8 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_out", "idx"), &Curve3D::get_point_out);
 	ClassDB::bind_method(D_METHOD("remove_point", "idx"), &Curve3D::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve3D::clear_points);
-	ClassDB::bind_method(D_METHOD("interpolate", "idx", "t"), &Curve3D::interpolate);
-	ClassDB::bind_method(D_METHOD("interpolatef", "fofs"), &Curve3D::interpolatef);
+	ClassDB::bind_method(D_METHOD("sample", "idx", "t"), &Curve3D::sample);
+	ClassDB::bind_method(D_METHOD("samplef", "fofs"), &Curve3D::samplef);
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve3D::bake,DEFVAL(10));
 	ClassDB::bind_method(D_METHOD("set_bake_interval", "distance"), &Curve3D::set_bake_interval);
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve3D::get_bake_interval);
@@ -1992,8 +1992,8 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_up_vector_enabled"), &Curve3D::is_up_vector_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
-	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve3D::interpolate_baked, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("interpolate_baked_up_vector", "offset", "apply_tilt"), &Curve3D::interpolate_baked_up_vector, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve3D::sample_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("sample_baked_up_vector", "offset", "apply_tilt"), &Curve3D::sample_baked_up_vector, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
 	ClassDB::bind_method(D_METHOD("get_baked_up_vectors"), &Curve3D::get_baked_up_vectors);

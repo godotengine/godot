@@ -750,7 +750,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 
 		float blend = xfade_time == 0 ? 0 : (prev_xfading / xfade_time);
 		if (xfade_curve.is_valid()) {
-			blend = xfade_curve->interpolate(blend);
+			blend = xfade_curve->sample(blend);
 		}
 
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current

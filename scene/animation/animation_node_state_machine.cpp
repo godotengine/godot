@@ -433,7 +433,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	if (current_curve.is_valid()) {
-		fade_blend = current_curve->interpolate(fade_blend);
+		fade_blend = current_curve->sample(fade_blend);
 	}
 	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, true);
 

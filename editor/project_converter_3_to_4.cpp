@@ -397,6 +397,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "http_unescape", "uri_decode" }, // String
 	{ "import_scene_from_other_importer", "_import_scene" }, //EditorSceneFormatImporter
 	{ "instance_set_surface_material", "instance_set_surface_override_material" }, // RenderingServer
+	{ "interpolate", "sample" }, // Curve, Curve2D, Curve3D, Gradient
 	{ "intersect_polygons_2d", "intersect_polygons" }, // Geometry2D
 	{ "intersect_polyline_with_polygon_2d", "intersect_polyline_with_polygon" }, // Geometry2D
 	{ "is_a_parent_of", "is_ancestor_of" }, // Node
