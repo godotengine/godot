@@ -102,19 +102,24 @@ int PortalRoomsBSP::find_room_within(const PortalRenderer &p_portal_renderer, co
 
 	// first try previous room
 	if (p_previous_room_id != -1) {
-		const VSRoom &prev_room = p_portal_renderer.get_room(p_previous_room_id);
+		if (p_previous_room_id < p_portal_renderer.get_num_rooms()) {
+			const VSRoom &prev_room = p_portal_renderer.get_room(p_previous_room_id);
 
-		// we can only use this shortcut if the room doesn't include internal rooms.
-		// otherwise the point may be inside more than one room, and we need to find the room of highest priority.
-		if (!prev_room._contains_internal_rooms) {
-			closest = prev_room.is_point_within(p_pos);
-			closest_room_id = p_previous_room_id;
+			// we can only use this shortcut if the room doesn't include internal rooms.
+			// otherwise the point may be inside more than one room, and we need to find the room of highest priority.
+			if (!prev_room._contains_internal_rooms) {
+				closest = prev_room.is_point_within(p_pos);
+				closest_room_id = p_previous_room_id;
 
-			if (closest < 0.0) {
-				return p_previous_room_id;
+				if (closest < 0.0) {
+					return p_previous_room_id;
+				}
+			} else {
+				// don't mark it as checked later, as we haven't done it because it contains internal rooms
+				p_previous_room_id = -1;
 			}
 		} else {
-			// don't mark it as checked later, as we haven't done it because it contains internal rooms
+			// previous room was out of range (perhaps due to reconverting room system and the number of rooms decreasing)
 			p_previous_room_id = -1;
 		}
 	}
