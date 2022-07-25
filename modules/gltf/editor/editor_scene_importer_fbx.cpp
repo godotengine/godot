@@ -32,9 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../gltf_document.h"
-#include "../gltf_state.h"
-
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 #include "scene/main/node.h"
@@ -88,30 +85,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	}
 
 	// Import the generated glTF.
-
-	// Use GLTFDocument instead of glTF importer to keep image references.
-	Ref<GLTFDocument> gltf;
-	gltf.instantiate();
-	Ref<GLTFState> state;
-	state.instantiate();
-	print_verbose(vformat("glTF path: %s", sink));
-	Error err = gltf->append_from_file(sink, state, p_flags, p_bake_fps);
-	if (err != OK) {
-		if (r_err) {
-			*r_err = FAILED;
-		}
-		return nullptr;
-	}
-	return gltf->generate_scene(state, p_bake_fps);
-}
-
-Variant EditorSceneFormatImporterFBX::get_option_visibility(const String &p_path, bool p_for_animation,
-		const String &p_option, const HashMap<StringName, Variant> &p_options) {
-	return true;
-}
-
-void EditorSceneFormatImporterFBX::get_import_options(const String &p_path,
-		List<ResourceImporter::ImportOption> *r_options) {
+	return EditorSceneFormatImporterGLTFBase::generate_gltf(p_path, sink, p_flags, p_options, p_bake_fps, String(), r_err);
 }
 
 #endif // TOOLS_ENABLED

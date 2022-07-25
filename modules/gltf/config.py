@@ -11,6 +11,7 @@ def get_doc_classes():
         "EditorSceneFormatImporterBlend",
         "EditorSceneFormatImporterFBX",
         "EditorSceneFormatImporterGLTF",
+        "EditorSceneFormatImporterGLTFBase",
         "GLTFAccessor",
         "GLTFAnimation",
         "GLTFBufferView",

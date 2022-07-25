@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneFormatImporterGLTFBase" inherits="EditorSceneFormatImporter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for all scene format importers that use glTF as intermediate representation.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_initialize_gltf" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="original_path" type="String" />
+			<param index="1" name="gltf_path" type="String" />
+			<param index="2" name="document" type="GLTFDocument" />
+			<param index="3" name="state" type="GLTFState" />
+			<description>
+				This method can be overridden to modify the glTF document or state before any parsing has taken place.
+				For example, this can be used to handle the glTF metadata provided in [code]extras[/code] or [code]extensions[/code] by modifying the [member GLTFDocument.extensions] passed into this method.
+			</description>
+		</method>
+	</methods>
+</class>

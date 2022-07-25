@@ -33,13 +33,13 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "editor/import/resource_importer_scene.h"
+#include "editor_scene_importer_gltf_base.h"
 
 class Animation;
 class Node;
 
-class EditorSceneFormatImporterFBX : public EditorSceneFormatImporter {
-	GDCLASS(EditorSceneFormatImporterFBX, EditorSceneFormatImporter);
+class EditorSceneFormatImporterFBX : public EditorSceneFormatImporterGLTFBase {
+	GDCLASS(EditorSceneFormatImporterFBX, EditorSceneFormatImporterGLTFBase);
 
 public:
 	virtual uint32_t get_import_flags() const override;
@@ -47,10 +47,6 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			const HashMap<StringName, Variant> &p_options, int p_bake_fps,
 			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-	virtual void get_import_options(const String &p_path,
-			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
-			const HashMap<StringName, Variant> &p_options) override;
 };
 
 #endif // TOOLS_ENABLED

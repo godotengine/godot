@@ -55,6 +55,7 @@
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
+#include "editor/editor_scene_importer_gltf_base.h"
 #include "editor/editor_settings.h"
 
 static void _editor_init() {
@@ -127,6 +128,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		ClassDB::APIType prev_api = ClassDB::get_current_api();
 		ClassDB::set_current_api(ClassDB::API_EDITOR);
 
+		GDREGISTER_VIRTUAL_CLASS(EditorSceneFormatImporterGLTFBase);
 		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 

@@ -32,9 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../gltf_document.h"
-#include "../gltf_state.h"
-
 #include "core/config/project_settings.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
@@ -218,24 +215,11 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 
 	// Import the generated glTF.
-
-	// Use GLTFDocument instead of glTF importer to keep image references.
-	Ref<GLTFDocument> gltf;
-	gltf.instantiate();
-	Ref<GLTFState> state;
-	state.instantiate();
 	String base_dir;
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, p_bake_fps, base_dir);
-	if (err != OK) {
-		if (r_err) {
-			*r_err = FAILED;
-		}
-		return nullptr;
-	}
-	return gltf->generate_scene(state, p_bake_fps);
+	return EditorSceneFormatImporterGLTFBase::generate_gltf(p_path, sink.get_basename() + ".gltf", p_flags, p_options, p_bake_fps, base_dir, r_err);
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
@@ -253,9 +237,6 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 }
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
-		return;
-	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, SNAME(PATH)), VALUE));
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \

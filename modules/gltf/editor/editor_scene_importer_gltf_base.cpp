@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_scene_importer_gltf.h                                         */
+/*  editor_scene_importer_gltf_base.cpp                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,27 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_GLTF_H
-#define EDITOR_SCENE_IMPORTER_GLTF_H
-
 #ifdef TOOLS_ENABLED
 
 #include "editor_scene_importer_gltf_base.h"
 
-class Animation;
-class Node;
+Variant EditorSceneFormatImporterGLTFBase::get_option_visibility(const String &p_path, bool p_for_animation,
+		const String &p_option, const HashMap<StringName, Variant> &p_options) {
+	return true;
+}
 
-class EditorSceneFormatImporterGLTF : public EditorSceneFormatImporterGLTFBase {
-	GDCLASS(EditorSceneFormatImporterGLTF, EditorSceneFormatImporterGLTFBase);
+void EditorSceneFormatImporterGLTFBase::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
+}
 
-public:
-	virtual uint32_t get_import_flags() const override;
-	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
-			const HashMap<StringName, Variant> &p_options, int p_bake_fps,
-			List<String> *r_missing_deps, Error *r_err = nullptr) override;
-};
+Node *EditorSceneFormatImporterGLTFBase::generate_gltf(const String &p_path, const String &p_gltf_path, uint32_t p_flags,
+		const HashMap<StringName, Variant> &p_options, int p_bake_fps,
+		const String &p_base_dir, Error *r_err) {
+	// Use GLTFDocument instead of glTF importer to keep image references.
+	Ref<GLTFDocument> gltf;
+	gltf.instantiate();
+	Ref<GLTFState> state;
+	state.instantiate();
+
+	// Allow augmentation (e.g. adding document extensions).
+	initialize_gltf(p_path, p_gltf_path, gltf, state);
+
+	print_verbose(vformat("glTF path: %s", p_gltf_path));
+	Error err = gltf->append_from_file(p_gltf_path, state, p_flags, p_bake_fps, p_base_dir);
+	if (err != OK) {
+		if (r_err) {
+			*r_err = FAILED;
+		}
+		return nullptr;
+	}
+	if (p_options.has("animation/import")) {
+		state->set_create_animations(bool(p_options["animation/import"]));
+	}
+	return gltf->generate_scene(state, p_bake_fps);
+}
+
+void EditorSceneFormatImporterGLTFBase::initialize_gltf(const String &p_src_path, const String &p_gltf_path,
+		Ref<GLTFDocument> p_document, Ref<GLTFState> p_state) {
+	GDVIRTUAL_CALL(_initialize_gltf, p_src_path, p_gltf_path, p_document, p_state);
+}
+
+void EditorSceneFormatImporterGLTFBase::_bind_methods() {
+	GDVIRTUAL_BIND(_initialize_gltf, "original_path", "gltf_path", "document", "state");
+}
 
 #endif // TOOLS_ENABLED
-
-#endif // EDITOR_SCENE_IMPORTER_GLTF_H

@@ -1696,7 +1696,11 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	}
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : importers) {
-		importer_elem->get_import_options(p_path, r_options);
+		List<String> allowed_extensions;
+		importer_elem->get_extensions(&allowed_extensions);
+		if (allowed_extensions.find(p_path.get_extension().to_lower()) != nullptr) {
+			importer_elem->get_import_options(p_path, r_options);
+		}
 	}
 }
 
