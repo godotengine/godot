@@ -31,7 +31,7 @@
 #ifndef EFFECTS_RD_H
 #define EFFECTS_RD_H
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
@@ -238,7 +238,7 @@ public:
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 
-	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
+	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

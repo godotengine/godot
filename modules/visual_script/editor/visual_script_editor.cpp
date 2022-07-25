@@ -376,6 +376,12 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::VECTOR3I:
 				color = Color(0.84, 0.49, 0.93);
 				break;
+			case Variant::VECTOR4:
+				color = Color(0.84, 0.49, 0.94);
+				break;
+			case Variant::VECTOR4I:
+				color = Color(0.84, 0.49, 0.94);
+				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.77, 0.93, 0.41);
 				break;
@@ -4821,12 +4827,15 @@ VisualScriptEditor::VisualScriptEditor() {
 	base_type_map.insert("Rect2i", Variant::RECT2I);
 	base_type_map.insert("Vector3", Variant::VECTOR3);
 	base_type_map.insert("Vector3i", Variant::VECTOR3I);
+	base_type_map.insert("Vector4", Variant::VECTOR4);
+	base_type_map.insert("Vector4i", Variant::VECTOR4I);
 	base_type_map.insert("Transform2D", Variant::TRANSFORM2D);
 	base_type_map.insert("Plane", Variant::PLANE);
 	base_type_map.insert("Quaternion", Variant::QUATERNION);
 	base_type_map.insert("AABB", Variant::AABB);
 	base_type_map.insert("Basis", Variant::BASIS);
 	base_type_map.insert("Transform3D", Variant::TRANSFORM3D);
+	base_type_map.insert("Projection", Variant::PROJECTION);
 	base_type_map.insert("Color", Variant::COLOR);
 	base_type_map.insert("NodePath", Variant::NODE_PATH);
 	base_type_map.insert("RID", Variant::RID);

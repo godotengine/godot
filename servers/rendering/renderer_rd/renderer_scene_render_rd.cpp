@@ -1430,7 +1430,7 @@ void RendererSceneRenderRD::light_instance_set_aabb(RID p_light_instance, const 
 	light_instance->aabb = p_aabb;
 }
 
-void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
+void RendererSceneRenderRD::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
 	LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
 	ERR_FAIL_COND(!light_instance);
 
@@ -1534,7 +1534,7 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects, this);
 }
 
-void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const CameraMatrix *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+void RendererSceneRenderRD::_debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
@@ -1913,7 +1913,7 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 	rb->rbgi.free();
 }
 
-void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatrix &p_camera) {
+void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const Projection &p_camera) {
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb);
 
@@ -1931,7 +1931,7 @@ void RendererSceneRenderRD::_process_sss(RID p_render_buffers, const CameraMatri
 	RendererCompositorRD::singleton->get_effects()->sub_surface_scattering(rb->internal_texture, rb->sss_texture, rb->depth_texture, p_camera, Size2i(rb->internal_width, rb->internal_height), sss_scale, sss_depth_scale, sss_quality);
 }
 
-void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive) {
+void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive) {
 	ERR_FAIL_NULL(ss_effects);
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -1964,7 +1964,7 @@ void RendererSceneRenderRD::_process_ssr(RID p_render_buffers, RID p_dest_frameb
 	copy_effects->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->internal_texture, rb->ssr.output, rb->view_count);
 }
 
-void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection) {
+void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection) {
 	ERR_FAIL_NULL(ss_effects);
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -1995,7 +1995,7 @@ void RendererSceneRenderRD::_process_ssao(RID p_render_buffers, RID p_environmen
 	ss_effects->generate_ssao(rb->ss_effects.ssao, p_normal_buffer, p_projection, settings);
 }
 
-void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection, const Transform3D &p_transform) {
+void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection, const Transform3D &p_transform) {
 	ERR_FAIL_NULL(ss_effects);
 
 	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
@@ -2020,12 +2020,12 @@ void RendererSceneRenderRD::_process_ssil(RID p_render_buffers, RID p_environmen
 	settings.fadeout_to = ssil_fadeout_to;
 	settings.full_screen_size = Size2i(rb->width, rb->height);
 
-	CameraMatrix correction;
+	Projection correction;
 	correction.set_depth_correction(true);
-	CameraMatrix projection = correction * p_projection;
+	Projection projection = correction * p_projection;
 	Transform3D transform = p_transform;
 	transform.set_origin(Vector3(0.0, 0.0, 0.0));
-	CameraMatrix last_frame_projection = rb->ss_effects.last_frame_projection * CameraMatrix(rb->ss_effects.last_frame_transform.affine_inverse()) * CameraMatrix(transform) * projection.inverse();
+	Projection last_frame_projection = rb->ss_effects.last_frame_projection * Projection(rb->ss_effects.last_frame_transform.affine_inverse()) * Projection(transform) * projection.inverse();
 
 	ss_effects->ssil_allocate_buffers(rb->ss_effects.ssil, settings, rb->ss_effects.linear_depth);
 	ss_effects->screen_space_indirect_lighting(rb->ss_effects.ssil, p_normal_buffer, p_projection, last_frame_projection, settings);
@@ -3191,17 +3191,17 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light_storage->light_directional_get_blend_splits(base);
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = li->shadow_transform[j].atlas_rect;
-						CameraMatrix matrix = li->shadow_transform[j].camera;
+						Projection matrix = li->shadow_transform[j].camera;
 						float split = li->shadow_transform[MIN(limit, j)].split;
 
-						CameraMatrix bias;
+						Projection bias;
 						bias.set_light_bias();
-						CameraMatrix rectm;
+						Projection rectm;
 						rectm.set_light_atlas_rect(atlas_rect);
 
 						Transform3D modelview = (inverse_transform * li->shadow_transform[j].transform).inverse();
 
-						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
+						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = li->shadow_transform[j].bias_scale;
 						light_data.shadow_bias[j] = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) / 100.0 * bias_scale;
@@ -3469,16 +3469,16 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 				light_data.direction[1] = omni_offset.y * float(rect.size.height);
 			} else if (type == RS::LIGHT_SPOT) {
 				Transform3D modelview = (inverse_transform * light_transform).inverse();
-				CameraMatrix bias;
+				Projection bias;
 				bias.set_light_bias();
 
-				CameraMatrix shadow_mtx = bias * li->shadow_transform[0].camera * modelview;
+				Projection shadow_mtx = bias * li->shadow_transform[0].camera * modelview;
 				RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrix);
 
 				if (size > 0.0 && light_data.soft_shadow_scale > 0.0) {
 					// Only enable PCSS-like soft shadows if blurring is enabled.
 					// Otherwise, performance would decrease with no visual difference.
-					CameraMatrix cm = li->shadow_transform[0].camera;
+					Projection cm = li->shadow_transform[0].camera;
 					float half_np = cm.get_z_near() * Math::tan(Math::deg2rad(spot_angle));
 					light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
 				} else {
@@ -3921,7 +3921,7 @@ Vector3i RendererSceneRenderRD::_point_get_position_in_froxel_volume(const Vecto
 	return Vector3i(fog_position);
 }
 
-void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
+void RendererSceneRenderRD::_update_volumetric_fog(RID p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -5044,7 +5044,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 
 	bool flip_y = false;
 
-	CameraMatrix light_projection;
+	Projection light_projection;
 	Transform3D light_transform;
 
 	if (RSG::light_storage->light_get_type(light_instance->light) == RS::LIGHT_DIRECTIONAL) {
@@ -5186,7 +5186,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 			copy_effects->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), true);
 
 			//restore transform so it can be properly used
-			light_instance_set_shadow_transform(p_light, CameraMatrix(), light_instance->transform, zfar, 0, 0, 0);
+			light_instance_set_shadow_transform(p_light, Projection(), light_instance->transform, zfar, 0, 0, 0);
 		}
 
 	} else {
@@ -5195,7 +5195,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	}
 }
 
-void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RendererSceneRenderRD::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	_render_material(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_instances, p_framebuffer, p_region);
 }
 
@@ -5204,7 +5204,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 
 	ERR_FAIL_COND(!particles_storage->particles_collision_is_heightfield(p_collider));
 	Vector3 extents = particles_storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
-	CameraMatrix cm;
+	Projection cm;
 	cm.set_orthogonal(-extents.x, extents.x, -extents.z, extents.z, 0, extents.y * 2.0);
 
 	Vector3 cam_pos = p_transform.origin;

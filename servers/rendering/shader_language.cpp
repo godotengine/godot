@@ -3926,13 +3926,29 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				}
 			}
 		} break;
-		case ShaderLanguage::TYPE_IVEC2:
-		case ShaderLanguage::TYPE_IVEC3:
-		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC2:
+		case ShaderLanguage::TYPE_IVEC2: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR2I;
+			}
+		} break;
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_UVEC4: {
-			pi.type = Variant::PACKED_INT32_ARRAY;
+		case ShaderLanguage::TYPE_IVEC3: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR3I;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC4:
+		case ShaderLanguage::TYPE_IVEC4: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR4I;
+			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
 			if (p_uniform.array_size > 0) {
@@ -3980,7 +3996,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.type = Variant::COLOR;
 				} else {
-					pi.type = Variant::QUATERNION;
+					pi.type = Variant::VECTOR4;
 				}
 			}
 		} break;
@@ -4002,7 +4018,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::TRANSFORM3D;
+				pi.type = Variant::PROJECTION;
 			}
 			break;
 		case ShaderLanguage::TYPE_SAMPLER2D:

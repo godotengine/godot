@@ -363,8 +363,8 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_eye;
 };
 
-CameraMatrix WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
-	CameraMatrix eye;
+Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+	Projection eye;
 
 	float *js_matrix = godot_webxr_get_projection_for_eye(p_view + 1);
 	if (!initialized || js_matrix == nullptr) {

@@ -285,6 +285,46 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
+		case Variant::VECTOR4: {
+			Vector4 val;
+			if (type & ENCODE_FLAG_64) {
+				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
+				val.x = decode_double(&buf[0]);
+				val.y = decode_double(&buf[sizeof(double)]);
+				val.z = decode_double(&buf[sizeof(double) * 2]);
+				val.w = decode_double(&buf[sizeof(double) * 3]);
+
+				if (r_len) {
+					(*r_len) += sizeof(double) * 4;
+				}
+			} else {
+				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 4, ERR_INVALID_DATA);
+				val.x = decode_float(&buf[0]);
+				val.y = decode_float(&buf[sizeof(float)]);
+				val.z = decode_float(&buf[sizeof(float) * 2]);
+				val.w = decode_float(&buf[sizeof(float) * 3]);
+
+				if (r_len) {
+					(*r_len) += sizeof(float) * 4;
+				}
+			}
+			r_variant = val;
+
+		} break;
+		case Variant::VECTOR4I: {
+			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
+			Vector4i val;
+			val.x = decode_uint32(&buf[0]);
+			val.y = decode_uint32(&buf[4]);
+			val.z = decode_uint32(&buf[8]);
+			val.w = decode_uint32(&buf[12]);
+			r_variant = val;
+
+			if (r_len) {
+				(*r_len) += 4 * 4;
+			}
+
+		} break;
 		case Variant::TRANSFORM2D: {
 			Transform2D val;
 			if (type & ENCODE_FLAG_64) {
@@ -452,6 +492,33 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				if (r_len) {
 					(*r_len) += sizeof(float) * 12;
+				}
+			}
+			r_variant = val;
+
+		} break;
+		case Variant::PROJECTION: {
+			Projection val;
+			if (type & ENCODE_FLAG_64) {
+				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						val.matrix[i][j] = decode_double(&buf[(i * 4 + j) * sizeof(double)]);
+					}
+				}
+				if (r_len) {
+					(*r_len) += sizeof(double) * 16;
+				}
+			} else {
+				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 62, ERR_INVALID_DATA);
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						val.matrix[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);
+					}
+				}
+
+				if (r_len) {
+					(*r_len) += sizeof(float) * 16;
 				}
 			}
 			r_variant = val;
@@ -1286,6 +1353,30 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 6 * sizeof(real_t);
 
 		} break;
+		case Variant::VECTOR4: {
+			if (buf) {
+				Vector4 v4 = p_variant;
+				encode_real(v4.x, &buf[0]);
+				encode_real(v4.y, &buf[sizeof(real_t)]);
+				encode_real(v4.z, &buf[sizeof(real_t) * 2]);
+				encode_real(v4.w, &buf[sizeof(real_t) * 3]);
+			}
+
+			r_len += 4 * sizeof(real_t);
+
+		} break;
+		case Variant::VECTOR4I: {
+			if (buf) {
+				Vector4i v4 = p_variant;
+				encode_uint32(v4.x, &buf[0]);
+				encode_uint32(v4.y, &buf[4]);
+				encode_uint32(v4.z, &buf[8]);
+				encode_uint32(v4.w, &buf[12]);
+			}
+
+			r_len += 4 * 4;
+
+		} break;
 		case Variant::PLANE: {
 			if (buf) {
 				Plane p = p_variant;
@@ -1352,6 +1443,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += 12 * sizeof(real_t);
+
+		} break;
+		case Variant::PROJECTION: {
+			if (buf) {
+				Projection val = p_variant;
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.matrix[i][j], sizeof(real_t));
+					}
+				}
+			}
+
+			r_len += 16 * sizeof(real_t);
 
 		} break;
 

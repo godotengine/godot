@@ -61,7 +61,7 @@ public:
 
 	/* SS Downsampler */
 
-	void downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_mipmaps, RS::EnvironmentSSAOQuality p_ssao_quality, RS::EnvironmentSSILQuality p_ssil_quality, bool p_invalidate_uniform_set, bool p_ssao_half_size, bool p_ssil_half_size, Size2i p_full_screen_size, const CameraMatrix &p_projection);
+	void downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_mipmaps, RS::EnvironmentSSAOQuality p_ssao_quality, RS::EnvironmentSSILQuality p_ssil_quality, bool p_invalidate_uniform_set, bool p_ssao_half_size, bool p_ssil_half_size, Size2i p_full_screen_size, const Projection &p_projection);
 
 	/* SSIL */
 
@@ -107,7 +107,7 @@ public:
 	};
 
 	void ssil_allocate_buffers(SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings, RID p_linear_depth);
-	void screen_space_indirect_lighting(SSILRenderBuffers &p_ssil_buffers, RID p_normal_buffer, const CameraMatrix &p_projection, const CameraMatrix &p_last_projection, const SSILSettings &p_settings);
+	void screen_space_indirect_lighting(SSILRenderBuffers &p_ssil_buffers, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
 	void ssil_free(SSILRenderBuffers &p_ssil_buffers);
 
 	/* SSAO */
@@ -150,7 +150,7 @@ public:
 	};
 
 	void ssao_allocate_buffers(SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings, RID p_linear_depth);
-	void generate_ssao(SSAORenderBuffers &p_ssao_buffers, RID p_normal_buffer, const CameraMatrix &p_projection, const SSAOSettings &p_settings);
+	void generate_ssao(SSAORenderBuffers &p_ssao_buffers, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
 	void ssao_free(SSAORenderBuffers &p_ssao_buffers);
 
 	/* Screen Space Reflection */
@@ -165,7 +165,7 @@ public:
 	};
 
 	void ssr_allocate_buffers(SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, const Size2i &p_screen_size, const uint32_t p_view_count);
-	void screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const Color &p_metallic_mask, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets);
+	void screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const Color &p_metallic_mask, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets);
 	void ssr_free(SSRRenderBuffers &p_ssr_buffers);
 
 private:
