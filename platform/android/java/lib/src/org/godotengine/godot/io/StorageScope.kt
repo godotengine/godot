@@ -54,11 +54,19 @@ internal enum class StorageScope {
 	 */
 	UNKNOWN;
 
-	companion object {
+	class Identifier(context: Context) {
+
+		private val internalAppDir: String? = context.filesDir.canonicalPath
+		private val internalCacheDir: String? = context.cacheDir.canonicalPath
+		private val externalAppDir: String? = context.getExternalFilesDir(null)?.canonicalPath
+		private val sharedDir : String? = Environment.getExternalStorageDirectory().canonicalPath
+		private val downloadsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath
+		private val documentsSharedDir: String? = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
+
 		/**
 		 * Determines which [StorageScope] the given path falls under.
 		 */
-		fun getStorageScope(context: Context, path: String?): StorageScope {
+		fun identifyStorageScope(path: String?): StorageScope {
 			if (path == null) {
 				return UNKNOWN
 			}
@@ -70,23 +78,19 @@ internal enum class StorageScope {
 
 			val canonicalPathFile = pathFile.canonicalPath
 
-			val internalAppDir = context.filesDir.canonicalPath ?: return UNKNOWN
-			if (canonicalPathFile.startsWith(internalAppDir)) {
+			if (internalAppDir != null && canonicalPathFile.startsWith(internalAppDir)) {
 				return APP
 			}
 
-			val internalCacheDir = context.cacheDir.canonicalPath ?: return UNKNOWN
-			if (canonicalPathFile.startsWith(internalCacheDir)) {
+			if (internalCacheDir != null && canonicalPathFile.startsWith(internalCacheDir)) {
 				return APP
 			}
 
-			val externalAppDir = context.getExternalFilesDir(null)?.canonicalPath ?: return UNKNOWN
-			if (canonicalPathFile.startsWith(externalAppDir)) {
+			if (externalAppDir != null && canonicalPathFile.startsWith(externalAppDir)) {
 				return APP
 			}
 
-			val sharedDir =	Environment.getExternalStorageDirectory().canonicalPath ?: return UNKNOWN
-			if (canonicalPathFile.startsWith(sharedDir)) {
+			if (sharedDir != null && canonicalPathFile.startsWith(sharedDir)) {
 				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 					// Before R, apps had access to shared storage so long as they have the right
 					// permissions (and flag on Q).
@@ -95,13 +99,8 @@ internal enum class StorageScope {
 
 				// Post R, access is limited based on the target destination
 				// 'Downloads' and 'Documents' are still accessible
-				val downloadsSharedDir =
-					Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).canonicalPath
-						?: return SHARED
-				val documentsSharedDir =
-					Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).canonicalPath
-						?: return SHARED
-				if (canonicalPathFile.startsWith(downloadsSharedDir) || canonicalPathFile.startsWith(documentsSharedDir)) {
+				if ((downloadsSharedDir != null && canonicalPathFile.startsWith(downloadsSharedDir))
+					|| (documentsSharedDir != null && canonicalPathFile.startsWith(documentsSharedDir))) {
 					return APP
 				}
 

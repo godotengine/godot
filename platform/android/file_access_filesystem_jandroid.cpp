@@ -166,6 +166,51 @@ uint8_t FileAccessFilesystemJAndroid::get_8() const {
 	return byte;
 }
 
+String FileAccessFilesystemJAndroid::get_line() const {
+	ERR_FAIL_COND_V_MSG(!is_open(), String(), "File must be opened before use.");
+
+	const size_t buffer_size_limit = 2048;
+	const uint64_t file_size = get_len();
+	const uint64_t start_position = get_position();
+
+	String result;
+	LocalVector<uint8_t> line_buffer;
+	size_t current_buffer_size = 0;
+	uint64_t line_buffer_position = 0;
+
+	while (true) {
+		size_t line_buffer_size = MIN(buffer_size_limit, file_size - get_position());
+		if (line_buffer_size <= 0) {
+			break;
+		}
+
+		current_buffer_size += line_buffer_size;
+		line_buffer.resize(current_buffer_size);
+
+		uint64_t bytes_read = get_buffer(&line_buffer[line_buffer_position], current_buffer_size - line_buffer_position);
+		if (bytes_read <= 0) {
+			break;
+		}
+
+		for (; bytes_read > 0; line_buffer_position++, bytes_read--) {
+			uint8_t elem = line_buffer[line_buffer_position];
+			if (elem == '\n' || elem == '\0') {
+				// Found the end of the line
+				const_cast<FileAccessFilesystemJAndroid *>(this)->seek(start_position + line_buffer_position + 1);
+				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+					return String();
+				}
+				return result;
+			}
+		}
+	}
+
+	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position)) {
+		return String();
+	}
+	return result;
+}
+
 uint64_t FileAccessFilesystemJAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	if (_file_read) {
 		ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");

@@ -49,8 +49,8 @@ class FileAccessHandler(val context: Context) {
 		private const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
 
-		fun fileExists(context: Context, path: String?): Boolean {
-			val storageScope = StorageScope.getStorageScope(context, path)
+		internal fun fileExists(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
+			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
@@ -62,8 +62,8 @@ class FileAccessHandler(val context: Context) {
 			}
 		}
 
-		fun removeFile(context: Context, path: String?): Boolean {
-			val storageScope = StorageScope.getStorageScope(context, path)
+		internal fun removeFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
+			val storageScope = storageScopeIdentifier.identifyStorageScope(path)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
@@ -75,8 +75,8 @@ class FileAccessHandler(val context: Context) {
 			}
 		}
 
-		fun renameFile(context: Context, from: String?, to: String?): Boolean {
-			val storageScope = StorageScope.getStorageScope(context, from)
+		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String?, to: String?): Boolean {
+			val storageScope = storageScopeIdentifier.identifyStorageScope(from)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
@@ -89,13 +89,14 @@ class FileAccessHandler(val context: Context) {
 		}
 	}
 
+	private val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val files = SparseArray<DataAccess>()
 	private var lastFileId = STARTING_FILE_ID
 
 	private fun hasFileId(fileId: Int) = files.indexOfKey(fileId) >= 0
 
 	fun fileOpen(path: String?, modeFlags: Int): Int {
-		val storageScope = StorageScope.getStorageScope(context, path)
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
 		if (storageScope == StorageScope.UNKNOWN) {
 			return INVALID_FILE_ID
 		}
@@ -162,10 +163,10 @@ class FileAccessHandler(val context: Context) {
 		files[fileId].flush()
 	}
 
-	fun fileExists(path: String?) = Companion.fileExists(context, path)
+	fun fileExists(path: String?) = Companion.fileExists(context, storageScopeIdentifier, path)
 
 	fun fileLastModified(filepath: String?): Long {
-		val storageScope = StorageScope.getStorageScope(context, filepath)
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
 		if (storageScope == StorageScope.UNKNOWN) {
 			return 0L
 		}
