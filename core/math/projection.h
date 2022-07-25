@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  camera_matrix.h                                                      */
+/*  projection.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,6 +33,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/math/vector3.h"
+#include "core/math/vector4.h"
 #include "core/templates/vector.h"
 
 struct AABB;
@@ -41,7 +42,7 @@ struct Rect2;
 struct Transform3D;
 struct Vector2;
 
-struct CameraMatrix {
+struct Projection {
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,
@@ -51,13 +52,24 @@ struct CameraMatrix {
 		PLANE_BOTTOM
 	};
 
-	real_t matrix[4][4];
+	Vector4 matrix[4];
+
+	_FORCE_INLINE_ const Vector4 &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 4);
+		return matrix[p_axis];
+	}
+
+	_FORCE_INLINE_ Vector4 &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 4);
+		return matrix[p_axis];
+	}
 
 	float determinant() const;
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
 	void set_depth_correction(bool p_flip_y = true);
+
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);
@@ -67,6 +79,21 @@ struct CameraMatrix {
 	void set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
 	void set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 	void adjust_perspective_znear(real_t p_new_znear);
+
+	static Projection create_depth_correction(bool p_flip_y);
+	static Projection create_light_atlas_rect(const Rect2 &p_rect);
+	static Projection create_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
+	static Projection create_perspective_hmd(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);
+	static Projection create_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far);
+	static Projection create_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar);
+	static Projection create_orthogonal_aspect(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar, bool p_flip_fov = false);
+	static Projection create_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
+	static Projection create_frustum_aspect(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
+	static Projection create_fit_aabb(const AABB &p_aabb);
+	Projection perspective_znear_adjusted(real_t p_new_znear) const;
+	Plane get_projection_plane(Planes p_plane) const;
+	Projection flipped_y() const;
+	Projection jitter_offseted(const Vector2 &p_offset) const;
 
 	static real_t get_fovy(real_t p_fovx, real_t p_aspect) {
 		return Math::rad2deg(Math::atan(p_aspect * Math::tan(Math::deg2rad(p_fovx) * 0.5)) * 2.0);
@@ -85,12 +112,15 @@ struct CameraMatrix {
 	Vector2 get_far_plane_half_extents() const;
 
 	void invert();
-	CameraMatrix inverse() const;
+	Projection inverse() const;
 
-	CameraMatrix operator*(const CameraMatrix &p_matrix) const;
+	Projection operator*(const Projection &p_matrix) const;
 
 	Plane xform4(const Plane &p_vec4) const;
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vec3) const;
+
+	Vector4 xform(const Vector4 &p_vec4) const;
+	Vector4 xform_inv(const Vector4 &p_vec4) const;
 
 	operator String() const;
 
@@ -102,7 +132,7 @@ struct CameraMatrix {
 
 	void flip_y();
 
-	bool operator==(const CameraMatrix &p_cam) const {
+	bool operator==(const Projection &p_cam) const {
 		for (uint32_t i = 0; i < 4; i++) {
 			for (uint32_t j = 0; j < 4; j++) {
 				if (matrix[i][j] != p_cam.matrix[i][j]) {
@@ -113,18 +143,19 @@ struct CameraMatrix {
 		return true;
 	}
 
-	bool operator!=(const CameraMatrix &p_cam) const {
+	bool operator!=(const Projection &p_cam) const {
 		return !(*this == p_cam);
 	}
 
 	float get_lod_multiplier() const;
 
-	CameraMatrix();
-	CameraMatrix(const Transform3D &p_transform);
-	~CameraMatrix();
+	Projection();
+	Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);
+	Projection(const Transform3D &p_transform);
+	~Projection();
 };
 
-Vector3 CameraMatrix::xform(const Vector3 &p_vec3) const {
+Vector3 Projection::xform(const Vector3 &p_vec3) const {
 	Vector3 ret;
 	ret.x = matrix[0][0] * p_vec3.x + matrix[1][0] * p_vec3.y + matrix[2][0] * p_vec3.z + matrix[3][0];
 	ret.y = matrix[0][1] * p_vec3.x + matrix[1][1] * p_vec3.y + matrix[2][1] * p_vec3.z + matrix[3][1];

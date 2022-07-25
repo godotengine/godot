@@ -140,6 +140,18 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (tclass == CACHED_CLASS(Vector4)) {
+				GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_value.operator ::Vector4());
+				mono_field_set_value(p_object, mono_field, &from);
+				break;
+			}
+
+			if (tclass == CACHED_CLASS(Vector4i)) {
+				GDMonoMarshal::M_Vector4i from = MARSHALLED_OUT(Vector4i, p_value.operator ::Vector4i());
+				mono_field_set_value(p_object, mono_field, &from);
+				break;
+			}
+
 			if (tclass == CACHED_CLASS(Basis)) {
 				GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_value.operator ::Basis());
 				mono_field_set_value(p_object, mono_field, &from);
@@ -154,6 +166,12 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			if (tclass == CACHED_CLASS(Transform3D)) {
 				GDMonoMarshal::M_Transform3D from = MARSHALLED_OUT(Transform3D, p_value.operator ::Transform3D());
+				mono_field_set_value(p_object, mono_field, &from);
+				break;
+			}
+
+			if (tclass == CACHED_CLASS(Projection)) {
+				GDMonoMarshal::M_Projection from = MARSHALLED_OUT(Projection, p_value.operator ::Projection());
 				mono_field_set_value(p_object, mono_field, &from);
 				break;
 			}
@@ -328,6 +346,14 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					GDMonoMarshal::M_Vector3i from = MARSHALLED_OUT(Vector3i, p_value.operator ::Vector3i());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
+				case Variant::VECTOR4: {
+					GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_value.operator ::Vector4());
+					mono_field_set_value(p_object, mono_field, &from);
+				} break;
+				case Variant::VECTOR4I: {
+					GDMonoMarshal::M_Vector4i from = MARSHALLED_OUT(Vector4i, p_value.operator ::Vector4i());
+					mono_field_set_value(p_object, mono_field, &from);
+				} break;
 				case Variant::TRANSFORM2D: {
 					GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_value.operator ::Transform2D());
 					mono_field_set_value(p_object, mono_field, &from);
@@ -350,6 +376,10 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				} break;
 				case Variant::TRANSFORM3D: {
 					GDMonoMarshal::M_Transform3D from = MARSHALLED_OUT(Transform3D, p_value.operator ::Transform3D());
+					mono_field_set_value(p_object, mono_field, &from);
+				} break;
+				case Variant::PROJECTION: {
+					GDMonoMarshal::M_Projection from = MARSHALLED_OUT(Projection, p_value.operator ::Projection());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
 				case Variant::COLOR: {

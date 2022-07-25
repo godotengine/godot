@@ -168,8 +168,8 @@ private:
 	uint32_t render_element_max = 0;
 
 	Transform3D view_xform;
-	CameraMatrix adjusted_projection;
-	CameraMatrix projection;
+	Projection adjusted_projection;
+	Projection projection;
 	float z_far = 0;
 	float z_near = 0;
 	bool orthogonal = false;
@@ -220,7 +220,7 @@ private:
 public:
 	void setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer);
 
-	void begin(const Transform3D &p_view_transform, const CameraMatrix &p_cam_projection, bool p_flip_y);
+	void begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y);
 
 	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {
 		if (p_type == LIGHT_TYPE_OMNI && cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT] == max_elements_by_type) {

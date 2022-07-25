@@ -174,7 +174,7 @@ void EffectsRD::taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity
 	RD::get_singleton()->compute_list_end();
 }
 
-void EffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const CameraMatrix &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RenderingServer::SubSurfaceScatteringQuality p_quality) {
+void EffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RenderingServer::SubSurfaceScatteringQuality p_quality) {
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	Plane p = p_camera.xform4(Plane(1, 0, -1, 1));

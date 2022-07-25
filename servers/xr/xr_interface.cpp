@@ -195,7 +195,7 @@ RID XRInterface::get_vrs_texture() {
 			uint8_t *data_ptr = data.ptrw();
 
 			// Our near and far don't matter much for what we're doing here, but there are some interfaces that will remember this as the near and far and may fail as a result...
-			CameraMatrix cm = get_projection_for_view(i, aspect, 0.1, 1000.0);
+			Projection cm = get_projection_for_view(i, aspect, 0.1, 1000.0);
 			Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
 
 			Vector2i view_center;

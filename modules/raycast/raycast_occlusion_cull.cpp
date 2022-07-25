@@ -78,7 +78,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
+void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
 	CameraRayThreadData td;
 	td.thread_count = p_thread_work_pool.get_thread_count();
 
@@ -88,7 +88,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 	td.camera_dir = -p_cam_transform.basis.get_column(2);
 	td.camera_orthogonal = p_cam_orthogonal;
 
-	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
+	Projection inv_camera_matrix = p_cam_projection.inverse();
 	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
 	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
 	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
@@ -524,7 +524,7 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
-void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {
+void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {
 	if (!buffers.has(p_buffer)) {
 		return;
 	}
