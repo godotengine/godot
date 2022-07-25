@@ -208,7 +208,30 @@ void ShaderTextEditor::_load_theme_settings() {
 	// to distinguish from keywords at a quick glance.
 
 	List<String> built_ins;
-	if (shader.is_valid()) {
+
+	if (shader_inc.is_valid()) {
+		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+				for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
+					built_ins.push_back(F.key);
+				}
+			}
+
+			const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
+
+			for (int j = 0; j < modes.size(); j++) {
+				const ShaderLanguage::ModeInfo &info = modes[j];
+
+				if (!info.options.is_empty()) {
+					for (int k = 0; k < info.options.size(); k++) {
+						built_ins.push_back(String(info.name) + "_" + String(info.options[k]));
+					}
+				} else {
+					built_ins.push_back(String(info.name));
+				}
+			}
+		}
+	} else if (shader.is_valid()) {
 		for (const KeyValue<StringName, ShaderLanguage::FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()))) {
 			for (const KeyValue<StringName, ShaderLanguage::BuiltInInfo> &F : E.value.built_ins) {
 				built_ins.push_back(F.key);
@@ -337,11 +360,10 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	ShaderLanguage::ShaderCompileInfo info;
 	info.global_variable_type_func = _get_global_variable_type;
 
-	Ref<ShaderInclude> inc = shader_inc;
 	if (shader.is_null()) {
 		info.is_include = true;
 
-		sl.complete(p_code, info, r_options, calltip);
+		sl.complete(code, info, r_options, calltip);
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
@@ -350,7 +372,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
 
-	sl.complete(p_code, info, r_options, calltip);
+	sl.complete(code, info, r_options, calltip);
 	get_text_editor()->set_code_hint(calltip);
 }
 
