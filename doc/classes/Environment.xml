@@ -290,6 +290,9 @@
 		<member name="ssao_radius2" type="float" setter="set_ssao_radius2" getter="get_ssao_radius2" default="0.0">
 			The secondary screen-space ambient occlusion radius. If set to a value higher than [code]0[/code], enables the secondary screen-space ambient occlusion effect which can be used to improve the effect's appearance (at the cost of performance).
 		</member>
+		<member name="ssao_type" type="int" setter="set_ssao_type" getter="get_ssao_type" enum="Environment.SSAOType" default="0">
+			The screen-space ambient occlusion type. GTAO is higher quality, physically based.
+		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			The default exposure used for tonemapping.
 		</member>
@@ -383,6 +386,12 @@
 		</constant>
 		<constant name="SSAO_QUALITY_HIGH" value="2" enum="SSAOQuality">
 			High quality for the screen-space ambient occlusion effect (slowest).
+		</constant>
+		<constant name="SSAO_TYPE_SSAO" value="0" enum="SSAOType">
+			Low quality SSAO effect.
+		</constant>
+		<constant name="SSAO_TYPE_GTAO" value="1" enum="SSAOType">
+			Higher quality (physically based) SSAO effect.
 		</constant>
 	</constants>
 </class>

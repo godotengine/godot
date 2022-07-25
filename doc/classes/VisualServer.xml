@@ -903,10 +903,10 @@
 			<argument index="8" name="ao_channel_affect" type="float" />
 			<argument index="9" name="color" type="Color" />
 			<argument index="10" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality" />
-			<argument index="11" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur" />
-			<argument index="12" name="bilateral_sharpness" type="float" />
+			<argument index="11" name="type" type="int" enum="VisualServer.EnvironmentSSAOType" />
+			<argument index="12" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur" />
+			<argument index="13" name="bilateral_sharpness" type="float" />
 			<description>
-				Sets the variables to be used with the "Screen Space Ambient Occlusion (SSAO)" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr">
@@ -3870,6 +3870,12 @@
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
 			Highest quality screen space ambient occlusion.
+		</constant>
+		<constant name="ENV_SSAO_TYPE_SSAO" value="0" enum="EnvironmentSSAOType">
+			Low quality SSAO.
+		</constant>
+		<constant name="ENV_SSAO_TYPE_GTAO" value="1" enum="EnvironmentSSAOType">
+			Higher quality (physically based) SSAO.
 		</constant>
 		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
 			Disables the blur set for SSAO. Will make SSAO look noisier.

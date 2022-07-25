@@ -86,6 +86,11 @@ public:
 		SSAO_QUALITY_HIGH
 	};
 
+	enum SSAOType {
+		SSAO_TYPE_SSAO,
+		SSAO_TYPE_GTAO
+	};
+
 private:
 	RID environment;
 
@@ -135,6 +140,9 @@ private:
 	SSAOBlur ssao_blur;
 	float ssao_edge_sharpness;
 	SSAOQuality ssao_quality;
+	SSAOType ssao_type;
+	bool ssao_thickness_attenuation;
+	bool ssao_distance_attenuation;
 
 	bool glow_enabled;
 	int glow_levels;
@@ -301,6 +309,9 @@ public:
 	void set_ssao_quality(SSAOQuality p_quality);
 	SSAOQuality get_ssao_quality() const;
 
+	void set_ssao_type(SSAOType p_quality);
+	SSAOType get_ssao_type() const;
+
 	void set_ssao_edge_sharpness(float p_edge_sharpness);
 	float get_ssao_edge_sharpness() const;
 
@@ -420,6 +431,7 @@ VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::DOFBlurQuality)
 VARIANT_ENUM_CAST(Environment::SSAOQuality)
+VARIANT_ENUM_CAST(Environment::SSAOType)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
 
 #endif // ENVIRONMENT_H

@@ -396,7 +396,7 @@ bool Environment::is_ssr_rough() const {
 
 void Environment::set_ssao_enabled(bool p_enable) {
 	ssao_enabled = p_enable;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 	_change_notify();
 }
 
@@ -406,7 +406,7 @@ bool Environment::is_ssao_enabled() const {
 
 void Environment::set_ssao_radius(float p_radius) {
 	ssao_radius = p_radius;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_radius() const {
 	return ssao_radius;
@@ -414,7 +414,7 @@ float Environment::get_ssao_radius() const {
 
 void Environment::set_ssao_intensity(float p_intensity) {
 	ssao_intensity = p_intensity;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 float Environment::get_ssao_intensity() const {
@@ -423,7 +423,7 @@ float Environment::get_ssao_intensity() const {
 
 void Environment::set_ssao_radius2(float p_radius) {
 	ssao_radius2 = p_radius;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_radius2() const {
 	return ssao_radius2;
@@ -431,7 +431,7 @@ float Environment::get_ssao_radius2() const {
 
 void Environment::set_ssao_intensity2(float p_intensity) {
 	ssao_intensity2 = p_intensity;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_intensity2() const {
 	return ssao_intensity2;
@@ -439,7 +439,7 @@ float Environment::get_ssao_intensity2() const {
 
 void Environment::set_ssao_bias(float p_bias) {
 	ssao_bias = p_bias;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_bias() const {
 	return ssao_bias;
@@ -447,7 +447,7 @@ float Environment::get_ssao_bias() const {
 
 void Environment::set_ssao_direct_light_affect(float p_direct_light_affect) {
 	ssao_direct_light_affect = p_direct_light_affect;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_direct_light_affect() const {
 	return ssao_direct_light_affect;
@@ -455,7 +455,7 @@ float Environment::get_ssao_direct_light_affect() const {
 
 void Environment::set_ssao_ao_channel_affect(float p_ao_channel_affect) {
 	ssao_ao_channel_affect = p_ao_channel_affect;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 float Environment::get_ssao_ao_channel_affect() const {
 	return ssao_ao_channel_affect;
@@ -463,7 +463,7 @@ float Environment::get_ssao_ao_channel_affect() const {
 
 void Environment::set_ssao_color(const Color &p_color) {
 	ssao_color = p_color;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 Color Environment::get_ssao_color() const {
@@ -472,7 +472,7 @@ Color Environment::get_ssao_color() const {
 
 void Environment::set_ssao_blur(SSAOBlur p_blur) {
 	ssao_blur = p_blur;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 Environment::SSAOBlur Environment::get_ssao_blur() const {
 	return ssao_blur;
@@ -480,16 +480,25 @@ Environment::SSAOBlur Environment::get_ssao_blur() const {
 
 void Environment::set_ssao_quality(SSAOQuality p_quality) {
 	ssao_quality = p_quality;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 Environment::SSAOQuality Environment::get_ssao_quality() const {
 	return ssao_quality;
 }
 
+void Environment::set_ssao_type(SSAOType p_type) {
+	ssao_type = p_type;
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+}
+
+Environment::SSAOType Environment::get_ssao_type() const {
+	return ssao_type;
+}
+
 void Environment::set_ssao_edge_sharpness(float p_edge_sharpness) {
 	ssao_edge_sharpness = p_edge_sharpness;
-	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
+	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOType(ssao_type), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
 
 float Environment::get_ssao_edge_sharpness() const {
@@ -1006,6 +1015,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ssao_quality", "quality"), &Environment::set_ssao_quality);
 	ClassDB::bind_method(D_METHOD("get_ssao_quality"), &Environment::get_ssao_quality);
 
+	ClassDB::bind_method(D_METHOD("set_ssao_type", "quality"), &Environment::set_ssao_type);
+	ClassDB::bind_method(D_METHOD("get_ssao_type"), &Environment::get_ssao_type);
+
 	ClassDB::bind_method(D_METHOD("set_ssao_edge_sharpness", "edge_sharpness"), &Environment::set_ssao_edge_sharpness);
 	ClassDB::bind_method(D_METHOD("get_ssao_edge_sharpness"), &Environment::get_ssao_edge_sharpness);
 
@@ -1015,11 +1027,12 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_intensity", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity", "get_ssao_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_radius2", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_radius2", "get_ssao_radius2");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_intensity2", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity2", "get_ssao_intensity2");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_bias", PROPERTY_HINT_RANGE, "0.001,8,0.001"), "set_ssao_bias", "get_ssao_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_bias", PROPERTY_HINT_RANGE, "0.000,8,0.001"), "set_ssao_bias", "get_ssao_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ssao_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ssao_color", "get_ssao_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_ssao_quality", "get_ssao_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_type", PROPERTY_HINT_ENUM, "SSAO, GTAO"), "set_ssao_type", "get_ssao_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_blur", PROPERTY_HINT_ENUM, "Disabled,1x1,2x2,3x3"), "set_ssao_blur", "get_ssao_blur");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_edge_sharpness", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_ssao_edge_sharpness", "get_ssao_edge_sharpness");
 
@@ -1174,6 +1187,9 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(SSAO_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(SSAO_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(SSAO_QUALITY_HIGH);
+
+	BIND_ENUM_CONSTANT(SSAO_TYPE_SSAO);
+	BIND_ENUM_CONSTANT(SSAO_TYPE_GTAO);
 }
 
 Environment::Environment() :
@@ -1181,6 +1197,7 @@ Environment::Environment() :
 		tone_mapper(TONE_MAPPER_LINEAR),
 		ssao_blur(SSAO_BLUR_3x3),
 		ssao_quality(SSAO_QUALITY_MEDIUM),
+		ssao_type(SSAO_TYPE_SSAO),
 		glow_blend_mode(GLOW_BLEND_MODE_ADDITIVE),
 		dof_blur_far_quality(DOF_BLUR_QUALITY_LOW),
 		dof_blur_near_quality(DOF_BLUR_QUALITY_LOW) {
@@ -1232,6 +1249,10 @@ Environment::Environment() :
 	ssao_blur = SSAO_BLUR_3x3;
 	set_ssao_edge_sharpness(4);
 	set_ssao_quality(SSAO_QUALITY_MEDIUM);
+	set_ssao_type(SSAO_TYPE_SSAO);
+
+	ssao_thickness_attenuation = true;
+	ssao_distance_attenuation = true;
 
 	glow_enabled = false;
 	glow_levels = (1 << 2) | (1 << 4);

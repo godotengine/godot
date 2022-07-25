@@ -226,6 +226,27 @@ MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_
 	return md;
 }
 
+MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12, const char *p_arg13, const char *p_arg14) {
+	MethodDefinition md;
+	md.name = StaticCString::create(p_name);
+	md.args.resize(14);
+	md.args.write[0] = StaticCString::create(p_arg1);
+	md.args.write[1] = StaticCString::create(p_arg2);
+	md.args.write[2] = StaticCString::create(p_arg3);
+	md.args.write[3] = StaticCString::create(p_arg4);
+	md.args.write[4] = StaticCString::create(p_arg5);
+	md.args.write[5] = StaticCString::create(p_arg6);
+	md.args.write[6] = StaticCString::create(p_arg7);
+	md.args.write[7] = StaticCString::create(p_arg8);
+	md.args.write[8] = StaticCString::create(p_arg9);
+	md.args.write[9] = StaticCString::create(p_arg10);
+	md.args.write[10] = StaticCString::create(p_arg11);
+	md.args.write[11] = StaticCString::create(p_arg12);
+	md.args.write[12] = StaticCString::create(p_arg13);
+	md.args.write[13] = StaticCString::create(p_arg14);
+	return md;
+}
+
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;

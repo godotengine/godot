@@ -898,7 +898,7 @@ void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, int p_m
 	env->ssr_roughness = p_roughness;
 }
 
-void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VisualServer::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
+void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOType p_type, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
@@ -913,7 +913,12 @@ void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float 
 	env->ssao_color = p_color;
 	env->ssao_filter = p_blur;
 	env->ssao_quality = p_quality;
+	env->ssao_type = p_type;
 	env->ssao_bilateral_sharpness = p_bilateral_sharpness;
+
+	//GTAO specific flags
+	env->ssao_thickness_attenuation = true;
+	env->ssao_distance_attenuation = true;
 }
 
 void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
@@ -3318,6 +3323,12 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		state.ssao_shader.set_conditional(SsaoShaderGLES3::USE_ORTHOGONAL_PROJECTION, p_cam_projection.is_orthogonal());
 		state.ssao_shader.set_conditional(SsaoShaderGLES3::SSAO_QUALITY_LOW, env->ssao_quality == VS::ENV_SSAO_QUALITY_LOW);
 		state.ssao_shader.set_conditional(SsaoShaderGLES3::SSAO_QUALITY_HIGH, env->ssao_quality == VS::ENV_SSAO_QUALITY_HIGH);
+
+		state.ssao_shader.set_conditional(SsaoShaderGLES3::SSAO_TYPE_GTAO, env->ssao_type == VS::ENV_SSAO_TYPE_GTAO);
+
+		state.ssao_shader.set_conditional(SsaoShaderGLES3::SSAO_THICKNESS_ATTENUATION, env->ssao_thickness_attenuation);
+		state.ssao_shader.set_conditional(SsaoShaderGLES3::SSAO_DISTANCE_ATTENUATION, env->ssao_distance_attenuation);
+
 		state.ssao_shader.bind();
 		state.ssao_shader.set_uniform(SsaoShaderGLES3::CAMERA_Z_FAR, p_cam_projection.get_z_far());
 		state.ssao_shader.set_uniform(SsaoShaderGLES3::CAMERA_Z_NEAR, p_cam_projection.get_z_near());

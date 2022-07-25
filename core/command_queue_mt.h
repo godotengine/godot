@@ -52,9 +52,13 @@
 #define _COMMA_11 ,
 #define _COMMA_12 ,
 #define _COMMA_13 ,
+#define _COMMA_14 ,
 
 // 1-based comma separated list of ITEMs
 #define COMMA_SEP_LIST(ITEM, LENGTH) _COMMA_SEP_LIST_##LENGTH(ITEM)
+#define _COMMA_SEP_LIST_14(ITEM) \
+	_COMMA_SEP_LIST_13(ITEM)     \
+	, ITEM(14)
 #define _COMMA_SEP_LIST_13(ITEM) \
 	_COMMA_SEP_LIST_12(ITEM)     \
 	, ITEM(13)
@@ -98,6 +102,9 @@
 
 // 1-based semicolon separated list of ITEMs
 #define SEMIC_SEP_LIST(ITEM, LENGTH) _SEMIC_SEP_LIST_##LENGTH(ITEM)
+#define _SEMIC_SEP_LIST_14(ITEM) \
+	_SEMIC_SEP_LIST_13(ITEM);    \
+	ITEM(14)
 #define _SEMIC_SEP_LIST_13(ITEM) \
 	_SEMIC_SEP_LIST_12(ITEM);    \
 	ITEM(13)
@@ -141,6 +148,9 @@
 
 // 1-based space separated list of ITEMs
 #define SPACE_SEP_LIST(ITEM, LENGTH) _SPACE_SEP_LIST_##LENGTH(ITEM)
+#define _SPACE_SEP_LIST_14(ITEM) \
+	_SPACE_SEP_LIST_13(ITEM)     \
+	ITEM(14)
 #define _SPACE_SEP_LIST_13(ITEM) \
 	_SPACE_SEP_LIST_12(ITEM)     \
 	ITEM(13)
@@ -274,7 +284,7 @@
 		ss->in_use = false;                                                           \
 	}
 
-#define MAX_CMD_PARAMS 13
+#define MAX_CMD_PARAMS 14
 
 class CommandQueueMT {
 	struct SyncSemaphore {
@@ -297,15 +307,15 @@ class CommandQueueMT {
 	};
 
 	DECL_CMD(0)
-	SPACE_SEP_LIST(DECL_CMD, 13)
+	SPACE_SEP_LIST(DECL_CMD, 14)
 
 	/* commands that return */
 	DECL_CMD_RET(0)
-	SPACE_SEP_LIST(DECL_CMD_RET, 13)
+	SPACE_SEP_LIST(DECL_CMD_RET, 14)
 
 	/* commands that don't return but sync */
 	DECL_CMD_SYNC(0)
-	SPACE_SEP_LIST(DECL_CMD_SYNC, 13)
+	SPACE_SEP_LIST(DECL_CMD_SYNC, 14)
 
 	/***** BASE *******/
 
@@ -462,15 +472,15 @@ class CommandQueueMT {
 public:
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
-	SPACE_SEP_LIST(DECL_PUSH, 13)
+	SPACE_SEP_LIST(DECL_PUSH, 14)
 
 	/* PUSH AND RET COMMANDS */
 	DECL_PUSH_AND_RET(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 14)
 
 	/* PUSH AND RET SYNC COMMANDS*/
 	DECL_PUSH_AND_SYNC(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 14)
 
 	void wait_and_flush_one() {
 		ERR_FAIL_COND(!sync);

@@ -807,6 +807,11 @@ public:
 		ENV_SSAO_QUALITY_HIGH,
 	};
 
+	enum EnvironmentSSAOType {
+		ENV_SSAO_TYPE_SSAO,
+		ENV_SSAO_TYPE_GTAO
+	};
+
 	enum EnvironmentSSAOBlur {
 		ENV_SSAO_BLUR_DISABLED,
 		ENV_SSAO_BLUR_1x1,
@@ -814,7 +819,7 @@ public:
 		ENV_SSAO_BLUR_3x3,
 	};
 
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, EnvironmentSSAOQuality p_quality, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, EnvironmentSSAOQuality p_quality, EnvironmentSSAOType p_type, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
@@ -1247,6 +1252,7 @@ VARIANT_ENUM_CAST(VisualServer::EnvironmentDOFBlurQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOType);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(VisualServer::InstanceFlags);
 VARIANT_ENUM_CAST(VisualServer::ShadowCastingSetting);

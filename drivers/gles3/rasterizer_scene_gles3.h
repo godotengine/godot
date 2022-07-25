@@ -398,8 +398,15 @@ public:
 		float ssao_ao_channel_affect;
 		Color ssao_color;
 		VS::EnvironmentSSAOQuality ssao_quality;
+		VS::EnvironmentSSAOType ssao_type;
+		bool ssao_thickness_attenuation;
+		bool ssao_distance_attenuation;
+
 		float ssao_bilateral_sharpness;
 		VS::EnvironmentSSAOBlur ssao_filter;
+
+		bool thickness_attenuation;
+		bool distance_attenuation;
 
 		bool glow_enabled;
 		int glow_levels;
@@ -480,6 +487,9 @@ public:
 				ssao_light_affect(0),
 				ssao_ao_channel_affect(0),
 				ssao_quality(VS::ENV_SSAO_QUALITY_LOW),
+				ssao_type(VS::ENV_SSAO_TYPE_SSAO),
+				ssao_thickness_attenuation(true),
+				ssao_distance_attenuation(true),
 				ssao_bilateral_sharpness(4),
 				ssao_filter(VS::ENV_SSAO_BLUR_3x3),
 				glow_enabled(false),
@@ -553,7 +563,7 @@ public:
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOType p_type, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
 
 	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
