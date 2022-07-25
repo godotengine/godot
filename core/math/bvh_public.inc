@@ -2,7 +2,7 @@ public:
 BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p_subindex, uint32_t p_tree_id, uint32_t p_tree_collision_mask, bool p_invisible = false) {
 #ifdef BVH_VERBOSE_TREE
 	VERBOSE_PRINT("\nitem_add BEFORE");
-	_debug_recursive_print_tree(0);
+	_debug_recursive_print_tree(p_tree_id);
 	VERBOSE_PRINT("\n");
 #endif
 
@@ -78,8 +78,8 @@ BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p
 	mem += _nodes.estimate_memory_use();
 
 	String sz = _debug_aabb_to_string(abb);
-	VERBOSE_PRINT("\titem_add [" + itos(ref_id) + "] " + itos(_refs.size()) + " refs,\t" + itos(_nodes.size()) + " nodes " + sz);
-	VERBOSE_PRINT("mem use : " + itos(mem) + ", num nodes : " + itos(_nodes.size()));
+	VERBOSE_PRINT("\titem_add [" + itos(ref_id) + "] " + itos(_refs.used_size()) + " refs,\t" + itos(_nodes.used_size()) + " nodes " + sz);
+	VERBOSE_PRINT("mem use : " + itos(mem) + ", num nodes reserved : " + itos(_nodes.reserved_size()));
 
 #endif
 
