@@ -1488,7 +1488,7 @@ String ResourceLoaderText::get_attached_script_path(Ref<FileAccess> p_f) {
 
 	// Find resource tag to begin parsing properties
 	while (next_tag.name != "resource") {
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag);
+		error = VariantParser::skip_until_tag(&stream, lines, error_text, next_tag);
 		if (error) {
 			return "";
 		}

@@ -1360,6 +1360,21 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 	return OK;
 }
 
+Error VariantParser::skip_until_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
+	Token token;
+	get_token(p_stream, token, line, r_err_str);
+
+	if (token.type == TK_EOF) {
+		return ERR_FILE_EOF;
+	}
+
+	while (token.type != TK_BRACKET_OPEN) {
+		get_token(p_stream, token, line, r_err_str);
+	}
+
+	return _parse_tag(token, p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
+}
+
 Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
 	Token token;
 	get_token(p_stream, token, line, r_err_str);
