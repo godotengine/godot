@@ -140,4 +140,4 @@ public:
 	~OpenXRInterface();
 };
 
-#endif // !OPENXR_INTERFACE_H
+#endif // OPENXR_INTERFACE_H

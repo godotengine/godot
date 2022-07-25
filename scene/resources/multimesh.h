@@ -113,4 +113,4 @@ public:
 
 VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
 
-#endif // MULTI_MESH_H
+#endif // MULTIMESH_H

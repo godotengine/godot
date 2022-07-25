@@ -192,4 +192,5 @@ public:
 	//	this->material_cache = p_material_cache;
 	//}
 };
+
 #endif // GLTF_STATE_H

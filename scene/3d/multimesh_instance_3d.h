@@ -53,4 +53,4 @@ public:
 	~MultiMeshInstance3D();
 };
 
-#endif // MULTIMESH_INSTANCE_H
+#endif // MULTIMESH_INSTANCE_3D_H

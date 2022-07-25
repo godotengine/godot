@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_COMPOSITOR_H
-#define RENDERING_SERVER_COMPOSITOR_H
+#ifndef RENDERER_COMPOSITOR_H
+#define RENDERER_COMPOSITOR_H
 
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/environment/renderer_gi.h"
@@ -109,4 +109,4 @@ public:
 	virtual ~RendererCompositor() {}
 };
 
-#endif // RASTERIZER_H
+#endif // RENDERER_COMPOSITOR_H

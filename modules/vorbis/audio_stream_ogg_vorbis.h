@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_LIBVORBIS_H
-#define AUDIO_STREAM_LIBVORBIS_H
+#ifndef AUDIO_STREAM_OGG_VORBIS_H
+#define AUDIO_STREAM_OGG_VORBIS_H
 
 #include "core/variant/variant.h"
 #include "modules/ogg/ogg_packet_sequence.h"
@@ -153,4 +153,4 @@ public:
 	virtual ~AudioStreamOGGVorbis();
 };
 
-#endif // AUDIO_STREAM_LIBVORBIS_H
+#endif // AUDIO_STREAM_OGG_VORBIS_H

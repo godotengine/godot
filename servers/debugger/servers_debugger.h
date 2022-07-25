@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SERVER_DEBUGGER_H
-#define SERVER_DEBUGGER_H
+#ifndef SERVERS_DEBUGGER_H
+#define SERVERS_DEBUGGER_H
 
 #include "core/debugger/debugger_marshalls.h"
 

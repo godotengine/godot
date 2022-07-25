@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VEHICLE_BODY_H
-#define VEHICLE_BODY_H
+#ifndef VEHICLE_BODY_3D_H
+#define VEHICLE_BODY_3D_H
 
 #include "scene/3d/physics_body_3d.h"
 
@@ -210,4 +210,4 @@ public:
 	VehicleBody3D();
 };
 
-#endif // VEHICLE_BODY_H
+#endif // VEHICLE_BODY_3D_H

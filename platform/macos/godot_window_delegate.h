@@ -44,4 +44,4 @@
 
 @end
 
-#endif //GODOT_WINDOW_DELEGATE_H
+#endif // GODOT_WINDOW_DELEGATE_H

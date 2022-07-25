@@ -114,4 +114,4 @@ public:
 	ShaderCreateDialog();
 };
 
-#endif
+#endif // SHADER_CREATE_DIALOG_H

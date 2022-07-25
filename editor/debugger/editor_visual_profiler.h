@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_FRAME_PROFILER_H
-#define EDITOR_FRAME_PROFILER_H
+#ifndef EDITOR_VISUAL_PROFILER_H
+#define EDITOR_VISUAL_PROFILER_H
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -144,4 +144,4 @@ public:
 	EditorVisualProfiler();
 };
 
-#endif // EDITOR_FRAME_PROFILER_H
+#endif // EDITOR_VISUAL_PROFILER_H

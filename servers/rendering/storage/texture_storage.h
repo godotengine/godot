@@ -148,4 +148,4 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 };
 
-#endif // !TEXTURE_STORAGE_H
+#endif // TEXTURE_STORAGE_H

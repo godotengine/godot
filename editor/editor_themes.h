@@ -40,4 +40,4 @@ Ref<Theme> create_custom_theme(Ref<Theme> p_theme = nullptr);
 
 Ref<ImageTexture> create_unscaled_default_project_icon();
 
-#endif
+#endif // EDITOR_THEMES_H

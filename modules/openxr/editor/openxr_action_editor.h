@@ -64,4 +64,4 @@ public:
 	OpenXRActionEditor(Ref<OpenXRAction> p_action);
 };
 
-#endif // !OPENXR_ACTION_EDITOR_H
+#endif // OPENXR_ACTION_EDITOR_H

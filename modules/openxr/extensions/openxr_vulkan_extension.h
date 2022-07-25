@@ -90,4 +90,4 @@ private:
 	XrResult xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result);
 };
 
-#endif // !OPENXR_VULKAN_EXTENSION_H
+#endif // OPENXR_VULKAN_EXTENSION_H

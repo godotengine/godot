@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_DEVICE_MACOS_H
-#define VULKAN_DEVICE_MACOS_H
+#ifndef VULKAN_CONTEXT_MACOS_H
+#define VULKAN_CONTEXT_MACOS_H
 
 #include "drivers/vulkan/vulkan_context.h"
 #import <AppKit/AppKit.h>
@@ -44,4 +44,4 @@ public:
 	~VulkanContextMacOS();
 };
 
-#endif // VULKAN_DEVICE_MACOS_H
+#endif // VULKAN_CONTEXT_MACOS_H

@@ -36,4 +36,4 @@
 void initialize_meshoptimizer_module(ModuleInitializationLevel p_level);
 void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level);
 
-#endif // PVR_REGISTER_TYPES_H
+#endif // MESHOPTIMIZER_REGISTER_TYPES_H

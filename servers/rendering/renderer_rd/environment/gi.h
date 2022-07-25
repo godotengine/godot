@@ -786,4 +786,4 @@ public:
 
 } // namespace RendererRD
 
-#endif /* !GI_RD_H */
+#endif // GI_RD_H

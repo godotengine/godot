@@ -526,4 +526,4 @@ VARIANT_ENUM_CAST(Node::DuplicateFlags);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 
-#endif
+#endif // NODE_H

@@ -53,4 +53,5 @@ public:
 
 	WorldBoundaryShape3D();
 };
-#endif // WORLD_BOUNDARY_SHAPE_H
+
+#endif // WORLD_BOUNDARY_SHAPE_3D_H

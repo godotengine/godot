@@ -127,4 +127,4 @@ extern void godot_js_display_vk_hide();
 }
 #endif
 
-#endif /* GODOT_JS_H */
+#endif // GODOT_JS_H

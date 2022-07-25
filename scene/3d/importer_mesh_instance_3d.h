@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_IMPORTER_MESH_INSTANCE_3D_H
-#define SCENE_IMPORTER_MESH_INSTANCE_3D_H
+#ifndef IMPORTER_MESH_INSTANCE_3D_H
+#define IMPORTER_MESH_INSTANCE_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/immediate_mesh.h"
@@ -61,4 +61,5 @@ public:
 	void set_skeleton_path(const NodePath &p_path);
 	NodePath get_skeleton_path() const;
 };
-#endif
+
+#endif // IMPORTER_MESH_INSTANCE_3D_H

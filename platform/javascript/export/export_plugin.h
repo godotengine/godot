@@ -144,4 +144,4 @@ public:
 	~EditorExportPlatformJavaScript();
 };
 
-#endif
+#endif // JAVASCRIPT_EXPORT_PLUGIN_H

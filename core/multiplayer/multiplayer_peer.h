@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_PEER_H
-#define NETWORKED_MULTIPLAYER_PEER_H
+#ifndef MULTIPLAYER_PEER_H
+#define MULTIPLAYER_PEER_H
 
 #include "core/io/packet_peer.h"
 #include "core/multiplayer/multiplayer.h"
@@ -147,4 +147,4 @@ public:
 	GDVIRTUAL0RC(int, _get_connection_status);
 };
 
-#endif // NETWORKED_MULTIPLAYER_PEER_H
+#endif // MULTIPLAYER_PEER_H

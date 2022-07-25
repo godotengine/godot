@@ -98,6 +98,6 @@ public:
 	virtual ~UnixTerminalLogger();
 };
 
-#endif
+#endif // UNIX_ENABLED
 
-#endif
+#endif // OS_UNIX_H

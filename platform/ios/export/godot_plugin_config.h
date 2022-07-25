@@ -129,4 +129,4 @@ struct PluginConfigIOS {
 	static PluginConfigIOS load_plugin_config(Ref<ConfigFile> config_file, const String &path);
 };
 
-#endif // GODOT_PLUGIN_CONFIG_H
+#endif // IOS_GODOT_PLUGIN_CONFIG_H

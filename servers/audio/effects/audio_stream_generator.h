@@ -95,4 +95,5 @@ public:
 
 	AudioStreamGeneratorPlayback();
 };
+
 #endif // AUDIO_STREAM_GENERATOR_H

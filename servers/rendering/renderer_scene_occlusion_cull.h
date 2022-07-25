@@ -200,4 +200,4 @@ public:
 	};
 };
 
-#endif //RENDERER_SCENE_OCCLUSION_CULL_H
+#endif // RENDERER_SCENE_OCCLUSION_CULL_H

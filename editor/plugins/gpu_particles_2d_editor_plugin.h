@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_2D_EDITOR_PLUGIN_H
-#define PARTICLES_2D_EDITOR_PLUGIN_H
+#ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
+#define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
@@ -97,4 +97,4 @@ public:
 	~GPUParticles2DEditorPlugin();
 };
 
-#endif // PARTICLES_2D_EDITOR_PLUGIN_H
+#endif // GPU_PARTICLES_2D_EDITOR_PLUGIN_H

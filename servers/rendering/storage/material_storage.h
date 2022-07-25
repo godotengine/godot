@@ -99,4 +99,4 @@ public:
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 };
 
-#endif // !MATERIAL_STORAGE_H
+#endif // MATERIAL_STORAGE_H

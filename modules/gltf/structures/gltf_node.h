@@ -97,4 +97,5 @@ public:
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
 };
+
 #endif // GLTF_NODE_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_OPENGL_H
-#define RASTERIZER_OPENGL_H
+#ifndef RASTERIZER_GLES3_H
+#define RASTERIZER_GLES3_H
 
 #ifdef GLES3_ENABLED
 
@@ -112,4 +112,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif
+#endif // RASTERIZER_GLES3_H

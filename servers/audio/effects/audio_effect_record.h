@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTRECORD_H
-#define AUDIOEFFECTRECORD_H
+#ifndef AUDIO_EFFECT_RECORD_H
+#define AUDIO_EFFECT_RECORD_H
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
@@ -103,4 +103,4 @@ public:
 	AudioEffectRecord();
 };
 
-#endif // AUDIOEFFECTRECORD_H
+#endif // AUDIO_EFFECT_RECORD_H
