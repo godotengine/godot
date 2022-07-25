@@ -3225,8 +3225,8 @@ bool DisplayServerX11::_wait_for_events() const {
 	FD_SET(x11_fd, &in_fds);
 
 	struct timeval tv;
-	tv.tv_usec = 0;
-	tv.tv_sec = 1;
+	tv.tv_usec = 100000;
+	tv.tv_sec = 0;
 
 	// Wait for next event or timeout.
 	int num_ready_fds = select(x11_fd + 1, &in_fds, nullptr, nullptr, &tv);
