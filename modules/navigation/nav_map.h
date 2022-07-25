@@ -34,8 +34,8 @@
 #include "nav_rid.h"
 
 #include "core/math/math_defs.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/rb_map.h"
-#include "core/templates/thread_work_pool.h"
 #include "nav_utils.h"
 
 #include <KdTree.h>
@@ -80,9 +80,6 @@ class NavMap : public NavRid {
 
 	/// Change the id each time the map is updated.
 	uint32_t map_update_id = 0;
-
-	/// Pooled threads for computing steps
-	ThreadWorkPool step_work_pool;
 
 public:
 	NavMap();
