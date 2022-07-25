@@ -177,4 +177,4 @@ public:
 	~AnimationTreePlayerEditorPlugin();
 };
 
-#endif // ANIMATION_TREE_EDITOR_PLUGIN_H
+#endif // ANIMATION_TREE_PLAYER_EDITOR_PLUGIN_H

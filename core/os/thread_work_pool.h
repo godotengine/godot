@@ -154,4 +154,4 @@ public:
 	~ThreadWorkPool();
 };
 
-#endif // THREAD_POOL_H
+#endif // THREAD_WORK_POOL_H

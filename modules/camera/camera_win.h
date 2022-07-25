@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAWIN_H
-#define CAMERAWIN_H
+#ifndef CAMERA_WIN_H
+#define CAMERA_WIN_H
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera_server.h"
@@ -43,4 +43,4 @@ public:
 	~CameraWindows();
 };
 
-#endif /* CAMERAWIN_H */
+#endif // CAMERA_WIN_H

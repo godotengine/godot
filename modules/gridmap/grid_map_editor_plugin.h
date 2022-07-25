@@ -267,4 +267,4 @@ public:
 	~GridMapEditorPlugin();
 };
 
-#endif // CUBE_GRID_MAP_EDITOR_PLUGIN_H
+#endif // GRID_MAP_EDITOR_PLUGIN_H

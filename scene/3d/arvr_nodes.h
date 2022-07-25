@@ -170,4 +170,4 @@ public:
 	~ARVROrigin();
 };
 
-#endif /* ARVR_NODES_H */
+#endif // ARVR_NODES_H

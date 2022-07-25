@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -73,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXTokenizer.h
  *  @brief FBX lexer
  */
-#ifndef FBX_TOKENIZER_H
-#define FBX_TOKENIZER_H
+
+#ifndef FBXTOKENIZER_H
+#define FBXTOKENIZER_H
 
 #include "FBXParseTools.h"
 #include "core/ustring.h"
@@ -201,4 +201,4 @@ void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length);
 
 } // namespace FBXDocParser
 
-#endif // FBX_TOKENIZER_H
+#endif // FBXTOKENIZER_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_DICTIONARY_H
-#define GODOT_DICTIONARY_H
+#ifndef GDNATIVE_DICTIONARY_H
+#define GDNATIVE_DICTIONARY_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,4 +110,4 @@ void GDAPI godot_dictionary_merge(godot_dictionary *p_self, const godot_dictiona
 }
 #endif
 
-#endif // GODOT_DICTIONARY_H
+#endif // GDNATIVE_DICTIONARY_H

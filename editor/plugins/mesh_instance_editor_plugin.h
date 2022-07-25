@@ -100,4 +100,4 @@ public:
 	~MeshInstanceEditorPlugin();
 };
 
-#endif // MESH_EDITOR_PLUGIN_H
+#endif // MESH_INSTANCE_EDITOR_PLUGIN_H

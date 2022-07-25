@@ -1114,4 +1114,4 @@ private:
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
-#endif
+#endif // GEOMETRY_H

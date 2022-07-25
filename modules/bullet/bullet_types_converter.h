@@ -59,4 +59,5 @@ extern void INVERT_G_TO_B(Basis const &inVal, btMatrix3x3 &outVal);
 extern void G_TO_B(Transform const &inVal, btTransform &outVal);
 
 extern void UNSCALE_BT_BASIS(btTransform &scaledBasis);
-#endif
+
+#endif // BULLET_TYPES_CONVERTER_H

@@ -74,4 +74,4 @@ public:
 	virtual Ref<VideoStreamPlayback> instance_playback() = 0;
 };
 
-#endif
+#endif // VIDEO_STREAM_H

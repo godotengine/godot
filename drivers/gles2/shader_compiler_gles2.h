@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHADERCOMPILERGLES2_H
-#define SHADERCOMPILERGLES2_H
+#ifndef SHADER_COMPILER_GLES2_H
+#define SHADER_COMPILER_GLES2_H
 
 #include "core/pair.h"
 #include "core/string_builder.h"
@@ -98,4 +98,4 @@ public:
 	ShaderCompilerGLES2();
 };
 
-#endif // SHADERCOMPILERGLES2_H
+#endif // SHADER_COMPILER_GLES2_H

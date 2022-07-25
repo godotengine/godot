@@ -109,4 +109,4 @@ public:
 	~EditorAutoloadSettings();
 };
 
-#endif
+#endif // EDITOR_AUTOLOAD_SETTINGS_H

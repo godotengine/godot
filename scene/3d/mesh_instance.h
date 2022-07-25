@@ -156,4 +156,4 @@ public:
 	~MeshInstance();
 };
 
-#endif
+#endif // MESH_INSTANCE_H

@@ -39,4 +39,4 @@ namespace TestString {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_STRING_H

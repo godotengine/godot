@@ -185,4 +185,4 @@ public:
 	LightmapperCPU();
 };
 
-#endif // LIGHTMAPPER_H
+#endif // LIGHTMAPPER_CPU_H

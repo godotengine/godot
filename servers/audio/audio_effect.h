@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECT_H
-#define AUDIOEFFECT_H
+#ifndef AUDIO_EFFECT_H
+#define AUDIO_EFFECT_H
 
 #include "core/math/audio_frame.h"
 #include "core/resource.h"
@@ -50,4 +50,4 @@ public:
 	AudioEffect();
 };
 
-#endif // AUDIOEFFECT_H
+#endif // AUDIO_EFFECT_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSCENEGLES3_H
-#define RASTERIZERSCENEGLES3_H
+#ifndef RASTERIZER_SCENE_GLES3_H
+#define RASTERIZER_SCENE_GLES3_H
 
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles3.h"
@@ -870,4 +870,4 @@ public:
 	~RasterizerSceneGLES3();
 };
 
-#endif // RASTERIZERSCENEGLES3_H
+#endif // RASTERIZER_SCENE_GLES3_H

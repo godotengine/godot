@@ -38,4 +38,4 @@ namespace TestAStar {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_ASTAR_H

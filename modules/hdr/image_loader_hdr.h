@@ -40,4 +40,4 @@ public:
 	ImageLoaderHDR();
 };
 
-#endif
+#endif // IMAGE_LOADER_HDR_H

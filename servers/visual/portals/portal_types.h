@@ -512,4 +512,4 @@ struct VSOccluder_Poly {
 struct VSOccluder_Hole : public Occlusion::Poly {
 };
 
-#endif
+#endif // PORTAL_TYPES_H

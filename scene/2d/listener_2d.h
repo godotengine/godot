@@ -56,4 +56,4 @@ public:
 	bool is_current() const;
 };
 
-#endif
+#endif // LISTENER_2D_H

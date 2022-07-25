@@ -82,5 +82,6 @@ public:
 	virtual ~FileAccessWindows();
 };
 
-#endif
-#endif
+#endif // WINDOWS_ENABLED
+
+#endif // FILE_ACCESS_WINDOWS_H

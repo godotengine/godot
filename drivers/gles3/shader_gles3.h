@@ -447,4 +447,4 @@ void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
 	}
 }
 
-#endif
+#endif // SHADER_GLES3_H

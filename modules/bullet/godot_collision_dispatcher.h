@@ -49,4 +49,5 @@ public:
 	virtual bool needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 	virtual bool needsResponse(const btCollisionObject *body0, const btCollisionObject *body1);
 };
-#endif
+
+#endif // GODOT_COLLISION_DISPATCHER_H

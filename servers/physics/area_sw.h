@@ -196,4 +196,4 @@ void AreaSW::remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape, uint3
 	}
 }
 
-#endif // AREA__SW_H
+#endif // AREA_SW_H

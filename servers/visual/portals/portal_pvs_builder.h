@@ -71,4 +71,4 @@ private:
 	static bool _log_active;
 };
 
-#endif
+#endif // PORTAL_PVS_BUILDER_H

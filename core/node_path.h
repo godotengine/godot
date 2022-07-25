@@ -102,4 +102,4 @@ public:
 	~NodePath();
 };
 
-#endif
+#endif // NODE_PATH_H

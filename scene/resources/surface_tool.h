@@ -141,4 +141,4 @@ public:
 	SurfaceTool();
 };
 
-#endif
+#endif // SURFACE_TOOL_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VIEWPORTCONTAINER_H
-#define VIEWPORTCONTAINER_H
+#ifndef VIEWPORT_CONTAINER_H
+#define VIEWPORT_CONTAINER_H
 
 #include "scene/gui/container.h"
 
@@ -57,4 +57,4 @@ public:
 	ViewportContainer();
 };
 
-#endif // VIEWPORTCONTAINER_H
+#endif // VIEWPORT_CONTAINER_H

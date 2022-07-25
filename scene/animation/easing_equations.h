@@ -402,4 +402,4 @@ static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 }
 }; // namespace back
 
-#endif
+#endif // EASING_EQUATIONS_H

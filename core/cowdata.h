@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COWDATA_H_
-#define COWDATA_H_
+#ifndef COWDATA_H
+#define COWDATA_H
 
 #include <string.h>
 
@@ -375,4 +375,4 @@ CowData<T>::~CowData() {
 	_unref(_ptr);
 }
 
-#endif /* COW_H_ */
+#endif // COWDATA_H

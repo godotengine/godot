@@ -226,4 +226,4 @@ public:
 
 VARIANT_ENUM_CAST(Font::ContourPointTag);
 
-#endif
+#endif // FONT_H

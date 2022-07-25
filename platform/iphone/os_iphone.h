@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IPHONE_ENABLED
-
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
+
+#ifdef IPHONE_ENABLED
 
 #include "core/os/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -195,6 +195,6 @@ public:
 	void on_focus_in();
 };
 
-#endif // OS_IPHONE_H
+#endif // IPHONE_ENABLED
 
-#endif
+#endif // OS_IPHONE_H

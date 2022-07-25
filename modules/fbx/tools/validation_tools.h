@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FBX_VALIDATION_TOOLS_H
-#define FBX_VALIDATION_TOOLS_H
+#ifndef VALIDATION_TOOLS_H
+#define VALIDATION_TOOLS_H
 
 #ifdef TOOLS_ENABLED
 
@@ -91,4 +91,5 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-#endif // FBX_VALIDATION_TOOLS_H
+
+#endif // VALIDATION_TOOLS_H

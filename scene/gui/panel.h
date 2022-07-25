@@ -44,4 +44,4 @@ public:
 	~Panel();
 };
 
-#endif
+#endif // PANEL_H

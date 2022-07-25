@@ -46,4 +46,4 @@ public:
 	StepSW();
 };
 
-#endif // STEP__SW_H
+#endif // STEP_SW_H

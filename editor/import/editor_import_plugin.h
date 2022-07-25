@@ -55,4 +55,4 @@ public:
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr);
 };
 
-#endif //EDITOR_IMPORT_PLUGIN_H
+#endif // EDITOR_IMPORT_PLUGIN_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORAUDIOBUSES_H
-#define EDITORAUDIOBUSES_H
+#ifndef EDITOR_AUDIO_BUSES_H
+#define EDITOR_AUDIO_BUSES_H
 
 #include "editor/editor_file_dialog.h"
 #include "editor_plugin.h"
@@ -278,4 +278,4 @@ public:
 	~AudioBusesEditorPlugin();
 };
 
-#endif // EDITORAUDIOBUSES_H
+#endif // EDITOR_AUDIO_BUSES_H

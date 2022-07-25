@@ -103,4 +103,4 @@ private:
 	void _log(String p_string);
 };
 
-#endif
+#endif // PORTAL_ROOMS_BSP_H

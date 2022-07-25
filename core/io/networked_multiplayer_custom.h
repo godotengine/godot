@@ -84,4 +84,4 @@ public:
 	void deliver_packet(const PoolByteArray &p_data, int p_from_peer_id);
 };
 
-#endif
+#endif // NETWORKED_MULTIPLAYER_CUSTOM_H

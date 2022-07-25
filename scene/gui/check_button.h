@@ -48,4 +48,4 @@ public:
 	~CheckButton();
 };
 
-#endif
+#endif // CHECK_BUTTON_H

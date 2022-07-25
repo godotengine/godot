@@ -507,4 +507,4 @@ public:
 #undef CMD_SYNC_TYPE
 #undef DECL_CMD_SYNC
 
-#endif
+#endif // COMMAND_QUEUE_MT_H

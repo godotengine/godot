@@ -277,4 +277,4 @@ protected:
 
 VARIANT_ENUM_CAST(RoomManager::PVSMode);
 
-#endif
+#endif // ROOM_MANAGER_H

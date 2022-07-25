@@ -48,4 +48,5 @@ public:
 		locked.clear(std::memory_order_release);
 	}
 };
+
 #endif // SPIN_LOCK_H

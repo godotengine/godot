@@ -56,4 +56,5 @@ public:
 	ResourceImporterBitMap();
 	~ResourceImporterBitMap();
 };
+
 #endif // RESOURCE_IMPORTER_BITMASK_H

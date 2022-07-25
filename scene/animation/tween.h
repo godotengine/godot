@@ -196,4 +196,4 @@ VARIANT_ENUM_CAST(Tween::TweenProcessMode);
 VARIANT_ENUM_CAST(Tween::TransitionType);
 VARIANT_ENUM_CAST(Tween::EaseType);
 
-#endif
+#endif // TWEEN_H

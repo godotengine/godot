@@ -70,4 +70,4 @@ public:
 	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
 };
 
-#endif
+#endif // GENERIC_6DOF_JOINT_BULLET_H
