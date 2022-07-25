@@ -23,7 +23,7 @@
 			Use an expression as a condition for state machine transitions. It is possible to create complex animation advance conditions for switching between states and gives much greater flexibility for creating complex state machines by directly interfacing with the script code.
 		</member>
 		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;&quot;)">
-			The path to the [Node] used to evaluate an [Expression] if one is not explictly specified internally.
+			The path to the [Node] used to evaluate an [Expression] if one is not explicitly specified internally.
 		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance" default="false">
 			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].

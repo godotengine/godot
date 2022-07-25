@@ -275,7 +275,7 @@ bool DisplayServerX11::_refresh_device_info() {
 		xi.pen_pressure_range[dev->deviceid] = Vector2(pressure_min, pressure_max);
 		xi.pen_tilt_x_range[dev->deviceid] = Vector2(tilt_x_min, tilt_x_max);
 		xi.pen_tilt_y_range[dev->deviceid] = Vector2(tilt_y_min, tilt_y_max);
-		xi.pen_inverted_devices[dev->deviceid] = (bool)strstr(dev->name, "eraser");
+		xi.pen_inverted_devices[dev->deviceid] = String(dev->name).findn("eraser") > 0;
 	}
 
 	XIFreeDeviceInfo(info);
@@ -1489,8 +1489,8 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
 		if (p_screen != window_get_current_screen(p_window)) {
-			Point2i position = screen_get_position(p_screen);
-			XMoveWindow(x11_display, wd.x11_window, position.x, position.y);
+			Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+			window_set_position(ofs + screen_get_position(p_screen), p_window);
 		}
 	}
 }

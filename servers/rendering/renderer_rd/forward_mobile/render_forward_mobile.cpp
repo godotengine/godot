@@ -87,10 +87,11 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count) {
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) {
 	clear();
 
 	msaa = p_msaa;
+	vrs = p_vrs_texture;
 
 	Size2i target_size = RD::get_singleton()->texture_size(p_target_buffer);
 
@@ -108,6 +109,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		Vector<RID> fb;
 		fb.push_back(p_color_buffer); // 0 - color buffer
 		fb.push_back(depth); // 1 - depth buffer
+		if (vrs.is_valid()) {
+			fb.push_back(vrs); // 2 - vrs texture
+		}
 
 		// Now define our subpasses
 		Vector<RD::FramebufferPass> passes;
@@ -116,6 +120,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 		// re-using the same attachments
 		pass.color_attachments.push_back(0);
 		pass.depth_attachment = 1;
+		if (vrs.is_valid()) {
+			pass.vrs_attachment = 2;
+		}
 
 		// - opaque pass
 		passes.push_back(pass);
@@ -131,12 +138,13 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 
 		if (!is_scaled) {
 			// - add blit to 2D pass
-			fb.push_back(p_target_buffer); // 2 - target buffer
+			int target_buffer_id = fb.size();
+			fb.push_back(p_target_buffer); // 2/3 - target buffer
 
 			RD::FramebufferPass blit_pass;
-			blit_pass.color_attachments.push_back(2);
+			blit_pass.color_attachments.push_back(target_buffer_id);
 			blit_pass.input_attachments.push_back(0);
-			passes.push_back(blit_pass);
+			passes.push_back(blit_pass); // this doesn't need VRS
 
 			color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
 		} else {
@@ -179,6 +187,9 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			Vector<RID> fb;
 			fb.push_back(color_msaa); // 0 - msaa color buffer
 			fb.push_back(depth_msaa); // 1 - msaa depth buffer
+			if (vrs.is_valid()) {
+				fb.push_back(vrs); // 2 - vrs texture
+			}
 
 			// Now define our subpasses
 			Vector<RD::FramebufferPass> passes;
@@ -187,18 +198,22 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			// re-using the same attachments
 			pass.color_attachments.push_back(0);
 			pass.depth_attachment = 1;
+			if (vrs.is_valid()) {
+				pass.vrs_attachment = 2;
+			}
 
 			// - opaque pass
 			passes.push_back(pass);
 
 			// - add sky pass
-			fb.push_back(color); // 2 - color buffer
+			int color_buffer_id = fb.size();
+			fb.push_back(color); // color buffer
 			passes.push_back(pass); // without resolve for our 3 + 4 subpass config
 			{
 				// but with resolve for our 2 subpass config
 				Vector<RD::FramebufferPass> two_passes;
 				two_passes.push_back(pass); // opaque subpass without resolve
-				pass.resolve_attachments.push_back(2);
+				pass.resolve_attachments.push_back(color_buffer_id);
 				two_passes.push_back(pass); // sky subpass with resolve
 
 				color_fbs[FB_CONFIG_TWO_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, two_passes, RenderingDevice::INVALID_ID, view_count);
@@ -217,10 +232,11 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 
 			if (!is_scaled) {
 				// - add blit to 2D pass
-				fb.push_back(p_target_buffer); // 3 - target buffer
+				int target_buffer_id = fb.size();
+				fb.push_back(p_target_buffer); // target buffer
 				RD::FramebufferPass blit_pass;
-				blit_pass.color_attachments.push_back(3);
-				blit_pass.input_attachments.push_back(2);
+				blit_pass.color_attachments.push_back(target_buffer_id);
+				blit_pass.input_attachments.push_back(color_buffer_id);
 				passes.push_back(blit_pass);
 
 				color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
@@ -632,9 +648,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			CameraMatrix projection = p_render_data->cam_projection;
+			Projection projection = p_render_data->cam_projection;
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
 				projection = correction * p_render_data->cam_projection;
 			}
@@ -664,9 +680,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_begin_label("Setup Sky Resolution Buffers");
 
 		if (p_render_data->reflection_probe.is_valid()) {
-			CameraMatrix correction;
+			Projection correction;
 			correction.set_depth_correction(true);
-			CameraMatrix projection = correction * p_render_data->cam_projection;
+			Projection projection = correction * p_render_data->cam_projection;
 			sky.update_res_buffers(env, 1, &projection, p_render_data->cam_transform, time);
 		} else {
 			sky.update_res_buffers(env, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
@@ -675,8 +691,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
 	}
 
-	RID null_rids[2];
-	_pre_opaque_render(p_render_data, false, false, false, null_rids, RID());
+	RID nullrids[RendererSceneRender::MAX_RENDER_VIEWS];
+	_pre_opaque_render(p_render_data, false, false, false, nullrids, RID(), nullrids);
 
 	uint32_t spec_constant_base_flags = 0;
 
@@ -760,9 +776,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
-				CameraMatrix projection = correction * p_render_data->cam_projection;
+				Projection projection = correction * p_render_data->cam_projection;
 				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
 				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
@@ -884,7 +900,7 @@ void RenderForwardMobile::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
 
-void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
+void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -978,7 +994,7 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1095,7 +1111,7 @@ void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_
 	// we don't do GI in low end..
 }
 
-void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
+void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
@@ -1527,11 +1543,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// This populates our UBO with main scene data that is pushed into set 1
 
-	//CameraMatrix projection = p_render_data->cam_projection;
+	//Projection projection = p_render_data->cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
-	CameraMatrix correction;
+	Projection correction;
 	correction.set_depth_correction(p_flip_y);
-	CameraMatrix projection = correction * p_render_data->cam_projection;
+	Projection projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
 	RendererRD::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);

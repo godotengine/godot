@@ -206,7 +206,7 @@ setup_masks_use (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    info[i].use_category() = hb_use_get_category (info[i]);
+    info[i].use_category() = hb_use_get_category (info[i].codepoint);
 }
 
 static void
@@ -490,12 +490,12 @@ const hb_ot_shaper_t _hb_ot_shaper_use =
   data_destroy_use,
   preprocess_text_use,
   nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
   nullptr, /* decompose */
   compose_use,
   setup_masks_use,
-  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
+  HB_TAG_NONE, /* gpos_tag */
+  HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
   false, /* fallback_position */
 };

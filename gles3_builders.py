@@ -436,7 +436,7 @@ def build_gles3_header(filename, include, class_suffix, output_attribs):
         )
 
         fd.write(
-            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const CameraMatrix& p_matrix,RID p_version,ShaderVariant p_variant"""
+            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Projection& p_matrix,RID p_version,ShaderVariant p_variant"""
             + defvariant
             + """,uint64_t p_specialization="""
             + str(defspec)

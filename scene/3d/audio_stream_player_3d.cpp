@@ -281,7 +281,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			if (setplay.get() >= 0 && stream.is_valid()) {
 				active.set();
-				Ref<AudioStreamPlayback> new_playback = stream->instance_playback();
+				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;

@@ -87,4 +87,4 @@ public:
 	MeshEditorPlugin();
 };
 
-#endif
+#endif // MESH_EDITOR_PLUGIN_H

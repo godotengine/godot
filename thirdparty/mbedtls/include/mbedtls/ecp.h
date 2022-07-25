@@ -315,7 +315,7 @@ mbedtls_ecp_group;
 #if !defined(MBEDTLS_ECP_WINDOW_SIZE)
 /*
  * Maximum "window" size used for point multiplication.
- * Default: a point where higher memory usage yields disminishing performance
+ * Default: a point where higher memory usage yields diminishing performance
  *          returns.
  * Minimum value: 2. Maximum value: 7.
  *
@@ -351,7 +351,7 @@ mbedtls_ecp_group;
 #define MBEDTLS_ECP_FIXED_POINT_OPTIM  1   /**< Enable fixed-point speed-up. */
 #endif /* MBEDTLS_ECP_FIXED_POINT_OPTIM */
 
-/* \} name SECTION: Module settings */
+/** \} name SECTION: Module settings */
 
 #else  /* MBEDTLS_ECP_ALT */
 #include "ecp_alt.h"

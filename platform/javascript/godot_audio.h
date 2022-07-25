@@ -63,4 +63,4 @@ extern void godot_audio_script_start(float *p_in_buf, int p_in_size, float *p_ou
 }
 #endif
 
-#endif /* GODOT_AUDIO_H */
+#endif // GODOT_AUDIO_H

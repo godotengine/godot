@@ -70,7 +70,7 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	RID canvas_item;
-	StringName group;
+	StringName canvas_group;
 
 	CanvasLayer *canvas_layer = nullptr;
 

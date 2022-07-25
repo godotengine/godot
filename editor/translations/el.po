@@ -469,6 +469,10 @@ msgid "Pressure"
 msgstr "Πίεση"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "Σχετικό"
@@ -22038,7 +22042,7 @@ msgstr "Ταξίδι"
 msgid "Rotation Degrees"
 msgstr "Περιστροφή %s μοίρες."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Σταθερή"
@@ -24161,6 +24165,11 @@ msgstr ""
 "Οι αλλαγές μεγέθους σε SoftBody θα παρακαμφθούν από την μηχανή φυσικής κατά "
 "την εκτέλεση.\n"
 "Αλλάξτε μέγεθος στα σχήματα σύγκρουσης των παιδιών."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Διατήρηση παγκόσμιου μετασχηματισμού"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

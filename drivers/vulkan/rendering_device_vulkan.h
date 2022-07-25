@@ -241,6 +241,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<AttachmentFormat> attachments;
 		Vector<FramebufferPass> passes;
 		uint32_t view_count = 1;
+
 		bool operator<(const FramebufferFormatKey &p_key) const {
 			if (view_count != p_key.view_count) {
 				return view_count < p_key.view_count;
@@ -1203,7 +1204,7 @@ public:
 	/**** Limits ****/
 	/****************/
 
-	virtual uint64_t limit_get(Limit p_limit);
+	virtual uint64_t limit_get(Limit p_limit) const;
 
 	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context, bool p_local_device = false);
@@ -1233,6 +1234,8 @@ public:
 	virtual String get_device_pipeline_cache_uuid() const;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
+
+	virtual bool has_feature(const Features p_feature) const;
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

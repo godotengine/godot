@@ -162,8 +162,8 @@ void mbedtls_x509_crl_init( mbedtls_x509_crl *crl );
  */
 void mbedtls_x509_crl_free( mbedtls_x509_crl *crl );
 
-/* \} name */
-/* \} addtogroup x509_module */
+/** \} name Structures and functions for parsing CRLs */
+/** \} addtogroup x509_module */
 
 #ifdef __cplusplus
 }

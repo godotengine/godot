@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef COREAUDIO_ENABLED
-
 #ifndef AUDIO_DRIVER_COREAUDIO_H
 #define AUDIO_DRIVER_COREAUDIO_H
+
+#ifdef COREAUDIO_ENABLED
 
 #include "servers/audio_server.h"
 
 #import <AudioUnit/AudioUnit.h>
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 #import <CoreAudio/AudioHardware.h>
 #endif
 
@@ -58,7 +58,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 	Vector<int32_t> samples_in;
 	Vector<int16_t> input_buf;
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	Array _get_device_list(bool capture = false);
 	void _set_device(const String &device, bool capture = false);
 
@@ -106,7 +106,7 @@ public:
 	bool try_lock();
 	void stop();
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	virtual Array get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
@@ -120,6 +120,6 @@ public:
 	~AudioDriverCoreAudio() {}
 };
 
-#endif
+#endif // COREAUDIO_ENABLED
 
-#endif
+#endif // AUDIO_DRIVER_COREAUDIO_H

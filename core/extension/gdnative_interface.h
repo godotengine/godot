@@ -67,11 +67,14 @@ typedef enum {
 	GDNATIVE_VARIANT_TYPE_VECTOR3,
 	GDNATIVE_VARIANT_TYPE_VECTOR3I,
 	GDNATIVE_VARIANT_TYPE_TRANSFORM2D,
+	GDNATIVE_VARIANT_TYPE_VECTOR4,
+	GDNATIVE_VARIANT_TYPE_VECTOR4I,
 	GDNATIVE_VARIANT_TYPE_PLANE,
 	GDNATIVE_VARIANT_TYPE_QUATERNION,
 	GDNATIVE_VARIANT_TYPE_AABB,
 	GDNATIVE_VARIANT_TYPE_BASIS,
 	GDNATIVE_VARIANT_TYPE_TRANSFORM3D,
+	GDNATIVE_VARIANT_TYPE_PROJECTION,
 
 	/* misc types */
 	GDNATIVE_VARIANT_TYPE_COLOR,
@@ -537,7 +540,7 @@ typedef struct {
 
 	void (*classdb_register_extension_class)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
 	void (*classdb_register_extension_class_method)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, bool p_is_bitfield);
+	void (*classdb_register_extension_class_integer_constant)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_enum_name, const char *p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
 	void (*classdb_register_extension_class_property)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const GDNativePropertyInfo *p_info, const char *p_setter, const char *p_getter);
 	void (*classdb_register_extension_class_property_group)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_group_name, const char *p_prefix);
 	void (*classdb_register_extension_class_property_subgroup)(const GDNativeExtensionClassLibraryPtr p_library, const char *p_class_name, const char *p_subgroup_name, const char *p_prefix);
@@ -579,4 +582,4 @@ typedef GDNativeBool (*GDNativeInitializationFunction)(const GDNativeInterface *
 }
 #endif
 
-#endif
+#endif // GDNATIVE_INTERFACE_H

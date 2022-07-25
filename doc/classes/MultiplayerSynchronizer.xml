@@ -6,12 +6,64 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="add_visibility_filter">
+			<return type="void" />
+			<argument index="0" name="filter" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="get_visibility_for" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="peer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="remove_visibility_filter">
+			<return type="void" />
+			<argument index="0" name="filter" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="set_visibility_for">
+			<return type="void" />
+			<argument index="0" name="peer" type="int" />
+			<argument index="1" name="visible" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="update_visibility">
+			<return type="void" />
+			<argument index="0" name="for_peer" type="int" default="0" />
+			<description>
+			</description>
+		</method>
+	</methods>
 	<members>
+		<member name="public_visibility" type="bool" setter="set_visibility_public" getter="is_visibility_public" default="true">
+		</member>
 		<member name="replication_config" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
 		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
 		</member>
 		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
 		</member>
+		<member name="visibility_update_mode" type="int" setter="set_visibility_update_mode" getter="get_visibility_update_mode" enum="MultiplayerSynchronizer.VisibilityUpdateMode" default="0">
+		</member>
 	</members>
+	<signals>
+		<signal name="visibility_changed">
+			<argument index="0" name="for_peer" type="int" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="VISIBILITY_PROCESS_IDLE" value="0" enum="VisibilityUpdateMode">
+		</constant>
+		<constant name="VISIBILITY_PROCESS_PHYSICS" value="1" enum="VisibilityUpdateMode">
+		</constant>
+		<constant name="VISIBILITY_PROCESS_NONE" value="2" enum="VisibilityUpdateMode">
+		</constant>
+	</constants>
 </class>

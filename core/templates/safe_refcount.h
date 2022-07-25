@@ -111,7 +111,8 @@ public:
 			if (tmp >= p_value) {
 				return tmp; // already greater, or equal
 			}
-			if (value.compare_exchange_weak(tmp, p_value, std::memory_order_release)) {
+
+			if (value.compare_exchange_weak(tmp, p_value, std::memory_order_acq_rel)) {
 				return p_value;
 			}
 		}
@@ -123,7 +124,7 @@ public:
 			if (c == 0) {
 				return 0;
 			}
-			if (value.compare_exchange_weak(c, c + 1, std::memory_order_release)) {
+			if (value.compare_exchange_weak(c, c + 1, std::memory_order_acq_rel)) {
 				return c + 1;
 			}
 		}

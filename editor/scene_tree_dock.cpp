@@ -72,7 +72,7 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
-		if (mb->is_pressed() && scene_tree->get_rect().has_point(mb->get_position())) {
+		if (mb->is_pressed() && scene_tree->get_rect().has_point(scene_tree->get_local_mouse_position())) {
 			tree_clicked = true;
 		} else if (!mb->is_pressed()) {
 			tree_clicked = false;
@@ -1122,7 +1122,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					case TOOL_CREATE_USER_INTERFACE: {
 						Control *node = memnew(Control);
-						node->set_anchors_and_offsets_preset(PRESET_WIDE); //more useful for resizable UIs.
+						node->set_anchors_and_offsets_preset(PRESET_FULL_RECT); //more useful for resizable UIs.
 						new_node = node;
 
 					} break;

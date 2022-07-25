@@ -545,4 +545,4 @@ public:
 	~PhysicsServer3DExtension();
 };
 
-#endif // PHYSICSSERVER3DEXTENSION_H
+#endif // PHYSICS_SERVER_3D_EXTENSION_H

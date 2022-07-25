@@ -112,4 +112,5 @@ namespace GodotUWP
 }
 
 /* clang-format on */
+
 #endif // APP_UWP_H

@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
 
@@ -40,7 +41,23 @@ Shader::Mode Shader::get_mode() const {
 	return mode;
 }
 
+void Shader::_dependency_changed() {
+	RenderingServer::get_singleton()->shader_set_code(shader, RenderingServer::get_singleton()->shader_get_code(shader));
+	params_cache_dirty = true;
+
+	emit_changed();
+}
+
+void Shader::set_path(const String &p_path, bool p_take_over) {
+	Resource::set_path(p_path, p_take_over);
+	RS::get_singleton()->shader_set_path_hint(shader, p_path);
+}
+
 void Shader::set_code(const String &p_code) {
+	for (Ref<ShaderInclude> E : include_dependencies) {
+		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	}
+
 	String type = ShaderLanguage::get_shader_type(p_code);
 
 	if (type == "canvas_item") {
@@ -55,7 +72,27 @@ void Shader::set_code(const String &p_code) {
 		mode = MODE_SPATIAL;
 	}
 
-	RenderingServer::get_singleton()->shader_set_code(shader, p_code);
+	code = p_code;
+	String pp_code = p_code;
+
+	HashSet<Ref<ShaderInclude>> new_include_dependencies;
+
+	{
+		// Preprocessor must run here and not in the server because:
+		// 1) Need to keep track of include dependencies at resource level
+		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
+		ShaderPreprocessor preprocessor;
+		preprocessor.preprocess(p_code, pp_code, nullptr, nullptr, &new_include_dependencies);
+	}
+
+	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+	include_dependencies = new_include_dependencies;
+
+	for (Ref<ShaderInclude> E : include_dependencies) {
+		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+	}
+
+	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);
 	params_cache_dirty = true;
 
 	emit_changed();
@@ -63,7 +100,7 @@ void Shader::set_code(const String &p_code) {
 
 String Shader::get_code() const {
 	_update_shader();
-	return RenderingServer::get_singleton()->shader_get_code(shader);
+	return code;
 }
 
 void Shader::get_param_list(List<PropertyInfo> *p_params) const {

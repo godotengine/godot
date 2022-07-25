@@ -156,7 +156,7 @@ protected:
 					pinfo.type = Variant::VECTOR3I;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_IVEC4: {
-					pinfo.type = Variant::PACKED_INT32_ARRAY;
+					pinfo.type = Variant::VECTOR4I;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_RECT2I: {
 					pinfo.type = Variant::RECT2I;
@@ -171,7 +171,7 @@ protected:
 					pinfo.type = Variant::VECTOR3I;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_UVEC4: {
-					pinfo.type = Variant::PACKED_INT32_ARRAY;
+					pinfo.type = Variant::VECTOR4I;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_FLOAT: {
 					pinfo.type = Variant::FLOAT;
@@ -183,7 +183,7 @@ protected:
 					pinfo.type = Variant::VECTOR3;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_VEC4: {
-					pinfo.type = Variant::QUATERNION;
+					pinfo.type = Variant::VECTOR4;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_RECT2: {
 					pinfo.type = Variant::RECT2;
@@ -204,7 +204,7 @@ protected:
 					pinfo.type = Variant::TRANSFORM3D;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT4: {
-					pinfo.type = Variant::PACKED_INT32_ARRAY;
+					pinfo.type = Variant::PROJECTION;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
 					pinfo.type = Variant::OBJECT;

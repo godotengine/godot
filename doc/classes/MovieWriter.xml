@@ -68,7 +68,7 @@
 			<return type="void" />
 			<argument index="0" name="writer" type="MovieWriter" />
 			<description>
-				Adds a writer to be usable by the engine. The supported file extensions can be set by overridding [method _handles_file].
+				Adds a writer to be usable by the engine. The supported file extensions can be set by overriding [method _handles_file].
 				[b]Note:[/b] [method add_writer] must be called early enough in the engine initialization to work, as movie writing is designed to start at the same time as the rest of the engine.
 			</description>
 		</method>

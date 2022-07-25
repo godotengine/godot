@@ -55,7 +55,7 @@
 #ifdef ANDROID_ENABLED
 #include "android_mono_config.h"
 #include "support/android_support.h"
-#elif defined(IPHONE_ENABLED)
+#elif defined(IOS_ENABLED)
 #include "support/ios_support.h"
 #endif
 
@@ -188,7 +188,7 @@ MonoDomain *gd_initialize_mono_runtime() {
 MonoDomain *gd_initialize_mono_runtime() {
 	gd_mono_debug_init();
 
-#if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(IOS_ENABLED) || defined(ANDROID_ENABLED)
 	// I don't know whether this actually matters or not
 	const char *runtime_version = "mobile";
 #else
@@ -263,7 +263,7 @@ void GDMono::determine_mono_dirs(String &r_assembly_rootdir, String &r_config_di
 	if (mono_reg_info.config_dir.length() && DirAccess::exists(mono_reg_info.config_dir)) {
 		r_config_dir = mono_reg_info.config_dir;
 	}
-#elif defined(OSX_ENABLED)
+#elif defined(MACOS_ENABLED)
 	const char *c_assembly_rootdir = mono_assembly_getrootdir();
 	const char *c_config_dir = mono_get_config_dir();
 
@@ -343,7 +343,7 @@ void GDMono::initialize() {
 
 #if defined(ANDROID_ENABLED)
 	gdmono::android::support::initialize();
-#elif defined(IPHONE_ENABLED)
+#elif defined(IOS_ENABLED)
 	gdmono::ios::support::initialize();
 #endif
 

@@ -43,28 +43,93 @@ int AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 
 	int todo = p_frames;
 
-	int start_buffer = 0;
+	int beat_length_frames = -1;
+	bool beat_loop = vorbis_stream->has_loop();
+	if (beat_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
+		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
+	}
 
 	while (todo > 0 && active) {
 		AudioFrame *buffer = p_buffer;
-		if (start_buffer > 0) {
-			buffer = buffer + start_buffer;
+		buffer += p_frames - todo;
+
+		int to_mix = todo;
+		if (beat_length_frames >= 0 && (beat_length_frames - (int)frames_mixed) < to_mix) {
+			to_mix = MAX(0, beat_length_frames - (int)frames_mixed);
 		}
-		int mixed = _mix_frames_vorbis(buffer, todo);
+
+		int mixed = _mix_frames_vorbis(buffer, to_mix);
 		ERR_FAIL_COND_V(mixed < 0, 0);
 		todo -= mixed;
 		frames_mixed += mixed;
-		start_buffer += mixed;
+
+		if (loop_fade_remaining < FADE_SIZE) {
+			int to_fade = loop_fade_remaining + MIN(FADE_SIZE - loop_fade_remaining, mixed);
+			for (int i = loop_fade_remaining; i < to_fade; i++) {
+				buffer[i - loop_fade_remaining] += loop_fade[i] * (float(FADE_SIZE - i) / float(FADE_SIZE));
+			}
+			loop_fade_remaining = to_fade;
+		}
+
+		if (beat_length_frames >= 0) {
+			/**
+			 * Length determined by beat length
+			 * This code is commented out because, in practice, it is prefered that the fade
+			 * is done by the transitioner and this stream just goes on until it ends while fading out.
+			 *
+			 * End fade implementation is left here for reference in case at some point this feature
+			 * is desired.
+
+			if (!beat_loop && (int)frames_mixed > beat_length_frames - FADE_SIZE) {
+				print_line("beat length fade/after mix?");
+				//No loop, just fade and finish
+				for (int i = 0; i < mixed; i++) {
+					int idx = frames_mixed + i - mixed;
+					buffer[i] *= 1.0 - float(MAX(0, (idx - (beat_length_frames - FADE_SIZE)))) / float(FADE_SIZE);
+				}
+				if ((int)frames_mixed == beat_length_frames) {
+					for (int i = p_frames - todo; i < p_frames; i++) {
+						p_buffer[i] = AudioFrame(0, 0);
+					}
+					active = false;
+					break;
+				}
+			} else
+			**/
+
+			if (beat_loop && beat_length_frames <= (int)frames_mixed) {
+				// End of file when doing beat-based looping. <= used instead of == because importer editing
+				if (!have_packets_left && !have_samples_left) {
+					//Nothing remaining, so do nothing.
+					loop_fade_remaining = FADE_SIZE;
+				} else {
+					// Add some loop fade;
+					int faded_mix = _mix_frames_vorbis(loop_fade, FADE_SIZE);
+
+					for (int i = faded_mix; i < FADE_SIZE; i++) {
+						// In case lesss was mixed, pad with zeros
+						loop_fade[i] = AudioFrame(0, 0);
+					}
+					loop_fade_remaining = 0;
+				}
+
+				seek(vorbis_stream->loop_offset);
+				loops++;
+				// We still have buffer to fill, start from this element in the next iteration.
+				continue;
+			}
+		}
+
 		if (!have_packets_left && !have_samples_left) {
-			//end of file!
+			// Actual end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
 			if (vorbis_stream->loop && is_not_empty) {
 				//loop
 
 				seek(vorbis_stream->loop_offset);
 				loops++;
-				// we still have buffer to fill, start from this element in the next iteration.
-				start_buffer = p_frames - todo;
+				// We still have buffer to fill, start from this element in the next iteration.
+
 			} else {
 				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
@@ -130,7 +195,7 @@ bool AudioStreamPlaybackOGGVorbis::_alloc_vorbis() {
 	comment_is_allocated = true;
 
 	ERR_FAIL_COND_V(vorbis_data.is_null(), false);
-	vorbis_data_playback = vorbis_data->instance_playback();
+	vorbis_data_playback = vorbis_data->instantiate_playback();
 
 	ogg_packet *packet;
 	int err;
@@ -160,6 +225,7 @@ bool AudioStreamPlaybackOGGVorbis::_alloc_vorbis() {
 
 void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 	ERR_FAIL_COND(!ready);
+	loop_fade_remaining = FADE_SIZE;
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
@@ -180,6 +246,10 @@ int AudioStreamPlaybackOGGVorbis::get_loop_count() const {
 
 float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 	return float(frames_mixed) / vorbis_data->get_sampling_rate();
+}
+
+void AudioStreamPlaybackOGGVorbis::tag_used_streams() {
+	vorbis_stream->tag_used(get_playback_position());
 }
 
 void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
@@ -315,7 +385,7 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 	}
 }
 
-Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
+Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instantiate_playback() {
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
 	ERR_FAIL_COND_V(packet_sequence.is_null(), nullptr);
@@ -347,7 +417,7 @@ void AudioStreamOGGVorbis::maybe_update_info() {
 	vorbis_info_init(&info);
 	vorbis_comment_init(&comment);
 
-	Ref<OGGPacketSequencePlayback> packet_sequence_playback = packet_sequence->instance_playback();
+	Ref<OGGPacketSequencePlayback> packet_sequence_playback = packet_sequence->instantiate_playback();
 
 	for (int i = 0; i < 3; i++) {
 		ogg_packet *packet;
@@ -405,6 +475,36 @@ float AudioStreamOGGVorbis::get_length() const {
 	return packet_sequence->get_length();
 }
 
+void AudioStreamOGGVorbis::set_bpm(double p_bpm) {
+	ERR_FAIL_COND(p_bpm < 0);
+	bpm = p_bpm;
+	emit_changed();
+}
+
+double AudioStreamOGGVorbis::get_bpm() const {
+	return bpm;
+}
+
+void AudioStreamOGGVorbis::set_beat_count(int p_beat_count) {
+	ERR_FAIL_COND(p_beat_count < 0);
+	beat_count = p_beat_count;
+	emit_changed();
+}
+
+int AudioStreamOGGVorbis::get_beat_count() const {
+	return beat_count;
+}
+
+void AudioStreamOGGVorbis::set_bar_beats(int p_bar_beats) {
+	ERR_FAIL_COND(p_bar_beats < 2);
+	bar_beats = p_bar_beats;
+	emit_changed();
+}
+
+int AudioStreamOGGVorbis::get_bar_beats() const {
+	return bar_beats;
+}
+
 bool AudioStreamOGGVorbis::is_monophonic() const {
 	return false;
 }
@@ -419,7 +519,19 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamOGGVorbis::set_loop_offset);
 	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamOGGVorbis::get_loop_offset);
 
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamOGGVorbis::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamOGGVorbis::get_bpm);
+
+	ClassDB::bind_method(D_METHOD("set_beat_count", "count"), &AudioStreamOGGVorbis::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamOGGVorbis::get_beat_count);
+
+	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamOGGVorbis::set_bar_beats);
+	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamOGGVorbis::get_bar_beats);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "packet_sequence", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_sequence", "get_packet_sequence");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,1,or_greater"), "set_beat_count", "get_beat_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }

@@ -78,6 +78,9 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_value_label", "text"), &AnimationNodeBlendSpace1D::set_value_label);
 	ClassDB::bind_method(D_METHOD("get_value_label"), &AnimationNodeBlendSpace1D::get_value_label);
 
+	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlendSpace1D::set_use_sync);
+	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlendSpace1D::is_using_sync);
+
 	ClassDB::bind_method(D_METHOD("_add_blend_point", "index", "node"), &AnimationNodeBlendSpace1D::_add_blend_point);
 
 	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
@@ -89,6 +92,7 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_space", "get_max_space");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_value_label", "get_value_label");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_use_sync", "is_using_sync");
 }
 
 void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
@@ -211,6 +215,14 @@ String AnimationNodeBlendSpace1D::get_value_label() const {
 	return value_label;
 }
 
+void AnimationNodeBlendSpace1D::set_use_sync(bool p_sync) {
+	sync = p_sync;
+}
+
+bool AnimationNodeBlendSpace1D::is_using_sync() const {
+	return sync;
+}
+
 void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node) {
 	if (p_index == blend_points_used) {
 		add_blend_point(p_node, 0);
@@ -226,7 +238,7 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_see
 
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
-		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, false);
+		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
 	}
 
 	double blend_pos = get_parameter(blend_position);
@@ -295,9 +307,12 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_see
 	double max_time_remaining = 0.0;
 
 	for (int i = 0; i < blend_points_used; i++) {
-		double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, weights[i], FILTER_IGNORE, false);
-
-		max_time_remaining = MAX(max_time_remaining, remaining);
+		if (i == point_lower || i == point_higher) {
+			double remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, weights[i], FILTER_IGNORE, true);
+			max_time_remaining = MAX(max_time_remaining, remaining);
+		} else {
+			blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
+		}
 	}
 
 	return max_time_remaining;

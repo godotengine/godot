@@ -951,9 +951,9 @@ String OS_Windows::get_user_data_dir() const {
 }
 
 String OS_Windows::get_unique_id() const {
-	HW_PROFILE_INFO HwProfInfo;
-	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+	HW_PROFILE_INFOA HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
+	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {

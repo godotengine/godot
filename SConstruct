@@ -195,7 +195,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
-opts.Add("disable_classes", "Disable given classes (comma separated)", "")
+opts.Add("build_feature_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
@@ -260,7 +260,7 @@ else:
     ):
         selected_platform = "linuxbsd"
     elif sys.platform == "darwin":
-        selected_platform = "osx"
+        selected_platform = "macos"
     elif sys.platform == "win32":
         selected_platform = "windows"
     else:
@@ -271,6 +271,20 @@ else:
 
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
+
+if selected_platform in ["macos", "osx"]:
+    if selected_platform == "osx":
+        # Deprecated alias kept for compatibility.
+        print('Platform "osx" has been renamed to "macos" in Godot 4.0. Building for platform "macos".')
+    # Alias for convenience.
+    selected_platform = "macos"
+
+if selected_platform in ["ios", "iphone"]:
+    if selected_platform == "iphone":
+        # Deprecated alias kept for compatibility.
+        print('Platform "iphone" has been renamed to "ios" in Godot 4.0. Building for platform "ios".')
+    # Alias for convenience.
+    selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
@@ -398,6 +412,24 @@ if selected_platform in platform_list:
     import detect
 
     env = env_base.Clone()
+
+    # Default num_jobs to local cpu count if not user specified.
+    # SCons has a peculiarity where user-specified options won't be overridden
+    # by SetOption, so we can rely on this to know if we should use our default.
+    initial_num_jobs = env.GetOption("num_jobs")
+    altered_num_jobs = initial_num_jobs + 1
+    env.SetOption("num_jobs", altered_num_jobs)
+    if env.GetOption("num_jobs") == altered_num_jobs:
+        cpu_count = os.cpu_count()
+        if cpu_count is None:
+            print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        else:
+            safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
+            print(
+                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
+                % (cpu_count, safer_cpu_count)
+            )
+            env.SetOption("num_jobs", safer_cpu_count)
 
     if env["compiledb"]:
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
@@ -536,7 +568,7 @@ if selected_platform in platform_list:
             )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        elif env["platform"] == "osx" or env["platform"] == "iphone":
+        elif env["platform"] == "macos" or env["platform"] == "ios":
             vanilla = methods.is_vanilla_clang(env)
             if vanilla and cc_version_major < 6:
                 print(
@@ -720,7 +752,27 @@ if selected_platform in platform_list:
 
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
-    methods.write_disabled_classes(env["disable_classes"].split(","))
+
+    disabled_classes = []
+
+    if env["build_feature_profile"] != "":
+        print("Using build feature profile: " + env["build_feature_profile"])
+        import json
+
+        try:
+            ft = json.load(open(env["build_feature_profile"]))
+            if "disabled_classes" in ft:
+                disabled_classes = ft["disabled_classes"]
+            if "disabled_build_options" in ft:
+                dbo = ft["disabled_build_options"]
+                for c in dbo:
+                    env[c] = dbo[c]
+        except:
+            print("Error opening feature build profile: " + env["build_feature_profile"])
+            Exit(255)
+
+    methods.write_disabled_classes(disabled_classes)
+
     if env["disable_3d"]:
         if env["tools"]:
             print(
@@ -802,6 +854,9 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
+        if os.name != "nt":
+            print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
+            Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
         methods.generate_vs_project(env, GetOption("num_jobs"))
         methods.generate_cpp_hint_file("cpp.hint")

@@ -43,8 +43,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="auto_spawn" type="bool" setter="set_auto_spawning" getter="is_auto_spawning" default="false">
-		</member>
 		<member name="spawn_limit" type="int" setter="set_spawn_limit" getter="get_spawn_limit" default="0">
 		</member>
 		<member name="spawn_path" type="NodePath" setter="set_spawn_path" getter="get_spawn_path" default="NodePath(&quot;&quot;)">

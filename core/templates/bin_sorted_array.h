@@ -178,4 +178,4 @@ public:
 	}
 };
 
-#endif //BIN_SORTED_ARRAY_H
+#endif // BIN_SORTED_ARRAY_H

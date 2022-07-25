@@ -105,4 +105,4 @@ public:
 	OS_LinuxBSD();
 };
 
-#endif
+#endif // OS_LINUXBSD_H

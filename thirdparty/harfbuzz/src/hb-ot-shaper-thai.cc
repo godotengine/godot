@@ -379,12 +379,12 @@ const hb_ot_shaper_t _hb_ot_shaper_thai =
   nullptr, /* data_destroy */
   preprocess_text_thai,
   nullptr, /* postprocess_glyphs */
-  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   nullptr, /* decompose */
   nullptr, /* compose */
   nullptr, /* setup_masks */
-  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
+  HB_TAG_NONE, /* gpos_tag */
+  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
   false,/* fallback_position */
 };

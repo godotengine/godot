@@ -501,6 +501,10 @@ msgid "Pressure"
 msgstr "Esiasetukset"
 
 #: core/os/input_event.cpp
+msgid "Pen Inverted"
+msgstr ""
+
+#: core/os/input_event.cpp
 #, fuzzy
 msgid "Relative"
 msgstr "Suhteellinen tarttuminen"
@@ -21899,7 +21903,7 @@ msgstr "Matkaa"
 msgid "Rotation Degrees"
 msgstr "Kierto %s astetta."
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
 msgid "Global Rotation"
 msgstr "Globaali vakio"
@@ -24047,6 +24051,11 @@ msgid ""
 msgstr ""
 "Fysiikkamoottori ylikirjoittaa SoftBody kokomuutokset ajon aikana.\n"
 "Muuta kokoa sen sijaan alisolmujen törmäysmuodoissa."
+
+#: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Pidä globaali muunnos"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

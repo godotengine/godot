@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface.h"
-// #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_compositor.h"
 
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
@@ -114,7 +114,12 @@ void XRInterface::set_primary(bool p_primary) {
 
 XRInterface::XRInterface() {}
 
-XRInterface::~XRInterface() {}
+XRInterface::~XRInterface() {
+	if (vrs.vrs_texture.is_valid()) {
+		RS::get_singleton()->free(vrs.vrs_texture);
+		vrs.vrs_texture = RID();
+	}
+}
 
 // query if this interface supports this play area mode
 bool XRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
@@ -149,6 +154,85 @@ void XRInterface::set_anchor_detection_is_enabled(bool p_enable) {
 
 int XRInterface::get_camera_feed_id() {
 	return 0;
+}
+
+RID XRInterface::get_vrs_texture() {
+	// Default logic will return a standard VRS image based on our target size and default projections.
+	// Note that this only gets called if VRS is supported on the hardware.
+
+	Size2 texel_size = Size2(16.0, 16.0); // For now we assume we always use 16x16 texels, seems to be the standard.
+	int view_count = get_view_count();
+	Size2 target_size = get_render_target_size();
+	real_t aspect = target_size.x / target_size.y; // is this y/x ?
+	Size2 vrs_size = Size2(round(0.5 + target_size.x / texel_size.x), round(0.5 + target_size.y / texel_size.y));
+	real_t radius = vrs_size.length() * 0.5;
+	Size2 vrs_sizei = vrs_size;
+
+	if (vrs.size != vrs_sizei) {
+		const uint8_t densities[] = {
+			0, // 1x1
+			1, // 1x2
+			// 4, // 2x1
+			5, // 2x2
+			6, // 2x4
+			// 9, // 4x2
+			10, // 4x4
+		};
+
+		// out with the old
+		if (vrs.vrs_texture.is_valid()) {
+			RS::get_singleton()->free(vrs.vrs_texture);
+			vrs.vrs_texture = RID();
+		}
+
+		// in with the new
+		Vector<Ref<Image>> images;
+		vrs.size = vrs_sizei;
+
+		for (int i = 0; i < view_count && i < 2; i++) {
+			PackedByteArray data;
+			data.resize(vrs_sizei.x * vrs_sizei.y);
+			uint8_t *data_ptr = data.ptrw();
+
+			// Our near and far don't matter much for what we're doing here, but there are some interfaces that will remember this as the near and far and may fail as a result...
+			Projection cm = get_projection_for_view(i, aspect, 0.1, 1000.0);
+			Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
+
+			Vector2i view_center;
+			view_center.x = int(vrs_size.x * (center.x + 1.0) * 0.5);
+			view_center.y = int(vrs_size.y * (center.y + 1.0) * 0.5);
+
+			int d = 0;
+			for (int y = 0; y < vrs_sizei.y; y++) {
+				for (int x = 0; x < vrs_sizei.x; x++) {
+					Vector2 offset = Vector2(x - view_center.x, y - view_center.y);
+					offset.y *= aspect;
+					real_t distance = offset.length();
+					int idx = round(5.0 * distance / radius);
+					if (idx > 4) {
+						idx = 4;
+					}
+					uint8_t density = densities[idx];
+
+					data_ptr[d++] = density;
+				}
+			}
+
+			Ref<Image> image;
+			image.instantiate();
+			image->create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_R8, data);
+
+			images.push_back(image);
+		}
+
+		if (images.size() == 1) {
+			vrs.vrs_texture = RS::get_singleton()->texture_2d_create(images[0]);
+		} else {
+			vrs.vrs_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TEXTURE_LAYERED_2D_ARRAY);
+		}
+	}
+
+	return vrs.vrs_texture;
 }
 
 /** these are optional, so we want dummies **/

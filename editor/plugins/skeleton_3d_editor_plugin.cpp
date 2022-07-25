@@ -42,6 +42,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 
@@ -250,6 +251,10 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 			create_physical_skeleton();
 			break;
 		}
+		case SKELETON_OPTION_EXPORT_SKELETON_PROFILE: {
+			export_skeleton_profile();
+			break;
+		}
 	}
 }
 
@@ -451,6 +456,73 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	return physical_bone;
 }
 
+void Skeleton3DEditor::export_skeleton_profile() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_title(TTR("Export Skeleton Profile As..."));
+
+	List<String> exts;
+	ResourceLoader::get_recognized_extensions_for_type("SkeletonProfile", &exts);
+	file_dialog->clear_filters();
+	for (const String &K : exts) {
+		file_dialog->add_filter("*." + K);
+	}
+
+	file_dialog->popup_file_dialog();
+}
+
+void Skeleton3DEditor::_file_selected(const String &p_file) {
+	// Export SkeletonProfile.
+	Ref<SkeletonProfile> sp(memnew(SkeletonProfile));
+
+	// Build SkeletonProfile.
+	sp->set_group_size(1);
+
+	Vector<Vector2> handle_positions;
+	Vector2 position_max;
+	Vector2 position_min;
+
+	int len = skeleton->get_bone_count();
+	sp->set_bone_size(len);
+	for (int i = 0; i < len; i++) {
+		sp->set_bone_name(i, skeleton->get_bone_name(i));
+		int parent = skeleton->get_bone_parent(i);
+		if (parent >= 0) {
+			sp->set_bone_parent(i, skeleton->get_bone_name(parent));
+		}
+		sp->set_reference_pose(i, skeleton->get_bone_rest(i));
+
+		Transform3D grest = skeleton->get_bone_global_rest(i);
+		handle_positions.append(Vector2(grest.origin.x, grest.origin.y));
+		if (i == 0) {
+			position_max = Vector2(grest.origin.x, grest.origin.y);
+			position_min = Vector2(grest.origin.x, grest.origin.y);
+		} else {
+			position_max.x = MAX(grest.origin.x, position_max.x);
+			position_max.y = MAX(grest.origin.y, position_max.y);
+			position_min.x = MIN(grest.origin.x, position_min.x);
+			position_min.y = MIN(grest.origin.y, position_min.y);
+		}
+	}
+
+	// Layout handles provisionaly.
+	Vector2 bound = Vector2(position_max.x - position_min.x, position_max.y - position_min.y);
+	Vector2 center = Vector2((position_max.x + position_min.x) * 0.5, (position_max.y + position_min.y) * 0.5);
+	float nrm = MAX(bound.x, bound.y);
+	if (nrm > 0) {
+		for (int i = 0; i < len; i++) {
+			handle_positions.write[i] = (handle_positions[i] - center) / nrm * 0.9;
+			sp->set_handle_offset(i, Vector2(0.5 + handle_positions[i].x, 0.5 - handle_positions[i].y));
+		}
+	}
+
+	Error err = ResourceSaver::save(p_file, sp);
+
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_file));
+		return;
+	}
+}
+
 Variant Skeleton3DEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	TreeItem *selected = joint_tree->get_selected();
 
@@ -631,6 +703,11 @@ void Skeleton3DEditor::create_editors() {
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 
+	// Create File dialog.
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->connect("file_selected", callable_mp(this, &Skeleton3DEditor::_file_selected));
+	add_child(file_dialog);
+
 	// Create Top Menu Bar.
 	separator = memnew(VSeparator);
 	ne->add_control_to_menu_panel(separator);
@@ -649,6 +726,7 @@ void Skeleton3DEditor::create_editors() {
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
+	p->add_item(TTR("Export skeleton profile"), SKELETON_OPTION_EXPORT_SKELETON_PROFILE);
 
 	p->connect("id_pressed", callable_mp(this, &Skeleton3DEditor::_on_click_skeleton_option));
 	set_bone_options_enabled(false);

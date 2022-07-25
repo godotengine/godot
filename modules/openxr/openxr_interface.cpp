@@ -631,8 +631,8 @@ Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Trans
 	return p_cam_transform * xr_server->get_reference_frame() * t;
 }
 
-CameraMatrix OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
-	CameraMatrix cm;
+Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+	Projection cm;
 
 	if (openxr_api) {
 		if (openxr_api->get_view_projection(p_view, p_z_near, p_z_far, cm)) {

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_ENET_H
-#define NETWORKED_MULTIPLAYER_ENET_H
+#ifndef ENET_MULTIPLAYER_PEER_H
+#define ENET_MULTIPLAYER_PEER_H
 
 #include "core/crypto/crypto.h"
 #include "core/multiplayer/multiplayer_peer.h"
@@ -135,4 +135,4 @@ public:
 	~ENetMultiplayerPeer();
 };
 
-#endif // NETWORKED_MULTIPLAYER_ENET_H
+#endif // ENET_MULTIPLAYER_PEER_H

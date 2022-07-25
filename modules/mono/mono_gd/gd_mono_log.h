@@ -35,7 +35,7 @@
 
 #include "core/typedefs.h"
 
-#if !defined(JAVASCRIPT_ENABLED) && !defined(IPHONE_ENABLED)
+#if !defined(JAVASCRIPT_ENABLED) && !defined(IOS_ENABLED)
 // We have custom mono log callbacks for WASM and iOS
 #define GD_MONO_LOG_ENABLED
 #endif

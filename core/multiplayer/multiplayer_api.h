@@ -77,7 +77,8 @@ public:
 	virtual void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {}
 
 	// Returns true if all peers have cached path.
-	virtual bool send_object_cache(Object *p_obj, NodePath p_path, int p_target, int &p_id) { return false; }
+	virtual bool send_object_cache(Object *p_obj, int p_target, int &r_id) { return false; }
+	virtual int make_object_cache(Object *p_obj) { return false; }
 	virtual Object *get_cached_object(int p_from, uint32_t p_cache_id) { return nullptr; }
 	virtual bool is_cache_confirmed(NodePath p_path, int p_peer) { return false; }
 
@@ -160,7 +161,8 @@ public:
 	Error replication_start(Object *p_object, Variant p_config);
 	Error replication_stop(Object *p_object, Variant p_config);
 	// Cache API
-	bool send_object_cache(Object *p_obj, NodePath p_path, int p_target, int &p_id);
+	bool send_object_cache(Object *p_obj, int p_target, int &r_id);
+	int make_object_cache(Object *p_obj);
 	Object *get_cached_object(int p_from, uint32_t p_cache_id);
 	bool is_cache_confirmed(NodePath p_path, int p_peer);
 

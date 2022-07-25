@@ -116,7 +116,7 @@ public:
 		PRESET_BOTTOM_WIDE,
 		PRESET_VCENTER_WIDE,
 		PRESET_HCENTER_WIDE,
-		PRESET_WIDE
+		PRESET_FULL_RECT
 	};
 
 	enum LayoutPresetMode {
@@ -574,4 +574,4 @@ VARIANT_ENUM_CAST(Control::LayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
 
-#endif
+#endif // CONTROL_H

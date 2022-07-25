@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CODEEDIT_H
-#define CODEEDIT_H
+#ifndef CODE_EDIT_H
+#define CODE_EDIT_H
 
 #include "scene/gui/text_edit.h"
 
@@ -433,4 +433,4 @@ public:
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
 
-#endif // CODEEDIT_H
+#endif // CODE_EDIT_H

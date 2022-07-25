@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/godot-build
         with:
           sconsflags: ${{ env.SCONSFLAGS }}
-          platform: iphone
+          platform: ios
           target: release
           tools: false
           tests: false

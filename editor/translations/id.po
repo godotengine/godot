@@ -26,7 +26,7 @@
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
 # zephyroths <ridho.hikaru@gmail.com>, 2020, 2021, 2022.
 # Richard Urban <redasuio1@gmail.com>, 2020.
-# yusuf afandi <afandi.yusuf.04@gmail.com>, 2020.
+# yusuf afandi <afandi.yusuf.04@gmail.com>, 2020, 2022.
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
 # Hanz <hanzhaxors@gmail.com>, 2021.
 # Reza Almanda <rezaalmanda27@gmail.com>, 2021, 2022.
@@ -44,8 +44,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-15 09:38+0000\n"
-"Last-Translator: Tsaqib Fadhlurrahman Soka <sokatsaqib@gmail.com>\n"
+"PO-Revision-Date: 2022-07-09 21:12+0000\n"
+"Last-Translator: yusuf afandi <afandi.yusuf.04@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -479,6 +479,11 @@ msgstr "Miring"
 #: core/os/input_event.cpp
 msgid "Pressure"
 msgstr "Tekanan"
+
+#: core/os/input_event.cpp
+#, fuzzy
+msgid "Pen Inverted"
+msgstr "Balik"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -21753,7 +21758,7 @@ msgstr "Menjelajah"
 msgid "Rotation Degrees"
 msgstr "Derajat Putaran"
 
-#: scene/2d/node_2d.cpp
+#: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 msgid "Global Rotation"
 msgstr "Rotasi Global"
 
@@ -23822,6 +23827,11 @@ msgstr ""
 "Ubah ukurannya melalui \"collision shape\"-anaknya saja."
 
 #: scene/3d/spatial.cpp
+#, fuzzy
+msgid "Global Translation"
+msgstr "Transformasi Global"
+
+#: scene/3d/spatial.cpp
 msgid "Matrix"
 msgstr "Matriks"
 
@@ -24742,7 +24752,7 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
-msgstr ""
+msgstr "Tanda sisipan"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"

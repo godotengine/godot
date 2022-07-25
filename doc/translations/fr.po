@@ -61,7 +61,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-06 04:47+0000\n"
+"PO-Revision-Date: 2022-07-18 08:12+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
@@ -70,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -8364,6 +8364,9 @@ msgid ""
 "Returns the number of inputs for the transition node with name [code]id[/"
 "code]. You can add inputs by right-clicking on the transition node."
 msgstr ""
+"Retourne le nombre d'entrées pour le nœud de transition nommé [code]id[/"
+"code]. Vous pouvez ajouter des entrées en faisant un clic droit sur le nœud "
+"de transition."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8378,6 +8381,9 @@ msgid ""
 "transition node with name [code]id[/code] is set to automatically advance to "
 "the next input upon completion."
 msgstr ""
+"Retourne [code]true[/code] si l'entrée [code]input_idx[/code] du nœud de "
+"transition nommé [code]id[/code] est définie pour avancer automatiquement "
+"vers la prochaine entrée dès que la transition se termine."
 
 #: doc/classes/AnimationTreePlayer.xml
 #, fuzzy
@@ -8393,6 +8399,8 @@ msgid ""
 "The transition node with name [code]id[/code] advances to its next input "
 "automatically when the input at [code]input_idx[/code] completes."
 msgstr ""
+"Le nœud de transition nommé [code]id[/code] avance à sa prochaine entrée "
+"automatiquement lorsque l'entrée [code]input_idx[/code] se termine."
 
 #: doc/classes/AnimationTreePlayer.xml
 msgid ""
@@ -8490,6 +8498,10 @@ msgid ""
 "exiting. Can also alter or override local physics parameters (gravity, "
 "damping) and route audio to custom audio buses."
 msgstr ""
+"La zone 3D qui détecte nœuds [CollisionObject] qui se chevauchent, entrent "
+"ou sortent. Peut également modifier ou surcharger les paramètres de physique "
+"locale (gravité, amortissement) et passer l'audio à des bus audio "
+"personnalisés."
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
 #: doc/classes/ViewportTexture.xml
@@ -8570,6 +8582,10 @@ msgid ""
 "See [member ProjectSettings.physics/3d/default_angular_damp] for more "
 "details about damping."
 msgstr ""
+"La vitesse à laquelle les objets s'arrêtent de tourner dans cette zone. "
+"Représente la vitesse angulaire perdue par seconde.\n"
+"Voir [member ProjectSettings.physics/3d/default_angular_damp] pour plus de "
+"détails sur l'amortissement."
 
 #: doc/classes/Area.xml doc/classes/Area2D.xml
 msgid "The name of the area's audio bus."
@@ -8681,6 +8697,9 @@ msgid ""
 "be set to [code]true[/code].\n"
 "[code]area[/code] the other Area."
 msgstr ""
+"Émis quand une autre Area entre dans cette zone. Nécessite [member "
+"monitoring] d'être défini à [code]true[/code].\n"
+"[code]area[/code] l'autre Area."
 
 #: doc/classes/Area.xml
 msgid ""
@@ -8688,6 +8707,9 @@ msgid ""
 "be set to [code]true[/code].\n"
 "[code]area[/code] the other Area."
 msgstr ""
+"Émis quand une autre Area quitte cette Area. Nécessite [member monitoring] "
+"d'être défini à [code]true[/code].\n"
+"[code]area[/code] l'autre Area."
 
 #: doc/classes/Area.xml
 msgid ""
@@ -8855,6 +8877,14 @@ msgid ""
 "list is modified once during the physics step, not immediately after objects "
 "are moved. Consider using signals instead."
 msgstr ""
+"Retourne la liste des intersections entre les [PhysiqueBody2D]. Le calque "
+"[member CollisionObject2D.collision_layer] du corps entrant en intersection "
+"doit être dans le masque [member CollisionObject2D.collision_mask] de ce "
+"corps pour être détecté.\n"
+"Pour des raisons de performance (les collisions sont toutes traitées en même "
+"temps) cette liste est modifiée une fois pendant l'étape physique, pas "
+"immédiatement après le déplacement des objets. Considérez plutôt "
+"l'utilisation des signaux."
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -8863,6 +8893,11 @@ msgid ""
 "For performance, the list of overlaps is updated once per frame and before "
 "the physics step. Consider using signals instead."
 msgstr ""
+"Si [code]true[/code], la zone donnée recouvre la Area2D.\n"
+"[b]Note :[/b] Le résultat de ce test n'est pas immédiat après le déplacement "
+"des objets. Pour des raisons de performance, la liste des collisions est "
+"mise à jour une fois par trame et avant l'étape physique. Considérez plutôt "
+"l'utilisation des signaux."
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -8913,6 +8948,10 @@ msgid ""
 "See [member ProjectSettings.physics/2d/default_linear_damp] for more details "
 "about damping."
 msgstr ""
+"La vitesse à laquelle les objets arrêtent de se déplacer dans cette zone. "
+"Représente la vitesse linéaire perdue par seconde.\n"
+"Voir [member ProjectSettings.physics/2d/default_linear_damp] pour plus de "
+"détails sur l'amortissement."
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -8920,6 +8959,9 @@ msgid ""
 "to be set to [code]true[/code].\n"
 "[code]area[/code] the other Area2D."
 msgstr ""
+"Émis quand une autre Area2D entre dans cette Area2D. Nécessite [member "
+"monitoring] d'être défini à [code]true[/code].\n"
+"[code]area[/code] l'autre Area2D."
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -8927,6 +8969,9 @@ msgid ""
 "to be set to [code]true[/code].\n"
 "[code]area[/code] the other Area2D."
 msgstr ""
+"Émis quand une autre Area2D quitte cette Area2D. Nécessite [member "
+"monitoring] d'être défini à [code]true[/code].\n"
+"[code]area[/code] l'autre Area2D."
 
 #: doc/classes/Area2D.xml
 msgid ""
@@ -9858,7 +9903,7 @@ msgstr ""
 
 #: doc/classes/ArrayMesh.xml
 msgid "Will regenerate normal maps for the [ArrayMesh]."
-msgstr ""
+msgstr "Régénérera les cartes normales pour le [ArrayMesh]."
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
@@ -9873,12 +9918,16 @@ msgid ""
 "Returns the length in indices of the index array in the requested surface "
 "(see [method add_surface_from_arrays])."
 msgstr ""
+"Retourne la longueur des indices du tableau d'indices pour la surface "
+"spécifiée (voir [method add_surface_from_arrays].)"
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
 "Returns the length in vertices of the vertex array in the requested surface "
 "(see [method add_surface_from_arrays])."
 msgstr ""
+"Retourne la longueur des sommets du tableau des sommets dans la surface "
+"spécifiée (voir [method add_surface_from_arrays].)"
 
 #: doc/classes/ArrayMesh.xml
 msgid ""
@@ -9926,7 +9975,7 @@ msgstr ""
 
 #: doc/classes/ArrayMesh.xml
 msgid "Sets the blend shape mode to one of [enum Mesh.BlendShapeMode]."
-msgstr ""
+msgstr "Définit le mode de forme de mélange avec [enum Mesh.BlendShapeMode]"
 
 #: doc/classes/ArrayMesh.xml doc/classes/PrimitiveMesh.xml
 msgid ""
@@ -10865,7 +10914,7 @@ msgid ""
 msgstr ""
 "Retourne l'horodatage absolu (en μs) de la dernière mise à jour des yeux AR/"
 "VR du [ARVRServer] envoyée au [VisualServer]. La valeur est récupérée via un "
-"appel interne à [method OS.get_ticks_usec]"
+"appel interne à [method OS.get_ticks_usec]."
 
 #: doc/classes/ARVRServer.xml
 msgid ""
@@ -10885,7 +10934,7 @@ msgid ""
 msgstr ""
 "Retourne l'horodatage absolu (en μs) du dernier appel de mise à jour du "
 "[ARVRServer]. La valeur vient est récupérée via un appel interne à [method "
-"OS.get_ticks_usec]"
+"OS.get_ticks_usec]."
 
 #: doc/classes/ARVRServer.xml
 msgid ""
@@ -11406,6 +11455,8 @@ msgid ""
 "Returns the capacity of the structure backing the points, useful in "
 "conjunction with [code]reserve_space[/code]."
 msgstr ""
+"Retourne la capacité de la structure qui garde les points en cache, utile "
+"avec [code]reserve_space[/code]."
 
 #: doc/classes/AStar.xml
 msgid ""
@@ -11468,6 +11519,8 @@ msgid ""
 "Returns the weight scale of the point associated with the given [code]id[/"
 "code]."
 msgstr ""
+"Retourne l'échelle de poids du point associé pour le [code]id[/code] "
+"spécifié."
 
 #: doc/classes/AStar.xml doc/classes/AStar2D.xml
 msgid "Returns an array of all points."
@@ -11484,6 +11537,8 @@ msgid ""
 "Returns whether a point is disabled or not for pathfinding. By default, all "
 "points are enabled."
 msgstr ""
+"Retourne si un point est désactivé ou non pour le calcul du chemin. Par "
+"défaut, tous les points sont activés."
 
 #: doc/classes/AStar.xml doc/classes/AStar2D.xml
 msgid ""
@@ -11499,6 +11554,9 @@ msgid ""
 "you're adding a known large number of points at once, for a grid for "
 "instance. New capacity must be greater or equals to old capacity."
 msgstr ""
+"Réserve l'espace interne pour [code]num_nodes[/code] points, utile si vous "
+"voulez ajouter un grand nombre de points à la fois, pour une grille par "
+"exemple. La nouvelle capacité doit être supérieure ou égale à l'ancienne."
 
 #: doc/classes/AStar.xml doc/classes/AStar2D.xml
 msgid ""
@@ -11859,6 +11917,9 @@ msgid ""
 "Limits the frequencies in a range around the [member AudioEffectFilter."
 "cutoff_hz] and allows frequencies outside of this range to pass."
 msgstr ""
+"Limite l'intensité des fréquences dans la gamme autour de [member "
+"AudioEffectFilter.cutoff_hz], et permet aux fréquences en dehors de cette "
+"gamme de passer."
 
 #: doc/classes/AudioEffectBandPassFilter.xml
 msgid "Adds a band pass filter to the audio bus."
@@ -11869,6 +11930,9 @@ msgid ""
 "Attenuates the frequencies inside of a range around the [member "
 "AudioEffectFilter.cutoff_hz] and cuts frequencies outside of this band."
 msgstr ""
+"Atténue les fréquences à l'intérieur de la gamme autour de [member "
+"AudioEffectFilter.cutoff_hz] et coupe les fréquences en dehors de cette "
+"gamme."
 
 #: doc/classes/AudioEffectCapture.xml
 msgid "Captures audio from an audio bus in real-time."
@@ -12058,6 +12122,9 @@ msgid ""
 "Compressor's delay time to stop reducing the signal after the signal level "
 "falls below the threshold, in milliseconds. Value can range from 20 to 2000."
 msgstr ""
+"Le retard du compresseur avant d'arrêter de réduire le signal après que le "
+"niveau de signal sous le seuil, en millisecondes. La valeur peut aller de 20 "
+"à 2000."
 
 #: doc/classes/AudioEffectCompressor.xml
 msgid "Reduce the sound level using another audio bus for threshold detection."
@@ -12090,6 +12157,10 @@ msgid ""
 "echo. Delay effects range from a subtle echo effect to a pronounced blending "
 "of previous sounds with new sounds."
 msgstr ""
+"Joue le signal d'entrée après une période de temps. Le signal retardé peut "
+"être joué plusieurs fois pour créer un écho qui s'amortit dans le temps. Les "
+"effets de retard vont d'un subtil écho à un mélange prononcé de sons "
+"précédents avec les nouveaux sons."
 
 #: doc/classes/AudioEffectDelay.xml
 msgid ""
@@ -12128,6 +12199,8 @@ msgid ""
 "Pan position for [code]tap1[/code]. Value can range from -1 (fully left) to "
 "1 (fully right)."
 msgstr ""
+"La position gauche-droite pour [code]tap1[/code]. La valeur peut aller de -1 "
+"(complètement à gauche) à 1 (complètement à droite)."
 
 #: doc/classes/AudioEffectDelay.xml
 msgid "If [code]true[/code], [code]tap2[/code] will be enabled."
@@ -12146,6 +12219,8 @@ msgid ""
 "Pan position for [code]tap2[/code]. Value can range from -1 (fully left) to "
 "1 (fully right)."
 msgstr ""
+"La position gauche-droite pour [code]tap2[/code]. La valeur peut aller de -1 "
+"(complètement à gauche) à 1 (complètement à droite)."
 
 #: doc/classes/AudioEffectDistortion.xml
 msgid ""
@@ -12488,15 +12563,22 @@ msgid ""
 "Attenuates frequencies in a narrow band around the [member AudioEffectFilter."
 "cutoff_hz] and cuts frequencies outside of this range."
 msgstr ""
+"Atténue les fréquences dans une bande étroite autour du [member "
+"AudioEffectFilter.cutoff_hz] et coupe les fréquences en dehors de cette "
+"gamme."
 
 #: doc/classes/AudioEffectPanner.xml
 msgid "Adds a panner audio effect to an Audio bus. Pans sound left or right."
 msgstr ""
+"Ajoute un effet audio de balance à un bus audio. Balance les sons à gauche "
+"ou à droite."
 
 #: doc/classes/AudioEffectPanner.xml
 msgid ""
 "Determines how much of an audio signal is sent to the left and right buses."
 msgstr ""
+"Détermine quelle quantité d'un signal audio est envoyé aux bus de gauche et "
+"de droite."
 
 #: doc/classes/AudioEffectPanner.xml
 msgid "Pan position. Value can range from -1 (fully left) to 1 (fully right)."
@@ -12510,6 +12592,9 @@ msgid ""
 "Combines the original signal with a copy that is slightly out of phase with "
 "the original."
 msgstr ""
+"Ajoute un effet audio de phaseur à un bus audio.\n"
+"Combine le signal original avec une copie de l'original légèrement hors "
+"phase."
 
 #: doc/classes/AudioEffectPhaser.xml
 msgid ""
@@ -13334,8 +13419,14 @@ msgstr ""
 "scènes."
 
 #: doc/classes/AudioStreamPlayer.xml doc/classes/AudioStreamPlayer2D.xml
-msgid "Bus on which this audio is playing."
-msgstr "Bus sur lequel cet audio joue."
+msgid ""
+"Bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
+msgstr ""
 
 #: doc/classes/AudioStreamPlayer.xml
 msgid ""
@@ -13548,8 +13639,14 @@ msgstr ""
 "ajouté à la scène."
 
 #: doc/classes/AudioStreamPlayer3D.xml
-msgid "The bus on which this audio is playing."
-msgstr "Le bus sur lequel cet audio est joué."
+msgid ""
+"The bus on which this audio is playing.\n"
+"[b]Note:[/b] When setting this property, keep in mind that no validation is "
+"performed to see if the given name matches an existing bus. This is because "
+"audio bus layouts might be loaded after this property is set. If this given "
+"name can't be resolved at runtime, it will fall back to [code]\"Master\"[/"
+"code]."
+msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
@@ -13585,7 +13682,7 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "Sets the absolute maximum of the soundlevel, in decibels."
-msgstr ""
+msgstr "Définit le maximum absolu du niveau sonore, en décibels."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
@@ -13617,13 +13714,15 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "The base sound level unaffected by dampening, in decibels."
-msgstr ""
+msgstr "Le niveau sonore de base non affecté par l'amortissement, en décibels."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
 "The factor for the attenuation effect. Higher values make the sound audible "
 "over a larger distance."
 msgstr ""
+"Le facteur pour l'effet d'atténuation. Des valeurs plus élevées rendent le "
+"son audible sur une distance plus grande."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "Linear dampening of loudness according to distance."
@@ -13654,6 +13753,10 @@ msgid ""
 "but keeps the sound playing at the correct position if the camera leaves and "
 "enters the [AudioStreamPlayer3D]'s [member max_distance] radius."
 msgstr ""
+"Mélanger ce son, même lorsqu'il est hors de portée. Cela augmente "
+"l'utilisation de CPU, mais garde le son à la bonne position de lecture si la "
+"caméra quitte puis entre à nouveau dans le rayon [member max_distance] du "
+"[AudioStreamPlayer3D]."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid ""
@@ -13661,6 +13764,9 @@ msgid ""
 "will cause the sound to restart if the camera leaves and enters the "
 "[AudioStreamPlayer3D]'s [member max_distance] radius."
 msgstr ""
+"Pause ce son quand il hors de portée. Cela diminue l'utilisation du CPU, "
+"mais cela fera redémarrer le son si la caméra quitte puis entre dans le "
+"rayon [member max_distance] du [AudioStreamPlayer3D]."
 
 #: doc/classes/AudioStreamPlayer3D.xml
 msgid "Disables doppler tracking."
@@ -14057,6 +14163,8 @@ msgid ""
 "Deprecated, in previous versions it determined the location where lightmaps "
 "were be saved."
 msgstr ""
+"Obsolète, dans les versions précédentes ça déterminait l'emplacement où les "
+"textures de lumière étaient enregistrées."
 
 #: doc/classes/BakedLightmap.xml
 msgid "The calculated light data."
@@ -14094,6 +14202,15 @@ msgid ""
 "lightmap banding even when using the GLES2 backend or if [member "
 "ProjectSettings.rendering/quality/depth/hdr] is [code]false[/code]."
 msgstr ""
+"Si [code]true[/code], enregistre les textures de lumière dans un format de "
+"plage dynamique élevée (type EXR). Si [code]false[/code], enregistre les "
+"textures de lumière dans une image PNG de plage dynamique faible. Ceci peut "
+"être défini à [code]false[/code] pour réduire l'usage du disque, mais les "
+"valeurs lumineuses supérieures à 1.0 seront limitées et vous pouvez voir un "
+"effet de bandes qui apparaissent à cause de cette précision réduite.\n"
+"[b]Note :[/b] Définir [member use_hdr] à [code]true[/code] réduira l'effet "
+"de bandes même sous GLES2 ou quand [member ProjectSettings.rendering/quality/"
+"depth/hdr] est [code]false[/code]."
 
 #: doc/classes/BakedLightmap.xml
 msgid "The lowest bake quality mode. Fastest to calculate."
@@ -14120,6 +14237,9 @@ msgid ""
 "Returns if no viable save path is found. This can happen where an [member "
 "image_path] is not specified or when the save location is invalid."
 msgstr ""
+"Retourne si aucun chemin d'enregistrement invalid n'est trouvé. Cela peut se "
+"produire lorsqu'un [member image_path] n'est pas spécifié ou lorsque "
+"l'emplacement de sauvegarde est invalide."
 
 #: doc/classes/BakedLightmap.xml doc/classes/SpatialMaterial.xml
 msgid "Currently unused."
@@ -14342,6 +14462,8 @@ msgid ""
 "If [code]true[/code], the button is in toggle mode. Makes the button flip "
 "state between pressed and unpressed each time its area is clicked."
 msgstr ""
+"Si [code]true[/code], le bouton est en mode basculement. Fait basculer le "
+"bouton entre les états pressé et non-pressé chaque fois qu'il est cliqué."
 
 #: doc/classes/BaseButton.xml
 msgid "Emitted when the button starts being held down."
@@ -14359,6 +14481,11 @@ msgid ""
 "If you need to know the button's pressed state (and [member toggle_mode] is "
 "active), use [signal toggled] instead."
 msgstr ""
+"Émis quand le bouton est basculé ou pressé. Émis lors de [signal "
+"button_down] si [member action_mode] est [constant ACTION_MODE_BUTTON_PRESS] "
+"et lors de [signal button_up] sinon.\n"
+"Si vous avez besoin de connaître l'état du bouton (et que [member "
+"toggle_mode] est actif), utilisez plutôt [signal toggled]."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14366,6 +14493,9 @@ msgid ""
 "(only if [member toggle_mode] is active). The new state is contained in the "
 "[code]button_pressed[/code] argument."
 msgstr ""
+"Émis lorsque le bouton a été juste basculé entre les états pressé et normal "
+"(seulement si [member toggle_mode] est actif). Le nouvel état est passé dans "
+"l'argument [code]button_pressed[/code]."
 
 #: doc/classes/BaseButton.xml
 msgid ""
@@ -14606,6 +14736,10 @@ msgid ""
 "[b]Note:[/b] This results in a multiplication by the inverse of the matrix "
 "only if it represents a rotation-reflection."
 msgstr ""
+"Retourne un vecteur transformé (multiplié) par la matrice de base "
+"transposée.\n"
+"[b]Note :[/b] Cela entraîne une multiplication par l'inverse de la matrice "
+"seulement si elle représente une rotation-réflexion."
 
 #: doc/classes/Basis.xml doc/classes/Transform2D.xml
 msgid ""
@@ -14772,6 +14906,10 @@ msgid ""
 "Supports distance fields. For using vector font files like TTF directly, see "
 "[DynamicFont]."
 msgstr ""
+"Rend le texte en utilisant les atlas des texture contenues dans le fichier "
+"[code]*.fnt[/code]. Supporte les champs de distance. Pour utiliser "
+"directement des fichiers de police vectorielles, comme le TTF, voir "
+"[DynamicFont]."
 
 #: doc/classes/BitmapFont.xml
 msgid ""
@@ -14781,6 +14919,11 @@ msgid ""
 "alignment for the character and [code]advance[/code] is the (optional) "
 "advance."
 msgstr ""
+"Ajoute un caractère à la police, où [code]character[/code] est la valeur "
+"Unicode, [code]texture[/code] est l'index de la texture, [code]rect[/code] "
+"est la région de la texture (en pixels !), [code]align[/code] est "
+"l'alignement (optionnel) du caractère et [code]advance[/code] est "
+"l'avancement (optionnel)."
 
 #: doc/classes/BitmapFont.xml
 msgid ""
@@ -14851,6 +14994,17 @@ msgid ""
 "menu option, from the code, you need to iterate over the bones to set their "
 "individual rest poses."
 msgstr ""
+"Utilise une hiérarchie [code]Bone2D[/code] liée à un [Skeleton2D] pour "
+"contrôler et animer d'autres nœuds [Node2D].\n"
+"Vous pouvez utiliser les nœuds [code]Bone2D[/code] et [code]Skeleton2D[/"
+"code] pour animer les maillages 2D créées avec l'éditeur d'UV de Polygon "
+"2D.\n"
+"Chaque os a une transformation de repos [member rest] que vous pouvez "
+"réinitialiser avec [method apply_rest]. Ces poses de repos sont par rapport "
+"au parent de l'os.\n"
+"Si dans l'éditeur vous pouvez définir la pose de repos d'un squelette entier "
+"en utilisant une option de menu, à partir du code, vous devez itérer sur les "
+"os pour définir leurs poses de repos individuelles."
 
 #: doc/classes/Bone2D.xml
 msgid "Stores the node's current transforms in [member rest]."
@@ -15439,6 +15593,9 @@ msgid ""
 "[b]Note:[/b] A position which returns [code]false[/code] may still be "
 "outside the camera's field of view."
 msgstr ""
+"Retourne [code]true[/code] si la position donnée est derrière la caméra.\n"
+"[b]Note :[/b] Une position qui retourne [code]false[/code] peut quand même "
+"être en dehors du champ de vision de la caméra."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15446,6 +15603,10 @@ msgid ""
 "description). If the camera node is outside the scene tree, it will attempt "
 "to become current once it's added."
 msgstr ""
+"Fait que cette caméra devient l'actuelle pour le [Viewport] (voir la "
+"description de la classe). Si le nœud de la caméra est en dehors de "
+"l'arborescence de la scène, il tentera de devenir l'actuel dès qu'il sera "
+"ajouté."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15460,6 +15621,9 @@ msgid ""
 "the [Viewport] rectangle on a plane that is the given [code]z_depth[/code] "
 "distance into the scene away from the camera."
 msgstr ""
+"Retourne le point 3D dans l'espace global qui correspond à la coordonnées 2D "
+"donnée dans le rectangle du [Viewport] sur un plan qui est à la distance "
+"[code]z_depth[/code] donnée dans la scène par rapport à la caméra."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15468,6 +15632,10 @@ msgid ""
 "useful for casting rays in the form of (origin, normal) for object "
 "intersection or picking."
 msgstr ""
+"Retourne la normale dans l'espace global, qui est le résultat de la "
+"projection d'un point sur le rectangle [Viewport] par la projection inverse "
+"de la caméra. Ceci est utile pour lancer des rayons sous la forme (origine, "
+"normale) pour l'intersection ou la sélection d'objets."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15476,6 +15644,10 @@ msgid ""
 "useful for casting rays in the form of (origin, normal) for object "
 "intersection or picking."
 msgstr ""
+"Retourne la position 3D dans l'espace global, qui est le résultat de "
+"projeter un point sur le rectangle [Viewport] par la projection inverse de "
+"la caméra. Ceci est utile pour lancer des rayons sous la forme (origine, "
+"normale) pour l'intersection ou la sélection d'objets."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15620,6 +15792,8 @@ msgid ""
 "The axis to lock during [member fov]/[member size] adjustments. Can be "
 "either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT]."
 msgstr ""
+"L'axe à verrouiller pendant les réglages [member fov] ou [member size]. Peut "
+"être soit [constant KEEP_WIDTH] ou [constant KEEP_HEIGHT]."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15633,6 +15807,9 @@ msgid ""
 "objects' Z distance from the camera's local space scales their perceived "
 "size."
 msgstr ""
+"Le mode de projection de la caméra. Dans le mode [constant "
+"PROJECTION_PERSPECTIVE], la distance des objets dans l'espace local de la "
+"caméra détermine la taille apparante de ces objets."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15640,6 +15817,10 @@ msgid ""
 "orthogonal and frustum modes. Since [member keep_aspect] locks on axis, "
 "[code]size[/code] sets the other axis' size length."
 msgstr ""
+"La taille de la caméra mesurée comme la moitié de la largeur ou de la "
+"hauteur. N'est applicable qu'en modes orthogonal et frustum. Comme [member "
+"keep_aspect] verrouille l'axe, [code]size[/code] fixe la longueur de la "
+"taille sur l'autre axe."
 
 #: doc/classes/Camera.xml
 msgid "The vertical (Y) offset of the camera viewport."
@@ -15658,6 +15839,9 @@ msgid ""
 "Orthogonal projection, also known as orthographic projection. Objects remain "
 "the same size on the screen no matter how far away they are."
 msgstr ""
+"La projection orthogonale, également connue sous le nom de projection "
+"orthographique. Les objets gardent la même taille à l'écran, indépendamment "
+"de leur distance."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15678,6 +15862,10 @@ msgid ""
 "usually the best option for projects running in landscape mode, as wider "
 "aspect ratios will automatically benefit from a wider horizontal FOV."
 msgstr ""
+"Préserve le rapport d'aspect vertical ; également connu sous le nom "
+"d'échelle Hor+. C'est généralement la meilleure option pour les projets en "
+"mode paysage, car les ratios d'aspect plus larges bénéficieront "
+"automatiquement d'un champ de vision horizontal plus large."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -15778,6 +15966,11 @@ msgid ""
 "or [member Node2D.global_position], as it is affected by the [code]drag[/"
 "code] properties."
 msgstr ""
+"Retourne la [code]position[/code] de la caméra (le point suivi que la caméra "
+"essaye de suivre), par rapport à l'origine.\n"
+"[b]Note :[/b] La valeur retournée n'est pas la même que [member Node2D."
+"position] ou [member Node2D.global_position], car elle est aussi affectée "
+"par les propriétés [code]drag[/code]."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15786,12 +15979,18 @@ msgid ""
 "[b]Note:[/b] The real [code]position[/code] of the camera may be different, "
 "see [method get_camera_position]."
 msgstr ""
+"Retourne l'emplacement du centre de l'écran de la [Camera2D], par rapport à "
+"l'origine.\n"
+"[b]Note :[/b] La véritable [code]position[/code] de la caméra peut être "
+"différente, voir [method get_camera_position]."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "Returns the specified margin. See also [member drag_margin_bottom], [member "
 "drag_margin_top], [member drag_margin_left], and [member drag_margin_right]."
 msgstr ""
+"Retourne la marge spécifiée. Voir aussi [member drag_margin_bottom], [member "
+"drag_margin_top], [member drag_margin_left], et [member drag_margin_right]."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15862,24 +16061,36 @@ msgid ""
 "drag margins. If [code]false[/code], the camera moves horizontally "
 "regardless of margins."
 msgstr ""
+"Si [code]true[/code], la caméra ne bouge que lorsqu'elle atteint les marges "
+"horizontales de glissage. Si [code]false[/code], la caméra se déplace "
+"horizontalement indépendamment des marges."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "Left margin needed to drag the camera. A value of [code]1[/code] makes the "
 "camera move only when reaching the edge of the screen."
 msgstr ""
+"La marge gauche nécessaire pour pour glisser la caméra. Une valeur de "
+"[code]1[/code] ne déplace la caméra que lorsqu'elle atteint le bord de "
+"l'écran."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "Right margin needed to drag the camera. A value of [code]1[/code] makes the "
 "camera move only when reaching the edge of the screen."
 msgstr ""
+"La marge droite nécessaire pour pour glisser la caméra. Une valeur de "
+"[code]1[/code] ne déplace la caméra que lorsqu'elle atteint le bord de "
+"l'écran."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "Top margin needed to drag the camera. A value of [code]1[/code] makes the "
 "camera move only when reaching the edge of the screen."
 msgstr ""
+"La marge supérieure nécessaire pour pour glisser la caméra. Une valeur de "
+"[code]1[/code] ne déplacer la caméra que lorsqu'elle atteint le bord de "
+"l'écran."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15887,16 +16098,23 @@ msgid ""
 "margins. If [code]false[/code], the camera moves vertically regardless of "
 "margins."
 msgstr ""
+"Si [code]true[/code], la caméra ne bouge que lorsqu'elle atteint les marges "
+"verticales de glissage. Si [code]false[/code], la caméra se déplace "
+"verticalement indépendamment des marges."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "If [code]true[/code], draws the camera's drag margin rectangle in the editor."
 msgstr ""
+"Si [code]true[/code], dessine le rectangle de la marge de glissage de la "
+"caméra activée dans l'éditeur."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "If [code]true[/code], draws the camera's limits rectangle in the editor."
 msgstr ""
+"Si [code]true[/code], dessine le rectangle des limites de la caméra activée "
+"dans l'éditeur."
 
 #: doc/classes/Camera2D.xml
 msgid ""
@@ -15966,12 +16184,19 @@ msgid ""
 "not updated in any way if drag margins are enabled and can be used to set "
 "initial offset."
 msgstr ""
+"Le décalage horizontal de la caméra, par rapport aux marges de glissage.\n"
+"[b]Note :[/b] Le décalage H est utilisé uniquement pour forcer le décalage "
+"par rapport aux marges. Elle n'est pas mise à jour même si les marges de "
+"glissage sont activées et peuvent être utilisées pour régler le décalage "
+"initial."
 
 #: doc/classes/Camera2D.xml
 msgid ""
 "The vertical offset of the camera, relative to the drag margins.\n"
 "[b]Note:[/b] Used the same as [member offset_h]."
 msgstr ""
+"Le décalage vertical de la caméra, par rapport aux marges de glissage.\n"
+"[b]Note :[/b] Utilisé de la même manière que [member offset_h]."
 
 #: doc/classes/Camera2D.xml
 msgid "The camera's process callback. See [enum Camera2DProcessMode]."
@@ -16202,6 +16427,10 @@ msgid ""
 "[b]Note:[/b] Many cameras supply YCbCr images which need to be converted in "
 "a shader."
 msgstr ""
+"Cette texture donne accès à la texture de la caméra fournie par "
+"[CameraFeed].\n"
+"[b]Note :[/b] Beaucoup de caméras fournissent des images au format YCbCr qui "
+"doivent être converties dans un shader."
 
 #: doc/classes/CameraTexture.xml
 msgid "The ID of the [CameraFeed] for which we want to display the image."
@@ -16212,13 +16441,15 @@ msgstr ""
 msgid ""
 "Convenience property that gives access to the active property of the "
 "[CameraFeed]."
-msgstr ""
+msgstr "Propriété utile qui donne accès à la propriété active du [CameraFeed]."
 
 #: doc/classes/CameraTexture.xml
 msgid ""
 "Which image within the [CameraFeed] we want access to, important if the "
 "camera image is split in a Y and CbCr component."
 msgstr ""
+"L'image du [CameraFeed] pour laquelle nous voulons accéder, important si "
+"l'image de la caméra est divisée en composants Y et CbCr."
 
 #: doc/classes/CanvasItem.xml
 msgid "Base class of anything 2D."
@@ -16880,6 +17111,8 @@ msgid ""
 "The color applied to textures on this [CanvasItem]. This is not inherited by "
 "children [CanvasItem]s."
 msgstr ""
+"La couleur appliquée aux textures sur ce [CanvasItem]. Cela n'est pas hérité "
+"pour les [CanvasItem] enfants."
 
 #: doc/classes/CanvasItem.xml
 msgid "If [code]true[/code], the object draws behind its parent."
@@ -16934,7 +17167,7 @@ msgid ""
 msgstr ""
 "Émis quand la position ou la taille du [Rect2] a changé, ou lorsqu'une "
 "action a changé ces valeurs là (par exemple en changeant [member Sprite."
-"texture])"
+"texture])."
 
 #: doc/classes/CanvasItem.xml
 msgid "Emitted when the visibility (hidden/visible) changes."
@@ -16945,6 +17178,8 @@ msgid ""
 "Mix blending mode. Colors are assumed to be independent of the alpha "
 "(opacity) value."
 msgstr ""
+"Le mode de mélange. Les couleurs sont supposées être indépendantes de "
+"l'opacité."
 
 #: doc/classes/CanvasItem.xml doc/classes/CanvasItemMaterial.xml
 msgid "Additive blending mode."
@@ -16963,6 +17198,8 @@ msgid ""
 "Mix blending mode. Colors are assumed to be premultiplied by the alpha "
 "(opacity) value."
 msgstr ""
+"Le mode de mélange. Les couleurs sont supposées être prémultipliées par leur "
+"opacité."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
@@ -16976,12 +17213,16 @@ msgid ""
 "The [CanvasItem]'s global transform has changed. This notification is only "
 "received if enabled by [method set_notify_transform]."
 msgstr ""
+"La transformation globale du [CanvasItem] a changé. Cette notification n'est "
+"reçue que si elle est activée par [method set_notify_transform]."
 
 #: doc/classes/CanvasItem.xml
 msgid ""
 "The [CanvasItem]'s local transform has changed. This notification is only "
 "received if enabled by [method set_notify_local_transform]."
 msgstr ""
+"La transformation locale [CanvasItem] a changé. Cette notification n'est "
+"reçue que si elle est activée par [method set_notify_local_transform]."
 
 #: doc/classes/CanvasItem.xml
 msgid "The [CanvasItem] is requested to draw."
@@ -17728,12 +17969,17 @@ msgid ""
 "Returns the value of the integer constant [code]name[/code] of [code]class[/"
 "code] or its ancestry. Always returns 0 when the constant could not be found."
 msgstr ""
+"Retourne la valeur de la constante entière nommée [code]name[/code] dans "
+"[code]class[/code] ou un de ses parents. Retourne toujours 0 si la constante "
+"n'a pas été trouvée."
 
 #: doc/classes/ClassDB.xml
 msgid ""
 "Returns which enum the integer constant [code]name[/code] of [code]class[/"
 "code] or its ancestry belongs to."
 msgstr ""
+"Retourne à quelle énumération la constante entière nommée [code]name[/code] "
+"dans [code]class[/code] ou un de ses parents."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17825,6 +18071,9 @@ msgid ""
 "Returns whether [code]class[/code] (or its ancestry if [code]no_inheritance[/"
 "code] is [code]false[/code]) has a method called [code]method[/code] or not."
 msgstr ""
+"Retourne si [code]class[/code] (ou un de ses parents si "
+"[code]no_inheritance[/code] est [code]false[/code]) a une méthode nommée "
+"[code]method[/code] ou non."
 
 #: doc/classes/ClassDB.xml
 msgid ""
@@ -17850,6 +18099,8 @@ msgid ""
 "Returns the names of all the classes that directly or indirectly inherit "
 "from [code]class[/code]."
 msgstr ""
+"Retourne le nom de toutes les classes qui héritent directement ou "
+"indirectement de [code]class[/code]."
 
 #: doc/classes/ClassDB.xml
 msgid "Returns the parent class of [code]class[/code]."
@@ -17880,6 +18131,9 @@ msgid ""
 "This node extends [Camera] to add collisions with [Area] and/or "
 "[PhysicsBody] nodes. The camera cannot move through colliding objects."
 msgstr ""
+"Ce nœud étend [Camera] pour ajouter des collisions avec des nœuds [Area] et/"
+"ou [PhysicsBody]. La caméra ne peut pas passer à travers les objets avec "
+"lesquels elle rentre en collision."
 
 #: doc/classes/ClippedCamera.xml
 msgid ""
@@ -18172,6 +18426,10 @@ msgid ""
 "the mouse pointer entering/leaving, and if the mouse is inside it, report "
 "input events. Requires at least one [member collision_layer] bit to be set."
 msgstr ""
+"Si [code]true[/code], cet objet peut être sélectionné. Ces objets peuvent "
+"détecter l'entrée/la sortie du pointeur de la souris sur eux, et si la "
+"souris pointe sur l'objet, signaler par des événements d'entrée. Nécessite "
+"au moins un bit de [member collision_layer] d'être réglé."
 
 #: doc/classes/CollisionObject.xml
 msgid ""
@@ -18227,6 +18485,10 @@ msgid ""
 "[Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up "
 "these events."
 msgstr ""
+"Accepte les [InputEvent] non traités. Nécessite [member input_pickable] "
+"d'être à [code]true[/code]. [code]shape_idx[/code] est l'index de la "
+"[Shape2D] enfant. Connectez-vous au signal [code]input_event[/code] pour "
+"récupérer facilement ces événements."
 
 #: doc/classes/CollisionObject2D.xml
 msgid ""
@@ -18242,6 +18504,9 @@ msgid ""
 "this [CollisionObject2D] will not be reported to collided with "
 "[CollisionObject2D]s."
 msgstr ""
+"Retourne [code]true[/code] si les collisions pour le propriétaire de forme "
+"venant de ce [CollisionObject2D] ne seront pas signalées aux "
+"[CollisionObject2D] entrants en collision."
 
 #: doc/classes/CollisionObject2D.xml
 msgid "Adds a [Shape2D] to the shape owner."
@@ -18250,12 +18515,16 @@ msgstr "Ajoute un [Shape2D] au propriétaire de la forme."
 #: doc/classes/CollisionObject2D.xml
 msgid "Returns the [Shape2D] with the given id from the given shape owner."
 msgstr ""
+"Retourne la [Shape2D] avec l'identifiant donné du propriétaire donné de la "
+"forme."
 
 #: doc/classes/CollisionObject2D.xml
 msgid ""
 "Returns the child index of the [Shape2D] with the given id from the given "
 "shape owner."
 msgstr ""
+"Retourne l'indice de enfant du [Shape2D] avec l'identifiant donné du "
+"propriétaire donné de forme."
 
 #: doc/classes/CollisionObject2D.xml
 msgid "Returns the shape owner's [Transform2D]."
@@ -18267,12 +18536,17 @@ msgid ""
 "originating from this [CollisionObject2D] will not be reported to collided "
 "with [CollisionObject2D]s."
 msgstr ""
+"Si [code]enable[/code] est [code]true[/code], les collisions pour le "
+"propriétaire de forme original de ce [CollisionObject2D] ne seront pas "
+"rapportées aux [CollisionObject2D] entrant en collision."
 
 #: doc/classes/CollisionObject2D.xml
 msgid ""
 "Sets the [code]one_way_collision_margin[/code] of the shape owner identified "
 "by given [code]owner_id[/code] to [code]margin[/code] pixels."
 msgstr ""
+"Définit la marge [code]one_way_collision_margin[/code] du propriétaire de la "
+"forme identifié par [code]owner_id[/code] à [code]margin[/code] pixels."
 
 #: doc/classes/CollisionObject2D.xml
 msgid "Sets the [Transform2D] of the given shape owner."
@@ -18359,12 +18633,20 @@ msgid ""
 "editor. It will not appear in the scene tree at run-time. Creates a [Shape] "
 "for gameplay. Properties modified during gameplay will have no effect."
 msgstr ""
+"Permet d'éditer des sommets de collision sur un plan sélectionné. Peut "
+"également définir une profondeur perpendiculaire à ce plan. Cette classe "
+"n'est disponible que dans l'éditeur. Elle n'apparaîtra pas dans "
+"l'arborescence de la scène quand le jeu est lancé. Crée une [Shape] pour les "
+"mécaniques de jeu. Les propriétés modifiées une fois le jeu lancé n'auront "
+"aucun effet."
 
 #: doc/classes/CollisionPolygon.xml
 msgid ""
 "Length that the resulting collision extends in either direction "
 "perpendicular to its polygon."
 msgstr ""
+"La longueur que la collision résultante s'étend dans la direction "
+"perpendiculaire à son polygone."
 
 #: doc/classes/CollisionPolygon.xml
 msgid "If [code]true[/code], no collision will be produced."
@@ -18375,6 +18657,8 @@ msgid ""
 "The collision margin for the generated [Shape]. See [member Shape.margin] "
 "for more details."
 msgstr ""
+"La marge de collision pour la [Shape] générée. Voir [member Shape.margin] "
+"pour plus d'informations."
 
 #: doc/classes/CollisionPolygon.xml
 msgid ""
@@ -18385,6 +18669,12 @@ msgid ""
 "temporary variable and make changes before reassigning the [code]polygon[/"
 "code] member."
 msgstr ""
+"Un tableau de sommets qui définissent le polygone.\n"
+"[b]Note :[/b] La valeur retournée est une copie de l'original. Les méthodes "
+"qui modifie la taille ou les propriétés de la valeur de retour n'affecteront "
+"pas le polygone d'origine. Pour modifier les propriétés du polygone, "
+"assignez-le à une variable temporaire et faites des changements avant de le "
+"réassigner au membre [code]polygon[/code]."
 
 #: doc/classes/CollisionPolygon2D.xml
 msgid "Defines a 2D collision polygon."
@@ -18395,10 +18685,14 @@ msgid ""
 "Provides a 2D collision polygon to a [CollisionObject2D] parent. Polygons "
 "can be drawn in the editor or specified by a list of vertices."
 msgstr ""
+"Fournit un polygone de collision 2D à un parent [CollisionObject2D]. Les "
+"polygones peuvent être dessinés manuellement dans l'éditeur ou spécifiés par "
+"une liste de sommets."
 
 #: doc/classes/CollisionPolygon2D.xml
 msgid "Collision build mode. Use one of the [enum BuildMode] constants."
 msgstr ""
+"Le mode d'assemblage. Utilisez l'une des constantes de [enum BuildMode]."
 
 #: doc/classes/CollisionPolygon2D.xml
 msgid "If [code]true[/code], no collisions will be detected."
@@ -18411,6 +18705,11 @@ msgid ""
 "[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a "
 "child of an [Area2D] node."
 msgstr ""
+"Si [code]true[/code], seuls les bords qui font face, par rapport à la "
+"rotation du [CollisionPolygon2D], entreront en collision avec d'autres "
+"objets.\n"
+"[b]Note :[/b] Cette propriété n'a aucun effet si cette [CollisionPolygon2D] "
+"est un enfant d'un nœud [Area2D]."
 
 #: doc/classes/CollisionPolygon2D.xml
 msgid ""
@@ -18418,6 +18717,9 @@ msgid ""
 "the shape thicker, and work better for colliders that enter the polygon at a "
 "high velocity."
 msgstr ""
+"La marge (en pixels) utilisée pour une collision à sens unique. Des valeurs "
+"plus élevées rendront la forme plus épaisse, et fonctionneront mieux pour "
+"les objets entrant en collision quand ils vont à une vitesse élevée."
 
 #: doc/classes/CollisionPolygon2D.xml
 msgid ""
@@ -19622,11 +19924,18 @@ msgid ""
 "in the color picker and the user will be able to select them.\n"
 "[b]Note:[/b] The presets list is only for [i]this[/i] color picker."
 msgstr ""
+"Ajoute la couleur donnée à une liste de pré-réglages de couleur. Les pré-"
+"réglages sont affichés dans le sélectionneur de couleurs que l'utilisateur "
+"pourra sélectionner.\n"
+"[b]Note :[/b] La liste des pré-réglages est seulement pour [i]ce[/i] "
+"sélectionneur de couleur."
 
 #: doc/classes/ColorPicker.xml
 msgid ""
 "Removes the given color from the list of color presets of this color picker."
 msgstr ""
+"Retire la couleur donnée de la liste des pré-réglages de couleur de ce "
+"sélectionneur de couleur."
 
 #: doc/classes/ColorPicker.xml
 msgid "Returns the list of colors in the presets of the color picker."
@@ -19643,6 +19952,10 @@ msgid ""
 "mouse button, otherwise it will apply immediately even in mouse motion event "
 "(which can cause performance issues)."
 msgstr ""
+"Si [code]true[/code], la couleur ne s'appliquera que quand l'utilisateur "
+"relâche le bouton de la souris, sinon elle s'appliquera immédiatement en "
+"suivant le déplacement de la souris (ce qui peut causer des problèmes de "
+"performance)."
 
 #: doc/classes/ColorPicker.xml
 #, fuzzy
@@ -19655,6 +19968,9 @@ msgid ""
 "sliders.\n"
 "[b]Note:[/b] Cannot be enabled if raw mode is on."
 msgstr ""
+"Si [code]true[/code], permet de modifier la couleur avec des curseurs teinte/"
+"saturation/valeur.\n"
+"[b]Note :[/b] Ne peut être activé si le mode brut est activé."
 
 #: doc/classes/ColorPicker.xml
 msgid "If [code]true[/code], the \"add preset\" button is enabled."
@@ -19722,10 +20038,12 @@ msgid ""
 "The indicator used to signalize that the color value is outside the 0-1 "
 "range."
 msgstr ""
+"L'indicateur utilisé pour signaler que la valeur de couleur est en dehors de "
+"l'intervalle 0-1."
 
 #: doc/classes/ColorPicker.xml
 msgid "The icon for the screen color picker button."
-msgstr ""
+msgstr "L'icône pour le bouton de sélecteur de couleurs."
 
 #: doc/classes/ColorPickerButton.xml
 msgid "Button that pops out a [ColorPicker]."
@@ -20161,18 +20479,25 @@ msgid ""
 "Deletes the specified section along with all the key-value pairs inside. "
 "Raises an error if the section does not exist."
 msgstr ""
+"Supprime la section spécifiée ainsi que toutes ses paires valeur-clé avec. "
+"Affiche une erreur si la section n'existe pas."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
 "Deletes the specified key in a section. Raises an error if either the "
 "section or the key do not exist."
 msgstr ""
+"Supprime la clé spécifiée dans une section. Affiche une erreur si la section "
+"ou la clé n'existe pas."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
 "Returns an array of all defined key identifiers in the specified section. "
 "Raises an error and returns an empty array if the section does not exist."
 msgstr ""
+"Retourne un tableau de tous les identifiants des clés définis dans la "
+"section spécifiée. Affiche une erreur et retourne un tableau vide si la "
+"section n'existe pas."
 
 #: doc/classes/ConfigFile.xml
 msgid "Returns an array of all defined section identifiers."
@@ -20185,6 +20510,10 @@ msgid ""
 "[code]default[/code] value. If [code]default[/code] is not specified or set "
 "to [code]null[/code], an error is also raised."
 msgstr ""
+"Retourne l'actuelle valeur pour la section et la clé spécifiées. Si la "
+"section ou la clé n'existent pas, la méthode retourne la valeur du paramètre "
+"[code]default[/code]. Si [code]default[/code] n'est pas spécifié ou défini à "
+"[code]null[/code], une erreur est affichée."
 
 #: doc/classes/ConfigFile.xml
 msgid "Returns [code]true[/code] if the specified section exists."
@@ -20202,6 +20531,10 @@ msgid ""
 "on.\n"
 "Returns one of the [enum Error] code constants ([code]OK[/code] on success)."
 msgstr ""
+"Charge le fichier de configuration spécifié en paramètre. Le contenu du "
+"fichier est interprété et chargé dans l'objet [ConfigFile] sur lequel la "
+"méthode a été appelée.\n"
+"Retourne un des codes [enum Error] ([code]OK[/code] en cas de succès)."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -20210,6 +20543,11 @@ msgid ""
 "the [ConfigFile] object which the method was called on.\n"
 "Returns one of the [enum Error] code constants ([code]OK[/code] on success)."
 msgstr ""
+"Charge le fichier de configuration crypté spécifié en paramètre, en "
+"utilisant la clé [code]key[/code] fournie pour le décrypter. Le contenu du "
+"fichier est interprété et chargé dans l'objet [ConfigFile] sur lequel la "
+"méthode a été appelée.\n"
+"Retourne un des codes [enum Error] ([code]OK[/code] en cas de succès)."
 
 #: doc/classes/ConfigFile.xml
 msgid ""
@@ -20279,6 +20617,10 @@ msgid ""
 "code] value deletes the specified key if it exists, and deletes the section "
 "if it ends up empty once the key has been removed."
 msgstr ""
+"Attribue une valeur à la clé spécifiée de la section spécifiée. Si la "
+"section ou la clé n'existe pas, elles sont créées. Passer une valeur "
+"[code]null[/code] supprime la clé spécifiée si elle existe, et supprime la "
+"section si elle est vide une fois que la clé a été supprimée."
 
 #: doc/classes/ConfirmationDialog.xml
 msgid "Dialog for confirmation of actions."
@@ -20309,6 +20651,10 @@ msgid ""
 "may cause a crash. If you wish to hide it or any of its children, use their "
 "[member CanvasItem.visible] property."
 msgstr ""
+"Retourne le bouton annuler.\n"
+"[b]Avertissement :[/b] Il s'agit d'un nœud interne requis, le retirer et le "
+"libérer peut causer un plantage. Si vous voulez le cacher lui ou un de ses "
+"enfants, utilisez la propriété [member CanvasItem.visible]."
 
 #: doc/classes/Container.xml
 msgid "Base node for containers."
@@ -20320,18 +20666,26 @@ msgid ""
 "automatically arranges them in a certain way.\n"
 "A Control can inherit this to create custom container classes."
 msgstr ""
+"Le nœud de base pour les conteneurs. Un [Container] contient d'autres "
+"contrôles et les arrange automatiquement d'une certaine manière.\n"
+"Un Control peut en hériter pour créer des classes de conteneur qui arrange "
+"les contrôles enfants de manière personnalisée."
 
 #: doc/classes/Container.xml
 msgid ""
 "Fit a child control in a given rect. This is mainly a helper for creating "
 "custom container classes."
 msgstr ""
+"Ajuste un contrôle enfant dans un rectangle donné. Il s'agit principalement "
+"d'une aide pour créer des classes de conteneurs personnalisées."
 
 #: doc/classes/Container.xml
 msgid ""
 "Queue resort of the contained children. This is called automatically anyway, "
 "but can be called upon request."
 msgstr ""
+"Ajoute un commande de tri pour les contrôles enfants. Ceci est appelé "
+"automatiquement de tous les cas, mais peut être appelé sur demande."
 
 #: doc/classes/Container.xml
 msgid "Emitted when sorting the children is needed."
@@ -20341,12 +20695,17 @@ msgstr "Émis quand le tri des enfants est nécessaire."
 msgid ""
 "Notification for when sorting the children, it must be obeyed immediately."
 msgstr ""
+"La notification pour le tri des enfants, à laquelle faut l'obéir "
+"immédiatement."
 
 #: doc/classes/Control.xml
 msgid ""
 "All user interface nodes inherit from Control. A control's anchors and "
 "margins adapt its position and size relative to its parent."
 msgstr ""
+"Tous les nœuds d'interface utilisateur héritent de Control. Les ancres et "
+"les marges des contrôles adaptent leur position et leur taille par rapport à "
+"son parent."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20433,7 +20792,7 @@ msgstr "Galerie des nœuds de contrôle"
 
 #: doc/classes/Control.xml
 msgid "All GUI Demos"
-msgstr ""
+msgstr "Toutes les démos d'interface"
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20443,6 +20802,13 @@ msgid ""
 "Similar to [member rect_clip_content], but doesn't affect visibility.\n"
 "If not overridden, defaults to [code]false[/code]."
 msgstr ""
+"Méthode virtuelle à surcharger par l'utilisateur. Retourne si [méthode "
+"gui_input] ne doit pas être appelé pour les contrôles enfants en dehors du "
+"rectangle englobant du contrôle. L'entrée sera limitée au Rect de ce "
+"[Control]. Similaire à [member rect_clip_content], mais n'affecte pas la "
+"visibilité.\n"
+"Si la méthode n'est pas surchargée, la valeur par défaut retournée est "
+"[code]false[/code]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20804,6 +21170,12 @@ msgid ""
 "The methods [method can_drop_data] and [method drop_data] must be "
 "implemented on controls that want to receive drop data."
 msgstr ""
+"Force le glissage et contourne [method get_drag_data] et [method "
+"set_drag_preview] en passant [code]data[/code] et [code]preview[/code]. Le "
+"glissage va commencer même si la souris n'est ni sur, ni appuyé sur ce "
+"contrôle.\n"
+"Les méthodes [method can_drop_data] et [method drop_data] doivent être "
+"implémentées pour les contrôles qui veulent recevoir ces données de glissage."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -20896,6 +21268,8 @@ msgid ""
 "Returns the mouse cursor shape the control displays on mouse hover. See "
 "[enum CursorShape]."
 msgstr ""
+"Retourne le curseur de la souris que le contrôle affiche quand la souris le "
+"survole. Voir [enum CursorShape]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21039,6 +21413,10 @@ msgid ""
 "[Theme] has a valid [member Theme.default_font] value.\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne la police par défaut de la première correspondance [Theme] trouvée "
+"dans l'arborescence si ce [Theme] a une valeur valide pour [member Theme."
+"default_font].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21203,6 +21581,10 @@ msgid ""
 "[code]theme_type[/code].\n"
 "See [method get_color] for details."
 msgstr ""
+"Retourne [code]true[/code] s'il y a une correspondance [Theme] dans "
+"l'arborescence qui a un élément de la boîte de style avec le code spécifié "
+"[code]name[/code] et [code]theme_type[/code].\n"
+"Voir [method get_color] pour plus de détails."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21231,11 +21613,17 @@ msgid ""
 "changed. Setting [member rect_min_size] directly calls this method "
 "automatically."
 msgstr ""
+"Invalide le cache de taille de ce nœud et des nœuds parents jusqu'à la "
+"racine. Prévu pour être utilisé avec [method get_minimum_size] quand la "
+"valeur de retour est changée. Définir [member rect_min_size] appelle cette "
+"méthode automatiquement."
 
 #: doc/classes/Control.xml
 msgid ""
 "Give up the focus. No other control will be able to receive keyboard input."
 msgstr ""
+"Relâche le focus. Aucun autre contrôle ne pourra recevoir les entrées du "
+"clavier."
 
 #: doc/classes/Control.xml
 #, fuzzy
@@ -21304,12 +21692,18 @@ msgid ""
 "code] argument and automatic update of margin, it allows to set the margin "
 "offset yourself (see [method set_margin])."
 msgstr ""
+"Fonctionne comme [method set_anchor], mais au lieu de l'argument "
+"[code]keep_margin[/code] et de la mise à jour automatique de la marge, ça "
+"permet de définir la marge de décalage par vous-même (voir [method "
+"set_margin])."
 
 #: doc/classes/Control.xml
 msgid ""
 "Sets both anchor preset and margin preset. See [method set_anchors_preset] "
 "and [method set_margins_preset]."
 msgstr ""
+"Définit à la fois le préréglage de l'ancre et de la marge. Voir [method "
+"set_anchors_preset] et [method set_margins_preset]."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21523,6 +21917,15 @@ msgid ""
 "If [code]exclusive[/code] is [code]true[/code], other controls will not "
 "receive input and clicking outside this control will not close it."
 msgstr ""
+"Affiche un contrôle en tant que modal. Le contrôle doit être une sous-"
+"fenêtre. Les contrôles de modal capturent les signaux d'entrée jusqu'à ce "
+"que la zone située à l'extérieur soit accessible. Lorsqu'un contrôle modal "
+"perd le focus, ou que la touche échap est pressée, il disparait "
+"automatiquement. Les contrôles de modal sont largement utilisés pour les "
+"dialogues surgissants (popup) et les menus.\n"
+"Si [code]exclusif[/code] est [code]true[/code], les autres contrôles ne "
+"recevront pas les entrées, et cliquer à l'extérieur de ce contrôle ne le "
+"fermera pas."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -21584,6 +21987,9 @@ msgid ""
 "The focus access mode for the control (None, Click or All). Only one Control "
 "can be focused at the same time, and it will receive keyboard signals."
 msgstr ""
+"Le mode de focus du contrôle (aucun, clic ou tous). Un seul contrôle peut "
+"avoir le focus à un moment donné, et il recevra des signaux des touches du "
+"clavier appuyées."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -22188,6 +22594,9 @@ msgid ""
 "beam pointer has a shape similar to \"I\". It tells the user they can "
 "highlight or insert text."
 msgstr ""
+"Affiche le curseur de la souris en forme de I lorsque l'utilisateur survole "
+"le nœud. Le pointeur en I a une forme semblable à un \"I\". Il signale à "
+"l'utilisateur qu'il peut insérer ou surligner du texte."
 
 #: doc/classes/Control.xml
 msgid ""
@@ -22675,6 +23084,15 @@ msgid ""
 "uses a more complex method of collision detection, and a convex one forces "
 "itself to be convex in order to speed up collision detection."
 msgstr ""
+"Forme polygone convexe pour la physique 2D. Un polygone convexe, quelle que "
+"soit sa forme, est décomposé en interne par d'autant de polygones convexes "
+"que nécessaire pour assurer que toutes les collisions sont toujours "
+"effectués sur les polygones convexes (ce qui sont plus rapide à vérifier).\n"
+"La principale différence entre un [ConvexPolygonShape2D] et un "
+"[ConcavePolygonShape2D] est qu'un polygone concave suppose toujours qu'il "
+"est concave et utilise une méthode plus complexe pour la détection des "
+"collisions, alors qu'un polygone convexe suppose toujours qu'il est convexe "
+"pour accélérer la détection des collisions."
 
 #: doc/classes/ConvexPolygonShape2D.xml
 msgid ""
@@ -22682,6 +23100,10 @@ msgid ""
 "points] property using the convex hull algorithm. Removing all unneeded "
 "points. See [method Geometry.convex_hull_2d] for details."
 msgstr ""
+"Basé sur l'ensemble des points fournis, cela crée et définit la propriété "
+"[member points] en utilisant l'algorithme de découpage convexe. Ça enlève "
+"aussi tous les points inutiles. Voir [method Geometry.convex_hull_2d] pour "
+"plus de détails."
 
 #: doc/classes/ConvexPolygonShape2D.xml
 msgid ""
@@ -22690,6 +23112,10 @@ msgid ""
 "[method set_point_cloud] to generate a convex hull shape from concave shape "
 "points."
 msgstr ""
+"La liste des sommets du polygone. Peut être dans le sens horaire ou dans le "
+"sens anti-horaire. Ne définissez cette propriété qu'avec des points d'une "
+"forme convexe, et utilisez [method set_point_cloud] pour générer une forme "
+"convexe à partir de points d'une forme concave."
 
 #: doc/classes/CPUParticles.xml
 msgid "CPU-based 3D particle emitter."
@@ -22704,12 +23130,22 @@ msgid ""
 "[b]Note:[/b] Unlike [Particles], the visibility rect is generated on-the-fly "
 "and doesn't need to be configured by the user."
 msgstr ""
+"Un nœud pour les particules 3D fonctionnant sur le CPU utilisé pour créer "
+"une grande variété d'effets de particules.\n"
+"Voir aussi [Particles], qui fournit la même fonctionnalité mais avec "
+"l'accélération matérielle (via GPU), mais ne peut pas fonctionner sur des "
+"appareils plus anciens.\n"
+"[b]Note :[/b] Contrairement aux [Particles], le rect de visibilité est "
+"généré à lors de émission et n'a pas besoin d'être configuré par "
+"l'utilisateur."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
 "Sets this node's properties to match a given [Particles] node with an "
 "assigned [ParticlesMaterial]."
 msgstr ""
+"Génère les propriétés de ce nœud pour correspondre à un nœud [Particules] "
+"avec en plus un nœud assigné [ParticlesMaterial]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Returns the base value of the parameter specified by [enum Parameter]."
@@ -22767,6 +23203,11 @@ msgid ""
 "therefore removing all particles that were already emitted before changing "
 "[member amount]."
 msgstr ""
+"Le nombre de particules émises dans un cycle d'émission (correspondant à la "
+"durée [member lifetime]).\n"
+"[b]Note :[/b] Changer [member amount] réinitialisera l'émission des "
+"particules, supprimant ainsi toutes les particules déjà émises avant de "
+"changer [member amount]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Initial rotation applied to each particle, in degrees."
@@ -22838,6 +23279,9 @@ msgid ""
 "[SpatialMaterial] make sure to set [member SpatialMaterial."
 "vertex_color_use_as_albedo] to [code]true[/code]."
 msgstr ""
+"La couleur initiale de chaque particule. Pour utiliser cette couleur dans un "
+"[SpatialMaterial], assurez-vous de définir [membrer SpatialMaterial."
+"vertex_color_use_as_albedo] à [code]true[/code]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -22845,6 +23289,8 @@ msgid ""
 "Each particle's initial color will vary along this [GradientTexture] "
 "(multiplied with [member color])."
 msgstr ""
+"La couleur initiale de chaque particule qui varie suivant la "
+"[GradientTexture] (multipliée avec [member color])."
 
 #: doc/classes/CPUParticles.xml doc/classes/ParticlesMaterial.xml
 msgid ""
@@ -22978,6 +23424,10 @@ msgid ""
 "the value to 2 will make the particles render at 2 frames per second. Note "
 "this does not slow down the particle system itself."
 msgstr ""
+"Le nombre de trames du système de particules est fixé à une valeur. Par "
+"exemple, changer la valeur à 2 rendra les particules à 2 trames par seconde. "
+"Notez que cela ne ralentit pas le système de particules lui-même juste "
+"l'affichage final."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -23001,6 +23451,8 @@ msgid ""
 "Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts "
 "particles to X/Z plane."
 msgstr ""
+"La quantité d'éparpillement [member spread] dans le plan Y/Z. Une valeur de "
+"[code]1[/code] limite les particules au plan X/Z."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/Particles.xml doc/classes/Particles2D.xml
@@ -23008,6 +23460,8 @@ msgid ""
 "If [code]true[/code], results in fractional delta calculation which has a "
 "smoother particles display effect."
 msgstr ""
+"Si [code]true[/code], utilise un calcul d'étape fractionnelle qui permet "
+"affichage plus lisse des particules."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -23034,6 +23488,8 @@ msgid ""
 "Initial velocity magnitude for each particle. Direction comes from [member "
 "spread] and the node's orientation."
 msgstr ""
+"La magnitude de la vitesse initiale de chaque particule. L'orientation "
+"dépend de [member spread] et de l'orientation du nœud."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -23055,6 +23511,8 @@ msgstr "Facteur d'aléatoire de la durée de vie d'une particule."
 msgid ""
 "Linear acceleration applied to each particle in the direction of motion."
 msgstr ""
+"L'accélération linéaire appliquée à chaque particule dans la direction du "
+"mouvement."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's linear acceleration will vary along this [Curve]."
@@ -23073,6 +23531,9 @@ msgid ""
 "If [code]true[/code], particles use the parent node's coordinate space. If "
 "[code]false[/code], they use global coordinates."
 msgstr ""
+"Si [code]true[/code], les particules utilisent l'espace de coordonnées du "
+"parent du nœud. Si [code]false[/code], ils utilisent des coordonnées "
+"globales."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -23088,6 +23549,9 @@ msgid ""
 "If [code]true[/code], only one emission cycle occurs. If set [code]true[/"
 "code] during a cycle, emission will stop at the cycle's end."
 msgstr ""
+"Si [code]true[/code], un seul cycle d'émission se produit. Si définit à "
+"[code]true[/code] pendant un cycle, l'émission s'arrêtera à la fin de ce "
+"cycle."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -23097,6 +23561,11 @@ msgid ""
 "This property is only available when [member flag_disable_z] is [code]true[/"
 "code]."
 msgstr ""
+"La vitesse orbitale appliquée à chaque particule. Fait tourner les "
+"particules autour d'origine sur le plan XY local. Spécifié en nombre de "
+"rotations complètes autour de l'origine par seconde.\n"
+"Cette propriété est uniquement disponible lorsque [member flag_disable_z] "
+"est [code]true[/code]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's orbital velocity will vary along this [Curve]."
@@ -23113,6 +23582,8 @@ msgstr "Facteur d'aléatoire de la vélocité orbitale."
 #: doc/classes/Particles2D.xml
 msgid "Particle system starts as if it had already run for this many seconds."
 msgstr ""
+"Le système de particules démarre comme s'il avait déjà commencé depuis "
+"plusieurs secondes."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 #: doc/classes/ParticlesMaterial.xml
@@ -23159,6 +23630,8 @@ msgid ""
 "Particle system's running speed scaling ratio. A value of [code]0[/code] can "
 "be used to pause the particles."
 msgstr ""
+"Le facteur de vitesse du système de particules. Une valeur de [code]0[/code] "
+"peut être utilisée pour arrêter les particules."
 
 #: doc/classes/CPUParticles.xml
 msgid ""
@@ -23176,6 +23649,9 @@ msgid ""
 "perpendicular to the particle's velocity giving the particles a swirling "
 "motion."
 msgstr ""
+"L'accélération tangentielle appliquée à chaque particule. Elle est "
+"perpendiculaire à la vitesse de la particule, ce qui donne aux particules un "
+"mouvement de glissement."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid "Each particle's tangential acceleration will vary along this [Curve]."
@@ -23209,30 +23685,40 @@ msgid ""
 "Use with [method set_param], [method set_param_randomness], and [method "
 "set_param_curve] to set initial velocity properties."
 msgstr ""
+"À utiliser avec [method set_param], [method set_param_randomness], et "
+"[method set_param_curve] pour définir les propriétés de vitesse initiale."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
 "Use with [method set_param], [method set_param_randomness], and [method "
 "set_param_curve] to set angular velocity properties."
 msgstr ""
+"À utiliser avec [method set_param], [method set_param_randomness], et "
+"[method set_param_curve] pour définir les propriétés de vitesse angulaire."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
 "Use with [method set_param], [method set_param_randomness], and [method "
 "set_param_curve] to set orbital velocity properties."
 msgstr ""
+"À utiliser avec [method set_param], [method set_param_randomness], et "
+"[method set_param_curve] pour définir les propriétés de vitesse orbitale."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
 "Use with [method set_param], [method set_param_randomness], and [method "
 "set_param_curve] to set linear acceleration properties."
 msgstr ""
+"À utiliser avec [method set_param], [method set_param_randomness], et "
+"[method set_param_curve] pour définir les propriétés d'accélération linéaire."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
 "Use with [method set_param], [method set_param_randomness], and [method "
 "set_param_curve] to set radial acceleration properties."
 msgstr ""
+"À utiliser avec [method set_param], [method set_param_randomness], et "
+"[method set_param_curve] pour définir les propriétés d'accélération radiale."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
@@ -23336,6 +23822,9 @@ msgid ""
 "emission_points]. Particle color will be modulated by [member "
 "emission_colors]."
 msgstr ""
+"Les particules seront émises à une position choisie au hasard parmi les "
+"points [member emission_points]. La couleur des particules sera modulée par "
+"[member emission_colors]."
 
 #: doc/classes/CPUParticles.xml doc/classes/CPUParticles2D.xml
 msgid ""
@@ -23344,6 +23833,10 @@ msgid ""
 "[member emission_normals]. Particle color will be modulated by [member "
 "emission_colors]."
 msgstr ""
+"Les particules seront émises à une position choisie au hasard parmi [member "
+"emission_points]. La vitesse et la rotation des particules seront "
+"déterminées en fonction de [member emission_normals]. La couleur des "
+"particules sera modulée par [member emission_colors]."
 
 #: doc/classes/CPUParticles.xml doc/classes/ParticlesMaterial.xml
 msgid "Particles will be emitted in a ring or cylinder."
@@ -23367,30 +23860,45 @@ msgid ""
 "[b]Note:[/b] Unlike [Particles2D], the visibility rect is generated on-the-"
 "fly and doesn't need to be configured by the user."
 msgstr ""
+"Nœud de particules 2D calculées par le CPU pour créer une variété de "
+"systèmes et d'effets de particules.\n"
+"Voir aussi [Particles2D], qui fournit la même fonctionnalité mais en "
+"utilisant l'accélération matérielle, mais ne peut pas fonctionner sur des "
+"appareils plus anciens.\n"
+"[b]Note :[/b] Contrairement [Particles2D], le rectangle de visibilité est "
+"généré à l'émission et n'a donc pas besoin d'être définit par l'utilisateur."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "Sets this node's properties to match a given [Particles2D] node with an "
 "assigned [ParticlesMaterial]."
 msgstr ""
+"Définit les propriétés de ce nœud pour correspondre à au nœud [Particles2D] "
+"spécifié, en incluant un nœud [ParticlesMaterial]."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "Each particle's initial color. If [member texture] is defined, it will be "
 "multiplied by this color."
 msgstr ""
+"La couleur initiale de chaque particule. Si [member texture] est défini, les "
+"particules sont multipliées par cette couleur."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "Each particle's color will vary along this [Gradient] (multiplied with "
 "[member color])."
 msgstr ""
+"Chaque couleur de particle varie selon ce [Gradient] (multiplié avec [member "
+"color])."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "The rectangle's extents if [member emission_shape] is set to [constant "
 "EMISSION_SHAPE_RECTANGLE]."
 msgstr ""
+"Le rectangle d'émission si [member emission_shape] est [constant "
+"EMISSION_SHAPE_RECTANGLE]."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
@@ -23407,6 +23915,10 @@ msgid ""
 "the value to 2 will make the particles render at 2 frames per second. Note "
 "this does not slow down the simulation of the particle system itself."
 msgstr ""
+"Le nombre de trames du système de particules est fixé à une valeur. Par "
+"exemple, changer la valeur à 2 rendra les particules à 2 trames par seconde. "
+"Notez que cela ne ralentit pas le système de particules lui-même juste "
+"l'affichage final."
 
 #: doc/classes/CPUParticles2D.xml doc/classes/Particles2D.xml
 msgid ""
@@ -23416,12 +23928,21 @@ msgid ""
 "Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for "
 "a comparison of normal map coordinates expected by popular engines."
 msgstr ""
+"La texture de normale à utiliser pour la propriété [member texture].\n"
+"[b]Note :[/b] Godot s'attend à ce que la texture de normale utilise les "
+"coordonnées +X, -Y, et +Z. Voir [url=http://wiki.polycount.com/wiki/"
+"Normal_Map_Technical_Details#Common_Swizzle_Coordinates]cette page[/url] "
+"pour une comparaison des coordonnées des textures de normales attendues par "
+"les principaux moteurs de jeu."
 
 #: doc/classes/CPUParticles2D.xml
 msgid ""
 "Orbital velocity applied to each particle. Makes the particles circle around "
 "origin. Specified in number of full rotations around origin per second."
 msgstr ""
+"La vitesse orbitale appliquée à chaque particule. Fait tourner les "
+"particules autour de l'origine. Spécifié en nombre de rotations complètes "
+"autour de l'origine par seconde."
 
 #: doc/classes/CPUParticles2D.xml doc/classes/ParticlesMaterial.xml
 msgid ""
@@ -23590,7 +24111,7 @@ msgid ""
 "certificates and passed to [method StreamPeerSSL.accept_stream]."
 msgstr ""
 "Génère une [CryptoKey] RSA qui peut être utilisé pour créer des certificats "
-"autosignés et transmis à [method StreamPeerSSL.accept_stream]"
+"autosignés et transmis à [method StreamPeerSSL.accept_stream]."
 
 #: doc/classes/Crypto.xml
 msgid ""
@@ -23639,6 +24160,12 @@ msgid ""
 "Currently, only [constant HashingContext.HASH_SHA256] and [constant "
 "HashingContext.HASH_SHA1] are supported."
 msgstr ""
+"Génère un résumé [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] de "
+"[code]msg[/code] à partir de la clé [code]key[/code]. Le paramètre "
+"[code]hash_type[/code] est l'algorithme de hachage utilisé pour les hachages "
+"intérieurs et extérieurs.\n"
+"Actuellement, seuls les algorithmes [constant HashingContext.HASH_SHA256] et "
+"[constant HashingContext.HASH_SHA1] sont supportés."
 
 #: doc/classes/Crypto.xml
 msgid ""
@@ -23668,6 +24195,12 @@ msgid ""
 "Crypto.generate_self_signed_certificate] and as private key in [method "
 "StreamPeerSSL.accept_stream] along with the appropriate certificate."
 msgstr ""
+"La classe CryptoKey représente une clé cryptographique. Les clés peuvent "
+"être chargées et sauvegardées comme toute autre [Resource].\n"
+"Elles peuvent être utilisées pour générer un certicat [X509Certificate] "
+"autosigné avec [method Crypto.generate_self_signed_certificate] et comme clé "
+"privée dans [method StreamPeerSSL.accept_stream] avec le certificat "
+"approprié."
 
 #: doc/classes/CryptoKey.xml
 msgid ""
@@ -23684,12 +24217,19 @@ msgid ""
 "[b]Note:[/b] [code]path[/code] should be a \"*.pub\" file if "
 "[code]public_only[/code] is [code]true[/code], a \"*.key\" file otherwise."
 msgstr ""
+"Charge la clé à [code]path[/code]. Si [code]public_only[/code] est "
+"[code]true[/code], seule la clé publique sera chargée.\n"
+"[b]Note :[/b] [code]path[/code] doit être un fichier \"*.pub\" si "
+"[code]public_only[/code] est [code]true[/code], et un fichier \"*.key\" "
+"sinon."
 
 #: doc/classes/CryptoKey.xml
 msgid ""
 "Loads a key from the given [code]string[/code]. If [code]public_only[/code] "
 "is [code]true[/code], only the public key will be loaded."
 msgstr ""
+"Charge une clé depuis la [code]string[/code] donnée. Si [code]public_only[/"
+"code] est [code]true[/code], seule la clé publique sera chargée."
 
 #: doc/classes/CryptoKey.xml
 msgid ""
@@ -23698,12 +24238,21 @@ msgid ""
 "[b]Note:[/b] [code]path[/code] should be a \"*.pub\" file if "
 "[code]public_only[/code] is [code]true[/code], a \"*.key\" file otherwise."
 msgstr ""
+"Enregistre une clé au chemin [code]path[/code] spécifié. Si "
+"[code]public_only[/code] est [code]true[/code], seule la clé publique sera "
+"enregistrée.\n"
+"[b]Note :[/b] [code]path[/code] doit être un fichier avec l'extension \"."
+"pub\" si [code]public_only[/code] est [code]true[/code], et avec l'extension "
+"\".key\" sinon."
 
 #: doc/classes/CryptoKey.xml
 msgid ""
 "Returns a string containing the key in PEM format. If [code]public_only[/"
 "code] is [code]true[/code], only the public key will be included."
 msgstr ""
+"Retourne une chaîne de caractères contenant la clé en format PEM. Si "
+"[code]public_only[/code] est [code]true[/code], seule la clé publique sera "
+"incluse."
 
 #: modules/csg/doc_classes/CSGBox.xml
 msgid "A CSG Box shape."
@@ -24002,7 +24551,7 @@ msgstr ""
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid "The [member polygon] shape is extruded along the negative Z axis."
-msgstr ""
+msgstr "La forme [member polygone] est extrudée le long de l'axe Z négatif."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -24016,6 +24565,8 @@ msgid ""
 "The [member polygon] shape is extruded along the [Path] specified in [member "
 "path_node]."
 msgstr ""
+"La forme [member polygone] est extrudée le long du [Path] spécifié par "
+"[member path_node]."
 
 #: modules/csg/doc_classes/CSGPolygon.xml
 msgid ""
@@ -24110,6 +24661,9 @@ msgid ""
 "node and the second is the root [Mesh] of this node. Only works when this "
 "node is the root shape."
 msgstr ""
+"Retourne un [Array] avec deux éléments, le premier est la [Transform] de ce "
+"nœud et le second est le [Mesh] racine de ce nœud. Ne fonctionne que lorsque "
+"ce nœud est la forme racine."
 
 #: modules/csg/doc_classes/CSGShape.xml
 msgid ""
@@ -24180,6 +24734,9 @@ msgid ""
 "CSG child node as the operation is between this node and the previous child "
 "of this nodes parent."
 msgstr ""
+"L'opération effectuée sur cette forme. Ceci est ignoré pour le premier nœud "
+"enfant CSG puisque l'opération est entre ce nœud et l'enfant précédent de ce "
+"nœud parent."
 
 #: modules/csg/doc_classes/CSGShape.xml
 msgid ""
@@ -24194,6 +24751,9 @@ msgid ""
 "always act like a static body. Note that the collision shape is still active "
 "even if the CSG shape itself is hidden."
 msgstr ""
+"Ajoute une forme de collision au moteur de physique pour cette forme CSG. "
+"Cela agira toujours comme un corps statique. Notez que la forme de collision "
+"est toujours active même si cette forme CSG est cachée."
 
 #: modules/csg/doc_classes/CSGShape.xml
 msgid ""
@@ -24291,6 +24851,9 @@ msgid ""
 "effect making the torus seem rounded. If [code]false[/code] the torus will "
 "have a flat shaded look."
 msgstr ""
+"Si [code]true[/code] les normales du tore sont définies pour donner un effet "
+"lisse donnant l'impression que le tore est arrondis. Si [code]false[/code] "
+"le tore aura un aspect de rendu plat."
 
 #: modules/mono/doc_classes/CSharpScript.xml
 #, fuzzy
@@ -24307,6 +24870,9 @@ msgid ""
 "class and is only available in Mono-enabled Godot builds.\n"
 "See also [GodotSharp]."
 msgstr ""
+"Cette classe représente un script C#. C'est l'équivalent C# de la classe "
+"[GDScript] et n'est disponible que dans les versions de Godot avec Mono.\n"
+"Voir aussi [GodotSharp]."
 
 #: modules/mono/doc_classes/CSharpScript.xml
 #: modules/gdnative/doc_classes/PluginScript.xml
@@ -24785,12 +25351,24 @@ msgid ""
 "get_point_count][/code]), the point will be appended at the end of the point "
 "list."
 msgstr ""
+"Ajoute un point à une courbe à la [code]position[/code] par rapport à la "
+"position de la [Curve2D], avec des points de contrôle d'entrée [code]in[/"
+"code] et de sortie [code]out[/code].\n"
+"Si [code]at_position[/code] est spécifié, le point est inséré juste avant ce "
+"numéro de point [code]at_position[/code], en déplaçant ce point (et tous les "
+"autres points qui suivent) après le point inséré. Si [code]at_position[/"
+"code] n'est pas donné, ou est une valeur invalide ([code]at_position < 0[/"
+"code] ou [code]at_position >= [method get_point_count][/code,) le point sera "
+"ajouté en dernier."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
 "Returns the total length of the curve, based on the cached points. Given "
 "enough density (see [member bake_interval]), it should be approximate enough."
 msgstr ""
+"Retourne la longueur totale de la courbe, à partir de la distance entre les "
+"points mis en cache. Si la densité est suffisante (voir [member "
+"bake_interval]), cette longeur devrait être une approximation suffisante."
 
 #: doc/classes/Curve2D.xml
 msgid "Returns the cache of points as a [PoolVector2Array]."
@@ -24802,6 +25380,9 @@ msgid ""
 "be used in [method interpolate_baked].\n"
 "[code]to_point[/code] must be in this curve's local space."
 msgstr ""
+"Retourne le décalage le plus proche de [code]to_point[/code]. Ce décalage "
+"est destiné à être utilisé dans [méthode interpolate_baked].\n"
+"[code]to_point[/code] doit être dans l'espace local de la courbe."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -24809,6 +25390,9 @@ msgid ""
 "code].\n"
 "[code]to_point[/code] must be in this curve's local space."
 msgstr ""
+"Retourne le point en cache le plus proche (dans l'espace local de la courbe) "
+"de [code]to_point[/code].\n"
+"[code]to_point[/code] doit être dans l'espace local de la courbe."
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -24817,6 +25401,10 @@ msgid ""
 "the index is out of bounds, the function sends an error to the console, and "
 "returns [code](0, 0)[/code]."
 msgstr ""
+"Retourne la position du point de contrôle menant vers le sommet [code]idx[/"
+"code]. La position retournée est relative au sommet [code]idx[/code]. Si "
+"l'index est hors limites, la fonction affiche une erreur, et retourne [code]"
+"(0, 0)[/code]."
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -24825,6 +25413,10 @@ msgid ""
 "code]. If the index is out of bounds, the function sends an error to the "
 "console, and returns [code](0, 0)[/code]."
 msgstr ""
+"Retourne la position du point de contrôle en partant du sommet [code]idx[/"
+"code]. La position retournée est relative au sommet [code]idx[/code]. Si "
+"l'index est hors limites, la fonction affiche une erreur, et retourne [code]"
+"(0, 0)[/code]."
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -24832,6 +25424,8 @@ msgid ""
 "bounds, the function sends an error to the console, and returns [code](0, 0)"
 "[/code]."
 msgstr ""
+"Retourne la position du sommet [code]idx[/code]. Si l'index est hors "
+"limites, la fonction affiche une erreur, et retourne [code](0, 0)[/code]."
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -24844,6 +25438,14 @@ msgid ""
 "vertex, and [code]t[/code] is ignored. If the curve has no points, the "
 "function sends an error to the console, and returns [code](0, 0)[/code]."
 msgstr ""
+"Retourne la position entre le sommet [code]idx[/code] et le sommet [code]idx "
+"+ 1[/code], où [code]t[/code] contrôle si le point est le premier sommet "
+"([code]t = 0,0[/code]), le dernier sommet ([code]t = 1.0[/code]), ou entre "
+"les deux. Les valeurs de [code]t[/code] en dehors de l'intervalle ([code]0.0 "
+">= t <=1[/code]) donnent des résultats inattendus, mais prévisibles.\n"
+"Si [code]idx[/code] est hors limites il est tronqué au premier ou au dernier "
+"sommet, et [code]t[/code] est ignoré. Si la courbe n'a pas de points, la "
+"fonction affiche une erreur, et retourne [code](0, 0)[/code]."
 
 #: doc/classes/Curve2D.xml
 msgid ""
@@ -24856,6 +25458,14 @@ msgid ""
 "Cubic interpolation tends to follow the curves better, but linear is faster "
 "(and often, precise enough)."
 msgstr ""
+"Retourne un point dans la courbe à la position [code]offset[/code], où "
+"[code]offset[/code] est mesuré en pixels le long de la courbe.\n"
+"Pour cela, il trouve les deux points dans le cache où le [code]offset[/code] "
+"se situe entre, puis interpole les valeurs. Cette interpolation est cubique "
+"si [code]cubic[/code] est [code]true[/code], ou linéaire si est [code]false[/"
+"code].\n"
+"L'interpolation cubique tend à mieux suivre les courbes, mais "
+"l'interpolation linéaire est plus rapide (et souvent bien assez précise)."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -24863,12 +25473,17 @@ msgid ""
 "interpolate] using the integer part of [code]fofs[/code] as [code]idx[/"
 "code], and its fractional part as [code]t[/code]."
 msgstr ""
+"Retourne la position au sommet [code]fofs[/code]. Ça appelle [method "
+"interpolate] en utilisant la partie entière de [code]fofs[/code] pour "
+"[code]idx[/code], et sa partie décimale pour [code]t[/code]."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
 "Deletes the point [code]idx[/code] from the curve. Sends an error to the "
 "console if [code]idx[/code] is out of bounds."
 msgstr ""
+"Supprime le point [code]idx[/code] de la courbe. Affiche une erreur si "
+"[code]idx[/code] est hors limites."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -24876,6 +25491,9 @@ msgid ""
 "code]. If the index is out of bounds, the function sends an error to the "
 "console. The position is relative to the vertex."
 msgstr ""
+"Régle la position du point de contrôle menant au sommet [code]idx[/code]. Si "
+"l'index est hors limites, la fonction affiche une erreur. La position est "
+"relative au sommet."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -24883,12 +25501,17 @@ msgid ""
 "code]. If the index is out of bounds, the function sends an error to the "
 "console. The position is relative to the vertex."
 msgstr ""
+"Régle la position du point de contrôle partant du sommet [code]idx[/code]. "
+"Si l'index est hors limites, la fonction affiche une erreur. La position est "
+"relative au sommet."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
 "Sets the position for the vertex [code]idx[/code]. If the index is out of "
 "bounds, the function sends an error to the console."
 msgstr ""
+"Définit la position pour le vertex [code]idx[/code]. Si l'index est hors "
+"limites, la fonction affiche une erreur."
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
@@ -24944,6 +25567,11 @@ msgid ""
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
 msgstr ""
+"Cette classe décrit une courbe de Bézier dans l'espace 3D. Elle est "
+"principalement utilisée pour donner une forme à un [Path], mais peut être "
+"échantillonné manuellement à d'autres fins.\n"
+"Elle conserve un cache de points précalculés le long de la courbe, pour "
+"accélérer de nouveaux calculs."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -24956,6 +25584,15 @@ msgid ""
 "get_point_count][/code]), the point will be appended at the end of the point "
 "list."
 msgstr ""
+"Ajoute un point à la courbe à [code]position[/code] par rapport à la "
+"position [Curve3D], avec des points de contrôle [code]in[/code] et "
+"[code]out[/code].\n"
+"Si [code]at_position[/code] est spécifiée, le point est inséré avant le "
+"numéro de point [code]at_position[/code], deplaçant ce point (et tous les "
+"suivants) après le point inséré. Si [code]at_position[/code] n'est pas "
+"spécifiée, ou est une valeur invalide ([code]at_position <0[/code] ou "
+"[code]at_position >= [method get_point_count][/code]), le point sera ajouté "
+"à la fin de la liste des points."
 
 #: doc/classes/Curve3D.xml
 msgid "Returns the cache of points as a [PoolVector3Array]."
@@ -24970,6 +25607,8 @@ msgid ""
 "Returns the cache of up vectors as a [PoolVector3Array].\n"
 "If [member up_vector_enabled] is [code]false[/code], the cache will be empty."
 msgstr ""
+"Retourne le cache des vecteurs du haut dans un [PoolVector3Array].\n"
+"Si [member up_vector_enabled] est [code]false[/code], le cache sera vide."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -24978,6 +25617,10 @@ msgid ""
 "interpolate_baked_up_vector].\n"
 "[code]to_point[/code] must be in this curve's local space."
 msgstr ""
+"Retourne le décalage le plus proche de [code]to_point[/code]. Ce décalage "
+"est destiné à être utilisé dans [method interpolate_baked] ou [method "
+"interpolate_baked_up_vector].\n"
+"[code]to_point[/code] doit être dans l'espace local de cette courbe."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -24986,6 +25629,10 @@ msgid ""
 "the index is out of bounds, the function sends an error to the console, and "
 "returns [code](0, 0, 0)[/code]."
 msgstr ""
+"Retourne la position du point de contrôle menant au sommet [code]idx[/code]. "
+"La position retournée est relative au sommet [code]idx[/code]. Si l'index "
+"est hors limites, la fonction affiche une erreur, et retourne [code](0, 0, 0)"
+"[/code]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -24994,6 +25641,10 @@ msgid ""
 "code]. If the index is out of bounds, the function sends an error to the "
 "console, and returns [code](0, 0, 0)[/code]."
 msgstr ""
+"Retourne la position du point de contrôle partant du sommet [code]idx[/"
+"code]. La position retournée est relative au sommet [code]idx[/code]. Si "
+"l'index est hors limites, la fonction affiche une erreur, et retourne [code]"
+"(0, 0, 0)[/code]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25001,6 +25652,8 @@ msgid ""
 "bounds, the function sends an error to the console, and returns [code](0, 0, "
 "0)[/code]."
 msgstr ""
+"Retourne la position du sommet [code]idx[/code]. Si l'index est hors "
+"limites, la fonction affiche une erreur, et retourne [code](0, 0, 0)[/code]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25023,6 +25676,15 @@ msgid ""
 "vertex, and [code]t[/code] is ignored. If the curve has no points, the "
 "function sends an error to the console, and returns [code](0, 0, 0)[/code]."
 msgstr ""
+"Retourne la position entre le sommet [code]idx[/code] et le sommet [code]idx "
+"+ 1[/code], où [code]t[/code] contrôle si le point est le premier sommet "
+"([code]t = 0,0[/code]), le dernier sommet ([code]t = 1.0[/code]), ou entre "
+"ces deux valeurs. Les valeurs de [code]t[/code] en dehors de l'intervalle "
+"([code]0.0 >= t <=1[/code]) donnent des résultats inattendus, mais "
+"prévisibles.\n"
+"Si [code]idx[/code] est hors limites il est tronqué au premier ou au dernier "
+"sommet, et [code]t[/code] est ignoré. Si la courbe n'a pas de points, la "
+"fonction affiche une erreur, et retourne [code](0, 0, 0)[/code]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25035,6 +25697,14 @@ msgid ""
 "Cubic interpolation tends to follow the curves better, but linear is faster "
 "(and often, precise enough)."
 msgstr ""
+"Retourne un point dans la courbe à la position [code]offset[/code], où "
+"[code]offset[/code] est mesuré en unités 3D le long de la courbe.\n"
+"Pour cela, il trouve les deux points dans le cache où le [code]offset[/code] "
+"se situe entre, puis interpole les valeurs. Cette interpolation est cubique "
+"si [code]cubic[/code] est [code]true[/code], ou linéaire si est [code]false[/"
+"code].\n"
+"L'interpolation cubique tend à mieux suivre les courbes, mais "
+"l'interpolation linéaire est plus rapide (et souvent bien assez précise)."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25047,6 +25717,14 @@ msgid ""
 "If the curve has no up vectors, the function sends an error to the console, "
 "and returns [code](0, 1, 0)[/code]."
 msgstr ""
+"Retourne un vecteur haut dans la courbe à la position [code]offset[/code], "
+"où [code]offset[/code] est mesuré en unités 3D le long de la courbe.\n"
+"Pour cela, il trouve les deux vecteurs dans le cache où le [code]offset[/"
+"code] se situe entre, puis interpole les valeurs. Si [code]apply_tilt[/code] "
+"est [code]true[/code], une inclinaison interpolée est aussi appliquée au "
+"vecteur interpolé.\n"
+"Si la courbe n'a pas de vecteurs, la fonction affiche une erreur, et "
+"retourne [code](0, 1, 0)[/code]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25056,6 +25734,11 @@ msgid ""
 "the path would have. In the case of a curve controlling a [PathFollow], this "
 "tilt is an offset over the natural tilt the [PathFollow] calculates."
 msgstr ""
+"Définit l'angle d'inclinaison en radians pour le point [code]idx[/code]. Si "
+"l'index est hors limites, la fonction affiche une erreur.\n"
+"L'inclinaison contrôle la rotation qu'un objet parcourant la courbe aurait. "
+"Dans le cas d'une courbe contrôlant un [PathFollow], cette inclinaison est "
+"un décalage sur l'inclinaison naturelle que calcule le [PathFollow]."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25065,6 +25748,11 @@ msgid ""
 "smaller the distance, the more points in the cache and the more memory it "
 "will consume, so use with care."
 msgstr ""
+"La distance en unités entre deux points de cache adjacents. Le changement "
+"force le cache à être recalculé la prochaine fois que la fonction [method "
+"get_baked_points] ou [method get_baked_length] sera appelée. Plus la "
+"distance est petite, plus il y aura de points dans le cache, et plus ça "
+"utilisera de mémoire, à utiliser donc avec soin."
 
 #: doc/classes/Curve3D.xml
 msgid ""
@@ -25072,6 +25760,10 @@ msgid ""
 "This is used when [member PathFollow.rotation_mode] is set to [constant "
 "PathFollow.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed."
 msgstr ""
+"Si [code]true[/code], la courbe pré-calcule des vecteurs utilisés pour "
+"l'orientation. Ceci est utilisé lorsque [member PathFollow.rotation_mode] "
+"est défini à [constant PathFollow.ROTATION_ORIENTED]. Le changer force le "
+"cache à être recalculé."
 
 #: doc/classes/CurveTexture.xml
 msgid "A texture that shows a curve."
@@ -25082,6 +25774,8 @@ msgid ""
 "Renders a given [Curve] provided to it. Simplifies the task of drawing "
 "curves and/or saving them as image files."
 msgstr ""
+"Fait le rendu d'une [Curve] donnée. Simplifie la tâche de dessiner les "
+"courbes et/ou de les enregistrer dans des fichiers d'image."
 
 #: doc/classes/CurveTexture.xml
 #, fuzzy
@@ -25094,6 +25788,10 @@ msgid ""
 "represent high-frequency data better (such as sudden direction changes), at "
 "the cost of increased generation time and memory usage."
 msgstr ""
+"La largeur de la texture (en pixels). Des valeurs plus élevées permettent de "
+"mieux représenter les données à haute fréquence (comme les changements "
+"soudains de direction) au coût de l'utilisation accrue du temps de "
+"génération et de la mémoire."
 
 #: doc/classes/CylinderMesh.xml
 msgid "Class representing a cylindrical [PrimitiveMesh]."
@@ -25105,12 +25803,17 @@ msgid ""
 "create cones by setting either the [member top_radius] or [member "
 "bottom_radius] properties to [code]0.0[/code]."
 msgstr ""
+"La classe représentant un [PrimitiveMesh] cylindrique. Cette classe peut "
+"être utilisée pour créer des cônes en définissant la propriété [member "
+"top_radius] ou [member bottom_radius] à [code]0.0[/code]."
 
 #: doc/classes/CylinderMesh.xml
 msgid ""
 "Bottom radius of the cylinder. If set to [code]0.0[/code], the bottom faces "
 "will not be generated, resulting in a conic shape."
 msgstr ""
+"Le rayon inférieur du cylindre. Si [code]0.0[/code], les faces inférieures "
+"ne seront pas générées, ce qui donne une forme conique."
 
 #: doc/classes/CylinderMesh.xml
 msgid "Full height of the cylinder."
@@ -25121,6 +25824,9 @@ msgid ""
 "Number of radial segments on the cylinder. Higher values result in a more "
 "detailed cylinder/cone at the cost of performance."
 msgstr ""
+"Le nombre de segments radiaux sur le cylindre. Des valeurs plus élevées "
+"génèrent des cylindres/cônes plus détaillés mais peuvent réduire les "
+"performances."
 
 #: doc/classes/CylinderMesh.xml
 msgid ""
@@ -25138,6 +25844,8 @@ msgid ""
 "Top radius of the cylinder. If set to [code]0.0[/code], the top faces will "
 "not be generated, resulting in a conic shape."
 msgstr ""
+"Le rayon supérieur du cylindre. Si [code]0.0[/code], les faces supérieures "
+"ne seront pas générées, ce qui donne une forme conique."
 
 #: doc/classes/CylinderShape.xml
 msgid "Cylinder shape for collisions."
@@ -25438,6 +26146,12 @@ msgid ""
 "[b]Note:[/b] Don't erase elements while iterating over the dictionary. You "
 "can iterate over the [method keys] array instead."
 msgstr ""
+"Efface une paire de clé/valeur du dictionnaire spécifiée par sa clé. "
+"Retourne [code]true[/code] si la clé donnée était présente dans le "
+"dictionnaire, [code]false[/code] sinon.\n"
+"[b]Note :[/b] Ne supprimez pas les éléments pendant l'énumération du "
+"dictionnaire. Vous pouvez à la place énumérer le dictionnaire avec [method "
+"keys] qui retourne un tableau immuable."
 
 #: doc/classes/Dictionary.xml
 msgid ""
@@ -25445,6 +26159,9 @@ msgid ""
 "key does not exist, the method returns the value of the optional default "
 "argument, or [code]null[/code] if it is omitted."
 msgstr ""
+"Retourne la valeur actuelle de la clé spécifiée dans le [Dictionnaire]. Si "
+"la clé n'existe pas, la méthode retourne la valeur de l'argument optionnel "
+"\"default\", ou [code]null[/code] si elle n'est pas spécifiée."
 
 #: doc/classes/Dictionary.xml
 msgid ""
@@ -25525,6 +26242,9 @@ msgid ""
 "duplicate keys will not be copied over, unless [code]overwrite[/code] is "
 "[code]true[/code]."
 msgstr ""
+"Ajoute tous les éléments de [code]dictionary[/code] à ce [Dictionnaire]. Par "
+"défaut, les clés en double ne seront pas remplaçées, sauf si "
+"[code]overwrite[/code] est [code]true[/code]."
 
 #: doc/classes/Dictionary.xml
 msgid "Returns the number of keys in the dictionary."
@@ -25547,6 +26267,12 @@ msgid ""
 "or moonlight. The worldspace location of the DirectionalLight transform "
 "(origin) is ignored. Only the basis is used to determine light direction."
 msgstr ""
+"Une lumière directionnelle est un type de nœud [Light] qui fait un rendu "
+"d'un nombre infini de rayons parallèles couvrant toute la scène. Il est "
+"utilisé pour les lumières à forte intensité qui sont situées loin de la "
+"scène pour modéliser la lumière du soleil ou du clair de lune. L'emplacement "
+"global de la DirectionalLight (son origine) est ignoré. Seule sa rotation "
+"est utilisée pour déterminer la direction de la lumière."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25563,6 +26289,10 @@ msgid ""
 "moderate performance cost. This is ignored when [member "
 "directional_shadow_mode] is [constant SHADOW_ORTHOGONAL]."
 msgstr ""
+"Si [code]true[/code], le détail des ombres est sacrifié pour obtenir des "
+"transitions plus lisses entre les fractions. Activer cette option a "
+"également un coût modéré sur les performances. Ceci est ignoré lorsque "
+"[member directional_shadow_mode] est [constant SHADOW_ORTHOGONAL]."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25579,6 +26309,10 @@ msgid ""
 "shadow detail and performance (since more objects need to be included in the "
 "directional shadow rendering)."
 msgstr ""
+"La distance maximale pour les fractions des ombres. Augmenter cette valeur "
+"rendra visibles les ombres directionnelles de plus loin, mais affichera "
+"moins de détails des ombres et de moins bonnes performances (puisque plus "
+"d'objets doivent être inclus dans le rendu d'ombre directionnel)."
 
 #: doc/classes/DirectionalLight.xml
 msgid "The light's shadow rendering algorithm. See [enum ShadowMode]."
@@ -25590,6 +26324,8 @@ msgid ""
 "Can be used to fix special cases of self shadowing when objects are "
 "perpendicular to the light."
 msgstr ""
+"Peut être utilisé pour corriger des cas spéciaux pour les ombres des objets "
+"qui sont perpendiculaires à la source de lumière."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25598,6 +26334,10 @@ msgid ""
 "directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
 "SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
+"La distance de la caméra à la division 1 de l'ombre. Relative à [member "
+"directional_shadow_max_distance]. Seulement utilisé lorsque [member "
+"directional_shadow_mode] est [constant SHADOW_PARALLEL_2_SPLITS] ou "
+"[constant SHADOW_PARALLEL_4_SPLITS]."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25606,6 +26346,10 @@ msgid ""
 "directional_shadow_mode] is [constant SHADOW_PARALLEL_2_SPLITS] or [constant "
 "SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
+"La distance de la division 1 à la divion 2 de l'ombre. Relative à [member "
+"directional_shadow_max_distance]. Seulement utilisé lorsque [member "
+"directional_shadow_mode] est [constant SHADOW_PARALLEL_2_SPLITS] ou "
+"[constant SHADOW_PARALLEL_4_SPLITS]."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25613,6 +26357,9 @@ msgid ""
 "directional_shadow_max_distance]. Only used when [member "
 "directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS]."
 msgstr ""
+"La distance de la division 2 à la divion 3 de l'ombre. Relative à [member "
+"directional_shadow_max_distance]. Seulement utilisé lorsque [member "
+"directional_shadow_mode] est [constant SHADOW_PARALLEL_4_SPLITS]."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25642,6 +26389,8 @@ msgid ""
 "Keeps the shadow stable when the camera moves, at the cost of lower "
 "effective shadow resolution."
 msgstr ""
+"Garde l'ombre stable lorsque la caméra se déplace, mais la résolution de "
+"l'ombre se trouve réduite."
 
 #: doc/classes/DirectionalLight.xml
 msgid ""
@@ -25649,6 +26398,10 @@ msgid ""
 "shadow edges. This mode typically works best in games where the camera will "
 "often move at high speeds, such as most racing games."
 msgstr ""
+"Essaye d'atteindre une résolution maximale pour l'ombre. Peut faire "
+"apparaitre un effet de scie sur les bords de l'ombre. Ce mode fonctionne "
+"généralement mieux dans les jeux où la caméra se déplace souvent à des "
+"vitesses élevées, comme la plupart des jeux de course."
 
 #: doc/classes/Directory.xml
 msgid "Type used to handle the filesystem."
@@ -26177,6 +26930,10 @@ msgid ""
 "If a given character is included in more than one font, it appears only once "
 "in the returned string."
 msgstr ""
+"Retourne une chaîne contenant tous les caractères disponibles dans la police "
+"principale et celles de repli.\n"
+"Si un caractère donné est inclus dans plus d'une police, il apparaît "
+"seulement une fois dans la chaîne retournée."
 
 #: doc/classes/DynamicFont.xml
 msgid "Returns the fallback font at index [code]idx[/code]."
@@ -26206,6 +26963,8 @@ msgid ""
 "Sets the spacing for [code]type[/code] (see [enum SpacingType]) to "
 "[code]value[/code] in pixels (not relative to the font size)."
 msgstr ""
+"Définit l'espacement pour [code]type[/code] (voir [enum SpacingType]) à "
+"[code]value[/code] en pixels (et en fonction de la taille de la police)."
 
 #: doc/classes/DynamicFont.xml
 msgid "Extra spacing at the bottom in pixels."
@@ -26217,6 +26976,8 @@ msgid ""
 "This can be a negative number to make the distance between characters "
 "smaller."
 msgstr ""
+"L'espacement additionnel entre chaque caratère, en pixels.\n"
+"Ceci peut être un nombre négatif pour rapprocher les caractères."
 
 #: doc/classes/DynamicFont.xml
 msgid ""
@@ -26224,6 +26985,9 @@ msgid ""
 "extra_spacing_char]) in pixels.\n"
 "This can be a negative number to make the distance between words smaller."
 msgstr ""
+"L'espacement additionnel entre les caractères d'espace (en plus de [member "
+"extra_spacing_char]), en pixels.\n"
+"Cela peut être un nombre négatif pour rapprocher les mots."
 
 #: doc/classes/DynamicFont.xml
 msgid "Extra spacing at the top in pixels."
@@ -26241,10 +27005,17 @@ msgid ""
 "black here, it won't be possible to change its color using a Label's font "
 "outline modulate theme item."
 msgstr ""
+"La couleur du contour de la police.\n"
+"[b]Note :[/b] Il est recommandé de laisser ceci à la valeur par défaut afin "
+"que vous puissiez l'ajuster dans les contrôles individuels. Par exemple, si "
+"le contour est déclaré ici en noir, il ne sera pas possible de modifier sa "
+"couleur même en utilisant un thème pour le Label."
 
 #: doc/classes/DynamicFont.xml
 msgid "The font outline's thickness in pixels (not relative to the font size)."
 msgstr ""
+"L'épaisseur du contour de la police, en pixels (et non en fonction à la "
+"taille de la police)."
 
 #: doc/classes/DynamicFont.xml
 msgid "The font size in pixels."
@@ -26265,6 +27036,9 @@ msgid ""
 "appearance when downscaling it if font oversampling is disabled or "
 "ineffective."
 msgstr ""
+"Si [code]true[/code], les mipmaps sont utilisées. Cela améliore l'apparence "
+"de la police lorsqu'elle est désactivée si le sur-échantillonnage de la "
+"police est désactivé ou non utilisé."
 
 #: doc/classes/DynamicFont.xml
 msgid "Spacing at the top."
@@ -26292,6 +27066,8 @@ msgid ""
 "Used with [DynamicFont] to describe the location of a vector font file for "
 "dynamic rendering at runtime."
 msgstr ""
+"Utilisé avec [DynamicFont] pour décrire l'emplacement d'un fichier de police "
+"vectoriel pour un rendu dynamique au lancement du projet."
 
 #: doc/classes/DynamicFontData.xml
 msgid ""
@@ -26433,6 +27209,12 @@ msgid ""
 "This method should not be used for System libraries as they are already "
 "present on the device."
 msgstr ""
+"Ajoute une bibliothèque dynamique (*.dylib, *.framework) au \"Linking "
+"Phase\" dans le projet Xcode d'iOS et l'intègre en binaire final.\n"
+"[b]Note :[/b] Pour les bibliothèques statiques (*.a), ça fonctionne de la "
+"même manière que [méthode add_ios_framework].\n"
+"Cette méthode ne devrait pas être utilisée pour les bibliothèques système "
+"car elles sont déjà présentes sur l'appareil."
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
@@ -26451,6 +27233,8 @@ msgstr ""
 #: doc/classes/EditorExportPlugin.xml
 msgid "Adds a static lib from the given [code]path[/code] to the iOS project."
 msgstr ""
+"Ajoute la bibliothèque statique à l'emplacement [code]path[/code] spécifié "
+"au projet iOS."
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
@@ -26458,6 +27242,9 @@ msgid ""
 "directory of macOS app bundle.\n"
 "[b]Note:[/b] This is useful only for macOS exports."
 msgstr ""
+"Ajoute le fichier ou le dossier correspondant à l'emplacement [code]path[/"
+"code] au dossier [code]PlugIns[/code] de l'applications macOS.\n"
+"[b]Note :[/b] Cela n'est utile que pour les exports pour macOS."
 
 #: doc/classes/EditorExportPlugin.xml
 msgid ""
@@ -26613,6 +27400,11 @@ msgid ""
 "When a property is disabled, it won't appear in the inspector when selecting "
 "a node that extends the class specified by [code]class_name[/code]."
 msgstr ""
+"Si [code]disable[/code] est [code]true[/code], désactive l'édition de la "
+"[code]property[/code] dans la classe nommée [code]class_name[/code]. "
+"Lorsqu'une propriété est désactivée, elle n'apparaît plus dans l'inspecteur "
+"lors du choix d'un nœud qui étend la classe spécifiée par [code]class_name[/"
+"code]."
 
 #: doc/classes/EditorFeatureProfile.xml
 msgid ""
@@ -26726,12 +27518,17 @@ msgid ""
 "Notify the [EditorFileDialog] that its view of the data is no longer "
 "accurate. Updates the view contents on next view update."
 msgstr ""
+"Notifie le [EditorFileDialog] que sa vue que son contenu n'est plus à jour. "
+"Mettre à jour le contenu de la vue sur la prochaine mise à jour de la vue."
 
 #: doc/classes/EditorFileDialog.xml
 msgid ""
 "The location from which the user may select a file, including [code]res://[/"
 "code], [code]user://[/code], and the local file system."
 msgstr ""
+"L'emplacement à partir duquel l'utilisateur peut sélectionner un fichier, y "
+"compris [code]res://[/code], [code]user://[code], et le système de fichiers "
+"local."
 
 #: doc/classes/EditorFileDialog.xml
 msgid "The currently occupied directory."
@@ -26758,11 +27555,13 @@ msgid ""
 "The view format in which the [EditorFileDialog] displays resources to the "
 "user."
 msgstr ""
+"Le format de vue dans lequel le [EditorFileDialog] affiche les ressources à "
+"l'utilisateur."
 
 #: doc/classes/EditorFileDialog.xml
 msgid ""
 "The purpose of the [EditorFileDialog], which defines the allowed behaviors."
-msgstr ""
+msgstr "Le but du [EditorFileDialog], qui définit les comportements autorisés."
 
 #: doc/classes/EditorFileDialog.xml
 msgid ""
@@ -26789,6 +27588,8 @@ msgid ""
 "The [EditorFileDialog] can select only one file. Accepting the window will "
 "open the file."
 msgstr ""
+"Le [EditorFileDialog] ne peut sélectionner qu'un seul fichier. Accepter "
+"cette fenêtre ouvrira le fichier sélectionné."
 
 #: doc/classes/EditorFileDialog.xml
 msgid ""
@@ -26803,6 +27604,8 @@ msgid ""
 "The [EditorFileDialog] can select only one directory. Accepting the window "
 "will open the directory."
 msgstr ""
+"Le [EditorFileDialog] ne peut sélectionner qu'un seul dossier. Accepter la "
+"fenêtre ouvrira le dossier sélectionné."
 
 #: doc/classes/EditorFileDialog.xml
 msgid ""
@@ -26860,6 +27663,11 @@ msgid ""
 "[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access "
 "the singleton using [method EditorInterface.get_resource_filesystem]."
 msgstr ""
+"Cet objet contient des informations sur toutes les ressources du système de "
+"fichiers, leurs types, etc.\n"
+"[b]Note :[/b] Cette classe ne devrait pas être instanciée directement. "
+"Accédez plutôt à l'instance unique avec [method EditorInterface."
+"get_resource_filesystem]"
 
 #: doc/classes/EditorFileSystem.xml
 msgid ""
@@ -26867,6 +27675,10 @@ msgid ""
 "string such as [code]\"Resource\"[/code] or [code]\"GDScript\"[/code], "
 "[i]not[/i] a file extension such as [code]\".gd\"[/code]."
 msgstr ""
+"Retourne le type de ressource du fichier, spécifié par le chemin complet. "
+"Ceci retourne une chaîne comme [code]\"Resource\"[/code] or "
+"[code]\"GDScript\"[/code], mais [i]pas[/i] l'extension du fichier comme "
+"[code]\".gd\"[/code]."
 
 #: doc/classes/EditorFileSystem.xml
 msgid "Gets the root directory object."
@@ -26881,6 +27693,8 @@ msgstr ""
 #: doc/classes/EditorFileSystem.xml
 msgid "Returns the scan progress for 0 to 1 if the FS is being scanned."
 msgstr ""
+"Retourne la progression de l'analyse de 0 à 1 si le système de fichiers est "
+"en train d'être scanné."
 
 #: doc/classes/EditorFileSystem.xml
 #, fuzzy
@@ -26900,10 +27714,14 @@ msgid ""
 "Update a file information. Call this if an external program (not Godot) "
 "modified the file."
 msgstr ""
+"Met à jour les informations du fichier. Appelez cette méthode si un "
+"programme externe (hors Godot) a modifié le fichier."
 
 #: doc/classes/EditorFileSystem.xml
 msgid "Scans the script files and updates the list of custom class names."
 msgstr ""
+"Scanne les fichiers de script et met à jour la liste des noms de classe "
+"personnalisés."
 
 #: doc/classes/EditorFileSystem.xml
 msgid "Emitted if the filesystem changed."
@@ -26974,6 +27792,9 @@ msgid ""
 "[code]idx[/code]. If the file doesn't define a script class using the "
 "[code]class_name[/code] syntax, this will return an empty string."
 msgstr ""
+"Retourne la classe de base de la classe de script définie dans le fichier à "
+"index [code]idx[/code]. Si le fichier ne définit pas une classe de script en "
+"utilisant la syntaxe [code]class_name[/code], une chaîne vide est retournée."
 
 #: doc/classes/EditorFileSystemDirectory.xml
 msgid ""
@@ -26981,6 +27802,9 @@ msgid ""
 "code]. If the file doesn't define a script class using the [code]class_name[/"
 "code] syntax, this will return an empty string."
 msgstr ""
+"Retourne le nom de la classe script définie dans le fichier à index "
+"[code]idx[/code]. Si le fichier ne définit pas une classe de script en "
+"utilisant la syntaxe [code]class_name[/code], une chaîne vide est retournée."
 
 #: doc/classes/EditorFileSystemDirectory.xml
 msgid ""
@@ -26988,6 +27812,9 @@ msgid ""
 "returns a string such as [code]\"Resource\"[/code] or [code]\"GDScript\"[/"
 "code], [i]not[/i] a file extension such as [code]\".gd\"[/code]."
 msgstr ""
+"Retourne le type de ressource du fichier à l'index [code]idx[/code]. Ceci "
+"retourne une chaîne comme [code]\"Resource\"[/code] or [code]\"GDScript\"[/"
+"code], mais [i]pas[/i] l'extension du fichier comme [code]\".gd\"[/code]."
 
 #: doc/classes/EditorFileSystemDirectory.xml
 msgid "Returns the name of this directory."
@@ -27018,6 +27845,9 @@ msgid ""
 "Registers a custom resource importer in the editor. Use the class to parse "
 "any file and import it as a new resource type."
 msgstr ""
+"Enregistre un importateur de ressources personnalisée dans l'éditeur. "
+"Utilisez cette classe pour interpréter n'importe quel fichier pour "
+"l'importer comme nouveau type de ressource."
 
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
@@ -27139,6 +27969,11 @@ msgid ""
 "[code]default_value[/code], [code]property_hint[/code] (optional), "
 "[code]hint_string[/code] (optional), [code]usage[/code] (optional)."
 msgstr ""
+"Retourne les options et les valeurs par défaut pour le préréglage à cet "
+"index. Retourne un Array de Dictionnary avec les clés suivantes : "
+"[code]name[/code], [code]default_value[/code], [code]property_hint[/code] "
+"(optionnel), [code]hint_string[/code] (optionnel) et [code]usage[/code] "
+"(optionnel)."
 
 #: doc/classes/EditorImportPlugin.xml
 msgid ""
@@ -27360,10 +28195,13 @@ msgid ""
 "by clicking the \"key\" icon next to a property when the Animation panel is "
 "toggled."
 msgstr ""
+"Émis lorsqu'une propriété est utilisée comme clé dans l'inspecteur. Les "
+"propriétés peuvent être utilisées comme clé en cliquant sur l'icône \"clé\" "
+"à côté d'une propriété lorsque le panneau \"Animation\" est ouvert."
 
 #: doc/classes/EditorInspector.xml
 msgid "Emitted when a property is selected in the inspector."
-msgstr ""
+msgstr "Émis lorsqu'une propriété est sélectionnée dans l'inspecteur."
 
 #: doc/classes/EditorInspector.xml
 msgid ""
@@ -27372,6 +28210,11 @@ msgid ""
 "code] property enabled. Since this property is always enabled in the editor "
 "inspector, this signal is never emitted by the editor itself."
 msgstr ""
+"Émis lorsqu'une propriété booléenne est basculée dans l'inspecteur.\n"
+"[b]Note :[/b] Ce signal n'est jamais émis si la propriété interne "
+"[code]autoclear[/code] est activée. Comme cette propriété est toujours "
+"activée dans l'inspecteur de l'éditeur, ce signal n'est jamais émis par "
+"l'éditeur lui-même."
 
 #: doc/classes/EditorInspector.xml
 msgid "Emitted when a resource is selected in the inspector."
@@ -27426,18 +28269,24 @@ msgstr "Les greffons de l'inspecteur"
 #: doc/classes/EditorInspectorPlugin.xml
 msgid "Adds a custom control, which is not necessarily a property editor."
 msgstr ""
+"Ajoute un contrôle personnalisé, qui n'est pas nécessairement un éditeur de "
+"propriété."
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid ""
 "Adds a property editor for an individual property. The [code]editor[/code] "
 "control must extend [EditorProperty]."
 msgstr ""
+"Ajoute un éditeur de propriétés pour une seule propriété. Le contrôle "
+"[code]editor[/code] doit être une sous-classe de [EditorProperty]."
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid ""
 "Adds an editor that allows modifying multiple properties. The [code]editor[/"
 "code] control must extend [EditorProperty]."
 msgstr ""
+"Ajoute un éditeur qui permet de modifier plusieurs propriétés. Le contrôle "
+"[code]editor[/code] doit être une sous-classe de [EditorProperty]."
 
 #: doc/classes/EditorInspectorPlugin.xml
 msgid "Returns [code]true[/code] if this object can be handled by this plugin."
@@ -27462,6 +28311,10 @@ msgid ""
 "built-in editor for this property, otherwise allows to insert a custom "
 "editor before the built-in one."
 msgstr ""
+"Appelé pour autoriser l'ajout d'éditeurs spécifiques à la propriété dans "
+"l'inspecteur. Habituellement, ils héritent de [EditorProperty]. Retourner "
+"[code]true[/code] supprimera l'éditeur intégré pour cette propriété, c'est-à-"
+"dire que ça permet d'insérer un éditeur personnalisé avant l'éditeur intégré."
 
 #: doc/classes/EditorInterface.xml
 msgid "Godot editor's interface."
@@ -27499,6 +28352,9 @@ msgid ""
 "Edits the given [Resource]. If the resource is a [Script] you can also edit "
 "it with [method edit_script] to specify the line and column position."
 msgstr ""
+"Modifie la [Resource] donnée. Si la ressource est un [Script], vous pouvez "
+"également la modifier avec [method edit_script] en spécifiant la position de "
+"la ligne et de la colonne."
 
 #: doc/classes/EditorInterface.xml
 msgid ""
@@ -27506,6 +28362,10 @@ msgid ""
 "can also be specified. The script will be open with the user-configured "
 "editor for the script's language which may be an external editor."
 msgstr ""
+"Modifie le [Script]. La ligne et la colonne à laquelle ce script s'ouvre "
+"peut également être spécifiées. Le script sera ouvert avec l'éditeur "
+"configuré par l'utilisateur pour ce type de langage, où un éditeur externe "
+"peut être spécifié."
 
 #: doc/classes/EditorInterface.xml
 msgid ""
@@ -27515,10 +28375,15 @@ msgid ""
 "[b]Warning:[/b] Removing and freeing this node will render the editor "
 "useless and may cause a crash."
 msgstr ""
+"Retourne le conteneur principal de la fenêtre de l'éditeur de Godot. Par "
+"exemple, vous pouvez l'utiliser pour récupérer la taille du conteneur et "
+"placer vos contrôles en conséquence.\n"
+"[b]Avertissement :[/b] Enlever et libérer ce nœud rend l'éditeur inutile et "
+"peut causer un plantage."
 
 #: doc/classes/EditorInterface.xml
 msgid "Returns the current path being viewed in the [FileSystemDock]."
-msgstr ""
+msgstr "Retourne l'actuel chemin en train d'être vu dans le [FileSystemDock]."
 
 #: doc/classes/EditorInterface.xml
 msgid "Returns the edited (current) scene's root [Node]."
@@ -27533,6 +28398,13 @@ msgid ""
 "code] and [code]interface/editor/custom_display_scale[/code] editor "
 "settings. Editor must be restarted for changes to be properly applied."
 msgstr ""
+"Retourne l'échelle actuelle de l'interface de l'éditeur ([code]1.0[/code] "
+"étant une échelle à 100%). Cela peut être utilisé pour régler la position et "
+"les dimensions des interfaces utilisateurs ajoutées par les greffons.\n"
+"[b]Note :[/b] Cette valeur est définie par [code]interface/editor/"
+"display_scale[/code] et [code]interface/editor/custom_display_scale[/code]. "
+"L'éditeur doit être redémarré pour que les changements soient complètement "
+"appliqués."
 
 #: doc/classes/EditorInterface.xml
 msgid "Returns the editor's [EditorSettings] instance."
@@ -27609,6 +28481,9 @@ msgid ""
 "[FileSystemDock]. If a file is selected, its base directory will be returned "
 "using [method String.get_base_dir] instead."
 msgstr ""
+"Retourne le chemin du dossier actuellement sélectionné dans le "
+"[FileSystemDock]. Si un fichier est sélectionné, son dossier de base sera "
+"retourné en utilisant [method String.get_base_dir]."
 
 #: doc/classes/EditorInterface.xml
 msgid "Returns the editor's [EditorSelection] instance."
@@ -27620,6 +28495,10 @@ msgid ""
 "Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins "
 "will not attempt to edit [code]object[/code]."
 msgstr ""
+"Affiche la propriété donnée sur le [code]object[/code] donné dans la barre "
+"d'outils de l'inspecteur de l'éditeur. Si [code]inspector_only[/code] est "
+"[code]true[/code], les greffons ne tenteront pas de modifier cet "
+"[code]object[/code]."
 
 #: doc/classes/EditorInterface.xml
 #, fuzzy
@@ -27693,6 +28572,10 @@ msgid ""
 "([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/"
 "code])."
 msgstr ""
+"Spécifie l'écran principal courant de l'éditeur activé avec celui nommé "
+"[code]name[/code]. [code]name[/code] doit correspondre exactement au texte "
+"de l'onglet en question (soit [code]2D[/code], [code]3D[/code], "
+"[code]Script[/code], ou [code]AssetLib[/code])."
 
 #: doc/classes/EditorInterface.xml
 msgid ""
@@ -27711,6 +28594,8 @@ msgid ""
 "If [code]true[/code], enables distraction-free mode which hides side docks "
 "to increase the space available for the main view."
 msgstr ""
+"Si [code]true[/code], active le mode sans distraction qui cache les barres "
+"d'outils latérales pour augmenter l'espace disponible pour la vue principale."
 
 #: doc/classes/EditorPlugin.xml
 msgid "Used by the editor to extend its functionality."
@@ -27723,6 +28608,10 @@ msgid ""
 "plugins and export plugins. See also [EditorScript] to add functions to the "
 "editor."
 msgstr ""
+"Les greffons sont utilisés par l'éditeur pour étendre les fonctionnalités. "
+"Les types les plus courants de greffons sont ceux qui modifient un nœud "
+"donné ou un type de ressource, les greffons d'importation et d'exportation. "
+"Voir aussi [EditorScript] pour ajouter des fonctions à l'éditeur."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27879,6 +28768,9 @@ msgid ""
 "Registers a new [EditorSceneImporter]. Scene importers are used to import "
 "custom 3D asset formats as scenes."
 msgstr ""
+"Enregistre un nouveau [EditorSceneImporter]. Les importateurs de scène sont "
+"utilisés pour importer des formats d'éléments 3D personnalisés comme des "
+"scènes."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27886,6 +28778,11 @@ msgid ""
 "custom gizmos to the 3D preview viewport for a [Spatial].\n"
 "See [method add_inspector_plugin] for an example of how to register a plugin."
 msgstr ""
+"Enregistre un nouveau [EditorSpatialGizmoPlugin]. Les greffons du "
+"manipulateur sont utilisés pour ajouter des manipulateurs personnalisés dans "
+"la fenêtre d'affichage 3D pour transformer un [Spatial].\n"
+"Voir [method add_inspector_greffon] pour un exemple sur comment enregistrer "
+"un greffon."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27909,6 +28806,13 @@ msgid ""
 "This is used, for example, in shader editors to let the plugin know that it "
 "must apply the shader code being written by the user to the object."
 msgstr ""
+"Cette méthode est appelée lorsque l'éditeur est sur le point d'enregistrer "
+"le projet, passer à un autre onglet, etc. Il demande au greffon d'appliquer "
+"tout changement d'état qui serait en attente pour garder une certaine "
+"cohérence.\n"
+"Ceci est utilisé, par exemple, dans les éditeurs d'ombres pour signaler au "
+"greffon qu'il doit appliquer le shader d'ombre écrit par l'utilisateur à "
+"l'objet."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27918,6 +28822,13 @@ msgid ""
 "code], the project will not run. The run is aborted immediately, so this "
 "also prevents all other plugins' [method build] methods from running."
 msgstr ""
+"Cette méthode est appelée lorsque l'éditeur est sur le point de lancer le "
+"projet. Le greffon peut ensuite effectuer les opérations requises avant le "
+"lancement du projet.\n"
+"Cette méthode doit retourner un booléen. Si cette méthode retourne "
+"[code]false[/code], le projet ne sera pas lancé. Le lancement sera "
+"immédiatement annulé, ce qui empêche également toutes les autres méthodes de "
+"fonctionnement des greffons."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27925,24 +28836,34 @@ msgid ""
 "your plugin does not keep editing a currently existing node, or a node from "
 "the wrong scene."
 msgstr ""
+"Efface tout l'état et réinitialise à zéro l'objet modifié. Cela garantit que "
+"votre greffon ne maintient pas l'édition d'un nœud existant ou d'une autre "
+"scène."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
 "Called by the engine when the user disables the [EditorPlugin] in the Plugin "
 "tab of the project settings window."
 msgstr ""
+"Appelé par le moteur lorsque l'utilisateur désactive le [EditorPlugin] dans "
+"l'onglet Greffon de la fenêtre des paramètres du projet."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
 "This function is used for plugins that edit specific object types (nodes or "
 "resources). It requests the editor to edit the given object."
 msgstr ""
+"Cette fonction est utilisée pour les greffons qui modifient des types "
+"d'objets spécifiques (nœuds ou ressources). Il demande à l'éditeur de "
+"modifier l'objet spécifié."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
 "Called by the engine when the user enables the [EditorPlugin] in the Plugin "
 "tab of the project settings window."
 msgstr ""
+"Appelé par le moteur lorsque l'utilisateur active le [EditorPlugin] dans "
+"l'onglet Greffon de la fenêtre des paramètres du projet."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -27989,6 +28910,11 @@ msgid ""
 "You need to enable calling of this method by using [method "
 "set_force_draw_over_forwarding_enabled]."
 msgstr ""
+"Cette méthode est la même que [method forward_canvas_draw_over_viewport], "
+"sauf qu'elle est dessinée au-dessus de tout le reste. Utile quand vous avez "
+"besoin d'une calque supplémentaire qui s'affiche par dessus les autres.\n"
+"Vous devez activer l'appel de cette méthode en utilisant [method "
+"set_force_draw_over_forwarding_enabled]."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28079,6 +29005,11 @@ msgid ""
 "You need to enable calling of this method by using [method "
 "set_force_draw_over_forwarding_enabled]."
 msgstr ""
+"Cette méthode est la même que [method forward_spatial_draw_over_viewport], "
+"sauf qu'elle est dessinée au-dessus de tout le reste. Utile quand vous avez "
+"besoin d'une calque supplémentaire qui s'affiche par dessus les autres.\n"
+"Vous devez activer l'appel de cette méthode en utilisant [method "
+"set_force_draw_over_forwarding_enabled]."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28132,6 +29063,9 @@ msgid ""
 "breakpoints in the format ([code]script:line[/code]), for example: "
 "[code]res://path_to_script.gd:25[/code]."
 msgstr ""
+"C'est pour les éditeurs qui modifient des objets basés sur des scripts. Vous "
+"pouvez retourner une liste de points d'arrêt avec le format ([code]script:"
+"line[/code]), par exemple : [code]res://path_to_script.gd:25[/code]."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28318,6 +29252,11 @@ msgid ""
 "Remember that you have to manage the visibility of all your editor controls "
 "manually."
 msgstr ""
+"Cette fonction sera appelée lorsqu'il est demandé à l'éditeur de devenir "
+"visible. Il est utilisé pour les greffons qui modifient un type d'objet "
+"spécifique.\n"
+"Rappelez-vous que vous devez gérer manuellement la visibilité de tous les "
+"contrôles de votre éditeur."
 
 #: doc/classes/EditorPlugin.xml
 msgid "Queue save the project's editor layout."
@@ -28390,6 +29329,9 @@ msgid ""
 "This method is called after the editor saves the project or when it's "
 "closed. It asks the plugin to save edited external scenes/resources."
 msgstr ""
+"Cette méthode est appelée après que l'éditeur enregistre le projet ou "
+"lorsqu'il est fermé. Il demande au greffon d'enregistrer les scènes et "
+"ressources externes modifiées."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28398,6 +29340,11 @@ msgid ""
 "editor when their viewports are updated. You need to call this method only "
 "once and it will work permanently for this plugin."
 msgstr ""
+"Permet d'appeler [method forward_canvas_force_draw_over_viewport] pour "
+"l'éditeur 2D et [method forward_spatial_force_draw_over_viewport] pour "
+"l'éditeur 3D lorsque leurs fenêtres d'affichage sont mises à jour. Vous "
+"devez appeler cette méthode qu'une seule fois, et ça fonctionnera en "
+"permanence pour ce greffon."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28405,6 +29352,9 @@ msgid ""
 "inside [method forward_spatial_gui_input]. It might be especially usable if "
 "your plugin will want to use raycast in the scene."
 msgstr ""
+"Utilisez cette méthode si vous voulez toujours recevoir les entrées dans "
+"l'écran d'aperçu 3D dans [method forward_spatial_gui_input]. Ça peut être "
+"utile si votre greffon veut utiliser un Raycast dans la scène."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28461,6 +29411,11 @@ msgid ""
 "forward_spatial_draw_over_viewport] and [method "
 "forward_spatial_force_draw_over_viewport] to be called."
 msgstr ""
+"Met à jour des sur-couches de l'éditeur 2D et 3D. Fait que les méthodes "
+"[method forward_canvas_draw_over_viewport], [method "
+"forward_canvas_force_draw_over_viewport], [method "
+"forward_spatial_draw_over_viewport] et [method "
+"forward_spatial_force_draw_over_port] seront appelées."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28477,6 +29432,9 @@ msgid ""
 "the root node of the scene that has just become active. If this scene is new "
 "and empty, the argument will be [code]null[/code]."
 msgstr ""
+"Émis lorsque la scène est changée dans l'éditeur. L'argument retournera le "
+"nœud racine de la scène qui vient de devenir active. Si cette scène est "
+"nouvelle et vide, l'argument sera [code]null[/code]."
 
 #: doc/classes/EditorPlugin.xml
 msgid ""
@@ -28508,6 +29466,8 @@ msgid ""
 "If any of the controls added can gain keyboard focus, add it here. This "
 "ensures that focus will be restored if the inspector is refreshed."
 msgstr ""
+"Si l'un des contrôles ajoutés peut récupérer le focus du clavier, ajoutez-le "
+"ici. Cela permettra de rétablir le focus si l'inspecteur est mis à jour."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28517,6 +29477,11 @@ msgid ""
 "requesting this property to be refreshed (leave as [code]false[/code] if "
 "unsure)."
 msgstr ""
+"Si une ou plusieurs propriétés ont changé, cela doit être appelé. "
+"[code]field[/code] est utilisé au cas où votre éditeur peut modifier les "
+"champs séparément (par exemple : Vector3.x) L'argument [code]changing[/code] "
+"évite à l'éditeur de demander que cette propriété soit rafraîchie (laissez-"
+"le à [code]false[/code] en cas de doute)."
 
 #: doc/classes/EditorProperty.xml
 msgid "Gets the edited object."
@@ -28528,16 +29493,23 @@ msgid ""
 "[method EditorInspectorPlugin.parse_property]), then this will return the "
 "property."
 msgstr ""
+"Retourne la propriété modifiée. Si votre éditeur n'est que pour une seule "
+"propriété (ajouté par [method EditorInspectorPlugin.parse_property]), cela "
+"retournera la propriété."
 
 #: doc/classes/EditorProperty.xml
 msgid "Must be implemented to provide a custom tooltip to the property editor."
 msgstr ""
+"Doit être implémenté pour fournir un outil personnalisé dans l'éditeur de "
+"propriété."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
 "Puts the [code]editor[/code] control below the property label. The control "
 "must be previously added using [method Node.add_child]."
 msgstr ""
+"Place le contrôle [code]editor[/code] sous le label de la propriété. Le "
+"contrôle doit d'abord être ajouté avec [method Node.add_child]"
 
 #: doc/classes/EditorProperty.xml
 msgid "When this virtual function is called, you must update your editor."
@@ -28550,11 +29522,15 @@ msgid ""
 "Used by the inspector, set to [code]true[/code] when the property is "
 "checkable."
 msgstr ""
+"Utilisé par l'inspecteur, défini à [code]true[/code] lorsque la propriété "
+"peut être cochée."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
 "Used by the inspector, set to [code]true[/code] when the property is checked."
 msgstr ""
+"Utilisé par l'inspecteur, défini à [code]true[/code] quand la propriété est "
+"cochée."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28562,6 +29538,9 @@ msgid ""
 "with the editor theme's warning color. This is used for editable children's "
 "properties."
 msgstr ""
+"Utilisé par l'inspecteur, définit à [code]true[/code] quand la propriété est "
+"affiché avec la couleur d'avertissement de l'éditeur. Ceci est utilisé pour "
+"les propriétés modifiables pour les nœuds enfants."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28582,16 +29561,23 @@ msgid ""
 "Used by the inspector, set to [code]true[/code] when the property is read-"
 "only."
 msgstr ""
+"Utilisé par l'inspecteur, défini à [code]true[/code] quand la propriété est "
+"en lecture-seule."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
 "Emit it if you want multiple properties modified at the same time. Do not "
 "use if added via [method EditorInspectorPlugin.parse_property]."
 msgstr ""
+"Emettez-le si vous voulez plusieurs propriétés modifiées en même temps. Ne "
+"pas utiliser s'il a été ajouté avec [method EditorInspectorPlugin."
+"parse_property]"
 
 #: doc/classes/EditorProperty.xml
 msgid "Used by sub-inspectors. Emit it if what was selected was an Object ID."
 msgstr ""
+"Utilisé par des sous-inspecteurs. Émettez-le si l'identifiant d'un Object a "
+"été sélectionné."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28609,10 +29595,14 @@ msgid ""
 "Emit it if you want to add this value as an animation key (check for keying "
 "being enabled first)."
 msgstr ""
+"Émettez-le si vous voulez ajouter cette valeur comme clé d'animation "
+"(vérifiez que la clé est d'abord activée)."
 
 #: doc/classes/EditorProperty.xml
 msgid "Emit it if you want to key a property with a single value."
 msgstr ""
+"Emettez-le si vous voulez définir une clé pour cette propriété avec une "
+"valeur unique."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28622,6 +29612,11 @@ msgid ""
 "instantiated and can come from an ancestor scene in the inheritance/"
 "instancing chain, a script or a builtin class."
 msgstr ""
+"Émettez-le si vous voulez marquer (ou dé-marquer) la valeur d'une propriété "
+"pour être sauvegardée peu importe si elle est égale à la valeur par défaut.\n"
+"La valeur par défaut est celle que la propriété obtiendra lorsque le nœud "
+"est juste instancié et peut venir d'une scène instanciée ou héritée, d'un "
+"script ou d'une classe intégrée."
 
 #: doc/classes/EditorProperty.xml
 msgid ""
@@ -28649,6 +29644,13 @@ msgid ""
 "[b]Note:[/b] This [Control] does not include any editor for the resource, as "
 "editing is controlled by the Inspector dock itself or sub-Inspectors."
 msgstr ""
+"Ce nœud [Control] est utilisé dans la barre d'outils de l'inspecteur de "
+"l'éditeur pour permettre l'édition des propriétés de type [Resource]. Il "
+"offre des options pour créer, charger, enregistrer et convertir des "
+"ressources. Peut être utilisé avec [EditorInspectorPlugin] pour recréer le "
+"même comportement.\n"
+"[b]Note :[/b] Ce [Control] n'inclut aucun éditeur de la ressource, car "
+"l'édition est contrôlée par l'inspecteur lui-même ou les sous-inspecteurs."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
@@ -28656,12 +29658,17 @@ msgid ""
 "[member base_type]. If the [member base_type] is empty, an empty list is "
 "returned."
 msgstr ""
+"Retourne une liste de tous les types et sous-types autorisés correspondant "
+"au [member base_type]. Si le [member base_type] est vide, une liste vide est "
+"retournée."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
 "This virtual method can be implemented to handle context menu items not "
 "handled by default. See [method set_create_options]."
 msgstr ""
+"Cette méthode virtuelle peut être implémentée pour gérer les éléments du "
+"menu contextuel non gérés par défaut. Voir [method set_create_options]."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
@@ -28672,12 +29679,20 @@ msgid ""
 "[b]Note:[/b] Implement [method handle_menu_selected] to handle these custom "
 "items."
 msgstr ""
+"Cette méthode virtuelle est appelée lors de la mise à jour du menu "
+"contextuel de [EditorResourcePicker]. Implémenter cette méthode pour "
+"remplacer les éléments dans « Nouveau... » par vos propres options. "
+"[code]menu_nœud[/code] est une référence au nœud [PopupMenu].\n"
+"[b]Note :[/b] Implémentez [method handle_menu_sélection] pour traiter ces "
+"éléments personnalisés."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
 "Sets the toggle mode state for the main button. Works only if [member "
 "toggle_mode] is set to [code]true[/code]."
 msgstr ""
+"Définit l'état du mode de basculement pour le bouton principal. Fonctionne "
+"uniquement si [member toggle_mode] est défini à [code]true[/code]."
 
 #: doc/classes/EditorResourcePicker.xml
 msgid ""
@@ -28700,6 +29715,9 @@ msgid ""
 "If [code]true[/code], the main button with the resource preview works in the "
 "toggle mode. Use [method set_toggle_pressed] to manually set the state."
 msgstr ""
+"Si [code]true[/code], le bouton principal avec la prévisualisation des "
+"ressources fonctionne avec le mode de basculement. Utilisez [method "
+"set_toggle_pressed] pour définir manuellement cet état."
 
 #: doc/classes/EditorResourcePicker.xml
 #, fuzzy
@@ -28712,6 +29730,9 @@ msgid ""
 "[code]edit[/code] is [code]true[/code], the signal was caused by the context "
 "menu \"Edit\" option."
 msgstr ""
+"Émis lorsque la valeur de ressource a été définie et que l'utilisateur a "
+"cliqué pour la modifier. Lorsque [code]edit[/code] est [code]true[/code], le "
+"signal a été causé par le menu contextuel \"Édition\"."
 
 #: doc/classes/EditorResourcePreview.xml
 msgid "Helper to generate previews of resources or files."
@@ -28723,6 +29744,11 @@ msgid ""
 "[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access "
 "the singleton using [method EditorInterface.get_resource_previewer]."
 msgstr ""
+"Cet objet est utilisé pour générer des aperçus pour les ressources de "
+"fichiers.\n"
+"[b]Note :[/b] Cette classe ne devrait pas être instanciée directement. "
+"Accédez plutôt à l'instance unique en utilisant [method EditorInterface."
+"get_resource_previewer]"
 
 #: doc/classes/EditorResourcePreview.xml
 msgid "Create an own, custom preview generator."
@@ -28733,6 +29759,8 @@ msgid ""
 "Check if the resource changed, if so, it will be invalidated and the "
 "corresponding signal emitted."
 msgstr ""
+"Vérifiez si la ressource a changé, si oui, elle sera invalidée et le signal "
+"correspondant émis."
 
 #: doc/classes/EditorResourcePreview.xml
 msgid ""
@@ -28792,6 +29820,8 @@ msgid ""
 "Emitted if a preview was invalidated (changed). [code]path[/code] "
 "corresponds to the path of the preview."
 msgstr ""
+"Émis si un aperçu a été invalidé (c'est-à-dire changé). [code]path[/code] "
+"correspond au chemin de l'aperçu."
 
 #: doc/classes/EditorResourcePreviewGenerator.xml
 msgid "Custom generator of previews."
@@ -28803,6 +29833,9 @@ msgid ""
 "thumbnail_size[/code] in [EditorSettings] to find out the right size to do "
 "previews at."
 msgstr ""
+"Le Code personnalisé pour générer des aperçus. Veuillez cocher "
+"[code]file_dialog/thumbnail_size[/code] dans [EditorSettings] pour connaître "
+"la taille correcte des prévisualisations."
 
 #: doc/classes/EditorResourcePreviewGenerator.xml
 msgid ""
@@ -28925,6 +29958,10 @@ msgid ""
 "to [EditorSceneImporterGLTF] within a script will cause an error in an "
 "exported project."
 msgstr ""
+"[b]Note :[/b] Cette classe n'est compilée que pour les éditeurs. Le "
+"chargement et l'enregistrement au format glTF [i]n'est pas[/i] disponible "
+"dans les projets exportés. Les références à [EditorSceneImporterGLTF] dans "
+"un script provoquent une erreur dans un projet exporté."
 
 #: doc/classes/EditorScenePostImport.xml
 msgid "Post-processes scenes after import."
@@ -29001,6 +30038,8 @@ msgid ""
 "Called after the scene was imported. This method must return the modified "
 "version of the scene."
 msgstr ""
+"Appelé après l'importation de la scène. Cette méthode doit retourner la "
+"version modifiée de la scène."
 
 #: doc/classes/EditorScript.xml
 msgid "Base script that can be used to add extension functions to the editor."
@@ -29057,6 +30096,10 @@ msgid ""
 "Adds [code]node[/code] as a child of the root node in the editor context.\n"
 "[b]Warning:[/b] The implementation of this method is currently disabled."
 msgstr ""
+"Ajoute [code]node[/code] comme enfant du nœud racine dans le contexte de "
+"l'éditeur.\n"
+"[b]Avertissement :[/b] L'implémentation de cette méthode est actuellement "
+"désactivée."
 
 #: doc/classes/EditorScript.xml
 msgid "Returns the [EditorInterface] singleton instance."
@@ -29071,6 +30114,8 @@ msgid ""
 "Godot editor's control for selecting the [code]script[/code] property of a "
 "[Node]."
 msgstr ""
+"Le contrôle de l'éditeur Godot pour sélectionner la propriété [code]script[/"
+"code] d'un [Node]."
 
 #: doc/classes/EditorScriptPicker.xml
 msgid ""
@@ -29107,6 +30152,10 @@ msgid ""
 "[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access "
 "the singleton using [method EditorInterface.get_selection]."
 msgstr ""
+"Cet objet gère la sélection dans le SceneTree dans l'éditeur.\n"
+"[b]Note :[/b] Cette classe ne devrait pas être instanciée directement. "
+"Accédez plutôt à l'instance unique en utilisant [method EditorInterface."
+"get_selection]"
 
 #: doc/classes/EditorSelection.xml
 msgid ""
@@ -29115,6 +30164,10 @@ msgid ""
 "inspector. If you want to edit a node, use [method EditorInterface."
 "edit_node]."
 msgstr ""
+"Ajoute un nœud à la sélection.\n"
+"[b]Note :[/b] Le nouveau nœud sélectionné ne sera pas automatiquement "
+"modifié dans l'inspecteur. Si vous souhaitez modifier un nœud, utilisez "
+"[method EditorInterface.edit_nœud]."
 
 #: doc/classes/EditorSelection.xml
 msgid "Clear the selection."
@@ -29130,6 +30183,10 @@ msgid ""
 "moving them, rotating, etc). This list avoids situations where a node is "
 "selected and also child/grandchild."
 msgstr ""
+"Retourne la liste des nœuds sélectionnés, optimisés pour les opérations de "
+"transformation (c'est-à-dire le fait de les déplacer, les faire pivoter, "
+"etc.). Cette liste évite les situations où un nœud est sélectionné et mais "
+"aussi ses descendants."
 
 #: doc/classes/EditorSelection.xml
 msgid "Removes a node from the selection."
@@ -29244,6 +30301,10 @@ msgid ""
 "[code]key[/code] specified. If the metadata doesn't exist, [code]default[/"
 "code] will be returned instead. See also [method set_project_metadata]."
 msgstr ""
+"Retourne les métadonnées spécifiques au projet pour la [code]section[/code] "
+"et [code]key[/code] spécifiées. Si les métadonnées n'existent pas, "
+"[code]default[/code] sera retourné à la place. Voir aussi [method "
+"set_project_metadata]."
 
 #: doc/classes/EditorSettings.xml
 msgid ""
@@ -29268,6 +30329,8 @@ msgid ""
 "Returns the value of the setting specified by [code]name[/code]. This is "
 "equivalent to using [method Object.get] on the EditorSettings instance."
 msgstr ""
+"Retourne la valeur du paramètre spécifié par [code]name[/code]. Ceci est "
+"équivalent à l'utiliser [method Object.get] sur l'instance EditorSettings."
 
 #: doc/classes/EditorSettings.xml
 msgid ""
@@ -29297,6 +30360,10 @@ msgid ""
 "When this method returns [code]true[/code], a Revert button will display "
 "next to the setting in the Editor Settings."
 msgstr ""
+"Retourne [code]true[/code] si le paramètre spécifié par [code]name[/code] "
+"peut avoir sa valeur rétablie à cette par défaut, ou [code]false[/code] "
+"sinon. Lorsque cette méthode retourne [code]true[/code], un bouton Rétablir "
+"s'affichera à côté du réglage dans les paramètres de l'éditeur."
 
 #: doc/classes/EditorSettings.xml
 msgid ""
@@ -29304,6 +30371,9 @@ msgid ""
 "This is the value that would be applied when clicking the Revert button in "
 "the Editor Settings."
 msgstr ""
+"Retourne la valeur par défaut du paramètre spécifié par [code]name[/code]. "
+"C'est la valeur qui sera appliquée en cliquant sur le bouton Rétablir dans "
+"les paramètres de l'éditeur."
 
 #: doc/classes/EditorSettings.xml
 msgid "Sets the list of favorite files and directories for this project."
@@ -29329,6 +30399,11 @@ msgid ""
 "project folder and therefore won't be checked into version control. See also "
 "[method get_project_metadata]."
 msgstr ""
+"Définit des métadonnées spécifiques au projet dans la [code]section[/code], "
+"la [code]key[/code] et les [code]data[/code] spécifiées. Ces métadonnées "
+"sont enregistrées à l'extérieur du dossier du projet, et donc pas dans le "
+"système de contrôle de version (Git, etc.). Voir aussi [method "
+"get_project_metadata]."
 
 #: doc/classes/EditorSettings.xml
 msgid ""
@@ -29344,6 +30419,9 @@ msgid ""
 "This is equivalent to using [method Object.set] on the EditorSettings "
 "instance."
 msgstr ""
+"Définit la [code]value[/code] du paramètre nommé [code]name[/code]. Cela "
+"équivaut à l'utilisation de [method Object.set] sur l'instance "
+"EditorSettings."
 
 #: doc/classes/EditorSettings.xml
 msgid "Emitted after any editor setting has changed."
@@ -29355,6 +30433,9 @@ msgid ""
 "plugins to update their visuals on theme changes or logic on configuration "
 "changes."
 msgstr ""
+"Émis après que n'importe quel réglage de l'édiateur a changé. Il est utilisé "
+"par divers greffons de l'éditeurs pour mettre à jour leur affichage lors de "
+"changements de thème ou de configuration."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid "Custom gizmo for editing Spatial objects."
@@ -29366,12 +30447,18 @@ msgid ""
 "(handles) for 3D Spatial objects. See [EditorSpatialGizmoPlugin] for more "
 "information."
 msgstr ""
+"Un manipulateur personnalisé qui est utilisé pour la visualisation et "
+"l'édition personnalisées (poignets) pour les objets 3D de type Spatial. Voir "
+"[EditorSpatialGizmoPlugin] pour plus d'informations."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
 "Adds the specified [code]segments[/code] to the gizmo's collision shape for "
 "picking. Call this function during [method redraw]."
 msgstr ""
+"Ajoute le [code]segments[/code] spécifié à la forme de collision du "
+"manipulateur pour la sélection. Appelez cette fonction durant [method "
+"redraw]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -29379,6 +30466,9 @@ msgid ""
 "generated from a regular [Mesh] too. Call this function during [method "
 "redraw]."
 msgstr ""
+"Ajoute des triangles de collision au manipulateur pour la sélection. Un "
+"[TriangleMesh] peut être généré à partir d'un [Mesh] régulier. Appelez cette "
+"fonction durant [method redraw]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -29387,6 +30477,10 @@ msgid ""
 "There are virtual functions which will be called upon editing of these "
 "handles. Call this function during [method redraw]."
 msgstr ""
+"Ajoute une liste de poignées (points) qui peuvent être utilisées pour "
+"déformer l'objet en cours d'édition.\n"
+"Il y a des fonctions virtuelles qui seront appelés à l'édition de ces "
+"poignées. Appelez cette fonction durant [method redraw]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -29394,6 +30488,9 @@ msgid ""
 "lines are used for visualizing the gizmo. Call this function during [method "
 "redraw]."
 msgstr ""
+"Ajoute des lignes au gizmo (une liste de paires de points), avec un matériau "
+"donné. Les lignes sont utilisées pour visualiser le manipulateur. Appelez "
+"cette fonction durant [method redraw]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -29402,6 +30499,11 @@ msgid ""
 "is [code]true[/code], the mesh will rotate to always face the camera. Call "
 "this function during [method redraw]."
 msgstr ""
+"Ajoute un maillage au manipulateur avec l'état [code]billboard[/code] "
+"spécifié, [code]skeleton[/code] et [code]material[/code]. Si "
+"[code]billboard[/code] est [code]true[/code], le maillage tourne pour "
+"toujours faire toujours face à la caméra. Appelez cette fonction durant "
+"[method redraw]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
@@ -29430,18 +30532,28 @@ msgid ""
 "by [method add_handles]).\n"
 "Handles can be named for reference to the user when editing."
 msgstr ""
+"Retourne le nom d'une poignée modifiée (ces poignées doivent d'abord être "
+"ajoutées avec [méthode add_handles]).\n"
+"Les poignées peuvent être nommées pour référence à l'utilisateur lors de "
+"l'édition."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
 "Gets actual value of a handle. This value can be anything and used for "
 "eventually undoing the motion when calling [method commit_handle]."
 msgstr ""
+"Retourne la valeur réelle d'une poignée. Cette valeur peut être n'importe "
+"quoi et utilisée pour finalement annuler le mouvement en appelant [method "
+"commit_handle]."
 
 #: doc/classes/EditorSpatialGizmo.xml
 msgid ""
 "Returns the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to "
 "retrieve materials using [method EditorSpatialGizmoPlugin.get_material]."
 msgstr ""
+"Retourne le [EditorSpatialGizmoPlugin] qui possède ce manipulateur. Il est "
+"utile de récupérer les matériaux en utilisant [method "
+"EditorSpatialGizmoPlugin.get_material]"
 
 #: doc/classes/EditorSpatialGizmo.xml
 #, fuzzy
@@ -29524,6 +30636,9 @@ msgid ""
 "nodes of your choice, return [code]null[/code] for the rest of nodes. See "
 "also [method has_gizmo]."
 msgstr ""
+"Surchargez cette méthode pour retourner un [EditorSpatialGizmo] personnalisé "
+"pour les nœuds spatiaux de votre choix, retourner [code]null[/code] pour le "
+"reste des nœuds. Voir aussi [method has_gizmo]."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -29533,6 +30648,12 @@ msgid ""
 "Should not be overridden.\n"
 "You can optionally provide a texture to use instead of the default icon."
 msgstr ""
+"Crée un matériau de poignée avec ses variantes (sélectionnées et/ou "
+"modifiables) et les ajoute à la liste interne des matériaux. Ils peuvent "
+"ensuite être consultés avec [method get_material] et utilisés dans [method "
+"EditorSpatialGizmo.add_handles] Ne devrait pas être surchargé.\n"
+"Vous pouvez en option fournir une texture à utiliser à la place de l'icône "
+"par défaut."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -29541,6 +30662,10 @@ msgid ""
 "[method get_material] and used in [method EditorSpatialGizmo."
 "add_unscaled_billboard]. Should not be overridden."
 msgstr ""
+"Crée un matériau d'icône avec ses variantes (sélectionnées et/ou "
+"modifiables) et les ajoute à la liste interne des matériaux. Ils peuvent "
+"ensuite être consultés avec [method get_material] et utilisés dans [method "
+"EditorSpatialGizmo.add_unscaled_billboard]. Ne devrait pas être surchargé."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -29549,6 +30674,11 @@ msgid ""
 "[method get_material] and used in [method EditorSpatialGizmo.add_mesh] and "
 "[method EditorSpatialGizmo.add_lines]. Should not be overridden."
 msgstr ""
+"Crée un matériau non éclairé avec ses variantes (sélectionnées et/ou "
+"modifiables) et les ajoute à la liste interne des matériaux. Ils peuvent "
+"ensuite être consultés avec [method get_material] et utilisés dans [method "
+"EditorSpatialGizmo.add_mesh] et [method EditorSpatialGizmo.add_lines]. Ne "
+"devrait pas être dépassé."
 
 #: doc/classes/EditorSpatialGizmoPlugin.xml
 msgid ""
@@ -36815,13 +37945,14 @@ msgstr "Nombre maximal de redirections autorisées."
 
 #: doc/classes/HTTPRequest.xml
 msgid ""
-"If set to a value greater than [code]0.0[/code], the HTTP request will time "
-"out after [code]timeout[/code] seconds have passed and the request is not "
-"[i]completed[/i] yet. For small HTTP requests such as REST API usage, set "
-"[member timeout] to a value greater than [code]0.0[/code] to prevent the "
-"application from getting stuck if the request fails to get a response in a "
-"timely manner. For file downloads, leave this to [code]0.0[/code] to prevent "
-"the download from failing if it takes too much time."
+"If set to a value greater than [code]0.0[/code] before the request starts, "
+"the HTTP request will time out after [code]timeout[/code] seconds have "
+"passed and the request is not [i]completed[/i] yet. For small HTTP requests "
+"such as REST API usage, set [member timeout] to a value between [code]10.0[/"
+"code] and [code]30.0[/code] to prevent the application from getting stuck if "
+"the request fails to get a response in a timely manner. For file downloads, "
+"leave this to [code]0.0[/code] to prevent the download from failing if it "
+"takes too much time."
 msgstr ""
 
 #: doc/classes/HTTPRequest.xml
@@ -38376,9 +39507,9 @@ msgid ""
 "freehand lines is required, input accumulation should generally be disabled "
 "while the user is drawing the line to get results that closely follow the "
 "actual input.\n"
-"[b]Note:[/b] Input accumulation is [i]disabled[/i] by default for backward "
-"compatibility reasons. It is however recommended to enable it for games "
-"which don't require very reactive input, as this will decrease CPU usage."
+"[b]Note:[/b] Input accumulation is [i]enabled[/i] by default. It is "
+"recommended to keep it enabled for games which don't require very reactive "
+"input, as this will decrease CPU usage."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -39018,10 +40149,13 @@ msgstr "Type d’évènement d’entrée pour les évènements de mouvement de s
 msgid ""
 "Contains mouse and pen motion information. Supports relative, absolute "
 "positions and speed. See [method Node._input].\n"
-"[b]Note:[/b] By default, this event can be emitted multiple times per frame "
-"rendered, allowing for precise input reporting, at the expense of CPU usage. "
-"You can set [member Input.use_accumulated_input] to [code]true[/code] to let "
-"multiple events merge into a single emitted event per frame.\n"
+"[b]Note:[/b] The behavior of this event is affected by the value of [member "
+"Input.use_accumulated_input]. When set to [code]true[/code] (default), mouse/"
+"pen motion events received from the OS will be merged to emit an accumulated "
+"event only once per frame rendered at most. When set to [code]false[/code], "
+"the events will be emitted as received, which means that they can be emitted "
+"multiple times per frame rendered, allowing for precise input reporting at "
+"the expense of CPU usage.\n"
 "[b]Note:[/b] If you use InputEventMouseMotion to draw lines, consider "
 "implementing [url=https://en.wikipedia.org/wiki/"
 "Bresenham%27s_line_algorithm]Bresenham's line algorithm[/url] as well to "
@@ -39031,6 +40165,15 @@ msgstr ""
 #: doc/classes/InputEventMouseMotion.xml
 msgid "Mouse and input coordinates"
 msgstr "Les coordonnées de la souris"
+
+#: doc/classes/InputEventMouseMotion.xml
+#, fuzzy
+msgid ""
+"Returns [code]true[/code] when using the eraser end of a stylus pen.\n"
+"[b]Note:[/b] This property is implemented on Linux, macOS and Windows."
+msgstr ""
+"Retourne le nombre de disposition de clavier.\n"
+"[b]Note :[/b] Cette méthode est implémentée sous Linux, macOS et Windows."
 
 #: doc/classes/InputEventMouseMotion.xml
 msgid ""
@@ -55463,6 +56606,14 @@ msgstr ""
 msgid "Changes the byte at the given index."
 msgstr "Change l'octet à la position donnée."
 
+#: doc/classes/PoolByteArray.xml doc/classes/PoolColorArray.xml
+#: doc/classes/PoolIntArray.xml doc/classes/PoolRealArray.xml
+#: doc/classes/PoolStringArray.xml doc/classes/PoolVector2Array.xml
+#: doc/classes/PoolVector3Array.xml
+#, fuzzy
+msgid "Sorts the elements of the array in ascending order."
+msgstr "Retire l' élément du tableau à l'index donné."
+
 #: doc/classes/PoolByteArray.xml
 msgid ""
 "Returns the slice of the [PoolByteArray] between indices (inclusive) as a "
@@ -59009,9 +60160,8 @@ msgid "Optional name for the 3D render layer 13."
 msgstr "Le nom facultatif pour le calque 13 de rendu 3D."
 
 #: doc/classes/ProjectSettings.xml
-#, fuzzy
 msgid "Optional name for the 3D render layer 14."
-msgstr "Le nom facultatif pour le calque 14 de rendu 3D"
+msgstr "Le nom facultatif pour le calque 14 de rendu 3D."
 
 #: doc/classes/ProjectSettings.xml
 msgid "Optional name for the 3D render layer 15."
@@ -65245,7 +66395,8 @@ msgid ""
 "SceneTree.get_processed_tweens] will contain this [SceneTreeTween]). A "
 "[SceneTreeTween] might become invalid when it has finished tweening, is "
 "killed, or when created with [code]SceneTreeTween.new()[/code]. Invalid "
-"[SceneTreeTween]s can't have [Tweener]s appended."
+"[SceneTreeTween]s can't have [Tweener]s appended. You can however still use "
+"[method interpolate_value]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -65285,15 +66436,16 @@ msgstr ""
 msgid ""
 "Sets the number of times the tweening sequence will be repeated, i.e. "
 "[code]set_loops(2)[/code] will run the animation twice.\n"
-"Calling this method without arguments will make the [Tween] run infinitely, "
-"until either it is killed with [method kill], the [Tween]'s bound node is "
-"freed, or all the animated objects have been freed (which makes further "
-"animation impossible).\n"
+"Calling this method without arguments will make the [SceneTreeTween] run "
+"infinitely, until either it is killed with [method kill], the "
+"[SceneTreeTween]'s bound node is freed, or all the animated objects have "
+"been freed (which makes further animation impossible).\n"
 "[b]Warning:[/b] Make sure to always add some duration/delay when using "
 "infinite loops. To prevent the game freezing, 0-duration looped animations "
 "(e.g. a single [CallbackTweener] with no delay) are stopped after a small "
-"number of loops, which may produce unexpected results. If a [Tween]'s "
-"lifetime depends on some node, always use [method bind_node]."
+"number of loops, which may produce unexpected results. If a "
+"[SceneTreeTween]'s lifetime depends on some node, always use [method "
+"bind_node]."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -66922,8 +68074,27 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Spatial.xml
+msgid ""
+"Rotation part of the global transformation in radians, specified in terms of "
+"YXZ-Euler angles in the format (X angle, Y angle, Z angle).\n"
+"[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a "
+"vector. The three Euler angles, which are the three independent parameters "
+"of the Euler-angle parametrization of the rotation matrix, are stored in a "
+"[Vector3] data structure not because the rotation is a vector, but only "
+"because [Vector3] exists as a convenient data-structure to store 3 floating-"
+"point numbers. Therefore, applying affine operations on the rotation "
+"\"vector\" is not meaningful."
+msgstr ""
+
+#: doc/classes/Spatial.xml
 msgid "World space (global) [Transform] of this node."
 msgstr "La [Transform] globale de ce nœud."
+
+#: doc/classes/Spatial.xml
+msgid ""
+"Global position of this node. This is equivalent to [code]global_transform."
+"origin[/code]."
+msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid ""
@@ -78161,11 +79332,11 @@ msgstr ""
 #: doc/classes/VehicleBody.xml
 msgid ""
 "Accelerates the vehicle by applying an engine force. The vehicle is only "
-"speed up if the wheels that have [member VehicleWheel.use_as_traction] set "
-"to [code]true[/code] and are in contact with a surface. The [member "
-"RigidBody.mass] of the vehicle has an effect on the acceleration of the "
-"vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 "
-"range for acceleration.\n"
+"sped up if the wheels that have [member VehicleWheel.use_as_traction] set to "
+"[code]true[/code] and are in contact with a surface. The [member RigidBody."
+"mass] of the vehicle has an effect on the acceleration of the vehicle. For a "
+"vehicle with a mass set to 1000, try a value in the 25 - 50 range for "
+"acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "
 "you will need to add logic for this if you wish to simulate gears.\n"
 "A negative value will result in the vehicle reversing."
@@ -78246,8 +79417,8 @@ msgstr ""
 
 #: doc/classes/VehicleWheel.xml
 msgid ""
-"Accelerates the wheel by applying an engine force. The wheel is only speed "
-"up if it is in contact with a surface. The [member RigidBody.mass] of the "
+"Accelerates the wheel by applying an engine force. The wheel is only sped up "
+"if it is in contact with a surface. The [member RigidBody.mass] of the "
 "vehicle has an effect on the acceleration of the vehicle. For a vehicle with "
 "a mass set to 1000, try a value in the 25 - 50 range for acceleration.\n"
 "[b]Note:[/b] The simulation does not take the effect of gears into account, "

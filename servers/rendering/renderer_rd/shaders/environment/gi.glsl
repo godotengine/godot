@@ -8,6 +8,12 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define M_PI 3.141592
 
+/* Specialization Constants (Toggles) */
+
+layout(constant_id = 0) const bool sc_half_res = false;
+layout(constant_id = 1) const bool sc_use_full_projection_matrix = false;
+layout(constant_id = 2) const bool sc_use_vrs = false;
+
 #define SDFGI_MAX_CASCADES 8
 
 //set 0 for SDFGI and render buffers
@@ -97,18 +103,20 @@ layout(set = 0, binding = 18, std140) uniform SceneData {
 }
 scene_data;
 
+layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffer;
+
 layout(push_constant, std430) uniform Params {
-	uint view_index;
 	uint max_voxel_gi_instances;
 	bool high_quality_vct;
 	bool orthogonal;
+	uint view_index;
 
 	vec4 proj_info;
 
 	float z_near;
 	float z_far;
-	float pad1;
 	float pad2;
+	float pad3;
 }
 params;
 
@@ -140,34 +148,34 @@ vec4 blend_color(vec4 src, vec4 dst) {
 }
 
 vec3 reconstruct_position(ivec2 screen_pos) {
-#ifdef USE_MULTIVIEW
-	vec4 pos;
-	pos.xy = (2.0 * vec2(screen_pos) / vec2(scene_data.screen_size)) - 1.0;
-	pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r * 2.0 - 1.0;
-	pos.w = 1.0;
+	if (sc_use_full_projection_matrix) {
+		vec4 pos;
+		pos.xy = (2.0 * vec2(screen_pos) / vec2(scene_data.screen_size)) - 1.0;
+		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r * 2.0 - 1.0;
+		pos.w = 1.0;
 
-	pos = scene_data.inv_projection[params.view_index] * pos;
+		pos = scene_data.inv_projection[params.view_index] * pos;
 
-	return pos.xyz / pos.w;
-#else
-	vec3 pos;
-	pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r;
-
-	pos.z = pos.z * 2.0 - 1.0;
-	if (params.orthogonal) {
-		pos.z = ((pos.z + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+		return pos.xyz / pos.w;
 	} else {
-		pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - pos.z * (params.z_far - params.z_near));
-	}
-	pos.z = -pos.z;
+		vec3 pos;
+		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r;
 
-	pos.xy = vec2(screen_pos) * params.proj_info.xy + params.proj_info.zw;
-	if (!params.orthogonal) {
-		pos.xy *= pos.z;
-	}
+		pos.z = pos.z * 2.0 - 1.0;
+		if (params.orthogonal) {
+			pos.z = ((pos.z + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+		} else {
+			pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - pos.z * (params.z_far - params.z_near));
+		}
+		pos.z = -pos.z;
 
-	return pos;
-#endif
+		pos.xy = vec2(screen_pos) * params.proj_info.xy + params.proj_info.zw;
+		if (!params.orthogonal) {
+			pos.xy *= pos.z;
+		}
+
+		return pos;
+	}
 }
 
 void sdfvoxel_gi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, out vec3 diffuse_light, out vec3 specular_light) {
@@ -587,7 +595,6 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 vec4 fetch_normal_and_roughness(ivec2 pos) {
 	vec4 normal_roughness = texelFetch(sampler2D(normal_roughness_buffer, linear_sampler), pos, 0);
-
 	normal_roughness.xyz = normalize(normal_roughness.xyz * 2.0 - 1.0);
 	return normal_roughness;
 }
@@ -600,7 +607,7 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
-		vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[params.view_index].xyz));
+		vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
 		vertex = mat3(scene_data.cam_transform) * vertex;
 		normal = normalize(mat3(scene_data.cam_transform) * normal);
 		vec3 reflection = normalize(reflect(-view, normal));
@@ -648,9 +655,35 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
-#ifdef MODE_HALF_RES
-	pos <<= 1;
-#endif
+	uint vrs_x, vrs_y;
+	if (sc_use_vrs) {
+		ivec2 vrs_pos;
+
+		// Currently we use a 16x16 texel, possibly some day make this configurable.
+		if (sc_half_res) {
+			vrs_pos = pos >> 3;
+		} else {
+			vrs_pos = pos >> 4;
+		}
+
+		uint vrs_texel = imageLoad(vrs_buffer, vrs_pos).r;
+		// note, valid values for vrs_x and vrs_y are 1, 2 and 4.
+		vrs_x = 1 << ((vrs_texel >> 2) & 3);
+		vrs_y = 1 << (vrs_texel & 3);
+
+		if (mod(pos.x, vrs_x) != 0) {
+			return;
+		}
+
+		if (mod(pos.y, vrs_y) != 0) {
+			return;
+		}
+	}
+
+	if (sc_half_res) {
+		pos <<= 1;
+	}
+
 	if (any(greaterThanEqual(pos, scene_data.screen_size))) { //too large, do nothing
 		return;
 	}
@@ -663,10 +696,69 @@ void main() {
 
 	process_gi(pos, vertex, ambient_light, reflection_light);
 
-#ifdef MODE_HALF_RES
-	pos >>= 1;
-#endif
+	if (sc_half_res) {
+		pos >>= 1;
+	}
 
 	imageStore(ambient_buffer, pos, ambient_light);
 	imageStore(reflection_buffer, pos, reflection_light);
+
+	if (sc_use_vrs) {
+		if (vrs_x > 1) {
+			imageStore(ambient_buffer, pos + ivec2(1, 0), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(1, 0), reflection_light);
+		}
+
+		if (vrs_x > 2) {
+			imageStore(ambient_buffer, pos + ivec2(2, 0), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(2, 0), reflection_light);
+
+			imageStore(ambient_buffer, pos + ivec2(3, 0), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(3, 0), reflection_light);
+		}
+
+		if (vrs_y > 1) {
+			imageStore(ambient_buffer, pos + ivec2(0, 1), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(0, 1), reflection_light);
+		}
+
+		if (vrs_y > 1 && vrs_x > 1) {
+			imageStore(ambient_buffer, pos + ivec2(1, 1), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(1, 1), reflection_light);
+		}
+
+		if (vrs_y > 1 && vrs_x > 2) {
+			imageStore(ambient_buffer, pos + ivec2(2, 1), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(2, 1), reflection_light);
+
+			imageStore(ambient_buffer, pos + ivec2(3, 1), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(3, 1), reflection_light);
+		}
+
+		if (vrs_y > 2) {
+			imageStore(ambient_buffer, pos + ivec2(0, 2), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(0, 2), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(0, 3), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(0, 3), reflection_light);
+		}
+
+		if (vrs_y > 2 && vrs_x > 1) {
+			imageStore(ambient_buffer, pos + ivec2(1, 2), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(1, 2), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(1, 3), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(1, 3), reflection_light);
+		}
+
+		if (vrs_y > 2 && vrs_x > 2) {
+			imageStore(ambient_buffer, pos + ivec2(2, 2), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(2, 2), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(2, 3), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(2, 3), reflection_light);
+
+			imageStore(ambient_buffer, pos + ivec2(3, 2), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(3, 2), reflection_light);
+			imageStore(ambient_buffer, pos + ivec2(3, 3), ambient_light);
+			imageStore(reflection_buffer, pos + ivec2(3, 3), reflection_light);
+		}
+	}
 }

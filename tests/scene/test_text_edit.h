@@ -724,7 +724,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "t");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::CMD)
@@ -736,7 +736,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "tes");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD)
@@ -1902,7 +1902,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
@@ -2013,7 +2013,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
@@ -2244,7 +2244,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::UP | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
@@ -2285,7 +2285,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::DOWN | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
@@ -2326,7 +2326,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::SHIFT);
@@ -2383,7 +2383,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::SHIFT);
@@ -3139,7 +3139,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	v_scroll = text_edit->get_v_scroll();
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() > v_scroll);
+	CHECK(text_edit->get_v_scroll() >= v_scroll);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
@@ -3148,7 +3148,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->set_v_scroll_speed(10000);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() > v_scroll);
+	CHECK(text_edit->get_v_scroll() >= v_scroll);
 	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);

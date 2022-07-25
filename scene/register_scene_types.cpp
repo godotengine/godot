@@ -159,6 +159,7 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/immediate_mesh.h"
+#include "scene/resources/label_settings.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_data_tool.h"
@@ -173,6 +174,7 @@
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/separation_ray_shape_2d.h"
 #include "scene/resources/separation_ray_shape_3d.h"
+#include "scene/resources/shader_include.h"
 #include "scene/resources/skeleton_modification_2d.h"
 #include "scene/resources/skeleton_modification_2d_ccdik.h"
 #include "scene/resources/skeleton_modification_2d_fabrik.h"
@@ -272,6 +274,9 @@ static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
+static Ref<ResourceFormatSaverShaderInclude> resource_saver_shader_include;
+static Ref<ResourceFormatLoaderShaderInclude> resource_loader_shader_include;
+
 void register_scene_types() {
 	SceneStringNames::create();
 
@@ -299,6 +304,12 @@ void register_scene_types() {
 
 	resource_loader_shader.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
+
+	resource_saver_shader_include.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_saver_shader_include, true);
+
+	resource_loader_shader_include.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -439,6 +450,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 
+	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
 	GDREGISTER_CLASS(AnimationNodeOutput);
 	GDREGISTER_CLASS(AnimationNodeOneShot);
@@ -567,6 +579,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Shader);
 	GDREGISTER_CLASS(VisualShader);
+	GDREGISTER_CLASS(ShaderInclude);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNode);
 	GDREGISTER_CLASS(VisualShaderNodeCustom);
 	GDREGISTER_CLASS(VisualShaderNodeInput);
@@ -859,6 +872,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FontVariation);
 
 	GDREGISTER_CLASS(Curve);
+
+	GDREGISTER_CLASS(LabelSettings);
 
 	GDREGISTER_CLASS(SceneReplicationConfig);
 
@@ -1180,6 +1195,12 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_shader);
 	resource_loader_shader.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_shader_include);
+	resource_saver_shader_include.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_shader_include);
+	resource_loader_shader_include.unref();
 
 	// StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED

@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
+#include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/multiplayer/multiplayer_api.h"
@@ -1445,6 +1446,29 @@ SceneTree::SceneTree() {
 
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+
+	// We setup VRS for the main viewport here, in the editor this will have little effect.
+	const int vrs_mode = GLOBAL_DEF("rendering/vrs/mode", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vrs/mode", PropertyInfo(Variant::INT, "rendering/vrs/mode", PROPERTY_HINT_ENUM, String::utf8("Disabled,Texture,XR")));
+	root->set_vrs_mode(Viewport::VRSMode(vrs_mode));
+	const String vrs_texture_path = String(GLOBAL_DEF("rendering/vrs/texture", String())).strip_edges();
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vrs/texture",
+			PropertyInfo(Variant::STRING,
+					"rendering/vrs/texture",
+					PROPERTY_HINT_FILE, "*.png"));
+	if (vrs_mode == 1 && !vrs_texture_path.is_empty()) {
+		Ref<Image> vrs_image;
+		vrs_image.instantiate();
+		Error load_err = ImageLoader::load_image(vrs_texture_path, vrs_image);
+		if (load_err) {
+			ERR_PRINT("Non-existing or invalid VRS texture at '" + vrs_texture_path + "'.");
+		} else {
+			Ref<ImageTexture> vrs_texture;
+			vrs_texture.instantiate();
+			vrs_texture->create_from_image(vrs_image);
+			root->set_vrs_texture(vrs_texture);
+		}
+	}
 
 	int shadowmap_size = GLOBAL_DEF("rendering/shadows/positional_shadow/atlas_size", 4096);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/shadows/positional_shadow/atlas_size", PropertyInfo(Variant::INT, "rendering/shadows/positional_shadow/atlas_size", PROPERTY_HINT_RANGE, "256,16384"));

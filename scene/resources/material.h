@@ -809,4 +809,4 @@ public:
 
 //////////////////////
 
-#endif
+#endif // MATERIAL_H

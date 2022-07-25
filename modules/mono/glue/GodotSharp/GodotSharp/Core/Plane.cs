@@ -118,15 +118,15 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if point is inside the plane.
-        /// Comparison uses a custom minimum epsilon threshold.
+        /// Comparison uses a custom minimum tolerance threshold.
         /// </summary>
         /// <param name="point">The point to check.</param>
-        /// <param name="epsilon">The tolerance threshold.</param>
+        /// <param name="tolerance">The tolerance threshold.</param>
         /// <returns>A <see langword="bool"/> for whether or not the plane has the point.</returns>
-        public bool HasPoint(Vector3 point, real_t epsilon = Mathf.Epsilon)
+        public bool HasPoint(Vector3 point, real_t tolerance = Mathf.Epsilon)
         {
             real_t dist = _normal.Dot(point) - D;
-            return Mathf.Abs(dist) <= epsilon;
+            return Mathf.Abs(dist) <= tolerance;
         }
 
         /// <summary>

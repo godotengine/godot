@@ -367,7 +367,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		for (int j = 0; j < hslices; j++) {
 			int x = slice_w * j;
 			int y = slice_h * i;
-			Ref<Image> slice = image->get_rect(Rect2(x, y, slice_w, slice_h));
+			Ref<Image> slice = image->get_rect(Rect2i(x, y, slice_w, slice_h));
 			ERR_CONTINUE(slice.is_null() || slice->is_empty());
 			if (slice->get_width() != slice_w || slice->get_height() != slice_h) {
 				slice->resize(slice_w, slice_h);

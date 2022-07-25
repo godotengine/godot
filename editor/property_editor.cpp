@@ -828,13 +828,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
-
-				// get default color picker mode from editor settings
-				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-				color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-
-				int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-				color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+				color_picker->connect("show", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
 			}
 
 			color_picker->show();
@@ -1826,7 +1820,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	text_edit = memnew(TextEdit);
 	value_vbox->add_child(text_edit);
-	text_edit->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	text_edit->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	text_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	text_edit->set_offset(SIDE_BOTTOM, -30);
 
@@ -1882,12 +1876,12 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	spinbox = memnew(SpinBox);
 	value_vbox->add_child(spinbox);
-	spinbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	spinbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	spinbox->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	slider = memnew(HSlider);
 	value_vbox->add_child(slider);
-	slider->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 5);
+	slider->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 5);
 	slider->connect("value_changed", callable_mp(this, &CustomPropertyEditor::_range_modified));
 
 	action_hboxes = memnew(HBoxContainer);

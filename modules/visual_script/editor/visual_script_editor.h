@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_EDITOR_H
-#define VISUALSCRIPT_EDITOR_H
+#ifndef VISUAL_SCRIPT_EDITOR_H
+#define VISUAL_SCRIPT_EDITOR_H
 
 #include "../visual_script.h"
 #include "editor/create_dialog.h"
@@ -374,4 +374,4 @@ public:
 
 #endif
 
-#endif // VISUALSCRIPT_EDITOR_H
+#endif // VISUAL_SCRIPT_EDITOR_H

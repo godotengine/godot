@@ -100,11 +100,11 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 
 	{
 		Vector<String> copy_modes;
-		copy_modes.push_back("\n");
-		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n");
-		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n");
-		copy_modes.push_back("\n#define MULTIVIEW\n");
-		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n");
+		copy_modes.push_back("\n"); // COPY_TO_FB_COPY
+		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n"); // COPY_TO_FB_COPY_PANORAMA_TO_DP
+		copy_modes.push_back("\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_COPY2
+		copy_modes.push_back("\n#define MULTIVIEW\n"); // COPY_TO_FB_MULTIVIEW
+		copy_modes.push_back("\n#define MULTIVIEW\n#define MODE_TWO_SOURCES\n"); // COPY_TO_FB_MULTIVIEW_WITH_DEPTH
 
 		copy_to_fb.shader.initialize(copy_modes);
 
@@ -249,6 +249,56 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 			roughness.raster_pipeline.clear();
 		}
 	}
+
+	{
+		Vector<String> specular_modes;
+		specular_modes.push_back("\n#define MODE_MERGE\n"); // SPECULAR_MERGE_ADD
+		specular_modes.push_back("\n#define MODE_MERGE\n#define MODE_SSR\n"); // SPECULAR_MERGE_SSR
+		specular_modes.push_back("\n"); // SPECULAR_MERGE_ADDITIVE_ADD
+		specular_modes.push_back("\n#define MODE_SSR\n"); // SPECULAR_MERGE_ADDITIVE_SSR
+
+		specular_modes.push_back("\n#define USE_MULTIVIEW\n#define MODE_MERGE\n"); // SPECULAR_MERGE_ADD_MULTIVIEW
+		specular_modes.push_back("\n#define USE_MULTIVIEW\n#define MODE_MERGE\n#define MODE_SSR\n"); // SPECULAR_MERGE_SSR_MULTIVIEW
+		specular_modes.push_back("\n#define USE_MULTIVIEW\n"); // SPECULAR_MERGE_ADDITIVE_ADD_MULTIVIEW
+		specular_modes.push_back("\n#define USE_MULTIVIEW\n#define MODE_SSR\n"); // SPECULAR_MERGE_ADDITIVE_SSR_MULTIVIEW
+
+		specular_merge.shader.initialize(specular_modes);
+
+		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADD_MULTIVIEW, false);
+			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_SSR_MULTIVIEW, false);
+			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADDITIVE_ADD_MULTIVIEW, false);
+			specular_merge.shader.set_variant_enabled(SPECULAR_MERGE_ADDITIVE_SSR_MULTIVIEW, false);
+		}
+
+		specular_merge.shader_version = specular_merge.shader.version_create();
+
+		//use additive
+
+		RD::PipelineColorBlendState::Attachment ba;
+		ba.enable_blend = true;
+		ba.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		ba.color_blend_op = RD::BLEND_OP_ADD;
+		ba.alpha_blend_op = RD::BLEND_OP_ADD;
+
+		RD::PipelineColorBlendState blend_additive;
+		blend_additive.attachments.push_back(ba);
+
+		for (int i = 0; i < SPECULAR_MERGE_MAX; i++) {
+			if (specular_merge.shader.is_variant_enabled(i)) {
+				RD::PipelineColorBlendState blend_state;
+				if (i == SPECULAR_MERGE_ADDITIVE_ADD || i == SPECULAR_MERGE_ADDITIVE_SSR || i == SPECULAR_MERGE_ADDITIVE_ADD_MULTIVIEW || i == SPECULAR_MERGE_ADDITIVE_SSR_MULTIVIEW) {
+					blend_state = blend_additive;
+				} else {
+					blend_state = RD::PipelineColorBlendState::create_disabled();
+				}
+				specular_merge.pipelines[i].setup(specular_merge.shader.version_get_shader(specular_merge.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+			}
+		}
+	}
 }
 
 CopyEffects::~CopyEffects() {
@@ -263,6 +313,8 @@ CopyEffects::~CopyEffects() {
 		filter.compute_shader.version_free(filter.shader_version);
 		roughness.compute_shader.version_free(roughness.shader_version);
 	}
+
+	specular_merge.shader.version_free(specular_merge.shader_version);
 
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
@@ -1082,4 +1134,58 @@ void CopyEffects::cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_f
 
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
+}
+
+void CopyEffects::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection, uint32_t p_view_count) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::get_singleton()->draw_command_begin_label("Merge specular");
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, Vector<Color>());
+
+	int mode;
+	if (p_reflection.is_valid()) {
+		if (p_base.is_valid()) {
+			mode = SPECULAR_MERGE_SSR;
+		} else {
+			mode = SPECULAR_MERGE_ADDITIVE_SSR;
+		}
+	} else {
+		if (p_base.is_valid()) {
+			mode = SPECULAR_MERGE_ADD;
+		} else {
+			mode = SPECULAR_MERGE_ADDITIVE_ADD;
+		}
+	}
+
+	if (p_view_count > 1) {
+		mode += SPECULAR_MERGE_ADD_MULTIVIEW;
+	}
+
+	RID shader = specular_merge.shader.version_get_shader(specular_merge.shader_version, mode);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, specular_merge.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+
+	if (p_base.is_valid()) {
+		RD::Uniform u_base(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_base }));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 2, u_base), 2);
+	}
+
+	RD::Uniform u_specular(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_specular }));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_specular), 0);
+
+	if (p_reflection.is_valid()) {
+		RD::Uniform u_reflection(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_reflection }));
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_reflection), 1);
+	}
+
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+
+	RD::get_singleton()->draw_command_end_label();
 }

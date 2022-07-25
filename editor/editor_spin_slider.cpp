@@ -37,7 +37,7 @@
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (grabber->is_visible()) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		Key key = Key::META;
 #else
 		Key key = Key::CTRL;
@@ -652,7 +652,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
 	value_input_popup->set_wrap_controls(true);
-	value_input->set_anchors_and_offsets_preset(PRESET_WIDE);
+	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));

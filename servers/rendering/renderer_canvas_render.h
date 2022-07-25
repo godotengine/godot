@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERCANVASRENDER_H
-#define RENDERINGSERVERCANVASRENDER_H
+#ifndef RENDERER_CANVAS_RENDER_H
+#define RENDERER_CANVAS_RENDER_H
 
 #include "servers/rendering_server.h"
 
@@ -77,7 +77,7 @@ public:
 		Rect2 rect_cache;
 		Transform2D xform_cache;
 		float radius_cache; //used for shadow far plane
-		//CameraMatrix shadow_matrix_cache;
+		//Projection shadow_matrix_cache;
 
 		Transform2D light_shader_xform;
 		//Vector2 light_shader_pos;
@@ -520,4 +520,4 @@ public:
 	virtual ~RendererCanvasRender() {}
 };
 
-#endif // RENDERINGSERVERCANVASRENDER_H
+#endif // RENDERER_CANVAS_RENDER_H

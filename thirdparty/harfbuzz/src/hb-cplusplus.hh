@@ -166,8 +166,14 @@ HB_DEFINE_VTABLE (unicode_funcs);
 
 } // namespace hb
 
+/* Workaround for GCC < 7, see:
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+ * https://stackoverflow.com/a/25594741 */
+namespace std {
+
+
 template<typename T>
-struct std::hash<hb::shared_ptr<T>>
+struct hash<hb::shared_ptr<T>>
 {
     std::size_t operator()(const hb::shared_ptr<T>& v) const noexcept
     {
@@ -177,7 +183,7 @@ struct std::hash<hb::shared_ptr<T>>
 };
 
 template<typename T>
-struct std::hash<hb::unique_ptr<T>>
+struct hash<hb::unique_ptr<T>>
 {
     std::size_t operator()(const hb::unique_ptr<T>& v) const noexcept
     {
@@ -186,6 +192,8 @@ struct std::hash<hb::unique_ptr<T>>
     }
 };
 
+
+} // namespace std
 
 #endif /* __cplusplus */
 

@@ -60,11 +60,14 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 		builtin_types["Transform2D"] = Variant::TRANSFORM2D;
 		builtin_types["Vector3"] = Variant::VECTOR3;
 		builtin_types["Vector3i"] = Variant::VECTOR3I;
+		builtin_types["Vector4"] = Variant::VECTOR3;
+		builtin_types["Vector4i"] = Variant::VECTOR3I;
 		builtin_types["AABB"] = Variant::AABB;
 		builtin_types["Plane"] = Variant::PLANE;
 		builtin_types["Quaternion"] = Variant::QUATERNION;
 		builtin_types["Basis"] = Variant::BASIS;
 		builtin_types["Transform3D"] = Variant::TRANSFORM3D;
+		builtin_types["Projection"] = Variant::PROJECTION;
 		builtin_types["Color"] = Variant::COLOR;
 		builtin_types["RID"] = Variant::RID;
 		builtin_types["Object"] = Variant::OBJECT;
@@ -3422,7 +3425,16 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 				p_tutorials.append(Pair<String, String>(title, link));
 				break;
 			case DONE:
-				return;
+				break;
+		}
+	}
+	if (current_class->members.size() > 0) {
+		const ClassNode::Member &m = current_class->members[0];
+		int first_member_line = m.get_line();
+		if (first_member_line == line) {
+			p_brief = "";
+			p_desc = "";
+			p_tutorials.clear();
 		}
 	}
 }

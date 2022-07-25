@@ -1642,7 +1642,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_offsets_preset(preset, LayoutPresetMode::PRESET_MODE_MINSIZE);
 			break;
 	}
@@ -1718,7 +1718,7 @@ int Control::_get_anchors_layout_preset() const {
 	}
 
 	if (left == ANCHOR_BEGIN && right == ANCHOR_END && top == ANCHOR_BEGIN && bottom == ANCHOR_END) {
-		return (int)LayoutPreset::PRESET_WIDE;
+		return (int)LayoutPreset::PRESET_FULL_RECT;
 	}
 
 	// Does not match any preset, return "Custom".
@@ -1737,7 +1737,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_LEFT, ANCHOR_BEGIN, p_keep_offsets);
 			break;
 
@@ -1765,7 +1765,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_TOP, ANCHOR_BEGIN, p_keep_offsets);
 			break;
 
@@ -1807,7 +1807,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_RIGHT, ANCHOR_END, p_keep_offsets);
 			break;
 	}
@@ -1835,7 +1835,7 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_anchor(SIDE_BOTTOM, ANCHOR_END, p_keep_offsets);
 			break;
 	}
@@ -1870,7 +1870,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
 			break;
 
@@ -1898,7 +1898,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin + parent_rect.position.y;
 			break;
 
@@ -1940,7 +1940,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
 			break;
 	}
@@ -1968,7 +1968,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_RIGHT_WIDE:
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin + parent_rect.position.y;
 			break;
 	}
@@ -2003,7 +2003,7 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_h_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 			break;
 	}
@@ -2031,7 +2031,7 @@ void Control::set_grow_direction_preset(LayoutPreset p_preset) {
 		case PRESET_RIGHT_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
+		case PRESET_FULL_RECT:
 			set_v_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 			break;
 	}
@@ -3300,7 +3300,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
-	const String anchors_presets_options = "Custom:-1,PresetWide:15,"
+	const String anchors_presets_options = "Custom:-1,PresetFullRect:15,"
 										   "PresetTopLeft:0,PresetTopRight:1,PresetBottomRight:3,PresetBottomLeft:2,"
 										   "PresetCenterLeft:4,PresetCenterTop:5,PresetCenterRight:6,PresetCenterBottom:7,PresetCenter:8,"
 										   "PresetLeftWide:9,PresetTopWide:10,PresetRightWide:11,PresetBottomWide:12,PresetVCenterWide:13,PresetHCenterWide:14";
@@ -3408,7 +3408,7 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_BOTTOM_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_VCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_HCENTER_WIDE);
-	BIND_ENUM_CONSTANT(PRESET_WIDE);
+	BIND_ENUM_CONSTANT(PRESET_FULL_RECT);
 
 	BIND_ENUM_CONSTANT(PRESET_MODE_MINSIZE);
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_WIDTH);

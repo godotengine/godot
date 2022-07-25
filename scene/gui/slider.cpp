@@ -96,15 +96,15 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		if (grab.active) {
 			Size2i size = get_size();
 			Ref<Texture2D> grabber = get_theme_icon(SNAME("grabber"));
-			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
+			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
 			}
-			float areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
+			double areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
 			if (areasize <= 0) {
 				return;
 			}
-			float umotion = motion / float(areasize);
+			double umotion = motion / double(areasize);
 			set_as_ratio(grab.uvalue + umotion);
 		}
 	}
@@ -180,7 +180,7 @@ void Slider::_notification(int p_what) {
 
 			if (orientation == VERTICAL) {
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
-				float areasize = size.height - grabber->get_size().height;
+				double areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
 				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
 
@@ -197,7 +197,7 @@ void Slider::_notification(int p_what) {
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - ratio * areasize - grabber->get_size().height));
 			} else {
 				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
-				float areasize = size.width - grabber->get_size().width;
+				double areasize = size.width - grabber->get_size().width;
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
 				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_size().width / 2, widget_height)));
@@ -218,11 +218,11 @@ void Slider::_notification(int p_what) {
 	}
 }
 
-void Slider::set_custom_step(float p_custom_step) {
+void Slider::set_custom_step(double p_custom_step) {
 	custom_step = p_custom_step;
 }
 
-float Slider::get_custom_step() const {
+double Slider::get_custom_step() const {
 	return custom_step;
 }
 

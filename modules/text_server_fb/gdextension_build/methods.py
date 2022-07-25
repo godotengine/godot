@@ -98,7 +98,7 @@ def make_icu_data(target, source, env):
     g.write("#endif")
 
 
-def write_osx_plist(target, binary_name, identifier, name):
+def write_macos_plist(target, binary_name, identifier, name):
     os.makedirs(f"{target}/Resourece/", exist_ok=True)
     f = open(f"{target}/Resourece/Info.plist", "w")
 

@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEPARATION_RAY_SHAPE_H
-#define SEPARATION_RAY_SHAPE_H
+#ifndef SEPARATION_RAY_SHAPE_3D_H
+#define SEPARATION_RAY_SHAPE_3D_H
+
 #include "scene/resources/shape_3d.h"
 
 class SeparationRayShape3D : public Shape3D {
@@ -53,4 +54,5 @@ public:
 
 	SeparationRayShape3D();
 };
-#endif // SEPARATION_RAY_SHAPE_H
+
+#endif // SEPARATION_RAY_SHAPE_3D_H

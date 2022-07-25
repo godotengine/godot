@@ -715,7 +715,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-void RasterizerSceneGLES3::_setup_sky(Environment *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
+void RasterizerSceneGLES3::_setup_sky(Environment *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(!p_env);
@@ -861,7 +861,7 @@ void RasterizerSceneGLES3::_setup_sky(Environment *p_env, RID p_render_buffers, 
 	}
 }
 
-void RasterizerSceneGLES3::_draw_sky(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform) {
+void RasterizerSceneGLES3::_draw_sky(Environment *p_env, const Projection &p_projection, const Transform3D &p_transform) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(!p_env);
 
@@ -901,7 +901,7 @@ void RasterizerSceneGLES3::_draw_sky(Environment *p_env, const CameraMatrix &p_p
 	ERR_FAIL_COND(!shader_data);
 
 	// Camera
-	CameraMatrix camera;
+	Projection camera;
 
 	if (p_env->sky_custom_fov) {
 		float near_plane = p_projection.get_z_near();
@@ -926,7 +926,7 @@ void RasterizerSceneGLES3::_draw_sky(Environment *p_env, const CameraMatrix &p_p
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform) {
+void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const Projection &p_projection, const Transform3D &p_transform) {
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(!p_env);
 
@@ -1008,9 +1008,9 @@ void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const Camera
 			Vector3(0, -1, 0)
 		};
 
-		CameraMatrix cm;
+		Projection cm;
 		cm.set_perspective(90, 1, 0.01, 10.0);
-		CameraMatrix correction;
+		Projection correction;
 		correction.set_depth_correction(true);
 		cm = correction * cm;
 
@@ -1345,7 +1345,7 @@ void RasterizerSceneGLES3::light_instance_set_aabb(RID p_light_instance, const A
 	light_instance->aabb = p_aabb;
 }
 
-void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
+void RasterizerSceneGLES3::light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale, float p_range_begin, const Vector2 &p_uv_scale) {
 }
 
 void RasterizerSceneGLES3::light_instance_mark_visible(RID p_light_instance) {
@@ -1608,9 +1608,9 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 // Needs to be called after _setup_lights so that directional_light_count is accurate.
 void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows) {
-	CameraMatrix correction;
+	Projection correction;
 	correction.set_depth_correction(p_flip_y);
-	CameraMatrix projection = correction * p_render_data->cam_projection;
+	Projection projection = correction * p_render_data->cam_projection;
 	//store camera into ubo
 	GLES3::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
 	GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
@@ -2057,9 +2057,9 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || env->reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || env->ambient_source == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
-			CameraMatrix projection = render_data.cam_projection;
+			Projection projection = render_data.cam_projection;
 			if (render_data.reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
 				projection = correction * render_data.cam_projection;
 			}
@@ -2490,7 +2490,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	}
 }
 
-void RasterizerSceneGLES3::render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RasterizerSceneGLES3::render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 }
 
 void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) {

@@ -224,6 +224,7 @@ public:
 	FUNCRIDSPLIT(shader)
 
 	FUNC2(shader_set_code, RID, const String &)
+	FUNC2(shader_set_path_hint, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
 
 	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
@@ -637,6 +638,9 @@ public:
 
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
+	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
+	FUNC2(viewport_set_vrs_texture, RID, RID)
+
 	/* ENVIRONMENT API */
 
 #undef server_name
@@ -977,4 +981,4 @@ public:
 	~RenderingServerDefault();
 };
 
-#endif
+#endif // RENDERING_SERVER_DEFAULT_H

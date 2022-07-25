@@ -95,4 +95,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !UTILITIES_DUMMY_H
+#endif // UTILITIES_DUMMY_H
