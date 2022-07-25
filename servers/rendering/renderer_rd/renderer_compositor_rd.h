@@ -32,7 +32,6 @@
 #define RENDERER_COMPOSITOR_RD_H
 
 #include "core/os/os.h"
-#include "core/templates/thread_work_pool.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"

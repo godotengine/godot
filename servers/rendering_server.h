@@ -35,11 +35,11 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display_server.h"
-#include "servers/rendering/renderer_thread_pool.h"
 #include "servers/rendering/rendering_device.h"
 
 class RenderingServer : public Object {
@@ -51,8 +51,6 @@ class RenderingServer : public Object {
 	bool render_loop_enabled = true;
 
 	Array _get_array_from_surface(uint32_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len) const;
-
-	RendererThreadPool *thread_pool = nullptr;
 
 	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
 	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);

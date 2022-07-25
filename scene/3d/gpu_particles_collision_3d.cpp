@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_3d.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -339,15 +340,12 @@ void GPUParticlesCollisionSDF3D::_compute_sdf_z(uint32_t p_z, ComputeSDFParams *
 }
 
 void GPUParticlesCollisionSDF3D::_compute_sdf(ComputeSDFParams *params) {
-	ThreadWorkPool work_pool;
-	work_pool.init();
-	work_pool.begin_work(params->size.z, this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params);
-	while (!work_pool.is_done_dispatching()) {
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GPUParticlesCollisionSDF3D::_compute_sdf_z, params, params->size.z);
+	while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task)) {
 		OS::get_singleton()->delay_usec(10000);
-		bake_step_function(work_pool.get_work_index() * 100 / params->size.z, "Baking SDF");
+		bake_step_function(WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task) * 100 / params->size.z, "Baking SDF");
 	}
-	work_pool.end_work();
-	work_pool.finish();
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
 
 Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {

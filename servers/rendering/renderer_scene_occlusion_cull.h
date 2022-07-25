@@ -183,7 +183,8 @@ public:
 	}
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) { _print_warning(); }
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) { _print_warning(); }
-	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {}
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {}
+
 	virtual RID buffer_get_debug_texture(RID p_buffer) {
 		_print_warning();
 		return RID();

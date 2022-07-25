@@ -2518,14 +2518,14 @@ void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_
 
 	RENDER_TIMESTAMP("Update Occlusion Buffer")
 	// For now just cull on the first camera
-	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal, RendererThreadPool::singleton->thread_work_pool);
+	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal);
 
 	_render_scene(&camera_data, p_render_buffers, environment, camera->effects, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, true, r_render_info);
 #endif
 }
 
 void RendererSceneCull::_visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data) {
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t bin_from = p_thread * cull_data->cull_count / total_threads;
 	uint32_t bin_to = (p_thread + 1 == total_threads) ? cull_data->cull_count : ((p_thread + 1) * cull_data->cull_count / total_threads);
 
@@ -2622,7 +2622,7 @@ bool RendererSceneCull::_visibility_parent_check(const CullData &p_cull_data, co
 
 void RendererSceneCull::_scene_cull_threaded(uint32_t p_thread, CullData *cull_data) {
 	uint32_t cull_total = cull_data->scenario->instance_data.size();
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t cull_from = p_thread * cull_total / total_threads;
 	uint32_t cull_to = (p_thread + 1 == total_threads) ? cull_total : ((p_thread + 1) * cull_total / total_threads);
 
@@ -2919,7 +2919,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 
 			if (visibility_cull_data.cull_count > thread_cull_threshold) {
-				RendererThreadPool::singleton->thread_work_pool.do_work(RendererThreadPool::singleton->thread_work_pool.get_thread_count(), this, &RendererSceneCull::_visibility_cull_threaded, &visibility_cull_data);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RendererSceneCull::_visibility_cull_threaded, &visibility_cull_data, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("VisibilityCullInstances"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 			} else {
 				_visibility_cull(visibility_cull_data, visibility_cull_data.cull_offset, visibility_cull_data.cull_offset + visibility_cull_data.cull_count);
 			}
@@ -3024,7 +3025,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				scene_cull_result_threads[i].clear();
 			}
 
-			RendererThreadPool::singleton->thread_work_pool.do_work(scene_cull_result_threads.size(), this, &RendererSceneCull::_scene_cull_threaded, &cull_data);
+			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RendererSceneCull::_scene_cull_threaded, &cull_data, scene_cull_result_threads.size(), -1, true, SNAME("RenderCullInstances"));
+			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 			for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
 				scene_cull_result.append_from(scene_cull_result_threads[i]);
@@ -4030,14 +4032,14 @@ RendererSceneCull::RendererSceneCull() {
 	}
 
 	scene_cull_result.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
-	scene_cull_result_threads.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+	scene_cull_result_threads.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 	for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
 		scene_cull_result_threads[i].init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
 	}
 
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
-	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)RendererThreadPool::singleton->thread_work_pool.get_thread_count()); //make sure there is at least one thread per CPU
+	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
 
 	taa_jitter_array.resize(TAA_JITTER_COUNT);
 	for (int i = 0; i < TAA_JITTER_COUNT; i++) {

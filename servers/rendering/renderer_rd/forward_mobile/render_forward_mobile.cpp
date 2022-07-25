@@ -758,9 +758,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderList"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
@@ -822,10 +825,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_switch_to_next_pass_split(thread_draw_lists.size(), thread_draw_lists.ptr());
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass();
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
@@ -859,9 +864,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
 			} else {
 				//single threaded
@@ -1771,7 +1778,7 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 
 void RenderForwardMobile::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
 	uint32_t render_total = p_params->element_count;
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t render_from = p_thread * render_total / total_threads;
 	uint32_t render_to = (p_thread + 1 == total_threads) ? render_total : ((p_thread + 1) * render_total / total_threads);
 	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
@@ -1783,9 +1790,11 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 
 	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
 		//multi threaded
-		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, p_params);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 		RD::get_singleton()->draw_list_end(p_params->barrier);
 	} else {
 		//single threaded

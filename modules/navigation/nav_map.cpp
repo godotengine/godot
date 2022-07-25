@@ -30,9 +30,9 @@
 
 #include "nav_map.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
-
 #include <algorithm>
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
@@ -683,14 +683,8 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
-		if (step_work_pool.get_thread_count() == 0) {
-			step_work_pool.init();
-		}
-		step_work_pool.do_work(
-				controlled_agents.size(),
-				this,
-				&NavMap::compute_single_step,
-				controlled_agents.data());
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_step, controlled_agents.data(), controlled_agents.size(), -1, true, SNAME("NavigationMapAgents"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 	}
 }
 
@@ -736,5 +730,4 @@ NavMap::NavMap() {
 }
 
 NavMap::~NavMap() {
-	step_work_pool.finish();
 }

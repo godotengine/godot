@@ -775,7 +775,7 @@ void RenderForwardClustered::_render_list(RenderingDevice::DrawListID p_draw_lis
 
 void RenderForwardClustered::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
 	uint32_t render_total = p_params->element_count;
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t render_from = p_thread * render_total / total_threads;
 	uint32_t render_to = (p_thread + 1 == total_threads) ? render_total : ((p_thread + 1) * render_total / total_threads);
 	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
@@ -787,9 +787,10 @@ void RenderForwardClustered::_render_list_with_threads(RenderListParameters *p_p
 
 	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
 		//multi threaded
-		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardClustered::_render_list_thread_function, p_params);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardClustered::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardClusteredRenderList"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		RD::get_singleton()->draw_list_end(p_params->barrier);
 	} else {
 		//single threaded

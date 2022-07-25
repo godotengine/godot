@@ -36,7 +36,6 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/thread_work_pool.h"
 #include "scene/main/node.h"
 
 class FileAccess;
@@ -274,8 +273,6 @@ class EditorFileSystem : public Node {
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 
 	HashSet<String> group_file_cache;
-
-	ThreadWorkPool import_threads;
 
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
