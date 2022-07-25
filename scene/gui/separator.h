@@ -60,4 +60,4 @@ public:
 	HSeparator();
 };
 
-#endif
+#endif // SEPARATOR_H

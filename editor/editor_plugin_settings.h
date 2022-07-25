@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPLUGINSETTINGS_H
-#define EDITORPLUGINSETTINGS_H
+#ifndef EDITOR_PLUGIN_SETTINGS_H
+#define EDITOR_PLUGIN_SETTINGS_H
 
 #include "core/undo_redo.h"
 #include "editor/plugin_config_dialog.h"
@@ -67,4 +67,4 @@ public:
 	EditorPluginSettings();
 };
 
-#endif // EDITORPLUGINSETTINGS_H
+#endif // EDITOR_PLUGIN_SETTINGS_H

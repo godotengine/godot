@@ -32,7 +32,7 @@
 #define EDITOR_RESOURCE_PICKER_H
 
 #include "editor_file_dialog.h"
-#include "quick_open.h"
+#include "editor_quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"

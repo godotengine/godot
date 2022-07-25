@@ -345,4 +345,4 @@ private:
 	Point2 get_screens_origin() const;
 };
 
-#endif
+#endif // OS_OSX_H

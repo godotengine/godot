@@ -38,8 +38,8 @@
 //  - Requirements code generator is not implemented (only hard-coded requirements for the ad-hoc signing is supported).
 //  - RFC5652/CMS blob generation is not implemented, supports ad-hoc signing only.
 
-#ifndef CODESIGN_H
-#define CODESIGN_H
+#ifndef OSX_CODESIGN_H
+#define OSX_CODESIGN_H
 
 #include "core/crypto/crypto.h"
 #include "core/crypto/crypto_core.h"
@@ -365,4 +365,4 @@ public:
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // CODESIGN_H
+#endif // OSX_CODESIGN_H

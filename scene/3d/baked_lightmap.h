@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_INDIRECT_LIGHT_H
-#define BAKED_INDIRECT_LIGHT_H
+#ifndef BAKED_LIGHTMAP_H
+#define BAKED_LIGHTMAP_H
 
 #include "core/local_vector.h"
 #include "multimesh_instance.h"
@@ -285,4 +285,4 @@ VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
 VARIANT_ENUM_CAST(BakedLightmap::EnvironmentMode);
 
-#endif // BAKED_INDIRECT_LIGHT_H
+#endif // BAKED_LIGHTMAP_H

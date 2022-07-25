@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef HTTP_REQUEST_H
+#define HTTP_REQUEST_H
 
 #include "core/io/http_client.h"
 #include "core/os/file_access.h"
@@ -156,4 +156,4 @@ public:
 
 VARIANT_ENUM_CAST(HTTPRequest::Result);
 
-#endif // HTTPREQUEST_H
+#endif // HTTP_REQUEST_H

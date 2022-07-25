@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_SETTINGS_H
-#define PROJECT_SETTINGS_H
+#ifndef PROJECT_SETTINGS_EDITOR_H
+#define PROJECT_SETTINGS_EDITOR_H
 
 #include "core/undo_redo.h"
 #include "editor/editor_autoload_settings.h"
@@ -205,4 +205,4 @@ public:
 	ProjectSettingsEditor(EditorData *p_data);
 };
 
-#endif // PROJECT_SETTINGS_H
+#endif // PROJECT_SETTINGS_EDITOR_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTCOMPRESSOR_H
-#define AUDIOEFFECTCOMPRESSOR_H
+#ifndef AUDIO_EFFECT_COMPRESSOR_H
+#define AUDIO_EFFECT_COMPRESSOR_H
 
 #include "servers/audio/audio_effect.h"
 
@@ -91,4 +91,4 @@ public:
 	AudioEffectCompressor();
 };
 
-#endif // AUDIOEFFECTCOMPRESSOR_H
+#endif // AUDIO_EFFECT_COMPRESSOR_H

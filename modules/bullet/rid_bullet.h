@@ -50,4 +50,5 @@ public:
 	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer *p_physicsServer) { physicsServer = p_physicsServer; }
 	_FORCE_INLINE_ BulletPhysicsServer *get_physics_server() const { return physicsServer; }
 };
-#endif
+
+#endif // RID_BULLET_H

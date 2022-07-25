@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MBED_DTLS_SERVER_H
-#define MBED_DTLS_SERVER_H
+#ifndef DTLS_SERVER_MBEDTLS_H
+#define DTLS_SERVER_MBEDTLS_H
 
 #include "core/io/dtls_server.h"
 #include "ssl_context_mbedtls.h"
@@ -54,4 +54,4 @@ public:
 	~DTLSServerMbedTLS();
 };
 
-#endif // MBED_DTLS_SERVER_H
+#endif // DTLS_SERVER_MBEDTLS_H

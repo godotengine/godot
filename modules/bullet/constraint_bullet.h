@@ -68,4 +68,5 @@ public:
 
 	_FORCE_INLINE_ btTypedConstraint *get_bt_constraint() { return constraint; }
 };
-#endif
+
+#endif // CONSTRAINT_BULLET_H

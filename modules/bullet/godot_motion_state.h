@@ -96,4 +96,5 @@ public:
 		return bodyCurrentWorldTransform;
 	}
 };
-#endif
+
+#endif // GODOT_MOTION_STATE_H

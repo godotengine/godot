@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GIPROBEEDITORPLUGIN_H
-#define GIPROBEEDITORPLUGIN_H
+#ifndef GI_PROBE_EDITOR_PLUGIN_H
+#define GI_PROBE_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -65,4 +65,4 @@ public:
 	~GIProbeEditorPlugin();
 };
 
-#endif // GIPROBEEDITORPLUGIN_H
+#endif // GI_PROBE_EDITOR_PLUGIN_H

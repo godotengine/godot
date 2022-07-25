@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVEVIDEODECODER_H
-#define GODOT_NATIVEVIDEODECODER_H
+#ifndef GODOT_VIDEODECODER_H
+#define GODOT_VIDEODECODER_H
 
 #include <gdnative/gdnative.h>
 
@@ -72,4 +72,4 @@ void GDAPI godot_videodecoder_register_decoder(const godot_videodecoder_interfac
 }
 #endif
 
-#endif /* GODOT_NATIVEVIDEODECODER_H */
+#endif // GODOT_VIDEODECODER_H

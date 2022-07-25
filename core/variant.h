@@ -467,4 +467,5 @@ const Variant::ObjData &Variant::_get_obj() const {
 }
 
 String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
-#endif
+
+#endif // VARIANT_H

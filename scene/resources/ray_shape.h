@@ -30,6 +30,7 @@
 
 #ifndef RAY_SHAPE_H
 #define RAY_SHAPE_H
+
 #include "scene/resources/shape.h"
 
 class RayShape : public Shape {
@@ -53,4 +54,5 @@ public:
 
 	RayShape();
 };
+
 #endif // RAY_SHAPE_H

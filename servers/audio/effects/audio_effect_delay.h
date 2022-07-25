@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTDELAY_H
-#define AUDIOEFFECTDELAY_H
+#ifndef AUDIO_EFFECT_DELAY_H
+#define AUDIO_EFFECT_DELAY_H
 
 #include "servers/audio/audio_effect.h"
 
@@ -132,4 +132,4 @@ public:
 	AudioEffectDelay();
 };
 
-#endif // AUDIOEFFECTDELAY_H
+#endif // AUDIO_EFFECT_DELAY_H

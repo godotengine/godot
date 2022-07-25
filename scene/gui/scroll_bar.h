@@ -129,4 +129,4 @@ public:
 			ScrollBar(VERTICAL) { set_h_size_flags(0); }
 };
 
-#endif
+#endif // SCROLL_BAR_H

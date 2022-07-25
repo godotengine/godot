@@ -55,4 +55,4 @@ public:
 	~ShaderCacheGLES3();
 };
 
-#endif
+#endif // SHADER_CACHE_GLES3_H

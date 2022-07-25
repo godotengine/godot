@@ -382,4 +382,4 @@ class __UnexistingClass;
 
 #include "method_bind.gen.inc"
 
-#endif
+#endif // METHOD_BIND_H

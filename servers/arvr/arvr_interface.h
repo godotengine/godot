@@ -124,4 +124,4 @@ VARIANT_ENUM_CAST(ARVRInterface::Capabilities);
 VARIANT_ENUM_CAST(ARVRInterface::Eyes);
 VARIANT_ENUM_CAST(ARVRInterface::Tracking_status);
 
-#endif
+#endif // ARVR_INTERFACE_H

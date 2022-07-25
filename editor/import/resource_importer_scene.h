@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTERSCENE_H
-#define RESOURCEIMPORTERSCENE_H
+#ifndef RESOURCE_IMPORTER_SCENE_H
+#define RESOURCE_IMPORTER_SCENE_H
 
 #include "core/io/resource_importer.h"
 #include "scene/resources/animation.h"
@@ -172,4 +172,4 @@ public:
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 };
 
-#endif // RESOURCEIMPORTERSCENE_H
+#endif // RESOURCE_IMPORTER_SCENE_H

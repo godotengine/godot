@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJECTRC_H
-#define OBJECTRC_H
+#ifndef OBJECT_RC_H
+#define OBJECT_RC_H
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -74,4 +74,4 @@ public:
 	}
 };
 
-#endif
+#endif // OBJECT_RC_H

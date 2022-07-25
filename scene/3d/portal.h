@@ -188,4 +188,4 @@ protected:
 	void _notification(int p_what);
 };
 
-#endif
+#endif // PORTAL_H

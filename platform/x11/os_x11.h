@@ -376,4 +376,4 @@ public:
 	OS_X11();
 };
 
-#endif
+#endif // OS_X11_H

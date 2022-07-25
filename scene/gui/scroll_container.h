@@ -108,4 +108,4 @@ public:
 	ScrollContainer();
 };
 
-#endif
+#endif // SCROLL_CONTAINER_H

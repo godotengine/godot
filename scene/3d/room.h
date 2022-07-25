@@ -172,4 +172,4 @@ bool Room::detect_nodes_using_lambda(const Node *p_node, T p_lambda, bool p_igno
 	return false;
 }
 
-#endif
+#endif // ROOM_H

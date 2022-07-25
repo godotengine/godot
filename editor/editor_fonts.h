@@ -35,4 +35,4 @@
 
 void editor_register_fonts(Ref<Theme> p_theme);
 
-#endif
+#endif // EDITOR_FONTS_H

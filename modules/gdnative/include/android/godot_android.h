@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_ANDROID_GDN_H
-#define GODOT_ANDROID_GDN_H
+#ifndef GODOT_ANDROID_H
+#define GODOT_ANDROID_H
 
 #include <gdnative/gdnative.h>
 
@@ -53,4 +53,4 @@ bool GDAPI godot_android_is_activity_resumed();
 }
 #endif
 
-#endif /* !GODOT_ANDROID_GDN_H */
+#endif // GODOT_ANDROID_H

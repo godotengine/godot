@@ -44,4 +44,4 @@ public:
 
 #endif
 
-#endif
+#endif // WINDOWS_TERMINAL_LOGGER_H

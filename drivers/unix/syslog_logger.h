@@ -45,4 +45,4 @@ public:
 
 #endif
 
-#endif
+#endif // SYSLOG_LOGGER_H

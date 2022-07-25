@@ -71,4 +71,4 @@ public:
 	~AudioDriverDummy();
 };
 
-#endif
+#endif // AUDIO_DRIVER_DUMMY_H

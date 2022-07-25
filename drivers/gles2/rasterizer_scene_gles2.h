@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSCENEGLES2_H
-#define RASTERIZERSCENEGLES2_H
+#ifndef RASTERIZER_SCENE_GLES2_H
+#define RASTERIZER_SCENE_GLES2_H
 
 /* Must come before shaders or the Windows build fails... */
 #include "rasterizer_storage_gles2.h"
@@ -39,7 +39,6 @@
 #include "shaders/scene.glsl.gen.h"
 #include "shaders/tonemap.glsl.gen.h"
 /*
-
 
 #include "drivers/gles3/shaders/exposure.glsl.gen.h"
 #include "drivers/gles3/shaders/resolve.glsl.gen.h"
@@ -780,4 +779,4 @@ public:
 	~RasterizerSceneGLES2();
 };
 
-#endif // RASTERIZERSCENEGLES2_H
+#endif // RASTERIZER_SCENE_GLES2_H

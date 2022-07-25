@@ -81,4 +81,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
+
 #endif // NINE_PATCH_RECT_H

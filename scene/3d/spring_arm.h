@@ -68,4 +68,4 @@ private:
 	void process_spring();
 };
 
-#endif
+#endif // SPRING_ARM_H

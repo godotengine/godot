@@ -1256,4 +1256,4 @@ VARIANT_ENUM_CAST(VisualServer::ChangedPriority);
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer
 
-#endif
+#endif // VISUAL_SERVER_H

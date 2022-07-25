@@ -67,4 +67,4 @@ public:
 	~Area2PairSW();
 };
 
-#endif // AREA_PAIR__SW_H
+#endif // AREA_PAIR_SW_H

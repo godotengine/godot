@@ -148,4 +148,4 @@ public:
 	~MobileVRInterface();
 };
 
-#endif // !MOBILE_VR_INTERFACE_H
+#endif // MOBILE_VR_INTERFACE_H

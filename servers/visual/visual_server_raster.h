@@ -827,4 +827,4 @@ public:
 #undef BIND10
 };
 
-#endif
+#endif // VISUAL_SERVER_RASTER_H

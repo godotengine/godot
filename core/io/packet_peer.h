@@ -110,4 +110,4 @@ public:
 	PacketPeerStream();
 };
 
-#endif // PACKET_STREAM_H
+#endif // PACKET_PEER_H

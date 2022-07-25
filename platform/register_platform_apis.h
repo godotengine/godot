@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_APIS_H
-#define REGISTER_APIS_H
+#ifndef REGISTER_PLATFORM_APIS_H
+#define REGISTER_PLATFORM_APIS_H
 
 void register_platform_apis();
 void unregister_platform_apis();
 
-#endif
+#endif // REGISTER_PLATFORM_APIS_H

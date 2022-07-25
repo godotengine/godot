@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROPERTYSELECTOR_H
-#define PROPERTYSELECTOR_H
+#ifndef PROPERTY_SELECTOR_H
+#define PROPERTY_SELECTOR_H
 
 #include "editor/property_editor.h"
 #include "editor_help.h"
@@ -82,4 +82,4 @@ public:
 	PropertySelector();
 };
 
-#endif // PROPERTYSELECTOR_H
+#endif // PROPERTY_SELECTOR_H

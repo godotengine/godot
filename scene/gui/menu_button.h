@@ -64,4 +64,4 @@ public:
 	~MenuButton();
 };
 
-#endif
+#endif // MENU_BUTTON_H

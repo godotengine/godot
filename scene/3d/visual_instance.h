@@ -167,4 +167,4 @@ VARIANT_ENUM_CAST(GeometryInstance::Flags);
 VARIANT_ENUM_CAST(GeometryInstance::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
 
-#endif
+#endif // VISUAL_INSTANCE_H
