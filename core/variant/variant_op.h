@@ -694,42 +694,7 @@ public:
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
 
-template <class A, class B>
-class OperatorEvaluatorAnd {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
-		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
-		*r_ret = a && b;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) && *VariantGetInternalPtr<B>::get_ptr(right);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) && PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-template <class A, class B>
-class OperatorEvaluatorOr {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
-		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
-		*r_ret = a || b;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) || *VariantGetInternalPtr<B>::get_ptr(right);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) || PtrToArg<B>::convert(right), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
+// Should this be kept?
 #define XOR_OP(m_a, m_b) (((m_a) || (m_b)) && !((m_a) && (m_b)))
 template <class A, class B>
 class OperatorEvaluatorXor {
@@ -748,23 +713,6 @@ public:
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
 		PtrToArg<bool>::encode(xor_op(PtrToArg<A>::convert(left), PtrToArg<B>::convert(right)), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-template <class A>
-class OperatorEvaluatorNot {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
-		*r_ret = !a;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<A>::convert(left));
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
@@ -960,274 +908,207 @@ public:
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
 
-///// OR ///////
+///// LOGICAL OPS ///////
 
-_FORCE_INLINE_ static bool _operate_or(bool p_left, bool p_right) {
+template <Variant::Operator Op>
+_FORCE_INLINE_ bool _logical_op(const bool &p_left, const bool &p_right) {
+	ERR_FAIL_V_MSG(false, vformat("Unsupported logical operation %s.", Variant::get_operator_name(Op)));
+}
+template <>
+_FORCE_INLINE_ bool _logical_op<Variant::Operator::OP_AND>(const bool &p_left, const bool &p_right) {
+	return p_left && p_right;
+}
+template <>
+_FORCE_INLINE_ bool _logical_op<Variant::Operator::OP_OR>(const bool &p_left, const bool &p_right) {
 	return p_left || p_right;
 }
 
-_FORCE_INLINE_ static bool _operate_and(bool p_left, bool p_right) {
-	return p_left && p_right;
+template <Variant::Type T>
+_FORCE_INLINE_ bool _ptr_type_to_bool(const void *p_ptr) {
+	ERR_FAIL_V_MSG(false, vformat("Type %s cannot be converted to bool.", Variant::get_type_name(T)));
 }
-
-_FORCE_INLINE_ static bool _operate_xor(bool p_left, bool p_right) {
-	return (p_left || p_right) && !(p_left && p_right);
-}
-
-_FORCE_INLINE_ static bool _operate_get_nil(const Variant *p_ptr) {
-	return p_ptr->get_validated_object() != nullptr;
-}
-
-_FORCE_INLINE_ static bool _operate_get_bool(const Variant *p_ptr) {
-	return *VariantGetInternalPtr<bool>::get_ptr(p_ptr);
-}
-
-_FORCE_INLINE_ static bool _operate_get_int(const Variant *p_ptr) {
-	return *VariantGetInternalPtr<int64_t>::get_ptr(p_ptr) != 0;
-}
-
-_FORCE_INLINE_ static bool _operate_get_float(const Variant *p_ptr) {
-	return *VariantGetInternalPtr<double>::get_ptr(p_ptr) != 0.0;
-}
-
-_FORCE_INLINE_ static bool _operate_get_object(const Variant *p_ptr) {
-	return p_ptr->get_validated_object() != nullptr;
-}
-
-_FORCE_INLINE_ static bool _operate_get_ptr_nil(const void *p_ptr) {
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::NIL>(const void *p_ptr) {
 	return false;
 }
-
-_FORCE_INLINE_ static bool _operate_get_ptr_bool(const void *p_ptr) {
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::BOOL>(const void *p_ptr) {
 	return PtrToArg<bool>::convert(p_ptr);
 }
-
-_FORCE_INLINE_ static bool _operate_get_ptr_int(const void *p_ptr) {
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::INT>(const void *p_ptr) {
 	return PtrToArg<int64_t>::convert(p_ptr) != 0;
 }
-
-_FORCE_INLINE_ static bool _operate_get_ptr_float(const void *p_ptr) {
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::FLOAT>(const void *p_ptr) {
 	return PtrToArg<double>::convert(p_ptr) != 0.0;
 }
-
-_FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::STRING>(const void *p_ptr) {
+	return !PtrToArg<String>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::VECTOR2>(const void *p_ptr) {
+	return PtrToArg<Vector2>::convert(p_ptr) != Vector2();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::VECTOR2I>(const void *p_ptr) {
+	return PtrToArg<Vector2i>::convert(p_ptr) != Vector2i();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::RECT2>(const void *p_ptr) {
+	return PtrToArg<Rect2>::convert(p_ptr) != Rect2();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::RECT2I>(const void *p_ptr) {
+	return PtrToArg<Rect2i>::convert(p_ptr) != Rect2i();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::VECTOR3>(const void *p_ptr) {
+	return PtrToArg<Vector3>::convert(p_ptr) != Vector3();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::VECTOR3I>(const void *p_ptr) {
+	return PtrToArg<Vector3i>::convert(p_ptr) != Vector3i();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::TRANSFORM2D>(const void *p_ptr) {
+	return PtrToArg<Transform2D>::convert(p_ptr) != Transform2D();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PLANE>(const void *p_ptr) {
+	return PtrToArg<Plane>::convert(p_ptr) != Plane();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::QUATERNION>(const void *p_ptr) {
+	return PtrToArg<Quaternion>::convert(p_ptr) != Quaternion();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::AABB>(const void *p_ptr) {
+	return PtrToArg<AABB>::convert(p_ptr) != AABB();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::BASIS>(const void *p_ptr) {
+	return PtrToArg<Basis>::convert(p_ptr) != Basis();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::TRANSFORM3D>(const void *p_ptr) {
+	return PtrToArg<Transform3D>::convert(p_ptr) != Transform3D();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::COLOR>(const void *p_ptr) {
+	return PtrToArg<Color>::convert(p_ptr) != Color();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::STRING_NAME>(const void *p_ptr) {
+	return PtrToArg<StringName>::convert(p_ptr) != StringName();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::NODE_PATH>(const void *p_ptr) {
+	return PtrToArg<NodePath>::convert(p_ptr) != NodePath();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::RID>(const void *p_ptr) {
+	return PtrToArg<RID>::convert(p_ptr) != RID();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::OBJECT>(const void *p_ptr) {
 	return PtrToArg<Object *>::convert(p_ptr) != nullptr;
 }
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::CALLABLE>(const void *p_ptr) {
+	return !PtrToArg<Callable>::convert(p_ptr).is_null();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::SIGNAL>(const void *p_ptr) {
+	return !PtrToArg<Signal>::convert(p_ptr).is_null();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::DICTIONARY>(const void *p_ptr) {
+	return !PtrToArg<Dictionary>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::ARRAY>(const void *p_ptr) {
+	return !PtrToArg<Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_BYTE_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedByteArray>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_INT32_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedInt32Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_INT64_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedInt64Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_FLOAT32_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedFloat32Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_FLOAT64_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedFloat64Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_STRING_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedStringArray>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_VECTOR2_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedVector2Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_VECTOR3_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedVector3Array>::convert(p_ptr).is_empty();
+}
+template <>
+_FORCE_INLINE_ bool _ptr_type_to_bool<Variant::PACKED_COLOR_ARRAY>(const void *p_ptr) {
+	return !PtrToArg<PackedColorArray>::convert(p_ptr).is_empty();
+}
 
-#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op)                                                                    \
-	class m_class_name {                                                                                                     \
-	public:                                                                                                                  \
-		static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {                 \
-			*r_ret = m_op(_operate_get_##m_left(&p_left), _operate_get_##m_right(&p_right));                                 \
-			r_valid = true;                                                                                                  \
-		}                                                                                                                    \
-                                                                                                                             \
-		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                   \
-			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
-		}                                                                                                                    \
-                                                                                                                             \
-		static void ptr_evaluate(const void *left, const void *right, void *r_ret) {                                         \
-			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret);         \
-		}                                                                                                                    \
-                                                                                                                             \
-		static Variant::Type get_return_type() {                                                                             \
-			return Variant::BOOL;                                                                                            \
-		}                                                                                                                    \
-	};
+template <Variant::Operator Op, Variant::Type T_left, Variant::Type T_right>
+_FORCE_INLINE_ bool _ptr_logical_op(const void *p_left, const void *p_right) {
+	return _logical_op<Op>(_ptr_type_to_bool<T_left>(p_left), _ptr_type_to_bool<T_right>(p_right));
+}
 
-// OR
-
-// nil
-OP_EVALUATOR(OperatorEvaluatorNilXBoolOr, nil, bool, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorBoolXNilOr, bool, nil, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorNilXIntOr, nil, int, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorIntXNilOr, int, nil, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorNilXFloatOr, nil, float, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorFloatXNilOr, float, nil, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorObjectXNilOr, object, nil, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorNilXObjectOr, nil, object, _operate_or)
-
-// bool
-OP_EVALUATOR(OperatorEvaluatorBoolXBoolOr, bool, bool, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXIntOr, bool, int, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorIntXBoolOr, int, bool, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXFloatOr, bool, float, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorFloatXBoolOr, float, bool, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXObjectOr, bool, object, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorObjectXBoolOr, object, bool, _operate_or)
-
-// int
-OP_EVALUATOR(OperatorEvaluatorIntXIntOr, int, int, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorIntXFloatOr, int, float, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorFloatXIntOr, float, int, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorIntXObjectOr, int, object, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorObjectXIntOr, object, int, _operate_or)
-
-// float
-OP_EVALUATOR(OperatorEvaluatorFloatXFloatOr, float, float, _operate_or)
-
-OP_EVALUATOR(OperatorEvaluatorFloatXObjectOr, float, object, _operate_or)
-OP_EVALUATOR(OperatorEvaluatorObjectXFloatOr, object, float, _operate_or)
-
-// object
-OP_EVALUATOR(OperatorEvaluatorObjectXObjectOr, object, object, _operate_or)
-
-// AND
-
-// nil
-OP_EVALUATOR(OperatorEvaluatorNilXBoolAnd, nil, bool, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorBoolXNilAnd, bool, nil, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorNilXIntAnd, nil, int, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorIntXNilAnd, int, nil, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorNilXFloatAnd, nil, float, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorFloatXNilAnd, float, nil, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorObjectXNilAnd, object, nil, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorNilXObjectAnd, nil, object, _operate_and)
-
-// bool
-OP_EVALUATOR(OperatorEvaluatorBoolXBoolAnd, bool, bool, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXIntAnd, bool, int, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorIntXBoolAnd, int, bool, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXFloatAnd, bool, float, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorFloatXBoolAnd, float, bool, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXObjectAnd, bool, object, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorObjectXBoolAnd, object, bool, _operate_and)
-
-// int
-OP_EVALUATOR(OperatorEvaluatorIntXIntAnd, int, int, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorIntXFloatAnd, int, float, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorFloatXIntAnd, float, int, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorIntXObjectAnd, int, object, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorObjectXIntAnd, object, int, _operate_and)
-
-// float
-OP_EVALUATOR(OperatorEvaluatorFloatXFloatAnd, float, float, _operate_and)
-
-OP_EVALUATOR(OperatorEvaluatorFloatXObjectAnd, float, object, _operate_and)
-OP_EVALUATOR(OperatorEvaluatorObjectXFloatAnd, object, float, _operate_and)
-
-// object
-OP_EVALUATOR(OperatorEvaluatorObjectXObjectAnd, object, object, _operate_and)
-
-// XOR
-
-// nil
-OP_EVALUATOR(OperatorEvaluatorNilXBoolXor, nil, bool, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorBoolXNilXor, bool, nil, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorNilXIntXor, nil, int, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorIntXNilXor, int, nil, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorNilXFloatXor, nil, float, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorFloatXNilXor, float, nil, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorObjectXNilXor, object, nil, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorNilXObjectXor, nil, object, _operate_xor)
-
-// bool
-OP_EVALUATOR(OperatorEvaluatorBoolXBoolXor, bool, bool, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXIntXor, bool, int, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorIntXBoolXor, int, bool, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXFloatXor, bool, float, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorFloatXBoolXor, float, bool, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorBoolXObjectXor, bool, object, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorObjectXBoolXor, object, bool, _operate_xor)
-
-// int
-OP_EVALUATOR(OperatorEvaluatorIntXIntXor, int, int, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorIntXFloatXor, int, float, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorFloatXIntXor, float, int, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorIntXObjectXor, int, object, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorObjectXIntXor, object, int, _operate_xor)
-
-// float
-OP_EVALUATOR(OperatorEvaluatorFloatXFloatXor, float, float, _operate_xor)
-
-OP_EVALUATOR(OperatorEvaluatorFloatXObjectXor, float, object, _operate_xor)
-OP_EVALUATOR(OperatorEvaluatorObjectXFloatXor, object, float, _operate_xor)
-
-// object
-OP_EVALUATOR(OperatorEvaluatorObjectXObjectXor, object, object, _operate_xor)
-
-class OperatorEvaluatorNotBool {
+template <Variant::Operator Op, Variant::Type T_left, Variant::Type T_right>
+class OperatorEvaluatorLogicalOperation {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		*r_ret = !*VariantGetInternalPtr<bool>::get_ptr(&p_left);
+		*r_ret = _logical_op<Op>(p_left.booleanize(), p_right.booleanize());
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<bool>::get_ptr(left);
+		VariantTypeChanger<bool>::change(r_ret);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = _logical_op<Op>(left->booleanize(), right->booleanize());
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<bool>::convert(left), r_ret);
+		PtrToArg<bool>::encode(_ptr_logical_op<Op, T_left, T_right>(left, right), r_ret);
 	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
+	static Variant::Type get_return_type() {
+		return Variant::BOOL;
+	}
 };
 
-class OperatorEvaluatorNotInt {
+template <Variant::Type T_left>
+class OperatorEvaluatorNot {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		*r_ret = !*VariantGetInternalPtr<int64_t>::get_ptr(&p_left);
+		*r_ret = !p_left.booleanize();
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<int64_t>::get_ptr(left);
+		VariantTypeChanger<bool>::change(r_ret);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !left->booleanize();
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<int64_t>::convert(left), r_ret);
+		PtrToArg<bool>::encode(_ptr_type_to_bool<T_left>(left), r_ret);
 	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-class OperatorEvaluatorNotFloat {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		*r_ret = !*VariantGetInternalPtr<double>::get_ptr(&p_left);
-		r_valid = true;
+	static Variant::Type get_return_type() {
+		return Variant::BOOL;
 	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<double>::get_ptr(left);
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<double>::convert(left), r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
-};
-
-class OperatorEvaluatorNotObject {
-public:
-	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
-		*r_ret = p_left.get_validated_object() == nullptr;
-		r_valid = true;
-	}
-	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = left->get_validated_object() == nullptr;
-	}
-	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == nullptr, r_ret);
-	}
-	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
 
 ////

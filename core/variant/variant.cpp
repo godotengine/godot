@@ -818,70 +818,55 @@ bool Variant::is_zero() const {
 		} break;
 		case INT: {
 			return _data._int == 0;
-
 		} break;
 		case FLOAT: {
 			return _data._float == 0;
-
 		} break;
 		case STRING: {
 			return *reinterpret_cast<const String *>(_data._mem) == String();
-
 		} break;
 
 		// math types
 		case VECTOR2: {
 			return *reinterpret_cast<const Vector2 *>(_data._mem) == Vector2();
-
 		} break;
 		case VECTOR2I: {
 			return *reinterpret_cast<const Vector2i *>(_data._mem) == Vector2i();
-
 		} break;
 		case RECT2: {
 			return *reinterpret_cast<const Rect2 *>(_data._mem) == Rect2();
-
 		} break;
 		case RECT2I: {
 			return *reinterpret_cast<const Rect2i *>(_data._mem) == Rect2i();
-
 		} break;
 		case TRANSFORM2D: {
 			return *_data._transform2d == Transform2D();
-
 		} break;
 		case VECTOR3: {
 			return *reinterpret_cast<const Vector3 *>(_data._mem) == Vector3();
-
 		} break;
 		case VECTOR3I: {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i();
-
 		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane();
-
 		} break;
 		case AABB: {
 			return *_data._aabb == ::AABB();
 		} break;
 		case QUATERNION: {
 			return *reinterpret_cast<const Quaternion *>(_data._mem) == Quaternion();
-
 		} break;
 		case BASIS: {
 			return *_data._basis == Basis();
-
 		} break;
 		case TRANSFORM3D: {
 			return *_data._transform3d == Transform3D();
-
 		} break;
 
 		// misc types
 		case COLOR: {
 			return *reinterpret_cast<const Color *>(_data._mem) == Color();
-
 		} break;
 		case RID: {
 			return *reinterpret_cast<const ::RID *>(_data._mem) == ::RID();
@@ -896,58 +881,45 @@ bool Variant::is_zero() const {
 			return reinterpret_cast<const Signal *>(_data._mem)->is_null();
 		} break;
 		case STRING_NAME: {
-			return *reinterpret_cast<const StringName *>(_data._mem) != StringName();
-
+			return *reinterpret_cast<const StringName *>(_data._mem) == StringName();
 		} break;
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
-
 		} break;
 		case DICTIONARY: {
 			return reinterpret_cast<const Dictionary *>(_data._mem)->is_empty();
-
 		} break;
 		case ARRAY: {
 			return reinterpret_cast<const Array *>(_data._mem)->is_empty();
-
 		} break;
 
 		// arrays
 		case PACKED_BYTE_ARRAY: {
 			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_INT32_ARRAY: {
 			return PackedArrayRef<int32_t>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_INT64_ARRAY: {
 			return PackedArrayRef<int64_t>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_FLOAT32_ARRAY: {
 			return PackedArrayRef<float>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_FLOAT64_ARRAY: {
 			return PackedArrayRef<double>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_STRING_ARRAY: {
 			return PackedArrayRef<String>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 			return PackedArrayRef<Vector2>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			return PackedArrayRef<Vector3>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		case PACKED_COLOR_ARRAY: {
 			return PackedArrayRef<Color>::get_array(_data.packed_array).size() == 0;
-
 		} break;
 		default: {
 		}
