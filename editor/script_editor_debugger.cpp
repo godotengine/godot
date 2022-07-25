@@ -595,25 +595,25 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		le_clear->set_disabled(false);
 		le_set->set_disabled(false);
 	} else if (p_msg == "message:inspect_object") {
-		ScriptEditorDebuggerInspectedObject *debugObj = nullptr;
+		ScriptEditorDebuggerInspectedObject *debug_obj = nullptr;
 
 		ObjectID id = p_data[0];
 		String type = p_data[1];
 		Array properties = p_data[2];
 
 		if (remote_objects.has(id)) {
-			debugObj = remote_objects[id];
+			debug_obj = remote_objects[id];
 		} else {
-			debugObj = memnew(ScriptEditorDebuggerInspectedObject);
-			debugObj->remote_object_id = id;
-			debugObj->type_name = type;
-			remote_objects[id] = debugObj;
-			debugObj->connect("value_edited", this, "_scene_tree_property_value_edited");
+			debug_obj = memnew(ScriptEditorDebuggerInspectedObject);
+			debug_obj->remote_object_id = id;
+			debug_obj->type_name = type;
+			remote_objects[id] = debug_obj;
+			debug_obj->connect("value_edited", this, "_scene_tree_property_value_edited");
 		}
 
-		int old_prop_size = debugObj->prop_list.size();
+		int old_prop_size = debug_obj->prop_list.size();
 
-		debugObj->prop_list.clear();
+		debug_obj->prop_list.clear();
 		int new_props_added = 0;
 		Set<String> changed;
 		for (int i = 0; i < properties.size(); i++) {
@@ -646,12 +646,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					var = ResourceLoader::load(path);
 
 					if (pinfo.hint_string == "Script") {
-						if (debugObj->get_script() != var) {
-							debugObj->set_script(RefPtr());
+						if (debug_obj->get_script() != var) {
+							debug_obj->set_script(RefPtr());
 							Ref<Script> script(var);
 							if (!script.is_null()) {
-								ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
-								debugObj->set_script_and_instance(var, script_instance);
+								ScriptInstance *script_instance = script->placeholder_instance_create(debug_obj);
+								if (script_instance) {
+									debug_obj->set_script_and_instance(var, script_instance);
+								}
 							}
 						}
 					}
@@ -666,31 +668,31 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			}
 
 			//always add the property, since props may have been added or removed
-			debugObj->prop_list.push_back(pinfo);
+			debug_obj->prop_list.push_back(pinfo);
 
-			if (!debugObj->prop_values.has(pinfo.name)) {
+			if (!debug_obj->prop_values.has(pinfo.name)) {
 				new_props_added++;
-				debugObj->prop_values[pinfo.name] = var;
+				debug_obj->prop_values[pinfo.name] = var;
 			} else {
 				// Compare using `deep_equal` so dictionaries/arrays will be compared by value.
-				if (!debugObj->prop_values[pinfo.name].deep_equal(var)) {
-					debugObj->prop_values[pinfo.name] = var;
+				if (!debug_obj->prop_values[pinfo.name].deep_equal(var)) {
+					debug_obj->prop_values[pinfo.name] = var;
 					changed.insert(pinfo.name);
 				}
 			}
 		}
 
-		if (editor->get_editor_history()->get_current() != debugObj->get_instance_id()) {
-			editor->push_item(debugObj, "");
+		if (editor->get_editor_history()->get_current() != debug_obj->get_instance_id()) {
+			editor->push_item(debug_obj, "");
 		} else {
-			if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
+			if (old_prop_size == debug_obj->prop_list.size() && new_props_added == 0) {
 				//only some may have changed, if so, then update those, if exist
 				for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
 					EditorNode::get_singleton()->get_inspector()->update_property(E->get());
 				}
 			} else {
 				//full update, because props were added or removed
-				debugObj->update();
+				debug_obj->update();
 			}
 		}
 	} else if (p_msg == "message:video_mem") {
