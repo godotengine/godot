@@ -893,8 +893,23 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			j2 = j + 1;
 
 			Vector2 dir = (t + prev_t).normalized();
+
+			// Clamp the argument that we're going to pass to acos() within [-1, 1].
+			real_t dot_product = t.dot(prev_t);
+			dot_product = CLAMP(dot_product, -1.0, 1.0);
+
+			// Angle formed by the current and previous norm vectors.
+			real_t angle_between_norms = acos(dot_product);
+
+			real_t length_factor = cos(angle_between_norms * 0.5);
+
+			// Extend vector resulted from the current and previous norms.
 			Vector2 tangent = dir * p_width * 0.5;
+			tangent /= length_factor == 0 ? 1.0 : length_factor;
+
 			Vector2 border = dir * border_size;
+			border /= length_factor == 0 ? 1.0 : length_factor;
+
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
@@ -1014,19 +1029,34 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		// Makes a single triangle strip for drawing the line.
 
 		for (int i = 0, j = 0; i < pc; i++, j += 2) {
+			// Norm vector of the current line.
 			Vector2 t;
 			if (i == pc - 1) {
 				t = prev_t;
 			} else {
+				// Get the norm vector of the current line (from point i to point i + 1).
 				t = (p_points[i + 1] - p_points[i]).normalized().orthogonal();
 				if (i == 0) {
+					// No previous line for the first line.
 					prev_t = t;
 				}
 			}
 
 			j2 = j + 1;
 
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			// Clamp the argument that we're going to pass to acos() within [-1, 1].
+			real_t dot_product = t.dot(prev_t);
+			dot_product = CLAMP(dot_product, -1.0, 1.0);
+
+			// Angle formed by the current and previous norm vectors.
+			real_t angle_between_norms = acos(dot_product);
+
+			real_t length_factor = cos(angle_between_norms * 0.5);
+
+			// Extend vector resulted from the current and previous norms.
+			Vector2 tangent = (t + prev_t).normalized() * p_width * 0.5;
+			tangent /= length_factor == 0 ? 1.0 : length_factor;
+
 			Vector2 pos = p_points[i];
 
 			points_ptr[j] = pos + tangent;
