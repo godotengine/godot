@@ -30,9 +30,9 @@
 
 #include "gltf_document.h"
 
+#include "extensions/gltf_spec_gloss.h"
 #include "gltf_document_extension.h"
 #include "gltf_document_extension_convert_importer_mesh.h"
-#include "gltf_spec_gloss.h"
 #include "gltf_state.h"
 
 #include "core/crypto/crypto_core.h"

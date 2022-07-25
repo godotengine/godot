@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_skin.h                                                          */
+/*  gltf_node.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,82 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_SKIN_H
-#define GLTF_SKIN_H
+#ifndef GLTF_NODE_H
+#define GLTF_NODE_H
 
+#include "../gltf_defines.h"
 #include "core/io/resource.h"
-#include "gltf_defines.h"
 
-class GLTFSkin : public Resource {
-	GDCLASS(GLTFSkin, Resource);
+class GLTFNode : public Resource {
+	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
 
 private:
-	// The "skeleton" property defined in the gltf spec. -1 = Scene Root
-	GLTFNodeIndex skin_root = -1;
-
-	Vector<GLTFNodeIndex> joints_original;
-	Vector<Transform3D> inverse_binds;
-
-	// Note: joints + non_joints should form a complete subtree, or subtrees
-	// with a common parent
-
-	// All nodes that are skins that are caught in-between the original joints
-	// (inclusive of joints_original)
-	Vector<GLTFNodeIndex> joints;
-
-	// All Nodes that are caught in-between skin joint nodes, and are not
-	// defined as joints by any skin
-	Vector<GLTFNodeIndex> non_joints;
-
-	// The roots of the skin. In the case of multiple roots, their parent *must*
-	// be the same (the roots must be siblings)
-	Vector<GLTFNodeIndex> roots;
-
-	// The GLTF Skeleton this Skin points to (after we determine skeletons)
+	// matrices need to be transformed to this
+	GLTFNodeIndex parent = -1;
+	int height = -1;
+	Transform3D xform;
+	GLTFMeshIndex mesh = -1;
+	GLTFCameraIndex camera = -1;
+	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
-
-	// A mapping from the joint indices (in the order of joints_original) to the
-	// Godot Skeleton's bone_indices
-	HashMap<int, int> joint_i_to_bone_i;
-	HashMap<int, StringName> joint_i_to_name;
-
-	// The Actual Skin that will be created as a mapping between the IBM's of
-	// this skin to the generated skeleton for the mesh instances.
-	Ref<Skin> godot_skin;
+	bool joint = false;
+	Vector3 position;
+	Quaternion rotation;
+	Vector3 scale = Vector3(1, 1, 1);
+	Vector<int> children;
+	GLTFLightIndex light = -1;
 
 protected:
 	static void _bind_methods();
 
 public:
-	GLTFNodeIndex get_skin_root();
-	void set_skin_root(GLTFNodeIndex p_skin_root);
+	GLTFNodeIndex get_parent();
+	void set_parent(GLTFNodeIndex p_parent);
 
-	Vector<GLTFNodeIndex> get_joints_original();
-	void set_joints_original(Vector<GLTFNodeIndex> p_joints_original);
+	int get_height();
+	void set_height(int p_height);
 
-	Array get_inverse_binds();
-	void set_inverse_binds(Array p_inverse_binds);
+	Transform3D get_xform();
+	void set_xform(Transform3D p_xform);
 
-	Vector<GLTFNodeIndex> get_joints();
-	void set_joints(Vector<GLTFNodeIndex> p_joints);
+	GLTFMeshIndex get_mesh();
+	void set_mesh(GLTFMeshIndex p_mesh);
 
-	Vector<GLTFNodeIndex> get_non_joints();
-	void set_non_joints(Vector<GLTFNodeIndex> p_non_joints);
+	GLTFCameraIndex get_camera();
+	void set_camera(GLTFCameraIndex p_camera);
 
-	Vector<GLTFNodeIndex> get_roots();
-	void set_roots(Vector<GLTFNodeIndex> p_roots);
+	GLTFSkinIndex get_skin();
+	void set_skin(GLTFSkinIndex p_skin);
 
-	int get_skeleton();
-	void set_skeleton(int p_skeleton);
+	GLTFSkeletonIndex get_skeleton();
+	void set_skeleton(GLTFSkeletonIndex p_skeleton);
 
-	Dictionary get_joint_i_to_bone_i();
-	void set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i);
+	bool get_joint();
+	void set_joint(bool p_joint);
 
-	Dictionary get_joint_i_to_name();
-	void set_joint_i_to_name(Dictionary p_joint_i_to_name);
+	Vector3 get_position();
+	void set_position(Vector3 p_position);
 
-	Ref<Skin> get_godot_skin();
-	void set_godot_skin(Ref<Skin> p_godot_skin);
+	Quaternion get_rotation();
+	void set_rotation(Quaternion p_rotation);
+
+	Vector3 get_scale();
+	void set_scale(Vector3 p_scale);
+
+	Vector<int> get_children();
+	void set_children(Vector<int> p_children);
+
+	GLTFLightIndex get_light();
+	void set_light(GLTFLightIndex p_light);
 };
-#endif // GLTF_SKIN_H
+#endif // GLTF_NODE_H

@@ -31,8 +31,8 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "gltf_animation.h"
 #include "gltf_defines.h"
+#include "structures/gltf_animation.h"
 
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
