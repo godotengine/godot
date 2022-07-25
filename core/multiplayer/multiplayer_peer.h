@@ -93,6 +93,8 @@ class MultiplayerPeerExtension : public MultiplayerPeer {
 protected:
 	static void _bind_methods();
 
+	PackedByteArray script_buffer;
+
 public:
 	/* PacketPeer */
 	virtual int get_available_packet_count() const override;
@@ -125,6 +127,10 @@ public:
 	GDVIRTUAL2R(int, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
 	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
 	GDVIRTUAL0RC(int, _get_max_packet_size);
+
+	/* PacketPeer GDScript */
+	GDVIRTUAL0R(PackedByteArray, _get_packet_script);
+	GDVIRTUAL1R(int, _put_packet_script, PackedByteArray);
 
 	/* MultiplayerPeer GDExtension */
 	GDVIRTUAL1(_set_transfer_channel, int);

@@ -144,6 +144,7 @@
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
 				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
+				[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 			</description>
 		</method>
 		<method name="preload">

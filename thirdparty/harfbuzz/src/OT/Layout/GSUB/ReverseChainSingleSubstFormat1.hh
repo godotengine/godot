@@ -5,7 +5,7 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
 struct ReverseChainSingleSubstFormat1
 {
@@ -33,10 +33,10 @@ struct ReverseChainSingleSubstFormat1
     TRACE_SANITIZE (this);
     if (!(coverage.sanitize (c, this) && backtrack.sanitize (c, this)))
       return_trace (false);
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
     if (!lookahead.sanitize (c, this))
       return_trace (false);
-    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
     return_trace (substitute.sanitize (c));
   }
 
@@ -45,7 +45,7 @@ struct ReverseChainSingleSubstFormat1
     if (!(this+coverage).intersects (glyphs))
       return false;
 
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
 
     unsigned int count;
 
@@ -69,8 +69,8 @@ struct ReverseChainSingleSubstFormat1
   {
     if (!intersects (c->glyphs)) return;
 
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
 
     + hb_zip (this+coverage, substitute)
     | hb_filter (c->parent_active_glyphs (), hb_first)
@@ -91,12 +91,12 @@ struct ReverseChainSingleSubstFormat1
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!(this+backtrack[i]).collect_coverage (c->before))) return;
 
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
     count = lookahead.len;
     for (unsigned int i = 0; i < count; i++)
       if (unlikely (!(this+lookahead[i]).collect_coverage (c->after))) return;
 
-    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
     count = substitute.len;
     c->output->add_array (substitute.arrayZ, substitute.len);
   }
@@ -115,8 +115,8 @@ struct ReverseChainSingleSubstFormat1
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur ().codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
 
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
 
     if (unlikely (index >= substitute.len)) return_trace (false);
 
@@ -206,8 +206,8 @@ struct ReverseChainSingleSubstFormat1
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
-    const Array16OfOffset16To<Coverage> &lookahead = StructAfter<Array16OfOffset16To<Coverage>> (backtrack);
-    const Array16Of<HBGlyphID16> &substitute = StructAfter<Array16Of<HBGlyphID16>> (lookahead);
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
 
     auto it =
     + hb_zip (this+coverage, substitute)

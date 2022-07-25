@@ -755,16 +755,16 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * hb_buffer_message_func_t:
  * @buffer: An #hb_buffer_t to work upon
  * @font: The #hb_font_t the @buffer is shaped with
- * @message: %NULL-terminated message passed to the function
+ * @message: `NULL`-terminated message passed to the function
  * @user_data: User data pointer passed by the caller
  *
  * A callback method for #hb_buffer_t. The method gets called with the
  * #hb_buffer_t it was set on, the #hb_font_t the buffer is shaped with and a
  * message describing what step of the shaping process will be performed.
- * Returning %false from this method will skip this shaping step and move to
+ * Returning `false` from this method will skip this shaping step and move to
  * the next one.
  *
- * Return value: %true to perform the shaping step, %false to skip it.
+ * Return value: `true` to perform the shaping step, `false` to skip it.
  *
  * Since: 1.1.3
  */

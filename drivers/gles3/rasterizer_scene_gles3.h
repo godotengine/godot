@@ -651,7 +651,6 @@ protected:
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
-	bool ssao_using_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
 	float ssao_fadeout_from = 50.0;

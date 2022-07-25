@@ -4883,11 +4883,10 @@ void RichTextLabel::install_effect(const Variant effect) {
 	Ref<RichTextEffect> rteffect;
 	rteffect = effect;
 
-	if (rteffect.is_valid()) {
-		custom_effects.push_back(effect);
-		if ((!text.is_empty()) && use_bbcode) {
-			parse_bbcode(text);
-		}
+	ERR_FAIL_COND_MSG(rteffect.is_null(), "Invalid RichTextEffect resource.");
+	custom_effects.push_back(effect);
+	if ((!text.is_empty()) && use_bbcode) {
+		parse_bbcode(text);
 	}
 }
 

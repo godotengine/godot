@@ -148,7 +148,7 @@ static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
-static OS::ProcessID allow_focus_steal_pid = 0;
+static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
@@ -409,6 +409,8 @@ Error Main::test_setup() {
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
+
+	register_core_settings(); //here globals are present
 
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
@@ -685,7 +687,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 	while (I) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Ignore the process serial number argument passed by macOS Gatekeeper.
 		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
 		if (I->get().begins_with("-psn_")) {
@@ -1044,10 +1046,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (I->next()) {
 				String p = I->next()->get();
-				if (OS::get_singleton()->set_cwd(p) == OK) {
-					//nothing
-				} else {
-					project_path = I->next()->get(); //use project_path instead
+				if (OS::get_singleton()->set_cwd(p) != OK) {
+					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
+					goto error;
 				}
 				N = I->next()->next();
 			} else {
@@ -1141,9 +1142,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--allow_focus_steal_pid") { // not exposed to user
+		} else if (I->get() == "--editor-pid") { // not exposed to user
 			if (I->next()) {
-				allow_focus_steal_pid = I->next()->get().to_int();
+				editor_pid = I->next()->get().to_int();
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
@@ -1273,7 +1274,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					PROPERTY_HINT_RANGE,
 					"0, 200, 1, or_greater"));
 
-	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints);
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
+		if (editor_pid) {
+			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
+		}
+	});
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -1431,7 +1436,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("internationalization/rendering/force_right_to_left_layout_direction", false);
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
@@ -1838,10 +1843,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 	}
 
-	if (allow_focus_steal_pid) {
-		DisplayServer::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
-	}
-
 	MAIN_PRINT("Main: Load Boot Image");
 
 	Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
@@ -1965,7 +1966,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Enum text drivers */
-	GLOBAL_DEF("internationalization/rendering/text_driver", "");
+	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		if (i > 0) {
@@ -2669,7 +2670,7 @@ bool Main::start() {
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				String mac_iconpath = GLOBAL_DEF("application/config/macos_native_icon", "Variant()");
 				if (!mac_iconpath.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_iconpath);

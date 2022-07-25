@@ -646,7 +646,7 @@ Error VulkanContext::_check_capabilities() {
 		subgroup_capabilities.quadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
 
 		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-			print_verbose("- Vulkan Varying Shading Rates supported:");
+			print_verbose("- Vulkan Variable Rate Shading supported:");
 			if (vrs_capabilities.pipeline_vrs_supported) {
 				print_verbose("  Pipeline fragment shading rate");
 			}
@@ -664,7 +664,7 @@ Error VulkanContext::_check_capabilities() {
 			}
 
 		} else {
-			print_verbose("- Vulkan Varying Shading Rates not supported");
+			print_verbose("- Vulkan Variable Rate Shading not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {

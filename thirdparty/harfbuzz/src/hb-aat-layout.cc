@@ -229,7 +229,7 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
  *
  * <note>Note: does not examine the `GSUB` table.</note>
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */
@@ -300,7 +300,7 @@ hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
  *
  * <note>Note: does not examine the `GPOS` table.</note>
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */
@@ -333,7 +333,7 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
  * Tests whether the specified face includes any tracking information
  * in the `trak` table.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */

@@ -985,7 +985,9 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			}
 		}
 
-		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
+		String resource_type = ResourceLoader::get_resource_type(fpath);
+
+		if (resource_type == "PackedScene") {
 			bool is_imported = false;
 
 			{
@@ -1005,7 +1007,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
-		} else if (ResourceLoader::get_resource_type(fpath) == "AnimationLibrary") {
+		} else if (resource_type == "AnimationLibrary") {
 			bool is_imported = false;
 
 			{
@@ -1025,6 +1027,25 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			} else {
 				EditorNode::get_singleton()->open_request(fpath);
 			}
+		} else if (ResourceLoader::is_imported(fpath)) {
+			// If the importer has advanced settings, show them.
+			int order;
+			bool can_threads;
+			String name;
+			Error err = ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(fpath, order, can_threads, name);
+			bool used_advanced_settings = false;
+			if (err == OK) {
+				Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(name);
+				if (importer.is_valid() && importer->has_advanced_options()) {
+					importer->show_advanced_options(fpath);
+					used_advanced_settings = true;
+				}
+			}
+
+			if (!used_advanced_settings) {
+				EditorNode::get_singleton()->load_resource(fpath);
+			}
+
 		} else {
 			EditorNode::get_singleton()->load_resource(fpath);
 		}
@@ -2032,6 +2053,10 @@ void FileSystemDock::_resource_created() {
 		return;
 	} else if (type_name == "VisualShader") {
 		make_shader_dialog->config(fpath.plus_file("new_shader"), false, false, 1);
+		make_shader_dialog->popup_centered();
+		return;
+	} else if (type_name == "ShaderInclude") {
+		make_shader_dialog->config(fpath.plus_file("new_shader_include"), false, false, 2);
 		make_shader_dialog->popup_centered();
 		return;
 	}

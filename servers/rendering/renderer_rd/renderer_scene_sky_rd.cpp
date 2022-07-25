@@ -42,6 +42,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // SKY SHADER
 
+void RendererSceneSkyRD::SkyShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void RendererSceneSkyRD::SkyShaderData::set_code(const String &p_code) {
 	//compile
 

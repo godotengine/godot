@@ -3710,7 +3710,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 	// Now compute the contents of our buffers.
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 
-	// Render each eye seperately.
+	// Render each eye separately.
 	// We need to look into whether we can make our compute shader use Multiview but not sure that works or makes a difference..
 
 	// setup our push constant

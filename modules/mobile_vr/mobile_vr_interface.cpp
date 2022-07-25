@@ -45,7 +45,7 @@ uint32_t MobileVRInterface::get_capabilities() const {
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
-	// Well it may on Mac OS X because we're getting a calibrated value in the current implementation but Android we're getting raw data.
+	// Well it may on macOS because we're getting a calibrated value in the current implementation but Android we're getting raw data.
 	// This is a fairly simple adjustment we can do to correct for the magnetometer data being elliptical
 
 	Vector3 mag_raw = p_magnetometer;

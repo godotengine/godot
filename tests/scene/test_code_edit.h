@@ -3251,7 +3251,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 
 		SIGNAL_WATCH(code_edit, "symbol_validate");
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		SEND_GUI_KEY_EVENT(code_edit, Key::META);
 #else
 		SEND_GUI_KEY_EVENT(code_edit, Key::CTRL);

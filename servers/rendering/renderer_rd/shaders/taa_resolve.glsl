@@ -189,7 +189,7 @@ vec3 sample_catmull_rom_9(sampler2D stex, vec2 uv, vec2 resolution) {
 	// Source: https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1
 	// License: https://gist.github.com/TheRealMJP/bc503b0b87b643d3505d41eab8b332ae
 
-	// We're going to sample a a 4x4 grid of texels surrounding the target UV coordinate. We'll do this by rounding
+	// We're going to sample a 4x4 grid of texels surrounding the target UV coordinate. We'll do this by rounding
 	// down the sample location to get the exact center of our "starting" texel. The starting texel will be at
 	// location [1, 1] in the grid, where [0, 0] is the top left corner.
 	vec2 sample_pos = uv * resolution;

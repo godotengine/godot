@@ -1323,18 +1323,76 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	Error err = parser.compile(p_code, info);
 
 	if (err != OK) {
+		Vector<ShaderLanguage::FilePosition> include_positions = parser.get_include_positions();
+
+		String current;
+		HashMap<String, Vector<String>> includes;
+		includes[""] = Vector<String>();
+		Vector<String> include_stack;
 		Vector<String> shader = p_code.split("\n");
+
+		// Reconstruct the files.
 		for (int i = 0; i < shader.size(); i++) {
-			if (i + 1 == parser.get_error_line()) {
-				// Mark the error line to be visible without having to look at
-				// the trace at the end.
-				print_line(vformat("E%4d-> %s", i + 1, shader[i]));
+			String l = shader[i];
+			if (l.begins_with("@@>")) {
+				String inc_path = l.replace_first("@@>", "");
+
+				l = "#include \"" + inc_path + "\"";
+				includes[current].append("#include \"" + inc_path + "\""); // Restore the include directive
+				include_stack.push_back(current);
+				current = inc_path;
+				includes[inc_path] = Vector<String>();
+
+			} else if (l.begins_with("@@<")) {
+				if (include_stack.size()) {
+					current = include_stack[include_stack.size() - 1];
+					include_stack.resize(include_stack.size() - 1);
+				}
 			} else {
-				print_line(vformat("%5d | %s", i + 1, shader[i]));
+				includes[current].push_back(l);
 			}
 		}
 
-		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
+		// Print the files.
+		for (const KeyValue<String, Vector<String>> &E : includes) {
+			if (E.key.is_empty()) {
+				if (p_path == "") {
+					print_line("--Main Shader--");
+				} else {
+					print_line("--" + p_path + "--");
+				}
+			} else {
+				print_line("--" + E.key + "--");
+			}
+			int err_line = -1;
+			for (int i = 0; i < include_positions.size(); i++) {
+				if (include_positions[i].file == E.key) {
+					err_line = include_positions[i].line;
+				}
+			}
+			const Vector<String> &V = E.value;
+			for (int i = 0; i < V.size(); i++) {
+				if (i == err_line - 1) {
+					// Mark the error line to be visible without having to look at
+					// the trace at the end.
+					print_line(vformat("E%4d-> %s", i + 1, V[i]));
+				} else {
+					print_line(vformat("%5d | %s", i + 1, V[i]));
+				}
+			}
+		}
+
+		String file;
+		int line;
+		if (include_positions.size() > 1) {
+			file = include_positions[include_positions.size() - 1].file;
+			line = include_positions[include_positions.size() - 1].line;
+		} else {
+			file = p_path;
+			line = parser.get_error_line();
+		}
+
+		_err_print_error(nullptr, file.utf8().get_data(), line, parser.get_error_text().utf8().get_data(), false, ERR_HANDLER_SHADER);
 		return err;
 	}
 

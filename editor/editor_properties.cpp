@@ -3007,14 +3007,6 @@ void EditorPropertyColor::_popup_closed() {
 	}
 }
 
-void EditorPropertyColor::_picker_created() {
-	// get default color picker mode from editor settings
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	picker->get_picker()->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-	picker->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
-}
-
 void EditorPropertyColor::_picker_opening() {
 	last_color = picker->get_pick_color();
 }
@@ -3059,7 +3051,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
-	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created));
+	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(picker->get_picker()));
 	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
 
@@ -3176,6 +3168,11 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 
 	Node *dropped_node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
 	ERR_FAIL_NULL_V(dropped_node, false);
+
+	if (valid_types.is_empty()) {
+		// No type requirements specified so any type is valid.
+		return true;
+	}
 
 	for (const StringName &E : valid_types) {
 		if (dropped_node->is_class(E)) {
@@ -3517,6 +3514,9 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
 		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
+	} else if (p_base_type == "AudioStream") {
+		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
+		resource_picker = astream_picker;
 	} else {
 		resource_picker = memnew(EditorResourcePicker);
 	}

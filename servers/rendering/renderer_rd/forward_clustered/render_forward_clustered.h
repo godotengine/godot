@@ -117,6 +117,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		uint32_t view_count = 1;
 		RID color_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
 		RID depth_views[RendererSceneRender::MAX_RENDER_VIEWS]; // we should rewrite this so we get access to the existing views in our renderer, something we can address when we reorg this
+		RID specular_views[RendererSceneRender::MAX_RENDER_VIEWS];
+		RID specular_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID color_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID depth_msaa_views[RendererSceneRender::MAX_RENDER_VIEWS];
 		RID normal_roughness_views[RendererSceneRender::MAX_RENDER_VIEWS];

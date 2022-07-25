@@ -277,6 +277,14 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("StatusWarning");
 		exceptions.insert("OverbrightIndicator");
 		exceptions.insert("GuiMiniCheckerboard");
+
+		// Prevents Code Editor icons from changing
+		exceptions.insert("GuiTab");
+		exceptions.insert("GuiSpace");
+		exceptions.insert("CodeFoldedRightArrow");
+		exceptions.insert("CodeFoldDownArrow");
+		exceptions.insert("TextEditorPlay");
+		exceptions.insert("Breakpoint");
 	}
 
 	// These ones should be converted even if we are using a dark theme.
@@ -1659,7 +1667,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
 	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.7);
+	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
 
 	// editor main color
 	const Color main_color = dark_theme ? Color(0.34, 0.7, 1.0) : Color(0.02, 0.5, 1.0);
@@ -1749,17 +1757,21 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Now theme is loaded, apply it to CodeEdit.
 	theme->set_font("font", "CodeEdit", theme->get_font(SNAME("source"), SNAME("EditorFonts")));
 	theme->set_font_size("font_size", "CodeEdit", theme->get_font_size(SNAME("source_size"), SNAME("EditorFonts")));
+
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(EDITOR_GET("text_editor/theme/highlighting/background_color"), widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y, corner_radius);
 	theme->set_stylebox("normal", "CodeEdit", code_edit_stylebox);
 	theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	theme->set_stylebox("focus", "CodeEdit", Ref<StyleBoxEmpty>(memnew(StyleBoxEmpty)));
+
 	theme->set_icon("tab", "CodeEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
 	theme->set_icon("space", "CodeEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
-	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
-	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
-	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon(SNAME("CodeFoldedRightArrow"), SNAME("EditorIcons")));
+	theme->set_icon("can_fold", "CodeEdit", theme->get_icon(SNAME("CodeFoldDownArrow"), SNAME("EditorIcons")));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon(SNAME("TextEditorPlay"), SNAME("EditorIcons")));
 	theme->set_icon("breakpoint", "CodeEdit", theme->get_icon(SNAME("Breakpoint"), SNAME("EditorIcons")));
+
 	theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+
 	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
 	theme->set_color("completion_background_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
 	theme->set_color("completion_selected_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_selected_color"));

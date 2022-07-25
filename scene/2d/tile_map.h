@@ -130,7 +130,7 @@ public:
 		}
 
 		String to_string() const {
-			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priotity:%d}", base_cell_coords, bit, terrain, priority);
+			return vformat("Constraint {pos:%s, bit:%d, terrain:%d, priority:%d}", base_cell_coords, bit, terrain, priority);
 		}
 
 		Vector2i get_base_cell_coords() const {

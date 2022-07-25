@@ -63,15 +63,15 @@ def copy_file(src_dir, dst_dir, src_name, dst_name=""):
 
 
 def is_desktop(platform):
-    return platform in ["windows", "osx", "linuxbsd", "server", "uwp", "haiku"]
+    return platform in ["windows", "macos", "linuxbsd", "server", "uwp", "haiku"]
 
 
 def is_unix_like(platform):
-    return platform in ["osx", "linuxbsd", "server", "android", "haiku", "iphone"]
+    return platform in ["macos", "linuxbsd", "server", "android", "haiku", "ios"]
 
 
 def module_supports_tools_on(platform):
-    return platform not in ["android", "javascript", "iphone"]
+    return platform not in ["android", "javascript", "ios"]
 
 
 def find_wasm_src_dir(mono_root):
@@ -89,7 +89,7 @@ def configure(env, env_mono):
     bits = env["bits"]
     is_android = env["platform"] == "android"
     is_javascript = env["platform"] == "javascript"
-    is_ios = env["platform"] == "iphone"
+    is_ios = env["platform"] == "ios"
     is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
 
     tools_enabled = env["tools"]
@@ -206,7 +206,7 @@ def configure(env, env_mono):
 
             copy_file(mono_bin_path, "#bin", mono_dll_file)
     else:
-        is_apple = env["platform"] in ["osx", "iphone"]
+        is_apple = env["platform"] in ["macos", "ios"]
         is_macos = is_apple and not is_ios
 
         sharedlib_ext = ".dylib" if is_apple else ".so"
@@ -221,7 +221,7 @@ def configure(env, env_mono):
             )
 
         if not mono_root and is_macos:
-            # Try with some known directories under OSX
+            # Try with some known directories under macOS
             hint_dirs = ["/Library/Frameworks/Mono.framework/Versions/Current", "/usr/local/var/homebrew/linked/mono"]
             for hint_dir in hint_dirs:
                 if os.path.isdir(hint_dir):
@@ -270,7 +270,7 @@ def configure(env, env_mono):
 
                         def copy_mono_lib(libname_wo_ext):
                             copy_file(
-                                mono_lib_path, "#bin", libname_wo_ext + ".a", "%s.iphone.%s.a" % (libname_wo_ext, arch)
+                                mono_lib_path, "#bin", libname_wo_ext + ".a", "%s.ios.%s.a" % (libname_wo_ext, arch)
                             )
 
                         # Copy Mono libraries to the output folder. These are meant to be bundled with
@@ -539,7 +539,7 @@ def copy_mono_shared_libs(env, mono_root, target_mono_root_dir):
             os.makedirs(target_mono_lib_dir)
 
         lib_file_names = []
-        if platform == "osx":
+        if platform == "macos":
             lib_file_names = [
                 lib_name + ".dylib"
                 for lib_name in ["libmono-btls-shared", "libmono-native-compat", "libMonoPosixHelper"]

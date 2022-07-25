@@ -1512,6 +1512,9 @@ bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
 
 /* Particles SHADER */
 
+void ParticlesStorage::ParticlesShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
 void ParticlesStorage::ParticlesShaderData::set_code(const String &p_code) {
 	ParticlesStorage *particles_storage = ParticlesStorage::get_singleton();
 	//compile

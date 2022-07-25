@@ -53,11 +53,11 @@ _hb_codepoint_is_regional_indicator (hb_codepoint_t u)
 
 #ifndef HB_NO_AAT_SHAPE
 static inline bool
-_hb_apply_morx (hb_face_t *face, const hb_segment_properties_t *props)
+_hb_apply_morx (hb_face_t *face, const hb_segment_properties_t &props)
 {
   /* https://github.com/harfbuzz/harfbuzz/issues/2124 */
   return hb_aat_layout_has_substitution (face) &&
-	 (HB_DIRECTION_IS_HORIZONTAL (props->direction) || !hb_ot_layout_has_substitution (face));
+	 (HB_DIRECTION_IS_HORIZONTAL (props.direction) || !hb_ot_layout_has_substitution (face));
 }
 #endif
 
@@ -77,9 +77,9 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
 			      unsigned int                    num_user_features);
 
 hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *face,
-					      const hb_segment_properties_t *props) :
+					      const hb_segment_properties_t &props) :
 						face (face),
-						props (*props),
+						props (props),
 						map (face, props),
 						aat_map (face, props)
 #ifndef HB_NO_AAT_SHAPE
@@ -225,7 +225,7 @@ hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
 #endif
 
   hb_ot_shape_planner_t planner (face,
-				 &key->props);
+				 key->props);
 
   hb_ot_shape_collect_features (&planner,
 				key->user_features,

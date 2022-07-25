@@ -10,7 +10,7 @@
 		As many XR runtimes now use a configurable action map all inputs are named.
 	</description>
 	<tutorials>
-		<link title="VR documentation index">$DOCS_URL/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_axis" qualifiers="const">

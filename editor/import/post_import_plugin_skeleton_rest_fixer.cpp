@@ -89,7 +89,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			}
 		}
 
-		// Complement Rotation track for compatibility between defference rests.
+		// Complement Rotation track for compatibility between different rests.
 		{
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
@@ -100,7 +100,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 
-					// Detect does the animetion have skeleton's TRS track.
+					// Detect does the animation have skeleton's TRS track.
 					String track_path;
 					bool found_skeleton = false;
 					for (int i = 0; i < track_len; i++) {

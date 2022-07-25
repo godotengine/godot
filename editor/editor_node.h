@@ -88,6 +88,7 @@ class ProjectExportDialog;
 class ProjectSettingsEditor;
 class RunSettingsDialog;
 class SceneImportSettings;
+class AudioStreamImportSettings;
 class ScriptCreateDialog;
 class SubViewport;
 class TabBar;
@@ -95,6 +96,7 @@ class TabContainer;
 class TextureProgressBar;
 class VSplitContainer;
 class Window;
+class EditorBuildProfileManager;
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
@@ -163,6 +165,7 @@ private:
 		EDIT_REDO,
 		EDIT_RELOAD_SAVED_SCENE,
 		TOOLS_ORPHAN_RESOURCES,
+		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_CUSTOM,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
@@ -377,6 +380,7 @@ private:
 	EditorFileDialog *file = nullptr;
 	ExportTemplateManager *export_template_manager = nullptr;
 	EditorFeatureProfileManager *feature_profile_manager = nullptr;
+	EditorBuildProfileManager *build_profile_manager = nullptr;
 	EditorFileDialog *file_templates = nullptr;
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
@@ -468,6 +472,7 @@ private:
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
+	AudioStreamImportSettings *audio_stream_import_settings = nullptr;
 
 	String import_reload_fn;
 
@@ -782,6 +787,8 @@ public:
 
 	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
+
+	void setup_color_picker(ColorPicker *picker);
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);

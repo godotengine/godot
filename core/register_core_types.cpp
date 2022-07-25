@@ -74,6 +74,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language_extension.h"
 #include "core/object/undo_redo.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/main_loop.h"
 #include "core/os/time.h"
 #include "core/string/optimized_translation.h"
@@ -100,6 +101,8 @@ static IP *ip = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
+
+static WorkerThreadPool *worker_thread_pool = nullptr;
 
 extern Mutex _global_mutex;
 
@@ -189,6 +192,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(PacketPeerUDP);
 	GDREGISTER_CLASS(UDPServer);
 
+	GDREGISTER_ABSTRACT_CLASS(WorkerThreadPool);
+
 	ClassDB::register_custom_instance_class<HTTPClient>();
 
 	// Crypto
@@ -271,6 +276,8 @@ void register_core_types() {
 
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
+
+	worker_thread_pool = memnew(WorkerThreadPool);
 }
 
 void register_core_settings() {
@@ -279,9 +286,18 @@ void register_core_settings() {
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
-
 	GLOBAL_DEF("network/ssl/certificate_bundle_override", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificate_bundle_override", PropertyInfo(Variant::STRING, "network/ssl/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"));
+
+	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
+	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
+	float low_property_ratio = GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
+
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+		worker_thread_pool->init();
+	} else {
+		worker_thread_pool->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
+	}
 }
 
 void register_core_singletons() {
@@ -319,6 +335,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeExtensionManager", NativeExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
 }
 
 void register_core_extensions() {
@@ -349,6 +366,8 @@ void unregister_core_types() {
 
 	memdelete(_geometry_2d);
 	memdelete(_geometry_3d);
+
+	memdelete(worker_thread_pool);
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();

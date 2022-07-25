@@ -872,7 +872,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_valid = ResourceLoader::is_import_valid(path);
+				fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1023,7 +1023,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 						fi->type = "TextFile";
 					}
 					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
-					fi->import_valid = ResourceLoader::is_import_valid(path);
+					fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 
 					{
@@ -2024,7 +2024,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->type = importer->get_resource_type();
 	fs->files[cpos]->uid = uid;
-	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
+	fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
 
 	if (ResourceUID::get_singleton()->has_id(uid)) {
 		ResourceUID::get_singleton()->set_id(uid, p_file);

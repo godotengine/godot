@@ -37,10 +37,11 @@
 Size2 ScrollContainer::get_minimum_size() const {
 	Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 	Size2 min_size;
+	Size2 content_min_size;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c) {
+		if (!c || !c->is_visible()) {
 			continue;
 		}
 		if (c->is_set_as_top_level()) {
@@ -51,20 +52,26 @@ Size2 ScrollContainer::get_minimum_size() const {
 		}
 		Size2 minsize = c->get_combined_minimum_size();
 
-		if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
-			min_size.x = MAX(min_size.x, minsize.x);
-		}
-		if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
-			min_size.y = MAX(min_size.y, minsize.y);
-		}
+		content_min_size.x = MAX(content_min_size.x, minsize.x);
+		content_min_size.y = MAX(content_min_size.y, minsize.y);
 	}
 
-	if (h_scroll->is_visible_in_tree()) {
+	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
+		min_size.x = MAX(min_size.x, content_min_size.x);
+	}
+	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
+		min_size.y = MAX(min_size.y, content_min_size.y);
+	}
+
+	bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (horizontal_scroll_mode == SCROLL_MODE_AUTO && content_min_size.x > min_size.x);
+	bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || (vertical_scroll_mode == SCROLL_MODE_AUTO && content_min_size.y > min_size.y);
+	if (h_scroll_show) {
 		min_size.y += h_scroll->get_minimum_size().y;
 	}
-	if (v_scroll->is_visible_in_tree()) {
+	if (v_scroll_show) {
 		min_size.x += v_scroll->get_minimum_size().x;
 	}
+
 	min_size += sb->get_minimum_size();
 	return min_size;
 }
@@ -274,7 +281,7 @@ void ScrollContainer::_update_dimensions() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c) {
+		if (!c || !c->is_visible()) {
 			continue;
 		}
 		if (c->is_set_as_top_level()) {
@@ -312,6 +319,7 @@ void ScrollContainer::_update_dimensions() {
 		fit_child_in_rect(c, r);
 	}
 
+	update_scrollbars();
 	update();
 }
 

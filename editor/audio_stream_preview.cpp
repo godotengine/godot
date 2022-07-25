@@ -153,6 +153,8 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		singleton->call_deferred(SNAME("_update_emit"), preview->id);
 	}
 
+	preview->preview->version++;
+
 	preview->playback->stop();
 
 	preview->generating.clear();
@@ -171,7 +173,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 
 	Preview *preview = &previews[p_stream->get_instance_id()];
 	preview->base_stream = p_stream;
-	preview->playback = preview->base_stream->instance_playback();
+	preview->playback = preview->base_stream->instantiate_playback();
 	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 

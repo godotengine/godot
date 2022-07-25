@@ -75,6 +75,7 @@
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
+#include "editor/editor_build_profile.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
@@ -104,6 +105,7 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
@@ -131,7 +133,6 @@
 #include "editor/plugins/animation_state_machine_editor.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
-#include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/bit_map_editor_plugin.h"
 #include "editor/plugins/bone_map_editor_plugin.h"
@@ -2805,6 +2806,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
+		case TOOLS_BUILD_PROFILE_MANAGER: {
+			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
+		} break;
 		case RUN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
@@ -3586,6 +3590,13 @@ void EditorNode::set_current_scene(int p_idx) {
 	_update_title();
 
 	call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+}
+
+void EditorNode::setup_color_picker(ColorPicker *picker) {
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
+	picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 }
 
 bool EditorNode::is_scene_open(const String &p_path) {
@@ -5899,6 +5910,8 @@ EditorNode::EditorNode() {
 
 	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 
+	AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
+
 	// No navigation server by default if in editor.
 	NavigationServer3D::get_singleton()->set_active(false);
 
@@ -6443,6 +6456,9 @@ EditorNode::EditorNode() {
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
 
+	audio_stream_import_settings = memnew(AudioStreamImportSettings);
+	gui_base->add_child(audio_stream_import_settings);
+
 	fontdata_import_settings = memnew(DynamicFontImportSettings);
 	gui_base->add_child(fontdata_import_settings);
 
@@ -6451,6 +6467,10 @@ EditorNode::EditorNode() {
 
 	feature_profile_manager = memnew(EditorFeatureProfileManager);
 	gui_base->add_child(feature_profile_manager);
+
+	build_profile_manager = memnew(EditorBuildProfileManager);
+	gui_base->add_child(build_profile_manager);
+
 	about = memnew(EditorAbout);
 	gui_base->add_child(about);
 	feature_profile_manager->connect("current_feature_profile_changed", callable_mp(this, &EditorNode::_feature_profile_changed));
@@ -6542,6 +6562,10 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
 	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
 	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
+
+	p->add_separator();
+	p->add_item(TTR("Customize Engine Build Configuration..."), TOOLS_BUILD_PROFILE_MANAGER);
+	p->add_separator();
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
@@ -7079,7 +7103,6 @@ EditorNode::EditorNode() {
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	add_editor_plugin(memnew(AnimationTreeEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(AudioStreamEditorPlugin));
 	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));
 	add_editor_plugin(memnew(BoneMapEditorPlugin));
@@ -7190,6 +7213,7 @@ EditorNode::EditorNode() {
 		vshader_convert.instantiate();
 		resource_conversion_plugins.push_back(vshader_convert);
 	}
+
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
 	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
 
