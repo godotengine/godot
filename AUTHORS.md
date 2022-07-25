@@ -52,7 +52,6 @@ name is available.
     Bojidar Marinov (bojidar-bg)
     Brian Semrau (briansemrau)
     Bruno Lourenço (MadEqua)
-    bruvzg
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
     Caner Demirer (cdemirer)
@@ -64,8 +63,8 @@ name is available.
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Daniel Rakos (aqnuep)
-    dankan1890
     Danil Alexeev (dalexeev)
+    dankan1890
     David Cambré (Gallilus)
     David Sichma (DavidSichma)
     David Snopek (dsnopek)
@@ -85,7 +84,7 @@ name is available.
     Eveline Jarosz (Marqin)
     Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
-    fabriceci
+    Fabrice Cipolla (fabriceci)
     Ferenc Arn (tagcup)
     FireForge (fire-forge)
     follower
@@ -122,8 +121,8 @@ name is available.
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
     Joan Fons Sanchez (JFonS)
-    Johannes Witt (HaSa1002)
     Johan Manuel (29jm)
+    Johannes Witt (HaSa1002)
     Jordan Schidlowsky (winterpixelgames)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -187,6 +186,7 @@ name is available.
     Paul Batty (Paulb23)
     Paul Joannon (paulloz)
     Paul Trojahn (ptrojahn)
+    Pāvels Nadtočajevs (bruvzg)
     Paweł Fertyk (pfertyk)
     Pawel Kowal (pkowal1982)
     Pawel Lampe (Scony)
@@ -232,6 +232,7 @@ name is available.
     Twarit Waikar (IronicallySerious)
     Umang Kalra (theoway)
     Vinzenz Feenstra (vinzenz)
+    Vitika Soni (Vitika9)
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
     Wilhem Barbier (nounoursheureux)
@@ -246,3 +247,4 @@ name is available.
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
     ZuBsPaCe
+    风青山 (Rindbee)
