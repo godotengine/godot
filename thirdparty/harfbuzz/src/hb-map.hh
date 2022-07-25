@@ -124,21 +124,20 @@ struct hb_hashmap_t
     hb_swap (a.prime, b.prime);
     hb_swap (a.items, b.items);
   }
-  void init_shallow ()
+  void init ()
   {
+    hb_object_init (this);
+
     successful = true;
     population = occupancy = 0;
     mask = 0;
     prime = 0;
     items = nullptr;
   }
-  void init ()
+  void fini ()
   {
-    hb_object_init (this);
-    init_shallow ();
-  }
-  void fini_shallow ()
-  {
+    hb_object_fini (this);
+
     if (likely (items)) {
       unsigned size = mask + 1;
       for (unsigned i = 0; i < size; i++)
@@ -147,11 +146,6 @@ struct hb_hashmap_t
       items = nullptr;
     }
     population = occupancy = 0;
-  }
-  void fini ()
-  {
-    hb_object_fini (this);
-    fini_shallow ();
   }
 
   void reset ()
@@ -219,13 +213,11 @@ struct hb_hashmap_t
   /* Has interface. */
   typedef const V& value_t;
   value_t operator [] (K k) const { return get (k); }
-  bool has (K key, const V **vp = nullptr) const
+  template <typename VV=V>
+  bool has (K key, VV **vp = nullptr) const
   {
     if (unlikely (!items))
-    {
-      if (vp) *vp = &item_t::default_value ();
       return false;
-    }
     unsigned int i = bucket_for (key);
     if (items[i].is_real () && items[i] == key)
     {
@@ -233,10 +225,7 @@ struct hb_hashmap_t
       return true;
     }
     else
-    {
-      if (vp) *vp = &item_t::default_value ();
       return false;
-    }
   }
   /* Projection. */
   V operator () (K k) const { return get (k); }
@@ -301,12 +290,24 @@ struct hb_hashmap_t
     | hb_map (&item_t::key)
     | hb_map (hb_ridentity)
   )
+  auto keys_ref () const HB_AUTO_RETURN
+  (
+    + hb_array (items, mask ? mask + 1 : 0)
+    | hb_filter (&item_t::is_real)
+    | hb_map (&item_t::key)
+  )
   auto values () const HB_AUTO_RETURN
   (
     + hb_array (items, mask ? mask + 1 : 0)
     | hb_filter (&item_t::is_real)
     | hb_map (&item_t::value)
     | hb_map (hb_ridentity)
+  )
+  auto values_ref () const HB_AUTO_RETURN
+  (
+    + hb_array (items, mask ? mask + 1 : 0)
+    | hb_filter (&item_t::is_real)
+    | hb_map (&item_t::value)
   )
 
   /* Sink interface. */
@@ -442,5 +443,38 @@ struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 	    hb_requires (hb_is_iterable (Iterable))>
   hb_map_t (const Iterable &o) : hashmap (o) {}
 };
+
+template <typename K, typename V>
+static inline
+hb_hashmap_t<K, V>* hb_hashmap_create ()
+{
+  using hashmap = hb_hashmap_t<K, V>;
+  hashmap* map;
+  if (!(map = hb_object_create<hashmap> ()))
+    return nullptr;
+
+  return map;
+}
+
+template <typename K, typename V>
+static inline
+void hb_hashmap_destroy (hb_hashmap_t<K, V>* map)
+{
+  if (!hb_object_destroy (map))
+    return;
+
+  hb_free (map);
+}
+
+namespace hb {
+
+template <typename K, typename V>
+struct vtable<hb_hashmap_t<K, V>>
+{
+  static constexpr auto destroy = hb_hashmap_destroy<K,V>;
+};
+
+}
+
 
 #endif /* HB_MAP_HH */

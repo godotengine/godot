@@ -11,8 +11,11 @@ struct MarkMarkPos
 {
   protected:
   union {
-  HBUINT16              format;         /* Format identifier */
-  MarkMarkPosFormat1    format1;
+  HBUINT16				format;         /* Format identifier */
+  MarkMarkPosFormat1_2<SmallTypes>	format1;
+#ifndef HB_NO_BORING_EXPANSION
+  MarkMarkPosFormat1_2<MediumTypes>	format2;
+#endif
   } u;
 
   public:
@@ -23,6 +26,9 @@ struct MarkMarkPos
     if (unlikely (!c->may_dispatch (this, &u.format))) return_trace (c->no_dispatch_return_value ());
     switch (u.format) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+#ifndef HB_NO_BORING_EXPANSION
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+#endif
     default:return_trace (c->default_return_value ());
     }
   }
