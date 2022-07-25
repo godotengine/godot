@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_EDITOR_PLUGIN_H
-#define CPU_PARTICLES_EDITOR_PLUGIN_H
+#ifndef CPU_PARTICLES_3D_EDITOR_PLUGIN_H
+#define CPU_PARTICLES_3D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "scene/3d/cpu_particles_3d.h"
@@ -78,4 +78,4 @@ public:
 	~CPUParticles3DEditorPlugin();
 };
 
-#endif // CPU_PARTICLES_EDITOR_PLUGIN_H
+#endif // CPU_PARTICLES_3D_EDITOR_PLUGIN_H

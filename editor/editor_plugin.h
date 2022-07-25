@@ -346,4 +346,4 @@ public:
 	}
 };
 
-#endif
+#endif // EDITOR_PLUGIN_H

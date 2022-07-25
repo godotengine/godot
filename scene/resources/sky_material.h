@@ -219,4 +219,4 @@ public:
 	~PhysicalSkyMaterial();
 };
 
-#endif /* !SKY_MATERIAL_H */
+#endif // SKY_MATERIAL_H

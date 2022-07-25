@@ -488,4 +488,4 @@ VARIANT_ENUM_CAST(Animation::UpdateMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
 
-#endif
+#endif // ANIMATION_H

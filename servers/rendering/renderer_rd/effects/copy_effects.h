@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COPY_RD_H
-#define COPY_RD_H
+#ifndef COPY_EFFECTS_RD_H
+#define COPY_EFFECTS_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
@@ -343,4 +343,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !COPY_RD_H
+#endif // COPY_EFFECTS_RD_H

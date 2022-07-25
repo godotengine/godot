@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_RESOURCE
-#define TEST_RESOURCE
+#ifndef TEST_RESOURCE_H
+#define TEST_RESOURCE_H
 
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
@@ -111,4 +111,4 @@ TEST_CASE("[Resource] Saving and loading") {
 }
 } // namespace TestResource
 
-#endif // TEST_RESOURCE
+#endif // TEST_RESOURCE_H

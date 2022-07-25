@@ -117,4 +117,4 @@ public:
 	~OS_MacOS();
 };
 
-#endif
+#endif // OS_MACOS_H

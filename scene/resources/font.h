@@ -381,4 +381,4 @@ public:
 	~FontVariation();
 };
 
-#endif /* FONT_H */
+#endif // FONT_H

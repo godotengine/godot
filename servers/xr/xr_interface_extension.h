@@ -132,4 +132,4 @@ public:
 	// RID get_render_target_depth(RID p_render_target);
 };
 
-#endif // !XR_INTERFACE_EXTENSION_H
+#endif // XR_INTERFACE_EXTENSION_H

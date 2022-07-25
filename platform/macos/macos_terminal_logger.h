@@ -41,4 +41,5 @@ public:
 };
 
 #endif // MACOS_ENABLED
+
 #endif // MACOS_TERMINAL_LOGGER_H

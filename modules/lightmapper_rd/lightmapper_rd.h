@@ -256,4 +256,4 @@ public:
 	LightmapperRD();
 };
 
-#endif // LIGHTMAPPER_H
+#endif // LIGHTMAPPER_RD_H

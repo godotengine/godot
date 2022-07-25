@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
-#define RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
+#ifndef RENDER_FORWARD_CLUSTERED_H
+#define RENDER_FORWARD_CLUSTERED_H
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/effects/resolve.h"
@@ -693,4 +693,5 @@ public:
 	~RenderForwardClustered();
 };
 } // namespace RendererSceneRenderImplementation
-#endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_CLUSTERED_H
+
+#endif // RENDER_FORWARD_CLUSTERED_H

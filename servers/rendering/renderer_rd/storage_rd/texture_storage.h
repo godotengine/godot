@@ -576,4 +576,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !_TEXTURE_STORAGE_RD_H
+#endif // TEXTURE_STORAGE_RD_H

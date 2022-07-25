@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
-#define RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+#ifndef RENDER_FORWARD_MOBILE_H
+#define RENDER_FORWARD_MOBILE_H
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
@@ -674,4 +674,5 @@ public:
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation
-#endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+
+#endif // RENDER_FORWARD_MOBILE_H

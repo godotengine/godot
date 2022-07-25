@@ -342,6 +342,6 @@ public:
 
 } // namespace GLES3
 
-#endif // !GLES3_ENABLED
+#endif // GLES3_ENABLED
 
-#endif // !LIGHT_STORAGE_GLES3_H
+#endif // LIGHT_STORAGE_GLES3_H

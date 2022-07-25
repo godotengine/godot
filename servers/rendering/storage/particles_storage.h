@@ -125,4 +125,4 @@ public:
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) = 0;
 };
 
-#endif // !PARTICLES_STORAGE_H
+#endif // PARTICLES_STORAGE_H

@@ -424,4 +424,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !MATERIAL_STORAGE_RD_H
+#endif // MATERIAL_STORAGE_RD_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERSCENE_H
-#define RENDERINGSERVERSCENE_H
+#ifndef RENDERER_SCENE_H
+#define RENDERER_SCENE_H
 
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
@@ -226,4 +226,4 @@ public:
 	virtual ~RendererScene();
 };
 
-#endif // RENDERINGSERVERSCENE_H
+#endif // RENDERER_SCENE_H

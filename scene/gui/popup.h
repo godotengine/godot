@@ -79,4 +79,4 @@ public:
 	PopupPanel();
 };
 
-#endif
+#endif // POPUP_H

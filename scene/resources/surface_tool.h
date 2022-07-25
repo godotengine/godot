@@ -207,4 +207,4 @@ public:
 VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
 VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
 
-#endif
+#endif // SURFACE_TOOL_H

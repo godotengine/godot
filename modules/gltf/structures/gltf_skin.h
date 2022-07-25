@@ -106,4 +106,5 @@ public:
 	Ref<Skin> get_godot_skin();
 	void set_godot_skin(Ref<Skin> p_godot_skin);
 };
+
 #endif // GLTF_SKIN_H

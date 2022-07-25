@@ -55,4 +55,5 @@ public:
 	float get_depth_near() const { return depth_near; }
 	void set_depth_near(float p_val) { depth_near = p_val; }
 };
+
 #endif // GLTF_CAMERA_H

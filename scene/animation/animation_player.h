@@ -395,4 +395,4 @@ public:
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessCallback);
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
-#endif
+#endif // ANIMATION_PLAYER_H

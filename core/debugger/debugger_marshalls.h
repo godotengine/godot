@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DEBUGGER_MARSHARLLS_H
-#define DEBUGGER_MARSHARLLS_H
+#ifndef DEBUGGER_MARSHALLS_H
+#define DEBUGGER_MARSHALLS_H
 
 #include "core/object/script_language.h"
 
@@ -69,4 +69,4 @@ struct DebuggerMarshalls {
 	};
 };
 
-#endif // DEBUGGER_MARSHARLLS_H
+#endif // DEBUGGER_MARSHALLS_H

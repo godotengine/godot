@@ -214,4 +214,4 @@ public:
 	~RasterizerSceneDummy() {}
 };
 
-#endif // !RASTERIZER_SCENE_DUMMY_H
+#endif // RASTERIZER_SCENE_DUMMY_H

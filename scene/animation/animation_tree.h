@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANIMATION_GRAPH_PLAYER_H
-#define ANIMATION_GRAPH_PLAYER_H
+#ifndef ANIMATION_TREE_H
+#define ANIMATION_TREE_H
 
 #include "animation_player.h"
 #include "scene/3d/node_3d.h"
@@ -359,4 +359,4 @@ public:
 
 VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback)
 
-#endif // ANIMATION_GRAPH_PLAYER_H
+#endif // ANIMATION_TREE_H

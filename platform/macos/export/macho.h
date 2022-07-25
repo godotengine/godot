@@ -30,8 +30,8 @@
 
 // Mach-O binary object file format parser and editor.
 
-#ifndef MACHO_H
-#define MACHO_H
+#ifndef MACOS_MACHO_H
+#define MACOS_MACHO_H
 
 #include "core/crypto/crypto.h"
 #include "core/crypto/crypto_core.h"
@@ -212,4 +212,4 @@ public:
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // MACHO_H
+#endif // MACOS_MACHO_H

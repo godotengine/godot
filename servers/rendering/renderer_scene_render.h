@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERINGSERVERSCENERENDER_H
-#define RENDERINGSERVERSCENERENDER_H
+#ifndef RENDERER_SCENE_RENDER_H
+#define RENDERER_SCENE_RENDER_H
 
 #include "core/math/projection.h"
 #include "core/templates/paged_array.h"
@@ -281,4 +281,4 @@ public:
 	virtual ~RendererSceneRender() {}
 };
 
-#endif // RENDERINGSERVERSCENERENDER_H
+#endif // RENDERER_SCENE_RENDER_H

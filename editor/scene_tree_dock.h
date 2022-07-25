@@ -33,8 +33,8 @@
 
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
+#include "editor/editor_quick_open.h"
 #include "editor/groups_editor.h"
-#include "editor/quick_open.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"

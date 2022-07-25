@@ -74,4 +74,4 @@ private:
 	real_t estimate_agent_radius() const;
 };
 
-#endif
+#endif // NAVIGATION_OBSTACLE_2D_H
