@@ -57,4 +57,5 @@ public:
 	Vector3 getPivotInA();
 	Vector3 getPivotInB();
 };
-#endif
+
+#endif // PIN_JOINT_BULLET_H

@@ -157,4 +157,4 @@ struct DirAccessRef {
 	}
 };
 
-#endif
+#endif // DIR_ACCESS_H

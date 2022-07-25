@@ -30,6 +30,7 @@
 
 #ifndef REF_PTR_H
 #define REF_PTR_H
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
  * This class exists to workaround a limitation in C++ but keep the design OK.

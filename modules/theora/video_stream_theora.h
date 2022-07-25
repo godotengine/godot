@@ -192,4 +192,4 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif
+#endif // VIDEO_STREAM_THEORA_H

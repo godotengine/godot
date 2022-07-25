@@ -74,4 +74,4 @@ public:
 	~EditorAbout();
 };
 
-#endif
+#endif // EDITOR_ABOUT_H

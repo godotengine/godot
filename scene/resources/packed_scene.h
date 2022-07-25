@@ -233,4 +233,4 @@ public:
 
 VARIANT_ENUM_CAST(PackedScene::GenEditState)
 
-#endif // SCENE_PRELOADER_H
+#endif // PACKED_SCENE_H

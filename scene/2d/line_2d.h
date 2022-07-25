@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef LINE2D_H
-#define LINE2D_H
+#ifndef LINE_2D_H
+#define LINE_2D_H
 
 #include "node_2d.h"
 
@@ -138,4 +138,4 @@ private:
 	bool _antialiased;
 };
 
-#endif // LINE2D_H
+#endif // LINE_2D_H

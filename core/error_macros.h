@@ -558,4 +558,5 @@ void _err_flush_stdout();
 		((void)0)
 #else
 #define DEV_CHECK_ONCE(m_cond)
-#endif
+
+#endif // ERROR_MACROS_H

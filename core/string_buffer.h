@@ -163,4 +163,4 @@ int64_t StringBuffer<SHORT_BUFFER_SIZE>::as_int() {
 	return String::to_int(current_buffer_ptr());
 }
 
-#endif
+#endif // STRING_BUFFER_H

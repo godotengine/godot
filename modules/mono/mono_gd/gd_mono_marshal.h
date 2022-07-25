@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDMONOMARSHAL_H
-#define GDMONOMARSHAL_H
+#ifndef GD_MONO_MARSHAL_H
+#define GD_MONO_MARSHAL_H
 
 #include "core/variant.h"
 
@@ -465,4 +465,4 @@ DECL_TYPE_MARSHAL_TEMPLATES(Plane)
 
 } // namespace GDMonoMarshal
 
-#endif // GDMONOMARSHAL_H
+#endif // GD_MONO_MARSHAL_H

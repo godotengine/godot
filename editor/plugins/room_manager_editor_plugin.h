@@ -140,4 +140,4 @@ public:
 	~OccluderEditorPlugin();
 };
 
-#endif
+#endif // ROOM_MANAGER_EDITOR_PLUGIN_H

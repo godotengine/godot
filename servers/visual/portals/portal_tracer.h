@@ -173,4 +173,4 @@ private:
 	uint32_t _tick = 0;
 };
 
-#endif
+#endif // PORTAL_TRACER_H

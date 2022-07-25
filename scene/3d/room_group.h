@@ -78,4 +78,4 @@ protected:
 	void _notification(int p_what);
 };
 
-#endif
+#endif // ROOM_GROUP_H

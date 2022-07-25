@@ -48,4 +48,4 @@ struct GetSimpleTypeT<T const> {
 	typedef T type_t;
 };
 
-#endif
+#endif // SIMPLE_TYPE_H

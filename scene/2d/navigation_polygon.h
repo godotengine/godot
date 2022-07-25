@@ -142,4 +142,4 @@ public:
 	~NavigationPolygonInstance();
 };
 
-#endif // NAVIGATIONPOLYGON_H
+#endif // NAVIGATION_POLYGON_H

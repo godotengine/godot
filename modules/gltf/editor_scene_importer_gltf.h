@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #ifndef EDITOR_SCENE_IMPORTER_GLTF_H
 #define EDITOR_SCENE_IMPORTER_GLTF_H
+
+#ifdef TOOLS_ENABLED
 
 #include "editor/import/resource_importer_scene.h"
 
@@ -52,6 +52,6 @@ public:
 			uint32_t p_flags, int p_bake_fps);
 };
 
-#endif // EDITOR_SCENE_IMPORTER_GLTF_H
-
 #endif // TOOLS_ENABLED
+
+#endif // EDITOR_SCENE_IMPORTER_GLTF_H

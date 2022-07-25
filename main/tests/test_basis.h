@@ -37,4 +37,4 @@ namespace TestBasis {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_BASIS_H

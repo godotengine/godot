@@ -145,4 +145,4 @@ public:
 	~CollisionObject();
 };
 
-#endif // COLLISION_OBJECT__H
+#endif // COLLISION_OBJECT_H

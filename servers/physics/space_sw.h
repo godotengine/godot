@@ -208,4 +208,4 @@ public:
 	~SpaceSW();
 };
 
-#endif // SPACE__SW_H
+#endif // SPACE_SW_H

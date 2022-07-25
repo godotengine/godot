@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WSLCLIENT_H
-#define WSLCLIENT_H
+#ifndef WSL_CLIENT_H
+#define WSL_CLIENT_H
 
 #ifndef JAVASCRIPT_ENABLED
 
@@ -89,4 +89,4 @@ public:
 
 #endif // JAVASCRIPT_ENABLED
 
-#endif // WSLCLIENT_H
+#endif // WSL_CLIENT_H

@@ -101,4 +101,4 @@ public:
 	~GDScriptWorkspace();
 };
 
-#endif
+#endif // GDSCRIPT_WORKSPACE_H

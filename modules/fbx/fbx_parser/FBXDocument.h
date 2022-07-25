@@ -31,8 +31,9 @@
 /** @file  FBXDocument.h
  *  @brief FBX DOM
  */
-#ifndef FBX_DOCUMENT_H
-#define FBX_DOCUMENT_H
+
+#ifndef FBXDOCUMENT_H
+#define FBXDOCUMENT_H
 
 #include "FBXCommon.h"
 #include "FBXParser.h"
@@ -1317,4 +1318,4 @@ struct hash<const FBXDocParser::Video> {
 };
 } // namespace std
 
-#endif // FBX_DOCUMENT_H
+#endif // FBXDOCUMENT_H

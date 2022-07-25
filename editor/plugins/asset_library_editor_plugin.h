@@ -331,4 +331,4 @@ public:
 	~AssetLibraryEditorPlugin();
 };
 
-#endif // EDITORASSETLIBRARY_H
+#endif // ASSET_LIBRARY_EDITOR_PLUGIN_H

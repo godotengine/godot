@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GET_TYPE_INFO_H
-#define GET_TYPE_INFO_H
+#ifndef TYPE_INFO_H
+#define TYPE_INFO_H
 
 template <bool C, typename T = void>
 struct EnableIf {
@@ -282,4 +282,4 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 #define MAKE_ENUM_TYPE_INFO(m_enum)
 #define CLASS_INFO(m_type)
 
-#endif // GET_TYPE_INFO_H
+#endif // TYPE_INFO_H

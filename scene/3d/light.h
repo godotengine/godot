@@ -221,4 +221,4 @@ public:
 			Light(VisualServer::LIGHT_SPOT) {}
 };
 
-#endif
+#endif // LIGHT_H

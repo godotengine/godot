@@ -164,4 +164,4 @@ public:
 	static int get_cached_resource_count();
 };
 
-#endif
+#endif // RESOURCE_H

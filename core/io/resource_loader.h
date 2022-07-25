@@ -200,4 +200,4 @@ public:
 	static void finalize();
 };
 
-#endif
+#endif // RESOURCE_LOADER_H

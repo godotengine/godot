@@ -51,5 +51,6 @@ protected:
 	virtual bool is_hidden(const String &p_name);
 };
 
-#endif //UNIX ENABLED
-#endif
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+
+#endif // DIR_ACCESS_OSX_H

@@ -87,4 +87,4 @@ private:
 	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };
 
-#endif
+#endif // JOYPAD_UWP_H

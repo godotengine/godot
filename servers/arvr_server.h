@@ -189,4 +189,4 @@ public:
 VARIANT_ENUM_CAST(ARVRServer::TrackerType);
 VARIANT_ENUM_CAST(ARVRServer::RotationMode);
 
-#endif
+#endif // ARVR_SERVER_H

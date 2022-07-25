@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -70,8 +69,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-#ifndef FBX_MESH_GEOMETRY_H
-#define FBX_MESH_GEOMETRY_H
+#ifndef FBXMESHGEOMETRY_H
+#define FBXMESHGEOMETRY_H
 
 #include "core/color.h"
 #include "core/math/vector2.h"
@@ -261,4 +260,4 @@ private:
 
 } // namespace FBXDocParser
 
-#endif // FBX_MESH_GEOMETRY_H
+#endif // FBXMESHGEOMETRY_H

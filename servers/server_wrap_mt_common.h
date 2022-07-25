@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef SERVER_WRAP_MT_COMMON_H
+#define SERVER_WRAP_MT_COMMON_H
+
 #define FUNC0R(m_r, m_type)                                                     \
 	virtual m_r m_type() {                                                      \
 		if (Thread::get_caller_id() != server_thread) {                         \
@@ -820,3 +823,5 @@
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13);                                                                                         \
 		}                                                                                                                                                                        \
 	}
+
+#endif // SERVER_WRAP_MT_COMMON_H

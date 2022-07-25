@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2020, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -72,8 +71,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file Helper class to perform various byte order swappings
    (e.g. little to big endian) */
-#ifndef BYTE_SWAPPER_H
-#define BYTE_SWAPPER_H
+
+#ifndef BYTESWAPPER_H
+#define BYTESWAPPER_H
 
 #include <stdint.h>
 #include <algorithm>
@@ -280,4 +280,4 @@ struct Getter<SwapEndianess, T, false> {
 } // namespace Intern
 } // namespace FBXDocParser
 
-#endif // BYTE_SWAPPER_H
+#endif // BYTESWAPPER_H

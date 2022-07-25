@@ -93,4 +93,4 @@ public:
 	~BodyPairSW();
 };
 
-#endif // BODY_PAIR__SW_H
+#endif // BODY_PAIR_SW_H

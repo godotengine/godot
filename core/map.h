@@ -675,4 +675,4 @@ public:
 	}
 };
 
-#endif
+#endif // MAP_H

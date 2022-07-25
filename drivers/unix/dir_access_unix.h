@@ -88,5 +88,6 @@ public:
 	~DirAccessUnix();
 };
 
-#endif //UNIX ENABLED
-#endif
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+
+#endif // DIR_ACCESS_UNIX_H

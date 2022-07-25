@@ -222,4 +222,4 @@ public:
 	~PopupMenu();
 };
 
-#endif
+#endif // POPUP_MENU_H

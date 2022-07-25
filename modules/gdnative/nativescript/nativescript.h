@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NATIVE_SCRIPT_H
-#define NATIVE_SCRIPT_H
+#ifndef NATIVESCRIPT_H
+#define NATIVESCRIPT_H
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -391,4 +391,4 @@ class ResourceFormatSaverNativeScript : public ResourceFormatSaver {
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 };
 
-#endif // GDNATIVE_H
+#endif // NATIVESCRIPT_H

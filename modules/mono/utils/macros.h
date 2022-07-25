@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UTIL_MACROS_H
-#define UTIL_MACROS_H
+#ifndef MONO_MACROS_H
+#define MONO_MACROS_H
 
 #define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
 #define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
@@ -102,4 +102,4 @@ public:
 #define SCOPE_EXIT \
 	auto GD_UNIQUE_NAME(gd_scope_exit) = gdmono::ScopeExitAux() + [=]() -> void
 
-#endif // UTIL_MACROS_H
+#endif // MONO_MACROS_H

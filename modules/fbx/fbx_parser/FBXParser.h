@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -73,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXParser.h
  *  @brief FBX parsing code
  */
-#ifndef FBX_PARSER_H
-#define FBX_PARSER_H
+
+#ifndef FBXPARSER_H
+#define FBXPARSER_H
 
 #include <stdint.h>
 #include <map>
@@ -261,4 +261,4 @@ Transform ReadMatrix(const ElementPtr element);
 
 } // namespace FBXDocParser
 
-#endif // FBX_PARSER_H
+#endif // FBXPARSER_H

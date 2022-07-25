@@ -170,4 +170,4 @@ public:
 	CustomPropertyEditor();
 };
 
-#endif
+#endif // PROPERTY_EDITOR_H

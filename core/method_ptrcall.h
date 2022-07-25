@@ -448,5 +448,6 @@ struct PtrToArg<const PoolVector<Face3> &> {
 	}
 };
 
+#endif // PTRCALL_ENABLED
+
 #endif // METHOD_PTRCALL_H
-#endif

@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -73,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXUtil.h
  *  @brief FBX utility functions for internal use
  */
-#ifndef FBX_UTIL_H
-#define FBX_UTIL_H
+
+#ifndef FBXUTIL_H
+#define FBXUTIL_H
 
 #include "FBXTokenizer.h"
 #include <stdint.h>
@@ -120,4 +120,4 @@ std::string EncodeBase64(const char *data, size_t length);
 } // namespace Util
 } // namespace FBXDocParser
 
-#endif // FBX_UTIL_H
+#endif // FBXUTIL_H

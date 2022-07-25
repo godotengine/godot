@@ -60,4 +60,4 @@ public:
 	~ReparentDialog();
 };
 
-#endif
+#endif // REPARENT_DIALOG_H

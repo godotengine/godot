@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_2D_2DSW_H
-#define SHAPE_2D_2DSW_H
+#ifndef SHAPE_2D_SW_H
+#define SHAPE_2D_SW_H
 
 #include "servers/physics_2d_server.h"
 #define _SEGMENT_IS_VALID_SUPPORT_THRESHOLD 0.99998
@@ -533,4 +533,4 @@ public:
 
 #undef DEFAULT_PROJECT_RANGE_CAST
 
-#endif // SHAPE_2D_2DSW_H
+#endif // SHAPE_2D_SW_H

@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -73,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXImportSettings.h
  *  @brief FBX importer runtime configuration
  */
-#ifndef FBX_IMPORT_SETTINGS_H
-#define FBX_IMPORT_SETTINGS_H
+
+#ifndef FBXIMPORTSETTINGS_H
+#define FBXIMPORTSETTINGS_H
 
 namespace FBXDocParser {
 
@@ -171,4 +171,4 @@ struct ImportSettings {
 
 } // namespace FBXDocParser
 
-#endif // FBX_IMPORT_SETTINGS_H
+#endif // FBXIMPORTSETTINGS_H

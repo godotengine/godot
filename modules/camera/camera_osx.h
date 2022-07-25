@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAMERAOSX_H
-#define CAMERAOSX_H
+#ifndef CAMERA_OSX_H
+#define CAMERA_OSX_H
 
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
 // If you fix something here, make sure you fix it there as well!
@@ -44,4 +44,4 @@ public:
 	void update_feeds();
 };
 
-#endif /* CAMERAOSX_H */
+#endif // CAMERA_OSX_H

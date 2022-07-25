@@ -75,4 +75,4 @@ public:
 	PhysicalBonePlugin(EditorNode *p_editor);
 };
 
-#endif
+#endif // PHYSICAL_BONE_PLUGIN_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_GRADLE_EXPORT_UTIL_H
-#define GODOT_GRADLE_EXPORT_UTIL_H
+#ifndef ANDROID_GRADLE_EXPORT_UTIL_H
+#define ANDROID_GRADLE_EXPORT_UTIL_H
 
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
@@ -107,4 +107,4 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission);
 
-#endif // GODOT_GRADLE_EXPORT_UTIL_H
+#endif // ANDROID_GRADLE_EXPORT_UTIL_H

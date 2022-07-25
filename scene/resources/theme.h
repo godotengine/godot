@@ -223,4 +223,4 @@ public:
 
 VARIANT_ENUM_CAST(Theme::DataType);
 
-#endif
+#endif // THEME_H

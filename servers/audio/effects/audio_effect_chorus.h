@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTCHORUS_H
-#define AUDIOEFFECTCHORUS_H
+#ifndef AUDIO_EFFECT_CHORUS_H
+#define AUDIO_EFFECT_CHORUS_H
 
 #include "servers/audio/audio_effect.h"
 
@@ -134,4 +134,4 @@ public:
 	AudioEffectChorus();
 };
 
-#endif // AUDIOEFFECTCHORUS_H
+#endif // AUDIO_EFFECT_CHORUS_H

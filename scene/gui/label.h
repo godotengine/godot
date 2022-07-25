@@ -146,4 +146,4 @@ public:
 VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
 
-#endif
+#endif // LABEL_H

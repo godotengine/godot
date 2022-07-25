@@ -249,4 +249,4 @@ void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64
 }
 #endif
 
-#endif
+#endif // GODOT_NATIVESCRIPT_H

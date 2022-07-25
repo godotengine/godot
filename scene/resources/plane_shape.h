@@ -53,4 +53,5 @@ public:
 
 	PlaneShape();
 };
+
 #endif // PLANE_SHAPE_H

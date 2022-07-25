@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORFILEDIALOG_H
-#define EDITORFILEDIALOG_H
+#ifndef EDITOR_FILE_DIALOG_H
+#define EDITOR_FILE_DIALOG_H
 
 #include "core/os/dir_access.h"
 #include "scene/gui/box_container.h"
@@ -268,4 +268,4 @@ VARIANT_ENUM_CAST(EditorFileDialog::Mode);
 VARIANT_ENUM_CAST(EditorFileDialog::Access);
 VARIANT_ENUM_CAST(EditorFileDialog::DisplayMode);
 
-#endif // EDITORFILEDIALOG_H
+#endif // EDITOR_FILE_DIALOG_H

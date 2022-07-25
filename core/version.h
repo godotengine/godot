@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VERSION_H
-#define GODOT_VERSION_H
+#ifndef VERSION_H
+#define VERSION_H
 
 #include "core/version_generated.gen.h"
 
@@ -71,4 +71,4 @@
 // Git commit hash, generated at build time in `core/version_hash.gen.cpp`.
 extern const char *const VERSION_HASH;
 
-#endif // GODOT_VERSION_H
+#endif // VERSION_H

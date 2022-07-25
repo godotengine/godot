@@ -91,6 +91,6 @@ public:
 	~DirAccessWindows();
 };
 
-#endif //WINDOWS_ENABLED
+#endif // WINDOWS_ENABLED
 
-#endif
+#endif // DIR_ACCESS_WINDOWS_H

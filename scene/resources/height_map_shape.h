@@ -60,4 +60,4 @@ public:
 	HeightMapShape();
 };
 
-#endif /* !HEIGHT_MAP_SHAPE_H */
+#endif // HEIGHT_MAP_SHAPE_H

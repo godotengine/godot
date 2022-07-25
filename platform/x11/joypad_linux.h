@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
+
 #ifndef JOYPAD_LINUX_H
 #define JOYPAD_LINUX_H
 
@@ -120,4 +121,5 @@ private:
 };
 
 #endif
+
 #endif // JOYPAD_LINUX_H

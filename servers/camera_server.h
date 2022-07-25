@@ -112,4 +112,4 @@ public:
 
 VARIANT_ENUM_CAST(CameraServer::FeedImage);
 
-#endif /* CAMERA_SERVER_H */
+#endif // CAMERA_SERVER_H

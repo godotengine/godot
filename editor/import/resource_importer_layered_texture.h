@@ -82,4 +82,5 @@ public:
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();
 };
+
 #endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H

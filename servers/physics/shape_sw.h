@@ -526,4 +526,4 @@ struct _ShapeTestConvexBSPSW {
 	}
 };
 
-#endif // SHAPESW_H
+#endif // SHAPE_SW_H

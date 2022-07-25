@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_PROTOCAL_SERVER_H
-#define GDSCRIPT_PROTOCAL_SERVER_H
+#ifndef GDSCRIPT_LANGUAGE_PROTOCOL_H
+#define GDSCRIPT_LANGUAGE_PROTOCOL_H
 
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
@@ -110,4 +110,4 @@ public:
 	GDScriptLanguageProtocol();
 };
 
-#endif
+#endif // GDSCRIPT_LANGUAGE_PROTOCOL_H

@@ -109,4 +109,5 @@ public:
 	GDNativeLibraryEditorPlugin(EditorNode *p_node);
 };
 #endif
+
 #endif // GDNATIVE_LIBRARY_EDITOR_PLUGIN_H

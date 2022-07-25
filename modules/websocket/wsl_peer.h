@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WSLPEER_H
-#define WSLPEER_H
+#ifndef WSL_PEER_H
+#define WSL_PEER_H
 
 #ifndef JAVASCRIPT_ENABLED
 
@@ -124,4 +124,4 @@ public:
 
 #endif // JAVASCRIPT_ENABLED
 
-#endif // LSWPEER_H
+#endif // WSL_PEER_H

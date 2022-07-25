@@ -514,4 +514,4 @@ VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
 
-#endif
+#endif // CONTROL_H

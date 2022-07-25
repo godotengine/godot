@@ -118,4 +118,4 @@ public:
 	~CollisionShape2DEditorPlugin();
 };
 
-#endif //COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
+#endif // COLLISION_SHAPE_2D_EDITOR_PLUGIN_H

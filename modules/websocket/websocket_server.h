@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_H
-#define WEBSOCKET_H
+#ifndef WEBSOCKET_SERVER_H
+#define WEBSOCKET_SERVER_H
 
 #include "core/crypto/crypto.h"
 #include "core/reference.h"
@@ -91,4 +91,4 @@ public:
 	~WebSocketServer();
 };
 
-#endif // WEBSOCKET_H
+#endif // WEBSOCKET_SERVER_H

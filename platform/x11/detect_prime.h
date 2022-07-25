@@ -34,4 +34,5 @@
 int detect_prime();
 
 #endif
-#endif
+
+#endif // DETECT_PRIME_H

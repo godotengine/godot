@@ -157,4 +157,4 @@ struct PtrToArg<const BSP_Tree &> {
 
 #endif
 
-#endif
+#endif // BSP_TREE_H

@@ -72,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file FBXCommon.h
  * Some useful constants and enums for dealing with FBX files.
  */
-#ifndef FBX_COMMON_H
-#define FBX_COMMON_H
+
+#ifndef FBXCOMMON_H
+#define FBXCOMMON_H
 
 #include <string>
 
@@ -107,4 +108,4 @@ enum TransformInheritance {
 };
 } // namespace FBXDocParser
 
-#endif // FBX_COMMON_H
+#endif // FBXCOMMON_H

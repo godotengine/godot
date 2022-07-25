@@ -40,4 +40,4 @@ public:
 	ImageLoaderWEBP();
 };
 
-#endif
+#endif // IMAGE_LOADER_WEBP_H

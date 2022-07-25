@@ -78,4 +78,4 @@ public:
 	virtual ~GDScriptTextDocument();
 };
 
-#endif
+#endif // GDSCRIPT_TEXT_DOCUMENT_H

@@ -89,4 +89,4 @@ public:
 	MeshEditorPlugin(EditorNode *p_node);
 };
 
-#endif
+#endif // MESH_EDITOR_PLUGIN_H

@@ -213,4 +213,4 @@ public:
 	~VersionControlEditorPlugin();
 };
 
-#endif // !VERSION_CONTROL_EDITOR_PLUGIN_H
+#endif // VERSION_CONTROL_EDITOR_PLUGIN_H

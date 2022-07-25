@@ -38,4 +38,4 @@
 #define _THREAD_SAFE_LOCK_ _thread_safe_.lock();
 #define _THREAD_SAFE_UNLOCK_ _thread_safe_.unlock();
 
-#endif
+#endif // THREAD_SAFE_H

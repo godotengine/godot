@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VECTOR3_H
-#define GODOT_VECTOR3_H
+#ifndef GDNATIVE_VECTOR3_H
+#define GDNATIVE_VECTOR3_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,4 +146,4 @@ godot_real GDAPI godot_vector3_get_axis(const godot_vector3 *p_self, const godot
 }
 #endif
 
-#endif // GODOT_VECTOR3_H
+#endif // GDNATIVE_VECTOR3_H

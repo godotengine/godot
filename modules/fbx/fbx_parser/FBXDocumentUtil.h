@@ -71,8 +71,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXDocumentUtil.h
  *  @brief FBX internal utilities used by the DOM reading code
  */
-#ifndef FBX_DOCUMENT_UTIL_H
-#define FBX_DOCUMENT_UTIL_H
+
+#ifndef FBXDOCUMENTUTIL_H
+#define FBXDOCUMENTUTIL_H
 
 #include "FBXDocument.h"
 #include <memory>
@@ -139,4 +140,4 @@ const T *ProcessSimpleConnection(const Connection &con,
 } // namespace Util
 } // namespace FBXDocParser
 
-#endif // FBX_DOCUMENT_UTIL_H
+#endif // FBXDOCUMENTUTIL_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BODYBULLET_H
-#define BODYBULLET_H
+#ifndef RIGID_BODY_BULLET_H
+#define RIGID_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
@@ -300,4 +300,4 @@ private:
 	void _internal_set_mass(real_t p_mass);
 };
 
-#endif
+#endif // RIGID_BODY_BULLET_H

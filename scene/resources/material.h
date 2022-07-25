@@ -662,4 +662,4 @@ VARIANT_ENUM_CAST(SpatialMaterial::AsyncMode)
 
 //////////////////////
 
-#endif
+#endif // MATERIAL_H

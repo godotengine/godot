@@ -139,4 +139,4 @@ VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
 VARIANT_ENUM_CAST(MultiMesh::CustomDataFormat);
 VARIANT_ENUM_CAST(MultiMesh::PhysicsInterpolationQuality);
 
-#endif // MULTI_MESH_H
+#endif // MULTIMESH_H

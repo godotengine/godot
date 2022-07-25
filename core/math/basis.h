@@ -350,4 +350,5 @@ Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
 
 	return b;
 }
+
 #endif // BASIS_H

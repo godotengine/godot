@@ -364,4 +364,4 @@ VARIANT_ENUM_CAST(Animation::TrackType);
 VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
 
-#endif
+#endif // ANIMATION_H

@@ -30,6 +30,7 @@
 
 /// IMPORTANT The class name and filename was created by following Bullet writing rules for an easy (eventually) porting to bullet
 /// This shape is a custom shape that is not present to Bullet physics engine
+
 #ifndef BTRAYSHAPE_H
 #define BTRAYSHAPE_H
 

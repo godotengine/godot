@@ -199,4 +199,5 @@ public:
 		return *this;
 	}
 };
+
 #endif // VMAP_H

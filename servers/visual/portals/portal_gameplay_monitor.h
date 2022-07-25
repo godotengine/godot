@@ -93,4 +93,4 @@ private:
 	bool _use_signals = false;
 };
 
-#endif
+#endif // PORTAL_GAMEPLAY_MONITOR_H

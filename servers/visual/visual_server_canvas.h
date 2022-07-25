@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSERVERCANVAS_H
-#define VISUALSERVERCANVAS_H
+#ifndef VISUAL_SERVER_CANVAS_H
+#define VISUAL_SERVER_CANVAS_H
 
 #include "rasterizer.h"
 #include "visual_server_viewport.h"
@@ -258,4 +258,4 @@ public:
 	~VisualServerCanvas();
 };
 
-#endif // VISUALSERVERCANVAS_H
+#endif // VISUAL_SERVER_CANVAS_H

@@ -78,4 +78,4 @@ private:
 	int _portal_autoplace_priority;
 };
 
-#endif
+#endif // CULL_INSTANCE_H

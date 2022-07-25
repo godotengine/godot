@@ -163,4 +163,4 @@ public:
 	ConfirmationDialog();
 };
 
-#endif
+#endif // DIALOGS_H

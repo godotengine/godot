@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORASSETINSTALLER_H
-#define EDITORASSETINSTALLER_H
+#ifndef EDITOR_ASSET_INSTALLER_H
+#define EDITOR_ASSET_INSTALLER_H
 
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -60,4 +60,4 @@ public:
 	EditorAssetInstaller();
 };
 
-#endif // EDITORASSETINSTALLER_H
+#endif // EDITOR_ASSET_INSTALLER_H

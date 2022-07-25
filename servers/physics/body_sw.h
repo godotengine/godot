@@ -486,4 +486,4 @@ public:
 	PhysicsDirectBodyStateSW() {}
 };
 
-#endif // BODY__SW_H
+#endif // BODY_SW_H

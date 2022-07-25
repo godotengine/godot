@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKETPEER_H
-#define WEBSOCKETPEER_H
+#ifndef WEBSOCKET_PEER_H
+#define WEBSOCKET_PEER_H
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
@@ -71,4 +71,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);
-#endif // WEBSOCKETPEER_H
+
+#endif // WEBSOCKET_PEER_H

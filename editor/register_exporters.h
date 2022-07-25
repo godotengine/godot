@@ -33,4 +33,4 @@
 
 void register_exporters();
 
-#endif
+#endif // REGISTER_EXPORTERS_H

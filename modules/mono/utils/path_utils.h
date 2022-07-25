@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PATH_UTILS_H
-#define PATH_UTILS_H
+#ifndef MONO_PATH_UTILS_H
+#define MONO_PATH_UTILS_H
 
 #include "core/string_builder.h"
 #include "core/ustring.h"
@@ -61,4 +61,4 @@ String relative_to(const String &p_path, const String &p_relative_to);
 
 } // namespace path
 
-#endif // PATH_UTILS_H
+#endif // MONO_PATH_UTILS_H

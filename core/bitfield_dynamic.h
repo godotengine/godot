@@ -108,4 +108,4 @@ inline void BitFieldDynamic::set_bit(uint32_t p_bit, uint32_t p_set) {
 	_data[byte_number] = uc;
 }
 
-#endif
+#endif // BITFIELD_DYNAMIC_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PYTHONSCRIPT_PY_LOADER_H
-#define PYTHONSCRIPT_PY_LOADER_H
+#ifndef PLUGINSCRIPT_LOADER_H
+#define PLUGINSCRIPT_LOADER_H
 
 // Godot imports
 #include "core/io/resource_loader.h"
@@ -59,4 +59,4 @@ public:
 	virtual bool recognize(const RES &p_resource) const;
 };
 
-#endif // PYTHONSCRIPT_PY_LOADER_H
+#endif // PLUGINSCRIPT_LOADER_H

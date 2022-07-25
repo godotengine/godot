@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CANVASMODULATE_H
-#define CANVASMODULATE_H
+#ifndef CANVAS_MODULATE_H
+#define CANVAS_MODULATE_H
 
 #include "scene/2d/node_2d.h"
 
@@ -52,4 +52,4 @@ public:
 	~CanvasModulate();
 };
 
-#endif // CANVASMODULATE_H
+#endif // CANVAS_MODULATE_H

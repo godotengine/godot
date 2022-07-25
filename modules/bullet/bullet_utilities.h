@@ -43,4 +43,5 @@
 		delete cl;       \
 		cl = NULL;       \
 	}
-#endif
+
+#endif // BULLET_UTILITIES_H

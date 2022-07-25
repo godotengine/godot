@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef COREMIDI_ENABLED
-
 #ifndef MIDI_DRIVER_COREMIDI_H
 #define MIDI_DRIVER_COREMIDI_H
+
+#ifdef COREMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
 #include "core/vector.h"
@@ -57,5 +57,6 @@ public:
 	virtual ~MIDIDriverCoreMidi();
 };
 
-#endif // MIDI_DRIVER_COREMIDI_H
 #endif // COREMIDI_ENABLED
+
+#endif // MIDI_DRIVER_COREMIDI_H

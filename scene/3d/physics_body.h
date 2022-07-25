@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_BODY__H
-#define PHYSICS_BODY__H
+#ifndef PHYSICS_BODY_H
+#define PHYSICS_BODY_H
 
 #include "core/vset.h"
 #include "scene/3d/collision_object.h"
@@ -664,4 +664,4 @@ private:
 
 VARIANT_ENUM_CAST(PhysicalBone::JointType);
 
-#endif // PHYSICS_BODY__H
+#endif // PHYSICS_BODY_H

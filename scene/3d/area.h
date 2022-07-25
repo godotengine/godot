@@ -199,4 +199,4 @@ public:
 
 VARIANT_ENUM_CAST(Area::SpaceOverride);
 
-#endif // AREA__H
+#endif // AREA_H

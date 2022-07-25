@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITORPREVIEWPLUGINS_H
-#define EDITORPREVIEWPLUGINS_H
+#ifndef EDITOR_PREVIEW_PLUGINS_H
+#define EDITOR_PREVIEW_PLUGINS_H
 
 #include "editor/editor_resource_preview.h"
 
@@ -173,4 +173,5 @@ public:
 	EditorFontPreviewPlugin();
 	~EditorFontPreviewPlugin();
 };
-#endif // EDITORPREVIEWPLUGINS_H
+
+#endif // EDITOR_PREVIEW_PLUGINS_H

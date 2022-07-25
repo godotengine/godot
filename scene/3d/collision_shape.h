@@ -68,4 +68,4 @@ public:
 	~CollisionShape();
 };
 
-#endif // BODY_VOLUME_H
+#endif // COLLISION_SHAPE_H

@@ -237,4 +237,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(ClippedCamera::ProcessMode);
-#endif
+
+#endif // CAMERA_H

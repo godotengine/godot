@@ -461,4 +461,4 @@ public:
 
 VARIANT_ENUM_CAST(TextMesh::Align);
 
-#endif
+#endif // PRIMITIVE_MESHES_H

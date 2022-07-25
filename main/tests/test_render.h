@@ -38,4 +38,4 @@ namespace TestRender {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_RENDER_H

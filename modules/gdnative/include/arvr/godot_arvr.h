@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVEARVR_H
-#define GODOT_NATIVEARVR_H
+#ifndef GODOT_ARVR_H
+#define GODOT_ARVR_H
 
 #include <gdnative/gdnative.h>
 
@@ -95,4 +95,4 @@ godot_int GDAPI godot_arvr_get_depthid(godot_rid *p_render_target);
 }
 #endif
 
-#endif /* !GODOT_NATIVEARVR_H */
+#endif // GODOT_ARVR_H

@@ -166,4 +166,4 @@ struct HashMapComparatorDefault {
 	}
 };
 
-#endif
+#endif // HASHFUNCS_H

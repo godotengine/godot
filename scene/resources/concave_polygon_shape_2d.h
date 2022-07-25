@@ -52,4 +52,4 @@ public:
 	ConcavePolygonShape2D();
 };
 
-#endif
+#endif // CONCAVE_POLYGON_SHAPE_2D_H

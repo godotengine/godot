@@ -56,4 +56,4 @@ private:
 	bool _loaded = false;
 };
 
-#endif
+#endif // PORTAL_PVS_H

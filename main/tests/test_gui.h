@@ -38,4 +38,4 @@ namespace TestGUI {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_GUI_H

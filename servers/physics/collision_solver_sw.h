@@ -50,4 +50,4 @@ public:
 	static bool solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis = nullptr);
 };
 
-#endif // COLLISION_SOLVER__SW_H
+#endif // COLLISION_SOLVER_SW_H

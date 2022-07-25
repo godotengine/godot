@@ -37,4 +37,4 @@ namespace TestTransform {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_TRANSFORM_H

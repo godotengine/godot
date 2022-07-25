@@ -917,4 +917,4 @@ public:
 	virtual ~EditorSpatialGizmoPlugin();
 };
 
-#endif
+#endif // SPATIAL_EDITOR_PLUGIN_H

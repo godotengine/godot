@@ -34,4 +34,4 @@
 // We could include "webgl/webgl2.h", but old (< 2.0.17) emscripten versions do not have it, so use our own wrapper instead.
 void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
 
-#endif
+#endif // GODOT_WEBGL2_H

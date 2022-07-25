@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOEFFECTPANNER_H
-#define AUDIOEFFECTPANNER_H
+#ifndef AUDIO_EFFECT_PANNER_H
+#define AUDIO_EFFECT_PANNER_H
 
 #include "servers/audio/audio_effect.h"
 
@@ -61,4 +61,4 @@ public:
 	AudioEffectPanner();
 };
 
-#endif // AUDIOEFFECTPANNER_H
+#endif // AUDIO_EFFECT_PANNER_H

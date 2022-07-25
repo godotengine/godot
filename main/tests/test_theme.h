@@ -38,4 +38,5 @@ namespace TestTheme {
 MainLoop *test();
 
 }
+
 #endif // TEST_THEME_H

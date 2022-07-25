@@ -50,4 +50,5 @@ public:
 	void set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::ConeTwistJointParam p_param) const;
 };
-#endif
+
+#endif // CONE_TWIST_JOINT_BULLET_H

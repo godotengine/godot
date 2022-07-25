@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_POOL_ARRAYS_H
-#define GODOT_POOL_ARRAYS_H
+#ifndef GDNATIVE_POOL_ARRAYS_H
+#define GDNATIVE_POOL_ARRAYS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -505,4 +505,4 @@ void GDAPI godot_pool_color_array_write_access_destroy(godot_pool_color_array_wr
 }
 #endif
 
-#endif // GODOT_POOL_ARRAYS_H
+#endif // GDNATIVE_POOL_ARRAYS_H

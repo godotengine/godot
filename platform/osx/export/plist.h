@@ -30,8 +30,8 @@
 
 // Property list file format (application/x-plist) parser, property list ASN-1 serialization.
 
-#ifndef PLIST_H
-#define PLIST_H
+#ifndef OSX_PLIST_H
+#define OSX_PLIST_H
 
 #include "core/crypto/crypto_core.h"
 #include "core/os/file_access.h"
@@ -113,4 +113,4 @@ public:
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // PLIST_H
+#endif // OSX_PLIST_H

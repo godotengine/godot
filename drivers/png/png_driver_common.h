@@ -45,4 +45,4 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer);
 
 } // namespace PNGDriverCommon
 
-#endif
+#endif // PNG_DRIVER_COMMON_H

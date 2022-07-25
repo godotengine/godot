@@ -70,4 +70,4 @@ public:
 	ImageLoaderSVG();
 };
 
-#endif
+#endif // IMAGE_LOADER_SVG_H

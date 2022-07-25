@@ -200,4 +200,4 @@ void Vector<T>::fill(T p_elem) {
 	}
 }
 
-#endif
+#endif // VECTOR_H

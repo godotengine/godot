@@ -85,4 +85,4 @@ public:
 
 #endif
 
-#endif
+#endif // NAVIGATION_MESH_EDITOR_PLUGIN_H

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WINMIDI_ENABLED
-
 #ifndef MIDI_DRIVER_WINMIDI_H
 #define MIDI_DRIVER_WINMIDI_H
+
+#ifdef WINMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
 #include "core/vector.h"
@@ -57,5 +57,6 @@ public:
 	virtual ~MIDIDriverWinMidi();
 };
 
-#endif // MIDI_DRIVER_WINMIDI_H
 #endif // WINMIDI_ENABLED
+
+#endif // MIDI_DRIVER_WINMIDI_H

@@ -158,4 +158,4 @@ public:
 };
 #endif
 
-#endif
+#endif // AUDIO_DRIVER_JAVASCRIPT_H

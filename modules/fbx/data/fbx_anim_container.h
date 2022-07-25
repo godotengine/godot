@@ -43,4 +43,4 @@ struct FBXTrack {
 	std::map<int64_t, Vector3> keyframes;
 };
 
-#endif //MODEL_ABSTRACTION_ANIM_CONTAINER_H
+#endif // FBX_ANIM_CONTAINER_H

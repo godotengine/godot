@@ -38,4 +38,4 @@ namespace TestPhysics {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_PHYSICS_H

@@ -38,4 +38,4 @@ namespace TestMath {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_MATH_H

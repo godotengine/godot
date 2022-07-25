@@ -171,4 +171,4 @@ private:
 	void _check_distance_to_target();
 };
 
-#endif
+#endif // NAVIGATION_AGENT_2D_H

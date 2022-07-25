@@ -91,4 +91,4 @@ public:
 	StringName a8;
 };
 
-#endif // SCENE_STRING_NAMES_H
+#endif // CORE_STRING_NAMES_H

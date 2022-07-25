@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_BASIS_H
-#define GODOT_BASIS_H
+#ifndef GDNATIVE_BASIS_H
+#define GDNATIVE_BASIS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,4 +133,4 @@ godot_basis GDAPI godot_basis_slerp(const godot_basis *p_self, const godot_basis
 }
 #endif
 
-#endif // GODOT_BASIS_H
+#endif // GDNATIVE_BASIS_H

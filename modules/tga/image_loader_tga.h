@@ -81,4 +81,4 @@ public:
 	ImageLoaderTGA();
 };
 
-#endif
+#endif // IMAGE_LOADER_TGA_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCEIMPORTWAV_H
-#define RESOURCEIMPORTWAV_H
+#ifndef RESOURCE_IMPORTER_WAV_H
+#define RESOURCE_IMPORTER_WAV_H
 
 #include "core/io/resource_importer.h"
 
@@ -167,4 +167,4 @@ public:
 	ResourceImporterWAV();
 };
 
-#endif // RESOURCEIMPORTWAV_H
+#endif // RESOURCE_IMPORTER_WAV_H

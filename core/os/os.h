@@ -620,4 +620,4 @@ public:
 
 VARIANT_ENUM_CAST(OS::PowerState);
 
-#endif
+#endif // OS_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BIT_MAP_PREVIEW_EDITOR_PLUGIN_H
-#define BIT_MAP_PREVIEW_EDITOR_PLUGIN_H
+#ifndef BIT_MAP_EDITOR_PLUGIN_H
+#define BIT_MAP_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/resources/bit_map.h"
@@ -61,4 +61,4 @@ public:
 	BitMapEditorPlugin(EditorNode *p_editor);
 };
 
-#endif // BIT_MAP_PREVIEW_EDITOR_PLUGIN_H
+#endif // BIT_MAP_EDITOR_PLUGIN_H

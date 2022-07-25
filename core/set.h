@@ -629,4 +629,4 @@ public:
 	}
 };
 
-#endif
+#endif // SET_H

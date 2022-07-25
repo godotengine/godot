@@ -468,4 +468,4 @@ public:
 	virtual ~ScriptDebugger() { singleton = nullptr; }
 };
 
-#endif
+#endif // SCRIPT_LANGUAGE_H

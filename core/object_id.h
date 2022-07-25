@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OBJECTID_H
-#define OBJECTID_H
+#ifndef OBJECT_ID_H
+#define OBJECT_ID_H
 
 #include "core/int_types.h"
 
 typedef uint64_t ObjectID;
 
-#endif
+#endif // OBJECT_ID_H

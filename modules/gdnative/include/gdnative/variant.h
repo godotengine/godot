@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VARIANT_H
-#define GODOT_VARIANT_H
+#ifndef GDNATIVE_VARIANT_H
+#define GDNATIVE_VARIANT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -252,4 +252,4 @@ void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_varia
 }
 #endif
 
-#endif
+#endif // GDNATIVE_VARIANT_H
