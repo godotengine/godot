@@ -88,6 +88,9 @@ void CameraMatrix::adjust_perspective_znear(real_t p_new_znear) {
 }
 
 void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov) {
+	// Zero or negative Z near values are only valid in orthogonal projection.
+	p_z_near = MAX(0.001, p_z_near);
+
 	if (p_flip_fov) {
 		p_fovy_degrees = get_fovy(p_fovy_degrees, 1.0 / p_aspect);
 	}
@@ -114,6 +117,9 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 }
 
 void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist) {
+	// Zero or negative Z near values are only valid in orthogonal projection.
+	p_z_near = MAX(0.001, p_z_near);
+
 	if (p_flip_fov) {
 		p_fovy_degrees = get_fovy(p_fovy_degrees, 1.0 / p_aspect);
 	}
@@ -152,6 +158,9 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 }
 
 void CameraMatrix::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far) {
+	// Zero or negative Z near values are only valid in orthogonal projection.
+	p_z_near = MAX(0.001, p_z_near);
+
 	// we first calculate our base frustum on our values without taking our lens magnification into account.
 	real_t f1 = (p_intraocular_dist * 0.5) / p_display_to_lens;
 	real_t f2 = ((p_display_width - p_intraocular_dist) * 0.5) / p_display_to_lens;
@@ -200,6 +209,9 @@ void CameraMatrix::set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear
 }
 
 void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far) {
+	// Zero or negative Z near values are only valid in orthogonal projection.
+	p_near = MAX(0.001, p_near);
+
 	ERR_FAIL_COND(p_right <= p_left);
 	ERR_FAIL_COND(p_top <= p_bottom);
 	ERR_FAIL_COND(p_far <= p_near);
@@ -232,6 +244,9 @@ void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, r
 }
 
 void CameraMatrix::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov) {
+	// Zero or negative Z near values are only valid in orthogonal projection.
+	p_near = MAX(0.001, p_near);
+
 	if (!p_flip_fov) {
 		p_size *= p_aspect;
 	}
