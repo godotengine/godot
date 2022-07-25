@@ -304,7 +304,6 @@ void ScrollContainer::_update_dimensions() {
 		fit_child_in_rect(c, r);
 	}
 
-	update_scrollbars();
 	update();
 }
 
