@@ -462,8 +462,12 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
 	RS::EnvironmentSDFGIRayCount ray_count = RS::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
 	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
+	float sdfgi_min_roughness = GLOBAL_DEF("rendering/global_illumination/sdfgi/min_roughness", 0.0);
+	RS::get_singleton()->environment_set_sdfgi_min_roughness(sdfgi_min_roughness);
 	RS::VoxelGIQuality voxel_gi_quality = RS::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
 	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
+	float voxel_gi_min_roughness = GLOBAL_DEF("rendering/global_illumination/voxel_gi/min_roughness", 0.0);
+	RS::get_singleton()->voxel_gi_set_min_roughness(voxel_gi_min_roughness);
 	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
 	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));

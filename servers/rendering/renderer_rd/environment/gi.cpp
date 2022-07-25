@@ -3360,7 +3360,6 @@ void GI::init(SkyRD *p_sky) {
 		voxel_gi_lights = memnew_arr(VoxelGILight, voxel_gi_max_lights);
 		voxel_gi_lights_uniform = RD::get_singleton()->uniform_buffer_create(voxel_gi_max_lights * sizeof(VoxelGILight));
 		voxel_gi_quality = RS::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
-
 		String defines = "\n#define MAX_LIGHTS " + itos(voxel_gi_max_lights) + "\n";
 
 		Vector<String> versions;
@@ -3575,6 +3574,7 @@ void GI::init(SkyRD *p_sky) {
 	}
 	default_voxel_gi_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(VoxelGIData) * MAX_VOXEL_GI_INSTANCES);
 	half_resolution = GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution");
+	voxel_gi_min_roughness = GLOBAL_GET("rendering/global_illumination/gi/min_roughness");
 }
 
 void GI::free() {
@@ -3812,6 +3812,8 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 
 	push_constant.max_voxel_gi_instances = MIN((uint64_t)MAX_VOXEL_GI_INSTANCES, p_voxel_gi_instances.size());
 	push_constant.high_quality_vct = voxel_gi_quality == RS::VOXEL_GI_QUALITY_HIGH;
+	push_constant.voxel_gi_min_roughness = voxel_gi_min_roughness;
+	push_constant.sdfgi_min_roughness = sdfgi_min_roughness;
 
 	// these should be the same for all views
 	push_constant.orthogonal = p_projections[0].is_orthogonal();

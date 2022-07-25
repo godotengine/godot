@@ -1080,6 +1080,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="environment_set_sdfgi_min_roughness">
+			<return type="void" />
+			<argument index="0" name="roughness" type="float" />
+			<description>
+				If set to a value greater than [code]0.0[/code] (exclusive), clamps the minimum roughness used for SDFGI rendering (see [member Environment.sdfgi_enabled]). Higher values will improve performance in scenes with smooth materials (especially when set to [code]0.2[/code]), at the cost of less precise SDFGI reflections on smooth materials.
+				Clamping the roughness can also be useful to prevent bad interactions between [ReflectionProbe]s and SDFGI reflections, which may be noticeable in some scenes.
+				The minimum roughness defined here does [i]not[/i] affect other sources of reflections such as [ReflectionProbe]s or [Environment] sky reflections. See also [method voxel_gi_set_min_roughness] and [member ProjectSettings.rendering/global_illumination/sdfgi/min_roughness].
+			</description>
+		</method>
 		<method name="environment_set_sdfgi_ray_count">
 			<return type="void" />
 			<param index="0" name="ray_count" type="int" enum="RenderingServer.EnvironmentSDFGIRayCount" />
@@ -3582,6 +3591,15 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="voxel_gi_set_min_roughness">
+			<return type="void" />
+			<argument index="0" name="roughness" type="float" />
+			<description>
+				If set to a value greater than [code]0.0[/code] (exclusive), clamps the minimum roughness used for SDFGI rendering (see [member Environment.sdfgi_enabled]). Higher values will improve performance in scenes with smooth materials (especially when set to [code]0.2[/code]), at the cost of less precise SDFGI reflections on smooth materials.
+				Clamping the roughness can also be useful to prevent bad interactions between [ReflectionProbe]s and SDFGI reflections, which may be noticeable in some scenes.
+				The minimum roughness defined here does [i]not[/i] affect other sources of reflections such as [ReflectionProbe]s or [Environment] sky reflections. See also [method environment_set_sdfgi_min_roughness] and [member ProjectSettings.rendering/global_illumination/voxel_gi/min_roughness].
 			</description>
 		</method>
 		<method name="voxel_gi_set_normal_bias">

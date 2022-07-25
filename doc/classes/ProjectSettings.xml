@@ -2035,7 +2035,19 @@
 		</member>
 		<member name="rendering/global_illumination/sdfgi/frames_to_update_lights" type="int" setter="" getter="" default="2">
 		</member>
+		<member name="rendering/global_illumination/sdfgi/min_roughness" type="float" setter="" getter="" default="0.0">
+			If set to a value greater than [code]0.0[/code] (exclusive), clamps the minimum roughness used for SDFGI rendering (see [member Environment.sdfgi_enabled]). Higher values will improve performance in scenes with smooth materials (especially when set to [code]0.2[/code]), at the cost of less precise SDFGI reflections on smooth materials.
+			Clamping the roughness can also be useful to prevent bad interactions between [ReflectionProbe]s and SDFGI reflections, which may be noticeable in some scenes.
+			The minimum roughness defined here does [i]not[/i] affect other sources of reflections such as [ReflectionProbe]s or [Environment] sky reflections. See also [member rendering/global_illumination/voxel_gi/min_roughness].
+			[b]Note:[/b] This property is only read when the project starts. To set the minimum roughness for SDFGI reflections at run-time, call [method RenderingServer.environment_set_sdfgi_min_roughness] instead.
+		</member>
 		<member name="rendering/global_illumination/sdfgi/probe_ray_count" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="rendering/global_illumination/voxel_gi/min_roughness" type="float" setter="" getter="" default="0.0">
+			If set to a value greater than [code]0.0[/code] (exclusive), clamps the minimum roughness used for [VoxelGI] rendering. Higher values will improve performance in scenes with smooth materials, at the cost of less precise [VoxelGI] reflections on smooth materials.
+			Clamping the roughness can also be useful to prevent bad interactions between [ReflectionProbe]s and [VoxelGI] reflections, which may be noticeable in some scenes.
+			The minimum roughness defined here does [i]not[/i] affect other sources of reflections such as [ReflectionProbe]s or [Environment] sky reflections. See also [member rendering/global_illumination/sdfgi/min_roughness].
+			[b]Note:[/b] This property is only read when the project starts. To set the minimum roughness for [VoxelGI] reflections at run-time, call [method RenderingServer.voxel_gi_set_min_roughness] instead.
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 		</member>

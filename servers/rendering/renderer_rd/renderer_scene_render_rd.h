@@ -236,6 +236,7 @@ public:
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override;
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override;
+	virtual void environment_set_sdfgi_min_roughness(float p_roughness) override;
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
@@ -266,6 +267,7 @@ public:
 	virtual bool voxel_gi_needs_update(RID p_probe) const override;
 	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) override;
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
+	virtual void voxel_gi_set_min_roughness(float p_roughness) override { gi.voxel_gi_min_roughness = p_roughness; }
 
 	/* render buffers */
 

@@ -1082,6 +1082,7 @@ public:
 #define PASSBASE scene_render
 
 	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
+	PASS1(voxel_gi_set_min_roughness, float)
 
 	/* SKY API */
 
@@ -1234,6 +1235,7 @@ public:
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
+	PASS1(environment_set_sdfgi_min_roughness, float)
 
 	// Adjustment
 	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)

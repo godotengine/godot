@@ -540,6 +540,7 @@ public:
 	void voxel_gi_instance_free(RID p_rid);
 
 	RS::VoxelGIQuality voxel_gi_quality = RS::VOXEL_GI_QUALITY_LOW;
+	float voxel_gi_min_roughness = 0.0;
 
 	/* SDFGI */
 
@@ -695,6 +696,7 @@ public:
 	RS::EnvironmentSDFGIRayCount sdfgi_ray_count = RS::ENV_SDFGI_RAY_COUNT_16;
 	RS::EnvironmentSDFGIFramesToConverge sdfgi_frames_to_converge = RS::ENV_SDFGI_CONVERGE_IN_30_FRAMES;
 	RS::EnvironmentSDFGIFramesToUpdateLight sdfgi_frames_to_update_light = RS::ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES;
+	float sdfgi_min_roughness = 0.0;
 
 	float sdfgi_solid_cell_ratio = 0.25;
 	Vector3 sdfgi_debug_probe_pos;
@@ -770,15 +772,15 @@ public:
 	struct PushConstant {
 		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
-		uint32_t orthogonal;
-		uint32_t view_index;
+		float voxel_gi_min_roughness;
+		float sdfgi_min_roughness;
 
 		float proj_info[4];
 
+		uint32_t view_index;
+		uint32_t orthogonal;
 		float z_near;
 		float z_far;
-		float pad2;
-		float pad3;
 	};
 
 	RID sdfgi_ubo;

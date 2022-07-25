@@ -1088,6 +1088,9 @@ void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_converge(RS::Environm
 void RasterizerSceneGLES3::environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) {
 }
 
+void RasterizerSceneGLES3::environment_set_sdfgi_min_roughness(float p_roughness) {
+}
+
 void RasterizerSceneGLES3::environment_set_volumetric_fog_volume_size(int p_size, int p_depth) {
 }
 
@@ -1137,6 +1140,9 @@ void RasterizerSceneGLES3::voxel_gi_update(RID p_probe, bool p_update_light_inst
 }
 
 void RasterizerSceneGLES3::voxel_gi_set_quality(RS::VoxelGIQuality) {
+}
+
+void RasterizerSceneGLES3::voxel_gi_set_min_roughness(float p_roughness) {
 }
 
 void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append) {

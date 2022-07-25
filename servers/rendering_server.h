@@ -611,6 +611,7 @@ public:
 	};
 
 	virtual void voxel_gi_set_quality(VoxelGIQuality) = 0;
+	virtual void voxel_gi_set_min_roughness(float p_roughness) = 0;
 
 	/* LIGHTMAP */
 
@@ -1128,6 +1129,8 @@ public:
 	};
 
 	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
+
+	virtual void environment_set_sdfgi_min_roughness(float p_roughness) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
 
