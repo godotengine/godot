@@ -40,6 +40,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="ceil" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+			</description>
+		</method>
 		<method name="clamp" qualifiers="const">
 			<return type="Vector4" />
 			<argument index="0" name="min" type="Vector4" />
@@ -50,6 +55,11 @@
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="with" type="Vector4" />
+			<description>
+			</description>
+		</method>
+		<method name="floor" qualifiers="const">
+			<return type="Vector4" />
 			<description>
 			</description>
 		</method>
@@ -79,6 +89,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="lerp" qualifiers="const">
+			<return type="Vector4" />
+			<argument index="0" name="to" type="Vector4" />
+			<argument index="1" name="weight" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -90,6 +107,11 @@
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+			</description>
+		</method>
+		<method name="round" qualifiers="const">
 			<return type="Vector4" />
 			<description>
 			</description>
@@ -214,6 +236,12 @@
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<argument index="0" name="right" type="Vector4" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
 			<description>
 			</description>
 		</operator>
