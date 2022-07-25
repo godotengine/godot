@@ -576,14 +576,16 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				path.remove_at(0);
 			}
 			current = next;
-			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
-				pos_current = MIN(pos_current, len_current);
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+			if (p_state_machine->states.has(current)) {
+				if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
+					len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+					pos_current = MIN(pos_current, len_current);
+					p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
 
-			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
-				pos_current = 0;
+				} else {
+					len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+					pos_current = 0;
+				}
 			}
 
 			rem = len_current; //so it does not show 0 on transition
@@ -748,6 +750,8 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 
 bool AnimationNodeStateMachine::can_edit_node(const StringName &p_name) const {
 	if (states.has(p_name)) {
+		ERR_FAIL_COND_V(states[p_name].node.is_valid() == false, true);
+
 		return !(states[p_name].node->is_class("AnimationNodeStartState") || states[p_name].node->is_class("AnimationNodeEndState"));
 	}
 
@@ -858,19 +862,23 @@ void AnimationNodeStateMachine::_rename_transition(const StringName &p_name, con
 				} else {
 					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_to].node)->_rename_transition("../" + p_name, "../" + p_new_name);
 				}
+			} else {
+				transitions.write[i].local_from = p_new_name;
 			}
 
 			transitions.write[i].from = p_new_name;
 		}
 
 		if (transitions[i].to == p_name) {
-			Vector<String> path = String(transitions[i].from).split("/");
+			Vector<String> path = String(transitions[i].to).split("/");
 			if (path.size() > 1) {
 				if (path[0] == "..") {
 					prev_state_machine->_rename_transition(String(state_machine_name) + "/" + p_name, String(state_machine_name) + "/" + p_new_name);
 				} else {
 					((Ref<AnimationNodeStateMachine>)states[transitions[i].local_from].node)->_rename_transition("../" + p_name, "../" + p_new_name);
 				}
+			} else {
+				transitions.write[i].local_to = p_new_name;
 			}
 
 			transitions.write[i].to = p_new_name;
