@@ -223,9 +223,6 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 			if (p_peer_id < 0 && E == -p_peer_id) {
 				continue; // Continue, excluded.
 			}
-			if (p_peer_id > 0 && E != p_peer_id) {
-				continue; // Continue, not for this peer.
-			}
 
 			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
 			if (!F) {
