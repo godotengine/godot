@@ -99,4 +99,4 @@ public:
 	Error parse(const String &p_code, const String &p_path);
 };
 
-#endif
+#endif // GDSCRIPT_EXTEND_PARSER_H

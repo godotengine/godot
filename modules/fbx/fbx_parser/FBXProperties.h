@@ -34,7 +34,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -73,8 +72,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  FBXProperties.h
  *  @brief FBX dynamic properties
  */
-#ifndef FBX_PROPERTIES_H
-#define FBX_PROPERTIES_H
+
+#ifndef FBXPROPERTIES_H
+#define FBXPROPERTIES_H
 
 #include "FBXParser.h"
 #include <map>
@@ -220,4 +220,4 @@ inline T PropertyGet(const PropertyTable *in, const std::string &name, bool &res
 
 } // namespace FBXDocParser
 
-#endif // FBX_PROPERTIES_H
+#endif // FBXPROPERTIES_H

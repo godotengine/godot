@@ -197,4 +197,4 @@ public:
 VARIANT_ENUM_CAST(FileDialog::Mode);
 VARIANT_ENUM_CAST(FileDialog::Access);
 
-#endif
+#endif // FILE_DIALOG_H

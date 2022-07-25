@@ -347,4 +347,4 @@ FileAccessUnix::~FileAccessUnix() {
 	close();
 }
 
-#endif
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED

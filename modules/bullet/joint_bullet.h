@@ -48,4 +48,5 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const = 0;
 };
-#endif
+
+#endif // JOINT_BULLET_H

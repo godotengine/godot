@@ -42,4 +42,5 @@ namespace TestXMLParser {
 
 MainLoop *test();
 }
+
 #endif // TEST_XML_PARSER_H

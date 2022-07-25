@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  quick_open.cpp                                                       */
+/*  editor_quick_open.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "quick_open.h"
+#include "editor_quick_open.h"
 
 #include "core/os/keyboard.h"
 

@@ -45,4 +45,4 @@ public:
 	ImageLoaderPNG();
 };
 
-#endif
+#endif // IMAGE_LOADER_PNG_H

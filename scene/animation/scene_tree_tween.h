@@ -253,4 +253,4 @@ private:
 	Vector<Variant> binds;
 };
 
-#endif
+#endif // SCENE_TREE_TWEEN_H

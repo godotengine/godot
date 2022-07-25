@@ -85,4 +85,5 @@ public:
 #endif
 
 #endif
-#endif
+
+#endif // CONTEXT_GL_X11_H

@@ -101,4 +101,4 @@ public:
 
 VARIANT_ENUM_CAST(ARVRPositionalTracker::TrackerHand);
 
-#endif
+#endif // ARVR_POSITIONAL_TRACKER_H

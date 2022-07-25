@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GIPROBE_H
-#define GIPROBE_H
+#ifndef GI_PROBE_H
+#define GI_PROBE_H
 
 #include "multimesh_instance.h"
 #include "scene/3d/visual_instance.h"
@@ -175,4 +175,4 @@ public:
 
 VARIANT_ENUM_CAST(GIProbe::Subdiv)
 
-#endif // GIPROBE_H
+#endif // GI_PROBE_H

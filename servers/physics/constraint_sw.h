@@ -81,4 +81,4 @@ public:
 	virtual ~ConstraintSW() {}
 };
 
-#endif // CONSTRAINT__SW_H
+#endif // CONSTRAINT_SW_H

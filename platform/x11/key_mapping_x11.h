@@ -52,4 +52,4 @@ public:
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
 };
 
-#endif
+#endif // KEY_MAPPING_X11_H

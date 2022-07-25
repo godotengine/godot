@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWSPEER_H
-#define EMWSPEER_H
+#ifndef EMWS_PEER_H
+#define EMWS_PEER_H
 
 #ifdef JAVASCRIPT_ENABLED
 
@@ -90,4 +90,4 @@ public:
 
 #endif // JAVASCRIPT_ENABLED
 
-#endif // LSWPEER_H
+#endif // EMWS_PEER_H

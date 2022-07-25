@@ -106,4 +106,4 @@ public:
 	~AudioDriverXAudio2();
 };
 
-#endif
+#endif // AUDIO_DRIVER_XAUDIO2_H

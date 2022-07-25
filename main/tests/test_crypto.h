@@ -38,4 +38,4 @@ namespace TestCrypto {
 MainLoop *test();
 }
 
-#endif
+#endif // TEST_CRYPTO_H

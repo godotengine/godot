@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #ifndef PACKED_SCENE_GLTF_H
 #define PACKED_SCENE_GLTF_H
+
+#ifdef TOOLS_ENABLED
 
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
@@ -61,6 +61,6 @@ public:
 			real_t p_bake_fps = 1000.0f, uint32_t p_compress_flags = Mesh::ARRAY_COMPRESS_DEFAULT, Ref<GLTFState> r_state = Ref<GLTFState>());
 };
 
-#endif // PACKED_SCENE_GLTF_H
-
 #endif // TOOLS_ENABLED
+
+#endif // PACKED_SCENE_GLTF_H

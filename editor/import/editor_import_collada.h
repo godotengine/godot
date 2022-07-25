@@ -45,4 +45,4 @@ public:
 	EditorSceneImporterCollada();
 };
 
-#endif
+#endif // EDITOR_IMPORT_COLLADA_H

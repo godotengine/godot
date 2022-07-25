@@ -202,4 +202,4 @@ struct _GlobalNilClass {
 	static _GlobalNil _nil;
 };
 
-#endif
+#endif // MEMORY_H

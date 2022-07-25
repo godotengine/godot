@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_STRING_H
-#define GODOT_STRING_H
+#ifndef GDNATIVE_STRING_H
+#define GDNATIVE_STRING_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -264,4 +264,4 @@ void GDAPI godot_string_destroy(godot_string *p_self);
 }
 #endif
 
-#endif // GODOT_STRING_H
+#endif // GDNATIVE_STRING_H

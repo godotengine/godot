@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSTORAGEGLES3_H
-#define RASTERIZERSTORAGEGLES3_H
+#ifndef RASTERIZER_STORAGE_GLES3_H
+#define RASTERIZER_STORAGE_GLES3_H
 
 #include "core/self_list.h"
 #include "drivers/gles_common/rasterizer_asserts.h"
@@ -1559,4 +1559,4 @@ inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buff
 	glBufferSubData(p_target, p_offset_bytes, p_data_size_bytes, p_data);
 }
 
-#endif // RASTERIZERSTORAGEGLES3_H
+#endif // RASTERIZER_STORAGE_GLES3_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_BULLET_TYPES_H
-#define REGISTER_BULLET_TYPES_H
+#ifndef BULLET_REGISTER_TYPES_H
+#define BULLET_REGISTER_TYPES_H
 
 /**
 	@author AndreaCatania
@@ -37,4 +37,5 @@
 
 void register_bullet_types();
 void unregister_bullet_types();
-#endif
+
+#endif // BULLET_REGISTER_TYPES_H

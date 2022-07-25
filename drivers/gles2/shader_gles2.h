@@ -270,4 +270,4 @@ void ShaderGLES2::_set_conditional(int p_which, bool p_value) {
 	}
 }
 
-#endif
+#endif // SHADER_GLES2_H

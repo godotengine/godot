@@ -133,4 +133,5 @@ public:
 };
 
 #endif // TOOLS_ENABLED
+
 #endif // EDITOR_SCENE_IMPORTER_FBX_H

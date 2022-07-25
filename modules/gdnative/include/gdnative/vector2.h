@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_VECTOR2_H
-#define GODOT_VECTOR2_H
+#ifndef GDNATIVE_VECTOR2_H
+#define GDNATIVE_VECTOR2_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -139,4 +139,4 @@ godot_real GDAPI godot_vector2_get_y(const godot_vector2 *p_self);
 }
 #endif
 
-#endif // GODOT_VECTOR2_H
+#endif // GDNATIVE_VECTOR2_H

@@ -36,4 +36,4 @@ void register_core_settings();
 void register_core_singletons();
 void unregister_core_types();
 
-#endif
+#endif // REGISTER_CORE_TYPES_H

@@ -70,4 +70,4 @@ public:
 	virtual ~BroadPhaseSW();
 };
 
-#endif // BROAD_PHASE__SW_H
+#endif // BROAD_PHASE_SW_H

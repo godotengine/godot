@@ -262,4 +262,4 @@ public:
 	~StyleBoxLine();
 };
 
-#endif
+#endif // STYLE_BOX_H

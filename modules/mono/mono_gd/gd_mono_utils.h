@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONOUTILS_H
-#define GD_MONOUTILS_H
+#ifndef GD_MONO_UTILS_H
+#define GD_MONO_UTILS_H
 
 #include <mono/metadata/threads.h>
 
@@ -192,4 +192,4 @@ void add_internal_call(const char *p_name, R (*p_func)(P...)) {
 #define GD_MONO_ASSERT_THREAD_ATTACHED
 #endif
 
-#endif // GD_MONOUTILS_H
+#endif // GD_MONO_UTILS_H

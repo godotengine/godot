@@ -89,4 +89,4 @@ public:
 
 VARIANT_ENUM_CAST(Button::TextAlign);
 
-#endif
+#endif // BUTTON_H

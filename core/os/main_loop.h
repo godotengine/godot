@@ -81,4 +81,4 @@ public:
 	virtual ~MainLoop();
 };
 
-#endif
+#endif // MAIN_LOOP_H

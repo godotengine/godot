@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef CONTEXT_GL_WINDOWS_H
+#define CONTEXT_GL_WINDOWS_H
+
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
-
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
 
 #include "core/error_list.h"
 #include "core/os/os.h"
@@ -85,4 +83,5 @@ public:
 };
 
 #endif
-#endif
+
+#endif // CONTEXT_GL_WINDOWS_H

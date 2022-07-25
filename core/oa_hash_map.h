@@ -376,4 +376,4 @@ public:
 	}
 };
 
-#endif
+#endif // OA_HASH_MAP_H

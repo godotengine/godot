@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FBX_PARSE_TOOLS_H
-#define FBX_PARSE_TOOLS_H
+#ifndef FBXPARSETOOLS_H
+#define FBXPARSETOOLS_H
 
 #include "core/error_macros.h"
 #include "core/ustring.h"
@@ -108,4 +108,4 @@ inline uint64_t strtoul10_64(const char *in, bool &errored, const char **out = n
 	return value;
 }
 
-#endif // FBX_PARSE_TOOLS_H
+#endif // FBXPARSETOOLS_H

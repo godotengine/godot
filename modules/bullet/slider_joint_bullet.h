@@ -118,4 +118,5 @@ public:
 	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
 };
-#endif
+
+#endif // SLIDER_JOINT_BULLET_H

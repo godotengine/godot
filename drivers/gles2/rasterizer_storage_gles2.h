@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERSTORAGEGLES2_H
-#define RASTERIZERSTORAGEGLES2_H
+#ifndef RASTERIZER_STORAGE_GLES2_H
+#define RASTERIZER_STORAGE_GLES2_H
 
 #include "core/pool_vector.h"
 #include "core/self_list.h"
@@ -1404,4 +1404,4 @@ inline void RasterizerStorageGLES2::buffer_orphan_and_upload(unsigned int p_buff
 	glBufferSubData(p_target, p_offset_bytes, p_data_size_bytes, p_data);
 }
 
-#endif // RASTERIZERSTORAGEGLES2_H
+#endif // RASTERIZER_STORAGE_GLES2_H

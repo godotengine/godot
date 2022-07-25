@@ -260,4 +260,4 @@ private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);
 };
 
-#endif
+#endif // COLLISION_OBJECT_BULLET_H

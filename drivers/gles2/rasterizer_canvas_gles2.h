@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERCANVASGLES2_H
-#define RASTERIZERCANVASGLES2_H
+#ifndef RASTERIZER_CANVAS_GLES2_H
+#define RASTERIZER_CANVAS_GLES2_H
 
 #include "drivers/gles_common/rasterizer_canvas_batcher.h"
 #include "rasterizer_canvas_base_gles2.h"
@@ -70,4 +70,4 @@ public:
 	RasterizerCanvasGLES2();
 };
 
-#endif // RASTERIZERCANVASGLES2_H
+#endif // RASTERIZER_CANVAS_GLES2_H

@@ -50,4 +50,4 @@ public:
 	~CheckBox();
 };
 
-#endif
+#endif // CHECK_BOX_H

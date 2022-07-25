@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_2D_SERVER_SW
-#define PHYSICS_2D_SERVER_SW
+#ifndef PHYSICS_2D_SERVER_SW_H
+#define PHYSICS_2D_SERVER_SW_H
 
 #include "joints_2d_sw.h"
 #include "servers/physics_2d_server.h"
@@ -289,4 +289,4 @@ public:
 	~Physics2DServerSW();
 };
 
-#endif
+#endif // PHYSICS_2D_SERVER_SW_H

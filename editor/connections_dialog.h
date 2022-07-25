@@ -175,4 +175,4 @@ public:
 	~ConnectionsDock();
 };
 
-#endif
+#endif // CONNECTIONS_DIALOG_H
