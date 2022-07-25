@@ -824,12 +824,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
 				_zoom_out();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_reset_zoom();
+				accept_event();
 			}
 		}
 	}
