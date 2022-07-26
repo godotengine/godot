@@ -32,6 +32,8 @@
 
 #include "core/os/os.h"
 
+thread_local int WorkerThreadPool::thread_index = -1;
+
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_COND(!template_userdata);
 	ERR_FAIL_COND(native_func_userdata == nullptr);
@@ -150,6 +152,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 }
 
 void WorkerThreadPool::_thread_function(void *p_user) {
+	thread_index = ((ThreadData *)p_user)->index;
 	while (true) {
 		singleton->task_available_semaphore.wait();
 		if (singleton->exit_threads.is_set()) {
