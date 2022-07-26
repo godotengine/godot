@@ -43,4 +43,4 @@ public:
 	~VulkanContextWayland();
 };
 
-#endif // VULKAN_DEVICE_WAYLAND_H
+#endif // VULKAN_CONTEXT_WAYLAND_H
