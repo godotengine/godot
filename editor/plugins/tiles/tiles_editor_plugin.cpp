@@ -226,14 +226,14 @@ void TilesEditorPlugin::synchronize_sources_list(Object *p_current_list, Object 
 	}
 
 	if (item_list->is_visible_in_tree()) {
+		// Make sure the selection is not overwritten after sorting.
+		int atlas_sources_lists_current_mem = atlas_sources_lists_current;
+		item_list->emit_signal(SNAME("sort_request"));
+		atlas_sources_lists_current = atlas_sources_lists_current_mem;
+
 		if (atlas_sources_lists_current < 0 || atlas_sources_lists_current >= item_list->get_item_count()) {
 			item_list->deselect_all();
 		} else {
-			// Make sure the selection is not overwritten after sorting.
-			int atlas_sources_lists_current_mem = atlas_sources_lists_current;
-			item_list->emit_signal(SNAME("sort_request"));
-			atlas_sources_lists_current = atlas_sources_lists_current_mem;
-
 			item_list->set_current(atlas_sources_lists_current);
 			item_list->ensure_current_is_visible();
 			item_list->emit_signal(SNAME("item_selected"), atlas_sources_lists_current);
