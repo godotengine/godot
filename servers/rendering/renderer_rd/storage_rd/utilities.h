@@ -119,4 +119,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !UTILITIES_RD_H
+#endif // UTILITIES_RD_H

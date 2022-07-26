@@ -75,4 +75,4 @@ public:
 	ScriptIterator(const String &p_string, int p_start, int p_length);
 };
 
-#endif //SCRIPT_ITERATOR_H
+#endif // SCRIPT_ITERATOR_H

@@ -30,8 +30,8 @@
 
 // Universal / Universal 2 fat binary file creator and extractor.
 
-#ifndef LIPO_H
-#define LIPO_H
+#ifndef MACOS_LIPO_H
+#define MACOS_LIPO_H
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
@@ -73,4 +73,4 @@ public:
 
 #endif // MODULE_REGEX_ENABLED
 
-#endif // LIPO_H
+#endif // MACOS_LIPO_H

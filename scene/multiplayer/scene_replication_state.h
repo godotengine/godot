@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_REPLICATON_STATE_H
-#define SCENE_REPLICATON_STATE_H
+#ifndef SCENE_REPLICATION_STATE_H
+#define SCENE_REPLICATION_STATE_H
 
 #include "core/object/ref_counted.h"
 
@@ -129,4 +129,4 @@ public:
 	SceneReplicationState() {}
 };
 
-#endif // SCENE_REPLICATON_STATE_H
+#endif // SCENE_REPLICATION_STATE_H

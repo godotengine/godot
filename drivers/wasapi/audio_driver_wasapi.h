@@ -120,4 +120,5 @@ public:
 };
 
 #endif // WASAPI_ENABLED
+
 #endif // AUDIO_DRIVER_WASAPI_H

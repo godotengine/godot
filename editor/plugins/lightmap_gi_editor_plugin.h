@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_LIGHTMAP_EDITOR_PLUGIN_H
-#define BAKED_LIGHTMAP_EDITOR_PLUGIN_H
+#ifndef LIGHTMAP_GI_EDITOR_PLUGIN_H
+#define LIGHTMAP_GI_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
@@ -67,4 +67,4 @@ public:
 	~LightmapGIEditorPlugin();
 };
 
-#endif
+#endif // LIGHTMAP_GI_EDITOR_PLUGIN_H

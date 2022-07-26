@@ -50,6 +50,7 @@ struct hb_subset_input_t
     hb_set_t *name_ids;
     hb_set_t *name_languages;
     hb_set_t *layout_features;
+    hb_set_t *layout_scripts;
   };
 
   union {
@@ -58,6 +59,7 @@ struct hb_subset_input_t
   };
 
   unsigned flags;
+  hb_hashmap_t<hb_tag_t, float> *axes_location;
 
   inline unsigned num_sets () const
   {
@@ -76,7 +78,8 @@ struct hb_subset_input_t
       if (unlikely (set_ptrs[i]->in_error ()))
         return true;
     }
-    return false;
+
+    return axes_location->in_error ();
   }
 };
 

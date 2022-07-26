@@ -30,19 +30,10 @@
 
 #include "gltf_document.h"
 
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_camera.h"
+#include "extensions/gltf_spec_gloss.h"
 #include "gltf_document_extension.h"
 #include "gltf_document_extension_convert_importer_mesh.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
-#include "gltf_spec_gloss.h"
 #include "gltf_state.h"
-#include "gltf_texture.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_macros.h"
@@ -940,58 +931,58 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> state) {
 	return OK;
 }
 
-String GLTFDocument::_get_accessor_type_name(const GLTFDocument::GLTFType p_type) {
-	if (p_type == GLTFDocument::TYPE_SCALAR) {
+String GLTFDocument::_get_accessor_type_name(const GLTFType p_type) {
+	if (p_type == GLTFType::TYPE_SCALAR) {
 		return "SCALAR";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC2) {
+	if (p_type == GLTFType::TYPE_VEC2) {
 		return "VEC2";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC3) {
+	if (p_type == GLTFType::TYPE_VEC3) {
 		return "VEC3";
 	}
-	if (p_type == GLTFDocument::TYPE_VEC4) {
+	if (p_type == GLTFType::TYPE_VEC4) {
 		return "VEC4";
 	}
 
-	if (p_type == GLTFDocument::TYPE_MAT2) {
+	if (p_type == GLTFType::TYPE_MAT2) {
 		return "MAT2";
 	}
-	if (p_type == GLTFDocument::TYPE_MAT3) {
+	if (p_type == GLTFType::TYPE_MAT3) {
 		return "MAT3";
 	}
-	if (p_type == GLTFDocument::TYPE_MAT4) {
+	if (p_type == GLTFType::TYPE_MAT4) {
 		return "MAT4";
 	}
 	ERR_FAIL_V("SCALAR");
 }
 
-GLTFDocument::GLTFType GLTFDocument::_get_type_from_str(const String &p_string) {
+GLTFType GLTFDocument::_get_type_from_str(const String &p_string) {
 	if (p_string == "SCALAR") {
-		return GLTFDocument::TYPE_SCALAR;
+		return GLTFType::TYPE_SCALAR;
 	}
 
 	if (p_string == "VEC2") {
-		return GLTFDocument::TYPE_VEC2;
+		return GLTFType::TYPE_VEC2;
 	}
 	if (p_string == "VEC3") {
-		return GLTFDocument::TYPE_VEC3;
+		return GLTFType::TYPE_VEC3;
 	}
 	if (p_string == "VEC4") {
-		return GLTFDocument::TYPE_VEC4;
+		return GLTFType::TYPE_VEC4;
 	}
 
 	if (p_string == "MAT2") {
-		return GLTFDocument::TYPE_MAT2;
+		return GLTFType::TYPE_MAT2;
 	}
 	if (p_string == "MAT3") {
-		return GLTFDocument::TYPE_MAT3;
+		return GLTFType::TYPE_MAT3;
 	}
 	if (p_string == "MAT4") {
-		return GLTFDocument::TYPE_MAT4;
+		return GLTFType::TYPE_MAT4;
 	}
 
-	ERR_FAIL_V(GLTFDocument::TYPE_SCALAR);
+	ERR_FAIL_V(GLTFType::TYPE_SCALAR);
 }
 
 Error GLTFDocument::_parse_accessors(Ref<GLTFState> state) {
@@ -1542,7 +1533,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> state, c
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
+	const GLTFType type = GLTFType::TYPE_SCALAR;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_INT;
 
 	accessor->max = type_max;
@@ -1626,7 +1617,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> state, c
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC2;
+	const GLTFType type = GLTFType::TYPE_VEC2;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -1675,7 +1666,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> state, 
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -1740,7 +1731,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> state
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -1787,7 +1778,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> state,
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_UNSIGNED_SHORT;
 
 	accessor->max = type_max;
@@ -1836,7 +1827,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> s
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC4;
+	const GLTFType type = GLTFType::TYPE_VEC4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -1901,7 +1892,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> state,
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_SCALAR;
+	const GLTFType type = GLTFType::TYPE_SCALAR;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -1947,7 +1938,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_VEC3;
+	const GLTFType type = GLTFType::TYPE_VEC3;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -2015,7 +2006,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	accessor.instantiate();
 	GLTFBufferIndex buffer_view_i;
 	int64_t size = state->buffers[0].size();
-	const GLTFDocument::GLTFType type = GLTFDocument::TYPE_MAT4;
+	const GLTFType type = GLTFType::TYPE_MAT4;
 	const int component_type = GLTFDocument::COMPONENT_TYPE_FLOAT;
 
 	accessor->max = type_max;
@@ -5227,7 +5218,7 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 	Ref<GLTFCamera> c;
 	c.instantiate();
 
-	if (p_camera->get_projection() == Camera3D::Projection::PROJECTION_PERSPECTIVE) {
+	if (p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE) {
 		c->set_perspective(true);
 	}
 	c->set_fov_size(p_camera->get_fov());
@@ -6945,15 +6936,6 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
-	_convert_scene_node(state, p_node, -1, -1);
-	if (!state->buffers.size()) {
-		state->buffers.push_back(Vector<uint8_t>());
-	}
-	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
-		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
-		ERR_CONTINUE(ext.is_null());
-	}
-
 	for (int32_t ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
 		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 		ERR_CONTINUE(ext.is_null());
@@ -6964,7 +6946,6 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> state, uint32
 	if (!state->buffers.size()) {
 		state->buffers.push_back(Vector<uint8_t>());
 	}
-
 	return OK;
 }
 

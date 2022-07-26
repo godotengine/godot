@@ -37,6 +37,10 @@ jobs:
         run: |
           bash ./misc/scripts/clang_format.sh
 
+      - name: Header guards formatting checks (header_guards.sh)
+        run: |
+          bash ./misc/scripts/header_guards.sh
+
       - name: Python style checks via black (black_format.sh)
         run: |
           bash ./misc/scripts/black_format.sh

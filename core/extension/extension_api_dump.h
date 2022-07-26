@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef API_DUMP_H
-#define API_DUMP_H
+#ifndef EXTENSION_API_DUMP_H
+#define EXTENSION_API_DUMP_H
 
 #include "core/extension/native_extension.h"
 
@@ -42,4 +42,4 @@ public:
 };
 #endif
 
-#endif // API_DUMP_H
+#endif // EXTENSION_API_DUMP_H

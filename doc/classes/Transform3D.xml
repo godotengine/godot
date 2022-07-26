@@ -39,6 +39,12 @@
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
+			<argument index="0" name="from" type="Projection" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Transform3D">
+			<return type="Transform3D" />
 			<argument index="0" name="x_axis" type="Vector3" />
 			<argument index="1" name="y_axis" type="Vector3" />
 			<argument index="2" name="z_axis" type="Vector3" />

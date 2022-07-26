@@ -465,12 +465,10 @@ struct hb_bit_set_t
   }
   public:
 
-  template <typename Op>
-  void process (const Op& op, const hb_bit_set_t &other)
+  void process_ (hb_bit_page_t::vector_t (*op) (const hb_bit_page_t::vector_t &, const hb_bit_page_t::vector_t &),
+		 bool passthru_left, bool passthru_right,
+		 const hb_bit_set_t &other)
   {
-    const bool passthru_left = op (1, 0);
-    const bool passthru_right = op (0, 1);
-
     if (unlikely (!successful)) return;
 
     dirty ();
@@ -589,6 +587,15 @@ struct hb_bit_set_t
       }
     assert (!count);
     resize (newCount);
+  }
+  template <typename Op>
+  static hb_bit_page_t::vector_t
+  op_ (const hb_bit_page_t::vector_t &a, const hb_bit_page_t::vector_t &b)
+  { return Op{} (a, b); }
+  template <typename Op>
+  void process (const Op& op, const hb_bit_set_t &other)
+  {
+    process_ (op_<Op>, op (1, 0), op (0, 1), other);
   }
 
   void union_ (const hb_bit_set_t &other) { process (hb_bitwise_or, other); }

@@ -154,6 +154,7 @@ public:
 		TK_SEMICOLON,
 		TK_PERIOD,
 		TK_UNIFORM,
+		TK_UNIFORM_GROUP,
 		TK_INSTANCE,
 		TK_GLOBAL,
 		TK_VARYING,
@@ -687,6 +688,8 @@ public:
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
 			int instance_index = 0;
+			String group;
+			String subgroup;
 
 			Uniform() {
 				hint_range[0] = 0.0f;
@@ -936,6 +939,10 @@ private:
 	StringName current_function;
 	bool last_const = false;
 	StringName last_name;
+	bool is_shader_inc = false;
+
+	String current_uniform_group_name;
+	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
 
@@ -1079,7 +1086,7 @@ private:
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types, bool p_is_include);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);

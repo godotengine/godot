@@ -172,7 +172,7 @@ hb_resolve_overflows (const T& packed,
       && will_overflow)
   {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Assigning spaces to 32 bit subgraphs.");
-    if (sorted_graph.assign_32bit_spaces ())
+    if (sorted_graph.assign_spaces ())
       sorted_graph.sort_shortest_distance ();
   }
 
@@ -181,7 +181,7 @@ hb_resolve_overflows (const T& packed,
   // TODO(garretrieger): select a good limit for max rounds.
   while (!sorted_graph.in_error ()
          && graph::will_overflow (sorted_graph, &overflows)
-         && round++ < max_rounds) {
+         && round < max_rounds) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %d ===", round);
     print_overflows (sorted_graph, overflows);
 
@@ -189,6 +189,9 @@ hb_resolve_overflows (const T& packed,
 
     if (!_try_isolating_subgraphs (overflows, sorted_graph))
     {
+      // Don't count space isolation towards round limit. Only increment
+      // round counter if space isolation made no changes.
+      round++;
       if (!_process_overflows (overflows, priority_bumped_parents, sorted_graph))
       {
         DEBUG_MSG (SUBSET_REPACK, nullptr, "No resolution available :(");

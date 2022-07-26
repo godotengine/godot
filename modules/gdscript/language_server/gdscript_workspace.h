@@ -35,7 +35,7 @@
 #include "core/variant/variant.h"
 #include "editor/editor_file_system.h"
 #include "gdscript_extend_parser.h"
-#include "lsp.hpp"
+#include "godot_lsp.h"
 
 class GDScriptWorkspace : public RefCounted {
 	GDCLASS(GDScriptWorkspace, RefCounted);
@@ -100,4 +100,4 @@ public:
 	~GDScriptWorkspace();
 };
 
-#endif
+#endif // GDSCRIPT_WORKSPACE_H

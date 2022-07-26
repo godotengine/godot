@@ -949,6 +949,18 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
+				case Variant::VECTOR4: {
+					EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+
+				} break;
+				case Variant::VECTOR4I: {
+					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
+					editor->setup(-100000, 100000, true);
+					prop = editor;
+
+				} break;
 				case Variant::TRANSFORM2D: {
 					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
 					editor->setup(-100000, 100000, default_float_step, true);
@@ -981,6 +993,12 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::TRANSFORM3D: {
 					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+
+				} break;
+				case Variant::PROJECTION: {
+					EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 

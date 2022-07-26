@@ -79,4 +79,4 @@ public:
 	CollisionPolygon3D();
 };
 
-#endif // COLLISION_POLYGON_H
+#endif // COLLISION_POLYGON_3D_H

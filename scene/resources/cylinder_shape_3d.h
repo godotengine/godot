@@ -54,4 +54,4 @@ public:
 	CylinderShape3D();
 };
 
-#endif // CYLINDER_SHAPE_H
+#endif // CYLINDER_SHAPE_3D_H

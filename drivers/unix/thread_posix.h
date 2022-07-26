@@ -35,4 +35,4 @@
 void init_thread_posix();
 #endif
 
-#endif
+#endif // THREAD_POSIX_H

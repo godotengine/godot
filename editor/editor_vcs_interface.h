@@ -85,4 +85,4 @@ public:
 	virtual ~EditorVCSInterface();
 };
 
-#endif // !EDITOR_VCS_INTERFACE_H
+#endif // EDITOR_VCS_INTERFACE_H

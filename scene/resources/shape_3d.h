@@ -73,4 +73,4 @@ public:
 	~Shape3D();
 };
 
-#endif // SHAPE_H
+#endif // SHAPE_3D_H

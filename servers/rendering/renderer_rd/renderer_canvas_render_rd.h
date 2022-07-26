@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_CANVAS_RENDER_RD_H
-#define RENDERING_SERVER_CANVAS_RENDER_RD_H
+#ifndef RENDERER_CANVAS_RENDER_RD_H
+#define RENDERER_CANVAS_RENDER_RD_H
 
 #include "servers/rendering/renderer_canvas_render.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -465,4 +465,4 @@ public:
 	~RendererCanvasRenderRD();
 };
 
-#endif // RASTERIZER_CANVAS_RD_H
+#endif // RENDERER_CANVAS_RENDER_RD_H

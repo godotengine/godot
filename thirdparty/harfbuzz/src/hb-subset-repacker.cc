@@ -43,7 +43,7 @@ hb_blob_t* hb_subset_repack_or_fail (hb_object_t* hb_objects, unsigned num_hb_ob
   packed.push (nullptr);
   for (unsigned i = 0 ; i < num_hb_objs ; i++)
     packed.push (&(hb_objects[i]));
+
   return hb_resolve_overflows (packed, HB_OT_TAG_GSUB);
 }
 #endif
-

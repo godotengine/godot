@@ -81,4 +81,4 @@ TEST_CASE("[Path3D] Curve setter and getter") {
 
 } // namespace TestPath3D
 
-#endif // TEST_PATH_3D
+#endif // TEST_PATH_3D_H

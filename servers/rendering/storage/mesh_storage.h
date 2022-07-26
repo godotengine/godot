@@ -133,4 +133,4 @@ public:
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) = 0;
 };
 
-#endif // !MESH_STORAGE_H
+#endif // MESH_STORAGE_H

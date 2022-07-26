@@ -33,16 +33,14 @@
 
 #include "godot_space_2d.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/thread_work_pool.h"
 
 class GodotStep2D {
 	uint64_t _step = 1;
 
 	int iterations = 0;
 	real_t delta = 0.0;
-
-	ThreadWorkPool work_pool;
 
 	LocalVector<LocalVector<GodotBody2D *>> body_islands;
 	LocalVector<LocalVector<GodotConstraint2D *>> constraint_islands;

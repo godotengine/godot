@@ -25,6 +25,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_group_processed_element_count" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="group_id" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="is_group_task_completed" qualifiers="const">
 			<return type="bool" />
 			<argument index="0" name="group_id" type="int" />

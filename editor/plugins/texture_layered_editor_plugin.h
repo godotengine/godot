@@ -93,4 +93,4 @@ public:
 	TextureLayeredEditorPlugin();
 };
 
-#endif // TEXTURE_EDITOR_PLUGIN_H
+#endif // TEXTURE_LAYERED_EDITOR_PLUGIN_H

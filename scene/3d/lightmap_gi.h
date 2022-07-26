@@ -271,4 +271,4 @@ VARIANT_ENUM_CAST(LightmapGI::GenerateProbes);
 VARIANT_ENUM_CAST(LightmapGI::BakeError);
 VARIANT_ENUM_CAST(LightmapGI::EnvironmentMode);
 
-#endif // BAKED_LIGHTMAP_H
+#endif // LIGHTMAP_GI_H

@@ -2652,7 +2652,7 @@ void TileMap::clear_layer(int p_layer) {
 	// Remove all tiles.
 	_clear_layer_internals(p_layer);
 	layers[p_layer].tile_map.clear();
-
+	_recreate_layer_internals(p_layer);
 	used_rect_cache_dirty = true;
 }
 
@@ -2662,6 +2662,7 @@ void TileMap::clear() {
 	for (unsigned int i = 0; i < layers.size(); i++) {
 		layers[i].tile_map.clear();
 	}
+	_recreate_internals();
 	used_rect_cache_dirty = true;
 }
 

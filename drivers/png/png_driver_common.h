@@ -43,4 +43,4 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer);
 } // namespace PNGDriverCommon
 
-#endif
+#endif // PNG_DRIVER_COMMON_H

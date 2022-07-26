@@ -52,4 +52,4 @@ public:
 	SphereShape3D();
 };
 
-#endif // SPHERE_SHAPE_H
+#endif // SPHERE_SHAPE_3D_H

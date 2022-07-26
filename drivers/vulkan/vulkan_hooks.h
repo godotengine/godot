@@ -45,4 +45,4 @@ public:
 	virtual ~VulkanHooks(){};
 };
 
-#endif
+#endif // VULKAN_HOOKS_H

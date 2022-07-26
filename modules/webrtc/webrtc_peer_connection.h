@@ -74,4 +74,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(WebRTCPeerConnection::ConnectionState);
+
 #endif // WEBRTC_PEER_CONNECTION_H

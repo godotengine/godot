@@ -917,6 +917,8 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	ARRAY_ALL(Vector2i);
 	ARRAY_ALL(Vector3);
 	ARRAY_ALL(Vector3i);
+	ARRAY_ALL(Vector4);
+	ARRAY_ALL(Vector4i);
 
 #undef ARRAY_ALL
 #undef ARRAY_IS_EMPTY
@@ -3222,6 +3224,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
+		case Variant::VECTOR4:
+		case Variant::VECTOR4I:
+			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::OBJECT:
 			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
@@ -3273,6 +3280,15 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			} else {
 				Basis basis = transform.basis;
 				r_iarg.default_argument = "new Transform3D(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+			}
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+		} break;
+		case Variant::PROJECTION: {
+			Projection transform = p_val.operator Projection();
+			if (transform == Projection()) {
+				r_iarg.default_argument = "Projection.Identity";
+			} else {
+				r_iarg.default_argument = "new Projection(new Vector4" + transform.matrix[0].operator String() + ", new Vector4" + transform.matrix[1].operator String() + ", new Vector4" + transform.matrix[2].operator String() + ", new Vector4" + transform.matrix[3].operator String() + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;

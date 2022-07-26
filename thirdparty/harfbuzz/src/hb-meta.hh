@@ -188,7 +188,7 @@ template <> struct hb_int_max<signed long long>		: hb_integral_constant<signed l
 template <> struct hb_int_max<unsigned long long>	: hb_integral_constant<unsigned long long,	ULLONG_MAX>	{};
 #define hb_int_max(T) hb_int_max<T>::value
 
-#if defined(__GNUC__) && __GNUC__ < 5
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 #define hb_is_trivially_copyable(T) __has_trivial_copy(T)
 #define hb_is_trivially_copy_assignable(T) __has_trivial_assign(T)
 #define hb_is_trivially_constructible(T) __has_trivial_constructor(T)

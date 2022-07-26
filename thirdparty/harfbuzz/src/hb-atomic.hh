@@ -111,6 +111,19 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 #endif
 
 
+#ifndef _hb_compiler_memory_r_barrier
+/* This we always use std::atomic for; and should never be disabled...
+ * except that MSVC gives me an internal compiler error on it. */
+#if !defined(_MSC_VER)
+#include <atomic>
+#define _hb_compiler_memory_r_barrier() std::atomic_signal_fence (std::memory_order_acquire)
+#else
+#define _hb_compiler_memory_r_barrier() do {} while (0)
+#endif
+#endif
+
+
+
 #ifndef _hb_memory_r_barrier
 #define _hb_memory_r_barrier()			_hb_memory_barrier ()
 #endif

@@ -97,4 +97,4 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
-#endif // NATIVEEXTENSION_H
+#endif // NATIVE_EXTENSION_H

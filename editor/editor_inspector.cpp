@@ -3558,7 +3558,7 @@ void EditorInspector::_notification(int p_what) {
 				if (refresh_countdown <= 0) {
 					for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
 						for (EditorProperty *E : F.value) {
-							if (!E->is_cache_valid()) {
+							if (E && !E->is_cache_valid()) {
 								E->update_property();
 								E->update_revert_and_pin_status();
 								E->update_cache();

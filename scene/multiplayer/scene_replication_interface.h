@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_TREE_REPLICATOR_INTERFACE_H
-#define SCENE_TREE_REPLICATOR_INTERFACE_H
+#ifndef SCENE_REPLICATION_INTERFACE_H
+#define SCENE_REPLICATION_INTERFACE_H
 
 #include "core/multiplayer/multiplayer_api.h"
 
@@ -84,4 +84,4 @@ public:
 	}
 };
 
-#endif // SCENE_TREE_REPLICATOR_INTERFACE_H
+#endif // SCENE_REPLICATION_INTERFACE_H

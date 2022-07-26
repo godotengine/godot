@@ -132,4 +132,4 @@ public:
 
 } // namespace RendererDummy
 
-#endif // !LIGHT_STORAGE_DUMMY_H
+#endif // LIGHT_STORAGE_DUMMY_H

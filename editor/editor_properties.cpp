@@ -2623,6 +2623,186 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
 }
+///////////////////// VECTOR4 /////////////////////////
+
+void EditorPropertyVector4::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyVector4::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Vector4 p;
+	p.x = spin[0]->get_value();
+	p.y = spin[1]->get_value();
+	p.z = spin[2]->get_value();
+	p.w = spin[3]->get_value();
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyVector4::update_property() {
+	Vector4 val = get_edited_object()->get(get_edited_property());
+	setting = true;
+	spin[0]->set_value(val.x);
+	spin[1]->set_value(val.y);
+	spin[2]->set_value(val.z);
+	spin[3]->set_value(val.w);
+	setting = false;
+}
+
+void EditorPropertyVector4::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i]);
+			}
+		} break;
+	}
+}
+
+void EditorPropertyVector4::_bind_methods() {
+}
+
+void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		// Vector4 is inherently unitless, however someone may want to use it as
+		// a generic way to store 4 values, so we'll still respect the suffix.
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyVector4::EditorPropertyVector4() {
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
+	static const char *desc[4] = { "x", "y", "z", "w" };
+	for (int i = 0; i < 4; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_flat(true);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4::_value_changed), varray(desc[i]));
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
+	}
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
+}
+
+///////////////////// VECTOR4I /////////////////////////
+
+void EditorPropertyVector4i::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyVector4i::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Vector4i p;
+	p.x = spin[0]->get_value();
+	p.y = spin[1]->get_value();
+	p.z = spin[2]->get_value();
+	p.w = spin[3]->get_value();
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyVector4i::update_property() {
+	Vector4i val = get_edited_object()->get(get_edited_property());
+	setting = true;
+	spin[0]->set_value(val.x);
+	spin[1]->set_value(val.y);
+	spin[2]->set_value(val.z);
+	spin[3]->set_value(val.w);
+	setting = false;
+}
+
+void EditorPropertyVector4i::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 4; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i]);
+			}
+		} break;
+	}
+}
+
+void EditorPropertyVector4i::_bind_methods() {
+}
+
+void EditorPropertyVector4i::setup(double p_min, double p_max, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyVector4i::EditorPropertyVector4i() {
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
+	static const char *desc[4] = { "x", "y", "z", "w" };
+	for (int i = 0; i < 4; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_flat(true);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4i::_value_changed), varray(desc[i]));
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
+	}
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
+}
 
 ///////////////////// AABB /////////////////////////
 
@@ -2986,6 +3166,111 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	set_bottom_editor(g);
 }
 
+///////////////////// PROJECTION /////////////////////////
+
+void EditorPropertyProjection::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 12; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyProjection::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Projection p;
+	p.matrix[0][0] = spin[0]->get_value();
+	p.matrix[0][1] = spin[1]->get_value();
+	p.matrix[0][2] = spin[2]->get_value();
+	p.matrix[0][3] = spin[3]->get_value();
+	p.matrix[1][0] = spin[4]->get_value();
+	p.matrix[1][1] = spin[5]->get_value();
+	p.matrix[1][2] = spin[6]->get_value();
+	p.matrix[1][3] = spin[7]->get_value();
+	p.matrix[2][0] = spin[8]->get_value();
+	p.matrix[2][1] = spin[9]->get_value();
+	p.matrix[2][2] = spin[10]->get_value();
+	p.matrix[2][3] = spin[11]->get_value();
+	p.matrix[3][0] = spin[12]->get_value();
+	p.matrix[3][1] = spin[13]->get_value();
+	p.matrix[3][2] = spin[14]->get_value();
+	p.matrix[3][3] = spin[15]->get_value();
+
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyProjection::update_property() {
+	update_using_transform(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyProjection::update_using_transform(Projection p_transform) {
+	setting = true;
+	spin[0]->set_value(p_transform.matrix[0][0]);
+	spin[1]->set_value(p_transform.matrix[0][1]);
+	spin[2]->set_value(p_transform.matrix[0][2]);
+	spin[3]->set_value(p_transform.matrix[0][3]);
+	spin[4]->set_value(p_transform.matrix[1][0]);
+	spin[5]->set_value(p_transform.matrix[1][1]);
+	spin[6]->set_value(p_transform.matrix[1][2]);
+	spin[7]->set_value(p_transform.matrix[1][3]);
+	spin[8]->set_value(p_transform.matrix[2][0]);
+	spin[9]->set_value(p_transform.matrix[2][1]);
+	spin[10]->set_value(p_transform.matrix[2][2]);
+	spin[11]->set_value(p_transform.matrix[2][3]);
+	spin[12]->set_value(p_transform.matrix[3][0]);
+	spin[13]->set_value(p_transform.matrix[3][1]);
+	spin[14]->set_value(p_transform.matrix[3][2]);
+	spin[15]->set_value(p_transform.matrix[3][3]);
+	setting = false;
+}
+
+void EditorPropertyProjection::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 16; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i % 4]);
+			}
+		} break;
+	}
+}
+
+void EditorPropertyProjection::_bind_methods() {
+}
+
+void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 16; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		if (i % 4 == 3) {
+			spin[i]->set_suffix(p_suffix);
+		}
+	}
+}
+
+EditorPropertyProjection::EditorPropertyProjection() {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(4);
+	add_child(g);
+
+	static const char *desc[16] = { "xx", "xy", "xz", "xw", "yx", "yy", "yz", "yw", "zx", "zy", "zz", "zw", "wx", "wy", "wz", "ww" };
+	for (int i = 0; i < 16; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		g->add_child(spin[i]);
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed), varray(desc[i]));
+	}
+	set_bottom_editor(g);
+}
 ////////////// COLOR PICKER //////////////////////
 
 void EditorPropertyColor::_set_read_only(bool p_read_only) {
@@ -3954,6 +4239,20 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			return editor;
 
 		} break;
+		case Variant::VECTOR4: {
+			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+
+		} break;
+		case Variant::VECTOR4I: {
+			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			return editor;
+
+		} break;
 		case Variant::TRANSFORM2D: {
 			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
@@ -3986,6 +4285,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::TRANSFORM3D: {
 			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+
+		} break;
+		case Variant::PROJECTION: {
+			EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
