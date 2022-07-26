@@ -117,8 +117,6 @@ struct hb_ot_shaper_t
 			      hb_font_t                *font);
 
 
-  hb_ot_shape_normalization_mode_t normalization_preference;
-
   /* decompose()
    * Called during shape()'s normalization.
    * May be NULL.
@@ -147,12 +145,6 @@ struct hb_ot_shaper_t
 		       hb_buffer_t              *buffer,
 		       hb_font_t                *font);
 
-  /* gpos_tag()
-   * If not HB_TAG_NONE, then must match found GPOS script tag for
-   * GPOS to be applied.  Otherwise, fallback positioning will be used.
-   */
-  hb_tag_t gpos_tag;
-
   /* reorder_marks()
    * Called during shape().
    * Shapers can use to modify ordering of combining marks.
@@ -162,6 +154,14 @@ struct hb_ot_shaper_t
 			 hb_buffer_t              *buffer,
 			 unsigned int              start,
 			 unsigned int              end);
+
+  /* gpos_tag()
+   * If not HB_TAG_NONE, then must match found GPOS script tag for
+   * GPOS to be applied.  Otherwise, fallback positioning will be used.
+   */
+  hb_tag_t gpos_tag;
+
+  hb_ot_shape_normalization_mode_t normalization_preference;
 
   hb_ot_shape_zero_width_marks_type_t zero_width_marks;
 

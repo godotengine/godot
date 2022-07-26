@@ -140,4 +140,4 @@ public:
 	~Label();
 };
 
-#endif
+#endif // LABEL_H

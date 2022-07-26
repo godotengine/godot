@@ -84,4 +84,4 @@ public:
 
 VARIANT_ENUM_CAST(OpenXRAction::ActionType);
 
-#endif // !OPENXR_ACTION_H
+#endif // OPENXR_ACTION_H

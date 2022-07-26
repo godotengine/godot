@@ -214,6 +214,8 @@ lang_matches (const char *lang_str,
 	      const char *spec,
 	      unsigned    spec_len)
 {
+  /* Same as hb_language_matches(); duplicated. */
+
   if (likely ((unsigned) (limit - lang_str) < spec_len))
     return false;
 

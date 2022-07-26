@@ -185,4 +185,4 @@ public:
 	~OS_Windows();
 };
 
-#endif
+#endif // OS_WINDOWS_H

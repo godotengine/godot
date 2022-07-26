@@ -276,4 +276,5 @@ public:
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);
 VARIANT_ENUM_CAST(ColorPicker::ColorModeType);
+
 #endif // COLOR_PICKER_H

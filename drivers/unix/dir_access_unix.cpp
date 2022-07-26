@@ -516,4 +516,4 @@ DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();
 }
 
-#endif //posix_enabled
+#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED

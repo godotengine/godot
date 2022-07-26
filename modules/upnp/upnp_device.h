@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_UPNP_DEVICE_H
-#define GODOT_UPNP_DEVICE_H
+#ifndef UPNP_DEVICE_H
+#define UPNP_DEVICE_H
 
 #include "core/object/ref_counted.h"
 
@@ -90,4 +90,4 @@ private:
 
 VARIANT_ENUM_CAST(UPNPDevice::IGDStatus)
 
-#endif // GODOT_UPNP_DEVICE_H
+#endif // UPNP_DEVICE_H

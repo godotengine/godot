@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEXTFILE_H
-#define TEXTFILE_H
+#ifndef TEXT_FILE_H
+#define TEXT_FILE_H
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -51,4 +51,4 @@ public:
 	Error load_text(const String &p_path);
 };
 
-#endif // TEXTFILE_H
+#endif // TEXT_FILE_H

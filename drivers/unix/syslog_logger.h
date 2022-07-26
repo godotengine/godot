@@ -43,6 +43,6 @@ public:
 	virtual ~SyslogLogger();
 };
 
-#endif
+#endif // UNIX_ENABLED
 
-#endif
+#endif // SYSLOG_LOGGER_H

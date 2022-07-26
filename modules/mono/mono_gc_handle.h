@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CSHARP_GC_HANDLE_H
-#define CSHARP_GC_HANDLE_H
+#ifndef MONO_GC_HANDLE_H
+#define MONO_GC_HANDLE_H
 
 #include <mono/jit/jit.h>
 
@@ -104,4 +104,4 @@ public:
 	~MonoGCHandleRef() { release(); }
 };
 
-#endif // CSHARP_GC_HANDLE_H
+#endif // MONO_GC_HANDLE_H

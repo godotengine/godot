@@ -109,7 +109,7 @@
 			<argument index="0" name="from" type="Vector3" />
 			<argument index="1" name="to" type="Vector3" />
 			<description>
-				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
+				Returns the intersection point of a segment from position [code]from[/code] to position [code]to[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -121,7 +121,7 @@
 		</method>
 		<method name="is_point_over" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="plane" type="Vector3" />
+			<argument index="0" name="point" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if [code]point[/code] is located above the plane.
 			</description>

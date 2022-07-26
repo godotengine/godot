@@ -32,21 +32,21 @@
 
 #ifndef _3D_DISABLED
 
-#include "gltf_accessor.h"
-#include "gltf_animation.h"
-#include "gltf_buffer_view.h"
-#include "gltf_camera.h"
+#include "extensions/gltf_light.h"
+#include "extensions/gltf_spec_gloss.h"
 #include "gltf_document.h"
 #include "gltf_document_extension.h"
 #include "gltf_document_extension_convert_importer_mesh.h"
-#include "gltf_light.h"
-#include "gltf_mesh.h"
-#include "gltf_node.h"
-#include "gltf_skeleton.h"
-#include "gltf_skin.h"
-#include "gltf_spec_gloss.h"
 #include "gltf_state.h"
-#include "gltf_texture.h"
+#include "structures/gltf_accessor.h"
+#include "structures/gltf_animation.h"
+#include "structures/gltf_buffer_view.h"
+#include "structures/gltf_camera.h"
+#include "structures/gltf_mesh.h"
+#include "structures/gltf_node.h"
+#include "structures/gltf_skeleton.h"
+#include "structures/gltf_skin.h"
+#include "structures/gltf_texture.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"

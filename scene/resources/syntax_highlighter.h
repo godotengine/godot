@@ -142,4 +142,4 @@ public:
 	Color get_member_variable_color() const;
 };
 
-#endif
+#endif // SYNTAX_HIGHLIGHTER_H

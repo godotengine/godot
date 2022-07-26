@@ -58,4 +58,4 @@ public:
 	iOS();
 };
 
-#endif
+#endif // IOS_H

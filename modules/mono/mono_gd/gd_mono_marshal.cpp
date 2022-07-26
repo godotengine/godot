@@ -99,6 +99,13 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (vtclass == CACHED_CLASS(Vector3i)) {
 				return Variant::VECTOR3I;
 			}
+			if (vtclass == CACHED_CLASS(Vector4)) {
+				return Variant::VECTOR4;
+			}
+
+			if (vtclass == CACHED_CLASS(Vector4i)) {
+				return Variant::VECTOR4I;
+			}
 
 			if (vtclass == CACHED_CLASS(Basis)) {
 				return Variant::BASIS;
@@ -111,7 +118,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (vtclass == CACHED_CLASS(Transform3D)) {
 				return Variant::TRANSFORM3D;
 			}
-
+			if (vtclass == CACHED_CLASS(Projection)) {
+				return Variant::PROJECTION;
+			}
 			if (vtclass == CACHED_CLASS(AABB)) {
 				return Variant::AABB;
 			}
@@ -539,6 +548,14 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 			GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var.operator ::Transform2D());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
 		}
+		case Variant::VECTOR4: {
+			GDMonoMarshal::M_Vector4 from = MARSHALLED_OUT(Vector4, p_var.operator ::Vector4());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector4), &from);
+		}
+		case Variant::VECTOR4I: {
+			GDMonoMarshal::M_Vector4i from = MARSHALLED_OUT(Vector4i, p_var.operator ::Vector4i());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector4i), &from);
+		}
 		case Variant::PLANE: {
 			GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var.operator ::Plane());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
@@ -558,6 +575,10 @@ MonoObject *variant_to_mono_object(const Variant &p_var) {
 		case Variant::TRANSFORM3D: {
 			GDMonoMarshal::M_Transform3D from = MARSHALLED_OUT(Transform3D, p_var.operator ::Transform3D());
 			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform3D), &from);
+		}
+		case Variant::PROJECTION: {
+			GDMonoMarshal::M_Projection from = MARSHALLED_OUT(Projection, p_var.operator ::Projection());
+			return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Projection), &from);
 		}
 		case Variant::COLOR: {
 			GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var.operator ::Color());

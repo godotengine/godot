@@ -121,7 +121,7 @@ public:
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
-	virtual CameraMatrix get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
 	virtual void process() override;
 	virtual void pre_render() override;
@@ -140,4 +140,4 @@ public:
 	~OpenXRInterface();
 };
 
-#endif // !OPENXR_INTERFACE_H
+#endif // OPENXR_INTERFACE_H

@@ -98,6 +98,11 @@
 
 /* Closure of options. */
 
+#ifdef HB_NO_BORING_EXPANSION
+#define HB_NO_BEYOND_64K
+#define HB_NO_VARIATIONS2
+#endif
+
 #ifdef HB_DISABLE_DEPRECATED
 #define HB_IF_NOT_DEPRECATED(x)
 #else

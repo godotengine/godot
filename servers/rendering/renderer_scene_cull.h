@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_CULL_H
-#define RENDERING_SERVER_SCENE_CULL_H
+#ifndef RENDERER_SCENE_CULL_H
+#define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/bin_sorted_array.h"
@@ -980,9 +980,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -992,7 +992,7 @@ public:
 			struct Cascade {
 				Frustum frustum;
 
-				CameraMatrix projection;
+				Projection projection;
 				Transform3D transform;
 				real_t zfar;
 				real_t split;
@@ -1045,7 +1045,7 @@ public:
 		uint32_t visible_layers;
 		Instance *render_reflection_probe = nullptr;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
-		const CameraMatrix *camera_matrix;
+		const Projection *camera_matrix;
 		uint64_t visibility_viewport_mask;
 	};
 
@@ -1183,4 +1183,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // RENDERING_SERVER_SCENE_CULL_H
+#endif // RENDERER_SCENE_CULL_H

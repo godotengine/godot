@@ -368,4 +368,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !LIGHT_STORAGE_RD_H
+#endif // LIGHT_STORAGE_RD_H

@@ -43,4 +43,4 @@ public:
 	void update_feeds();
 };
 
-#endif /* CAMERA_MACOS_H */
+#endif // CAMERA_MACOS_H

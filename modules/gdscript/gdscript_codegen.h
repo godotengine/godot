@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_CODEGEN
-#define GDSCRIPT_CODEGEN
+#ifndef GDSCRIPT_CODEGEN_H
+#define GDSCRIPT_CODEGEN_H
 
 #include "core/multiplayer/multiplayer.h"
 #include "core/string/string_name.h"
@@ -163,4 +163,4 @@ public:
 	virtual ~GDScriptCodeGenerator() {}
 };
 
-#endif // GDSCRIPT_CODEGEN
+#endif // GDSCRIPT_CODEGEN_H

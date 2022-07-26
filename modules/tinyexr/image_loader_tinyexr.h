@@ -40,4 +40,4 @@ public:
 	ImageLoaderTinyEXR();
 };
 
-#endif
+#endif // IMAGE_LOADER_TINYEXR_H

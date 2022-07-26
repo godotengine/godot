@@ -252,4 +252,4 @@ public:
 	~OS_UWP();
 };
 
-#endif
+#endif // OS_UWP_H

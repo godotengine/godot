@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_TEST_H
-#define GDSCRIPT_TEST_H
+#ifndef GDSCRIPT_TEST_RUNNER_H
+#define GDSCRIPT_TEST_RUNNER_H
 
 #include "../gdscript.h"
 #include "core/error/error_macros.h"
@@ -123,4 +123,4 @@ public:
 
 } // namespace GDScriptTests
 
-#endif // GDSCRIPT_TEST_H
+#endif // GDSCRIPT_TEST_RUNNER_H

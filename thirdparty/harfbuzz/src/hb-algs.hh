@@ -109,15 +109,16 @@ struct BEInt<Type, 2>
   struct __attribute__((packed)) packed_uint16_t { uint16_t v; };
   constexpr operator Type () const
   {
-#if ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
+#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
+    ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
     defined(__BYTE_ORDER) && \
     (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
     /* Spoon-feed the compiler a big-endian integer with alignment 1.
      * https://github.com/harfbuzz/harfbuzz/pull/1398 */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    return __builtin_bswap16 (((packed_uint16_t *) this)->v);
+    return __builtin_bswap16 (((packed_uint16_t *) v)->v);
 #else /* __BYTE_ORDER == __BIG_ENDIAN */
-    return ((packed_uint16_t *) this)->v;
+    return ((packed_uint16_t *) v)->v;
 #endif
 #else
     return (v[0] <<  8)
@@ -153,15 +154,16 @@ struct BEInt<Type, 4>
 
   struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
   constexpr operator Type () const {
-#if ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
+#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
+    ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
     defined(__BYTE_ORDER) && \
     (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
     /* Spoon-feed the compiler a big-endian integer with alignment 1.
      * https://github.com/harfbuzz/harfbuzz/pull/1398 */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    return __builtin_bswap32 (((packed_uint32_t *) this)->v);
+    return __builtin_bswap32 (((packed_uint32_t *) v)->v);
 #else /* __BYTE_ORDER == __BIG_ENDIAN */
-    return ((packed_uint32_t *) this)->v;
+    return ((packed_uint32_t *) v)->v;
 #endif
 #else
     return (v[0] << 24)
@@ -525,7 +527,6 @@ struct hb_pair_t
   T1 first;
   T2 second;
 };
-#define hb_pair_t(T1,T2) hb_pair_t<T1, T2>
 template <typename T1, typename T2> static inline hb_pair_t<T1, T2>
 hb_pair (T1&& a, T2&& b) { return hb_pair_t<T1, T2> (a, b); }
 
@@ -551,14 +552,14 @@ struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (a <= b ? std::forward<T> (a) : std::forward<T2> (b))
+  (a <= b ? a : b)
 }
 HB_FUNCOBJ (hb_min);
 struct
 {
   template <typename T, typename T2> constexpr auto
   operator () (T&& a, T2&& b) const HB_AUTO_RETURN
-  (a >= b ? std::forward<T> (a) : std::forward<T2> (b))
+  (a >= b ? a : b)
 }
 HB_FUNCOBJ (hb_max);
 struct
@@ -972,7 +973,7 @@ void hb_qsort(void *base, size_t nel, size_t width,
               [void *arg]);
 */
 
-#define SORT_R_SWAP(a,b,tmp) ((tmp) = (a), (a) = (b), (b) = (tmp))
+#define SORT_R_SWAP(a,b,tmp) ((void) ((tmp) = (a)), (void) ((a) = (b)), (b) = (tmp))
 
 /* swap a and b */
 /* a and b must not be equal! */

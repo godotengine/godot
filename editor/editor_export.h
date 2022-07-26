@@ -529,4 +529,4 @@ public:
 	EditorExportTextSceneToBinaryPlugin();
 };
 
-#endif // EDITOR_IMPORT_EXPORT_H
+#endif // EDITOR_EXPORT_H

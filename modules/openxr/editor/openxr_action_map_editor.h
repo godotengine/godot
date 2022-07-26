@@ -97,4 +97,4 @@ public:
 	~OpenXRActionMapEditor();
 };
 
-#endif // !OPENXR_ACTION_MAP_EDITOR_H
+#endif // OPENXR_ACTION_MAP_EDITOR_H

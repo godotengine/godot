@@ -115,4 +115,4 @@ public:
 	~ImmediateMesh();
 };
 
-#endif // IMMEDIATEMESH_H
+#endif // IMMEDIATE_MESH_H

@@ -36,6 +36,7 @@
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 #include "editor/editor_node.h"
@@ -2137,7 +2138,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					data.reimport_from = from;
 					data.reimport_files = reimport_files.ptr();
 
-					import_threads.begin_work(i - from + 1, this, &EditorFileSystem::_reimport_thread, &data);
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &data, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
 						if (current_index < data.max_index) {
@@ -2145,9 +2146,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);
-					} while (!import_threads.is_done_dispatching());
+					} while (!WorkerThreadPool::get_singleton()->is_group_task_completed(group_task));
 
-					import_threads.end_work();
+					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 					importer->import_threaded_end();
 				}
@@ -2430,12 +2431,10 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	import_threads.init();
 	ResourceUID::get_singleton()->clear(); //will be updated on scan
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 
 EditorFileSystem::~EditorFileSystem() {
-	import_threads.finish();
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }

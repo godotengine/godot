@@ -107,4 +107,4 @@ public:
 	OS_JavaScript();
 };
 
-#endif
+#endif // OS_JAVASCRIPT_H

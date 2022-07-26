@@ -84,11 +84,14 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 				case Variant::VECTOR3:
 				case Variant::VECTOR3I:
 				case Variant::TRANSFORM2D:
+				case Variant::VECTOR4:
+				case Variant::VECTOR4I:
 				case Variant::PLANE:
 				case Variant::QUATERNION:
 				case Variant::AABB:
 				case Variant::BASIS:
 				case Variant::TRANSFORM3D:
+				case Variant::PROJECTION:
 				case Variant::COLOR:
 				case Variant::STRING_NAME:
 				case Variant::NODE_PATH:
@@ -453,6 +456,12 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 		case Variant::TRANSFORM2D:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM2D, 1);
 			break;
+		case Variant::VECTOR4:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3, 1);
+			break;
+		case Variant::VECTOR4I:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I, 1);
+			break;
 		case Variant::PLANE:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE, 1);
 			break;
@@ -467,6 +476,9 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::TRANSFORM3D:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D, 1);
+			break;
+		case Variant::PROJECTION:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PROJECTION, 1);
 			break;
 		case Variant::COLOR:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);

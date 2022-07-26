@@ -38,6 +38,7 @@
 #include "core/math/color.h"
 #include "core/math/face3.h"
 #include "core/math/plane.h"
+#include "core/math/projection.h"
 #include "core/math/quaternion.h"
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
@@ -47,6 +48,8 @@
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
+#include "core/math/vector4.h"
+#include "core/math/vector4i.h"
 #include "core/object/object_id.h"
 #include "core/os/keyboard.h"
 #include "core/string/node_path.h"
@@ -91,11 +94,14 @@ public:
 		VECTOR3,
 		VECTOR3I,
 		TRANSFORM2D,
+		VECTOR4,
+		VECTOR4I,
 		PLANE,
 		QUATERNION,
 		AABB,
 		BASIS,
 		TRANSFORM3D,
+		PROJECTION,
 
 		// misc types
 		COLOR,
@@ -210,6 +216,7 @@ private:
 		::AABB *_aabb;
 		Basis *_basis;
 		Transform3D *_transform3d;
+		Projection *_projection;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
@@ -234,11 +241,14 @@ private:
 			false, //VECTOR3,
 			false, //VECTOR3I,
 			true, //TRANSFORM2D,
+			false, //VECTOR4,
+			false, //VECTOR4I,
 			false, //PLANE,
 			false, //QUATERNION,
 			true, //AABB,
 			true, //BASIS,
 			true, //TRANSFORM,
+			true, //PROJECTION,
 
 			// misc types
 			false, //COLOR,
@@ -339,12 +349,15 @@ public:
 	operator Rect2i() const;
 	operator Vector3() const;
 	operator Vector3i() const;
+	operator Vector4() const;
+	operator Vector4i() const;
 	operator Plane() const;
 	operator ::AABB() const;
 	operator Quaternion() const;
 	operator Basis() const;
 	operator Transform2D() const;
 	operator Transform3D() const;
+	operator Projection() const;
 
 	operator Color() const;
 	operator NodePath() const;
@@ -409,12 +422,15 @@ public:
 	Variant(const Rect2i &p_rect2i);
 	Variant(const Vector3 &p_vector3);
 	Variant(const Vector3i &p_vector3i);
+	Variant(const Vector4 &p_vector4);
+	Variant(const Vector4i &p_vector4i);
 	Variant(const Plane &p_plane);
 	Variant(const ::AABB &p_aabb);
 	Variant(const Quaternion &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform3D &p_transform);
+	Variant(const Projection &p_projection);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);

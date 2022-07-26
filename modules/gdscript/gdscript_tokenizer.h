@@ -273,4 +273,4 @@ public:
 	GDScriptTokenizer();
 };
 
-#endif
+#endif // GDSCRIPT_TOKENIZER_H

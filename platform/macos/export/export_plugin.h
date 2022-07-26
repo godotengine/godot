@@ -134,4 +134,4 @@ public:
 	~EditorExportPlatformMacOS();
 };
 
-#endif
+#endif // MACOS_EXPORT_PLUGIN_H

@@ -31,8 +31,8 @@
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/skeleton_modification_3d.h"
 
-#ifndef SKELETONMODIFICATION3DLOOKAT_H
-#define SKELETONMODIFICATION3DLOOKAT_H
+#ifndef SKELETON_MODIFICATION_3D_LOOKAT_H
+#define SKELETON_MODIFICATION_3D_LOOKAT_H
 
 class SkeletonModification3DLookAt : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DLookAt, SkeletonModification3D);
@@ -86,4 +86,4 @@ public:
 	~SkeletonModification3DLookAt();
 };
 
-#endif //SKELETONMODIFICATION3DLOOKAT_H
+#endif // SKELETON_MODIFICATION_3D_LOOKAT_H

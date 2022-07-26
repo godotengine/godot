@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRADIENT_TEXTURE_2D_EDITOR
-#define GRADIENT_TEXTURE_2D_EDITOR
+#ifndef GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
+#define GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_spin_slider.h"
@@ -109,4 +109,4 @@ public:
 	GradientTexture2DEditorPlugin();
 };
 
-#endif
+#endif // GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H

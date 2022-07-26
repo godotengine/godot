@@ -29,11 +29,11 @@
 #ifndef HB_OT_LAYOUT_GPOS_TABLE_HH
 #define HB_OT_LAYOUT_GPOS_TABLE_HH
 
-#include "OT/Layout/GPOS.hh"
+#include "OT/Layout/GPOS/GPOS.hh"
 
 namespace OT {
-
-using Layout::GPOS_impl::PosLookup;
+namespace Layout {
+namespace GPOS_impl {
 
 // TODO(garretrieger): Move into new layout directory.
 /* Out-of-class implementation for methods recursing */
@@ -68,6 +68,8 @@ inline bool PosLookup::dispatch_recurse_func<hb_ot_apply_context_t> (hb_ot_apply
 }
 #endif
 
+} /* namespace GPOS_impl */
+} /* namespace Layout */
 } /* namespace OT */
 
 

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DTWOBONEIK_H
-#define SKELETONMODIFICATION2DTWOBONEIK_H
+#ifndef SKELETON_MODIFICATION_2D_TWOBONEIK_H
+#define SKELETON_MODIFICATION_2D_TWOBONEIK_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
@@ -104,4 +104,4 @@ public:
 	~SkeletonModification2DTwoBoneIK();
 };
 
-#endif // SKELETONMODIFICATION2DTWOBONEIK_H
+#endif // SKELETON_MODIFICATION_2D_TWOBONEIK_H

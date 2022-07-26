@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UNIFORM_SET_CACHE_H
-#define UNIFORM_SET_CACHE_H
+#ifndef UNIFORM_SET_CACHE_RD_H
+#define UNIFORM_SET_CACHE_RD_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
@@ -220,4 +220,4 @@ public:
 	~UniformSetCacheRD();
 };
 
-#endif // UNIFORMSETCACHE_H
+#endif // UNIFORM_SET_CACHE_RD_H
