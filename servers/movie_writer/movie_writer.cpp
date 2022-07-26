@@ -30,6 +30,8 @@
 
 #include "movie_writer.h"
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "servers/display_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
 uint32_t MovieWriter::writer_count = 0;
@@ -101,6 +103,7 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 }
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
+	project_name = GLOBAL_GET("application/config/name");
 	mix_rate = get_audio_mix_rate();
 	AudioDriverDummy::get_dummy_singleton()->set_mix_rate(mix_rate);
 	AudioDriverDummy::get_dummy_singleton()->set_speaker_mode(AudioDriver::SpeakerMode(get_audio_speaker_mode()));
@@ -162,6 +165,18 @@ void MovieWriter::set_extensions_hint() {
 }
 
 void MovieWriter::add_frame(const Ref<Image> &p_image) {
+	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
+	const String movie_time = vformat("%s:%s:%s",
+			String::num(movie_time_seconds / 3600).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
+			String::num(movie_time_seconds % 60).pad_zeros(2));
+
+#ifdef DEBUG_ENABLED
+	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+#else
+	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
+#endif
+
 	AudioDriverDummy::get_dummy_singleton()->mix_audio(mix_rate / fps, audio_mix_buffer.ptr());
 	write_frame(p_image, audio_mix_buffer.ptr());
 }
