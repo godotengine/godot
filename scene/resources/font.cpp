@@ -79,9 +79,9 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "jst_flags", "direction", "orientation"), &Font::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
 	// Drawing char.
-	ClassDB::bind_method(D_METHOD("get_char_size", "char"), &Font::get_char_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "modulate"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)));
-	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "size", "modulate"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "font_size"), &Font::get_char_size);
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "font_size", "modulate"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "font_size", "size", "modulate"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
 
 	// Helper functions.
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &Font::has_char);
