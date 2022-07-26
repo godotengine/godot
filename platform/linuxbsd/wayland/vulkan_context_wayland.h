@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_DEVICE_WAYLAND_H
-#define VULKAN_DEVICE_WAYLAND_H
+#ifndef VULKAN_CONTEXT_WAYLAND_H
+#define VULKAN_CONTEXT_WAYLAND_H
 
 #include "drivers/vulkan/vulkan_context.h"
 
