@@ -109,6 +109,9 @@ private:
 		bool loc_used = false;
 		bool rot_used = false;
 		bool scale_used = false;
+		Vector3 init_loc = Vector3(0, 0, 0);
+		Quaternion init_rot = Quaternion(0, 0, 0, 1);
+		Vector3 init_scale = Vector3(1, 1, 1);
 
 		Vector3 loc_accum;
 		Quaternion rot_accum;
