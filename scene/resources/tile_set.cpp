@@ -2467,9 +2467,42 @@ Vector<Point2> TileSet::_get_half_offset_side_terrain_peering_bit_polygon(Vector
 }
 
 void TileSet::reset_state() {
+	// Rendering
 	occlusion_layers.clear();
+	tile_lines_mesh.instantiate();
+	tile_filled_mesh.instantiate();
+	tile_meshes_dirty = true;
+
+	// Physics
 	physics_layers.clear();
+
+	// Terrains
+	terrain_sets.clear();
+	terrain_meshes.clear();
+	terrain_peering_bits_meshes.clear();
+	per_terrain_pattern_tiles.clear();
+	terrains_cache_dirty = true;
+
+	// Navigation
+	navigation_layers.clear();
+
 	custom_data_layers.clear();
+	custom_data_layers_by_name.clear();
+
+	// Proxies
+	source_level_proxies.clear();
+	coords_level_proxies.clear();
+	alternative_level_proxies.clear();
+
+#ifndef DISABLE_DEPRECATED
+	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
+		memdelete(E.value);
+	}
+	compatibility_data.clear();
+#endif // DISABLE_DEPRECATED
+	while (!source_ids.is_empty()) {
+		remove_source(source_ids[0]);
+	}
 }
 
 const Vector2i TileSetSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
@@ -3457,6 +3490,10 @@ void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
 }
 
+void TileSetSource::reset_state() {
+	tile_set = nullptr;
+};
+
 void TileSetSource::_bind_methods() {
 	// Base tiles
 	ClassDB::bind_method(D_METHOD("get_tiles_count"), &TileSetSource::get_tiles_count);
@@ -3640,12 +3677,17 @@ void TileSetAtlasSource::remove_custom_data_layer(int p_index) {
 }
 
 void TileSetAtlasSource::reset_state() {
-	// Reset all TileData.
+	tile_set = nullptr;
+
 	for (KeyValue<Vector2i, TileAlternativesData> &E_tile : tiles) {
-		for (KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
-			E_alternative.value->reset_state();
+		for (const KeyValue<int, TileData *> &E_tile_data : E_tile.value.alternatives) {
+			memdelete(E_tile_data.value);
 		}
 	}
+	_coords_mapping_cache.clear();
+	tiles.clear();
+	tiles_ids.clear();
+	_queue_update_padded_texture();
 }
 
 void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
@@ -4973,13 +5015,6 @@ void TileData::move_custom_data_layer(int p_from_index, int p_to_pos) {
 void TileData::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data.size());
 	custom_data.remove_at(p_index);
-}
-
-void TileData::reset_state() {
-	occluders.clear();
-	physics.clear();
-	navigation.clear();
-	custom_data.clear();
 }
 
 void TileData::set_allow_transform(bool p_allow_transform) {
