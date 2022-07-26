@@ -1337,14 +1337,14 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
-				bool is_unique = p_node->is_unique_name_in_owner() && p_base->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;
-				if (is_unique) {
+				bool disable_unique = p_node->is_unique_name_in_owner() && p_root->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;
+				if (disable_unique) {
 					// Will create a unique name conflict. Disable before setting owner.
 					undo_redo->add_do_method(p_node, "set_unique_name_in_owner", false);
 				}
 				undo_redo->add_do_method(p_node, "set_owner", p_root);
 				undo_redo->add_undo_method(p_node, "set_owner", p_base);
-				if (is_unique) {
+				if (disable_unique) {
 					// Will create a unique name conflict. Enable after setting owner.
 					undo_redo->add_undo_method(p_node, "set_unique_name_in_owner", true);
 				}
