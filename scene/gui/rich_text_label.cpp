@@ -224,13 +224,21 @@ void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<
 	for (int i = 0; i < spans; i++) {
 		ItemText *it = reinterpret_cast<ItemText *>((uint64_t)TS->shaped_get_span_meta(t, i));
 		if (it) {
-			Ref<Font> font = _find_font(it);
-			if (font.is_null()) {
-				font = p_base_font;
+			Ref<Font> font = p_base_font;
+			int font_size = p_base_font_size;
+
+			ItemFont *font_it = _find_font(it);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+				}
+				if (font_it->font_size > 0) {
+					font_size = font_it->font_size;
+				}
 			}
-			int font_size = _find_font_size(it);
-			if (font_size == -1) {
-				font_size = p_base_font_size;
+			ItemFontSize *font_size_it = _find_font_size(it);
+			if (font_size_it && font_size_it->font_size > 0) {
+				font_size = font_size_it->font_size;
 			}
 			TS->shaped_set_span_update_font(t, i, font->get_rids(), font_size, font->get_opentype_features());
 			for (int j = 0; j < TextServer::SPACING_MAX; j++) {
@@ -483,13 +491,21 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				l.dc_ol_color = dc->ol_color;
 			} break;
 			case ITEM_NEWLINE: {
-				Ref<Font> font = _find_font(it);
-				if (font.is_null()) {
-					font = p_base_font;
+				Ref<Font> font = p_base_font;
+				int font_size = p_base_font_size;
+
+				ItemFont *font_it = _find_font(it);
+				if (font_it) {
+					if (font_it->font.is_valid()) {
+						font = font_it->font;
+					}
+					if (font_it->font_size > 0) {
+						font_size = font_it->font_size;
+					}
 				}
-				int font_size = _find_font_size(it);
-				if (font_size == -1) {
-					font_size = p_base_font_size;
+				ItemFontSize *font_size_it = _find_font_size(it);
+				if (font_size_it && font_size_it->font_size > 0) {
+					font_size = font_size_it->font_size;
 				}
 				l.text_buf->add_string("\n", font, font_size);
 				text += "\n";
@@ -498,13 +514,21 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 			} break;
 			case ITEM_TEXT: {
 				ItemText *t = static_cast<ItemText *>(it);
-				Ref<Font> font = _find_font(it);
-				if (font.is_null()) {
-					font = p_base_font;
+				Ref<Font> font = p_base_font;
+				int font_size = p_base_font_size;
+
+				ItemFont *font_it = _find_font(it);
+				if (font_it) {
+					if (font_it->font.is_valid()) {
+						font = font_it->font;
+					}
+					if (font_it->font_size > 0) {
+						font_size = font_it->font_size;
+					}
 				}
-				int font_size = _find_font_size(it);
-				if (font_size == -1) {
-					font_size = p_base_font_size;
+				ItemFontSize *font_size_it = _find_font_size(it);
+				if (font_size_it && font_size_it->font_size > 0) {
+					font_size = font_size_it->font_size;
 				}
 				String lang = _find_language(it);
 				String tx = t->text;
@@ -750,13 +774,21 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 	}
 	if (!prefix.is_empty()) {
-		Ref<Font> font = _find_font(l.from);
-		if (font.is_null()) {
-			font = get_theme_font(SNAME("normal_font"));
+		Ref<Font> font = get_theme_font(SNAME("normal_font"));
+		int font_size = get_theme_font_size(SNAME("normal_font_size"));
+
+		ItemFont *font_it = _find_font(l.from);
+		if (font_it) {
+			if (font_it->font.is_valid()) {
+				font = font_it->font;
+			}
+			if (font_it->font_size > 0) {
+				font_size = font_it->font_size;
+			}
 		}
-		int font_size = _find_font_size(l.from);
-		if (font_size == -1) {
-			font_size = get_theme_font_size(SNAME("normal_font_size"));
+		ItemFontSize *font_size_it = _find_font_size(l.from);
+		if (font_size_it && font_size_it->font_size > 0) {
+			font_size = font_size_it->font_size;
 		}
 		if (rtl) {
 			float offx = 0.0f;
@@ -1519,13 +1551,20 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				int stop = text_rect_begin;
 				*r_click_item = _find_indentable(it);
 				while (*r_click_item) {
-					Ref<Font> font = _find_font(*r_click_item);
-					if (!font.is_valid()) {
-						font = get_theme_font(SNAME("normal_font"));
+					Ref<Font> font = get_theme_font(SNAME("normal_font"));
+					int font_size = get_theme_font_size(SNAME("normal_font_size"));
+					ItemFont *font_it = _find_font(*r_click_item);
+					if (font_it) {
+						if (font_it->font.is_valid()) {
+							font = font_it->font;
+						}
+						if (font_it->font_size > 0) {
+							font_size = font_it->font_size;
+						}
 					}
-					int font_size = _find_font_size(*r_click_item);
-					if (font_size == -1) {
-						font_size = get_theme_font_size(SNAME("normal_font_size"));
+					ItemFontSize *font_size_it = _find_font_size(*r_click_item);
+					if (font_size_it && font_size_it->font_size > 0) {
+						font_size = font_size_it->font_size;
 					}
 					if (rtl) {
 						stop += tab_size * font->get_char_size(' ', font_size).width;
@@ -2109,34 +2148,34 @@ RichTextLabel::Item *RichTextLabel::_find_indentable(Item *p_item) {
 	return indentable;
 }
 
-Ref<Font> RichTextLabel::_find_font(Item *p_item) {
+RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 	Item *fontitem = p_item;
 
 	while (fontitem) {
 		if (fontitem->type == ITEM_FONT) {
 			ItemFont *fi = static_cast<ItemFont *>(fontitem);
-			return fi->font;
+			return fi;
 		}
 
 		fontitem = fontitem->parent;
 	}
 
-	return Ref<Font>();
+	return nullptr;
 }
 
-int RichTextLabel::_find_font_size(Item *p_item) {
+RichTextLabel::ItemFontSize *RichTextLabel::_find_font_size(Item *p_item) {
 	Item *sizeitem = p_item;
 
 	while (sizeitem) {
 		if (sizeitem->type == ITEM_FONT_SIZE) {
 			ItemFontSize *fi = static_cast<ItemFontSize *>(sizeitem);
-			return fi->font_size;
+			return fi;
 		}
 
 		sizeitem = sizeitem->parent;
 	}
 
-	return -1;
+	return nullptr;
 }
 
 int RichTextLabel::_find_outline_size(Item *p_item, int p_default) {
@@ -2222,24 +2261,40 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 
 	while (item) {
 		if (item->type == ITEM_INDENT) {
-			Ref<Font> font = _find_font(item);
-			if (font.is_null()) {
-				font = p_base_font;
+			Ref<Font> font = p_base_font;
+			int font_size = p_base_font_size;
+
+			ItemFont *font_it = _find_font(item);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+				}
+				if (font_it->font_size > 0) {
+					font_size = font_it->font_size;
+				}
 			}
-			int font_size = _find_font_size(item);
-			if (font_size == -1) {
-				font_size = p_base_font_size;
+			ItemFontSize *font_size_it = _find_font_size(item);
+			if (font_size_it && font_size_it->font_size > 0) {
+				font_size = font_size_it->font_size;
 			}
 			margin += tab_size * font->get_char_size(' ', font_size).width;
 
 		} else if (item->type == ITEM_LIST) {
-			Ref<Font> font = _find_font(item);
-			if (font.is_null()) {
-				font = p_base_font;
+			Ref<Font> font = p_base_font;
+			int font_size = p_base_font_size;
+
+			ItemFont *font_it = _find_font(item);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+				}
+				if (font_it->font_size > 0) {
+					font_size = font_it->font_size;
+				}
 			}
-			int font_size = _find_font_size(item);
-			if (font_size == -1) {
-				font_size = p_base_font_size;
+			ItemFontSize *font_size_it = _find_font_size(item);
+			if (font_size_it && font_size_it->font_size > 0) {
+				font_size = font_size_it->font_size;
 			}
 			margin += tab_size * font->get_char_size(' ', font_size).width;
 		}
@@ -2918,7 +2973,7 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	_add_item(item, false);
 }
 
-void RichTextLabel::push_font(const Ref<Font> &p_font) {
+void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -2927,6 +2982,7 @@ void RichTextLabel::push_font(const Ref<Font> &p_font) {
 	ItemFont *item = memnew(ItemFont);
 
 	item->font = p_font;
+	item->font_size = p_size;
 	_add_item(item, true);
 }
 
@@ -2934,35 +2990,35 @@ void RichTextLabel::push_normal() {
 	Ref<Font> normal_font = get_theme_font(SNAME("normal_font"));
 	ERR_FAIL_COND(normal_font.is_null());
 
-	push_font(normal_font);
+	push_font(normal_font, get_theme_font_size(SNAME("normal_font_size")));
 }
 
 void RichTextLabel::push_bold() {
 	Ref<Font> bold_font = get_theme_font(SNAME("bold_font"));
 	ERR_FAIL_COND(bold_font.is_null());
 
-	push_font(bold_font);
+	push_font(bold_font, get_theme_font_size(SNAME("bold_font_size")));
 }
 
 void RichTextLabel::push_bold_italics() {
 	Ref<Font> bold_italics_font = get_theme_font(SNAME("bold_italics_font"));
 	ERR_FAIL_COND(bold_italics_font.is_null());
 
-	push_font(bold_italics_font);
+	push_font(bold_italics_font, get_theme_font_size(SNAME("bold_italics_font_size")));
 }
 
 void RichTextLabel::push_italics() {
 	Ref<Font> italics_font = get_theme_font(SNAME("italics_font"));
 	ERR_FAIL_COND(italics_font.is_null());
 
-	push_font(italics_font);
+	push_font(italics_font, get_theme_font_size(SNAME("italics_font_size")));
 }
 
 void RichTextLabel::push_mono() {
 	Ref<Font> mono_font = get_theme_font(SNAME("mono_font"));
 	ERR_FAIL_COND(mono_font.is_null());
 
-	push_font(mono_font);
+	push_font(mono_font, get_theme_font_size(SNAME("mono_font_size")));
 }
 
 void RichTextLabel::push_font_size(int p_font_size) {
@@ -3552,9 +3608,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use bold font
 			in_bold = true;
 			if (in_italics) {
-				push_font(bold_italics_font);
+				push_font(bold_italics_font, get_theme_font_size(SNAME("bold_italics_font_size")));
 			} else {
-				push_font(bold_font);
+				push_font(bold_font, get_theme_font_size(SNAME("bold_font_size")));
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -3562,15 +3618,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use italics font
 			in_italics = true;
 			if (in_bold) {
-				push_font(bold_italics_font);
+				push_font(bold_italics_font, get_theme_font_size(SNAME("bold_italics_font_size")));
 			} else {
-				push_font(italics_font);
+				push_font(italics_font, get_theme_font_size(SNAME("italics_font_size")));
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
 			//use monospace font
-			push_font(mono_font);
+			push_font(mono_font, get_theme_font_size(SNAME("mono_font_size")));
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("table=")) {
@@ -3999,9 +4055,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			String fnt_ftr = tag.substr(18, tag.length());
 			Vector<String> subtag = fnt_ftr.split(",");
 			if (subtag.size() > 0) {
-				Ref<Font> font = _find_font(current);
-				if (font.is_null()) {
-					font = normal_font;
+				Ref<Font> font = normal_font;
+				int font_size = 0;
+				ItemFont *font_it = _find_font(current);
+				if (font_it) {
+					if (font_it->font.is_valid()) {
+						font = font_it->font;
+					}
+					if (font_it->font_size > 0) {
+						font_size = font_it->font_size;
+					}
 				}
 				Ref<FontVariation> fc;
 				fc.instantiate();
@@ -4016,7 +4079,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 				fc->set_opentype_features(features);
-				push_font(fc);
+				push_font(fc, font_size);
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front("opentype_features");
@@ -4037,6 +4100,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			Ref<FontVariation> fc;
 			fc.instantiate();
+			int fnt_size = 0;
 			for (int i = 1; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=", true, 2);
 				if (subtag_a.size() == 2) {
@@ -4047,10 +4111,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							fc->set_base_font(font_data);
 						}
 					} else if (subtag_a[0] == "size" || subtag_a[0] == "s") {
-						int fnt_size = subtag_a[1].to_int();
-						if (fnt_size > 0) {
-							push_font_size(fnt_size);
-						}
+						fnt_size = subtag_a[1].to_int();
 					} else if (subtag_a[0] == "glyph_spacing" || subtag_a[0] == "gl") {
 						int spacing = subtag_a[1].to_int();
 						fc->set_spacing(TextServer::SPACING_GLYPH, spacing);
@@ -4101,7 +4162,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 			}
-			push_font(fc);
+			push_font(fc, fnt_size);
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 
@@ -4929,7 +4990,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
-	ClassDB::bind_method(D_METHOD("push_font", "font"), &RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
 	ClassDB::bind_method(D_METHOD("push_bold"), &RichTextLabel::push_bold);
