@@ -104,7 +104,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 }
 
 String EditorExportPlatformWindows::get_template_file_name(const String &p_target, const String &p_arch) const {
-	return "windows_" + p_arch + "_" + p_target + ".exe";
+	return "windows_" + p_target + "_" + p_arch + ".exe";
 }
 
 List<String> EditorExportPlatformWindows::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {

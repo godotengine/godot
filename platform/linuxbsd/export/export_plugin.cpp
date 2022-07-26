@@ -84,7 +84,7 @@ void EditorExportPlatformLinuxBSD::set_extension(const String &p_extension, cons
 }
 
 String EditorExportPlatformLinuxBSD::get_template_file_name(const String &p_target, const String &p_arch) const {
-	return "linux_x11_" + p_arch + "_" + p_target;
+	return "linux_" + p_target + "." + p_arch;
 }
 
 List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {

@@ -766,7 +766,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + ".64";
+	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + ".universal";
 
 	String pkg_name;
 	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
@@ -1064,19 +1064,19 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (data.size() > 0) {
-			if (file.find("/data.mono.macos.64.release_debug/") != -1) {
+			if (file.find("/data.mono.macos.release_debug.universal/") != -1) {
 				if (!p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.macos.64.release_debug/", "/GodotSharp/");
+				file = file.replace("/data.mono.macos.release_debug.universal/", "/GodotSharp/");
 			}
-			if (file.find("/data.mono.macos.64.release/") != -1) {
+			if (file.find("/data.mono.macos.release.universal/") != -1) {
 				if (p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}
-				file = file.replace("/data.mono.macos.64.release/", "/GodotSharp/");
+				file = file.replace("/data.mono.macos.release.universal/", "/GodotSharp/");
 			}
 
 			if (file.ends_with(".dylib")) {
