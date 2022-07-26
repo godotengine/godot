@@ -60,32 +60,32 @@ public:
 	};
 
 	struct MultiviewCapabilities {
-		bool is_supported;
-		bool geometry_shader_is_supported;
-		bool tessellation_shader_is_supported;
+		bool is_supported = false;
+		bool geometry_shader_is_supported = false;
+		bool tessellation_shader_is_supported = false;
 		uint32_t max_view_count;
 		uint32_t max_instance_count;
 	};
 
 	struct VRSCapabilities {
-		bool pipeline_vrs_supported; // We can specify our fragment rate on a pipeline level
-		bool primitive_vrs_supported; // We can specify our fragment rate on each drawcall
-		bool attachment_vrs_supported; // We can provide a density map attachment on our framebuffer
+		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level
+		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall
+		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
 	};
 
 	struct ShaderCapabilities {
-		bool shader_float16_is_supported;
-		bool shader_int8_is_supported;
+		bool shader_float16_is_supported = false;
+		bool shader_int8_is_supported = false;
 	};
 
 	struct StorageBufferCapabilities {
-		bool storage_buffer_16_bit_access_is_supported;
-		bool uniform_and_storage_buffer_16_bit_access_is_supported;
-		bool storage_push_constant_16_is_supported;
-		bool storage_input_output_16;
+		bool storage_buffer_16_bit_access_is_supported = false;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported = false;
+		bool storage_push_constant_16_is_supported = false;
+		bool storage_input_output_16 = false;
 	};
 
 private:
@@ -95,7 +95,7 @@ private:
 		FRAME_LAG = 2
 	};
 
-	static VulkanHooks *vulkan_hooks;
+	inline static VulkanHooks *vulkan_hooks = nullptr;
 	VkInstance inst = VK_NULL_HANDLE;
 	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props{};

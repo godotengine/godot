@@ -42,8 +42,6 @@
 #include <cstdlib>
 #include <cstring>
 
-VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
-
 // FIXME: `const VkDevice device` parameter shadows a field.
 VkResult VulkanContext::vk_create_render_pass2_khr(const VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
 	if (!fpCreateRenderPass2KHR) {
