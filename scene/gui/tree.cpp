@@ -723,7 +723,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_child(int p_idx) {
 	_create_children_cache();
+
+	if (p_idx < 0) {
+		p_idx += children_cache.size();
+	}
 	ERR_FAIL_INDEX_V(p_idx, children_cache.size(), nullptr);
+
 	return children_cache.get(p_idx);
 }
 
@@ -1844,15 +1849,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 
-				if (rtl) {
-					r.position.x = get_size().width - r.position.x - r.size.x;
-				}
-
-				if (p_item->cells[i].selected) {
-					if (has_focus()) {
-						cache.selected_focus->draw(ci, r);
-					} else {
-						cache.selected->draw(ci, r);
+				if (select_mode != SELECT_ROW) {
+					if (rtl) {
+						r.position.x = get_size().width - r.position.x - r.size.x;
+					}
+					if (p_item->cells[i].selected) {
+						if (has_focus()) {
+							cache.selected_focus->draw(ci, r);
+						} else {
+							cache.selected->draw(ci, r);
+						}
 					}
 				}
 			}
