@@ -915,7 +915,8 @@ void main() {
 
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
-	if (scene_data.use_ambient_light) {
+	// Skip ambient light sampling for fully metallic materials as it's not visible on those materials.
+	if (scene_data.use_ambient_light && metallic < 0.999) {
 		ambient_light = scene_data.ambient_light_color_energy.rgb;
 
 		if (scene_data.use_ambient_cubemap) {
@@ -973,25 +974,27 @@ void main() {
 
 	//lightmap
 	if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
-		uint index = draw_call.gi_offset;
+		// Skip ambient light sampling for fully metallic materials as it's not visible on those materials.
+		if (metallic < 0.999) {
+			uint index = draw_call.gi_offset;
 
-		vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
-		const float c1 = 0.429043;
-		const float c2 = 0.511664;
-		const float c3 = 0.743125;
-		const float c4 = 0.886227;
-		const float c5 = 0.247708;
-		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
-				c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
-				c4 * lightmap_captures.data[index].sh[0].rgb -
-				c5 * lightmap_captures.data[index].sh[6].rgb +
-				2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
-				2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
-				2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
-				2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
-				2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
-				2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
-
+			vec3 wnormal = mat3(scene_data.inv_view_matrix) * normal;
+			const float c1 = 0.429043;
+			const float c2 = 0.511664;
+			const float c3 = 0.743125;
+			const float c4 = 0.886227;
+			const float c5 = 0.247708;
+			ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
+					c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+					c4 * lightmap_captures.data[index].sh[0].rgb -
+					c5 * lightmap_captures.data[index].sh[6].rgb +
+					2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+					2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+					2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+					2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+					2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+					2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+		}
 	} else if (bool(draw_call.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(draw_call.flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = draw_call.gi_offset & 0xFFFF;
@@ -1111,34 +1114,37 @@ void main() {
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-	if (!sc_disable_directional_lights) { //directional light
+	// Skip shadow sampling for fully metallic smooth materials as shadows are not visible on those materials.
+	// We still have to sample shadows for fully metallic rough materials as the shadow can obstruct the specular lobe.
+	if (roughness > 0.001 || metallic < 0.999) {
+		if (!sc_disable_directional_lights) { //directional light
 #ifndef SHADOWS_DISABLED
-		// Do shadow and lighting in two passes to reduce register pressure
-		uint shadow0 = 0;
-		uint shadow1 = 0;
+			// Do shadow and lighting in two passes to reduce register pressure
+			uint shadow0 = 0;
+			uint shadow1 = 0;
 
-		for (uint i = 0; i < 8; i++) {
-			if (i >= scene_data.directional_light_count) {
-				break;
-			}
+			for (uint i = 0; i < 8; i++) {
+				if (i >= scene_data.directional_light_count) {
+					break;
+				}
 
-			if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
-				continue; //not masked
-			}
+				if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
+					continue; //not masked
+				}
 
-			float shadow = 1.0;
+				float shadow = 1.0;
 
-			// Directional light shadow code is basically the same as forward clustered at this point in time minus `LIGHT_TRANSMITTANCE_USED` support.
-			// Not sure if there is a reason to change this seeing directional lights are part of our global data
-			// Should think about whether we may want to move this code into an include file or function??
+				// Directional light shadow code is basically the same as forward clustered at this point in time minus `LIGHT_TRANSMITTANCE_USED` support.
+				// Not sure if there is a reason to change this seeing directional lights are part of our global data
+				// Should think about whether we may want to move this code into an include file or function??
 
 #ifdef USE_SOFT_SHADOWS
-			//version with soft shadows, more expensive
-			if (directional_lights.data[i].shadow_enabled) {
-				float depth_z = -vertex.z;
+				//version with soft shadows, more expensive
+				if (directional_lights.data[i].shadow_enabled) {
+					float depth_z = -vertex.z;
 
-				vec4 pssm_coord;
-				vec3 light_dir = directional_lights.data[i].direction;
+					vec4 pssm_coord;
+					vec3 light_dir = directional_lights.data[i].direction;
 
 #define BIAS_FUNC(m_var, m_idx)                                                                                                                                       \
 	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                                                                                           \
@@ -1146,83 +1152,28 @@ void main() {
 	normal_bias -= light_dir * dot(light_dir, normal_bias);                                                                                                           \
 	m_var.xyz += normal_bias;
 
-				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 0)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
-					pssm_coord /= pssm_coord.w;
-
-					if (directional_lights.data[i].softshadow_angle > 0) {
-						float range_pos = dot(directional_lights.data[i].direction, v.xyz);
-						float range_begin = directional_lights.data[i].shadow_range_begin.x;
-						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
-						vec2 tex_scale = directional_lights.data[i].uv_scale1 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
-					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
-					}
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 1)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-					pssm_coord /= pssm_coord.w;
-
-					if (directional_lights.data[i].softshadow_angle > 0) {
-						float range_pos = dot(directional_lights.data[i].direction, v.xyz);
-						float range_begin = directional_lights.data[i].shadow_range_begin.y;
-						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
-						vec2 tex_scale = directional_lights.data[i].uv_scale2 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
-					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
-					}
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 2)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-					pssm_coord /= pssm_coord.w;
-
-					if (directional_lights.data[i].softshadow_angle > 0) {
-						float range_pos = dot(directional_lights.data[i].direction, v.xyz);
-						float range_begin = directional_lights.data[i].shadow_range_begin.z;
-						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
-						vec2 tex_scale = directional_lights.data[i].uv_scale3 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
-					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
-					}
-				} else {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 3)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-					pssm_coord /= pssm_coord.w;
-
-					if (directional_lights.data[i].softshadow_angle > 0) {
-						float range_pos = dot(directional_lights.data[i].direction, v.xyz);
-						float range_begin = directional_lights.data[i].shadow_range_begin.w;
-						float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
-						vec2 tex_scale = directional_lights.data[i].uv_scale4 * test_radius;
-						shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
-					} else {
-						shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
-					}
-				}
-
-				if (directional_lights.data[i].blend_splits) {
-					float pssm_blend;
-					float shadow2;
-
 					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 						vec4 v = vec4(vertex, 1.0);
+
+						BIAS_FUNC(v, 0)
+
+						pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						pssm_coord /= pssm_coord.w;
+
+						if (directional_lights.data[i].softshadow_angle > 0) {
+							float range_pos = dot(directional_lights.data[i].direction, v.xyz);
+							float range_begin = directional_lights.data[i].shadow_range_begin.x;
+							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
+							vec2 tex_scale = directional_lights.data[i].uv_scale1 * test_radius;
+							shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+						} else {
+							shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+						}
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+						vec4 v = vec4(vertex, 1.0);
+
 						BIAS_FUNC(v, 1)
+
 						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
 						pssm_coord /= pssm_coord.w;
 
@@ -1231,15 +1182,15 @@ void main() {
 							float range_begin = directional_lights.data[i].shadow_range_begin.y;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale2 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 						}
-
-						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
-					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
+
 						BIAS_FUNC(v, 2)
+
 						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
 						pssm_coord /= pssm_coord.w;
 
@@ -1248,51 +1199,106 @@ void main() {
 							float range_begin = directional_lights.data[i].shadow_range_begin.z;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale3 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 						}
-
-						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
-					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+					} else {
 						vec4 v = vec4(vertex, 1.0);
+
 						BIAS_FUNC(v, 3)
+
 						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
 						pssm_coord /= pssm_coord.w;
+
 						if (directional_lights.data[i].softshadow_angle > 0) {
 							float range_pos = dot(directional_lights.data[i].direction, v.xyz);
 							float range_begin = directional_lights.data[i].shadow_range_begin.w;
 							float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
 							vec2 tex_scale = directional_lights.data[i].uv_scale4 * test_radius;
-							shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							shadow = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
 						} else {
-							shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
 						}
-
-						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
-					} else {
-						pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
 					}
 
-					pssm_blend = sqrt(pssm_blend);
+					if (directional_lights.data[i].blend_splits) {
+						float pssm_blend;
+						float shadow2;
 
-					shadow = mix(shadow, shadow2, pssm_blend);
-				}
+						if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 1)
+							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+							pssm_coord /= pssm_coord.w;
 
-				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
+							if (directional_lights.data[i].softshadow_angle > 0) {
+								float range_pos = dot(directional_lights.data[i].direction, v.xyz);
+								float range_begin = directional_lights.data[i].shadow_range_begin.y;
+								float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
+								vec2 tex_scale = directional_lights.data[i].uv_scale2 * test_radius;
+								shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							} else {
+								shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							}
+
+							pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 2)
+							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+							pssm_coord /= pssm_coord.w;
+
+							if (directional_lights.data[i].softshadow_angle > 0) {
+								float range_pos = dot(directional_lights.data[i].direction, v.xyz);
+								float range_begin = directional_lights.data[i].shadow_range_begin.z;
+								float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
+								vec2 tex_scale = directional_lights.data[i].uv_scale3 * test_radius;
+								shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							} else {
+								shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							}
+
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 3)
+							pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+							pssm_coord /= pssm_coord.w;
+							if (directional_lights.data[i].softshadow_angle > 0) {
+								float range_pos = dot(directional_lights.data[i].direction, v.xyz);
+								float range_begin = directional_lights.data[i].shadow_range_begin.w;
+								float test_radius = (range_pos - range_begin) * directional_lights.data[i].softshadow_angle;
+								vec2 tex_scale = directional_lights.data[i].uv_scale4 * test_radius;
+								shadow2 = sample_directional_soft_shadow(directional_shadow_atlas, pssm_coord.xyz, tex_scale * directional_lights.data[i].soft_shadow_scale);
+							} else {
+								shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale, pssm_coord);
+							}
+
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+						} else {
+							pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
+						}
+
+						pssm_blend = sqrt(pssm_blend);
+
+						shadow = mix(shadow, shadow2, pssm_blend);
+					}
+
+					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
 
 #undef BIAS_FUNC
-			}
+				}
 #else
-			// Soft shadow disabled version
+				// Soft shadow disabled version
 
-			if (directional_lights.data[i].shadow_enabled) {
-				float depth_z = -vertex.z;
+				if (directional_lights.data[i].shadow_enabled) {
+					float depth_z = -vertex.z;
 
-				vec4 pssm_coord;
-				float blur_factor;
-				vec3 light_dir = directional_lights.data[i].direction;
-				vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
+					vec4 pssm_coord;
+					float blur_factor;
+					vec3 light_dir = directional_lights.data[i].direction;
+					vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
 
 #define BIAS_FUNC(m_var, m_idx)                                                                 \
 	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                     \
@@ -1300,119 +1306,119 @@ void main() {
 	normal_bias -= light_dir * dot(light_dir, normal_bias);                                     \
 	m_var.xyz += normal_bias;
 
-				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 0)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
-					blur_factor = 1.0;
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 1)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-					// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-					blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
-					;
-				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 2)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-					// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-					blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
-				} else {
-					vec4 v = vec4(vertex, 1.0);
-
-					BIAS_FUNC(v, 3)
-
-					pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-					// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-					blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
-				}
-
-				pssm_coord /= pssm_coord.w;
-
-				shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor, pssm_coord);
-
-				if (directional_lights.data[i].blend_splits) {
-					float pssm_blend;
-					float blur_factor2;
-
 					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
 						vec4 v = vec4(vertex, 1.0);
-						BIAS_FUNC(v, 1)
-						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
-						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
-						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-						blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
+
+						BIAS_FUNC(v, 0)
+
+						pssm_coord = (directional_lights.data[i].shadow_matrix1 * v);
+						blur_factor = 1.0;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
 						vec4 v = vec4(vertex, 1.0);
-						BIAS_FUNC(v, 2)
-						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
-						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+
+						BIAS_FUNC(v, 1)
+
+						pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
 						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-						blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
+						;
 					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
 						vec4 v = vec4(vertex, 1.0);
-						BIAS_FUNC(v, 3)
-						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
-						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+
+						BIAS_FUNC(v, 2)
+
+						pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
 						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
-						blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
 					} else {
-						pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
-						blur_factor2 = 1.0;
+						vec4 v = vec4(vertex, 1.0);
+
+						BIAS_FUNC(v, 3)
+
+						pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+						// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+						blur_factor = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
 					}
 
 					pssm_coord /= pssm_coord.w;
 
-					float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor2, pssm_coord);
-					shadow = mix(shadow, shadow2, pssm_blend);
-				}
+					shadow = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor, pssm_coord);
 
-				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
+					if (directional_lights.data[i].blend_splits) {
+						float pssm_blend;
+						float blur_factor2;
+
+						if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 1)
+							pssm_coord = (directional_lights.data[i].shadow_matrix2 * v);
+							pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.y;
+						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 2)
+							pssm_coord = (directional_lights.data[i].shadow_matrix3 * v);
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.z;
+						} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+							vec4 v = vec4(vertex, 1.0);
+							BIAS_FUNC(v, 3)
+							pssm_coord = (directional_lights.data[i].shadow_matrix4 * v);
+							pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+							// Adjust shadow blur with reference to the first split to reduce discrepancy between shadow splits.
+							blur_factor2 = directional_lights.data[i].shadow_split_offsets.x / directional_lights.data[i].shadow_split_offsets.w;
+						} else {
+							pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
+							blur_factor2 = 1.0;
+						}
+
+						pssm_coord /= pssm_coord.w;
+
+						float shadow2 = sample_directional_pcf_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size * directional_lights.data[i].soft_shadow_scale * blur_factor2, pssm_coord);
+						shadow = mix(shadow, shadow2, pssm_blend);
+					}
+
+					shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
 
 #undef BIAS_FUNC
-			}
+				}
 #endif
 
-			if (i < 4) {
-				shadow0 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << (i * 8);
-			} else {
-				shadow1 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << ((i - 4) * 8);
+				if (i < 4) {
+					shadow0 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << (i * 8);
+				} else {
+					shadow1 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << ((i - 4) * 8);
+				}
 			}
-		}
 
 #endif // SHADOWS_DISABLED
 
-		for (uint i = 0; i < 8; i++) {
-			if (i >= scene_data.directional_light_count) {
-				break;
-			}
+			for (uint i = 0; i < 8; i++) {
+				if (i >= scene_data.directional_light_count) {
+					break;
+				}
 
-			if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
-				continue; //not masked
-			}
+				if (!bool(directional_lights.data[i].mask & draw_call.layer_mask)) {
+					continue; //not masked
+				}
 
-			// We're not doing light transmittence
+				// We're not doing light transmittence
 
-			float shadow = 1.0;
+				float shadow = 1.0;
 #ifndef SHADOWS_DISABLED
-			if (i < 4) {
-				shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
-			} else {
-				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
-			}
+				if (i < 4) {
+					shadow = float(shadow0 >> (i * 8) & 0xFF) / 255.0;
+				} else {
+					shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
+				}
 #endif
-			blur_shadow(shadow);
+				blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
+				light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+						backlight,
 #endif
 /* not supported here
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -1423,43 +1429,43 @@ void main() {
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim, rim_tint,
+						rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					binormal, tangent, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
 #ifdef USE_SOFT_SHADOW
-					directional_lights.data[i].size,
+						directional_lights.data[i].size,
 #endif
-					diffuse_light,
-					specular_light);
-		}
-	} //directional light
-
-	if (!sc_disable_omni_lights) { //omni lights
-		uint light_indices = draw_call.omni_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 4) {
-				light_indices = draw_call.omni_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
+						diffuse_light,
+						specular_light);
 			}
+		} //directional light
 
-			if (light_index == 0xFF) {
-				break;
-			}
+		if (!sc_disable_omni_lights) { //omni lights
+			uint light_indices = draw_call.omni_lights.x;
+			for (uint i = 0; i < 8; i++) {
+				uint light_index = light_indices & 0xFF;
+				if (i == 4) {
+					light_indices = draw_call.omni_lights.y;
+				} else {
+					light_indices = light_indices >> 8;
+				}
 
-			float shadow = light_process_omni_shadow(light_index, vertex, normal);
+				if (light_index == 0xFF) {
+					break;
+				}
 
-			shadow = blur_shadow(shadow);
+				float shadow = light_process_omni_shadow(light_index, vertex, normal);
 
-			light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+				shadow = blur_shadow(shadow);
+
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+						backlight,
 #endif
 /*
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -1469,42 +1475,42 @@ void main() {
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim,
-					rim_tint,
+						rim,
+						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					tangent,
-					binormal, anisotropy,
+						tangent,
+						binormal, anisotropy,
 #endif
-					diffuse_light, specular_light);
-		}
-	} //omni lights
-
-	if (!sc_disable_spot_lights) { //spot lights
-
-		uint light_indices = draw_call.spot_lights.x;
-		for (uint i = 0; i < 8; i++) {
-			uint light_index = light_indices & 0xFF;
-			if (i == 4) {
-				light_indices = draw_call.spot_lights.y;
-			} else {
-				light_indices = light_indices >> 8;
+						diffuse_light, specular_light);
 			}
+		} //omni lights
 
-			if (light_index == 0xFF) {
-				break;
-			}
+		if (!sc_disable_spot_lights) { //spot lights
 
-			float shadow = light_process_spot_shadow(light_index, vertex, normal);
+			uint light_indices = draw_call.spot_lights.x;
+			for (uint i = 0; i < 8; i++) {
+				uint light_index = light_indices & 0xFF;
+				if (i == 4) {
+					light_indices = draw_call.spot_lights.y;
+				} else {
+					light_indices = light_indices >> 8;
+				}
 
-			shadow = blur_shadow(shadow);
+				if (light_index == 0xFF) {
+					break;
+				}
 
-			light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+				float shadow = light_process_spot_shadow(light_index, vertex, normal);
+
+				shadow = blur_shadow(shadow);
+
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
-					backlight,
+						backlight,
 #endif
 /*
 #ifdef LIGHT_TRANSMITTANCE_USED
@@ -1514,19 +1520,20 @@ void main() {
 #endif
 */
 #ifdef LIGHT_RIM_USED
-					rim,
-					rim_tint,
+						rim,
+						rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-					tangent,
-					binormal, anisotropy,
+						tangent,
+						binormal, anisotropy,
 #endif
-					diffuse_light, specular_light);
-		}
-	} //spot lights
+						diffuse_light, specular_light);
+			}
+		} //spot lights
+	}
 
 #ifdef USE_SHADOW_TO_OPACITY
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
