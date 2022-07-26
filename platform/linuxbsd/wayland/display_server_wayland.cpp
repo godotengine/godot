@@ -1817,14 +1817,36 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_max_size %s window %d", p_size, p_window));
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+
+	DEBUG_LOG_WAYLAND(vformat("window id %d max size set to %s", p_window, p_size));
+
+	if (p_size.x < 0 || p_size.y < 0) {
+		ERR_FAIL_MSG("Maximum window size can't be negative!");
+	}
+
+	WindowData &wd = wls.windows[p_window];
+	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
+		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
+		return;
+	}
+
+	wd.max_size = p_size;
+
+	if (wd.wl_surface && wd.xdg_toplevel) {
+		xdg_toplevel_set_max_size(wd.xdg_toplevel, p_size.width, p_size.height);
+		wl_surface_commit(wd.wl_surface);
+	}
 }
 
 Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_max_size window %d, returning Size2i(1920, 1080)", p_window));
-	return Size2i(1920, 1080);
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
+
+	return wls.windows[p_window].max_size;
 }
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
@@ -1872,14 +1894,37 @@ void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window
 }
 
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_min_size size %s window %d", p_size, p_window));
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+
+	DEBUG_LOG_WAYLAND(vformat("window id %d minsize set to %s", p_window, p_size));
+
+	WindowData &wd = wls.windows[p_window];
+
+	if (p_size.x < 0 || p_size.y < 0) {
+		ERR_FAIL_MSG("Minimum window size can't be negative!");
+	}
+
+	if ((p_size != Size2i()) && (wd.max_size != Size2i()) && ((p_size.x > wd.max_size.x) || (p_size.y > wd.max_size.y))) {
+		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
+		return;
+	}
+
+	wd.min_size = p_size;
+
+	if (wd.wl_surface && wd.xdg_toplevel) {
+		xdg_toplevel_set_min_size(wd.xdg_toplevel, p_size.width, p_size.height);
+		wl_surface_commit(wd.wl_surface);
+	}
 }
 
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_min_size window %d, returning Size2i(0, 0)", p_window));
-	return Size2i(0, 0);
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), Size2i());
+
+	return wls.windows[p_window].min_size;
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {

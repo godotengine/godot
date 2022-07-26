@@ -137,6 +137,8 @@ class DisplayServerWayland : public DisplayServer {
 		VSyncMode vsync_mode;
 		Rect2i rect;
 		Rect2i safe_rect;
+		Size2i max_size;
+		Size2i min_size;
 
 		Callable rect_changed_callback;
 		Callable window_event_callback;
