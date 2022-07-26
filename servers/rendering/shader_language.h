@@ -154,6 +154,7 @@ public:
 		TK_SEMICOLON,
 		TK_PERIOD,
 		TK_UNIFORM,
+		TK_UNIFORM_GROUP,
 		TK_INSTANCE,
 		TK_GLOBAL,
 		TK_VARYING,
@@ -687,6 +688,8 @@ public:
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
 			int instance_index = 0;
+			String group;
+			String subgroup;
 
 			Uniform() {
 				hint_range[0] = 0.0f;
@@ -937,6 +940,9 @@ private:
 	bool last_const = false;
 	StringName last_name;
 	bool is_shader_inc = false;
+
+	String current_uniform_group_name;
+	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
 
