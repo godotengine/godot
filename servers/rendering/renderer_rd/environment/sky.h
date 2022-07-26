@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene_sky_rd.h                                              */
+/*  sky.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERER_SCENE_SKY_RD_H
-#define RENDERER_SCENE_SKY_RD_H
+#ifndef SKY_RD_H
+#define SKY_RD_H
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
-#include "servers/rendering/renderer_rd/shaders/sky.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/sky.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -44,7 +44,9 @@
 // Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 class RendererSceneRenderRD;
 
-class RendererSceneSkyRD {
+namespace RendererRD {
+
+class SkyRD {
 public:
 	enum SkySet {
 		SKY_SET_UNIFORMS,
@@ -290,10 +292,10 @@ public:
 	RendererRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
 	static RendererRD::MaterialData *_create_sky_material_funcs(RendererRD::ShaderData *p_shader);
 
-	RendererSceneSkyRD();
+	SkyRD();
 	void init();
 	void set_texture_format(RD::DataFormat p_texture_format);
-	~RendererSceneSkyRD();
+	~SkyRD();
 
 	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
 	void update(RendererSceneEnvironmentRD *p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
@@ -318,4 +320,6 @@ public:
 	RID sky_get_radiance_texture_rd(RID p_sky) const;
 };
 
-#endif // RENDERER_SCENE_SKY_RD_H
+} // namespace RendererRD
+
+#endif // SKY_RD_H
