@@ -1844,15 +1844,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 
-				if (rtl) {
-					r.position.x = get_size().width - r.position.x - r.size.x;
-				}
-
-				if (p_item->cells[i].selected) {
-					if (has_focus()) {
-						cache.selected_focus->draw(ci, r);
-					} else {
-						cache.selected->draw(ci, r);
+				if (select_mode != SELECT_ROW) {
+					if (rtl) {
+						r.position.x = get_size().width - r.position.x - r.size.x;
+					}
+					if (p_item->cells[i].selected) {
+						if (has_focus()) {
+							cache.selected_focus->draw(ci, r);
+						} else {
+							cache.selected->draw(ci, r);
+						}
 					}
 				}
 			}
