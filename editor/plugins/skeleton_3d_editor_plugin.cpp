@@ -221,7 +221,7 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 };
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
-	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_INIT_SELECTED_POSES, !p_bone_options_enabled);
+	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
 };
 
@@ -231,12 +231,12 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 
 	switch (p_skeleton_option) {
-		case SKELETON_OPTION_INIT_ALL_POSES: {
-			init_pose(true);
+		case SKELETON_OPTION_RESET_ALL_POSES: {
+			reset_pose(true);
 			break;
 		}
-		case SKELETON_OPTION_INIT_SELECTED_POSES: {
-			init_pose(false);
+		case SKELETON_OPTION_RESET_SELECTED_POSES: {
+			reset_pose(false);
 			break;
 		}
 		case SKELETON_OPTION_ALL_POSES_TO_RESTS: {
@@ -258,7 +258,7 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 }
 
-void Skeleton3DEditor::init_pose(const bool p_all_bones) {
+void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 	if (!skeleton) {
 		return;
 	}
@@ -271,27 +271,21 @@ void Skeleton3DEditor::init_pose(const bool p_all_bones) {
 	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
-			Transform3D rest = skeleton->get_bone_rest(i);
-			ur->add_do_method(skeleton, "set_bone_pose_position", i, rest.origin);
-			ur->add_do_method(skeleton, "set_bone_pose_rotation", i, rest.basis.get_rotation_quaternion());
-			ur->add_do_method(skeleton, "set_bone_pose_scale", i, rest.basis.get_scale());
 			ur->add_undo_method(skeleton, "set_bone_pose_position", i, skeleton->get_bone_pose_position(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", i, skeleton->get_bone_pose_rotation(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_scale", i, skeleton->get_bone_pose_scale(i));
 		}
+		ur->add_do_method(skeleton, "reset_bone_poses");
 	} else {
 		// Todo: Do method with multiple bone selection.
 		if (selected_bone == -1) {
 			ur->commit_action();
 			return;
 		}
-		Transform3D rest = skeleton->get_bone_rest(selected_bone);
-		ur->add_do_method(skeleton, "set_bone_pose_position", selected_bone, rest.origin);
-		ur->add_do_method(skeleton, "set_bone_pose_rotation", selected_bone, rest.basis.get_rotation_quaternion());
-		ur->add_do_method(skeleton, "set_bone_pose_scale", selected_bone, rest.basis.get_scale());
 		ur->add_undo_method(skeleton, "set_bone_pose_position", selected_bone, skeleton->get_bone_pose_position(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_rotation", selected_bone, skeleton->get_bone_pose_rotation(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_scale", selected_bone, skeleton->get_bone_pose_scale(selected_bone));
+		ur->add_do_method(skeleton, "reset_bone_pose", selected_bone);
 	}
 	ur->commit_action();
 }
@@ -721,8 +715,8 @@ void Skeleton3DEditor::create_editors() {
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_all_poses", TTR("Init all Poses")), SKELETON_OPTION_INIT_ALL_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_selected_poses", TTR("Init selected Poses")), SKELETON_OPTION_INIT_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset all bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);

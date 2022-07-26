@@ -281,6 +281,19 @@
 				[b]Note:[/b] This does not remove the child bone, but instead it removes the connection it has to the parent bone.
 			</description>
 		</method>
+		<method name="reset_bone_pose">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Sets the bone pose to rest for [param bone_idx].
+			</description>
+		</method>
+		<method name="reset_bone_poses">
+			<return type="void" />
+			<description>
+				Sets all bone poses to rests.
+			</description>
+		</method>
 		<method name="set_bone_children">
 			<return type="void" />
 			<param index="0" name="bone_idx" type="int" />

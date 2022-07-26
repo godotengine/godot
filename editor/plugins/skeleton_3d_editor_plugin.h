@@ -96,8 +96,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	friend class Skeleton3DEditorPlugin;
 
 	enum SkeletonOption {
-		SKELETON_OPTION_INIT_ALL_POSES,
-		SKELETON_OPTION_INIT_SELECTED_POSES,
+		SKELETON_OPTION_RESET_ALL_POSES,
+		SKELETON_OPTION_RESET_SELECTED_POSES,
 		SKELETON_OPTION_ALL_POSES_TO_RESTS,
 		SKELETON_OPTION_SELECTED_POSES_TO_RESTS,
 		SKELETON_OPTION_CREATE_PHYSICAL_SKELETON,
@@ -148,7 +148,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void init_pose(const bool p_all_bones);
+	void reset_pose(const bool p_all_bones);
 	void pose_to_rest(const bool p_all_bones);
 
 	void insert_keys(const bool p_all_bones);
