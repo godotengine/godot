@@ -33,6 +33,7 @@
 #include "editor/editor_scale.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
+#include "editor/import/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/scene_import_settings.h"
 
 void BoneMapperButton::fetch_textures() {
@@ -379,9 +380,13 @@ void BoneMapEditor::create_editors() {
 }
 
 void BoneMapEditor::fetch_objects() {
+	skeleton = nullptr;
 	// Hackey... but it may be the easist way to get a selected object from "ImporterScene".
 	SceneImportSettings *si = SceneImportSettings::get_singleton();
 	if (!si) {
+		return;
+	}
+	if (!si->is_visible()) {
 		return;
 	}
 	Node *selected = si->get_selected_node();
@@ -404,11 +409,11 @@ void BoneMapEditor::_notification(int p_what) {
 			create_editors();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (!bone_mapper) {
-				return;
+			if (bone_mapper) {
+				remove_child(bone_mapper);
+				bone_mapper->queue_delete();
 			}
-			remove_child(bone_mapper);
-			bone_mapper->queue_delete();
+			skeleton = nullptr;
 		} break;
 	}
 }
@@ -443,6 +448,10 @@ BoneMapEditorPlugin::BoneMapEditorPlugin() {
 	Ref<EditorInspectorPluginBoneMap> inspector_plugin;
 	inspector_plugin.instantiate();
 	add_inspector_plugin(inspector_plugin);
+
+	Ref<PostImportPluginSkeletonTrackOrganizer> post_import_plugin_track_organizer;
+	post_import_plugin_track_organizer.instantiate();
+	add_scene_post_import_plugin(post_import_plugin_track_organizer);
 
 	Ref<PostImportPluginSkeletonRenamer> post_import_plugin_renamer;
 	post_import_plugin_renamer.instantiate();

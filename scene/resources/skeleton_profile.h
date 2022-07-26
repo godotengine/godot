@@ -64,6 +64,9 @@ protected:
 		bool require = false;
 	};
 
+	StringName root_bone;
+	StringName scale_base_bone;
+
 	Vector<SkeletonProfileGroup> groups;
 	Vector<SkeletonProfileBone> bones;
 
@@ -74,6 +77,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	StringName get_root_bone();
+	void set_root_bone(StringName p_bone_name);
+
+	StringName get_scale_base_bone();
+	void set_scale_base_bone(StringName p_bone_name);
+
 	int get_group_size();
 	void set_group_size(int p_size);
 
