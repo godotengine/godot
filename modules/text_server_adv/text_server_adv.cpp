@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "text_server_adv.h"
+#include "core/object/worker_thread_pool.h"
 
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
@@ -1039,10 +1040,8 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		td.projection = &projection;
 		td.distancePixelConversion = &distancePixelConversion;
 
-		if (p_font_data->work_pool.get_thread_count() == 0) {
-			p_font_data->work_pool.init();
-		}
-		p_font_data->work_pool.do_work(h, this, &TextServerAdvanced::_generateMTSDF_threaded, &td);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &TextServerAdvanced::_generateMTSDF_threaded, &td, h, -1, true, SNAME("FontServerRasterizeMSDF"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 

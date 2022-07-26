@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CPU_PARTICLES_H
-#define CPU_PARTICLES_H
+#ifndef CPU_PARTICLES_3D_H
+#define CPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -317,4 +317,4 @@ VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
 
-#endif // CPU_PARTICLES_H
+#endif // CPU_PARTICLES_3D_H

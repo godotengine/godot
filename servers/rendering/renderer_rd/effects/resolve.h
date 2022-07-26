@@ -71,4 +71,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !RESOLVE_RD_H
+#endif // RESOLVE_RD_H

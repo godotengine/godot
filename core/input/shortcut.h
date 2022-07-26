@@ -55,4 +55,5 @@ public:
 
 	static bool is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2);
 };
+
 #endif // SHORTCUT_H

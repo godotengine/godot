@@ -446,4 +446,4 @@ public:
 	EditorExportPlatformUWP();
 };
 
-#endif
+#endif // UWP_EXPORT_PLUGIN_H

@@ -146,4 +146,4 @@ public:
 	~AppxPackager();
 };
 
-#endif
+#endif // UWP_APP_PACKAGER_H

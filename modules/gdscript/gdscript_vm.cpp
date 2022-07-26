@@ -199,11 +199,14 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Vector3>::init, // VECTOR3.
 	&VariantInitializer<Vector3i>::init, // VECTOR3I.
 	&VariantInitializer<Transform2D>::init, // TRANSFORM2D.
+	&VariantInitializer<Vector4>::init, // VECTOR4.
+	&VariantInitializer<Vector4i>::init, // VECTOR4I.
 	&VariantInitializer<Plane>::init, // PLANE.
 	&VariantInitializer<Quaternion>::init, // QUATERNION.
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
 	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
+	&VariantInitializer<Projection>::init, // PROJECTION.
 	&VariantInitializer<Color>::init, // COLOR.
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
@@ -282,11 +285,14 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_VECTOR3,               \
 		&&OPCODE_CALL_PTRCALL_VECTOR3I,              \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,           \
+		&&OPCODE_CALL_PTRCALL_VECTOR4,               \
+		&&OPCODE_CALL_PTRCALL_VECTOR4I,              \
 		&&OPCODE_CALL_PTRCALL_PLANE,                 \
 		&&OPCODE_CALL_PTRCALL_QUATERNION,            \
 		&&OPCODE_CALL_PTRCALL_AABB,                  \
 		&&OPCODE_CALL_PTRCALL_BASIS,                 \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM3D,           \
+		&&OPCODE_CALL_PTRCALL_PROJECTION,            \
 		&&OPCODE_CALL_PTRCALL_COLOR,                 \
 		&&OPCODE_CALL_PTRCALL_STRING_NAME,           \
 		&&OPCODE_CALL_PTRCALL_NODE_PATH,             \
@@ -372,11 +378,14 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_VECTOR3,                \
 		&&OPCODE_TYPE_ADJUST_VECTOR3I,               \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,            \
+		&&OPCODE_TYPE_ADJUST_VECTOR4,                \
+		&&OPCODE_TYPE_ADJUST_VECTOR4I,               \
 		&&OPCODE_TYPE_ADJUST_PLANE,                  \
 		&&OPCODE_TYPE_ADJUST_QUATERNION,             \
 		&&OPCODE_TYPE_ADJUST_AABB,                   \
 		&&OPCODE_TYPE_ADJUST_BASIS,                  \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,            \
+		&&OPCODE_TYPE_ADJUST_PROJECTION,             \
 		&&OPCODE_TYPE_ADJUST_COLOR,                  \
 		&&OPCODE_TYPE_ADJUST_STRING_NAME,            \
 		&&OPCODE_TYPE_ADJUST_NODE_PATH,              \
@@ -435,6 +444,8 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_VECTOR3 get_vector3
 #define OP_GET_VECTOR3I get_vector3i
 #define OP_GET_RECT2 get_rect2
+#define OP_GET_VECTOR4 get_vector4
+#define OP_GET_VECTOR4I get_vector4i
 #define OP_GET_RECT2I get_rect2i
 #define OP_GET_QUATERNION get_quaternion
 #define OP_GET_COLOR get_color
@@ -456,6 +467,7 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_PACKED_COLOR_ARRAY get_color_array
 #define OP_GET_TRANSFORM3D get_transform
 #define OP_GET_TRANSFORM2D get_transform2d
+#define OP_GET_PROJECTION get_projection
 #define OP_GET_PLANE get_plane
 #define OP_GET_AABB get_aabb
 #define OP_GET_BASIS get_basis
@@ -1827,11 +1839,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(VECTOR3);
 			OPCODE_CALL_PTR(VECTOR3I);
 			OPCODE_CALL_PTR(TRANSFORM2D);
+			OPCODE_CALL_PTR(VECTOR4);
+			OPCODE_CALL_PTR(VECTOR4I);
 			OPCODE_CALL_PTR(PLANE);
 			OPCODE_CALL_PTR(QUATERNION);
 			OPCODE_CALL_PTR(AABB);
 			OPCODE_CALL_PTR(BASIS);
 			OPCODE_CALL_PTR(TRANSFORM3D);
+			OPCODE_CALL_PTR(PROJECTION);
 			OPCODE_CALL_PTR(COLOR);
 			OPCODE_CALL_PTR(STRING_NAME);
 			OPCODE_CALL_PTR(NODE_PATH);
@@ -3308,11 +3323,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(VECTOR3, Vector3);
 			OPCODE_TYPE_ADJUST(VECTOR3I, Vector3i);
 			OPCODE_TYPE_ADJUST(TRANSFORM2D, Transform2D);
+			OPCODE_TYPE_ADJUST(VECTOR4, Vector4);
+			OPCODE_TYPE_ADJUST(VECTOR4I, Vector4i);
 			OPCODE_TYPE_ADJUST(PLANE, Plane);
 			OPCODE_TYPE_ADJUST(QUATERNION, Quaternion);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
 			OPCODE_TYPE_ADJUST(TRANSFORM3D, Transform3D);
+			OPCODE_TYPE_ADJUST(PROJECTION, Projection);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

@@ -247,4 +247,4 @@ public:
 	ControlEditorPlugin();
 };
 
-#endif //CONTROL_EDITOR_PLUGIN_H
+#endif // CONTROL_EDITOR_PLUGIN_H

@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETONMODIFICATION2DLOOKAT_H
-#define SKELETONMODIFICATION2DLOOKAT_H
+#ifndef SKELETON_MODIFICATION_2D_LOOKAT_H
+#define SKELETON_MODIFICATION_2D_LOOKAT_H
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/skeleton_modification_2d.h"
@@ -97,4 +97,4 @@ public:
 	~SkeletonModification2DLookAt();
 };
 
-#endif // SKELETONMODIFICATION2DLOOKAT_H
+#endif // SKELETON_MODIFICATION_2D_LOOKAT_H

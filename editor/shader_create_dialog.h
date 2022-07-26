@@ -47,6 +47,7 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	enum ShaderType {
 		SHADER_TYPE_TEXT,
 		SHADER_TYPE_VISUAL,
+		SHADER_TYPE_INC,
 		SHADER_TYPE_MAX,
 	};
 
@@ -56,14 +57,14 @@ class ShaderCreateDialog : public ConfirmationDialog {
 		bool use_templates = false;
 	};
 
-	List<ShaderTypeData> language_data;
+	List<ShaderTypeData> type_data;
 
 	GridContainer *gc = nullptr;
 	Label *error_label = nullptr;
 	Label *path_error_label = nullptr;
 	Label *builtin_warning_label = nullptr;
 	PanelContainer *status_panel = nullptr;
-	OptionButton *language_menu = nullptr;
+	OptionButton *type_menu = nullptr;
 	OptionButton *mode_menu = nullptr;
 	OptionButton *template_menu = nullptr;
 	CheckBox *internal = nullptr;
@@ -79,8 +80,8 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	bool built_in_enabled = true;
 	bool load_enabled = false;
 	bool re_check_path = false;
-	int current_language = -1;
-	int default_language = -1;
+	int current_type = -1;
+	int default_type = -1;
 	int current_mode = 0;
 	int current_template = 0;
 
@@ -89,7 +90,7 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	void _path_hbox_sorted();
 	void _path_changed(const String &p_path = String());
 	void _path_submitted(const String &p_path = String());
-	void _language_changed(int p_language = 0);
+	void _type_changed(int p_type = 0);
 	void _built_in_toggled(bool p_enabled);
 	void _template_changed(int p_template = 0);
 	void _mode_changed(int p_mode = 0);
@@ -113,4 +114,4 @@ public:
 	ShaderCreateDialog();
 };
 
-#endif
+#endif // SHADER_CREATE_DIALOG_H

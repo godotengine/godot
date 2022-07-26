@@ -648,9 +648,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			CameraMatrix projection = p_render_data->cam_projection;
+			Projection projection = p_render_data->cam_projection;
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
 				projection = correction * p_render_data->cam_projection;
 			}
@@ -680,9 +680,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_begin_label("Setup Sky Resolution Buffers");
 
 		if (p_render_data->reflection_probe.is_valid()) {
-			CameraMatrix correction;
+			Projection correction;
 			correction.set_depth_correction(true);
-			CameraMatrix projection = correction * p_render_data->cam_projection;
+			Projection projection = correction * p_render_data->cam_projection;
 			sky.update_res_buffers(env, 1, &projection, p_render_data->cam_transform, time);
 		} else {
 			sky.update_res_buffers(env, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
@@ -758,9 +758,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderList"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
@@ -776,9 +779,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
 			if (p_render_data->reflection_probe.is_valid()) {
-				CameraMatrix correction;
+				Projection correction;
 				correction.set_depth_correction(true);
-				CameraMatrix projection = correction * p_render_data->cam_projection;
+				Projection projection = correction * p_render_data->cam_projection;
 				sky.draw(draw_list, env, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
 			} else {
 				sky.draw(draw_list, env, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
@@ -822,10 +825,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_switch_to_next_pass_split(thread_draw_lists.size(), thread_draw_lists.ptr());
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass();
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 			} else {
 				//single threaded
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
@@ -859,9 +864,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
-				thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 				RD::get_singleton()->draw_list_begin_split(framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-				RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, &render_list_params);
+				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, &render_list_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 				RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL);
 			} else {
 				//single threaded
@@ -900,7 +907,7 @@ void RenderForwardMobile::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
 
-void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
+void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RendererScene::RenderInfo *p_render_info) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -994,7 +1001,7 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1111,7 +1118,7 @@ void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_
 	// we don't do GI in low end..
 }
 
-void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
+void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
@@ -1543,11 +1550,11 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// This populates our UBO with main scene data that is pushed into set 1
 
-	//CameraMatrix projection = p_render_data->cam_projection;
+	//Projection projection = p_render_data->cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
-	CameraMatrix correction;
+	Projection correction;
 	correction.set_depth_correction(p_flip_y);
-	CameraMatrix projection = correction * p_render_data->cam_projection;
+	Projection projection = correction * p_render_data->cam_projection;
 
 	//store camera into ubo
 	RendererRD::MaterialStorage::store_camera(projection, scene_state.ubo.projection_matrix);
@@ -1771,7 +1778,7 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 
 void RenderForwardMobile::_render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params) {
 	uint32_t render_total = p_params->element_count;
-	uint32_t total_threads = RendererThreadPool::singleton->thread_work_pool.get_thread_count();
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
 	uint32_t render_from = p_thread * render_total / total_threads;
 	uint32_t render_to = (p_thread + 1 == total_threads) ? render_total : ((p_thread + 1) * render_total / total_threads);
 	_render_list(thread_draw_lists[p_thread], p_params->framebuffer_format, p_params, render_from, render_to);
@@ -1783,9 +1790,11 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 
 	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
 		//multi threaded
-		thread_draw_lists.resize(RendererThreadPool::singleton->thread_work_pool.get_thread_count());
+		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
-		RendererThreadPool::singleton->thread_work_pool.do_work(thread_draw_lists.size(), this, &RenderForwardMobile::_render_list_thread_function, p_params);
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderForwardMobile::_render_list_thread_function, p_params, thread_draw_lists.size(), -1, true, SNAME("ForwardMobileRenderSubpass"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 		RD::get_singleton()->draw_list_end(p_params->barrier);
 	} else {
 		//single threaded

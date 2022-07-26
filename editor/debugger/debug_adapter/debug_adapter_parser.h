@@ -93,4 +93,4 @@ public:
 	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const;
 };
 
-#endif
+#endif // DEBUG_ADAPTER_PARSER_H

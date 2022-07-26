@@ -226,9 +226,12 @@
 			<argument index="5" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<argument index="6" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
-				Returns the size of a bounding box of a string, taking kerning and advance into account.
+				Returns the size of a bounding box of a single-line string, taking kerning and advance into account. See also [method get_multiline_string_size] and [method draw_string].
+				For example, to get the string size as displayed by a single-line Label, use:
+				[codeblock]
+				var string_size = $Label.get_theme_font("font").get_string_size($Label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, $Label.get_theme_font_size("font_size"))
+				[/codeblock]
 				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
-				See also [method draw_string].
 			</description>
 		</method>
 		<method name="get_supported_chars" qualifiers="const">

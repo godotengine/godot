@@ -32,7 +32,9 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
 #include "servers/rendering_server.h"
+#include "shader_types.h"
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
@@ -573,6 +575,37 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 				}
 
 				return _make_token(TK_OP_MOD);
+			} break;
+			case '@': {
+				if (GETCHAR(0) == '@' && GETCHAR(1) == '>') {
+					char_idx += 2;
+
+					LocalVector<char32_t> incp;
+					while (GETCHAR(0) != '\n') {
+						incp.push_back(GETCHAR(0));
+						char_idx++;
+					}
+					incp.push_back(0); // Zero end it.
+					String include_path(incp.ptr());
+					include_positions.write[include_positions.size() - 1].line = tk_line;
+					FilePosition fp;
+					fp.file = include_path;
+					fp.line = 0;
+					tk_line = 0;
+					include_positions.push_back(fp);
+
+				} else if (GETCHAR(0) == '@' && GETCHAR(1) == '<') {
+					if (include_positions.size() == 1) {
+						return _make_token(TK_ERROR, "Invalid include exit hint @@< without matching enter hint.");
+					}
+					char_idx += 2;
+
+					include_positions.resize(include_positions.size() - 1); // Pop back.
+					tk_line = include_positions[include_positions.size() - 1].line; // Restore line.
+
+				} else {
+					return _make_token(TK_ERROR, "Invalid include enter/exit hint token (@@> and @@<)");
+				}
 			} break;
 			default: {
 				char_idx--; //go back one, since we have no idea what this is
@@ -1122,6 +1155,9 @@ void ShaderLanguage::clear() {
 	completion_base = TYPE_VOID;
 	completion_base_array = false;
 
+	include_positions.clear();
+	include_positions.push_back(FilePosition());
+
 #ifdef DEBUG_ENABLED
 	keyword_completion_context = CF_GLOBAL_SPACE;
 	used_constants.clear();
@@ -1183,17 +1219,36 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 #endif // DEBUG_ENABLED
 
 bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, ConstantNode::Value *r_constant_value) {
-	if (p_function_info.built_ins.has(p_identifier)) {
-		if (r_data_type) {
-			*r_data_type = p_function_info.built_ins[p_identifier].type;
+	if (is_shader_inc) {
+		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
+				if ((current_function == E.key || E.key == "global") && E.value.built_ins.has(p_identifier)) {
+					if (r_data_type) {
+						*r_data_type = E.value.built_ins[p_identifier].type;
+					}
+					if (r_is_const) {
+						*r_is_const = E.value.built_ins[p_identifier].constant;
+					}
+					if (r_type) {
+						*r_type = IDENTIFIER_BUILTIN_VAR;
+					}
+					return true;
+				}
+			}
 		}
-		if (r_is_const) {
-			*r_is_const = p_function_info.built_ins[p_identifier].constant;
+	} else {
+		if (p_function_info.built_ins.has(p_identifier)) {
+			if (r_data_type) {
+				*r_data_type = p_function_info.built_ins[p_identifier].type;
+			}
+			if (r_is_const) {
+				*r_is_const = p_function_info.built_ins[p_identifier].constant;
+			}
+			if (r_type) {
+				*r_type = IDENTIFIER_BUILTIN_VAR;
+			}
+			return true;
 		}
-		if (r_type) {
-			*r_type = IDENTIFIER_BUILTIN_VAR;
-		}
-		return true;
 	}
 
 	if (p_function_info.stage_functions.has(p_identifier)) {
@@ -3891,13 +3946,29 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				}
 			}
 		} break;
-		case ShaderLanguage::TYPE_IVEC2:
-		case ShaderLanguage::TYPE_IVEC3:
-		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC2:
+		case ShaderLanguage::TYPE_IVEC2: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR2I;
+			}
+		} break;
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_UVEC4: {
-			pi.type = Variant::PACKED_INT32_ARRAY;
+		case ShaderLanguage::TYPE_IVEC3: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR3I;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC4:
+		case ShaderLanguage::TYPE_IVEC4: {
+			if (p_uniform.array_size > 0) {
+				pi.type = Variant::PACKED_INT32_ARRAY;
+			} else {
+				pi.type = Variant::VECTOR4I;
+			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
 			if (p_uniform.array_size > 0) {
@@ -3945,7 +4016,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 					pi.type = Variant::COLOR;
 				} else {
-					pi.type = Variant::QUATERNION;
+					pi.type = Variant::VECTOR4;
 				}
 			}
 		} break;
@@ -3967,7 +4038,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_FLOAT32_ARRAY;
 			} else {
-				pi.type = Variant::TRANSFORM3D;
+				pi.type = Variant::PROJECTION;
 			}
 			break;
 		case ShaderLanguage::TYPE_SAMPLER2D:
@@ -7678,34 +7749,38 @@ Error ShaderLanguage::_validate_precision(DataType p_type, DataPrecision p_preci
 }
 
 Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types) {
-	Token tk = _get_token();
+	Token tk;
 	TkPos prev_pos;
 	Token next;
 
-	if (tk.type != TK_SHADER_TYPE) {
-		_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
+	if (!is_shader_inc) {
+		tk = _get_token();
+
+		if (tk.type != TK_SHADER_TYPE) {
+			_set_error(vformat(RTR("Expected '%s' at the beginning of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
 #ifdef DEBUG_ENABLED
-	keyword_completion_context = CF_UNSPECIFIED;
+		keyword_completion_context = CF_UNSPECIFIED;
 #endif // DEBUG_ENABLED
 
-	_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
-	if (shader_type_identifier == StringName()) {
-		_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	if (!p_shader_types.has(shader_type_identifier)) {
-		_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
-		return ERR_PARSE_ERROR;
-	}
-	prev_pos = _get_tkpos();
-	tk = _get_token();
+		_get_completable_identifier(nullptr, COMPLETION_SHADER_TYPE, shader_type_identifier);
+		if (shader_type_identifier == StringName()) {
+			_set_error(vformat(RTR("Expected an identifier after '%s', indicating the type of shader. Valid types are: %s."), "shader_type", _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		if (!p_shader_types.has(shader_type_identifier)) {
+			_set_error(vformat(RTR("Invalid shader type. Valid types are: %s"), _get_shader_type_list(p_shader_types)));
+			return ERR_PARSE_ERROR;
+		}
+		prev_pos = _get_tkpos();
+		tk = _get_token();
 
-	if (tk.type != TK_SEMICOLON) {
-		_set_tkpos(prev_pos);
-		_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
-		return ERR_PARSE_ERROR;
+		if (tk.type != TK_SEMICOLON) {
+			_set_tkpos(prev_pos);
+			_set_expected_after_error(";", "shader_type " + String(shader_type_identifier));
+			return ERR_PARSE_ERROR;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
@@ -7760,25 +7835,54 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 					bool found = false;
 
-					for (int i = 0; i < p_render_modes.size(); i++) {
-						const ModeInfo &info = p_render_modes[i];
-						const String name = String(info.name);
+					if (is_shader_inc) {
+						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+							const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
 
-						if (smode.begins_with(name)) {
-							if (!info.options.is_empty()) {
-								if (info.options.has(smode.substr(name.length() + 1))) {
-									found = true;
+							for (int j = 0; j < modes.size(); j++) {
+								const ModeInfo &info = modes[j];
+								const String name = String(info.name);
 
-									if (defined_modes.has(name)) {
-										_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
-										return ERR_PARSE_ERROR;
+								if (smode.begins_with(name)) {
+									if (!info.options.is_empty()) {
+										if (info.options.has(smode.substr(name.length() + 1))) {
+											found = true;
+
+											if (defined_modes.has(name)) {
+												_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
+												return ERR_PARSE_ERROR;
+											}
+											defined_modes.insert(name, smode);
+											break;
+										}
+									} else {
+										found = true;
+										break;
 									}
-									defined_modes.insert(name, smode);
+								}
+							}
+						}
+					} else {
+						for (int i = 0; i < p_render_modes.size(); i++) {
+							const ModeInfo &info = p_render_modes[i];
+							const String name = String(info.name);
+
+							if (smode.begins_with(name)) {
+								if (!info.options.is_empty()) {
+									if (info.options.has(smode.substr(name.length() + 1))) {
+										found = true;
+
+										if (defined_modes.has(name)) {
+											_set_error(vformat(RTR("Redefinition of render mode: '%s'. The '%s' mode has already been set to '%s'."), smode, name, defined_modes[name]));
+											return ERR_PARSE_ERROR;
+										}
+										defined_modes.insert(name, smode);
+										break;
+									}
+								} else {
+									found = true;
 									break;
 								}
-							} else {
-								found = true;
-								break;
 							}
 						}
 					}
@@ -9508,9 +9612,11 @@ uint32_t ShaderLanguage::get_warning_flags() const {
 
 Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_info) {
 	clear();
+	is_shader_inc = p_info.is_include;
 
 	code = p_code;
 	global_var_get_type_func = p_info.global_variable_type_func;
+
 	varying_function_names = p_info.varying_function_names;
 
 	nodes = nullptr;
@@ -9532,6 +9638,7 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 
 Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint) {
 	clear();
+	is_shader_inc = p_info.is_include;
 
 	code = p_code;
 	varying_function_names = p_info.varying_function_names;
@@ -9577,30 +9684,64 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			return OK;
 		} break;
 		case COMPLETION_RENDER_MODE: {
-			for (int i = 0; i < p_info.render_modes.size(); i++) {
-				const ModeInfo &info = p_info.render_modes[i];
+			if (is_shader_inc) {
+				for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+					const Vector<ModeInfo> modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
 
-				if (!info.options.is_empty()) {
-					bool found = false;
+					for (int j = 0; j < modes.size(); j++) {
+						const ModeInfo &info = modes[j];
 
-					for (int j = 0; j < info.options.size(); j++) {
-						if (shader->render_modes.has(String(info.name) + "_" + String(info.options[j]))) {
-							found = true;
+						if (!info.options.is_empty()) {
+							bool found = false;
+
+							for (int k = 0; k < info.options.size(); k++) {
+								if (shader->render_modes.has(String(info.name) + "_" + String(info.options[k]))) {
+									found = true;
+								}
+							}
+
+							if (!found) {
+								for (int k = 0; k < info.options.size(); k++) {
+									ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[k]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+									r_options->push_back(option);
+								}
+							}
+						} else {
+							const String name = String(info.name);
+
+							if (!shader->render_modes.has(name)) {
+								ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								r_options->push_back(option);
+							}
 						}
 					}
+				}
+			} else {
+				for (int i = 0; i < p_info.render_modes.size(); i++) {
+					const ModeInfo &info = p_info.render_modes[i];
 
-					if (!found) {
+					if (!info.options.is_empty()) {
+						bool found = false;
+
 						for (int j = 0; j < info.options.size(); j++) {
-							ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+							if (shader->render_modes.has(String(info.name) + "_" + String(info.options[j]))) {
+								found = true;
+							}
+						}
+
+						if (!found) {
+							for (int j = 0; j < info.options.size(); j++) {
+								ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								r_options->push_back(option);
+							}
+						}
+					} else {
+						const String name = String(info.name);
+
+						if (!shader->render_modes.has(name)) {
+							ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 							r_options->push_back(option);
 						}
-					}
-				} else {
-					const String name = String(info.name);
-
-					if (!shader->render_modes.has(name)) {
-						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-						r_options->push_back(option);
 					}
 				}
 			}
@@ -9668,33 +9809,69 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				if (comp_ident) {
-					if (p_info.functions.has("global")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
-							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
-							if (E.value.constant) {
-								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
-							}
-							matches.insert(E.key, kind);
-						}
-					}
+					if (is_shader_inc) {
+						for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
+							const HashMap<StringName, ShaderLanguage::FunctionInfo> info = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i));
 
-					if (p_info.functions.has("constants")) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
-							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
-							if (E.value.constant) {
-								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+							if (info.has("global")) {
+								for (const KeyValue<StringName, BuiltInInfo> &E : info["global"].built_ins) {
+									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									if (E.value.constant) {
+										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									}
+									matches.insert(E.key, kind);
+								}
 							}
-							matches.insert(E.key, kind);
-						}
-					}
 
-					if (skip_function != StringName() && p_info.functions.has(skip_function)) {
-						for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
-							ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
-							if (E.value.constant) {
-								kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+							if (info.has("constants")) {
+								for (const KeyValue<StringName, BuiltInInfo> &E : info["constants"].built_ins) {
+									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									if (E.value.constant) {
+										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									}
+									matches.insert(E.key, kind);
+								}
 							}
-							matches.insert(E.key, kind);
+
+							if (skip_function != StringName() && info.has(skip_function)) {
+								for (const KeyValue<StringName, BuiltInInfo> &E : info[skip_function].built_ins) {
+									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									if (E.value.constant) {
+										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									}
+									matches.insert(E.key, kind);
+								}
+							}
+						}
+					} else {
+						if (p_info.functions.has("global")) {
+							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
+								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								if (E.value.constant) {
+									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+								}
+								matches.insert(E.key, kind);
+							}
+						}
+
+						if (p_info.functions.has("constants")) {
+							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
+								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								if (E.value.constant) {
+									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+								}
+								matches.insert(E.key, kind);
+							}
+						}
+
+						if (skip_function != StringName() && p_info.functions.has(skip_function)) {
+							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
+								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								if (E.value.constant) {
+									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+								}
+								matches.insert(E.key, kind);
+							}
 						}
 					}
 
@@ -10064,6 +10241,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 String ShaderLanguage::get_error_text() {
 	return error_str;
+}
+
+Vector<ShaderLanguage::FilePosition> ShaderLanguage::get_include_positions() {
+	return include_positions;
 }
 
 int ShaderLanguage::get_error_line() {

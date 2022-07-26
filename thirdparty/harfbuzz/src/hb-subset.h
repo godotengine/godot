@@ -100,6 +100,8 @@ typedef enum { /*< flags >*/
  * @HB_SUBSET_SETS_NAME_LANG_ID: the set of name lang ids that will be retained.
  * @HB_SUBSET_SETS_LAYOUT_FEATURE_TAG: the set of layout feature tags that will be retained
  * in the subset.
+ * @HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG: the set of layout script tags that will be retained
+ * in the subset. Defaults to all tags. Since: 5.0.0
  *
  * List of sets that can be configured on the subset input.
  *
@@ -113,6 +115,7 @@ typedef enum {
   HB_SUBSET_SETS_NAME_ID,
   HB_SUBSET_SETS_NAME_LANG_ID,
   HB_SUBSET_SETS_LAYOUT_FEATURE_TAG,
+  HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG,
 } hb_subset_sets_t;
 
 HB_EXTERN hb_subset_input_t *
@@ -150,6 +153,21 @@ hb_subset_input_get_flags (hb_subset_input_t *input);
 HB_EXTERN void
 hb_subset_input_set_flags (hb_subset_input_t *input,
 			   unsigned value);
+
+#ifdef HB_EXPERIMENTAL_API
+#ifndef HB_NO_VAR
+HB_EXTERN hb_bool_t
+hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
+				     hb_face_t          *face,
+				     hb_tag_t            axis_tag);
+
+HB_EXTERN hb_bool_t
+hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
+				   hb_face_t          *face,
+				   hb_tag_t            axis_tag,
+				   float               axis_value);
+#endif
+#endif
 
 HB_EXTERN hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input);

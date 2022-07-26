@@ -31,7 +31,7 @@
 #ifndef MATERIAL_STORAGE_RD_H
 #define MATERIAL_STORAGE_RD_H
 
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -57,6 +57,7 @@ enum ShaderType {
 
 struct ShaderData {
 	virtual void set_code(const String &p_Code) = 0;
+	virtual void set_path_hint(const String &p_hint) = 0;
 	virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) = 0;
 	virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
 
@@ -77,6 +78,7 @@ struct Material;
 struct Shader {
 	ShaderData *data = nullptr;
 	String code;
+	String path_hint;
 	ShaderType type;
 	HashMap<StringName, HashMap<int, RID>> default_texture_parameter;
 	HashSet<Material *> owners;
@@ -300,7 +302,7 @@ public:
 		p_array[11] = p_mtx.origin.z;
 	}
 
-	static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				p_array[i * 4 + j] = p_mtx.matrix[i][j];
@@ -364,6 +366,7 @@ public:
 	virtual void shader_free(RID p_rid) override;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) override;
+	virtual void shader_set_path_hint(RID p_shader, const String &p_path) override;
 	virtual String shader_get_code(RID p_shader) const override;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const override;
 
@@ -421,4 +424,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !MATERIAL_STORAGE_RD_H
+#endif // MATERIAL_STORAGE_RD_H

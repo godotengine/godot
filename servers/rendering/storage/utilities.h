@@ -183,4 +183,4 @@ public:
 	virtual String get_video_adapter_api_version() const = 0;
 };
 
-#endif // !RENDERER_UTILITIES_H
+#endif // RENDERER_UTILITIES_H

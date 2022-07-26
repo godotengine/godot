@@ -278,6 +278,11 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 			GDScriptFunction *func = E.value;
 			MethodInfo mi;
 			mi.name = E.key;
+
+			if (func->is_static()) {
+				mi.flags |= METHOD_FLAG_STATIC;
+			}
+
 			for (int i = 0; i < func->get_argument_count(); i++) {
 				PropertyInfo arginfo = func->get_argument_type(i);
 #ifdef TOOLS_ENABLED

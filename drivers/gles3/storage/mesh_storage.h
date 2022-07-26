@@ -543,4 +543,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !MESH_STORAGE_GLES3_H
+#endif // MESH_STORAGE_GLES3_H

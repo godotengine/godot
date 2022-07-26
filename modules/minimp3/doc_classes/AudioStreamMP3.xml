@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
+		</member>
+		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+		</member>
+		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
+		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contains the audio data in bytes.
 			You can load a file without having to import it beforehand using the code snippet below. Keep in mind that this snippet loads the whole file into memory and may not be ideal for huge files (hundreds of megabytes or more).

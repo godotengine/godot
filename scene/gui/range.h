@@ -106,4 +106,4 @@ public:
 	~Range();
 };
 
-#endif
+#endif // RANGE_H

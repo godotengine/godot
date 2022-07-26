@@ -93,4 +93,4 @@ public:
 
 #endif // GLES3_ENABLED
 
-#endif // !GI_GLES3_H
+#endif // GI_GLES3_H

@@ -18,8 +18,7 @@
 			<argument index="0" name="group" type="StringName" />
 			<argument index="1" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
-				[b]Note:[/b] Due to design limitations, [method call_group] will fail silently if one of the arguments is [code]null[/code].
+				Calls [code]method[/code] on each member of the given group. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
 				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
 			</description>
 		</method>
@@ -29,12 +28,11 @@
 			<argument index="1" name="group" type="StringName" />
 			<argument index="2" name="method" type="StringName" />
 			<description>
-				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call.
+				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags]. You can pass arguments to [code]method[/code] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
 				[codeblock]
 				# Call the method in a deferred manner and in reverse order.
 				get_tree().call_group_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
 				[/codeblock]
-				[b]Note:[/b] Due to design limitations, [method call_group_flags] will fail silently if one of the arguments is [code]null[/code].
 				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [code]flags[/code] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
 			</description>
 		</method>

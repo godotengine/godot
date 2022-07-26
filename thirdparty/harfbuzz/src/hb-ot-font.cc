@@ -151,7 +151,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   const OT::hmtx_accelerator_t &hmtx = *ot_face->hmtx;
 
 #ifndef HB_NO_VAR
-  const OT::HVARVVAR &HVAR = *hmtx.var_table;
+  const OT::HVAR &HVAR = *hmtx.var_table;
   const OT::VariationStore &varStore = &HVAR + HVAR.varStore;
   OT::VariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
 
@@ -190,7 +190,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   {
     for (unsigned int i = 0; i < count; i++)
     {
-      *first_advance = font->em_scale_x (hmtx.get_advance (*first_glyph, font, varStore_cache));
+      *first_advance = font->em_scale_x (hmtx.get_advance_with_var_unscaled (*first_glyph, font, varStore_cache));
       first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
@@ -211,7 +211,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 	v = cv;
       else
       {
-        v = hmtx.get_advance (*first_glyph, font, varStore_cache);
+        v = hmtx.get_advance_with_var_unscaled (*first_glyph, font, varStore_cache);
 	ot_font->advance_cache->set (*first_glyph, v);
       }
       *first_advance = font->em_scale_x (v);
@@ -242,7 +242,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
   if (vmtx.has_data ())
   {
 #ifndef HB_NO_VAR
-    const OT::HVARVVAR &VVAR = *vmtx.var_table;
+    const OT::VVAR &VVAR = *vmtx.var_table;
     const OT::VariationStore &varStore = &VVAR + VVAR.varStore;
     OT::VariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
 #else
@@ -251,7 +251,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
 
     for (unsigned int i = 0; i < count; i++)
     {
-      *first_advance = font->em_scale_y (-(int) vmtx.get_advance (*first_glyph, font, varStore_cache));
+      *first_advance = font->em_scale_y (-(int) vmtx.get_advance_with_var_unscaled (*first_glyph, font, varStore_cache));
       first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
@@ -293,17 +293,28 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
   const OT::VORG &VORG = *ot_face->VORG;
   if (VORG.has_data ())
   {
-    *y = font->em_scale_y (VORG.get_y_origin (glyph));
+    float delta = 0;
+
+#ifndef HB_NO_VAR
+    const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
+    const OT::VVAR &VVAR = *vmtx.var_table;
+    if (font->num_coords)
+      VVAR.get_vorg_delta_unscaled (glyph,
+				    font->coords, font->num_coords,
+				    &delta);
+#endif
+
+    *y = font->em_scalef_y (VORG.get_y_origin (glyph) + delta);
     return true;
   }
 
   hb_glyph_extents_t extents = {0};
   if (ot_face->glyf->get_extents (font, glyph, &extents))
   {
-    if (ot_face->vmtx->has_data ())
+    const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
+    int tsb = 0;
+    if (vmtx.get_leading_bearing_with_var_unscaled (font, glyph, &tsb))
     {
-      const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
-      hb_position_t tsb = vmtx.get_side_bearing (font, glyph);
       *y = extents.y_bearing + font->em_scale_y (tsb);
       return true;
     }
@@ -503,16 +514,17 @@ hb_ot_font_set_funcs (hb_font_t *font)
 }
 
 #ifndef HB_NO_VAR
-int
-_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+bool
+_glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical,
+					     int *lsb)
 {
-  return font->face->table.glyf->get_side_bearing_var (font, glyph, is_vertical);
+  return font->face->table.glyf->get_leading_bearing_with_var_unscaled (font, glyph, is_vertical, lsb);
 }
 
 unsigned
-_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+_glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
 {
-  return font->face->table.glyf->get_advance_var (font, glyph, is_vertical);
+  return font->face->table.glyf->get_advance_with_var_unscaled (font, glyph, is_vertical);
 }
 #endif
 

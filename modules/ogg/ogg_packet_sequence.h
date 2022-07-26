@@ -86,7 +86,7 @@ public:
 	// Returns the granule position of the last page in this sequence.
 	int64_t get_final_granule_pos() const;
 
-	Ref<OGGPacketSequencePlayback> instance_playback();
+	Ref<OGGPacketSequencePlayback> instantiate_playback();
 
 	OGGPacketSequence() {}
 	virtual ~OGGPacketSequence() {}

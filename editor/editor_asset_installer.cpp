@@ -112,6 +112,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["glb"] = tree->get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons"));
 
 		extension_guess["gdshader"] = tree->get_theme_icon(SNAME("Shader"), SNAME("EditorIcons"));
+		extension_guess["gdshaderinc"] = tree->get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons"));
 		extension_guess["gd"] = tree->get_theme_icon(SNAME("GDScript"), SNAME("EditorIcons"));
 		if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 			extension_guess["cs"] = tree->get_theme_icon(SNAME("CSharpScript"), SNAME("EditorIcons"));

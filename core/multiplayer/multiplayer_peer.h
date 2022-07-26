@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NETWORKED_MULTIPLAYER_PEER_H
-#define NETWORKED_MULTIPLAYER_PEER_H
+#ifndef MULTIPLAYER_PEER_H
+#define MULTIPLAYER_PEER_H
 
 #include "core/io/packet_peer.h"
 #include "core/multiplayer/multiplayer.h"
@@ -93,6 +93,8 @@ class MultiplayerPeerExtension : public MultiplayerPeer {
 protected:
 	static void _bind_methods();
 
+	PackedByteArray script_buffer;
+
 public:
 	/* PacketPeer */
 	virtual int get_available_packet_count() const override;
@@ -126,6 +128,10 @@ public:
 	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
 	GDVIRTUAL0RC(int, _get_max_packet_size);
 
+	/* PacketPeer GDScript */
+	GDVIRTUAL0R(PackedByteArray, _get_packet_script);
+	GDVIRTUAL1R(int, _put_packet_script, PackedByteArray);
+
 	/* MultiplayerPeer GDExtension */
 	GDVIRTUAL1(_set_transfer_channel, int);
 	GDVIRTUAL0RC(int, _get_transfer_channel);
@@ -141,4 +147,4 @@ public:
 	GDVIRTUAL0RC(int, _get_connection_status);
 };
 
-#endif // NETWORKED_MULTIPLAYER_PEER_H
+#endif // MULTIPLAYER_PEER_H

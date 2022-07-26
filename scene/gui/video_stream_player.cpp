@@ -225,7 +225,7 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	stream = p_stream;
 	if (stream.is_valid()) {
 		stream->set_audio_track(audio_track);
-		playback = stream->instance_playback();
+		playback = stream->instantiate_playback();
 	} else {
 		playback = Ref<VideoStreamPlayback>();
 	}

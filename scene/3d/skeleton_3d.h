@@ -288,4 +288,4 @@ public:
 	~Skeleton3D();
 };
 
-#endif
+#endif // SKELETON_3D_H

@@ -7,7 +7,7 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
 struct ContextSubst : Context {};
 

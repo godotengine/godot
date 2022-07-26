@@ -74,4 +74,4 @@ public:
 	~LightmapRaycasterEmbree();
 };
 
-#endif
+#endif // LIGHTMAP_RAYCASTER_H

@@ -7,6 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
+		</member>
+		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+		</member>
+		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
+		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
 			If [code]true[/code], the stream will automatically loop when it reaches the end.
 		</member>

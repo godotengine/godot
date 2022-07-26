@@ -723,7 +723,12 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_child(int p_idx) {
 	_create_children_cache();
+
+	if (p_idx < 0) {
+		p_idx += children_cache.size();
+	}
 	ERR_FAIL_INDEX_V(p_idx, children_cache.size(), nullptr);
+
 	return children_cache.get(p_idx);
 }
 

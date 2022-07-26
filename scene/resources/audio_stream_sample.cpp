@@ -406,6 +406,10 @@ int AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, int
 	return p_frames;
 }
 
+void AudioStreamPlaybackSample::tag_used_streams() {
+	base->tag_used(get_playback_position());
+}
+
 AudioStreamPlaybackSample::AudioStreamPlaybackSample() {}
 
 /////////////////////
@@ -599,7 +603,7 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	return OK;
 }
 
-Ref<AudioStreamPlayback> AudioStreamSample::instance_playback() {
+Ref<AudioStreamPlayback> AudioStreamSample::instantiate_playback() {
 	Ref<AudioStreamPlaybackSample> sample;
 	sample.instantiate();
 	sample->base = Ref<AudioStreamSample>(this);

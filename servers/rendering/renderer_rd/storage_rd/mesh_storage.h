@@ -703,4 +703,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !MESH_STORAGE_RD_H
+#endif // MESH_STORAGE_RD_H

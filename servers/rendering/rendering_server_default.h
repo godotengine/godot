@@ -224,6 +224,7 @@ public:
 	FUNCRIDSPLIT(shader)
 
 	FUNC2(shader_set_code, RID, const String &)
+	FUNC2(shader_set_path_hint, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
 
 	FUNC2SC(shader_get_param_list, RID, List<PropertyInfo> *)
@@ -980,4 +981,4 @@ public:
 	~RenderingServerDefault();
 };
 
-#endif
+#endif // RENDERING_SERVER_DEFAULT_H

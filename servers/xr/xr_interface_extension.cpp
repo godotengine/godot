@@ -258,12 +258,12 @@ Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const 
 	return Transform3D();
 }
 
-CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
-	CameraMatrix cm;
+Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+	Projection cm;
 	PackedFloat64Array arr;
 
 	if (GDVIRTUAL_CALL(_get_projection_for_view, p_view, p_aspect, p_z_near, p_z_far, arr)) {
-		ERR_FAIL_COND_V_MSG(arr.size() != 16, CameraMatrix(), "Projection matrix must contain 16 floats");
+		ERR_FAIL_COND_V_MSG(arr.size() != 16, Projection(), "Projection matrix must contain 16 floats");
 		real_t *m = (real_t *)cm.matrix;
 		for (int i = 0; i < 16; i++) {
 			m[i] = arr[i];
@@ -271,7 +271,7 @@ CameraMatrix XRInterfaceExtension::get_projection_for_view(uint32_t p_view, doub
 		return cm;
 	}
 
-	return CameraMatrix();
+	return Projection();
 }
 
 RID XRInterfaceExtension::get_vrs_texture() {

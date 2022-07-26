@@ -75,6 +75,7 @@ public:
 	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
 	Gradient::InterpolationMode get_interpolation_mode();
 	ColorPicker *get_picker();
+	PopupPanel *get_popup();
 
 	virtual Size2 get_minimum_size() const override;
 

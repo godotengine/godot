@@ -31,12 +31,13 @@
 
 namespace OT {
 
-struct DeltaSetIndexMapFormat0
+template <typename MapCountT>
+struct DeltaSetIndexMapFormat01
 {
   friend struct DeltaSetIndexMap;
 
   private:
-  DeltaSetIndexMapFormat0* copy (hb_serialize_context_t *c) const
+  DeltaSetIndexMapFormat01* copy (hb_serialize_context_t *c) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
@@ -128,56 +129,12 @@ struct DeltaSetIndexMapFormat0
   HBUINT8       format;         /* Format identifier--format = 0 */
   HBUINT8       entryFormat;    /* A packed field that describes the compressed
                                  * representation of delta-set indices. */
-  HBUINT16      mapCount;       /* The number of mapping entries. */
+  MapCountT     mapCount;       /* The number of mapping entries. */
   UnsizedArrayOf<HBUINT8>
                 mapDataZ;       /* The delta-set index mapping data. */
 
   public:
-  DEFINE_SIZE_ARRAY (4, mapDataZ);
-};
-
-struct DeltaSetIndexMapFormat1
-{
-  friend struct DeltaSetIndexMap;
-
-  private:
-  DeltaSetIndexMapFormat1* copy (hb_serialize_context_t *c) const
-  {
-    TRACE_SERIALIZE (this);
-    auto *out = c->start_embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
-
-    unsigned total_size = min_size + mapCount * get_width ();
-    HBUINT8 *p = c->allocate_size<HBUINT8> (total_size);
-    if (unlikely (!p)) return_trace (nullptr);
-
-    memcpy (p, this, HBUINT8::static_size * total_size);
-    return_trace (out);
-  }
-
-  unsigned get_map_count () const       { return mapCount; }
-  unsigned get_width () const           { return ((entryFormat >> 4) & 3) + 1; }
-  unsigned get_inner_bit_count () const { return (entryFormat & 0xF) + 1; }
-
-  bool sanitize (hb_sanitize_context_t *c) const
-  {
-    TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-                  c->check_range (mapDataZ.arrayZ,
-                                  mapCount,
-                                  get_width ()));
-  }
-
-  protected:
-  HBUINT8       format;         /* Format identifier--format = 1 */
-  HBUINT8       entryFormat;    /* A packed field that describes the compressed
-                                 * representation of delta-set indices. */
-  HBUINT32      mapCount;       /* The number of mapping entries. */
-  UnsizedArrayOf<HBUINT8>
-                mapDataZ;       /* The delta-set index mapping data. */
-
-  public:
-  DEFINE_SIZE_ARRAY (6, mapDataZ);
+  DEFINE_SIZE_ARRAY (2+MapCountT::static_size, mapDataZ);
 };
 
 struct DeltaSetIndexMap
@@ -186,8 +143,11 @@ struct DeltaSetIndexMap
   bool serialize (hb_serialize_context_t *c, const T &plan)
   {
     TRACE_SERIALIZE (this);
+    unsigned length = plan.get_output_map ().length;
+    u.format = length <= 0xFFFF ? 0 : 1;
     switch (u.format) {
     case 0: return_trace (u.format0.serialize (c, plan));
+    case 1: return_trace (u.format1.serialize (c, plan));
     default:return_trace (false);
     }
   }
@@ -196,6 +156,7 @@ struct DeltaSetIndexMap
   {
     switch (u.format) {
     case 0: return (u.format0.map (v));
+    case 1: return (u.format1.map (v));
     default:return v;
     }
   }
@@ -250,9 +211,9 @@ struct DeltaSetIndexMap
 
   protected:
   union {
-  HBUINT8                       format;         /* Format identifier */
-  DeltaSetIndexMapFormat0       format0;
-  DeltaSetIndexMapFormat1       format1;
+  HBUINT8                            format;         /* Format identifier */
+  DeltaSetIndexMapFormat01<HBUINT16> format0;
+  DeltaSetIndexMapFormat01<HBUINT32> format1;
   } u;
   public:
   DEFINE_SIZE_UNION (1, format);

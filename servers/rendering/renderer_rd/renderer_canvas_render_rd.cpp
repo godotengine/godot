@@ -1584,7 +1584,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		RD::InitialAction initial_action = i == 0 ? RD::INITIAL_ACTION_CLEAR_REGION : RD::INITIAL_ACTION_CLEAR_REGION_CONTINUE;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, initial_action, i != 3 ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, initial_action, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
-		CameraMatrix projection;
+		Projection projection;
 		{
 			real_t fov = 90;
 			real_t nearp = p_near;
@@ -1600,7 +1600,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		}
 
 		Vector3 cam_target = Basis(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
-		projection = projection * CameraMatrix(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
+		projection = projection * Projection(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
@@ -1673,9 +1673,9 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
-	CameraMatrix projection;
+	Projection projection;
 	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
-	projection = projection * CameraMatrix(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
+	projection = projection * Projection(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
 
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
@@ -1743,7 +1743,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc);
 
-	CameraMatrix projection;
+	Projection projection;
 
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
@@ -1966,6 +1966,10 @@ void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::
 	OccluderPolygon *oc = occluder_polygon_owner.get_or_null(p_occluder);
 	ERR_FAIL_COND(!oc);
 	oc->cull_mode = p_mode;
+}
+
+void RendererCanvasRenderRD::CanvasShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
 }
 
 void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {

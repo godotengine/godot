@@ -71,4 +71,5 @@ public:
 	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
 	EditorDebuggerTree();
 };
+
 #endif // EDITOR_DEBUGGER_TREE_H

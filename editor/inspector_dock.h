@@ -153,4 +153,4 @@ public:
 	~InspectorDock();
 };
 
-#endif
+#endif // INSPECTOR_DOCK_H

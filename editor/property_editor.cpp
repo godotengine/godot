@@ -828,13 +828,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
-
-				// get default color picker mode from editor settings
-				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-				color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-
-				int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-				color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+				color_picker->connect("show", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
 			}
 
 			color_picker->show();

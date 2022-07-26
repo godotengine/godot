@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CAPSULE_SHAPE_H
-#define CAPSULE_SHAPE_H
+#ifndef CAPSULE_SHAPE_3D_H
+#define CAPSULE_SHAPE_3D_H
 
 #include "scene/resources/shape_3d.h"
 
@@ -55,4 +55,4 @@ public:
 	CapsuleShape3D();
 };
 
-#endif // CAPSULE_SHAPE_H
+#endif // CAPSULE_SHAPE_3D_H

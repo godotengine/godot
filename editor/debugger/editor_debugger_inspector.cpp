@@ -126,25 +126,25 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 }
 
 ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
-	EditorDebuggerRemoteObject *debugObj = nullptr;
+	EditorDebuggerRemoteObject *debug_obj = nullptr;
 
 	SceneDebuggerObject obj;
 	obj.deserialize(p_arr);
 	ERR_FAIL_COND_V(obj.id.is_null(), ObjectID());
 
 	if (remote_objects.has(obj.id)) {
-		debugObj = remote_objects[obj.id];
+		debug_obj = remote_objects[obj.id];
 	} else {
-		debugObj = memnew(EditorDebuggerRemoteObject);
-		debugObj->remote_object_id = obj.id;
-		debugObj->type_name = obj.class_name;
-		remote_objects[obj.id] = debugObj;
-		debugObj->connect("value_edited", callable_mp(this, &EditorDebuggerInspector::_object_edited));
+		debug_obj = memnew(EditorDebuggerRemoteObject);
+		debug_obj->remote_object_id = obj.id;
+		debug_obj->type_name = obj.class_name;
+		remote_objects[obj.id] = debug_obj;
+		debug_obj->connect("value_edited", callable_mp(this, &EditorDebuggerInspector::_object_edited));
 	}
 
-	int old_prop_size = debugObj->prop_list.size();
+	int old_prop_size = debug_obj->prop_list.size();
 
-	debugObj->prop_list.clear();
+	debug_obj->prop_list.clear();
 	int new_props_added = 0;
 	HashSet<String> changed;
 	for (int i = 0; i < obj.properties.size(); i++) {
@@ -165,12 +165,14 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 				var = ResourceLoader::load(path);
 
 				if (pinfo.hint_string == "Script") {
-					if (debugObj->get_script() != var) {
-						debugObj->set_script(Ref<RefCounted>());
+					if (debug_obj->get_script() != var) {
+						debug_obj->set_script(Ref<RefCounted>());
 						Ref<Script> script(var);
 						if (!script.is_null()) {
-							ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
-							debugObj->set_script_and_instance(var, script_instance);
+							ScriptInstance *script_instance = script->placeholder_instance_create(debug_obj);
+							if (script_instance) {
+								debug_obj->set_script_and_instance(var, script_instance);
+							}
 						}
 					}
 				}
@@ -178,27 +180,27 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		}
 
 		//always add the property, since props may have been added or removed
-		debugObj->prop_list.push_back(pinfo);
+		debug_obj->prop_list.push_back(pinfo);
 
-		if (!debugObj->prop_values.has(pinfo.name)) {
+		if (!debug_obj->prop_values.has(pinfo.name)) {
 			new_props_added++;
-			debugObj->prop_values[pinfo.name] = var;
+			debug_obj->prop_values[pinfo.name] = var;
 		} else {
-			if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debugObj->prop_values[pinfo.name], var))) {
-				debugObj->prop_values[pinfo.name] = var;
+			if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debug_obj->prop_values[pinfo.name], var))) {
+				debug_obj->prop_values[pinfo.name] = var;
 				changed.insert(pinfo.name);
 			}
 		}
 	}
 
-	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
+	if (old_prop_size == debug_obj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
 		for (const String &E : changed) {
-			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E);
+			emit_signal(SNAME("object_property_updated"), debug_obj->remote_object_id, E);
 		}
 	} else {
 		//full update, because props were added or removed
-		debugObj->update();
+		debug_obj->update();
 	}
 	return obj.id;
 }

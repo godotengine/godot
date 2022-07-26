@@ -4025,6 +4025,8 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR2I), create_node_deconst_typed<Variant::Type::VECTOR2I>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR3), create_node_deconst_typed<Variant::Type::VECTOR3>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR3I), create_node_deconst_typed<Variant::Type::VECTOR3I>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR4), create_node_deconst_typed<Variant::Type::VECTOR4>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR4I), create_node_deconst_typed<Variant::Type::VECTOR4I>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::COLOR), create_node_deconst_typed<Variant::Type::COLOR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::RECT2), create_node_deconst_typed<Variant::Type::RECT2>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::RECT2I), create_node_deconst_typed<Variant::Type::RECT2I>);
@@ -4034,6 +4036,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::AABB), create_node_deconst_typed<Variant::Type::AABB>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::BASIS), create_node_deconst_typed<Variant::Type::BASIS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM3D), create_node_deconst_typed<Variant::Type::TRANSFORM3D>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::PROJECTION), create_node_deconst_typed<Variant::Type::PROJECTION>);
 	VisualScriptLanguage::singleton->add_register_func("functions/compose_array", create_node_generic<VisualScriptComposeArray>);
 
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {

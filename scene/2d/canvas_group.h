@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CANVASGROUP_H
-#define CANVASGROUP_H
+#ifndef CANVAS_GROUP_H
+#define CANVAS_GROUP_H
 
 #include "scene/2d/node_2d.h"
 
@@ -56,4 +56,4 @@ public:
 	~CanvasGroup();
 };
 
-#endif // CANVASGROUP_H
+#endif // CANVAS_GROUP_H

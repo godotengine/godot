@@ -105,7 +105,7 @@ struct IntType
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
   protected:
   BEInt<Type, Size> v;
@@ -170,7 +170,7 @@ struct LONGDATETIME
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
   protected:
   HBINT32 major;
@@ -195,6 +195,10 @@ struct Tag : HBUINT32
 struct HBGlyphID16 : HBUINT16
 {
   HBGlyphID16& operator = (uint16_t i) { HBUINT16::operator= (i); return *this; }
+};
+struct HBGlyphID24 : HBUINT24
+{
+  HBGlyphID24& operator = (uint32_t i) { HBUINT24::operator= (i); return *this; }
 };
 
 /* Script/language-system/feature index */
@@ -300,6 +304,10 @@ struct _hb_has_null<Type, true>
 template <typename Type, typename OffsetType, bool has_null=true>
 struct OffsetTo : Offset<OffsetType, has_null>
 {
+  // Make sure Type is not unbounded; works only for types that are fully defined at OffsetTo time.
+  static_assert (has_null == false ||
+		 (hb_has_null_size (Type) || !hb_has_min_size (Type)), "");
+
   HB_DELETE_COPY_ASSIGN (OffsetTo);
   OffsetTo () = default;
 
@@ -450,14 +458,16 @@ struct UnsizedArrayOf
   {
     unsigned int i = (unsigned int) i_;
     const Type *p = &arrayZ[i];
-    if (unlikely (p < arrayZ)) return Null (Type); /* Overflowed. */
+    if (unlikely ((const void *) p < (const void *) arrayZ)) return Null (Type); /* Overflowed. */
+    _hb_compiler_memory_r_barrier ();
     return *p;
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     Type *p = &arrayZ[i];
-    if (unlikely (p < arrayZ)) return Crap (Type); /* Overflowed. */
+    if (unlikely ((const void *) p < (const void *) arrayZ)) return Crap (Type); /* Overflowed. */
+    _hb_compiler_memory_r_barrier ();
     return *p;
   }
 
@@ -550,14 +560,16 @@ struct UnsizedListOfOffset16To : UnsizedArray16OfOffsetTo<Type, OffsetType, has_
   {
     unsigned int i = (unsigned int) i_;
     const OffsetTo<Type, OffsetType, has_null> *p = &this->arrayZ[i];
-    if (unlikely (p < this->arrayZ)) return Null (Type); /* Overflowed. */
+    if (unlikely ((const void *) p < (const void *) this->arrayZ)) return Null (Type); /* Overflowed. */
+    _hb_compiler_memory_r_barrier ();
     return this+*p;
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     const OffsetTo<Type, OffsetType, has_null> *p = &this->arrayZ[i];
-    if (unlikely (p < this->arrayZ)) return Crap (Type); /* Overflowed. */
+    if (unlikely ((const void *) p < (const void *) this->arrayZ)) return Crap (Type); /* Overflowed. */
+    _hb_compiler_memory_r_barrier ();
     return this+*p;
   }
 
@@ -608,12 +620,14 @@ struct ArrayOf
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= len)) return Null (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i];
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= len)) return Crap (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i];
   }
 
@@ -729,6 +743,7 @@ struct ArrayOf
   DEFINE_SIZE_ARRAY (sizeof (LenType), arrayZ);
 };
 template <typename Type> using Array16Of = ArrayOf<Type, HBUINT16>;
+template <typename Type> using Array24Of = ArrayOf<Type, HBUINT24>;
 template <typename Type> using Array32Of = ArrayOf<Type, HBUINT32>;
 using PString = ArrayOf<HBUINT8, HBUINT8>;
 
@@ -738,26 +753,28 @@ template <typename Type> using Array16OfOffset32To = ArrayOf<OffsetTo<Type, HBUI
 template <typename Type> using Array32OfOffset32To = ArrayOf<OffsetTo<Type, HBUINT32>, HBUINT32>;
 
 /* Array of offsets relative to the beginning of the array itself. */
-template <typename Type>
-struct List16OfOffset16To : Array16OfOffset16To<Type>
+template <typename Type, typename OffsetType>
+struct List16OfOffsetTo : ArrayOf<OffsetTo<Type, OffsetType>, HBUINT16>
 {
   const Type& operator [] (int i_) const
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= this->len)) return Null (Type);
+    _hb_compiler_memory_r_barrier ();
     return this+this->arrayZ[i];
   }
   const Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= this->len)) return Crap (Type);
+    _hb_compiler_memory_r_barrier ();
     return this+this->arrayZ[i];
   }
 
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    struct List16OfOffset16To<Type> *out = c->serializer->embed (*this);
+    struct List16OfOffsetTo *out = c->serializer->embed (*this);
     if (unlikely (!out)) return_trace (false);
     unsigned int count = this->len;
     for (unsigned int i = 0; i < count; i++)
@@ -769,9 +786,12 @@ struct List16OfOffset16To : Array16OfOffset16To<Type>
   bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
   {
     TRACE_SANITIZE (this);
-    return_trace (Array16OfOffset16To<Type>::sanitize (c, this, std::forward<Ts> (ds)...));
+    return_trace ((Array16Of<OffsetTo<Type, OffsetType>>::sanitize (c, this, std::forward<Ts> (ds)...)));
   }
 };
+
+template <typename Type>
+using List16OfOffset16To = List16OfOffsetTo<Type, HBUINT16>;
 
 /* An array starting at second element. */
 template <typename Type, typename LenType=HBUINT16>
@@ -785,12 +805,14 @@ struct HeadlessArrayOf
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= lenP1 || !i)) return Null (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i-1];
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= lenP1 || !i)) return Crap (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i-1];
   }
   unsigned int get_size () const
@@ -869,12 +891,14 @@ struct ArrayOfM1
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i > lenM1)) return Null (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i];
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i > lenM1)) return Crap (Type);
+    _hb_compiler_memory_r_barrier ();
     return arrayZ[i];
   }
   unsigned int get_size () const
@@ -961,6 +985,7 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
 };
 
 template <typename Type> using SortedArray16Of = SortedArrayOf<Type, HBUINT16>;
+template <typename Type> using SortedArray24Of = SortedArrayOf<Type, HBUINT24>;
 template <typename Type> using SortedArray32Of = SortedArrayOf<Type, HBUINT32>;
 
 /*
@@ -1053,12 +1078,14 @@ struct VarSizedBinSearchArrayOf
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= get_length ())) return Null (Type);
+    _hb_compiler_memory_r_barrier ();
     return StructAtOffset<Type> (&bytesZ, i * header.unitSize);
   }
   Type& operator [] (int i_)
   {
     unsigned int i = (unsigned int) i_;
     if (unlikely (i >= get_length ())) return Crap (Type);
+    _hb_compiler_memory_r_barrier ();
     return StructAtOffset<Type> (&bytesZ, i * header.unitSize);
   }
   unsigned int get_length () const

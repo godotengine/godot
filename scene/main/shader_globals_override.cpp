@@ -155,7 +155,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.type = Variant::VECTOR3;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_VEC4: {
-				pinfo.type = Variant::QUATERNION;
+				pinfo.type = Variant::VECTOR4;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_RECT2: {
 				pinfo.type = Variant::RECT2;
@@ -169,14 +169,14 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 			case RS::GLOBAL_VAR_TYPE_MAT3: {
 				pinfo.type = Variant::BASIS;
 			} break;
+			case RS::GLOBAL_VAR_TYPE_MAT4: {
+				pinfo.type = Variant::PROJECTION;
+			} break;
 			case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
 				pinfo.type = Variant::TRANSFORM2D;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 				pinfo.type = Variant::TRANSFORM3D;
-			} break;
-			case RS::GLOBAL_VAR_TYPE_MAT4: {
-				pinfo.type = Variant::PACKED_INT32_ARRAY;
 			} break;
 			case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
 				pinfo.type = Variant::OBJECT;
