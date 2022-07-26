@@ -972,6 +972,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	inspector_vars->edit(nullptr);
 	inspector_general->edit(nullptr);
+	inspector_text->edit(nullptr);
 
 	text_settings_data.instantiate();
 	ERR_FAIL_NULL(text_settings_data);
