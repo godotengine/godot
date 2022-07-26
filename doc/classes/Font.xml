@@ -14,8 +14,8 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="char" type="int" />
-			<argument index="3" name="modulate" type="int" />
-			<argument index="4" name="arg4" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="3" name="font_size" type="int" />
+			<argument index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw a single Unicode character [code]char[/code] into a canvas item using the font, at a given position, with [code]modulate[/code] color. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
@@ -26,9 +26,9 @@
 			<argument index="0" name="canvas_item" type="RID" />
 			<argument index="1" name="pos" type="Vector2" />
 			<argument index="2" name="char" type="int" />
-			<argument index="3" name="size" type="int" />
-			<argument index="4" name="modulate" type="int" default="-1" />
-			<argument index="5" name="arg5" type="Color" default="Color(1, 1, 1, 1)" />
+			<argument index="3" name="font_size" type="int" />
+			<argument index="4" name="size" type="int" default="-1" />
+			<argument index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw a single Unicode character [code]char[/code] outline into a canvas item using the font, at a given position, with [code]modulate[/code] color and [code]size[/code] outline size. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
 				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
@@ -129,7 +129,7 @@
 		<method name="get_char_size" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="char" type="int" />
-			<argument index="1" name="arg1" type="int" />
+			<argument index="1" name="font_size" type="int" />
 			<description>
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
 				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.

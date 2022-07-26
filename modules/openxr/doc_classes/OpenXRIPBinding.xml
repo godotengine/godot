@@ -24,7 +24,7 @@
 		</method>
 		<method name="has_path" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="arg0" type="String" />
+			<argument index="0" name="path" type="String" />
 			<description>
 				Returns [code]true[/code] if this input/output path is part of this binding.
 			</description>

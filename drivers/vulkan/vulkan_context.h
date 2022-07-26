@@ -280,6 +280,7 @@ public:
 	VkPhysicalDevice get_physical_device() const;
 	VkInstance get_instance() const { return inst; }
 	uint32_t get_swapchain_image_count() const;
+
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
 
