@@ -695,7 +695,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     f.write(make_footer())
 
 
-def escape_rst(text, until_pos=-1):  # type: (str) -> str
+def escape_rst(text, until_pos=-1):  # type: (str, int) -> str
     # Escape \ character, otherwise it ends up as an escape character in rst
     pos = 0
     while True:
@@ -1033,7 +1033,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
     return text
 
 
-def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
+def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterable[Tuple[str, ...]], bool) -> None
     if len(data) == 0:
         return
 
