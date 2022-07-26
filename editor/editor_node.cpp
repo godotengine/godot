@@ -1625,9 +1625,16 @@ void EditorNode::restart_editor() {
 	_exit_editor();
 
 	List<String> args;
+
 	args.push_back("--path");
 	args.push_back(ProjectSettings::get_singleton()->get_resource_path());
+
 	args.push_back("-e");
+
+	if (OS::get_singleton()->is_disable_crash_handler()) {
+		args.push_back("--disable-crash-handler");
+	}
+
 	if (to_reopen != String()) {
 		args.push_back(to_reopen);
 	}
