@@ -43,16 +43,16 @@
 #include <cstring>
 
 // FIXME: `const VkDevice device` parameter shadows a field.
-VkResult VulkanContext::vk_create_render_pass2_khr(const VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
+VkResult VulkanContext::create_render_pass2(const VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
 	if (!fpCreateRenderPass2KHR) {
 		fpCreateRenderPass2KHR = reinterpret_cast<PFN_vkCreateRenderPass2KHR>(vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR"));
 	}
 
 	if (!fpCreateRenderPass2KHR) {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	} else {
-		return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
 	}
+
+	return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
@@ -209,7 +209,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_report_callback(
 	return VK_FALSE;
 }
 
-VkBool32 VulkanContext::_check_layers(const uint32_t check_count, const char *const *check_names, const uint32_t layer_count, const VkLayerProperties *layers) const {
+VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, const VkLayerProperties *layers) const {
 	for (uint32_t i = 0; i < check_count; i++) {
 		VkBool32 found = false;
 		for (uint32_t j = 0; j < layer_count; j++) {
@@ -1420,7 +1420,7 @@ bool VulkanContext::_use_validation_layers() {
 	return Engine::get_singleton()->is_validation_layers_enabled();
 }
 
-Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, const DisplayServer::VSyncMode p_vsync_mode, const VkSurfaceKHR p_surface, const int p_width, const int p_height) {
+Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, const DisplayServer::VSyncMode p_vsync_mode, const VkSurfaceKHR p_surface, int p_width, int p_height) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
 	if (!device_initialized) {
@@ -1459,7 +1459,7 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, const D
 	return OK;
 }
 
-void VulkanContext::window_resize(const DisplayServer::WindowID p_window, const int p_width, const int p_height) {
+void VulkanContext::window_resize(const DisplayServer::WindowID p_window, int p_width, int p_height) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].width = p_width;
 	windows[p_window].height = p_height;
@@ -1837,7 +1837,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 			/*pCorrelatedViewMasks*/ &view_masks,
 		};
 
-		err = vk_create_render_pass2_khr(device, &rp_info, nullptr, &window->render_pass);
+		err = create_render_pass2(device, &rp_info, nullptr, &window->render_pass);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
@@ -2334,7 +2334,7 @@ VkDevice VulkanContext::local_device_get_vk_device(const RID p_local_device) {
 	return ld->device;
 }
 
-void VulkanContext::local_device_push_command_buffers(const RID p_local_device, const VkCommandBuffer *p_buffers, const int p_count) {
+void VulkanContext::local_device_push_command_buffers(const RID p_local_device, const VkCommandBuffer *p_buffers, int p_count) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(ld->waiting);
 
@@ -2423,7 +2423,7 @@ void VulkanContext::command_end_label(VkCommandBuffer p_command_buffer) const {
 	CmdEndDebugUtilsLabelEXT(p_command_buffer);
 }
 
-void VulkanContext::set_object_name(const VkObjectType p_object_type, const uint64_t p_object_handle, const String &p_object_name) const {
+void VulkanContext::set_object_name(const VkObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name) const {
 	if (!enabled_debug_utils) {
 		return;
 	}

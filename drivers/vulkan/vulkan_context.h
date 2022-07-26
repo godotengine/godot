@@ -48,7 +48,7 @@
 class VulkanContext {
 public:
 	struct SubgroupCapabilities {
-		uint32_t size;
+		uint32_t size = 0;
 		VkShaderStageFlags supportedStages;
 		VkSubgroupFeatureFlags supportedOperations;
 		VkBool32 quadOperationsInAllStages;
@@ -63,8 +63,8 @@ public:
 		bool is_supported = false;
 		bool geometry_shader_is_supported = false;
 		bool tessellation_shader_is_supported = false;
-		uint32_t max_view_count;
-		uint32_t max_instance_count;
+		uint32_t max_view_count = 0;
+		uint32_t max_instance_count = 0;
 	};
 
 	struct VRSCapabilities {
@@ -223,7 +223,7 @@ private:
 	Error _initialize_extensions();
 	Error _check_capabilities();
 
-	VkBool32 _check_layers(const uint32_t check_count, const char *const *check_names, const uint32_t layer_count, const VkLayerProperties *layers) const;
+	VkBool32 _check_layers(uint32_t check_count, const char *const *check_names, uint32_t layer_count, const VkLayerProperties *layers) const;
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -266,7 +266,7 @@ protected:
 
 public:
 	// Extension calls
-	VkResult vk_create_render_pass2_khr(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
+	VkResult create_render_pass2(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; }
 	uint32_t get_vulkan_minor() const { return vulkan_minor; }
@@ -310,8 +310,8 @@ public:
 	Error swap_buffers();
 	Error initialize();
 
-	void command_begin_label(VkCommandBuffer p_command_buffer, const String &p_label_name, const Color p_color) const;
-	void command_insert_label(VkCommandBuffer p_command_buffer, const String &p_label_name, const Color p_color) const;
+	void command_begin_label(VkCommandBuffer p_command_buffer, const String &p_label_name, Color p_color) const;
+	void command_insert_label(VkCommandBuffer p_command_buffer, const String &p_label_name, Color p_color) const;
 	void command_end_label(VkCommandBuffer p_command_buffer) const;
 	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name) const;
 
