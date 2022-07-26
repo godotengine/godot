@@ -133,6 +133,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		bool visible = false;
 
+		WindowMode mode;
 		uint32_t flags;
 		VSyncMode vsync_mode;
 		Rect2i rect;
@@ -297,6 +298,7 @@ class DisplayServerWayland : public DisplayServer {
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+	void _window_data_set_mode(WindowData &p_wd, WindowMode p_mode);
 	void _send_window_event(WindowID p_window, WindowEvent p_event);
 
 	static void _poll_events_thread(void *p_wls);

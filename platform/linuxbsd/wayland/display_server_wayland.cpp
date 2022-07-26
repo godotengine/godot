@@ -384,6 +384,7 @@ DisplayServer::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, 
 	wd.id = id;
 	wd.wls = &wls;
 
+	wd.mode = p_mode;
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
 	wd.rect = p_rect;
@@ -393,8 +394,81 @@ DisplayServer::WindowID DisplayServerWayland::_create_window(WindowMode p_mode, 
 	return id;
 }
 
+// Method which forces the modesetting logic without any fancy no-op case
+// useful in internal Wayland window handling.
+void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_mode) {
+	if (!p_wd.wl_surface || !p_wd.xdg_toplevel) {
+		// TODO: Ask whether this is the right behaviour.
+
+		// Don't waste time with popups and whatnot. Behave like it worked.
+		p_wd.mode = p_mode;
+		return;
+	}
+
+	// Return back to a windowed state so that we can apply what the user asked.
+	switch (p_wd.mode) {
+		case WINDOW_MODE_WINDOWED: {
+			// Do nothing.
+		} break;
+
+		case WINDOW_MODE_MINIMIZED: {
+			// We can't do much according to the xdg_shell protocol. I have no idea
+			// whether this implies that we should return or who knows what. For now
+			// we'll do nothing.
+			// TODO: Test this properly.
+		} break;
+
+		case WINDOW_MODE_MAXIMIZED: {
+			// Try to unmaximize. This isn't garaunteed to work actually, so we'll have
+			// to check whether something changed.
+			xdg_toplevel_unset_maximized(p_wd.xdg_toplevel);
+		} break;
+
+		case WINDOW_MODE_FULLSCREEN:
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
+			// Same thing as above, unset fullscreen and check later if it worked.
+			xdg_toplevel_unset_fullscreen(p_wd.xdg_toplevel);
+		} break;
+	}
+
+	// Wait for a configure event and hope that something changed.
+	wl_display_roundtrip(wls.display);
+
+	if (p_wd.mode != WINDOW_MODE_WINDOWED) {
+		// The compositor refused our "normalization" request. It'd be useless or
+		// unpredictable to attempt setting a new state. We're done.
+		return;
+	}
+
+	// Ask the compositor to set the state indicated by the new mode.
+	switch (p_mode) {
+		case WINDOW_MODE_WINDOWED: {
+			// Do nothing. We're already windowed.
+		} break;
+
+		case WINDOW_MODE_MINIMIZED: {
+			xdg_toplevel_set_minimized(p_wd.xdg_toplevel);
+
+			// We have no way to actually detect this state, so we'll have to report it
+			// manually to the engine (hoping that it worked). In the worst case it'll
+			// get reset by the next configure event.
+			p_wd.mode = WINDOW_MODE_MINIMIZED;
+		} break;
+
+		case WINDOW_MODE_MAXIMIZED: {
+			xdg_toplevel_set_maximized(p_wd.xdg_toplevel);
+		} break;
+
+		case WINDOW_MODE_FULLSCREEN:
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
+			xdg_toplevel_set_fullscreen(p_wd.xdg_toplevel, nullptr);
+		}
+	}
+}
+
 void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_event) {
 	ERR_FAIL_COND(!wls.windows.has(p_window));
+
 	WindowData &wd = wls.windows[p_window];
 
 	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && p_event == WINDOW_EVENT_CLOSE_REQUEST) {
@@ -1232,6 +1306,30 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 		wd->rect.size.height = height;
 	}
 
+	// Expect the window to be in windowed mode. The mode will get overridden if
+	// the compositor reports otherwise.
+	wd->mode = WINDOW_MODE_WINDOWED;
+
+	// There _is_ a macro made to iterate `wl_array`s, but it's broken on C++
+	// since it's meant for C and nobody bothered to fix it yet, so we'll have to
+	// do it manually (which is kinda ugly).
+	// See also: https://gitlab.freedesktop.org/wayland/wayland/-/issues/34
+	for (int i = 0; i < ((int)states->size); i++) {
+		switch (((int *)states->data)[i]) {
+			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
+				wd->mode = WINDOW_MODE_MAXIMIZED;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
+				wd->mode = WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			default: {
+				// We don't care about the other states (for now).
+			} break;
+		}
+	}
+
 	DEBUG_LOG_WAYLAND(vformat("xdg toplevel on configure width %d height %d", width, height));
 }
 
@@ -1610,6 +1708,11 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		}
 #endif
 		wd.visible = true;
+
+		if (wd.xdg_toplevel) {
+			// Actually try to apply any mode the window has now that it's visible.
+			_window_data_set_mode(wd, wd.mode);
+		}
 	}
 }
 
@@ -1966,14 +2069,25 @@ Size2i DisplayServerWayland::window_get_real_size(DisplayServer::WindowID p_wind
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mode mode %d window %d", p_mode, p_window));
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+
+	WindowData &wd = wls.windows[p_window];
+
+	if (wd.mode == p_mode) {
+		return;
+	}
+
+	_window_data_set_mode(wd, p_mode);
 }
 
 DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_mode window %d", p_window));
-	return WINDOW_MODE_WINDOWED;
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), WINDOW_MODE_WINDOWED);
+
+	return wls.windows[p_window].mode;
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
