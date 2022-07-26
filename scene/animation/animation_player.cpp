@@ -64,7 +64,7 @@ void AnimatedValuesBackup::restore() const {
 			if (arr.size() == 3) {
 				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_position(entry->bone_idx, arr[0]);
 				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_rotation(entry->bone_idx, arr[1]);
-				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_scale(entry->bone_idx, arr[0]);
+				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_scale(entry->bone_idx, arr[2]);
 			}
 		}
 	}
@@ -370,6 +370,10 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 						node_cache->node_3d = nullptr;
 						ERR_CONTINUE(node_cache->bone_idx < 0);
 					}
+					Transform3D rest = node_cache->skeleton->get_bone_rest(bone_idx);
+					node_cache->init_loc = rest.origin;
+					node_cache->init_rot = rest.basis.get_rotation_quaternion();
+					node_cache->init_scale = rest.basis.get_scale();
 				} else {
 					// no property, just use spatialnode
 					node_cache->skeleton = nullptr;
@@ -500,8 +504,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
 					nc->loc_accum = loc;
-					nc->rot_accum = Quaternion();
-					nc->scale_accum = Vector3();
+					nc->rot_accum = nc->init_rot;
+					nc->scale_accum = nc->init_scale;
 				} else {
 					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
 				}
@@ -526,9 +530,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
-					nc->loc_accum = Vector3();
+					nc->loc_accum = nc->init_loc;
 					nc->rot_accum = rot;
-					nc->scale_accum = Vector3();
+					nc->scale_accum = nc->init_scale;
 				} else {
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
 				}
@@ -553,8 +557,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
-					nc->loc_accum = Vector3();
-					nc->rot_accum = Quaternion();
+					nc->loc_accum = nc->init_loc;
+					nc->rot_accum = nc->init_rot;
 					nc->scale_accum = scale;
 				} else {
 					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);

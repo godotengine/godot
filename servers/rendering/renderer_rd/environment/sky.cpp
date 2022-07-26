@@ -178,8 +178,22 @@ void SkyRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) cons
 			order[E.value.order] = E.key;
 		}
 	}
-
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);

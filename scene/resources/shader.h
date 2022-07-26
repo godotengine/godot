@@ -78,7 +78,7 @@ public:
 	void set_code(const String &p_code);
 	String get_code() const;
 
-	void get_param_list(List<PropertyInfo> *p_params) const;
+	void get_param_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
 	bool has_param(const StringName &p_param) const;
 
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index = 0);

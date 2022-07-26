@@ -310,6 +310,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	// global space keywords
 
 	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD, {}, {} },
+	{ TK_UNIFORM_GROUP, "group_uniforms", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_VARYING, "varying", CF_GLOBAL_SPACE, { "particles", "sky", "fog" }, {} },
 	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
@@ -1146,6 +1147,8 @@ void ShaderLanguage::clear() {
 	current_function = StringName();
 	last_name = StringName();
 	last_type = IDENTIFIER_MAX;
+	current_uniform_group_name = "";
+	current_uniform_subgroup_name = "";
 
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
@@ -8298,6 +8301,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					uniform.scope = uniform_scope;
 					uniform.precision = precision;
 					uniform.array_size = array_size;
+					uniform.group = current_uniform_group_name;
+					uniform.subgroup = current_uniform_subgroup_name;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -8723,6 +8728,45 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #endif // DEBUG_ENABLED
 				}
 
+			} break;
+			case TK_UNIFORM_GROUP: {
+				tk = _get_token();
+				if (tk.type == TK_IDENTIFIER) {
+					current_uniform_group_name = tk.text;
+					tk = _get_token();
+					if (tk.type == TK_PERIOD) {
+						tk = _get_token();
+						if (tk.type == TK_IDENTIFIER) {
+							current_uniform_subgroup_name = tk.text;
+							tk = _get_token();
+							if (tk.type != TK_SEMICOLON) {
+								_set_expected_error(";");
+								return ERR_PARSE_ERROR;
+							}
+						} else {
+							_set_error(RTR("Expected an uniform subgroup identifier."));
+							return ERR_PARSE_ERROR;
+						}
+					} else if (tk.type != TK_SEMICOLON) {
+						_set_expected_error(";", ".");
+						return ERR_PARSE_ERROR;
+					}
+				} else {
+					if (tk.type != TK_SEMICOLON) {
+						if (current_uniform_group_name.is_empty()) {
+							_set_error(RTR("Expected an uniform group identifier."));
+						} else {
+							_set_error(RTR("Expected an uniform group identifier or `;`."));
+						}
+						return ERR_PARSE_ERROR;
+					} else if (tk.type == TK_SEMICOLON && current_uniform_group_name.is_empty()) {
+						_set_error(RTR("Group needs to be opened before."));
+						return ERR_PARSE_ERROR;
+					} else {
+						current_uniform_group_name = "";
+						current_uniform_subgroup_name = "";
+					}
+				}
 			} break;
 			case TK_SHADER_TYPE: {
 				_set_error(RTR("Shader type is already defined."));

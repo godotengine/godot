@@ -511,8 +511,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 			if (err == OK && !p_ignore_override) {
-				// Load override from location of the executable.
-				// Optional, we don't mind if it fails.
+				// Load overrides from the PCK and the executable location.
+				// Optional, we don't mind if either fails.
+				_load_settings_text("res://override.cfg");
 				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
 			return err;
