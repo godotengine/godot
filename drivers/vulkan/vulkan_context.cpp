@@ -257,7 +257,7 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 		return OK;
 	}
 
-	auto *instance_layers = static_cast<VkLayerProperties *>(malloc(sizeof(VkLayerProperties) * instance_layer_count));
+	VkLayerProperties *instance_layers = static_cast<VkLayerProperties *>(malloc(sizeof(VkLayerProperties) * instance_layer_count));
 	err = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers);
 	if (err) {
 		free(instance_layers);
@@ -284,7 +284,7 @@ typedef VkResult(VKAPI_PTR *_vkEnumerateInstanceVersion)(uint32_t *);
 Error VulkanContext::_obtain_vulkan_version() {
 	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkApplicationInfo.html#_description
 	// For Vulkan 1.0 vkEnumerateInstanceVersion is not available, including not in the loader we compile against on Android.
-	if (const auto func = reinterpret_cast<_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"))) {
+	if (const _vkEnumerateInstanceVersion func = reinterpret_cast<_vkEnumerateInstanceVersion>(vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"))) {
 		uint32_t api_version;
 
 		if (func(&api_version) == VK_SUCCESS) {
@@ -325,7 +325,7 @@ Error VulkanContext::_initialize_extensions() {
 	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, ERR_CANT_CREATE);
 
 	if (instance_extension_count > 0) {
-		auto *instance_extensions = static_cast<VkExtensionProperties *>(malloc(sizeof(VkExtensionProperties) * instance_extension_count));
+		VkExtensionProperties *instance_extensions = static_cast<VkExtensionProperties *>(malloc(sizeof(VkExtensionProperties) * instance_extension_count));
 		err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions);
 		if (err != VK_SUCCESS && err != VK_INCOMPLETE) {
 			free(instance_extensions);
@@ -541,7 +541,7 @@ Error VulkanContext::_check_capabilities() {
 	storage_buffer_capabilities.storage_input_output_16 = false;
 
 	// Check for extended features.
-	auto vkGetPhysicalDeviceFeatures2_func = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2"));
+	PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2_func = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2"));
 	if (!vkGetPhysicalDeviceFeatures2_func) {
 		// In Vulkan 1.0 might be accessible under its original extension name.
 		vkGetPhysicalDeviceFeatures2_func = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceFeatures2KHR"));
@@ -604,7 +604,7 @@ Error VulkanContext::_check_capabilities() {
 	}
 
 	// Check extended properties.
-	auto device_properties_func = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2"));
+	PFN_vkGetPhysicalDeviceProperties2 device_properties_func = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2"));
 	if (!device_properties_func) {
 		// In Vulkan 1.0 might be accessible under its original extension name.
 		device_properties_func = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR"));
@@ -699,7 +699,7 @@ Error VulkanContext::_create_instance() {
 
 	// Initialize extensions.
 	{
-		if (const auto err = _initialize_extensions(); err != OK) {
+		if (const Error err = _initialize_extensions(); err != OK) {
 			return err;
 		}
 	}
@@ -760,7 +760,7 @@ Error VulkanContext::_create_instance() {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		const auto err = vkCreateInstance(&inst_info, nullptr, &inst);
+		const VkResult err = vkCreateInstance(&inst_info, nullptr, &inst);
 		ERR_FAIL_COND_V_MSG(err == VK_ERROR_INCOMPATIBLE_DRIVER, ERR_CANT_CREATE,
 				"Cannot find a compatible Vulkan installable client driver (ICD).\n\n"
 				"vkCreateInstance Failure");
@@ -856,7 +856,7 @@ Error VulkanContext::_create_physical_device(const VkSurfaceKHR p_surface) {
 			"Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
 			"vkEnumeratePhysicalDevices Failure");
 
-	auto *physical_devices = static_cast<VkPhysicalDevice *>(malloc(sizeof(VkPhysicalDevice) * gpu_count));
+	VkPhysicalDevice *physical_devices = static_cast<VkPhysicalDevice *>(malloc(sizeof(VkPhysicalDevice) * gpu_count));
 	err = vkEnumeratePhysicalDevices(inst, &gpu_count, physical_devices);
 	if (err) {
 		free(physical_devices);
@@ -905,7 +905,7 @@ Error VulkanContext::_create_physical_device(const VkSurfaceKHR p_surface) {
 
 			uint32_t device_queue_family_count = 0;
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
-			auto *device_queue_props = static_cast<VkQueueFamilyProperties *>(malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties)));
+			VkQueueFamilyProperties *device_queue_props = static_cast<VkQueueFamilyProperties *>(malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties)));
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
 			for (uint32_t j = 0; j < device_queue_family_count; j++) {
 				VkBool32 supports;
@@ -1028,7 +1028,7 @@ Error VulkanContext::_create_physical_device(const VkSurfaceKHR p_surface) {
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	if (device_extension_count > 0) {
-		auto *device_extensions = static_cast<VkExtensionProperties *>(malloc(sizeof(VkExtensionProperties) * device_extension_count));
+		VkExtensionProperties *device_extensions = static_cast<VkExtensionProperties *>(malloc(sizeof(VkExtensionProperties) * device_extension_count));
 		err = vkEnumerateDeviceExtensionProperties(gpu, nullptr, &device_extension_count, device_extensions);
 		if (err) {
 			free(device_extensions);
@@ -1239,7 +1239,7 @@ Error VulkanContext::_create_device() {
 			return ERR_CANT_CREATE;
 		}
 	} else {
-		const auto err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
+		const VkResult err = vkCreateDevice(gpu, &sdevice, nullptr, &device);
 		ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	}
 
@@ -1248,7 +1248,7 @@ Error VulkanContext::_create_device() {
 
 Error VulkanContext::_initialize_queues(const VkSurfaceKHR p_surface) {
 	// Iterate over each queue to learn whether it supports presenting:
-	const auto supportsPresent = static_cast<VkBool32 *>(malloc(queue_family_count * sizeof(VkBool32)));
+	VkBool32 *supportsPresent = static_cast<VkBool32 *>(malloc(queue_family_count * sizeof(VkBool32)));
 	for (uint32_t i = 0; i < queue_family_count; i++) {
 		fpGetPhysicalDeviceSurfaceSupportKHR(gpu, i, p_surface, &supportsPresent[i]);
 	}
@@ -1327,7 +1327,7 @@ Error VulkanContext::_initialize_queues(const VkSurfaceKHR p_surface) {
 
 	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	const auto surfFormats = static_cast<VkSurfaceFormatKHR *>(malloc(formatCount * sizeof(VkSurfaceFormatKHR)));
+	VkSurfaceFormatKHR *surfFormats = static_cast<VkSurfaceFormatKHR *>(malloc(formatCount * sizeof(VkSurfaceFormatKHR)));
 	err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, surfFormats);
 	if (err) {
 		free(surfFormats);
@@ -1372,7 +1372,7 @@ Error VulkanContext::_initialize_queues(const VkSurfaceKHR p_surface) {
 
 	free(surfFormats);
 
-	if (const auto serr = _create_semaphores()) {
+	if (const Error serr = _create_semaphores()) {
 		return serr;
 	}
 
@@ -1452,8 +1452,8 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, const D
 		/*flags*/ 0,
 	};
 
-	for (auto &image_acquired_semaphore : window.image_acquired_semaphores) {
-		const auto vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_acquired_semaphore);
+	for (VkSemaphore &image_acquired_semaphore : window.image_acquired_semaphores) {
+		const VkResult vkerr = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &image_acquired_semaphore);
 		ERR_FAIL_COND_V(vkerr, ERR_CANT_CREATE);
 	}
 
@@ -1486,7 +1486,7 @@ bool VulkanContext::window_is_valid_swapchain(const DisplayServer::WindowID p_wi
 
 VkRenderPass VulkanContext::window_get_render_pass(const DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
-	const auto w = &windows[p_window];
+	const Window *w = &windows[p_window];
 	// Vulkan use of currentbuffer.
 	return w->render_pass;
 }
@@ -1494,7 +1494,7 @@ VkRenderPass VulkanContext::window_get_render_pass(const DisplayServer::WindowID
 VkFramebuffer VulkanContext::window_get_framebuffer(const DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
-	const auto w = &windows[p_window];
+	const Window *w = &windows[p_window];
 	// Vulkan use of currentbuffer.
 	if (w->swapchain_image_resources != VK_NULL_HANDLE) {
 		return w->swapchain_image_resources[w->current_buffer].framebuffer;
@@ -1506,7 +1506,7 @@ VkFramebuffer VulkanContext::window_get_framebuffer(const DisplayServer::WindowI
 void VulkanContext::window_destroy(const DisplayServer::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	_clean_up_swap_chain(&windows[p_window_id]);
-	for (const auto &image_acquired_semaphore : windows[p_window_id].image_acquired_semaphores) {
+	for (const VkSemaphore &image_acquired_semaphore : windows[p_window_id].image_acquired_semaphores) {
 		vkDestroySemaphore(device, image_acquired_semaphore, nullptr);
 	}
 
@@ -1554,7 +1554,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	uint32_t presentModeCount;
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	auto presentModes = static_cast<VkPresentModeKHR *>(malloc(presentModeCount * sizeof(VkPresentModeKHR)));
+	VkPresentModeKHR *presentModes = static_cast<VkPresentModeKHR *>(malloc(presentModeCount * sizeof(VkPresentModeKHR)));
 	ERR_FAIL_COND_V(!presentModes, ERR_CANT_CREATE);
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, presentModes);
 	if (err) {
@@ -1689,7 +1689,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
 		VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 	};
-	for (auto &compositeAlphaFlag : compositeAlphaFlags) {
+	for (VkCompositeAlphaFlagBitsKHR &compositeAlphaFlag : compositeAlphaFlags) {
 		if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlag) {
 			compositeAlpha = compositeAlphaFlag;
 			break;
@@ -1734,7 +1734,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		ERR_FAIL_COND_V(swapchainImageCount != sp_image_count, ERR_BUG);
 	}
 
-	auto swapchainImages = static_cast<VkImage *>(malloc(swapchainImageCount * sizeof(VkImage)));
+	VkImage *swapchainImages = static_cast<VkImage *>(malloc(swapchainImageCount * sizeof(VkImage)));
 	ERR_FAIL_COND_V(!swapchainImages, ERR_CANT_CREATE);
 	err = fpGetSwapchainImagesKHR(device, window->swapchain, &swapchainImageCount, swapchainImages);
 	if (err) {
@@ -1967,7 +1967,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.pCommandBuffers = command_buffer_queue.ptr();
 		submit_info.signalSemaphoreCount = pending_flushable ? 1 : 0;
 		submit_info.pSignalSemaphores = pending_flushable ? &draw_complete_semaphores[frame_index] : nullptr;
-		const auto err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+		const VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 		command_buffer_queue.write[0] = nullptr;
 		ERR_FAIL_COND(err);
 	}
@@ -1986,7 +1986,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 		submit_info.pCommandBuffers = command_buffer_queue.ptr() + 1;
 		submit_info.signalSemaphoreCount = 0;
 		submit_info.pSignalSemaphores = nullptr;
-		const auto err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+		const VkResult err = vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 		command_buffer_count = 1;
 		ERR_FAIL_COND(err);
 	}
@@ -2084,8 +2084,8 @@ Error VulkanContext::swap_buffers() {
 		commands_to_submit = command_buffer_count;
 	}
 
-	const auto semaphores_to_acquire = static_cast<VkSemaphore *>(alloca(windows.size() * sizeof(VkSemaphore)));
-	const auto pipe_stage_flags = static_cast<VkPipelineStageFlags *>(alloca(windows.size() * sizeof(VkPipelineStageFlags)));
+	VkSemaphore *semaphores_to_acquire = static_cast<VkSemaphore *>(alloca(windows.size() * sizeof(VkSemaphore)));
+	VkPipelineStageFlags *pipe_stage_flags = static_cast<VkPipelineStageFlags *>(alloca(windows.size() * sizeof(VkPipelineStageFlags)));
 	uint32_t semaphores_to_acquire_count = 0;
 
 	for (KeyValue<int, Window> &e : windows) {
@@ -2123,7 +2123,7 @@ Error VulkanContext::swap_buffers() {
 		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
 		submit_info.commandBufferCount = 0;
 
-		const auto cmdbufptr = static_cast<VkCommandBuffer *>(alloca(sizeof(VkCommandBuffer *) * windows.size()));
+		VkCommandBuffer *cmdbufptr = static_cast<VkCommandBuffer *>(alloca(sizeof(VkCommandBuffer *) * windows.size()));
 		submit_info.pCommandBuffers = cmdbufptr;
 
 		for (KeyValue<int, Window> &e : windows) {
@@ -2154,8 +2154,8 @@ Error VulkanContext::swap_buffers() {
 		/*pResults*/ nullptr,
 	};
 
-	const auto pSwapchains = static_cast<VkSwapchainKHR *>(alloca(sizeof(VkSwapchainKHR *) * windows.size()));
-	const auto pImageIndices = static_cast<uint32_t *>(alloca(sizeof(uint32_t *) * windows.size()));
+	VkSwapchainKHR *pSwapchains = static_cast<VkSwapchainKHR *>(alloca(sizeof(VkSwapchainKHR *) * windows.size()));
+	uint32_t *pImageIndices = static_cast<uint32_t *>(alloca(sizeof(uint32_t *) * windows.size()));
 
 	present.pSwapchains = pSwapchains;
 	present.pImageIndices = pImageIndices;
@@ -2319,7 +2319,7 @@ RID VulkanContext::local_device_create() {
 			/*ppEnabledExtensionNames */ static_cast<const char *const *>(extension_names),
 			/*pEnabledFeatures */ &physical_device_features, // If specific features are required, pass them in here.
 		};
-		const auto err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
+		const VkResult err = vkCreateDevice(gpu, &sdevice, nullptr, &ld.device);
 		ERR_FAIL_COND_V(err, RID());
 	}
 
@@ -2332,7 +2332,7 @@ RID VulkanContext::local_device_create() {
 }
 
 VkDevice VulkanContext::local_device_get_vk_device(const RID p_local_device) {
-	const auto ld = local_device_owner.get_or_null(p_local_device);
+	const LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	return ld->device;
 }
 
@@ -2372,7 +2372,7 @@ void VulkanContext::local_device_push_command_buffers(const RID p_local_device, 
 }
 
 void VulkanContext::local_device_sync(const RID p_local_device) {
-	const auto ld = local_device_owner.get_or_null(p_local_device);
+	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
 	vkDeviceWaitIdle(ld->device);
@@ -2380,7 +2380,7 @@ void VulkanContext::local_device_sync(const RID p_local_device) {
 }
 
 void VulkanContext::local_device_free(const RID p_local_device) {
-	const auto ld = local_device_owner.get_or_null(p_local_device);
+	const LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	vkDestroyDevice(ld->device, nullptr);
 	local_device_owner.free(p_local_device);
 }
