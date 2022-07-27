@@ -183,3 +183,461 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 		view_projection[v] = p_projections[v] * Projection(view_offset[v].inverse());
 	}
 }
+
+/* Environment API */
+
+RID RendererSceneRender::environment_allocate() {
+	return environment_storage.environment_allocate();
+}
+
+void RendererSceneRender::environment_initialize(RID p_rid) {
+	environment_storage.environment_initialize(p_rid);
+}
+
+void RendererSceneRender::environment_free(RID p_rid) {
+	environment_storage.environment_free(p_rid);
+}
+
+bool RendererSceneRender::is_environment(RID p_rid) const {
+	return environment_storage.is_environment(p_rid);
+}
+
+// background
+
+void RendererSceneRender::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
+	environment_storage.environment_set_background(p_env, p_bg);
+}
+
+void RendererSceneRender::environment_set_sky(RID p_env, RID p_sky) {
+	environment_storage.environment_set_sky(p_env, p_sky);
+}
+
+void RendererSceneRender::environment_set_sky_custom_fov(RID p_env, float p_scale) {
+	environment_storage.environment_set_sky_custom_fov(p_env, p_scale);
+}
+
+void RendererSceneRender::environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {
+	environment_storage.environment_set_sky_orientation(p_env, p_orientation);
+}
+
+void RendererSceneRender::environment_set_bg_color(RID p_env, const Color &p_color) {
+	environment_storage.environment_set_bg_color(p_env, p_color);
+}
+
+void RendererSceneRender::environment_set_bg_energy(RID p_env, float p_energy) {
+	environment_storage.environment_set_bg_energy(p_env, p_energy);
+}
+
+void RendererSceneRender::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
+	environment_storage.environment_set_canvas_max_layer(p_env, p_max_layer);
+}
+
+void RendererSceneRender::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
+	environment_storage.environment_set_ambient_light(p_env, p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source);
+}
+
+RS::EnvironmentBG RendererSceneRender::environment_get_background(RID p_env) const {
+	return environment_storage.environment_get_background(p_env);
+}
+
+RID RendererSceneRender::environment_get_sky(RID p_env) const {
+	return environment_storage.environment_get_sky(p_env);
+}
+
+float RendererSceneRender::environment_get_sky_custom_fov(RID p_env) const {
+	return environment_storage.environment_get_sky_custom_fov(p_env);
+}
+
+Basis RendererSceneRender::environment_get_sky_orientation(RID p_env) const {
+	return environment_storage.environment_get_sky_orientation(p_env);
+}
+
+Color RendererSceneRender::environment_get_bg_color(RID p_env) const {
+	return environment_storage.environment_get_bg_color(p_env);
+}
+
+float RendererSceneRender::environment_get_bg_energy(RID p_env) const {
+	return environment_storage.environment_get_bg_energy(p_env);
+}
+
+int RendererSceneRender::environment_get_canvas_max_layer(RID p_env) const {
+	return environment_storage.environment_get_canvas_max_layer(p_env);
+}
+
+RS::EnvironmentAmbientSource RendererSceneRender::environment_get_ambient_source(RID p_env) const {
+	return environment_storage.environment_get_ambient_source(p_env);
+}
+
+Color RendererSceneRender::environment_get_ambient_light(RID p_env) const {
+	return environment_storage.environment_get_ambient_light(p_env);
+}
+
+float RendererSceneRender::environment_get_ambient_light_energy(RID p_env) const {
+	return environment_storage.environment_get_ambient_light_energy(p_env);
+}
+
+float RendererSceneRender::environment_get_ambient_sky_contribution(RID p_env) const {
+	return environment_storage.environment_get_ambient_sky_contribution(p_env);
+}
+
+RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_source(RID p_env) const {
+	return environment_storage.environment_get_reflection_source(p_env);
+}
+
+// Tonemap
+
+void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
+	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white, p_auto_exposure, p_min_luminance, p_max_luminance, p_auto_exp_speed, p_auto_exp_scale);
+}
+
+RS::EnvironmentToneMapper RendererSceneRender::environment_get_tone_mapper(RID p_env) const {
+	return environment_storage.environment_get_tone_mapper(p_env);
+}
+
+float RendererSceneRender::environment_get_exposure(RID p_env) const {
+	return environment_storage.environment_get_exposure(p_env);
+}
+
+float RendererSceneRender::environment_get_white(RID p_env) const {
+	return environment_storage.environment_get_white(p_env);
+}
+
+bool RendererSceneRender::environment_get_auto_exposure(RID p_env) const {
+	return environment_storage.environment_get_auto_exposure(p_env);
+}
+
+float RendererSceneRender::environment_get_min_luminance(RID p_env) const {
+	return environment_storage.environment_get_min_luminance(p_env);
+}
+
+float RendererSceneRender::environment_get_max_luminance(RID p_env) const {
+	return environment_storage.environment_get_max_luminance(p_env);
+}
+
+float RendererSceneRender::environment_get_auto_exp_speed(RID p_env) const {
+	return environment_storage.environment_get_auto_exp_speed(p_env);
+}
+
+float RendererSceneRender::environment_get_auto_exp_scale(RID p_env) const {
+	return environment_storage.environment_get_auto_exp_scale(p_env);
+}
+
+uint64_t RendererSceneRender::environment_get_auto_exposure_version(RID p_env) const {
+	return environment_storage.environment_get_auto_exposure_version(p_env);
+}
+
+// Fog
+
+void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) {
+	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective);
+}
+
+bool RendererSceneRender::environment_get_fog_enabled(RID p_env) const {
+	return environment_storage.environment_get_fog_enabled(p_env);
+}
+
+Color RendererSceneRender::environment_get_fog_light_color(RID p_env) const {
+	return environment_storage.environment_get_fog_light_color(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_light_energy(RID p_env) const {
+	return environment_storage.environment_get_fog_light_energy(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_sun_scatter(RID p_env) const {
+	return environment_storage.environment_get_fog_sun_scatter(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_density(RID p_env) const {
+	return environment_storage.environment_get_fog_density(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_height(RID p_env) const {
+	return environment_storage.environment_get_fog_height(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_height_density(RID p_env) const {
+	return environment_storage.environment_get_fog_height_density(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_aerial_perspective(RID p_env) const {
+	return environment_storage.environment_get_fog_aerial_perspective(p_env);
+}
+
+// Volumetric Fog
+
+void RendererSceneRender::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) {
+	environment_storage.environment_set_volumetric_fog(p_env, p_enable, p_density, p_albedo, p_emission, p_emission_energy, p_anisotropy, p_length, p_detail_spread, p_gi_inject, p_temporal_reprojection, p_temporal_reprojection_amount, p_ambient_inject);
+}
+
+bool RendererSceneRender::environment_get_volumetric_fog_enabled(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_enabled(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_density(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_density(p_env);
+}
+
+Color RendererSceneRender::environment_get_volumetric_fog_scattering(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_scattering(p_env);
+}
+
+Color RendererSceneRender::environment_get_volumetric_fog_emission(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_emission(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_emission_energy(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_emission_energy(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_anisotropy(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_anisotropy(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_length(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_length(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_detail_spread(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_detail_spread(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_gi_inject(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_gi_inject(p_env);
+}
+
+bool RendererSceneRender::environment_get_volumetric_fog_temporal_reprojection(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_temporal_reprojection(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_temporal_reprojection_amount(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_temporal_reprojection_amount(p_env);
+}
+
+float RendererSceneRender::environment_get_volumetric_fog_ambient_inject(RID p_env) const {
+	return environment_storage.environment_get_volumetric_fog_ambient_inject(p_env);
+}
+
+// GLOW
+
+void RendererSceneRender::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
+	environment_storage.environment_set_glow(p_env, p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap, p_glow_map_strength, p_glow_map);
+}
+
+bool RendererSceneRender::environment_get_glow_enabled(RID p_env) const {
+	return environment_storage.environment_get_glow_enabled(p_env);
+}
+
+Vector<float> RendererSceneRender::environment_get_glow_levels(RID p_env) const {
+	return environment_storage.environment_get_glow_levels(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_intensity(RID p_env) const {
+	return environment_storage.environment_get_glow_intensity(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_strength(RID p_env) const {
+	return environment_storage.environment_get_glow_strength(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_bloom(RID p_env) const {
+	return environment_storage.environment_get_glow_bloom(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_mix(RID p_env) const {
+	return environment_storage.environment_get_glow_mix(p_env);
+}
+
+RS::EnvironmentGlowBlendMode RendererSceneRender::environment_get_glow_blend_mode(RID p_env) const {
+	return environment_storage.environment_get_glow_blend_mode(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_hdr_bleed_threshold(RID p_env) const {
+	return environment_storage.environment_get_glow_hdr_bleed_threshold(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_hdr_luminance_cap(RID p_env) const {
+	return environment_storage.environment_get_glow_hdr_luminance_cap(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_hdr_bleed_scale(RID p_env) const {
+	return environment_storage.environment_get_glow_hdr_bleed_scale(p_env);
+}
+
+float RendererSceneRender::environment_get_glow_map_strength(RID p_env) const {
+	return environment_storage.environment_get_glow_map_strength(p_env);
+}
+
+RID RendererSceneRender::environment_get_glow_map(RID p_env) const {
+	return environment_storage.environment_get_glow_map(p_env);
+}
+
+// SSR
+
+void RendererSceneRender::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {
+	environment_storage.environment_set_ssr(p_env, p_enable, p_max_steps, p_fade_int, p_fade_out, p_depth_tolerance);
+}
+
+bool RendererSceneRender::environment_get_ssr_enabled(RID p_env) const {
+	return environment_storage.environment_get_ssr_enabled(p_env);
+}
+
+int RendererSceneRender::environment_get_ssr_max_steps(RID p_env) const {
+	return environment_storage.environment_get_ssr_max_steps(p_env);
+}
+
+float RendererSceneRender::environment_get_ssr_fade_in(RID p_env) const {
+	return environment_storage.environment_get_ssr_fade_in(p_env);
+}
+
+float RendererSceneRender::environment_get_ssr_fade_out(RID p_env) const {
+	return environment_storage.environment_get_ssr_fade_out(p_env);
+}
+
+float RendererSceneRender::environment_get_ssr_depth_tolerance(RID p_env) const {
+	return environment_storage.environment_get_ssr_depth_tolerance(p_env);
+}
+
+// SSAO
+
+void RendererSceneRender::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {
+	environment_storage.environment_set_ssao(p_env, p_enable, p_radius, p_intensity, p_power, p_detail, p_horizon, p_sharpness, p_light_affect, p_ao_channel_affect);
+}
+
+bool RendererSceneRender::environment_get_ssao_enabled(RID p_env) const {
+	return environment_storage.environment_get_ssao_enabled(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_radius(RID p_env) const {
+	return environment_storage.environment_get_ssao_radius(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_intensity(RID p_env) const {
+	return environment_storage.environment_get_ssao_intensity(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_power(RID p_env) const {
+	return environment_storage.environment_get_ssao_power(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_detail(RID p_env) const {
+	return environment_storage.environment_get_ssao_detail(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_horizon(RID p_env) const {
+	return environment_storage.environment_get_ssao_horizon(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_sharpness(RID p_env) const {
+	return environment_storage.environment_get_ssao_sharpness(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_direct_light_affect(RID p_env) const {
+	return environment_storage.environment_get_ssao_direct_light_affect(p_env);
+}
+
+float RendererSceneRender::environment_get_ssao_ao_channel_affect(RID p_env) const {
+	return environment_storage.environment_get_ssao_ao_channel_affect(p_env);
+}
+
+// SSIL
+
+void RendererSceneRender::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
+	environment_storage.environment_set_ssil(p_env, p_enable, p_radius, p_intensity, p_sharpness, p_normal_rejection);
+}
+
+bool RendererSceneRender::environment_get_ssil_enabled(RID p_env) const {
+	return environment_storage.environment_get_ssil_enabled(p_env);
+}
+
+float RendererSceneRender::environment_get_ssil_radius(RID p_env) const {
+	return environment_storage.environment_get_ssil_radius(p_env);
+}
+
+float RendererSceneRender::environment_get_ssil_intensity(RID p_env) const {
+	return environment_storage.environment_get_ssil_intensity(p_env);
+}
+
+float RendererSceneRender::environment_get_ssil_sharpness(RID p_env) const {
+	return environment_storage.environment_get_ssil_sharpness(p_env);
+}
+
+float RendererSceneRender::environment_get_ssil_normal_rejection(RID p_env) const {
+	return environment_storage.environment_get_ssil_normal_rejection(p_env);
+}
+
+// SDFGI
+
+void RendererSceneRender::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+	environment_storage.environment_set_sdfgi(p_env, p_enable, p_cascades, p_min_cell_size, p_y_scale, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias);
+}
+
+bool RendererSceneRender::environment_get_sdfgi_enabled(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_enabled(p_env);
+}
+
+int RendererSceneRender::environment_get_sdfgi_cascades(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_cascades(p_env);
+}
+
+float RendererSceneRender::environment_get_sdfgi_min_cell_size(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_min_cell_size(p_env);
+}
+
+bool RendererSceneRender::environment_get_sdfgi_use_occlusion(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_use_occlusion(p_env);
+}
+
+float RendererSceneRender::environment_get_sdfgi_bounce_feedback(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_bounce_feedback(p_env);
+}
+
+bool RendererSceneRender::environment_get_sdfgi_read_sky_light(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_read_sky_light(p_env);
+}
+
+float RendererSceneRender::environment_get_sdfgi_energy(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_energy(p_env);
+}
+
+float RendererSceneRender::environment_get_sdfgi_normal_bias(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_normal_bias(p_env);
+}
+
+float RendererSceneRender::environment_get_sdfgi_probe_bias(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_probe_bias(p_env);
+}
+
+RS::EnvironmentSDFGIYScale RendererSceneRender::environment_get_sdfgi_y_scale(RID p_env) const {
+	return environment_storage.environment_get_sdfgi_y_scale(p_env);
+}
+
+// Adjustments
+
+void RendererSceneRender::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
+	environment_storage.environment_set_adjustment(p_env, p_enable, p_brightness, p_contrast, p_saturation, p_use_1d_color_correction, p_color_correction);
+}
+
+bool RendererSceneRender::environment_get_adjustments_enabled(RID p_env) const {
+	return environment_storage.environment_get_adjustments_enabled(p_env);
+}
+
+float RendererSceneRender::environment_get_adjustments_brightness(RID p_env) const {
+	return environment_storage.environment_get_adjustments_brightness(p_env);
+}
+
+float RendererSceneRender::environment_get_adjustments_contrast(RID p_env) const {
+	return environment_storage.environment_get_adjustments_contrast(p_env);
+}
+
+float RendererSceneRender::environment_get_adjustments_saturation(RID p_env) const {
+	return environment_storage.environment_get_adjustments_saturation(p_env);
+}
+
+bool RendererSceneRender::environment_get_use_1d_color_correction(RID p_env) const {
+	return environment_storage.environment_get_use_1d_color_correction(p_env);
+}
+
+RID RendererSceneRender::environment_get_color_correction(RID p_env) const {
+	return environment_storage.environment_get_color_correction(p_env);
+}

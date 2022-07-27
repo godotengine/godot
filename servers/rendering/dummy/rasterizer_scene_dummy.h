@@ -69,48 +69,23 @@ public:
 
 	/* ENVIRONMENT API */
 
-	RID environment_allocate() override { return RID(); }
-	void environment_initialize(RID p_rid) override {}
-	void environment_set_background(RID p_env, RS::EnvironmentBG p_bg) override {}
-	void environment_set_sky(RID p_env, RID p_sky) override {}
-	void environment_set_sky_custom_fov(RID p_env, float p_scale) override {}
-	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) override {}
-	void environment_set_bg_color(RID p_env, const Color &p_color) override {}
-	void environment_set_bg_energy(RID p_env, float p_energy) override {}
-	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) override {}
-	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) override {}
-
-	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) override {}
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override {}
 	void environment_glow_set_use_high_quality(bool p_enable) override {}
 
-	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) override {}
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) override {}
-	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
-	void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) override {}
-	void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
 
-	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) override {}
+	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
+
+	void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
 
 	void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override {}
 	void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override {}
 	void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override {}
 
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) override {}
-
-	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) override {}
-
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) override {}
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) override {}
 	void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override {}
 	void environment_set_volumetric_fog_filter_active(bool p_enable) override {}
 
 	Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override { return Ref<Image>(); }
-
-	bool is_environment(RID p_env) const override { return false; }
-	RS::EnvironmentBG environment_get_background(RID p_env) const override { return RS::ENV_BG_KEEP; }
-	int environment_get_canvas_max_layer(RID p_env) const override { return 0; }
 
 	RID camera_effects_allocate() override { return RID(); }
 	void camera_effects_initialize(RID p_rid) override {}
@@ -180,7 +155,14 @@ public:
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) override { return TypedArray<Image>(); }
 
-	bool free(RID p_rid) override { return false; }
+	bool free(RID p_rid) override {
+		if (is_environment(p_rid)) {
+			environment_free(p_rid);
+			return true;
+		} else {
+			return false;
+		}
+	}
 	void update() override {}
 	void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 

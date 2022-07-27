@@ -1106,20 +1106,20 @@ SkyRD::~SkyRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
-void SkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(!p_env);
+	ERR_FAIL_COND(p_env.is_null());
 
 	SkyMaterialData *material = nullptr;
-	Sky *sky = get_sky(p_env->sky);
+	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	RID sky_material;
 
 	SkyShaderData *shader_data = nullptr;
 
 	if (sky) {
-		sky_material = sky_get_material(p_env->sky);
+		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
 			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
@@ -1305,27 +1305,27 @@ void SkyRD::setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const
 	}
 
 	sky_scene_state.ubo.z_far = p_projection.get_z_far();
-	sky_scene_state.ubo.fog_enabled = p_env->fog_enabled;
-	sky_scene_state.ubo.fog_density = p_env->fog_density;
-	sky_scene_state.ubo.fog_aerial_perspective = p_env->fog_aerial_perspective;
-	Color fog_color = p_env->fog_light_color.srgb_to_linear();
-	float fog_energy = p_env->fog_light_energy;
+	sky_scene_state.ubo.fog_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_env);
+	sky_scene_state.ubo.fog_density = RendererSceneRenderRD::get_singleton()->environment_get_fog_density(p_env);
+	sky_scene_state.ubo.fog_aerial_perspective = RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_env);
+	Color fog_color = RendererSceneRenderRD::get_singleton()->environment_get_fog_light_color(p_env).srgb_to_linear();
+	float fog_energy = RendererSceneRenderRD::get_singleton()->environment_get_fog_light_energy(p_env);
 	sky_scene_state.ubo.fog_light_color[0] = fog_color.r * fog_energy;
 	sky_scene_state.ubo.fog_light_color[1] = fog_color.g * fog_energy;
 	sky_scene_state.ubo.fog_light_color[2] = fog_color.b * fog_energy;
-	sky_scene_state.ubo.fog_sun_scatter = p_env->fog_sun_scatter;
+	sky_scene_state.ubo.fog_sun_scatter = RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_env);
 
 	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo);
 }
 
-void SkyRD::update(RendererSceneEnvironmentRD *p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
+void SkyRD::update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(!p_env);
+	ERR_FAIL_COND(p_env.is_null());
 
-	Sky *sky = get_sky(p_env->sky);
+	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 	ERR_FAIL_COND(!sky);
 
-	RID sky_material = sky_get_material(p_env->sky);
+	RID sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	SkyMaterialData *material = nullptr;
 
@@ -1347,7 +1347,7 @@ void SkyRD::update(RendererSceneEnvironmentRD *p_env, const Projection &p_projec
 
 	ERR_FAIL_COND(!shader_data);
 
-	float multiplier = p_env->bg_energy;
+	float multiplier = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
 
 	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
 	RS::SkyMode sky_mode = sky->mode;
@@ -1487,23 +1487,23 @@ void SkyRD::update(RendererSceneEnvironmentRD *p_env, const Projection &p_projec
 	}
 }
 
-void SkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time) {
+void SkyRD::draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(!p_env);
+	ERR_FAIL_COND(p_env.is_null());
 
 	ERR_FAIL_COND(p_view_count == 0);
 	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
 
-	Sky *sky = get_sky(p_env->sky);
+	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	RS::EnvironmentBG background = p_env->background;
+	RS::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
 
 	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
 		ERR_FAIL_COND(!sky);
-		sky_material = sky_get_material(p_env->sky);
+		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
 			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
@@ -1529,11 +1529,11 @@ void SkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, b
 
 	ERR_FAIL_COND(!shader_data);
 
-	Basis sky_transform = p_env->sky_orientation;
+	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
 
-	float multiplier = p_env->bg_energy;
-	float custom_fov = p_env->sky_custom_fov;
+	float multiplier = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
+	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_env);
 
 	// Camera
 	Projection camera;
@@ -1594,20 +1594,20 @@ void SkyRD::draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, b
 	RD::get_singleton()->draw_list_end();
 }
 
-void SkyRD::update_res_buffers(RendererSceneEnvironmentRD *p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
+void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(!p_env);
+	ERR_FAIL_COND(p_env.is_null());
 
 	ERR_FAIL_COND(p_view_count == 0);
 	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
 
-	Sky *sky = get_sky(p_env->sky);
+	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 	ERR_FAIL_COND(!sky);
 
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	sky_material = sky_get_material(p_env->sky);
+	sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	if (sky_material.is_valid()) {
 		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
@@ -1627,11 +1627,11 @@ void SkyRD::update_res_buffers(RendererSceneEnvironmentRD *p_env, uint32_t p_vie
 
 	ERR_FAIL_COND(!shader_data);
 
-	Basis sky_transform = p_env->sky_orientation;
+	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
 
-	float multiplier = p_env->bg_energy;
-	float custom_fov = p_env->sky_custom_fov;
+	float multiplier = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
+	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_env);
 
 	// Camera
 	Projection camera;
@@ -1679,23 +1679,23 @@ void SkyRD::update_res_buffers(RendererSceneEnvironmentRD *p_env, uint32_t p_vie
 	}
 }
 
-void SkyRD::draw(RD::DrawListID p_draw_list, RendererSceneEnvironmentRD *p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
+void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(!p_env);
+	ERR_FAIL_COND(p_env.is_null());
 
 	ERR_FAIL_COND(p_view_count == 0);
 	ERR_FAIL_COND(p_view_count > RendererSceneRender::MAX_RENDER_VIEWS);
 
-	Sky *sky = get_sky(p_env->sky);
+	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	RS::EnvironmentBG background = p_env->background;
+	RS::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
 
 	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
 		ERR_FAIL_COND(!sky);
-		sky_material = sky_get_material(p_env->sky);
+		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
 			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::SHADER_TYPE_SKY));
@@ -1721,11 +1721,11 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RendererSceneEnvironmentRD *p_env, 
 
 	ERR_FAIL_COND(!shader_data);
 
-	Basis sky_transform = p_env->sky_orientation;
+	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
 
-	float multiplier = p_env->bg_energy;
-	float custom_fov = p_env->sky_custom_fov;
+	float multiplier = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy(p_env);
+	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_env);
 
 	// Camera
 	Projection camera;
