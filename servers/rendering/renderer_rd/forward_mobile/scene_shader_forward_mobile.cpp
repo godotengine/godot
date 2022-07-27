@@ -584,7 +584,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["NORMAL_ROUGHNESS_TEXTURE"] = "normal_roughness_buffer";
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["OUTPUT_IS_SRGB"] = "true";
-		actions.renames["FOG"] = "custom_fog";
+		actions.renames["FOG"] = "fog";
 		actions.renames["RADIANCE"] = "custom_radiance";
 		actions.renames["IRRADIANCE"] = "custom_irradiance";
 		actions.renames["BONE_INDICES"] = "bone_attrib";
