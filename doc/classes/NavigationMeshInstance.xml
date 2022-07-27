@@ -9,7 +9,7 @@
 		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer.map_set_edge_connection_margin].
 		[b]Note:[/b] Overlapping two regions' navmeshes is not enough for connecting two regions. They must share a similar edge.
 		The cost of entering this region from another region can be controlled with the [member enter_cost] value.
-		[b]Note[/b]: This value is not added to the path cost when the start position is already inside this region.
+		[b]Note:[/b] This value is not added to the path cost when the start position is already inside this region.
 		The cost of traveling distances inside this region can be controlled with the [member travel_cost] multiplier.
 	</description>
 	<tutorials>
