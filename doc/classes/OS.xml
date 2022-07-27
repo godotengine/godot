@@ -385,6 +385,23 @@
 				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
+		<method name="get_system_font_path" qualifiers="const">
+			<return type="String" />
+			<argument index="0" name="font_name" type="String" />
+			<argument index="1" name="bold" type="bool" default="false" />
+			<argument index="2" name="italic" type="bool" default="false" />
+			<description>
+				Returns path to the system font file with [code]font_name[/code] and style. Return empty string if no matching fonts found.
+				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_fonts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of font family names available.
+				[b]Note:[/b] This method is implemented on iOS, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>

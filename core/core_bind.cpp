@@ -231,6 +231,14 @@ void OS::crash(const String &p_message) {
 	CRASH_NOW_MSG(p_message);
 }
 
+Vector<String> OS::get_system_fonts() const {
+	return ::OS::get_singleton()->get_system_fonts();
+}
+
+String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
+}
+
 String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
@@ -589,6 +597,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
