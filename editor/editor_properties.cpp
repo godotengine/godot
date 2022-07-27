@@ -133,6 +133,11 @@ void EditorPropertyMultilineText::_text_changed() {
 void EditorPropertyMultilineText::_open_big_text() {
 	if (!big_text_dialog) {
 		big_text = memnew(TextEdit);
+		if (expression) {
+			big_text->set_syntax_highlighter(text->get_syntax_highlighter());
+			big_text->add_theme_font_override("font", get_theme_font(SNAME("expression"), SNAME("EditorFonts")));
+			big_text->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts")));
+		}
 		big_text->connect("text_changed", callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
 		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 		big_text_dialog = memnew(AcceptDialog);
@@ -162,12 +167,24 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons"));
 			open_big_text->set_icon(df);
-			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
-			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
-			text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
-			text->add_theme_font_size_override("font_size", get_theme_font_size("expression_size", "EditorFonts"));
 
+			Ref<Font> font;
+			int font_size;
+			if (expression) {
+				font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
+				font_size = get_theme_font_size(SNAME("expression_size"), SNAME("EditorFonts"));
+
+				text->add_theme_font_override("font", font);
+				text->add_theme_font_size_override("font_size", font_size);
+				if (big_text) {
+					big_text->add_theme_font_override("font", font);
+					big_text->add_theme_font_size_override("font_size", font_size);
+				}
+			} else {
+				font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
+				font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+			}
+			text->set_custom_minimum_size(Vector2(0, font->get_height(font_size) * 6));
 		} break;
 	}
 }
