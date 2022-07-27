@@ -186,6 +186,7 @@ public:
 	virtual String get_name() const;
 	virtual void add_frame_delay(bool p_can_draw) {}
 	virtual bool can_draw() const;
+	virtual void vibrate_handheld(int p_duration_ms);
 
 	virtual String get_cache_path() const;
 	virtual String get_config_path() const;
