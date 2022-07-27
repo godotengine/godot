@@ -10,8 +10,8 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
 # Import hardcoded version information from version.py
-script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(script_directory, "../../"))  # Include the root directory
+root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+sys.path.append(root_directory)  # Include the root directory
 import version
 
 # Uncomment to do type checks. I have it commented out so it works below Python 3.5
@@ -475,7 +475,7 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     if hasattr(version, "docs") and version.docs != "latest":
         git_branch = version.docs
 
-    source_xml_path = os.path.normpath(os.path.join("doc", class_def.filepath)).replace("\\", "/")
+    source_xml_path = os.path.relpath(class_def.filepath, root_directory).replace("\\", "/")
     source_github_url = "https://github.com/godotengine/godot/tree/{}/{}".format(git_branch, source_xml_path)
     generator_github_url = "https://github.com/godotengine/godot/tree/{}/doc/tools/make_rst.py".format(git_branch)
 
