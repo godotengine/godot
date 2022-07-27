@@ -34,11 +34,11 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/animation.h"
 #include "scene/resources/bone_map.h"
 
 void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) {
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/normalize_position_tracks"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/overwrite_axis"), true));
 
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable"), false));
@@ -85,6 +85,53 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				int parent = profile->find_bone(profile->get_bone_parent(i));
 				if (parent >= 0) {
 					prof_skeleton->set_bone_parent(i, parent);
+				}
+			}
+		}
+
+		// Set motion scale to Skeleton if normalize position tracks.
+		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
+			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
+			if (src_bone_idx >= 0) {
+				real_t motion_scale = abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
+				if (motion_scale > 0) {
+					src_skeleton->set_motion_scale(motion_scale);
+				}
+			}
+
+			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+			while (nodes.size()) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+				List<StringName> anims;
+				ap->get_animation_list(&anims);
+				for (const StringName &name : anims) {
+					Ref<Animation> anim = ap->get_animation(name);
+					int track_len = anim->get_track_count();
+					for (int i = 0; i < track_len; i++) {
+						if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
+							continue;
+						}
+
+						if (anim->track_is_compressed(i)) {
+							continue; // Shouldn't occur in internal_process().
+						}
+
+						String track_path = String(anim->track_get_path(i).get_concatenated_names());
+						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
+						if (node) {
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (track_skeleton) {
+								if (track_skeleton && track_skeleton == src_skeleton) {
+									real_t mlt = 1 / src_skeleton->get_motion_scale();
+									int key_len = anim->track_get_key_count(i);
+									for (int j = 0; j < key_len; j++) {
+										Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+										anim->track_set_key_value(i, j, pos * mlt);
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -357,12 +404,12 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						Ref<Animation> anim = ap->get_animation(name);
 						int track_len = anim->get_track_count();
 						for (int i = 0; i < track_len; i++) {
-							if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_ROTATION_3D) {
+							if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
 								continue;
 							}
 
 							if (anim->track_is_compressed(i)) {
-								continue; // TODO: Adopt to compressed track.
+								continue; // Shouldn't occur in internal_process().
 							}
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
@@ -374,20 +421,44 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 									if (bn) {
 										int bone_idx = src_skeleton->find_bone(bn);
 
-										Quaternion old_rest = old_skeleton_rest[bone_idx].basis.get_rotation_quaternion();
-										Quaternion new_rest = src_skeleton->get_bone_rest(bone_idx).basis.get_rotation_quaternion();
-										Quaternion old_pg;
-										Quaternion new_pg;
+										Transform3D old_rest = old_skeleton_rest[bone_idx];
+										Transform3D new_rest = src_skeleton->get_bone_rest(bone_idx);
+										Transform3D old_pg;
+										Transform3D new_pg;
 										int parent_idx = src_skeleton->get_bone_parent(bone_idx);
 										if (parent_idx >= 0) {
-											old_pg = old_skeleton_global_rest[parent_idx].basis.get_rotation_quaternion();
-											new_pg = src_skeleton->get_bone_global_rest(parent_idx).basis.get_rotation_quaternion();
+											old_pg = old_skeleton_global_rest[parent_idx];
+											new_pg = src_skeleton->get_bone_global_rest(parent_idx);
 										}
 
 										int key_len = anim->track_get_key_count(i);
-										for (int j = 0; j < key_len; j++) {
-											Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
-											anim->track_set_key_value(i, j, new_pg.inverse() * old_pg * qt * old_rest.inverse() * old_pg.inverse() * new_pg * new_rest);
+										if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
+											Quaternion old_rest_q = old_rest.basis.get_rotation_quaternion();
+											Quaternion new_rest_q = new_rest.basis.get_rotation_quaternion();
+											Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
+											Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
+											for (int j = 0; j < key_len; j++) {
+												Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
+												anim->track_set_key_value(i, j, new_pg_q.inverse() * old_pg_q * qt * old_rest_q.inverse() * old_pg_q.inverse() * new_pg_q * new_rest_q);
+											}
+										} else if (anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+											Basis old_rest_b = old_rest.basis;
+											Basis new_rest_b = new_rest.basis;
+											Basis old_pg_b = old_pg.basis;
+											Basis new_pg_b = new_pg.basis;
+											for (int j = 0; j < key_len; j++) {
+												Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
+												anim->track_set_key_value(i, j, (new_pg_b.inverse() * old_pg_b * sc * old_rest_b.inverse() * old_pg_b.inverse() * new_pg_b * new_rest_b).get_scale());
+											}
+										} else {
+											Vector3 old_rest_o = old_rest.origin;
+											Vector3 new_rest_o = new_rest.origin;
+											Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
+											Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
+											for (int j = 0; j < key_len; j++) {
+												Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
+												anim->track_set_key_value(i, j, new_pg_q.xform_inv(old_pg_q.xform(ps - old_rest_o)) + new_rest_o);
+											}
 										}
 									}
 								}

@@ -316,6 +316,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx = -1);
+
 public:
 	StringName find_animation(const Ref<Animation> &p_animation) const;
 	StringName find_animation_library(const Ref<Animation> &p_animation) const;
