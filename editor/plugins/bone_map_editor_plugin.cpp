@@ -65,6 +65,9 @@ void BoneMapperButton::set_state(BoneMapState p_state) {
 		case BONE_MAP_STATE_SET: {
 			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/set"));
 		} break;
+		case BONE_MAP_STATE_MISSING: {
+			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/missing"));
+		} break;
 		case BONE_MAP_STATE_ERROR: {
 			circle->set_modulate(EditorSettings::get_singleton()->get("editors/bone_mapper/handle_colors/error"));
 		} break;
@@ -311,16 +314,48 @@ void BoneMapper::recreate_items() {
 void BoneMapper::_update_state() {
 	int len = bone_mapper_buttons.size();
 	for (int i = 0; i < len; i++) {
-		StringName sbn = bone_map->get_skeleton_bone_name(bone_mapper_buttons[i]->get_profile_bone_name());
-		if (skeleton->find_bone(sbn) >= 0) {
+		StringName pbn = bone_mapper_buttons[i]->get_profile_bone_name();
+		StringName sbn = bone_map->get_skeleton_bone_name(pbn);
+		int bone_idx = skeleton->find_bone(sbn);
+		if (bone_idx >= 0) {
 			if (bone_map->get_skeleton_bone_name_count(sbn) == 1) {
-				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_SET);
+				Ref<SkeletonProfile> prof = bone_map->get_profile();
+
+				StringName parent_name = prof->get_bone_parent(prof->find_bone(pbn));
+				Vector<int> prof_parent_bones;
+				while (parent_name != StringName()) {
+					prof_parent_bones.push_back(skeleton->find_bone(bone_map->get_skeleton_bone_name(parent_name)));
+					if (prof->find_bone(parent_name) == -1) {
+						break;
+					}
+					parent_name = prof->get_bone_parent(prof->find_bone(parent_name));
+				}
+
+				int parent_id = skeleton->get_bone_parent(bone_idx);
+				Vector<int> skel_parent_bones;
+				while (parent_id >= 0) {
+					skel_parent_bones.push_back(parent_id);
+					parent_id = skeleton->get_bone_parent(parent_id);
+				}
+
+				bool is_broken = false;
+				for (int j = 0; j < prof_parent_bones.size(); j++) {
+					if (prof_parent_bones[j] != -1 && !skel_parent_bones.has(prof_parent_bones[j])) {
+						is_broken = true;
+					}
+				}
+
+				if (is_broken) {
+					bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_ERROR);
+				} else {
+					bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_SET);
+				}
 			} else {
 				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_ERROR);
 			}
 		} else {
 			if (bone_mapper_buttons[i]->is_require()) {
-				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_ERROR);
+				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_MISSING);
 			} else {
 				bone_mapper_buttons[i]->set_state(BoneMapperButton::BONE_MAP_STATE_UNSET);
 			}
@@ -441,9 +476,10 @@ void EditorInspectorPluginBoneMap::parse_begin(Object *p_object) {
 
 BoneMapEditorPlugin::BoneMapEditorPlugin() {
 	// Register properties in editor settings.
-	EDITOR_DEF("editors/bone_mapper/handle_colors/set", Color(0.1, 0.6, 0.25));
-	EDITOR_DEF("editors/bone_mapper/handle_colors/error", Color(0.8, 0.2, 0.2));
 	EDITOR_DEF("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
+	EDITOR_DEF("editors/bone_mapper/handle_colors/set", Color(0.1, 0.6, 0.25));
+	EDITOR_DEF("editors/bone_mapper/handle_colors/missing", Color(0.8, 0.2, 0.8));
+	EDITOR_DEF("editors/bone_mapper/handle_colors/error", Color(0.8, 0.2, 0.2));
 
 	Ref<EditorInspectorPluginBoneMap> inspector_plugin;
 	inspector_plugin.instantiate();

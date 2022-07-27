@@ -47,6 +47,7 @@ public:
 	enum BoneMapState {
 		BONE_MAP_STATE_UNSET,
 		BONE_MAP_STATE_SET,
+		BONE_MAP_STATE_MISSING,
 		BONE_MAP_STATE_ERROR
 	};
 
