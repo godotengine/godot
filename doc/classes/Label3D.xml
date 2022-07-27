@@ -73,7 +73,7 @@
 		</member>
 		<member name="outline_render_priority" type="int" setter="set_outline_render_priority" getter="get_outline_render_priority" default="-1">
 			Sets the render priority for the text outline. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
@@ -81,7 +81,7 @@
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 			Sets the render priority for the text. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
@@ -105,7 +105,7 @@
 			If set, lights in the environment affect the label.
 		</constant>
 		<constant name="FLAG_DOUBLE_SIDED" value="1" enum="DrawFlags">
-			If set, text can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
+			If set, text can be seen from the back as well. If not, the text is invisible when looking at it from behind.
 		</constant>
 		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2" enum="DrawFlags">
 			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.

@@ -412,7 +412,7 @@
 			<argument index="0" name="line" type="int" />
 			<argument index="1" name="bookmark" type="bool" />
 			<description>
-				Bookmarks the [code]line[/code] if [code]bookmark[/code] is true. Deletes the bookmark if [code]bookmark[/code] is false.
+				Bookmarks the [code]line[/code] if [code]bookmark[/code] is [code]true[/code]. Deletes the bookmark if [code]bookmark[/code] is [code]false[/code].
 				Bookmarks are shown in the [member breakpoint_gutter].
 			</description>
 		</method>

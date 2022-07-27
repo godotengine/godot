@@ -1380,9 +1380,22 @@ msgstr ""
 "mientras muestra un trazo de cuando un error o advertencia se muestra."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-msgid "Like [method print], but prints only when used in debug mode."
+#, fuzzy
+msgid ""
+"Like [method print], but includes the current stack frame when running with "
+"the debugger turned on.\n"
+"Output in the console would look something like this:\n"
+"[codeblock]\n"
+"Test print\n"
+"   At: res://test.gd:15:_process()\n"
+"[/codeblock]"
 msgstr ""
-"Como [method print], pero imprime sólo cuando se usa en modo de depuración."
+"Imprime una registro de la pila en la ubicación del código, sólo funciona "
+"cuando se ejecuta con el depurador activado.\n"
+"La salida en la consola se vería algo así:\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -10108,8 +10121,8 @@ msgstr ""
 #, fuzzy
 msgid ""
 "The degree to which the controller vibrates. Ranges from [code]0.0[/code] to "
-"[code]1.0[/code] with precision [code].01[/code]. If changed, updates "
-"[member ARVRPositionalTracker.rumble] accordingly.\n"
+"[code]1.0[/code]. If changed, updates [member ARVRPositionalTracker.rumble] "
+"accordingly.\n"
 "This is a useful property to animate if you want the controller to vibrate "
 "for a limited duration."
 msgstr ""
@@ -15375,10 +15388,13 @@ msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
-"If [code]true[/code], the ancestor [Viewport] is currently using this camera."
+"If [code]true[/code], the ancestor [Viewport] is currently using this "
+"camera.\n"
+"If multiple cameras are in the scene, one will always be made current. For "
+"example, if two [Camera] nodes are present in the scene and only one is "
+"current, setting one camera's [member current] to [code]false[/code] will "
+"cause the other camera to be made current."
 msgstr ""
-"Si [code]true[/code], el ancestro [Viewport] está actualmente usando esta "
-"cámara."
 
 #: doc/classes/Camera.xml
 msgid ""
@@ -26618,10 +26634,11 @@ msgstr ""
 "save_to_file]."
 
 #: doc/classes/EditorFeatureProfile.xml
+#, fuzzy
 msgid ""
 "Saves the editor feature profile to a file in JSON format. It can then be "
 "imported using the feature profile manager's [b]Import[/b] button or the "
-"[method load_from_file] button."
+"[method load_from_file] method."
 msgstr ""
 "Guarda el perfil de características del editor en un archivo en formato "
 "JSON. Luego puede ser importado usando el botón [b]Import[/b] del "
@@ -31150,9 +31167,10 @@ msgid "The default exposure used for tonemapping."
 msgstr "La exposición predeterminada que se utiliza para el mapeo de tonos."
 
 #: doc/classes/Environment.xml
+#, fuzzy
 msgid ""
 "The tonemapping mode to use. Tonemapping is the process that \"converts\" "
-"HDR values to be suitable for rendering on a LDR display. (Godot doesn't "
+"HDR values to be suitable for rendering on a SDR display. (Godot doesn't "
 "support rendering on HDR displays yet.)"
 msgstr ""
 "El modo de mapeo de tonos a utilizar. El \"tonemapping\" es el proceso que "
@@ -33579,9 +33597,10 @@ msgstr ""
 "puntos finales."
 
 #: doc/classes/Geometry.xml
+#, fuzzy
 msgid ""
 "Given an array of [Vector2]s representing tiles, builds an atlas. The "
-"returned dictionary has two keys: [code]points[/code] is a vector of "
+"returned dictionary has two keys: [code]points[/code] is an array of "
 "[Vector2] that specifies the positions of each tile, [code]size[/code] "
 "contains the overall size of the whole atlas as [Vector2]."
 msgstr ""
@@ -43052,7 +43071,7 @@ msgstr "La altura del cilindro."
 msgid ""
 "Sets the render priority for the text outline. Higher priority objects will "
 "be sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -43078,7 +43097,7 @@ msgstr "El tamaño del ancho de un píxel en el sprite para escalarlo en 3D."
 msgid ""
 "Sets the render priority for the text. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -43125,7 +43144,7 @@ msgstr "Si se ajusta, las luces del entorno afectan al sprite."
 #: doc/classes/Label3D.xml
 #, fuzzy
 msgid ""
-"If set, text can be seen from the back as well. If not, the texture is "
+"If set, text can be seen from the back as well. If not, the text is "
 "invisible when looking at it from behind."
 msgstr ""
 "Si se fija, la textura puede ser vista desde atrás también, si no, es "
@@ -48253,7 +48272,7 @@ msgid ""
 "two regions. They must share a similar edge.\n"
 "The cost of entering this region from another region can be controlled with "
 "the [member enter_cost] value.\n"
-"[b]Note[/b]: This value is not added to the path cost when the start "
+"[b]Note:[/b] This value is not added to the path cost when the start "
 "position is already inside this region.\n"
 "The cost of traveling distances inside this region can be controlled with "
 "the [member travel_cost] multiplier."
@@ -48576,7 +48595,7 @@ msgid ""
 "two regions. They must share a similar edge.\n"
 "The pathfinding cost of entering this region from another region can be "
 "controlled with the [member enter_cost] value.\n"
-"[b]Note[/b]: This value is not added to the path cost when the start "
+"[b]Note:[/b] This value is not added to the path cost when the start "
 "position is already inside this region.\n"
 "The pathfinding cost of traveling distances inside this region can be "
 "controlled with the [member travel_cost] multiplier."
@@ -48701,6 +48720,54 @@ msgstr ""
 #, fuzzy
 msgid "Control activation of this server."
 msgstr "Traducción local de este nodo."
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"A [NetworkedMultiplayerPeer] implementation that can be controlled from a "
+"script."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"A [NetworkedMultiplayerPeer] implementation that can be used as a [member "
+"MultiplayerAPI.network_peer] and controlled from a script.\n"
+"Its purpose is to allow adding a new backend for the high-Level multiplayer "
+"API without needing to use GDNative."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Deliver a packet to the local [MultiplayerAPI].\n"
+"When your script receives a packet from other peers over the network "
+"(originating from the [signal packet_generated] signal on the sending peer), "
+"passing it to this method will deliver it locally."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Initialize the peer with the given [code]peer_id[/code] (must be between 1 "
+"and 2147483647)."
+msgstr ""
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+#, fuzzy
+msgid ""
+"Set the state of the connection. See [enum NetworkedMultiplayerPeer."
+"ConnectionStatus]."
+msgstr "Devuelve el estado actual de la conexión. Ver [enum ConnectionStatus]."
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+#, fuzzy
+msgid "Set the max packet size that this peer can handle."
+msgstr "Establece la piel que se utilizará en esta instancia."
+
+#: doc/classes/NetworkedMultiplayerCustom.xml
+msgid ""
+"Emitted when the local [MultiplayerAPI] generates a packet.\n"
+"Your script should take this packet and send it to the requested peer over "
+"the network (which should call [method deliver_packet] with the data when "
+"it's received)."
+msgstr ""
 
 #: modules/enet/doc_classes/NetworkedMultiplayerENet.xml
 msgid ""
@@ -52624,8 +52691,14 @@ msgid "See [enum ShadowDetail]."
 msgstr "Ver [enum ShadowMode]."
 
 #: doc/classes/OmniLight.xml
-msgid "See [enum ShadowMode]."
-msgstr "Ver [enum ShadowMode]."
+msgid ""
+"The shadow rendering mode to use for this [OmniLight]. See [enum "
+"ShadowMode].\n"
+"[b]Note:[/b] In GLES2, [constant SHADOW_CUBE] is only supported on GPUs that "
+"feature support for depth cubemaps. Old GPUs such as the Radeon HD 4000 "
+"series don't support cubemap shadows and will fall back to dual paraboloid "
+"shadows as a result."
+msgstr ""
 
 #: doc/classes/OmniLight.xml
 msgid ""
@@ -52636,9 +52709,11 @@ msgstr ""
 "que [constant SHADOW_CUBE], pero de menor calidad."
 
 #: doc/classes/OmniLight.xml
+#, fuzzy
 msgid ""
 "Shadows are rendered to a cubemap. Slower than [constant "
-"SHADOW_DUAL_PARABOLOID], but higher-quality."
+"SHADOW_DUAL_PARABOLOID], but higher-quality. Only supported on GPUs that "
+"feature support for depth cubemaps."
 msgstr ""
 "Las sombras se representan en un mapa de cubos. Más lento que [constant "
 "SHADOW_DUAL_PARABOLOID], pero de mayor calidad."
@@ -75508,7 +75583,7 @@ msgstr "El tamaño del ancho de un píxel en el sprite para escalarlo en 3D."
 msgid ""
 "Sets the render priority for the sprite. Higher priority objects will be "
 "sorted in front of lower priority objects.\n"
-"[b]Node:[/b] This only applies if [member alpha_cut] is set to [constant "
+"[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant "
 "ALPHA_CUT_DISABLED] (default value).\n"
 "[b]Note:[/b] This only applies to sorting of transparent objects. This will "
 "not impact how transparent objects are sorted relative to opaque objects. "
@@ -79211,8 +79286,8 @@ msgstr "Establece el texto para una línea específica."
 
 #: doc/classes/TextEdit.xml
 msgid ""
-"Bookmarks the [code]line[/code] if [code]bookmark[/code] is true. Deletes "
-"the bookmark if [code]bookmark[/code] is false.\n"
+"Bookmarks the [code]line[/code] if [code]bookmark[/code] is [code]true[/"
+"code]. Deletes the bookmark if [code]bookmark[/code] is [code]false[/code].\n"
 "Bookmarks are shown in the [member breakpoint_gutter]."
 msgstr ""
 
@@ -83834,15 +83909,18 @@ msgstr ""
 "elementos pueden establecerse utilizando [method set_item_metadata]."
 
 #: doc/classes/TreeItem.xml
+#, fuzzy
 msgid ""
-"Returns the next TreeItem in the tree or a null object if there is none."
+"Returns the next sibling TreeItem in the tree or a null object if there is "
+"none."
 msgstr ""
 "Devuelve el siguiente TreeItem del árbol o un objeto nulo si no hay ninguno."
 
 #: doc/classes/TreeItem.xml
+#, fuzzy
 msgid ""
-"Returns the next visible TreeItem in the tree or a null object if there is "
-"none.\n"
+"Returns the next visible sibling TreeItem in the tree or a null object if "
+"there is none.\n"
 "If [code]wrap[/code] is enabled, the method will wrap around to the first "
 "visible element in the tree when called on the last visible element, "
 "otherwise it returns [code]null[/code]."
@@ -83858,15 +83936,18 @@ msgid "Returns the parent TreeItem or a null object if there is none."
 msgstr "Devuelve el TreeItem padre o un objeto nulo si no hay ninguno."
 
 #: doc/classes/TreeItem.xml
+#, fuzzy
 msgid ""
-"Returns the previous TreeItem in the tree or a null object if there is none."
+"Returns the previous sibling TreeItem in the tree or a null object if there "
+"is none."
 msgstr ""
 "Devuelve el TreeItem anterior del árbol o un objeto nulo si no hay ninguno."
 
 #: doc/classes/TreeItem.xml
+#, fuzzy
 msgid ""
-"Returns the previous visible TreeItem in the tree or a null object if there "
-"is none.\n"
+"Returns the previous visible sibling TreeItem in the tree or a null object "
+"if there is none.\n"
 "If [code]wrap[/code] is enabled, the method will wrap around to the last "
 "visible element in the tree when called on the first visible element, "
 "otherwise it returns [code]null[/code]."
@@ -93040,9 +93121,12 @@ msgid "Sets the viewport's global transformation matrix."
 msgstr "Establece la matriz de transformación global del Viewport."
 
 #: doc/classes/VisualServer.xml
-#, fuzzy
-msgid "If [code]true[/code], the viewport renders to hdr."
-msgstr "Si [code]true[/code], el canvas del viewport no se renderiza."
+msgid ""
+"If [code]true[/code], the viewport renders to high dynamic range (HDR) "
+"instead of standard dynamic range (SDR). See also [method "
+"viewport_set_use_32_bpc_depth].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "If [code]true[/code], the viewport's canvas is not rendered."
@@ -93148,6 +93232,15 @@ msgid ""
 msgstr ""
 "Establece cuándo debe actualizarse el viewport. Ver las constantes [enum "
 "ViewportUpdateMode] para las opciones."
+
+#: doc/classes/VisualServer.xml
+msgid ""
+"If [code]true[/code], allocates the viewport's framebuffer with full "
+"floating-point precision (32-bit) instead of half floating-point precision "
+"(16-bit). Only effective if [method viewport_set_use_32_bpc_depth] is used "
+"on the same [Viewport] to set HDR to [code]true[/code].\n"
+"[b]Note:[/b] Only available on the GLES3 backend."
+msgstr ""
 
 #: doc/classes/VisualServer.xml
 #, fuzzy

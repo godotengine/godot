@@ -65,7 +65,7 @@
 			When a controller is turned off, its slot is freed. This ensures controllers will keep the same ID even when controllers with lower IDs are turned off.
 		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
-			The degree to which the controller vibrates. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
+			The degree to which the controller vibrates. Ranges from [code]0.0[/code] to [code]1.0[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
 			This is a useful property to animate if you want the controller to vibrate for a limited duration.
 		</member>
 	</members>
