@@ -69,13 +69,15 @@
 # Federico Caprini <caprinifede@gmail.com>, 2022.
 # Alessandro Casalino <alessandro.casalino93@gmail.com>, 2022.
 # conecat <ilgrandemax190@gmail.com>, 2022.
+# Gico2006 <gradaellig@protonmail.com>, 2022.
+# ale piccia <picciatialessio2@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-04 05:16+0000\n"
-"Last-Translator: conecat <ilgrandemax190@gmail.com>\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
+"Last-Translator: ale piccia <picciatialessio2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -83,7 +85,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -374,7 +376,6 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Byte insufficienti per decodificarli o formato non valido."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Input %d non valido (assente) nell'espressione"
 
@@ -425,7 +426,7 @@ msgstr "Modalità Mouse"
 
 #: core/os/input.cpp
 msgid "Use Accumulated Input"
-msgstr "Usa Input Accumulato"
+msgstr "Usa Input Accumulati"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -671,14 +672,12 @@ msgid "Always On Top"
 msgstr "Sempre In Primo Piano"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Larghezza Test"
+msgstr "Test Larghezza"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Altezza Test"
+msgstr "Test Altezza"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -713,14 +712,12 @@ msgid "Script Templates Search Path"
 msgstr "Percorso di Ricerca dei Template di Script"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Autocaricamento all'Avvio"
+msgstr "Caricamento automatico del controllo di versione all'avvio"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Controllo della versione"
+msgstr "Nome del plugin di controllo della versione"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -1210,14 +1207,12 @@ msgid "Type"
 msgstr "Tipo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In Handle"
-msgstr "Imposta Maniglia"
+msgstr "In gestione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out Handle"
-msgstr "Imposta Maniglia"
+msgstr "Non gestire"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1406,19 +1401,16 @@ msgid "Stream:"
 msgstr "Stream"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Riavvia (s):"
+msgstr "inizia:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "Fade In (s):"
+msgstr "finisci:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "Animazioni:"
+msgstr "clip delle animazioni:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -2173,14 +2165,15 @@ msgstr "Preferiti:"
 msgid "Recent:"
 msgstr "Recenti:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Cerca:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Corrispondenze:"
@@ -2240,8 +2233,8 @@ msgstr "Cerca risorsa di rimpiazzo:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -2250,7 +2243,7 @@ msgstr "Apri"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "proprietario di: %s (Totale: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2607,9 +2600,8 @@ msgid "There is no '%s' file."
 msgstr "File \"%s\" assente."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Disposizione"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2850,9 +2842,8 @@ msgid "Save PCK"
 msgstr "Salva PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Impossibile creare la cartella."
+msgstr "impossibile creare il file \"%s\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2860,9 +2851,8 @@ msgid "Failed to export project files."
 msgstr "Impossibile esportare i file del progetto"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Impossibile aprire il file in scrittura:"
+msgstr "impossibile aprire file da leggere dalla path \"%s\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -5580,6 +5570,10 @@ msgstr "Uso dei tasti aggiuntivi del mouse per navigare la cronologia"
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Selezione GridMap"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11737,6 +11731,11 @@ msgstr "Animazioni:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Nuova Animazione"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Modalità di filtraggio"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
