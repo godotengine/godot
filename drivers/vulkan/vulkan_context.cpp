@@ -42,8 +42,7 @@
 #include <cstdlib>
 #include <cstring>
 
-// FIXME: `const VkDevice device` parameter shadows a field.
-VkResult VulkanContext::create_render_pass2(const VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
+VkResult VulkanContext::create_render_pass2(const VkDevice p_device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
 	if (!fpCreateRenderPass2KHR) {
 		fpCreateRenderPass2KHR = reinterpret_cast<PFN_vkCreateRenderPass2KHR>(vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR"));
 	}
@@ -52,7 +51,7 @@ VkResult VulkanContext::create_render_pass2(const VkDevice device, const VkRende
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
-	return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
+	return (fpCreateRenderPass2KHR)(p_device, pCreateInfo, pAllocator, pRenderPass);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(

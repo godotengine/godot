@@ -266,7 +266,7 @@ protected:
 
 public:
 	// Extension calls
-	VkResult create_render_pass2(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
+	VkResult create_render_pass2(VkDevice p_device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);
 
 	uint32_t get_vulkan_major() const { return vulkan_major; }
 	uint32_t get_vulkan_minor() const { return vulkan_minor; }
@@ -312,7 +312,7 @@ public:
 	Error initialize();
 
 	void command_begin_label(VkCommandBuffer p_command_buffer, const String &p_label_name, Color p_color) const;
-	void command_insert_label(VkCommandBuffer p_command_buffer, const String &p_label_name, Color p_color) const;
+	void command_insert_label(VkCommandBuffer p_command_buffer, const String &p_label_name, const Color p_color) const;
 	void command_end_label(VkCommandBuffer p_command_buffer) const;
 	void set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, const String &p_object_name) const;
 
