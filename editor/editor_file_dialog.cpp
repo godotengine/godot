@@ -37,6 +37,7 @@
 #include "core/string/print_string.h"
 #include "dependency_editor.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -294,11 +295,22 @@ void EditorFileDialog::_post_popup() {
 
 		bool res = (access == ACCESS_RESOURCES);
 		Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
+		Vector<String> recentd_paths;
+		Vector<String> recentd_names;
+
 		for (int i = 0; i < recentd.size(); i++) {
 			bool cres = recentd[i].begins_with("res://");
 			if (cres != res) {
 				continue;
 			}
+
+			if (!dir_access->dir_exists(recentd[i])) {
+				// Remove invalid directory from the list of Recent directories.
+				recentd.remove_at(i--);
+				continue;
+			}
+
+			// Compute recent directory display text.
 			String name = recentd[i];
 			if (res && name == "res://") {
 				name = "/";
@@ -306,17 +318,18 @@ void EditorFileDialog::_post_popup() {
 				if (name.ends_with("/")) {
 					name = name.substr(0, name.length() - 1);
 				}
-				name = name.get_file() + "/";
+				name = name.get_file();
 			}
-			bool exists = dir_access->dir_exists(recentd[i]);
-			if (!exists) {
-				// Remove invalid directory from the list of Recent directories.
-				recentd.remove_at(i--);
-			} else {
-				recent->add_item(name, folder);
-				recent->set_item_metadata(-1, recentd[i]);
-				recent->set_item_icon_modulate(-1, folder_color);
-			}
+			recentd_paths.append(recentd[i]);
+			recentd_names.append(name);
+		}
+
+		EditorNode::disambiguate_filenames(recentd_paths, recentd_names);
+
+		for (int i = 0; i < recentd_paths.size(); i++) {
+			recent->add_item(recentd_names[i], folder);
+			recent->set_item_metadata(-1, recentd_paths[i]);
+			recent->set_item_icon_modulate(-1, folder_color);
 		}
 		EditorSettings::get_singleton()->set_recent_dirs(recentd);
 
@@ -1329,49 +1342,58 @@ void EditorFileDialog::_update_favorites() {
 	favorite->set_pressed(false);
 
 	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> favorited_paths;
+	Vector<String> favorited_names;
 
 	bool fav_changed = false;
-	for (int i = favorited.size() - 1; i >= 0; i--) {
-		if (!dir_access->dir_exists(favorited[i])) {
-			favorited.remove_at(i);
-			fav_changed = true;
-		}
-	}
-	if (fav_changed) {
-		EditorSettings::get_singleton()->set_favorites(favorited);
-	}
-
+	int current_favorite = -1;
 	for (int i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res) {
 			continue;
 		}
-		String name = favorited[i];
-		bool setthis = false;
 
+		if (!dir_access->dir_exists(favorited[i])) {
+			// Remove invalid directory from the list of Favorited directories.
+			favorited.remove_at(i--);
+			fav_changed = true;
+			continue;
+		}
+
+		// Compute favorite display text.
+		String name = favorited[i];
 		if (res && name == "res://") {
 			if (name == current) {
-				setthis = true;
+				current_favorite = favorited_paths.size();
 			}
 			name = "/";
-
-			favorites->add_item(name, folder_icon);
+			favorited_paths.append(favorited[i]);
+			favorited_names.append(name);
 		} else if (name.ends_with("/")) {
 			if (name == current || name == current + "/") {
-				setthis = true;
+				current_favorite = favorited_paths.size();
 			}
 			name = name.substr(0, name.length() - 1);
 			name = name.get_file();
-
-			favorites->add_item(name, folder_icon);
+			favorited_paths.append(favorited[i]);
+			favorited_names.append(name);
 		} else {
-			continue; // We don't handle favorite files here.
+			// Ignore favorited files.
 		}
+	}
 
-		favorites->set_item_metadata(-1, favorited[i]);
+	if (fav_changed) {
+		EditorSettings::get_singleton()->set_favorites(favorited);
+	}
+
+	EditorNode::disambiguate_filenames(favorited_paths, favorited_names);
+
+	for (int i = 0; i < favorited_paths.size(); i++) {
+		favorites->add_item(favorited_names[i], folder_icon);
+		favorites->set_item_metadata(-1, favorited_paths[i]);
 		favorites->set_item_icon_modulate(-1, folder_color);
 
-		if (setthis) {
+		if (i == current_favorite) {
 			favorite->set_pressed(true);
 			favorites->set_current(favorites->get_item_count() - 1);
 			recent->deselect_all();
