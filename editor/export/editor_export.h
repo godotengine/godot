@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  editor_export.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#ifndef EDITOR_EXPORT_H
+#define EDITOR_EXPORT_H
 
-#include "editor/export/editor_export.h"
-#include "export_plugin.h"
+#include "editor_export_platform.h"
+#include "editor_export_plugin.h"
 
-void register_windows_exporter() {
-	EDITOR_DEF("export/windows/rcedit", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-#ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/windows/signtool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-#else
-	EDITOR_DEF("export/windows/osslsigncode", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
-	// On non-Windows we need WINE to run rcedit
-	EDITOR_DEF("export/windows/wine", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/wine", PROPERTY_HINT_GLOBAL_FILE));
-#endif
+class EditorExport : public Node {
+	GDCLASS(EditorExport, Node);
 
-	Ref<EditorExportPlatformWindows> platform;
-	platform.instantiate();
-	platform->set_logo(ImageTexture::create_from_image(memnew(Image(_windows_logo))));
-	platform->set_name("Windows Desktop");
-	platform->set_os_name("Windows");
+	Vector<Ref<EditorExportPlatform>> export_platforms;
+	Vector<Ref<EditorExportPreset>> export_presets;
+	Vector<Ref<EditorExportPlugin>> export_plugins;
 
-	EditorExport::get_singleton()->add_export_platform(platform);
-}
+	StringName _export_presets_updated;
+
+	Timer *save_timer = nullptr;
+	bool block_save = false;
+
+	static EditorExport *singleton;
+
+	void _save();
+
+protected:
+	friend class EditorExportPreset;
+	void save_presets();
+
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	static EditorExport *get_singleton() { return singleton; }
+
+	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
+	int get_export_platform_count();
+	Ref<EditorExportPlatform> get_export_platform(int p_idx);
+
+	void add_export_preset(const Ref<EditorExportPreset> &p_preset, int p_at_pos = -1);
+	int get_export_preset_count() const;
+	Ref<EditorExportPreset> get_export_preset(int p_idx);
+	void remove_export_preset(int p_idx);
+
+	void add_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
+	void remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
+	Vector<Ref<EditorExportPlugin>> get_export_plugins();
+
+	void load_config();
+	void update_export_presets();
+	bool poll_export_platforms();
+
+	EditorExport();
+	~EditorExport();
+};
+
+#endif // EDITOR_EXPORT_H

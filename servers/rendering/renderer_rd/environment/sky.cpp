@@ -419,21 +419,22 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 
 	radiance_base_cubemap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, 0, 1, RD::TEXTURE_SLICE_CUBEMAP);
 	RD::get_singleton()->set_resource_name(radiance_base_cubemap, "radiance base cubemap");
+
 	RD::TextureFormat tf;
 	tf.format = p_texture_format;
-	tf.width = 64; // Always 64x64
-	tf.height = 64;
+	tf.width = p_low_quality ? 64 : p_size >> 1; // Always 64x64 when using REALTIME.
+	tf.height = p_low_quality ? 64 : p_size >> 1;
 	tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 	tf.array_layers = 6;
-	tf.mipmaps = 7;
+	tf.mipmaps = p_low_quality ? 7 : mipmaps - 1;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	downsampled_radiance_cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(downsampled_radiance_cubemap, "downsampled radiance cubemap");
 	{
-		uint32_t mmw = 64;
-		uint32_t mmh = 64;
-		downsampled_layer.mipmaps.resize(7);
+		uint32_t mmw = tf.width;
+		uint32_t mmh = tf.height;
+		downsampled_layer.mipmaps.resize(tf.mipmaps);
 		for (int j = 0; j < downsampled_layer.mipmaps.size(); j++) {
 			ReflectionData::DownsampleLayer::Mipmap &mm = downsampled_layer.mipmaps.write[j];
 			mm.size.width = mmw;

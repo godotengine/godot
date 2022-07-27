@@ -50,7 +50,7 @@ Vector4 Vector4::normalized() const {
 }
 
 bool Vector4::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); //use less epsilon
+	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); // Use less epsilon.
 }
 
 Vector4 Vector4::abs() const {
@@ -59,6 +59,26 @@ Vector4 Vector4::abs() const {
 
 Vector4 Vector4::sign() const {
 	return Vector4(SIGN(x), SIGN(y), SIGN(z), SIGN(w));
+}
+
+Vector4 Vector4::floor() const {
+	return Vector4(Math::floor(x), Math::floor(y), Math::floor(z), Math::floor(w));
+}
+
+Vector4 Vector4::ceil() const {
+	return Vector4(Math::ceil(x), Math::ceil(y), Math::ceil(z), Math::ceil(w));
+}
+
+Vector4 Vector4::round() const {
+	return Vector4(Math::round(x), Math::round(y), Math::round(z), Math::round(w));
+}
+
+Vector4 Vector4::lerp(const Vector4 &p_to, const real_t p_weight) const {
+	return Vector4(
+			x + (p_weight * (p_to.x - x)),
+			y + (p_weight * (p_to.y - y)),
+			z + (p_weight * (p_to.z - z)),
+			w + (p_weight * (p_to.w - w)));
 }
 
 Vector4 Vector4::inverse() const {

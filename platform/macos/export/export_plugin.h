@@ -39,8 +39,8 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "platform/macos/logo.gen.h"
 
 #include <sys/stat.h>
