@@ -2401,7 +2401,7 @@ void VulkanContext::command_begin_label(VkCommandBuffer p_command_buffer, String
 		return;
 	}
 
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
@@ -2417,7 +2417,7 @@ void VulkanContext::command_insert_label(VkCommandBuffer p_command_buffer, Strin
 	if (!enabled_debug_utils) {
 		return;
 	}
-	CharString cs = p_label_name.utf8().get_data();
+	CharString cs = p_label_name.utf8();
 	VkDebugUtilsLabelEXT label;
 	label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
 	label.pNext = nullptr;
