@@ -197,7 +197,7 @@
 			<return type="Dictionary" />
 			<argument index="0" name="sizes" type="PoolVector2Array" />
 			<description>
-				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a vector of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
+				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is an array of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
 			</description>
 		</method>
 		<method name="merge_polygons_2d">
