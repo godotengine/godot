@@ -2441,6 +2441,8 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
+	r_error = ERR_UNAVAILABLE;
+
 	wls.display = wl_display_connect(nullptr);
 
 	// TODO: Better error handling.
@@ -2555,11 +2557,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 		RendererCompositorRD::make_current();
 	}
-
-	r_error = OK;
 #endif
 
 	events_thread.start(_poll_events_thread, &wls);
+
+	r_error = OK;
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
