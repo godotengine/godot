@@ -106,8 +106,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
 	Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
 
-	Vector<ExportArchitecture> _get_supported_architectures();
-	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset);
+	Vector<ExportArchitecture> _get_supported_architectures() const;
+	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset) const;
 
 	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
@@ -173,7 +173,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	}
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
 public:
@@ -199,7 +199,7 @@ public:
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 
-	virtual void get_platform_features(List<String> *r_features) override {
+	virtual void get_platform_features(List<String> *r_features) const override {
 		r_features->push_back("mobile");
 		r_features->push_back("ios");
 	}

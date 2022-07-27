@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 
-void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/s3tc")) {
 		r_features->push_back("s3tc");
 	}
@@ -224,7 +224,7 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 	logo = p_logo;
 }
 
-void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
+void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc"); //all pcs support "pc"
 	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
 	r_features->push_back(get_os_name().to_lower()); //OS name is a feature

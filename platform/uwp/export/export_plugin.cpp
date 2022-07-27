@@ -49,7 +49,7 @@ Ref<Texture2D> EditorExportPlatformUWP::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+void EditorExportPlatformUWP::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("s3tc");
 	r_features->push_back("etc");
 	switch ((int)p_preset->get("architecture/target")) {
@@ -494,7 +494,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) {
+void EditorExportPlatformUWP::get_platform_features(List<String> *r_features) const {
 	r_features->push_back("pc");
 	r_features->push_back("uwp");
 }
