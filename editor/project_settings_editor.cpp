@@ -31,7 +31,6 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_export.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"

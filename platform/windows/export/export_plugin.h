@@ -33,8 +33,8 @@
 
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export_platform_pc.h"
 #include "platform/windows/logo.gen.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {

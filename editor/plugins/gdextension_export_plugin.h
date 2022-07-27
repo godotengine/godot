@@ -31,7 +31,7 @@
 #ifndef GDEXTENSION_EXPORT_PLUGIN_H
 #define GDEXTENSION_EXPORT_PLUGIN_H
 
-#include "editor/editor_export.h"
+#include "editor/export/editor_export.h"
 
 class GDExtensionExportPlugin : public EditorExportPlugin {
 protected:

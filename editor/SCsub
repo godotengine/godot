@@ -113,6 +113,7 @@ if env["tools"]:
     env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
     SConscript("debugger/SCsub")
+    SConscript("export/SCsub")
     SConscript("fileserver/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")

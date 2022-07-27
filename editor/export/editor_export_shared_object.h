@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.cpp                                                           */
+/*  editor_export_shared_object.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "export.h"
+#ifndef EDITOR_EXPORT_SHARED_OBJECT_H
+#define EDITOR_EXPORT_SHARED_OBJECT_H
 
-#include "editor/export/editor_export.h"
-#include "export_plugin.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
-void register_windows_exporter() {
-	EDITOR_DEF("export/windows/rcedit", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-#ifdef WINDOWS_ENABLED
-	EDITOR_DEF("export/windows/signtool", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/signtool", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
-#else
-	EDITOR_DEF("export/windows/osslsigncode", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/osslsigncode", PROPERTY_HINT_GLOBAL_FILE));
-	// On non-Windows we need WINE to run rcedit
-	EDITOR_DEF("export/windows/wine", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/wine", PROPERTY_HINT_GLOBAL_FILE));
-#endif
+struct SharedObject {
+	String path;
+	Vector<String> tags;
+	String target;
 
-	Ref<EditorExportPlatformWindows> platform;
-	platform.instantiate();
-	platform->set_logo(ImageTexture::create_from_image(memnew(Image(_windows_logo))));
-	platform->set_name("Windows Desktop");
-	platform->set_os_name("Windows");
+	SharedObject(const String &p_path, const Vector<String> &p_tags, const String &p_target) :
+			path(p_path),
+			tags(p_tags),
+			target(p_target) {
+	}
 
-	EditorExport::get_singleton()->add_export_platform(platform);
-}
+	SharedObject() {}
+};
+
+#endif // EDITOR_EXPORT_SHARED_OBJECT_H
