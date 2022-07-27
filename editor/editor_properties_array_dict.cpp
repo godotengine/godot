@@ -348,7 +348,7 @@ void EditorPropertyArray::update_property() {
 				editor->setup("Object");
 				prop = editor;
 			} else {
-				prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+				prop = EditorInspector::instantiate_property_editor(nullptr, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE, wide);
 			}
 
 			prop->set_object_and_property(object.ptr(), prop_name);
@@ -685,7 +685,7 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorPropertyArray::drop_data_fw);
 }
 
-EditorPropertyArray::EditorPropertyArray() {
+EditorPropertyArray::EditorPropertyArray(bool p_wide) {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 
@@ -712,6 +712,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
+	wide = p_wide;
 }
 
 ///////////////////// DICTIONARY ///////////////////////////
@@ -914,91 +915,91 @@ void EditorPropertyDictionary::update_property() {
 
 				// Math types.
 				case Variant::VECTOR2: {
-					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
+					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR2I: {
-					EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i);
+					EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(wide));
 					editor->setup(-100000, 100000, true);
 					prop = editor;
 
 				} break;
 				case Variant::RECT2: {
-					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
+					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::RECT2I: {
-					EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i);
+					EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i(wide));
 					editor->setup(-100000, 100000, true);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR3: {
-					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
+					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR3I: {
-					EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i);
+					EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(wide));
 					editor->setup(-100000, 100000, true);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR4: {
-					EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
+					EditorPropertyVector4 *editor = memnew(EditorPropertyVector4(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::VECTOR4I: {
-					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
+					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i(wide));
 					editor->setup(-100000, 100000, true);
 					prop = editor;
 
 				} break;
 				case Variant::TRANSFORM2D: {
-					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
+					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::PLANE: {
-					EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
+					EditorPropertyPlane *editor = memnew(EditorPropertyPlane(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::QUATERNION: {
-					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
+					EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::AABB: {
-					EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
+					EditorPropertyAABB *editor = memnew(EditorPropertyAABB(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::BASIS: {
-					EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
+					EditorPropertyBasis *editor = memnew(EditorPropertyBasis(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::TRANSFORM3D: {
-					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
+					EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
 				} break;
 				case Variant::PROJECTION: {
-					EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
+					EditorPropertyProjection *editor = memnew(EditorPropertyProjection(wide));
 					editor->setup(-100000, 100000, default_float_step, true);
 					prop = editor;
 
@@ -1030,7 +1031,7 @@ void EditorPropertyDictionary::update_property() {
 						prop = editor;
 
 					} else {
-						EditorPropertyResource *editor = memnew(EditorPropertyResource);
+						EditorPropertyResource *editor = memnew(EditorPropertyResource(wide));
 						editor->setup(object.ptr(), prop_name, "Resource");
 						editor->set_use_folding(is_using_folding());
 						prop = editor;
@@ -1038,58 +1039,58 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 				case Variant::DICTIONARY: {
-					prop = memnew(EditorPropertyDictionary);
+					prop = memnew(EditorPropertyDictionary(wide));
 
 				} break;
 				case Variant::ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::ARRAY);
 					prop = editor;
 				} break;
 
 				// Arrays.
 				case Variant::PACKED_BYTE_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_BYTE_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_INT32_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_INT32_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_FLOAT32_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_FLOAT32_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_INT64_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_INT64_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_FLOAT64_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_FLOAT64_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_STRING_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_STRING_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_VECTOR2_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_VECTOR3_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_VECTOR3_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_COLOR_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					EditorPropertyArray *editor = memnew(EditorPropertyArray(wide));
 					editor->setup(Variant::PACKED_COLOR_ARRAY);
 					prop = editor;
 				} break;
@@ -1211,7 +1212,7 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 void EditorPropertyDictionary::_bind_methods() {
 }
 
-EditorPropertyDictionary::EditorPropertyDictionary() {
+EditorPropertyDictionary::EditorPropertyDictionary(bool p_wide) {
 	object.instantiate();
 	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
 
@@ -1230,6 +1231,8 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
+
+	wide = p_wide;
 }
 
 ///////////////////// LOCALIZABLE STRING ///////////////////////////

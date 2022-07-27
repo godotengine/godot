@@ -98,6 +98,7 @@ class EditorPropertyArray : public EditorProperty {
 	Variant::Type subtype;
 	PropertyHint subtype_hint;
 	String subtype_hint_string;
+	bool wide = false;
 
 	int reorder_from_index = -1;
 	int reorder_to_index = -1;
@@ -132,7 +133,7 @@ protected:
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
 	virtual void update_property() override;
-	EditorPropertyArray();
+	EditorPropertyArray(bool p_wide = false);
 };
 
 class EditorPropertyDictionary : public EditorProperty {
@@ -151,6 +152,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	EditorSpinSlider *size_sliderv;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
+	bool wide = false;
 
 	void _page_changed(int p_page);
 	void _edit_pressed();
@@ -167,7 +169,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	EditorPropertyDictionary();
+	EditorPropertyDictionary(bool p_wide = false);
 };
 
 class EditorPropertyLocalizableString : public EditorProperty {

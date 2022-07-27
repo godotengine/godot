@@ -354,6 +354,7 @@ SectionedInspector::SectionedInspector() :
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
 	inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+	inspector->set_use_wide_editors(true);
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

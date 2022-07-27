@@ -312,9 +312,11 @@ void EditorPropertyTextEnum::_notification(int p_what) {
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	default_layout = memnew(HBoxContainer);
+	default_layout->add_theme_constant_override("separation", 0);
 	add_child(default_layout);
 
 	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->add_theme_constant_override("separation", 0);
 	edit_custom_layout->hide();
 	add_child(edit_custom_layout);
 
@@ -1727,26 +1729,28 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 	}
 }
 
-EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
+EditorPropertyVector2::EditorPropertyVector2(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_theme_constant_override("separation", 0);
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		hb->add_child(bc);
-	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
 	}
 	bc->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(hb);
+	}
 
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
@@ -1831,25 +1835,29 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 	}
 }
 
-EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+EditorPropertyRect2::EditorPropertyRect2(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 	bool grid = false;
 	BoxContainer *bc;
 
-	if (p_force_wide) {
-		bc = memnew(HBoxContainer);
-		add_child(bc);
-	} else if (horizontal) {
+	if (horizontal) {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
-		set_bottom_editor(bc);
 
-		bc->add_child(memnew(HBoxContainer));
-		bc->add_child(memnew(HBoxContainer));
+		for (int i = 0; i < 2; i++) {
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			hbox->add_theme_constant_override("separation", 0);
+			bc->add_child(hbox);
+		}
+
 		grid = true;
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "w", "h" };
@@ -1871,8 +1879,8 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		}
 	}
 
-	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+	if (!horizontal || p_wide) {
+		set_label_reference(spin[0]); // Show text and buttons around this.
 	}
 }
 
@@ -2009,26 +2017,28 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 	}
 }
 
-EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+EditorPropertyVector3::EditorPropertyVector3(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_theme_constant_override("separation", 0);
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		hb->add_child(bc);
-	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
 	}
 	bc->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(hb);
+	}
 
 	static const char *desc[3] = { "x", "y", "z" };
 	for (int i = 0; i < 3; i++) {
@@ -2140,26 +2150,28 @@ void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider, bool 
 	}
 }
 
-EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
+EditorPropertyVector2i::EditorPropertyVector2i(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_theme_constant_override("separation", 0);
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		hb->add_child(bc);
-	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
 	}
 	bc->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(hb);
+	}
 
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
@@ -2244,25 +2256,29 @@ void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_no_slider, const S
 	}
 }
 
-EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+EditorPropertyRect2i::EditorPropertyRect2i(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 	bool grid = false;
 	BoxContainer *bc;
 
-	if (p_force_wide) {
-		bc = memnew(HBoxContainer);
-		add_child(bc);
-	} else if (horizontal) {
+	if (horizontal) {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
-		set_bottom_editor(bc);
 
-		bc->add_child(memnew(HBoxContainer));
-		bc->add_child(memnew(HBoxContainer));
+		for (int i = 0; i < 2; i++) {
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			hbox->add_theme_constant_override("separation", 0);
+			bc->add_child(hbox);
+		}
+
 		grid = true;
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "w", "h" };
@@ -2284,8 +2300,8 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		}
 	}
 
-	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+	if (!horizontal || p_wide) {
+		set_label_reference(spin[0]); // Show text and buttons around this.
 	}
 }
 
@@ -2394,23 +2410,25 @@ void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider, bool 
 	}
 }
 
-EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+EditorPropertyVector3i::EditorPropertyVector3i(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_theme_constant_override("separation", 0);
 
 	BoxContainer *bc;
-	if (p_force_wide) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		hb->add_child(bc);
-	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-		set_bottom_editor(hb);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(hb);
 	}
 
 	static const char *desc[3] = { "x", "y", "z" };
@@ -2497,21 +2515,22 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 	spin[3]->set_suffix(p_suffix);
 }
 
-EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
-	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+EditorPropertyPlane::EditorPropertyPlane(bool p_wide) {
+	bool horizontal = bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
+	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		add_child(bc);
-	} else if (horizontal) {
-		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "z", "d" };
@@ -2592,18 +2611,22 @@ void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, 
 	}
 }
 
-EditorPropertyQuaternion::EditorPropertyQuaternion() {
+EditorPropertyQuaternion::EditorPropertyQuaternion(bool p_wide) {
 	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
 	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		add_child(bc);
-		set_bottom_editor(bc);
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "z", "w" };
@@ -2623,6 +2646,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		set_label_reference(spin[0]); //show text and buttons around this
 	}
 }
+
 ///////////////////// VECTOR4 /////////////////////////
 
 void EditorPropertyVector4::_set_read_only(bool p_read_only) {
@@ -2683,18 +2707,22 @@ void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, boo
 	}
 }
 
-EditorPropertyVector4::EditorPropertyVector4() {
+EditorPropertyVector4::EditorPropertyVector4(bool p_wide) {
 	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
 	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		add_child(bc);
-		set_bottom_editor(bc);
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "z", "w" };
@@ -2772,18 +2800,22 @@ void EditorPropertyVector4i::setup(double p_min, double p_max, bool p_no_slider,
 	}
 }
 
-EditorPropertyVector4i::EditorPropertyVector4i() {
+EditorPropertyVector4i::EditorPropertyVector4i(bool p_wide) {
 	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
 
 	BoxContainer *bc;
 
 	if (horizontal) {
 		bc = memnew(HBoxContainer);
+		bc->add_theme_constant_override("separation", 0);
 		add_child(bc);
-		set_bottom_editor(bc);
 	} else {
 		bc = memnew(VBoxContainer);
 		add_child(bc);
+	}
+
+	if (horizontal && !p_wide) {
+		set_bottom_editor(bc);
 	}
 
 	static const char *desc[4] = { "x", "y", "z", "w" };
@@ -2868,9 +2900,10 @@ void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p
 	}
 }
 
-EditorPropertyAABB::EditorPropertyAABB() {
+EditorPropertyAABB::EditorPropertyAABB(bool p_wide) {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(3);
+	g->add_theme_constant_override("h_separation", 0);
 	add_child(g);
 
 	static const char *desc[6] = { "x", "y", "z", "w", "h", "d" };
@@ -2884,7 +2917,12 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed), varray(desc[i]));
 	}
-	set_bottom_editor(g);
+
+	if (p_wide) {
+		set_label_reference(spin[0]);
+	} else {
+		set_bottom_editor(g);
+	}
 }
 
 ///////////////////// TRANSFORM2D /////////////////////////
@@ -2958,9 +2996,10 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 	}
 }
 
-EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
+EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_wide) {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(p_include_origin ? 3 : 2);
+	g->set_columns(3);
+	g->add_theme_constant_override("h_separation", 0);
 	add_child(g);
 
 	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
@@ -2968,14 +3007,17 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		if (p_include_origin || i % 3 != 2) {
-			g->add_child(spin[i]);
-		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		g->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
 	}
-	set_bottom_editor(g);
+
+	if (p_wide) {
+		set_label_reference(spin[0]);
+	} else {
+		set_bottom_editor(g);
+	}
 }
 
 ///////////////////// BASIS /////////////////////////
@@ -3050,9 +3092,10 @@ void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool 
 	}
 }
 
-EditorPropertyBasis::EditorPropertyBasis() {
+EditorPropertyBasis::EditorPropertyBasis(bool p_wide) {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(3);
+	g->add_theme_constant_override("h_separation", 0);
 	add_child(g);
 
 	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
@@ -3065,7 +3108,12 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed), varray(desc[i]));
 	}
-	set_bottom_editor(g);
+
+	if (p_wide) {
+		set_label_reference(spin[0]);
+	} else {
+		set_bottom_editor(g);
+	}
 }
 
 ///////////////////// TRANSFORM3D /////////////////////////
@@ -3148,9 +3196,10 @@ void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step,
 	}
 }
 
-EditorPropertyTransform3D::EditorPropertyTransform3D() {
+EditorPropertyTransform3D::EditorPropertyTransform3D(bool p_wide) {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(4);
+	g->add_theme_constant_override("h_separation", 0);
 	add_child(g);
 
 	static const char *desc[12] = { "xx", "xy", "xz", "xo", "yx", "yy", "yz", "yo", "zx", "zy", "zz", "zo" };
@@ -3163,7 +3212,12 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed), varray(desc[i]));
 	}
-	set_bottom_editor(g);
+
+	if (p_wide) {
+		set_label_reference(spin[0]);
+	} else {
+		set_bottom_editor(g);
+	}
 }
 
 ///////////////////// PROJECTION /////////////////////////
@@ -3254,9 +3308,10 @@ void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, 
 	}
 }
 
-EditorPropertyProjection::EditorPropertyProjection() {
+EditorPropertyProjection::EditorPropertyProjection(bool p_wide) {
 	GridContainer *g = memnew(GridContainer);
 	g->set_columns(4);
+	g->add_theme_constant_override("h_separation", 0);
 	add_child(g);
 
 	static const char *desc[16] = { "xx", "xy", "xz", "xw", "yx", "yy", "yz", "yw", "zx", "zy", "zz", "zw", "wx", "wy", "wz", "ww" };
@@ -3269,8 +3324,14 @@ EditorPropertyProjection::EditorPropertyProjection() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed), varray(desc[i]));
 	}
-	set_bottom_editor(g);
+
+	if (p_wide) {
+		set_label_reference(spin[0]);
+	} else {
+		set_bottom_editor(g);
+	}
 }
+
 ////////////// COLOR PICKER //////////////////////
 
 void EditorPropertyColor::_set_read_only(bool p_read_only) {
@@ -3845,6 +3906,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_keying(is_keying());
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
+				sub_inspector->set_use_wide_editors(wide);
 				sub_inspector->set_undo_redo(EditorNode::get_undo_redo());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
@@ -3930,8 +3992,9 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_fold_other_editors"), &EditorPropertyResource::_fold_other_editors);
 }
 
-EditorPropertyResource::EditorPropertyResource() {
+EditorPropertyResource::EditorPropertyResource(bool p_wide) {
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
+	wide = p_wide;
 
 	add_to_group("_editor_resource_properties");
 }
@@ -4240,21 +4303,21 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 		case Variant::VECTOR4: {
-			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
+			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 
 		} break;
 		case Variant::VECTOR4I: {
-			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
+			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
 			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
 			return editor;
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
+			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
@@ -4266,32 +4329,32 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			return editor;
 		} break;
 		case Variant::QUATERNION: {
-			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
+			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 		} break;
 		case Variant::AABB: {
-			EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
+			EditorPropertyAABB *editor = memnew(EditorPropertyAABB(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 		} break;
 		case Variant::BASIS: {
-			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
+			EditorPropertyBasis *editor = memnew(EditorPropertyBasis(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 		} break;
 		case Variant::TRANSFORM3D: {
-			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D);
+			EditorPropertyTransform3D *editor = memnew(EditorPropertyTransform3D(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 
 		} break;
 		case Variant::PROJECTION: {
-			EditorPropertyProjection *editor = memnew(EditorPropertyProjection);
+			EditorPropertyProjection *editor = memnew(EditorPropertyProjection(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
@@ -4344,7 +4407,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(NodePath(), sn, false, true);
 				return editor;
 			} else {
-				EditorPropertyResource *editor = memnew(EditorPropertyResource);
+				EditorPropertyResource *editor = memnew(EditorPropertyResource(p_wide));
 				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
 
 				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
@@ -4377,57 +4440,57 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyLocalizableString *editor = memnew(EditorPropertyLocalizableString);
 				return editor;
 			} else {
-				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
+				EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary(p_wide));
 				return editor;
 			}
 		} break;
 		case Variant::ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_BYTE_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_INT32_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_INT64_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_FLOAT32_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_FLOAT64_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_STRING_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
-			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			EditorPropertyArray *editor = memnew(EditorPropertyArray(p_wide));
 			editor->setup(Variant::PACKED_COLOR_ARRAY);
 			return editor;
 		} break;
