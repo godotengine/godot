@@ -3856,18 +3856,11 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					Basis p;
-					p[0][0] = p_value[0].real;
-					p[0][1] = p_value[1].real;
-					p[0][2] = p_value[2].real;
-					p[1][0] = p_value[4].real;
-					p[1][1] = p_value[5].real;
-					p[1][2] = p_value[6].real;
-					p[2][0] = p_value[8].real;
-					p[2][1] = p_value[9].real;
-					p[2][2] = p_value[10].real;
-					Transform3D t = Transform3D(p, Vector3(p_value[3].real, p_value[7].real, p_value[11].real));
-					value = Variant(t);
+					Projection p = Projection(Vector4(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real),
+							Vector4(p_value[4].real, p_value[5].real, p_value[6].real, p_value[7].real),
+							Vector4(p_value[8].real, p_value[9].real, p_value[10].real, p_value[11].real),
+							Vector4(p_value[12].real, p_value[13].real, p_value[14].real, p_value[15].real));
+					value = Variant(p);
 				}
 				break;
 			}
