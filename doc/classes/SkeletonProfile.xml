@@ -167,7 +167,7 @@
 		<signal name="profile_updated">
 			<description>
 				This signal is emitted when change the value in profile. This is used to update key name in the [BoneMap] and to redraw the [BoneMap] editor.
-				[b]Note[/b]: This signal is not connected directly to editor to simplify the reference, instead it is passed on to editor through the [BoneMap].
+				[b]Note:[/b] This signal is not connected directly to editor to simplify the reference, instead it is passed on to editor through the [BoneMap].
 			</description>
 		</signal>
 	</signals>
