@@ -497,8 +497,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 
 	while (sky) {
 		if (sky->radiance == 0) {
-			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) + 1;
-
+			sky->mipmap_count = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8) - 2;
 			// Left uninitialized, will attach a texture at render time
 			glGenFramebuffers(1, &sky->radiance_framebuffer);
 
@@ -837,7 +836,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const Projec
 	int max_processing_layer = sky->mipmap_count;
 
 	// Update radiance cubemap
-	if (sky->reflection_dirty && (sky->processing_layer >= max_processing_layer || update_single_frame)) {
+	if (sky->reflection_dirty && (sky->processing_layer > max_processing_layer || update_single_frame)) {
 		static const Vector3 view_normals[6] = {
 			Vector3(+1, 0, 0),
 			Vector3(-1, 0, 0),
@@ -881,7 +880,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const Projec
 		}
 
 		if (update_single_frame) {
-			for (int i = 0; i < max_processing_layer; i++) {
+			for (int i = 0; i <= max_processing_layer; i++) {
 				_filter_sky_radiance(sky, i);
 			}
 		} else {
@@ -891,11 +890,50 @@ void RasterizerSceneGLES3::_update_sky_radiance(Environment *p_env, const Projec
 
 		sky->reflection_dirty = false;
 	} else {
-		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
+		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer <= max_processing_layer) {
 			_filter_sky_radiance(sky, sky->processing_layer);
 			sky->processing_layer++;
 		}
 	}
+}
+
+// Helper functions for IBL filtering
+
+Vector3 importance_sample_GGX(Vector2 xi, float roughness4) {
+	// Compute distribution direction
+	float phi = 2.0 * Math_PI * xi.x;
+	float cos_theta = sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
+	float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+	// Convert to spherical direction
+	Vector3 half_vector;
+	half_vector.x = sin_theta * cos(phi);
+	half_vector.y = sin_theta * sin(phi);
+	half_vector.z = cos_theta;
+
+	return half_vector;
+}
+
+float distribution_GGX(float NdotH, float roughness4) {
+	float NdotH2 = NdotH * NdotH;
+	float denom = (NdotH2 * (roughness4 - 1.0) + 1.0);
+	denom = Math_PI * denom * denom;
+
+	return roughness4 / denom;
+}
+
+float radical_inverse_vdC(uint32_t bits) {
+	bits = (bits << 16) | (bits >> 16);
+	bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
+	bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
+	bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
+	bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
+
+	return float(bits) * 2.3283064365386963e-10;
+}
+
+Vector2 hammersley(uint32_t i, uint32_t N) {
+	return Vector2(float(i) / float(N), radical_inverse_vdC(i));
 }
 
 void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
@@ -909,21 +947,60 @@ void RasterizerSceneGLES3::_filter_sky_radiance(Sky *p_sky, int p_base_layer) {
 
 	if (p_base_layer == 0) {
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		// Copy over base layer without filtering.
 		mode = CubemapFilterShaderGLES3::MODE_COPY;
-
-		//Copy over base layer
 	}
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, sky_globals.radical_inverse_vdc_cache_tex);
 
 	int size = p_sky->radiance_size >> p_base_layer;
 	glViewport(0, 0, size, size);
 	glBindVertexArray(sky_globals.screen_triangle_array);
 
 	material_storage->shaders.cubemap_filter_shader.version_bind_shader(scene_globals.cubemap_filter_shader_version, mode);
-	material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::SAMPLE_COUNT, sky_globals.ggx_samples, scene_globals.cubemap_filter_shader_version, mode);
-	material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::ROUGHNESS, float(p_base_layer) / (p_sky->mipmap_count - 1.0), scene_globals.cubemap_filter_shader_version, mode);
-	material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::FACE_SIZE, float(size), scene_globals.cubemap_filter_shader_version, mode);
+
+	if (p_base_layer > 0) {
+		const uint32_t sample_counts[4] = { 1, sky_globals.ggx_samples / 4, sky_globals.ggx_samples / 2, sky_globals.ggx_samples };
+		uint32_t sample_count = sample_counts[MIN(3, p_base_layer)];
+
+		float roughness = float(p_base_layer) / (p_sky->mipmap_count);
+		float roughness4 = roughness * roughness;
+		roughness4 *= roughness4;
+
+		float solid_angle_texel = 4.0 * Math_PI / float(6 * size * size);
+
+		LocalVector<float> sample_directions;
+		sample_directions.resize(4 * sample_count);
+
+		uint32_t index = 0;
+		float weight = 0.0;
+		for (uint32_t i = 0; i < sample_count; i++) {
+			Vector2 xi = hammersley(i, sample_count);
+			Vector3 dir = importance_sample_GGX(xi, roughness4);
+			Vector3 light_vec = (2.0 * dir.z * dir - Vector3(0.0, 0.0, 1.0));
+
+			if (light_vec.z < 0.0) {
+				continue;
+			}
+
+			sample_directions[index * 4] = light_vec.x;
+			sample_directions[index * 4 + 1] = light_vec.y;
+			sample_directions[index * 4 + 2] = light_vec.z;
+
+			float D = distribution_GGX(dir.z, roughness4);
+			float pdf = D * dir.z / (4.0 * dir.z) + 0.0001;
+
+			float solid_angle_sample = 1.0 / (float(sample_count) * pdf + 0.0001);
+
+			float mip_level = MAX(0.5 * log2(solid_angle_sample / solid_angle_texel) + float(MAX(1, p_base_layer - 3)), 1.0);
+
+			sample_directions[index * 4 + 3] = mip_level;
+			weight += light_vec.z;
+			index++;
+		}
+
+		glUniform4fv(material_storage->shaders.cubemap_filter_shader.version_get_uniform(CubemapFilterShaderGLES3::SAMPLE_DIRECTIONS_MIP, scene_globals.cubemap_filter_shader_version, mode), sample_count, sample_directions.ptr());
+		material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::WEIGHT, weight, scene_globals.cubemap_filter_shader_version, mode);
+		material_storage->shaders.cubemap_filter_shader.version_set_uniform(CubemapFilterShaderGLES3::SAMPLE_COUNT, index, scene_globals.cubemap_filter_shader_version, mode);
+	}
 
 	for (int i = 0; i < 6; i++) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, p_sky->radiance, p_base_layer);
@@ -2596,8 +2673,12 @@ void fragment() {
 		material_storage->shaders.sky_shader.initialize(global_defines);
 		sky_globals.shader_default_version = material_storage->shaders.sky_shader.version_create();
 		material_storage->shaders.sky_shader.version_bind_shader(sky_globals.shader_default_version, SkyShaderGLES3::MODE_BACKGROUND);
+	}
 
-		material_storage->shaders.cubemap_filter_shader.initialize();
+	{
+		String global_defines;
+		global_defines += "\n#define MAX_SAMPLE_COUNT " + itos(sky_globals.ggx_samples) + "\n";
+		material_storage->shaders.cubemap_filter_shader.initialize(global_defines);
 		scene_globals.cubemap_filter_shader_version = material_storage->shaders.cubemap_filter_shader.version_create();
 		material_storage->shaders.cubemap_filter_shader.version_bind_shader(scene_globals.cubemap_filter_shader_version, CubemapFilterShaderGLES3::MODE_DEFAULT);
 	}
@@ -2667,36 +2748,6 @@ void sky() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
 
-	// Radical inverse vdc cache texture used for cubemap filtering.
-	{
-		glGenTextures(1, &sky_globals.radical_inverse_vdc_cache_tex);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sky_globals.radical_inverse_vdc_cache_tex);
-
-		uint8_t radical_inverse[512];
-
-		for (uint32_t i = 0; i < 512; i++) {
-			uint32_t bits = i;
-
-			bits = (bits << 16) | (bits >> 16);
-			bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
-			bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
-			bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
-			bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
-
-			float value = float(bits) * 2.3283064365386963e-10;
-			radical_inverse[i] = uint8_t(CLAMP(value * 255.0, 0, 255));
-		}
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 1, 0, GL_RED, GL_UNSIGNED_BYTE, radical_inverse);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //need this for proper sampling
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
 #ifdef GLES_OVER_GL
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
