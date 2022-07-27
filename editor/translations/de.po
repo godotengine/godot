@@ -87,7 +87,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-09 21:11+0000\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -96,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -520,9 +520,8 @@ msgid "Pressure"
 msgstr "Druck"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pen Inverted"
-msgstr "Umkehren"
+msgstr "Stift invertiert"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -2169,14 +2168,15 @@ msgstr "Favoriten:"
 msgid "Recent:"
 msgstr "Kürzlich:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Suche:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Treffer:"
@@ -2236,8 +2236,8 @@ msgstr "Ersatzressource suchen:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -5566,6 +5566,10 @@ msgstr "Extramaustasten blättern durch Verlauf"
 #: editor/editor_settings.cpp
 msgid "Drag And Drop Selection"
 msgstr "Auswahl ziehen und fallen lassen"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11691,6 +11695,11 @@ msgstr "Animationen:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Neue Animation"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Methoden filtern"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -23109,9 +23118,8 @@ msgstr ""
 "geändert werden."
 
 #: scene/3d/spatial.cpp
-#, fuzzy
 msgid "Global Translation"
-msgstr "Globales Transform"
+msgstr "Globale Verschiebung"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"

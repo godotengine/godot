@@ -41,7 +41,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-18 08:11+0000\n"
+"PO-Revision-Date: 2022-07-23 03:57+0000\n"
 "Last-Translator: 菘菘 <rrt467778@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -2112,14 +2112,15 @@ msgstr "我的最愛："
 msgid "Recent:"
 msgstr "最近存取："
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "搜尋："
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "符合條件："
@@ -2179,8 +2180,8 @@ msgstr "搜尋並取代資源："
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -5400,6 +5401,10 @@ msgstr "使用額外滑鼠按鍵查看歷史"
 #: editor/editor_settings.cpp
 msgid "Drag And Drop Selection"
 msgstr "拖移選擇的檔案"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11436,6 +11441,11 @@ msgstr "動畫："
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "新增動畫"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "篩選方法"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -23144,9 +23154,8 @@ msgstr ""
 "請改為修改其子節點的碰撞形狀之大小。"
 
 #: scene/3d/spatial.cpp
-#, fuzzy
 msgid "Global Translation"
-msgstr "保持全域變換"
+msgstr "全域變換"
 
 #: scene/3d/spatial.cpp
 msgid "Matrix"
