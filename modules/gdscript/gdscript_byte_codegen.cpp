@@ -1608,7 +1608,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				// Typed array.
 				const GDScriptDataType &element_type = function->return_type.get_container_element_type();
 
-				Variant script = function->return_type.script_type;
+				Variant script = element_type.script_type;
 				int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
 				append(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY, 2);
