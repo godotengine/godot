@@ -181,7 +181,6 @@ static bool debug_navigation = false;
 static int frame_delay = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
-static String write_movie_path;
 static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
@@ -1162,7 +1161,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--write-movie") {
 			if (I->next()) {
-				write_movie_path = I->next()->get();
+				Engine::get_singleton()->set_write_movie_path(I->next()->get());
 				N = I->next()->next();
 				if (fixed_fps == -1) {
 					fixed_fps = 60;
@@ -1512,7 +1511,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver_idx = 0;
 	}
 
-	if (write_movie_path != String()) {
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
 		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
 		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
 		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
@@ -1609,7 +1608,7 @@ error:
 	display_driver = "";
 	audio_driver = "";
 	tablet_driver = "";
-	write_movie_path = "";
+	Engine::get_singleton()->set_write_movie_path(String());
 	project_path = "";
 
 	args.clear();
@@ -1784,11 +1783,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->set_print_gpu_profile(true);
 	}
 
-	if (write_movie_path != String()) {
-		movie_writer = MovieWriter::find_writer_for_file(write_movie_path);
+	if (Engine::get_singleton()->get_write_movie_path() != String()) {
+		movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
 		if (movie_writer == nullptr) {
-			ERR_PRINT("Can't find movie writer for file type, aborting: " + write_movie_path);
-			write_movie_path = String();
+			ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
+			Engine::get_singleton()->set_write_movie_path(String());
 		}
 	}
 
@@ -2724,7 +2723,7 @@ bool Main::start() {
 	OS::get_singleton()->set_main_loop(main_loop);
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, write_movie_path);
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
