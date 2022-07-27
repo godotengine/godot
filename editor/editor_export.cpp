@@ -940,6 +940,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 		}
 		for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+			// Remove plugin files from filter whitelist
+			paths.erase(export_plugins[i]->extra_files[j].path);
+
 			err = p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, 0, paths.size(), enc_in_filters, enc_ex_filters, key);
 			if (err != OK) {
 				return err;
