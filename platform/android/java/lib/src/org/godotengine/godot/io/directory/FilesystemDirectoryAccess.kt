@@ -54,6 +54,7 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 
 	private data class DirData(val dirFile: File, val files: Array<File>, var current: Int = 0)
 
+	private val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 	private var lastDirId = STARTING_DIR_ID
 	private val dirs = SparseArray<DirData>()
@@ -62,7 +63,7 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 		// Directory access is available for shared storage on Android 11+
 		// On Android 10, access is also available as long as the `requestLegacyExternalStorage`
 		// tag is available.
-		return StorageScope.getStorageScope(context, path) != StorageScope.UNKNOWN
+		return storageScopeIdentifier.identifyStorageScope(path) != StorageScope.UNKNOWN
 	}
 
 	override fun hasDirId(dirId: Int) = dirs.indexOfKey(dirId) >= 0
@@ -102,7 +103,7 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 		}
 	}
 
-	override fun fileExists(path: String) = FileAccessHandler.fileExists(context, path)
+	override fun fileExists(path: String) = FileAccessHandler.fileExists(context, storageScopeIdentifier, path)
 
 	override fun dirNext(dirId: Int): String {
 		val dirData = dirs[dirId]
@@ -199,7 +200,7 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 			if (fromFile.isDirectory) {
 				fromFile.renameTo(File(to))
 			} else {
-				FileAccessHandler.renameFile(context, from, to)
+				FileAccessHandler.renameFile(context, storageScopeIdentifier, from, to)
 			}
 		} catch (e: SecurityException) {
 			false
@@ -218,7 +219,7 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 				if (deleteFile.isDirectory) {
 					deleteFile.delete()
 				} else {
-					FileAccessHandler.removeFile(context, filename)
+					FileAccessHandler.removeFile(context, storageScopeIdentifier, filename)
 				}
 			} else {
 				true

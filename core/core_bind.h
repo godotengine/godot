@@ -170,6 +170,8 @@ public:
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
+	Vector<String> get_system_fonts() const;
+	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);

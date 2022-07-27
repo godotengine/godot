@@ -54,11 +54,13 @@ struct _NO_DISCARD_ Vector4 {
 		real_t components[4] = { 0, 0, 0, 0 };
 	};
 
-	_FORCE_INLINE_ real_t &operator[](int idx) {
-		return components[idx];
+	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 4);
+		return components[p_axis];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int idx) const {
-		return components[idx];
+	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 4);
+		return components[p_axis];
 	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Vector4 &p_vec4) const;
@@ -66,8 +68,13 @@ struct _NO_DISCARD_ Vector4 {
 	void normalize();
 	Vector4 normalized() const;
 	bool is_normalized() const;
+
 	Vector4 abs() const;
 	Vector4 sign() const;
+	Vector4 floor() const;
+	Vector4 ceil() const;
+	Vector4 round() const;
+	Vector4 lerp(const Vector4 &p_to, const real_t p_weight) const;
 
 	Vector4::Axis min_axis_index() const;
 	Vector4::Axis max_axis_index() const;

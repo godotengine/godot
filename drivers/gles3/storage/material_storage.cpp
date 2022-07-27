@@ -1518,7 +1518,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["NORMAL_ROUGHNESS_TEXTURE"] = "normal_roughness_buffer";
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["OUTPUT_IS_SRGB"] = "true";
-		actions.renames["FOG"] = "custom_fog";
+		actions.renames["FOG"] = "fog";
 		actions.renames["RADIANCE"] = "custom_radiance";
 		actions.renames["IRRADIANCE"] = "custom_irradiance";
 		actions.renames["BONE_INDICES"] = "bone_attrib";
@@ -2900,7 +2900,22 @@ void CanvasShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 		}
 	}
 
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);
@@ -3123,7 +3138,22 @@ void SkyShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 		}
 	}
 
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);
@@ -3433,7 +3463,22 @@ void SceneShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 		}
 	}
 
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);

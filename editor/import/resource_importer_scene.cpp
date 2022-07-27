@@ -743,6 +743,163 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 	return p_node;
 }
 
+Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps) {
+	// children first
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *r = _pre_fix_animations(p_node->get_child(i), p_root, p_node_data, p_animation_data, p_animation_fps);
+		if (!r) {
+			i--; //was erased
+		}
+	}
+
+	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+
+	Dictionary node_settings;
+	if (p_node_data.has(import_id)) {
+		node_settings = p_node_data[import_id];
+	}
+
+	{
+		//make sure this is unique
+		node_settings = node_settings.duplicate(true);
+		//fill node settings for this node with default values
+		List<ImportOption> iopts;
+		get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
+		for (const ImportOption &E : iopts) {
+			if (!node_settings.has(E.option.name)) {
+				node_settings[E.option.name] = E.default_value;
+			}
+		}
+	}
+
+	if (Object::cast_to<AnimationPlayer>(p_node)) {
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+
+		Array animation_clips;
+		{
+			int clip_count = node_settings["clips/amount"];
+
+			for (int i = 0; i < clip_count; i++) {
+				String name = node_settings["clip_" + itos(i + 1) + "/name"];
+				int from_frame = node_settings["clip_" + itos(i + 1) + "/start_frame"];
+				int end_frame = node_settings["clip_" + itos(i + 1) + "/end_frame"];
+				Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)node_settings["clip_" + itos(i + 1) + "/loop_mode"]);
+				bool save_to_file = node_settings["clip_" + itos(i + 1) + "/save_to_file/enabled"];
+				bool save_to_path = node_settings["clip_" + itos(i + 1) + "/save_to_file/path"];
+				bool save_to_file_keep_custom = node_settings["clip_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
+
+				animation_clips.push_back(name);
+				animation_clips.push_back(from_frame / p_animation_fps);
+				animation_clips.push_back(end_frame / p_animation_fps);
+				animation_clips.push_back(loop_mode);
+				animation_clips.push_back(save_to_file);
+				animation_clips.push_back(save_to_path);
+				animation_clips.push_back(save_to_file_keep_custom);
+			}
+		}
+
+		if (animation_clips.size()) {
+			_create_clips(ap, animation_clips, true);
+		} else {
+			List<StringName> anims;
+			ap->get_animation_list(&anims);
+			AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
+				AnimationImportTracks(int(node_settings["import_tracks/position"])),
+				AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
+				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
+			};
+			if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
+				_optimize_track_usage(ap, import_tracks_mode);
+			}
+		}
+	}
+
+	return p_node;
+}
+
+Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps) {
+	// children first
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *r = _post_fix_animations(p_node->get_child(i), p_root, p_node_data, p_animation_data, p_animation_fps);
+		if (!r) {
+			i--; //was erased
+		}
+	}
+
+	String import_id = p_node->get_meta("import_id", "PATH:" + p_root->get_path_to(p_node));
+
+	Dictionary node_settings;
+	if (p_node_data.has(import_id)) {
+		node_settings = p_node_data[import_id];
+	}
+
+	{
+		//make sure this is unique
+		node_settings = node_settings.duplicate(true);
+		//fill node settings for this node with default values
+		List<ImportOption> iopts;
+		get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, &iopts);
+		for (const ImportOption &E : iopts) {
+			if (!node_settings.has(E.option.name)) {
+				node_settings[E.option.name] = E.default_value;
+			}
+		}
+	}
+
+	if (Object::cast_to<AnimationPlayer>(p_node)) {
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+
+		bool use_optimizer = node_settings["optimizer/enabled"];
+		float anim_optimizer_linerr = node_settings["optimizer/max_linear_error"];
+		float anim_optimizer_angerr = node_settings["optimizer/max_angular_error"];
+		float anim_optimizer_maxang = node_settings["optimizer/max_angle"];
+
+		if (use_optimizer) {
+			_optimize_animations(ap, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_maxang);
+		}
+
+		bool use_compression = node_settings["compression/enabled"];
+		int anim_compression_page_size = node_settings["compression/page_size"];
+
+		if (use_compression) {
+			_compress_animations(ap, anim_compression_page_size);
+		}
+
+		List<StringName> anims;
+		ap->get_animation_list(&anims);
+		for (const StringName &name : anims) {
+			Ref<Animation> anim = ap->get_animation(name);
+			if (p_animation_data.has(name)) {
+				Dictionary anim_settings = p_animation_data[name];
+				{
+					//fill with default values
+					List<ImportOption> iopts;
+					get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
+					for (const ImportOption &F : iopts) {
+						if (!anim_settings.has(F.option.name)) {
+							anim_settings[F.option.name] = F.default_value;
+						}
+					}
+				}
+
+				anim->set_loop_mode(static_cast<Animation::LoopMode>((int)anim_settings["settings/loop_mode"]));
+				bool save = anim_settings["save_to_file/enabled"];
+				String path = anim_settings["save_to_file/path"];
+				bool keep_custom = anim_settings["save_to_file/keep_custom_tracks"];
+
+				Ref<Animation> saved_anim = _save_animation_to_file(anim, save, path, keep_custom);
+
+				if (saved_anim != anim) {
+					Ref<AnimationLibrary> al = ap->get_animation_library(ap->find_animation_library(anim));
+					al->add_animation(name, saved_anim); //replace
+				}
+			}
+		}
+	}
+
+	return p_node;
+}
+
 Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -1012,83 +1169,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 		}
 
-		bool use_optimizer = node_settings["optimizer/enabled"];
-		float anim_optimizer_linerr = node_settings["optimizer/max_linear_error"];
-		float anim_optimizer_angerr = node_settings["optimizer/max_angular_error"];
-		float anim_optimizer_maxang = node_settings["optimizer/max_angle"];
-
-		if (use_optimizer) {
-			_optimize_animations(ap, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_maxang);
-		}
-
-		Array animation_clips;
-		{
-			int clip_count = node_settings["clips/amount"];
-
-			for (int i = 0; i < clip_count; i++) {
-				String name = node_settings["clip_" + itos(i + 1) + "/name"];
-				int from_frame = node_settings["clip_" + itos(i + 1) + "/start_frame"];
-				int end_frame = node_settings["clip_" + itos(i + 1) + "/end_frame"];
-				Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)node_settings["clip_" + itos(i + 1) + "/loop_mode"]);
-				bool save_to_file = node_settings["clip_" + itos(i + 1) + "/save_to_file/enabled"];
-				bool save_to_path = node_settings["clip_" + itos(i + 1) + "/save_to_file/path"];
-				bool save_to_file_keep_custom = node_settings["clip_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
-
-				animation_clips.push_back(name);
-				animation_clips.push_back(from_frame / p_animation_fps);
-				animation_clips.push_back(end_frame / p_animation_fps);
-				animation_clips.push_back(loop_mode);
-				animation_clips.push_back(save_to_file);
-				animation_clips.push_back(save_to_path);
-				animation_clips.push_back(save_to_file_keep_custom);
-			}
-		}
-
-		if (animation_clips.size()) {
-			_create_clips(ap, animation_clips, true);
-		} else {
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
-			for (const StringName &name : anims) {
-				Ref<Animation> anim = ap->get_animation(name);
-				if (p_animation_data.has(name)) {
-					Dictionary anim_settings = p_animation_data[name];
-					{
-						//fill with default values
-						List<ImportOption> iopts;
-						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
-						for (const ImportOption &F : iopts) {
-							if (!anim_settings.has(F.option.name)) {
-								anim_settings[F.option.name] = F.default_value;
-							}
-						}
-					}
-
-					anim->set_loop_mode(static_cast<Animation::LoopMode>((int)anim_settings["settings/loop_mode"]));
-					bool save = anim_settings["save_to_file/enabled"];
-					String path = anim_settings["save_to_file/path"];
-					bool keep_custom = anim_settings["save_to_file/keep_custom_tracks"];
-
-					Ref<Animation> saved_anim = _save_animation_to_file(anim, save, path, keep_custom);
-
-					if (saved_anim != anim) {
-						Ref<AnimationLibrary> al = ap->get_animation_library(ap->find_animation_library(anim));
-						al->add_animation(name, saved_anim); //replace
-					}
-				}
-			}
-
-			AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
-				AnimationImportTracks(int(node_settings["import_tracks/position"])),
-				AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
-				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
-			};
-
-			if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
-				_optimize_track_usage(ap, import_tracks_mode);
-			}
-		}
-
 		if (post_importer_plugins.size()) {
 			List<StringName> anims;
 			ap->get_animation_list(&anims);
@@ -1112,13 +1192,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					}
 				}
 			}
-		}
-
-		bool use_compression = node_settings["compression/enabled"];
-		int anim_compression_page_size = node_settings["compression/page_size"];
-
-		if (use_compression) {
-			_compress_animations(ap, anim_compression_page_size);
 		}
 	}
 
@@ -2099,7 +2172,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
 	}
 
+	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
 	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps);
+	_post_fix_animations(scene, scene, node_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.

@@ -1268,7 +1268,7 @@ void GI::SDFGI::update_light() {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, RendererSceneSkyRD::Sky *p_sky) {
+void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, SkyRD::Sky *p_sky) {
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
@@ -1947,7 +1947,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	}
 }
 
-void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
+void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
 	//print_line("rendering region " + itos(p_region));
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
@@ -2428,7 +2428,7 @@ void GI::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_co
 ////////////////////////////////////////////////////////////////////////////////
 // VoxelGIInstance
 
-void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
+void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	uint32_t data_version = gi->voxel_gi_get_data_version(probe);
@@ -2951,10 +2951,10 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 		//this could probably be better parallelized in compute..
 		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
-			RendererSceneRender::GeometryInstance *instance = p_dynamic_objects[i];
+			RenderGeometryInstance *instance = p_dynamic_objects[i];
 
 			//transform aabb to voxel_gi
-			AABB aabb = (to_probe_xform * p_scene_render->geometry_instance_get_transform(instance)).xform(p_scene_render->geometry_instance_get_aabb(instance));
+			AABB aabb = (to_probe_xform * instance->get_transform()).xform(instance->get_aabb());
 
 			//this needs to wrap to grid resolution to avoid jitter
 			//also extend margin a bit just in case
@@ -3233,7 +3233,7 @@ GI::~GI() {
 	singleton = nullptr;
 }
 
-void GI::init(RendererSceneSkyRD *p_sky) {
+void GI::init(SkyRD *p_sky) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3960,7 +3960,7 @@ bool GI::voxel_gi_needs_update(RID p_probe) const {
 	return voxel_gi->last_probe_version != voxel_gi_get_version(voxel_gi->probe);
 }
 
-void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
+void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
 	VoxelGIInstance *voxel_gi = get_probe_instance(p_probe);
 	ERR_FAIL_COND(!voxel_gi);
 

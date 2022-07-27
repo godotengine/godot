@@ -35,7 +35,7 @@
 #include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export.h"
 
 const String godot_project_name_xml_string = R"(<?xml version="1.0" encoding="utf-8"?>
 <!--WARNING: THIS FILE WILL BE OVERWRITTEN AT BUILD TIME-->

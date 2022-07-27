@@ -80,6 +80,9 @@ public:
 
 	virtual uint64_t get_embedded_pck_offset() const override;
 
+	virtual Vector<String> get_system_fonts() const override;
+	virtual String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const override;
+
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;

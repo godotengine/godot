@@ -194,6 +194,12 @@
 			<description>
 			</description>
 		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator unary+">
 			<return type="Vector4i" />
 			<description>

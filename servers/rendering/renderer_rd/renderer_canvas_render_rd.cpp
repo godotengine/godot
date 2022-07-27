@@ -528,7 +528,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
+						push_constant.flags |= FLAGS_TRANSPOSE_RECT;
 					}
 
 					if (rect->flags & CANVAS_RECT_CLIP_UV) {
@@ -2185,7 +2185,22 @@ void RendererCanvasRenderRD::CanvasShaderData::get_param_list(List<PropertyInfo>
 		}
 	}
 
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);

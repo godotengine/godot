@@ -21,8 +21,8 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define DENSITY_SCALE 1024.0
 
-#include "cluster_data_inc.glsl"
-#include "light_data_inc.glsl"
+#include "../cluster_data_inc.glsl"
+#include "../light_data_inc.glsl"
 
 #define M_PI 3.14159265359
 

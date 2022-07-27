@@ -32,8 +32,8 @@
 #define LINUXBSD_EXPORT_PLUGIN_H
 
 #include "core/io/file_access.h"
-#include "editor/editor_export.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export_platform_pc.h"
 #include "platform/linuxbsd/logo.gen.h"
 #include "scene/resources/texture.h"
 

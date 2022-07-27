@@ -870,6 +870,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(Font);
 	GDREGISTER_CLASS(FontFile);
 	GDREGISTER_CLASS(FontVariation);
+	GDREGISTER_CLASS(SystemFont);
 
 	GDREGISTER_CLASS(Curve);
 

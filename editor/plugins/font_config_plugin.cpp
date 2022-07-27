@@ -895,17 +895,45 @@ void FontPreview::_notification(int p_what) {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color text_color = get_theme_color(SNAME("font_color"), SNAME("Label"));
-			font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + 2 * EDSCALE), name, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, font_size, text_color);
 
 			// Draw font preview.
-			Vector2 pos = Vector2(0, font->get_height(font_size)) + (get_size() - Vector2(0, font->get_height(font_size)) - line->get_size()) / 2;
-			line->draw(get_canvas_item(), pos, text_color);
+			bool prev_ok = true;
+			if (prev_font.is_valid()) {
+				if (prev_font->get_font_name().is_empty()) {
+					prev_ok = false;
+				} else {
+					String name;
+					if (prev_font->get_font_style_name().is_empty()) {
+						name = prev_font->get_font_name();
+					} else {
+						name = vformat("%s (%s)", prev_font->get_font_name(), prev_font->get_font_style_name());
+					}
+					if (prev_font->is_class("FontVariation")) {
+						name += " " + TTR(" - Variation");
+					}
+					font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + 2 * EDSCALE), name, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, font_size, text_color);
 
-			// Draw font baseline.
-			Color line_color = text_color;
-			line_color.a *= 0.6;
-			draw_line(Vector2(0, pos.y + line->get_line_ascent()), Vector2(pos.x - 5, pos.y + line->get_line_ascent()), line_color);
-			draw_line(Vector2(pos.x + line->get_size().x + 5, pos.y + line->get_line_ascent()), Vector2(get_size().x, pos.y + line->get_line_ascent()), line_color);
+					String sample;
+					static const String sample_base = U"12漢字ԱբΑαАбΑαאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐAb😀";
+					for (int i = 0; i < sample_base.length(); i++) {
+						if (prev_font->has_char(sample_base[i])) {
+							sample += sample_base[i];
+						}
+					}
+					if (sample.is_empty()) {
+						sample = prev_font->get_supported_chars().substr(0, 6);
+					}
+					if (sample.is_empty()) {
+						prev_ok = false;
+					} else {
+						prev_font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + prev_font->get_height(50)), sample, HORIZONTAL_ALIGNMENT_CENTER, get_size().x, 50, text_color);
+					}
+				}
+			}
+			if (!prev_ok) {
+				text_color.a *= 0.5;
+				font->draw_string(get_canvas_item(), Point2(0, font->get_height(font_size) + 2 * EDSCALE), TTR("Unable to preview font"), HORIZONTAL_ALIGNMENT_CENTER, get_size().x, font_size, text_color);
+			}
 		} break;
 	}
 }
@@ -917,30 +945,11 @@ Size2 FontPreview::get_minimum_size() const {
 }
 
 void FontPreview::set_data(const Ref<Font> &p_f) {
-	line->clear();
-	if (p_f.is_valid()) {
-		name = vformat("%s (%s)", p_f->get_font_name(), p_f->get_font_style_name());
-		if (p_f->is_class("FontVariation")) {
-			name += " " + TTR(" - Variation");
-		}
-		String sample;
-		static const String sample_base = U"12漢字ԱբΑαАбΑαאבابܐܒހށआআਆઆଆஆఆಆആආกิກິༀကႠა한글ሀᎣᐁᚁᚠᜀᜠᝀᝠកᠠᤁᥐAb😀";
-		for (int i = 0; i < sample_base.length(); i++) {
-			if (p_f->has_char(sample_base[i])) {
-				sample += sample_base[i];
-			}
-		}
-		if (sample.is_empty()) {
-			sample = p_f->get_supported_chars().substr(0, 6);
-		}
-		line->add_string(sample, p_f, 50);
-	}
-
+	prev_font = p_f;
 	update();
 }
 
 FontPreview::FontPreview() {
-	line.instantiate();
 }
 
 /*************************************************************************/
@@ -965,6 +974,71 @@ bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const Va
 }
 
 /*************************************************************************/
+/* EditorPropertyFontNamesArray                                          */
+/*************************************************************************/
+
+void EditorPropertyFontNamesArray::_add_element() {
+	Size2 size = get_size();
+	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->reset_size();
+	menu->popup();
+}
+
+void EditorPropertyFontNamesArray::_add_font(int p_option) {
+	if (updating) {
+		return;
+	}
+
+	Variant array = object->get_array();
+	int previous_size = array.call("size");
+
+	array.call("resize", previous_size + 1);
+	array.set(previous_size, menu->get_item_text(p_option));
+
+	emit_changed(get_edited_property(), array, "", false);
+	object->set_array(array);
+	update_property();
+}
+
+EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
+	menu = memnew(PopupMenu);
+	menu->add_item("Sans-Serif", 0);
+	menu->add_item("Serif", 1);
+	menu->add_item("Monospace", 2);
+	menu->add_item("Fantasy", 3);
+	menu->add_item("Cursive", 4);
+
+	menu->add_separator();
+
+	if (OS::get_singleton()) {
+		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
+		for (int i = 0; i < fonts.size(); i++) {
+			menu->add_item(fonts[i], i + 6);
+		}
+	}
+	add_child(menu);
+	menu->connect("id_pressed", callable_mp(this, &EditorPropertyFontNamesArray::_add_font));
+}
+
+/*************************************************************************/
+/* EditorInspectorPluginSystemFont                                       */
+/*************************************************************************/
+
+bool EditorInspectorPluginSystemFont::can_handle(Object *p_object) {
+	return Object::cast_to<SystemFont>(p_object) != nullptr;
+}
+
+bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+	if (p_path == "font_names") {
+		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray);
+		editor->setup(p_type, p_hint_text);
+		add_property_editor(p_path, editor);
+		return true;
+	}
+	return false;
+}
+
+/*************************************************************************/
 /* FontEditorPlugin                                                */
 /*************************************************************************/
 
@@ -972,6 +1046,10 @@ FontEditorPlugin::FontEditorPlugin() {
 	Ref<EditorInspectorPluginFontVariation> fc_plugin;
 	fc_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(fc_plugin);
+
+	Ref<EditorInspectorPluginSystemFont> fs_plugin;
+	fs_plugin.instantiate();
+	EditorInspector::add_inspector_plugin(fs_plugin);
 
 	Ref<EditorInspectorPluginFontPreview> fp_plugin;
 	fp_plugin.instantiate();

@@ -107,7 +107,7 @@ struct RenderDataGLES3 {
 	float z_near = 0.0;
 	float z_far = 0.0;
 
-	const PagedArray<RendererSceneRender::GeometryInstance *> *instances = nullptr;
+	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
 	RID environment = RID();
@@ -210,7 +210,7 @@ private:
 
 	mutable RID_Owner<LightInstance> light_instance_owner;
 
-	struct GeometryInstanceGLES3;
+	class GeometryInstanceGLES3;
 
 	// Cached data for drawing surfaces
 	struct GeometryInstanceSurface {
@@ -265,33 +265,16 @@ private:
 		GeometryInstanceGLES3 *owner = nullptr;
 	};
 
-	struct GeometryInstanceGLES3 : public GeometryInstance {
+	class GeometryInstanceGLES3 : public RenderGeometryInstanceBase {
+	public:
 		//used during rendering
-		bool mirror = false;
-		bool non_uniform_scale = false;
-		float lod_bias = 0.0;
-		float lod_model_scale = 1.0;
-		AABB transformed_aabb; //needed for LOD
-		float depth = 0;
-		uint32_t flags_cache = 0;
 		bool store_transform_cache = true;
-		int32_t shader_parameters_offset = -1;
 
-		uint32_t layer_mask = 1;
 		int32_t instance_count = 0;
 
-		RID mesh_instance;
 		bool can_sdfgi = false;
 		bool using_projectors = false;
 		bool using_softshadows = false;
-		bool fade_near = false;
-		float fade_near_begin = 0;
-		float fade_near_end = 0;
-		bool fade_far = false;
-		float fade_far_begin = 0;
-		float fade_far_end = 0;
-		float force_alpha = 1.0;
-		float parent_fade_alpha = 1.0;
 
 		uint32_t omni_light_count = 0;
 		LocalVector<RID> omni_lights;
@@ -301,35 +284,22 @@ private:
 		LocalVector<uint32_t> spot_light_gl_cache;
 
 		//used during setup
-		uint32_t base_flags = 0;
-		Transform3D transform;
 		GeometryInstanceSurface *surface_caches = nullptr;
 		SelfList<GeometryInstanceGLES3> dirty_list_element;
 
-		struct Data {
-			//data used less often goes into regular heap
-			RID base;
-			RS::InstanceType base_type;
-
-			RID skeleton;
-			Vector<RID> surface_materials;
-			RID material_override;
-			RID material_overlay;
-			AABB aabb;
-
-			bool use_dynamic_gi = false;
-			bool use_baked_light = false;
-			bool cast_double_sided_shadows = false;
-			bool mirror = false;
-			bool dirty_dependencies = false;
-
-			DependencyTracker dependency_tracker;
-		};
-
-		Data *data = nullptr;
-
 		GeometryInstanceGLES3() :
 				dirty_list_element(this) {}
+
+		virtual void _mark_dirty() override;
+		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
+		virtual void set_lightmap_capture(const Color *p_sh9) override;
+
+		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;
+		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
+
+		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
 	};
 
 	enum {
@@ -357,8 +327,7 @@ private:
 	void _geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
 	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, RID p_mat_src, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
-	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
-	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
+	void _geometry_instance_update(RenderGeometryInstance *p_geometry_instance);
 	void _update_dirty_geometry_instances();
 
 	struct SceneState {
@@ -738,35 +707,14 @@ protected:
 	void _free_sky_data(Sky *p_sky);
 
 public:
+	static RasterizerSceneGLES3 *get_singleton() { return singleton; }
+
 	RasterizerCanvasGLES3 *canvas;
 
-	GeometryInstance *geometry_instance_create(RID p_base) override;
-	void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
-	void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override;
-	void geometry_instance_set_material_overlay(GeometryInstance *p_geometry_instance, RID p_overlay) override;
-	void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) override;
-	void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
-	void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) override;
-	void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override;
-	void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override;
-	void geometry_instance_set_transparency(GeometryInstance *p_geometry_instance, float p_transparency) override;
-	void geometry_instance_set_fade_range(GeometryInstance *p_geometry_instance, bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override;
-	void geometry_instance_set_parent_fade_alpha(GeometryInstance *p_geometry_instance, float p_alpha) override;
-	void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
-	void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) override;
-	void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) override;
-	void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override;
+	RenderGeometryInstance *geometry_instance_create(RID p_base) override;
+	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
 	uint32_t geometry_instance_get_pair_mask() override;
-	void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override;
-	void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-	void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
-	void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override;
-	void geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) override;
-
-	void geometry_instance_free(GeometryInstance *p_geometry_instance) override;
 
 	/* SHADOW ATLAS API */
 
@@ -899,13 +847,13 @@ public:
 	RID voxel_gi_instance_create(RID p_voxel_gi) override;
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override;
 	bool voxel_gi_needs_update(RID p_probe) const override;
-	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override;
+	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) override;
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
-	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
+	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 	void set_scene_pass(uint64_t p_pass) override {
 		scene_pass = p_pass;
@@ -940,7 +888,6 @@ public:
 	void decals_set_filter(RS::DecalFilter p_filter) override;
 	void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 
-	static RasterizerSceneGLES3 *get_singleton();
 	RasterizerSceneGLES3();
 	~RasterizerSceneGLES3();
 };

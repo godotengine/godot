@@ -270,6 +270,7 @@ def configure_msvc(env, manual_msvc_config):
         "bcrypt",
         "Avrt",
         "dwmapi",
+        "dwrite",
     ]
 
     if env["vulkan"]:
@@ -441,6 +442,7 @@ def configure_mingw(env):
             "avrt",
             "uuid",
             "dwmapi",
+            "dwrite",
         ]
     )
 

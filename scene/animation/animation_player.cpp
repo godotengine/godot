@@ -64,7 +64,7 @@ void AnimatedValuesBackup::restore() const {
 			if (arr.size() == 3) {
 				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_position(entry->bone_idx, arr[0]);
 				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_rotation(entry->bone_idx, arr[1]);
-				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_scale(entry->bone_idx, arr[0]);
+				Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose_scale(entry->bone_idx, arr[2]);
 			}
 		}
 	}
@@ -370,6 +370,10 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 						node_cache->node_3d = nullptr;
 						ERR_CONTINUE(node_cache->bone_idx < 0);
 					}
+					Transform3D rest = node_cache->skeleton->get_bone_rest(bone_idx);
+					node_cache->init_loc = rest.origin;
+					node_cache->init_rot = rest.basis.get_rotation_quaternion();
+					node_cache->init_scale = rest.basis.get_scale();
 				} else {
 					// no property, just use spatialnode
 					node_cache->skeleton = nullptr;
@@ -450,6 +454,23 @@ static void _call_object(Object *p_object, const StringName &p_method, const Vec
 	}
 }
 
+Variant AnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
+	switch (p_anim->track_get_type(p_track)) {
+#ifndef _3D_DISABLED
+		case Animation::TYPE_POSITION_3D: {
+			if (p_object_idx >= 0) {
+				const Skeleton3D *skel = Object::cast_to<Skeleton3D>(p_object);
+				return Vector3(p_value) * skel->get_motion_scale();
+			}
+			return p_value;
+		} break;
+#endif // _3D_DISABLED
+		default: {
+		} break;
+	}
+	return p_value;
+}
+
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started, int p_pingponged) {
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
@@ -494,14 +515,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (err != OK) {
 					continue;
 				}
+				loc = _post_process_key_value(a, i, loc, nc->node_3d, nc->bone_idx);
 
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
 					nc->loc_accum = loc;
-					nc->rot_accum = Quaternion();
-					nc->scale_accum = Vector3();
+					nc->rot_accum = nc->init_rot;
+					nc->scale_accum = nc->init_scale;
 				} else {
 					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
 				}
@@ -521,14 +543,15 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (err != OK) {
 					continue;
 				}
+				rot = _post_process_key_value(a, i, rot, nc->node_3d, nc->bone_idx);
 
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
-					nc->loc_accum = Vector3();
+					nc->loc_accum = nc->init_loc;
 					nc->rot_accum = rot;
-					nc->scale_accum = Vector3();
+					nc->scale_accum = nc->init_scale;
 				} else {
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
 				}
@@ -548,13 +571,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (err != OK) {
 					continue;
 				}
+				scale = _post_process_key_value(a, i, scale, nc->node_3d, nc->bone_idx);
 
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update[cache_update_size++] = nc;
 					nc->accum_pass = accum_pass;
-					nc->loc_accum = Vector3();
-					nc->rot_accum = Quaternion();
+					nc->loc_accum = nc->init_loc;
+					nc->rot_accum = nc->init_rot;
 					nc->scale_accum = scale;
 				} else {
 					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
@@ -575,6 +599,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				if (err != OK) {
 					continue;
 				}
+				blend = _post_process_key_value(a, i, blend, nc->node_blend_shape, nc->blend_shape_idx);
 
 				if (nc->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_size >= NODE_CACHE_UPDATE_MAX);
@@ -627,9 +652,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					if (p_time < first_key_time) {
 						double c = Math::ease(p_time / first_key_time, transition);
 						Variant first_value = a->track_get_key_value(i, first_key);
+						first_value = _post_process_key_value(a, i, first_value, nc->node);
 						Variant interp_value;
 						Variant::interpolate(pa->capture, first_value, c, interp_value);
-
 						if (pa->accum_pass != accum_pass) {
 							ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
 							cache_update_prop[cache_update_prop_size++] = pa;
@@ -649,6 +674,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					if (value == Variant()) {
 						continue;
 					}
+					value = _post_process_key_value(a, i, value, nc->node);
 
 					if (pa->accum_pass != accum_pass) {
 						ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
@@ -665,6 +691,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 					for (int &F : indices) {
 						Variant value = a->track_get_key_value(i, F);
+						value = _post_process_key_value(a, i, value, nc->node);
 						switch (pa->special) {
 							case SP_NONE: {
 								bool valid;
@@ -749,6 +776,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				TrackNodeCache::BezierAnim *ba = &E->value;
 
 				real_t bezier = a->bezier_track_interpolate(i, p_time);
+				bezier = _post_process_key_value(a, i, bezier, nc->node);
 				if (ba->accum_pass != accum_pass) {
 					ERR_CONTINUE(cache_update_bezier_size >= NODE_CACHE_UPDATE_MAX);
 					cache_update_bezier[cache_update_bezier_size++] = ba;

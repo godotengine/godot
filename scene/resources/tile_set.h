@@ -569,7 +569,7 @@ public:
 	virtual void add_custom_data_layer(int p_index){};
 	virtual void move_custom_data_layer(int p_from_index, int p_to_pos){};
 	virtual void remove_custom_data_layer(int p_index){};
-	virtual void reset_state() override{};
+	virtual void reset_state() override;
 
 	// Tiles.
 	virtual int get_tiles_count() const = 0;
@@ -847,7 +847,6 @@ public:
 	void add_custom_data_layer(int p_index);
 	void move_custom_data_layer(int p_from_index, int p_to_pos);
 	void remove_custom_data_layer(int p_index);
-	void reset_state();
 	void set_allow_transform(bool p_allow_transform);
 	bool is_allowing_transform() const;
 

@@ -1731,8 +1731,12 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, max_axis_index, sarray(), varray());
 	bind_method(Vector4, length, sarray(), varray());
 	bind_method(Vector4, length_squared, sarray(), varray());
-	bind_method(Vector4, sign, sarray(), varray());
 	bind_method(Vector4, abs, sarray(), varray());
+	bind_method(Vector4, sign, sarray(), varray());
+	bind_method(Vector4, floor, sarray(), varray());
+	bind_method(Vector4, ceil, sarray(), varray());
+	bind_method(Vector4, round, sarray(), varray());
+	bind_method(Vector4, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector4, clamp, sarray("min", "max"), varray());
 	bind_method(Vector4, normalized, sarray(), varray());
 	bind_method(Vector4, is_normalized, sarray(), varray());

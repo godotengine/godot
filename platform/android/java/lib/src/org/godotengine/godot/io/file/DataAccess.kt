@@ -161,8 +161,9 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun read(buffer: ByteBuffer): Int {
 		return try {
 			val readBytes = fileChannel.read(buffer)
+			endOfFile = readBytes == -1
+					|| (fileChannel.position() >= fileChannel.size() && fileChannel.size() > 0)
 			if (readBytes == -1) {
-				endOfFile = true
 				0
 			} else {
 				readBytes

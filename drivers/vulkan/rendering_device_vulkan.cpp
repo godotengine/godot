@@ -1834,6 +1834,10 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT && !(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as atomic storage image.");
 		}
+
+		if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)) {
+			ERR_FAIL_V_MSG(RID(), "Format " + format_text + " does not support usage as VRS attachment.");
+		}
 	}
 
 	//some view validation
@@ -3354,6 +3358,10 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 		return false;
 	}
 
+	if (p_usage & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && !(flags & VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR)) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -3807,7 +3815,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		subpass.pNext = subpass_nextptr;
 		subpass.flags = 0;
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.viewMask = view_mask;
+		if (p_view_count == 1) {
+			// VUID-VkSubpassDescription2-multiview-06558: If the multiview feature is not enabled, viewMask must be 0.
+			subpass.viewMask = 0;
+		} else {
+			subpass.viewMask = view_mask;
+		}
 		subpass.inputAttachmentCount = input_references.size();
 		if (input_references.size()) {
 			subpass.pInputAttachments = input_references.ptr();
@@ -3895,8 +3908,14 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		render_pass_create_info.pDependencies = nullptr;
 	}
 
-	render_pass_create_info.correlatedViewMaskCount = 1;
-	render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	if (p_view_count == 1) {
+		// VUID-VkRenderPassCreateInfo2-viewMask-03057: If the VkSubpassDescription2::viewMask member of all elements of pSubpasses is 0, correlatedViewMaskCount must be 0.
+		render_pass_create_info.correlatedViewMaskCount = 0;
+		render_pass_create_info.pCorrelatedViewMasks = nullptr;
+	} else {
+		render_pass_create_info.correlatedViewMaskCount = 1;
+		render_pass_create_info.pCorrelatedViewMasks = &correlation_mask;
+	}
 
 	Vector<uint32_t> view_masks;
 	VkRenderPassMultiviewCreateInfo render_pass_multiview_create_info;
@@ -3997,6 +4016,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	subpass.pNext = nullptr;
 	subpass.flags = 0;
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.viewMask = 0;
 	subpass.inputAttachmentCount = 0; //unsupported for now
 	subpass.pInputAttachments = nullptr;
 	subpass.colorAttachmentCount = 0;
