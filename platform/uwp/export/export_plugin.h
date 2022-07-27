@@ -90,12 +90,6 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	Ref<ImageTexture> logo;
 
-	enum Platform {
-		ARM,
-		X86,
-		X64
-	};
-
 	bool _valid_resource_name(const String &p_name) const {
 		if (p_name.is_empty()) {
 			return false;
@@ -215,8 +209,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		String version = itos(p_preset->get("version/major")) + "." + itos(p_preset->get("version/minor")) + "." + itos(p_preset->get("version/build")) + "." + itos(p_preset->get("version/revision"));
 		result = result.replace("$version_string$", version);
 
-		Platform arch = (Platform)(int)p_preset->get("architecture/target");
-		String architecture = arch == ARM ? "arm" : (arch == X86 ? "x86" : "x64");
+		String arch = p_preset->get("binary_format/architecture");
+		String architecture = arch == "arm32" ? "arm" : (arch == "x86_32" ? "x86" : "x64");
 		result = result.replace("$architecture$", architecture);
 
 		result = result.replace("$display_name$", String(p_preset->get("package/display_name")).is_empty() ? (String)ProjectSettings::get_singleton()->get("application/config/name") : String(p_preset->get("package/display_name")));

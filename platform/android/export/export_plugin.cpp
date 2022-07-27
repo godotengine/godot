@@ -1705,6 +1705,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	}
 	plugins_changed.clear();
 
+	// Android supports multiple architectures in an app bundle, so
+	// we expose each option as a checkbox in the export dialog.
 	const Vector<String> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
 		const String abi = abis[i];
