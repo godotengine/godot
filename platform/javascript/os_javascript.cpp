@@ -177,6 +177,10 @@ String OS_JavaScript::get_name() const {
 	return "HTML5";
 }
 
+void OS_JavaScript::vibrate_handheld(int p_duration_ms) {
+	godot_js_input_vibrate_handheld(p_duration_ms);
+}
+
 String OS_JavaScript::get_user_data_dir() const {
 	return "/userfs";
 }
