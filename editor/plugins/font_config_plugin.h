@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_array_dict.h"
 
 /*************************************************************************/
 
@@ -225,8 +226,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	String name;
-	Ref<TextLine> line;
+	Ref<Font> prev_font;
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -244,6 +244,33 @@ class EditorInspectorPluginFontPreview : public EditorInspectorPlugin {
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
+};
+
+/*************************************************************************/
+
+class EditorPropertyFontNamesArray : public EditorPropertyArray {
+	GDCLASS(EditorPropertyFontNamesArray, EditorPropertyArray);
+
+	PopupMenu *menu = nullptr;
+
+protected:
+	virtual void _add_element() override;
+
+	void _add_font(int p_option);
+	static void _bind_methods(){};
+
+public:
+	EditorPropertyFontNamesArray();
+};
+
+/*************************************************************************/
+
+class EditorInspectorPluginSystemFont : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginSystemFont, EditorInspectorPlugin);
+
+public:
+	virtual bool can_handle(Object *p_object) override;
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
 };
 

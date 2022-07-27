@@ -44,6 +44,7 @@
 #import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
+#import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
 #include <sys/sysctl.h>
@@ -300,6 +301,80 @@ String OS_IOS::get_processor_name() const {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
+Vector<String> OS_IOS::get_system_fonts() const {
+	HashSet<String> font_names;
+	CFArrayRef fonts = CTFontManagerCopyAvailableFontFamilyNames();
+	if (fonts) {
+		for (CFIndex i = 0; i < CFArrayGetCount(fonts); i++) {
+			CFStringRef cf_name = (CFStringRef)CFArrayGetValueAtIndex(fonts, i);
+			if (cf_name && (CFStringGetLength(cf_name) > 0) && (CFStringCompare(cf_name, CFSTR("LastResort"), kCFCompareCaseInsensitive) != kCFCompareEqualTo) && (CFStringGetCharacterAtIndex(cf_name, 0) != '.')) {
+				NSString *ns_name = (__bridge NSString *)cf_name;
+				font_names.insert(String::utf8([ns_name UTF8String]));
+			}
+		}
+		CFRelease(fonts);
+	}
+
+	Vector<String> ret;
+	for (const String &E : font_names) {
+		ret.push_back(E);
+	}
+	return ret;
+}
+
+String OS_IOS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	String ret;
+
+	String font_name = p_font_name;
+	if (font_name.to_lower() == "sans-serif") {
+		font_name = "Helvetica";
+	} else if (font_name.to_lower() == "serif") {
+		font_name = "Times";
+	} else if (font_name.to_lower() == "monospace") {
+		font_name = "Courier";
+	} else if (font_name.to_lower() == "fantasy") {
+		font_name = "Papyrus";
+	} else if (font_name.to_lower() == "cursive") {
+		font_name = "Apple Chancery";
+	};
+
+	CFStringRef name = CFStringCreateWithCString(kCFAllocatorDefault, font_name.utf8().get_data(), kCFStringEncodingUTF8);
+
+	CTFontSymbolicTraits traits = 0;
+	if (p_bold) {
+		traits |= kCTFontBoldTrait;
+	}
+	if (p_italic) {
+		traits |= kCTFontItalicTrait;
+	}
+
+	CFNumberRef sym_traits = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &traits);
+	CFMutableDictionaryRef traits_dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(traits_dict, kCTFontSymbolicTrait, sym_traits);
+
+	CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr);
+	CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, name);
+	CFDictionaryAddValue(attributes, kCTFontTraitsAttribute, traits_dict);
+
+	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
+	if (font) {
+		CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(font, kCTFontURLAttribute);
+		if (url) {
+			NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+			ret = String::utf8([font_path UTF8String]);
+			CFRelease(url);
+		}
+		CFRelease(font);
+	}
+
+	CFRelease(attributes);
+	CFRelease(traits_dict);
+	CFRelease(sym_traits);
+	CFRelease(name);
+
+	return ret;
 }
 
 void OS_IOS::vibrate_handheld(int p_duration_ms) {

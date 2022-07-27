@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FontFile" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		FontFile source data and prerendered glyph cache, imported from dynamic or bitmap font.
+		Font source data and prerendered glyph cache, imported from dynamic or bitmap font.
 	</brief_description>
 	<description>
 		[FontFile] contains a set of glyphs to represent Unicode characters imported from a font file, as well as a cache of rasterized glyphs, and a set of fallback [Font]s to use.
