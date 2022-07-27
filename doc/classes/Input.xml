@@ -379,9 +379,11 @@
 			<return type="void" />
 			<argument index="0" name="duration_ms" type="int" default="500" />
 			<description>
-				Vibrate Android and iOS devices.
+				Vibrate handheld devices.
+				[b]Note:[/b] This method is implemented on Android, iOS, and HTML5.
 				[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] permission in the export preset.
 				[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and later.
+				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support this method.
 			</description>
 		</method>
 		<method name="warp_mouse_position">
