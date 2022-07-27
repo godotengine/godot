@@ -80,7 +80,7 @@ void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, con
 	origin = p_eye;
 }
 
-Transform3D Transform3D::sphere_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
+Transform3D Transform3D::spherical_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
 	/* not sure if very "efficient" but good enough? */
 
 	Transform3D interp;

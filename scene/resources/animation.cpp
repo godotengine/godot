@@ -2302,7 +2302,7 @@ Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a
 }
 
 Quaternion Animation::_cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const {
-	return p_a.cubic_slerp(p_b, p_pre_a, p_post_b, p_c);
+	return p_a.spherical_cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
 }
 
 Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const {
@@ -2363,7 +2363,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Quaternion pa = p_pre_a;
 			Quaternion pb = p_post_b;
 
-			return a.cubic_slerp(b, pa, pb, p_c);
+			return a.spherical_cubic_interpolate(b, pa, pb, p_c);
 		}
 		case Variant::AABB: {
 			AABB a = p_a;
