@@ -111,7 +111,7 @@ Quaternion Quaternion::log() const {
 Quaternion Quaternion::exp() const {
 	Quaternion src = *this;
 	Vector3 src_v = Vector3(src.x, src.y, src.z);
-	float theta = src_v.length();
+	real_t theta = src_v.length();
 	if (theta < CMP_EPSILON) {
 		return Quaternion(0, 0, 0, 1);
 	}
@@ -132,15 +132,9 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) con
 	// adjust signs (if necessary)
 	if (cosom < 0.0f) {
 		cosom = -cosom;
-		to1.x = -p_to.x;
-		to1.y = -p_to.y;
-		to1.z = -p_to.z;
-		to1.w = -p_to.w;
+		to1 = -p_to;
 	} else {
-		to1.x = p_to.x;
-		to1.y = p_to.y;
-		to1.z = p_to.z;
-		to1.w = p_to.w;
+		to1 = p_to;
 	}
 
 	// calculate coefficients
@@ -194,11 +188,45 @@ Quaternion Quaternion::cubic_slerp(const Quaternion &p_b, const Quaternion &p_pr
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
-	//the only way to do slerp :|
-	real_t t2 = (1.0f - p_weight) * p_weight * 2;
-	Quaternion sp = this->slerp(p_b, p_weight);
-	Quaternion sq = p_pre_a.slerpni(p_post_b, p_weight);
-	return sp.slerpni(sq, t2);
+	Quaternion ret_q = *this;
+	Quaternion pre_q = p_pre_a;
+	Quaternion to_q = p_b;
+	Quaternion post_q = p_post_b;
+
+	// Align flip phases.
+	ret_q = Basis(ret_q).get_rotation_quaternion();
+	pre_q = Basis(pre_q).get_rotation_quaternion();
+	to_q = Basis(to_q).get_rotation_quaternion();
+	post_q = Basis(post_q).get_rotation_quaternion();
+
+	// Flip quaternions to shortest path if necessary.
+	bool flip1 = signbit(ret_q.dot(pre_q));
+	pre_q = flip1 ? -pre_q : pre_q;
+	bool flip2 = signbit(ret_q.dot(to_q));
+	to_q = flip2 ? -to_q : to_q;
+	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : signbit(to_q.dot(post_q));
+	post_q = flip3 ? -post_q : post_q;
+
+	if (flip1 || flip2 || flip3) {
+		// Angle is too large, calc by Approximate.
+		ret_q.x = Math::cubic_interpolate(ret_q.x, to_q.x, pre_q.x, post_q.x, p_weight);
+		ret_q.y = Math::cubic_interpolate(ret_q.y, to_q.y, pre_q.y, post_q.y, p_weight);
+		ret_q.z = Math::cubic_interpolate(ret_q.z, to_q.z, pre_q.z, post_q.z, p_weight);
+		ret_q.w = Math::cubic_interpolate(ret_q.w, to_q.w, pre_q.w, post_q.w, p_weight);
+		ret_q.normalize();
+	} else {
+		// Calc by Expmap.
+		Quaternion ln_ret = ret_q.log();
+		Quaternion ln_to = to_q.log();
+		Quaternion ln_pre = pre_q.log();
+		Quaternion ln_post = post_q.log();
+		Quaternion ln = Quaternion(0, 0, 0, 0);
+		ln.x = Math::cubic_interpolate(ln_ret.x, ln_to.x, ln_pre.x, ln_post.x, p_weight);
+		ln.y = Math::cubic_interpolate(ln_ret.y, ln_to.y, ln_pre.y, ln_post.y, p_weight);
+		ln.z = Math::cubic_interpolate(ln_ret.z, ln_to.z, ln_pre.z, ln_post.z, p_weight);
+		ret_q = ln.exp();
+	}
+	return ret_q;
 }
 
 Quaternion::operator String() const {
@@ -213,7 +241,7 @@ Vector3 Quaternion::get_axis() const {
 	return Vector3(x * r, y * r, z * r);
 }
 
-float Quaternion::get_angle() const {
+real_t Quaternion::get_angle() const {
 	return 2 * Math::acos(w);
 }
 

@@ -74,7 +74,7 @@ struct _NO_DISCARD_ Quaternion {
 	Quaternion cubic_slerp(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
 
 	Vector3 get_axis() const;
-	float get_angle() const;
+	real_t get_angle() const;
 
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
