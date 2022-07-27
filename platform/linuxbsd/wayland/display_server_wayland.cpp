@@ -2432,7 +2432,6 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWayland(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_resolution, r_error));
 	if (r_error != OK) {
-		memdelete(ds);
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported Vulkan or OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.\n"
 								   "If you have updated your graphics drivers recently, try rebooting.",
