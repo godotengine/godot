@@ -917,7 +917,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 				if (member.variable->getter != nullptr) {
 					member.variable->getter->set_datatype(member.variable->datatype);
 
-					resolve_function_body(member.variable->getter);
+					resolve_getter_body(member.variable->getter);
 				}
 				if (member.variable->setter != nullptr) {
 					resolve_function_signature(member.variable->setter);
@@ -1250,6 +1250,19 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		if (!p_function->body->has_return && p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
+	}
+
+	parser->current_function = previous_function;
+}
+
+void GDScriptAnalyzer::resolve_getter_body(GDScriptParser::FunctionNode *p_getter) {
+	resolve_function_body(p_getter);
+
+	GDScriptParser::FunctionNode *previous_function = parser->current_function;
+	parser->current_function = p_getter;
+
+	if (!p_getter->get_datatype().is_hard_type() && !p_getter->body->has_return) {
+		push_error(R"(Not all code paths in the getter function return a value.)", p_getter);
 	}
 
 	parser->current_function = previous_function;
