@@ -371,7 +371,7 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 	}
 	return ret;
 #else
-	ERR_FAIL_COND_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.")
+	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
 #endif
 }
 
@@ -410,10 +410,10 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold,
 		FcPatternDestroy(pattern);
 	}
 	FcObjectSetDestroy(object_set);
-#else
-	ERR_FAIL_COND_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.")
-#endif
 	return ret;
+#else
+	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
+#endif
 }
 
 String OS_LinuxBSD::get_config_path() const {
