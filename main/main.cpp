@@ -2576,7 +2576,7 @@ bool Main::start() {
 					PropertyInfo(Variant::FLOAT,
 							"display/window/stretch/scale",
 							PROPERTY_HINT_RANGE,
-							"1.0,8.0,0.1"));
+							"0.5,8.0,0.01"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
