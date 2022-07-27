@@ -41,6 +41,7 @@ def get_opts():
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
         BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
         BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
+        BoolVariable("fontconfig", "Detect and use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
@@ -298,11 +299,13 @@ def configure(env):
 
     ## Flags
 
-    if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
-        env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
-        env.ParseConfig("pkg-config fontconfig --cflags --libs")
-    else:
-        print("Warning: fontconfig libraries not found. Disabling the system fonts support.")
+    if env["fontconfig"]:
+        if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
+            env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+            env.ParseConfig("pkg-config fontconfig --cflags")  # Only cflags, we dlopen the library.
+        else:
+            env["fontconfig"] = False
+            print("Warning: fontconfig libraries not found. Disabling the system fonts support.")
 
     if os.system("pkg-config --exists alsa") == 0:  # 0 means found
         env["alsa"] = True

@@ -53,7 +53,7 @@
 #include <unistd.h>
 
 #ifdef FONTCONFIG_ENABLED
-#include <fontconfig/fontconfig.h>
+#include "fontconfig-so_wrap.h"
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
@@ -333,6 +333,9 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 
 Vector<String> OS_LinuxBSD::get_system_fonts() const {
 #ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unable to load fontconfig, system font support is disabled.");
+	}
 	HashSet<String> font_names;
 	Vector<String> ret;
 
@@ -377,6 +380,10 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 
 String OS_LinuxBSD::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
 #ifdef FONTCONFIG_ENABLED
+	if (!font_config_initialized) {
+		ERR_FAIL_V_MSG(String(), "Unable to load fontconfig, system font support is disabled.");
+	}
+
 	String ret;
 
 	FcConfig *config = FcInitLoadConfigAndFonts();
@@ -733,4 +740,13 @@ OS_LinuxBSD::OS_LinuxBSD() {
 #ifdef X11_ENABLED
 	DisplayServerX11::register_x11_driver();
 #endif
+
+#ifdef FONTCONFIG_ENABLED
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+#endif // FONTCONFIG_ENABLED
 }

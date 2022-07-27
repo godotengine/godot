@@ -45,6 +45,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 	bool force_quit;
 
+#ifdef FONTCONFIG_ENABLED
+	bool font_config_initialized = false;
+#endif
+
 #ifdef JOYDEV_ENABLED
 	JoypadLinux *joypad = nullptr;
 #endif
