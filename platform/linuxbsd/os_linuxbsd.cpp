@@ -34,12 +34,12 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
-#ifdef X11_ENABLED
-#include "x11/display_server_x11.h"
-#endif
-
 #ifdef WAYLAND_ENABLED
 #include "wayland/display_server_wayland.h"
+#endif
+
+#ifdef X11_ENABLED
+#include "x11/display_server_x11.h"
 #endif
 
 #ifdef HAVE_MNTENT
@@ -645,11 +645,11 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
-#ifdef X11_ENABLED
-	DisplayServerX11::register_x11_driver();
-#endif
-
 #ifdef WAYLAND_ENABLED
 	DisplayServerWayland::register_wayland_driver();
+#endif
+
+#ifdef X11_ENABLED
+	DisplayServerX11::register_x11_driver();
 #endif
 }
