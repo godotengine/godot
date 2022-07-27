@@ -951,21 +951,16 @@ void reflection_process(uint ref_index, vec3 view, vec3 vertex, vec3 normal, flo
 }
 
 float blur_shadow(float shadow) {
-	return shadow;
-#if 0
-	//disabling for now, will investigate later
 	float interp_shadow = shadow;
-	if (gl_HelperInvocation) {
-		interp_shadow = -4.0; // technically anything below -4 will do but just to make sure
-	}
 
 	uvec2 fc2 = uvec2(gl_FragCoord.xy);
-	interp_shadow -= dFdx(interp_shadow) * (float(fc2.x & 1) - 0.5);
-	interp_shadow -= dFdy(interp_shadow) * (float(fc2.y & 1) - 0.5);
+	interp_shadow -= dFdxFine(interp_shadow) * (float(fc2.x & 1) - 0.5);
+	interp_shadow -= dFdyFine(interp_shadow) * (float(fc2.y & 1) - 0.5);
+	interp_shadow = min(interp_shadow, 1.0);
 
 	if (interp_shadow >= 0.0) {
 		shadow = interp_shadow;
 	}
+
 	return shadow;
-#endif
 }
