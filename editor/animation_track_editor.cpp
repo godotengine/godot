@@ -3428,7 +3428,7 @@ void AnimationTrackEditor::set_root(Node *p_root) {
 	root = p_root;
 
 	if (root) {
-		root->connect("tree_exiting", callable_mp(this, &AnimationTrackEditor::_root_removed), make_binds(), CONNECT_ONESHOT);
+		root->connect("tree_exiting", callable_mp(this, &AnimationTrackEditor::_root_removed), CONNECT_ONESHOT);
 	}
 
 	_update_tracks();
@@ -4514,20 +4514,20 @@ void AnimationTrackEditor::_update_tracks() {
 		}
 
 		track_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
-		track_edit->connect("remove_request", callable_mp(this, &AnimationTrackEditor::_track_remove_request), varray(), CONNECT_DEFERRED);
-		track_edit->connect("dropped", callable_mp(this, &AnimationTrackEditor::_dropped_track), varray(), CONNECT_DEFERRED);
-		track_edit->connect("insert_key", callable_mp(this, &AnimationTrackEditor::_insert_key_from_track), varray(i), CONNECT_DEFERRED);
-		track_edit->connect("select_key", callable_mp(this, &AnimationTrackEditor::_key_selected), varray(i), CONNECT_DEFERRED);
-		track_edit->connect("deselect_key", callable_mp(this, &AnimationTrackEditor::_key_deselected), varray(i), CONNECT_DEFERRED);
+		track_edit->connect("remove_request", callable_mp(this, &AnimationTrackEditor::_track_remove_request), CONNECT_DEFERRED);
+		track_edit->connect("dropped", callable_mp(this, &AnimationTrackEditor::_dropped_track), CONNECT_DEFERRED);
+		track_edit->connect("insert_key", callable_mp(this, &AnimationTrackEditor::_insert_key_from_track).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("select_key", callable_mp(this, &AnimationTrackEditor::_key_selected).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("deselect_key", callable_mp(this, &AnimationTrackEditor::_key_deselected).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("move_selection_begin", callable_mp(this, &AnimationTrackEditor::_move_selection_begin));
 		track_edit->connect("move_selection", callable_mp(this, &AnimationTrackEditor::_move_selection));
 		track_edit->connect("move_selection_commit", callable_mp(this, &AnimationTrackEditor::_move_selection_commit));
 		track_edit->connect("move_selection_cancel", callable_mp(this, &AnimationTrackEditor::_move_selection_cancel));
 
-		track_edit->connect("duplicate_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_DUPLICATE_SELECTION), CONNECT_DEFERRED);
-		track_edit->connect("duplicate_transpose_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_DUPLICATE_TRANSPOSED), CONNECT_DEFERRED);
-		track_edit->connect("create_reset_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
-		track_edit->connect("delete_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_DELETE_SELECTION), CONNECT_DEFERRED);
+		track_edit->connect("duplicate_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_DUPLICATE_SELECTION), CONNECT_DEFERRED);
+		track_edit->connect("duplicate_transpose_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_DUPLICATE_TRANSPOSED), CONNECT_DEFERRED);
+		track_edit->connect("create_reset_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
+		track_edit->connect("delete_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_DELETE_SELECTION), CONNECT_DEFERRED);
 	}
 }
 
@@ -6477,7 +6477,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	optimize_max_angle->set_value(22);
 
 	optimize_dialog->set_ok_button_text(TTR("Optimize"));
-	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
+	optimize_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_OPTIMIZE_ANIMATION_CONFIRM));
 
 	//
 
@@ -6503,7 +6503,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	cleanup_dialog->set_title(TTR("Clean-Up Animation(s) (NO UNDO!)"));
 	cleanup_dialog->set_ok_button_text(TTR("Clean-Up"));
 
-	cleanup_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
+	cleanup_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_CLEAN_UP_ANIMATION_CONFIRM));
 
 	//
 	scale_dialog = memnew(ConfirmationDialog);
@@ -6515,7 +6515,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scale->set_max(99999);
 	scale->set_step(0.001);
 	vbc->add_margin_child(TTR("Scale Ratio:"), scale);
-	scale_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_SCALE_CONFIRM));
+	scale_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM));
 	add_child(scale_dialog);
 
 	track_copy_dialog = memnew(ConfirmationDialog);
@@ -6536,7 +6536,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_copy_select->set_hide_root(true);
 	track_vbox->add_child(track_copy_select);
-	track_copy_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed), varray(EDIT_COPY_TRACKS_CONFIRM));
+	track_copy_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {

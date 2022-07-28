@@ -279,7 +279,7 @@ void VisualScript::add_node(int p_id, const Ref<VisualScriptNode> &p_node, const
 	nd.pos = p_pos;
 
 	Ref<VisualScriptNode> vsn = p_node;
-	vsn->connect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed), varray(p_id));
+	vsn->connect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed).bind(p_id));
 	vsn->script_used = Ref<VisualScript>(this);
 	vsn->validate_input_default_values(); // Validate when fully loaded.
 
@@ -2122,7 +2122,14 @@ void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p
 		binds.push_back(p_binds[i]);
 	}
 	binds.push_back(Ref<VisualScriptFunctionState>(this)); //add myself on the back to avoid dying from unreferencing
-	p_obj->connect(p_signal, Callable(this, "_signal_callback"), binds, CONNECT_ONESHOT);
+
+	Vector<const Variant *> bind_ptrs;
+	bind_ptrs.resize(p_binds.size());
+	for (int i = 0; i < bind_ptrs.size(); i++) {
+		bind_ptrs.write[i] = &binds.write[i];
+	}
+
+	p_obj->connect(p_signal, Callable(this, "_signal_callback").bindp((const Variant **)bind_ptrs.ptr(), bind_ptrs.size()), CONNECT_ONESHOT);
 }
 
 bool VisualScriptFunctionState::is_valid() const {

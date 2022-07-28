@@ -3147,7 +3147,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		Variant *rectp = &rect;
 		Variant ret;
 		Callable::CallError ce;
-		wd.rect_changed_callback.call((const Variant **)&rectp, 1, ret, ce);
+		wd.rect_changed_callback.callp((const Variant **)&rectp, 1, ret, ce);
 	}
 }
 
@@ -3168,7 +3168,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			if (windows.has(E->get())) {
 				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 			return;
@@ -3181,7 +3181,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	} else {
@@ -3189,7 +3189,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		for (KeyValue<WindowID, WindowData> &E : windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	}
@@ -3201,7 +3201,7 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -4068,7 +4068,7 @@ void DisplayServerX11::process_events() {
 						Variant *vp = &v;
 						Variant ret;
 						Callable::CallError ce;
-						windows[window_id].drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+						windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
 					}
 
 					//Reply that all is well.

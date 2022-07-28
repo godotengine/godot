@@ -307,7 +307,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			Button *remove = memnew(Button);
 			remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			hbox->add_child(remove);
-			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove), varray(remove, name));
+			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
 
 			prop->update_property();
 		}
@@ -783,7 +783,7 @@ void EditorPropertyOTFeatures::update_property() {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 				hbox->add_child(remove);
-				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove), varray(remove, name_tag));
+				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
 
 				prop->update_property();
 			}

@@ -2292,7 +2292,7 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), varray(), CONNECT_DEFERRED);
+		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), CONNECT_DEFERRED);
 	}
 }
 
@@ -2595,7 +2595,7 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	}
 
 	data.icon_override[p_name] = p_icon;
-	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_changed();
 }
 
@@ -2607,7 +2607,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	}
 
 	data.style_override[p_name] = p_style;
-	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_changed();
 }
 
@@ -2619,7 +2619,7 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 	}
 
 	data.font_override[p_name] = p_font;
-	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_changed();
 }
 
@@ -3020,7 +3020,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
-			connect("ready", callable_mp(this, &Control::_clear_size_warning), varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
+			connect("ready", callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONESHOT);
 #endif
 		} break;
 

@@ -230,8 +230,8 @@ void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_s
 	ObjectID oid = p_node->get_instance_id();
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit), varray(p_node->get_instance_id()), CONNECT_ONESHOT);
-		p_node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready), varray(p_node->get_instance_id()), CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready).bind(p_node->get_instance_id()), CONNECT_ONESHOT);
 	}
 }
 

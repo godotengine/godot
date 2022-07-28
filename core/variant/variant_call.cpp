@@ -895,17 +895,17 @@ struct _VariantCall {
 
 	static void func_Callable_call(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->call(p_args, p_argcount, r_ret, r_error);
+		callable->callp(p_args, p_argcount, r_ret, r_error);
 	}
 
 	static void func_Callable_call_deferred(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->call_deferred(p_args, p_argcount);
+		callable->call_deferredp(p_args, p_argcount);
 	}
 
 	static void func_Callable_rpc(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		callable->rpc(0, p_args, p_argcount, r_error);
+		callable->rpcp(0, p_args, p_argcount, r_error);
 	}
 
 	static void func_Callable_rpc_id(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
@@ -920,13 +920,13 @@ struct _VariantCall {
 			r_error.expected = Variant::INT;
 		} else {
 			Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-			callable->rpc(*p_args[0], &p_args[1], p_argcount - 1, r_error);
+			callable->rpcp(*p_args[0], &p_args[1], p_argcount - 1, r_error);
 		}
 	}
 
 	static void func_Callable_bind(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
-		r_ret = callable->bind(p_args, p_argcount);
+		r_ret = callable->bindp(p_args, p_argcount);
 	}
 
 	static void func_Signal_emit(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {

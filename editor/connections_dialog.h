@@ -97,7 +97,7 @@ public:
 				for (int i = 0; i < binds.size(); i++) {
 					argptrs[i] = &binds[i];
 				}
-				return Callable(target, method).bind(argptrs, binds.size());
+				return Callable(target, method).bindp(argptrs, binds.size());
 			} else {
 				return Callable(target, method);
 			}

@@ -152,11 +152,9 @@
 			<return type="int" enum="Error" />
 			<argument index="0" name="signal" type="StringName" />
 			<argument index="1" name="callable" type="Callable" />
-			<argument index="2" name="binds" type="Array" default="[]" />
-			<argument index="3" name="flags" type="int" default="0" />
+			<argument index="2" name="flags" type="int" default="0" />
 			<description>
-				Connects a [code]signal[/code] to a [code]callable[/code]. Pass optional [code]binds[/code] to the call as an [Array] of parameters. These parameters will be passed to the [Callable]'s method after any parameter used in the call to [method emit_signal]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
-				[b]Note:[/b] This method is the legacy implementation for connecting signals. The recommended modern approach is to use [method Signal.connect] and to use [method Callable.bind] to add and validate parameter binds. Both syntaxes are shown below.
+				Connects a [code]signal[/code] to a [code]callable[/code]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				A signal can only be connected once to a [Callable]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]

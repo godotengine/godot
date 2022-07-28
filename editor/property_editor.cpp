@@ -827,7 +827,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				value_vbox->add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", callable_mp(this, &CustomPropertyEditor::_color_changed));
-				color_picker->connect("show", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
+				color_picker->connect("show", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(color_picker));
 			}
 
 			color_picker->show();
@@ -1813,7 +1813,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		checks20[i]->set_focus_mode(Control::FOCUS_NONE);
 		checks20gc->add_child(checks20[i]);
 		checks20[i]->hide();
-		checks20[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), make_binds(i));
+		checks20[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed).bind(i));
 		checks20[i]->set_tooltip(vformat(TTR("Bit %d, val %d."), i, 1 << i));
 	}
 
@@ -1890,9 +1890,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		action_buttons[i] = memnew(Button);
 		action_buttons[i]->hide();
 		action_hboxes->add_child(action_buttons[i]);
-		Vector<Variant> binds;
-		binds.push_back(i);
-		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed), binds);
+		action_buttons[i]->connect("pressed", callable_mp(this, &CustomPropertyEditor::_action_pressed).bind(i));
 	}
 
 	create_dialog = nullptr;

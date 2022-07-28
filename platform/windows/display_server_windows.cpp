@@ -2035,7 +2035,7 @@ void DisplayServerWindows::_send_window_event(const WindowData &wd, WindowEvent 
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -2062,7 +2062,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			if (windows.has(E->get())) {
 				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 			in_dispatch_input_event = false;
@@ -2076,7 +2076,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		if (windows.has(event_from_window->get_window_id())) {
 			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	} else {
@@ -2084,7 +2084,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
 			const Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call((const Variant **)&evp, 1, ret, ce);
+				callable.callp((const Variant **)&evp, 1, ret, ce);
 			}
 		}
 	}
@@ -3039,7 +3039,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					const Variant *args[] = { &size };
 					Variant ret;
 					Callable::CallError ce;
-					window.rect_changed_callback.call(args, 1, ret, ce);
+					window.rect_changed_callback.callp(args, 1, ret, ce);
 				}
 			}
 
@@ -3199,7 +3199,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				Variant *vp = &v;
 				Variant ret;
 				Callable::CallError ce;
-				windows[window_id].drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+				windows[window_id].drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
 			}
 		} break;
 		default: {

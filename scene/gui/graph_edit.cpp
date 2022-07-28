@@ -382,9 +382,9 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
-		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved), varray(gn));
-		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated), varray(gn));
-		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised), varray(gn));
+		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
+		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
+		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::update));
 		_graph_node_moved(gn);

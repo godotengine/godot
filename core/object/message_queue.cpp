@@ -226,7 +226,7 @@ void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_a
 
 	Callable::CallError ce;
 	Variant ret;
-	p_callable.call(argptrs, p_argcount, ret, ce);
+	p_callable.callp(argptrs, p_argcount, ret, ce);
 	if (p_show_error && ce.error != Callable::CallError::CALL_OK) {
 		ERR_PRINT("Error calling deferred method: " + Variant::get_callable_error_text(p_callable, argptrs, p_argcount, ce) + ".");
 	}

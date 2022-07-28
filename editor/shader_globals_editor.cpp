@@ -479,7 +479,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	inspector->set_use_wide_editors(true);
 	inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 	inspector->set_use_deletable_properties(true);
-	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), varray(), CONNECT_DEFERRED);
+	inspector->connect("property_deleted", callable_mp(this, &ShaderGlobalsEditor::_variable_deleted), CONNECT_DEFERRED);
 
 	interface = memnew(ShaderGlobalsEditorInterface);
 	interface->connect("var_changed", Callable(this, "_changed"));

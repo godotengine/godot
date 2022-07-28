@@ -774,7 +774,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
 			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled), varray(i));
+			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(i));
 			add_focusable(cb);
 			vbox->add_child(cb);
 			flags.push_back(cb);
@@ -1236,7 +1236,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", callable_mp(this, &EditorPropertyLayers::_menu_pressed));
-	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed), varray(false));
+	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed).bind(false));
 	EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorPropertyLayers::_refresh_names));
 }
 
@@ -1755,7 +1755,7 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1865,7 +1865,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2037,7 +2037,7 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2168,7 +2168,7 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2i::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector2i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2278,7 +2278,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 		}
 
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyRect2i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2420,7 +2420,7 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3i::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector3i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2521,7 +2521,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyPlane::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2613,7 +2613,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2704,7 +2704,7 @@ EditorPropertyVector4::EditorPropertyVector4() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2793,7 +2793,7 @@ EditorPropertyVector4i::EditorPropertyVector4i() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4i::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4i::_value_changed).bind(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -2882,7 +2882,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyAABB::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -2973,7 +2973,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform2D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -3063,7 +3063,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -3161,7 +3161,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform3D::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -3267,7 +3267,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed), varray(desc[i]));
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyProjection::_value_changed).bind(desc[i]));
 	}
 	set_bottom_editor(g);
 }
@@ -3336,7 +3336,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
 	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed));
-	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(picker->get_picker()));
+	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
 	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
 }
 

@@ -883,7 +883,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Reset to Default")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
-	profile_actions[PROFILE_CLEAR]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_CLEAR));
+	profile_actions[PROFILE_CLEAR]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_CLEAR));
 
 	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
@@ -897,12 +897,12 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	profile_actions[PROFILE_NEW] = memnew(Button(TTR("Create Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
-	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_NEW));
+	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_NEW));
 
 	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_ERASE));
+	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_ERASE));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
@@ -911,18 +911,18 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
-	profile_actions[PROFILE_SET]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_SET));
+	profile_actions[PROFILE_SET]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_SET));
 
 	current_profile_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_IMPORT]);
-	profile_actions[PROFILE_IMPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_IMPORT));
+	profile_actions[PROFILE_IMPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_IMPORT));
 
 	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
-	profile_actions[PROFILE_EXPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action), varray(PROFILE_EXPORT));
+	profile_actions[PROFILE_EXPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_EXPORT));
 
 	main_vbc->add_child(current_profile_hbc);
 
@@ -939,7 +939,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_selected));
-	class_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_edited), varray(), CONNECT_DEFERRED);
+	class_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
 	class_list_vbc->hide();
@@ -957,7 +957,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_hide_root(true);
 	property_list->set_hide_folding(true);
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), varray(), CONNECT_DEFERRED);
+	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), CONNECT_DEFERRED);
 	// It will be displayed once the user creates or chooses a profile.
 	property_list_vbc->hide();
 

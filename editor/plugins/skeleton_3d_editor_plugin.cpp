@@ -782,7 +782,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
-	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(false));
+	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip(TTR("Insert key of bone poses already exist track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
@@ -790,7 +790,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button = memnew(Button);
 	key_insert_all_button->set_flat(true);
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
-	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys), varray(true));
+	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip(TTR("Insert key of all bone poses."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
@@ -836,7 +836,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
 			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
 			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Vector<Variant>(), Object::CONNECT_ONESHOT);
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
 			break;
 		}
 		case NOTIFICATION_ENTER_TREE: {

@@ -329,7 +329,7 @@ void EditorPropertyArray::update_property() {
 			reorder_button->set_icon(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 			reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 			reorder_button->connect("gui_input", callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
-			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down), varray(i + offset));
+			reorder_button->connect("button_down", callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(i + offset));
 			reorder_button->connect("button_up", callable_mp(this, &EditorPropertyArray::_reorder_button_up));
 			hbox->add_child(reorder_button);
 
@@ -366,11 +366,11 @@ void EditorPropertyArray::update_property() {
 				Button *edit = memnew(Button);
 				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 				hbox->add_child(edit);
-				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type), varray(edit, i + offset));
+				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit, i + offset));
 			} else {
 				Button *remove = memnew(Button);
 				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed), varray(i + offset));
+				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
 				hbox->add_child(remove);
 			}
 
@@ -1136,7 +1136,7 @@ void EditorPropertyDictionary::update_property() {
 			Button *edit = memnew(Button);
 			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
+			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit, change_index));
 
 			prop->update_property();
 
@@ -1375,7 +1375,7 @@ void EditorPropertyLocalizableString::update_property() {
 			Button *edit = memnew(Button);
 			edit->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item), varray(edit, remove_index));
+			edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit, remove_index));
 
 			prop->update_property();
 		}

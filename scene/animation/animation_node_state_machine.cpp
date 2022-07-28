@@ -723,7 +723,7 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 
-	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<AnimationNode> p_node) {
@@ -743,7 +743,7 @@ void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<Anima
 	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 
-	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	p_node->connect("tree_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), CONNECT_REFERENCE_COUNTED);
 }
 
 bool AnimationNodeStateMachine::can_edit_node(const StringName &p_name) const {
@@ -1032,7 +1032,7 @@ void AnimationNodeStateMachine::add_transition(const StringName &p_from, const S
 	tr.local_to = local_to;
 	tr.transition = p_transition;
 
-	tr.transition->connect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), varray(), CONNECT_REFERENCE_COUNTED);
+	tr.transition->connect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed), CONNECT_REFERENCE_COUNTED);
 
 	transitions.push_back(tr);
 

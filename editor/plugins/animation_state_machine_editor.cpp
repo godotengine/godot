@@ -1899,7 +1899,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
 	tool_create->set_flat(true);
@@ -1907,7 +1907,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip(TTR("Create new nodes."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
 	tool_connect->set_flat(true);
@@ -1915,7 +1915,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip(TTR("Connect nodes."));
-	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), varray(), CONNECT_DEFERRED);
+	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_erase_hb = memnew(HBoxContainer);
 	top_hb->add_child(tool_erase_hb);
@@ -1938,7 +1938,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase = memnew(Button);
 	tool_erase->set_flat(true);
 	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected), varray(false));
+	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
 	tool_erase_hb->add_child(tool_erase);
 

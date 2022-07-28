@@ -261,7 +261,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (!p_action.is_empty()) {
-		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action), varray(p_action));
+		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
 	}
 
 	return button;

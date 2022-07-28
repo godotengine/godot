@@ -723,19 +723,19 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
-	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_NEW));
+	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
-	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_LOAD));
+	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
 	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
-	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_SAVE));
+	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
 	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
-	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_SAVE_AS));
+	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
@@ -745,11 +745,11 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
-	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_RESET));
+	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
-	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action), varray(ACTION_DETECT));
+	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
@@ -757,7 +757,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
-	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), varray(), CONNECT_DEFERRED);
+	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
 	main_vbc->add_margin_child(TTR("Configure Engine Build Profile:"), class_list, true);

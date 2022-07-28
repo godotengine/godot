@@ -199,7 +199,7 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 
 			Callable ce = callable_mp(editor, &VisualShaderEditor::_draw_color_over_button);
 			if (!button->is_connected("draw", ce)) {
-				button->connect("draw", ce, varray(button, p_value));
+				button->connect("draw", ce.bind(button, p_value));
 			}
 		} break;
 		case Variant::BOOL: {
@@ -423,7 +423,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		size = resizable_node->get_size();
 
 		node->set_resizable(true);
-		node->connect("resize_request", callable_mp(editor, &VisualShaderEditor::_node_resized), varray((int)p_type, p_id));
+		node->connect("resize_request", callable_mp(editor, &VisualShaderEditor::_node_resized).bind((int)p_type, p_id));
 	}
 	if (is_expression) {
 		expression = expression_node->get_expression();
@@ -435,10 +435,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	if (p_id >= 2) {
 		node->set_show_close_button(true);
-		node->connect("close_request", callable_mp(editor, &VisualShaderEditor::_delete_node_request), varray(p_type, p_id), CONNECT_DEFERRED);
+		node->connect("close_request", callable_mp(editor, &VisualShaderEditor::_delete_node_request).bind(p_type, p_id), CONNECT_DEFERRED);
 	}
 
-	node->connect("dragged", callable_mp(editor, &VisualShaderEditor::_node_dragged), varray(p_id));
+	node->connect("dragged", callable_mp(editor, &VisualShaderEditor::_node_dragged).bind(p_id));
 
 	Control *custom_editor = nullptr;
 	int port_offset = 1;
@@ -485,8 +485,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		register_uniform_name(p_id, uniform_name);
 		uniform_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		uniform_name->set_text(uniform->get_uniform_name());
-		uniform_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_changed), varray(p_id));
-		uniform_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_focus_out), varray(uniform_name, p_id));
+		uniform_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_changed).bind(p_id));
+		uniform_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_focus_out).bind(uniform_name, p_id));
 
 		if (vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			hb = memnew(HBoxContainer);
@@ -526,7 +526,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve);
 		if (curve->get_texture().is_valid() && !curve->get_texture()->is_connected("changed", ce)) {
-			curve->get_texture()->connect("changed", ce, varray(p_id));
+			curve->get_texture()->connect("changed", ce.bind(p_id));
 		}
 
 		CurveEditor *curve_editor = memnew(CurveEditor);
@@ -544,7 +544,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve_xyz);
 		if (curve_xyz->get_texture().is_valid() && !curve_xyz->get_texture()->is_connected("changed", ce)) {
-			curve_xyz->get_texture()->connect("changed", ce, varray(p_id));
+			curve_xyz->get_texture()->connect("changed", ce.bind(p_id));
 		}
 
 		CurveEditor *curve_editor_x = memnew(CurveEditor);
@@ -607,14 +607,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 			Button *add_input_btn = memnew(Button);
 			add_input_btn->set_text(TTR("Add Input"));
-			add_input_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_add_input_port), varray(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
+			add_input_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_add_input_port).bind(p_id, group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, input_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_input_btn);
 
 			hb2->add_spacer();
 
 			Button *add_output_btn = memnew(Button);
 			add_output_btn->set_text(TTR("Add Output"));
-			add_output_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_add_output_port), varray(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
+			add_output_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_add_output_port).bind(p_id, group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR_3D, output_port_name), CONNECT_DEFERRED);
 			hb2->add_child(add_output_btn);
 
 			node->add_child(hb2);
@@ -722,7 +722,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		Button *button = memnew(Button);
 		hb->add_child(button);
 		register_default_input_button(p_id, i, button);
-		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, i));
+		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, i));
 		if (default_value.get_type() != Variant::NIL) { // only a label
 			set_input_port_default_value(p_type, p_id, i, default_value);
 		} else {
@@ -747,20 +747,20 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					type_box->add_item(TTR("Sampler"));
 					type_box->select(group_node->get_input_port_type(i));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type), varray(p_id, i), CONNECT_DEFERRED);
+					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, i), CONNECT_DEFERRED);
 
 					LineEdit *name_box = memnew(LineEdit);
 					hb->add_child(name_box);
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, false), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port), varray(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
@@ -787,7 +787,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					remove_btn->set_tooltip(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_output_port), varray(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_output_port).bind(p_id, i), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 
 					LineEdit *name_box = memnew(LineEdit);
@@ -795,8 +795,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_right);
-					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_output_port_name), varray(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out), varray(name_box, p_id, i, true), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_output_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, true), CONNECT_DEFERRED);
 
 					OptionButton *type_box = memnew(OptionButton);
 					hb->add_child(type_box);
@@ -809,7 +809,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 					type_box->add_item(TTR("Transform"));
 					type_box->select(group_node->get_output_port_type(i));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_output_port_type), varray(p_id, i), CONNECT_DEFERRED);
+					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_output_port_type).bind(p_id, i), CONNECT_DEFERRED);
 				} else {
 					Label *label = memnew(Label);
 					label->set_text(name_right);
@@ -827,7 +827,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 				expand->set_pressed_texture(editor->get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
 				expand->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 				expand->set_pressed(vsnode->_is_output_port_expanded(i));
-				expand->connect("pressed", callable_mp(editor, &VisualShaderEditor::_expand_output_port), varray(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
+				expand->connect("pressed", callable_mp(editor, &VisualShaderEditor::_expand_output_port).bind(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
 				hb->add_child(expand);
 			}
 			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
@@ -839,7 +839,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 				register_output_port(p_id, j, preview);
 
-				preview->connect("pressed", callable_mp(editor, &VisualShaderEditor::_preview_select_port), varray(p_id, j), CONNECT_DEFERRED);
+				preview->connect("pressed", callable_mp(editor, &VisualShaderEditor::_preview_select_port).bind(p_id, j), CONNECT_DEFERRED);
 				hb->add_child(preview);
 			}
 		}
@@ -1021,7 +1021,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_box->set_context_menu_enabled(false);
 		expression_box->set_draw_line_numbers(true);
 
-		expression_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_expression_focus_out), varray(expression_box, p_id));
+		expression_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
 	}
 
 	if (is_comment) {
@@ -4666,13 +4666,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
 	//graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
-	graph->connect("connection_request", callable_mp(this, &VisualShaderEditor::_connection_request), varray(), CONNECT_DEFERRED);
-	graph->connect("disconnection_request", callable_mp(this, &VisualShaderEditor::_disconnection_request), varray(), CONNECT_DEFERRED);
+	graph->connect("connection_request", callable_mp(this, &VisualShaderEditor::_connection_request), CONNECT_DEFERRED);
+	graph->connect("disconnection_request", callable_mp(this, &VisualShaderEditor::_disconnection_request), CONNECT_DEFERRED);
 	graph->connect("node_selected", callable_mp(this, &VisualShaderEditor::_node_selected));
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualShaderEditor::_scroll_changed));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
-	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes), varray(false));
-	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes), varray(false, Point2()));
+	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes).bind(false));
+	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2()));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
@@ -4775,7 +4775,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->add_child(add_node);
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
+	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	varying_button = memnew(Button);
 	varying_button->set_flat(true);

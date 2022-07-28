@@ -334,7 +334,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				if (windows.has(E->get())) {
 					Callable callable = windows[E->get()].input_event_callback;
 					if (callable.is_valid()) {
-						callable.call((const Variant **)&evp, 1, ret, ce);
+						callable.callp((const Variant **)&evp, 1, ret, ce);
 					}
 				}
 				in_dispatch_input_event = false;
@@ -348,7 +348,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			if (windows.has(event_from_window->get_window_id())) {
 				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 		} else {
@@ -356,7 +356,7 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.call((const Variant **)&evp, 1, ret, ce);
+					callable.callp((const Variant **)&evp, 1, ret, ce);
 				}
 			}
 		}
@@ -555,7 +555,7 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 			Variant *tagp = &tag;
 			Variant ret;
 			Callable::CallError ce;
-			value->callback.call((const Variant **)&tagp, 1, ret, ce);
+			value->callback.callp((const Variant **)&tagp, 1, ret, ce);
 		}
 	}
 }
@@ -596,7 +596,7 @@ void DisplayServerMacOS::send_window_event(const WindowData &wd, WindowEvent p_e
 		Variant *eventp = &event;
 		Variant ret;
 		Callable::CallError ce;
-		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
+		wd.event_callback.callp((const Variant **)&eventp, 1, ret, ce);
 	}
 }
 
@@ -1522,7 +1522,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 		Variant *buttonp = &button;
 		Variant ret;
 		Callable::CallError ce;
-		p_callback.call((const Variant **)&buttonp, 1, ret, ce);
+		p_callback.callp((const Variant **)&buttonp, 1, ret, ce);
 	}
 
 	return OK;
@@ -1554,7 +1554,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 		Variant *textp = &text;
 		Variant ret;
 		Callable::CallError ce;
-		p_callback.call((const Variant **)&textp, 1, ret, ce);
+		p_callback.callp((const Variant **)&textp, 1, ret, ce);
 	}
 
 	return OK;
