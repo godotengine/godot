@@ -33,9 +33,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/inspector_dock.h"
+#include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-#include "scene/multiplayer/multiplayer_synchronizer.h"
 
 void ReplicationEditor::_pick_node_filter_text_changed(const String &p_newtext) {
 	TreeItem *root_item = pick_node->get_scene_tree()->get_scene_tree()->get_root();

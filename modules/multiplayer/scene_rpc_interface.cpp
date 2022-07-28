@@ -28,21 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/multiplayer/scene_rpc_interface.h"
+#include "scene_rpc_interface.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
-#include "core/multiplayer/multiplayer_api.h"
+#include "scene/main/multiplayer_api.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
-MultiplayerRPCInterface *SceneRPCInterface::_create(MultiplayerAPI *p_multiplayer) {
-	return memnew(SceneRPCInterface(p_multiplayer));
-}
+#include "scene_multiplayer.h"
 
-void SceneRPCInterface::make_default() {
-	MultiplayerAPI::create_default_rpc_interface = _create;
-}
+// The RPC meta is composed by a single byte that contains (starting from the least significant bit):
+// - `NetworkCommands` in the first four bits.
+// - `NetworkNodeIdCompression` in the next 2 bits.
+// - `NetworkNameIdCompression` in the next 1 bit.
+// - `byte_only_or_no_args` in the next 1 bit.
+#define NODE_ID_COMPRESSION_SHIFT SceneMultiplayer::CMD_FLAG_0_SHIFT
+#define NAME_ID_COMPRESSION_SHIFT SceneMultiplayer::CMD_FLAG_2_SHIFT
+#define BYTE_ONLY_OR_NO_ARGS_SHIFT SceneMultiplayer::CMD_FLAG_3_SHIFT
+
+#define NODE_ID_COMPRESSION_FLAG ((1 << NODE_ID_COMPRESSION_SHIFT) | (1 << (NODE_ID_COMPRESSION_SHIFT + 1)))
+#define NAME_ID_COMPRESSION_FLAG (1 << NAME_ID_COMPRESSION_SHIFT)
+#define BYTE_ONLY_OR_NO_ARGS_FLAG (1 << BYTE_ONLY_OR_NO_ARGS_SHIFT)
 
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id) {
@@ -67,50 +74,58 @@ int get_packet_len(uint32_t p_node_target, int p_packet_len) {
 	}
 }
 
-const Multiplayer::RPCConfig _get_rpc_config(const Node *p_node, const StringName &p_method, uint16_t &r_id) {
-	const Vector<Multiplayer::RPCConfig> node_config = p_node->get_node_rpc_methods();
-	for (int i = 0; i < node_config.size(); i++) {
-		if (node_config[i].name == p_method) {
-			r_id = ((uint16_t)i) | (1 << 15);
-			return node_config[i];
-		}
+void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_node, RPCConfigCache &r_cache) {
+	if (p_config.get_type() == Variant::NIL) {
+		return;
 	}
+	ERR_FAIL_COND(p_config.get_type() != Variant::DICTIONARY);
+	const Dictionary config = p_config;
+	Array names = config.keys();
+	names.sort(); // Ensure ID order
+	for (int i = 0; i < names.size(); i++) {
+		ERR_CONTINUE(names[i].get_type() != Variant::STRING);
+		String name = names[i].operator String();
+		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
+		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
+		Dictionary dict = config[name];
+		RPCConfig cfg;
+		cfg.name = name;
+		cfg.rpc_mode = ((MultiplayerAPI::RPCMode)dict.get("rpc_mode", MultiplayerAPI::RPC_MODE_AUTHORITY).operator int());
+		cfg.transfer_mode = ((MultiplayerPeer::TransferMode)dict.get("transfer_mode", MultiplayerPeer::TRANSFER_MODE_RELIABLE).operator int());
+		cfg.call_local = dict.get("call_local", false).operator bool();
+		cfg.channel = dict.get("channel", 0).operator int();
+		uint16_t id = ((uint16_t)i);
+		if (p_for_node) {
+			id |= (1 << 15);
+		}
+		r_cache.configs[id] = cfg;
+		r_cache.ids[name] = id;
+	}
+}
+
+const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(const Node *p_node) {
+	const ObjectID oid = p_node->get_instance_id();
+	if (rpc_cache.has(oid)) {
+		return rpc_cache[oid];
+	}
+	RPCConfigCache cache;
+	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
-		const Vector<Multiplayer::RPCConfig> script_config = p_node->get_script_instance()->get_rpc_methods();
-		for (int i = 0; i < script_config.size(); i++) {
-			if (script_config[i].name == p_method) {
-				r_id = (uint16_t)i;
-				return script_config[i];
-			}
-		}
+		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}
-	return Multiplayer::RPCConfig();
+	rpc_cache[oid] = cache;
+	return rpc_cache[oid];
 }
 
-const Multiplayer::RPCConfig _get_rpc_config_by_id(Node *p_node, uint16_t p_id) {
-	Vector<Multiplayer::RPCConfig> config;
-	uint16_t id = p_id;
-	if (id & (1 << 15)) {
-		id = id & ~(1 << 15);
-		config = p_node->get_node_rpc_methods();
-	} else if (p_node->get_script_instance()) {
-		config = p_node->get_script_instance()->get_rpc_methods();
-	}
-	if (id < config.size()) {
-		return config[id];
-	}
-	return Multiplayer::RPCConfig();
-}
-
-_FORCE_INLINE_ bool _can_call_mode(Node *p_node, Multiplayer::RPCMode mode, int p_remote_id) {
+_FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
 	switch (mode) {
-		case Multiplayer::RPC_MODE_DISABLED: {
+		case MultiplayerAPI::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case Multiplayer::RPC_MODE_ANY_PEER: {
+		case MultiplayerAPI::RPC_MODE_ANY_PEER: {
 			return true;
 		} break;
-		case Multiplayer::RPC_MODE_AUTHORITY: {
+		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
 			return !p_node->is_multiplayer_authority() && p_remote_id == p_node->get_multiplayer_authority();
 		} break;
 	}
@@ -118,19 +133,13 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, Multiplayer::RPCMode mode, int 
 	return false;
 }
 
-String SceneRPCInterface::get_rpc_md5(const Object *p_obj) const {
+String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 	const Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node, "");
+	const RPCConfigCache cache = _get_node_config(node);
 	String rpc_list;
-	const Vector<Multiplayer::RPCConfig> node_config = node->get_node_rpc_methods();
-	for (int i = 0; i < node_config.size(); i++) {
-		rpc_list += String(node_config[i].name);
-	}
-	if (node->get_script_instance()) {
-		const Vector<Multiplayer::RPCConfig> script_config = node->get_script_instance()->get_rpc_methods();
-		for (int i = 0; i < script_config.size(); i++) {
-			rpc_list += String(script_config[i].name);
-		}
+	for (const KeyValue<uint16_t, RPCConfig> &config : cache.configs) {
+		rpc_list += String(config.value.name);
 	}
 	return rpc_list.md5_text();
 }
@@ -159,7 +168,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 		return node;
 	} else {
 		// Use cached path.
-		return Object::cast_to<Node>(multiplayer->get_cached_object(p_from, p_node_target));
+		return Object::cast_to<Node>(multiplayer->get_path_cache()->get_cached_object(p_from, p_node_target));
 	}
 }
 
@@ -240,8 +249,9 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	ERR_FAIL_COND_MSG(p_offset > p_packet_len, "Invalid packet received. Size too small.");
 
 	// Check that remote can call the RPC on this node.
-	const Multiplayer::RPCConfig config = _get_rpc_config_by_id(p_node, p_rpc_method_id);
-	ERR_FAIL_COND(config.name == StringName());
+	const RPCConfigCache &cache_config = _get_node_config(p_node);
+	ERR_FAIL_COND(!cache_config.configs.has(p_rpc_method_id));
+	const RPCConfig &config = cache_config.configs[p_rpc_method_id];
 
 	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
 	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
@@ -286,7 +296,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	}
 }
 
-void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const Multiplayer::RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
+void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const RPCConfig &p_config, const StringName &p_name, const Variant **p_arg, int p_argcount) {
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND_MSG(peer.is_null(), "Attempt to call RPC without active multiplayer peer.");
 
@@ -297,14 +307,14 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments (>255).");
 
 	if (p_to != 0 && !multiplayer->get_connected_peers().has(ABS(p_to))) {
-		ERR_FAIL_COND_MSG(p_to == peer->get_unique_id(), "Attempt to call RPC on yourself! Peer unique ID: " + itos(peer->get_unique_id()) + ".");
+		ERR_FAIL_COND_MSG(p_to == multiplayer->get_unique_id(), "Attempt to call RPC on yourself! Peer unique ID: " + itos(multiplayer->get_unique_id()) + ".");
 
 		ERR_FAIL_MSG("Attempt to call RPC with unknown peer ID: " + itos(p_to) + ".");
 	}
 
 	// See if all peers have cached path (if so, call can be fast).
 	int psc_id;
-	const bool has_all_peers = multiplayer->send_object_cache(p_from, p_to, psc_id);
+	const bool has_all_peers = multiplayer->get_path_cache()->send_object_cache(p_from, p_to, psc_id);
 
 	// Create base packet, lots of hardcode because it must be tight.
 
@@ -315,7 +325,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 		packet_cache.resize(m_amount);
 
 	// Encode meta.
-	uint8_t command_type = MultiplayerAPI::NETWORK_COMMAND_REMOTE_CALL;
+	uint8_t command_type = SceneMultiplayer::NETWORK_COMMAND_REMOTE_CALL;
 	uint8_t node_id_compression = UINT8_MAX;
 	uint8_t name_id_compression = UINT8_MAX;
 	bool byte_only_or_no_args = false;
@@ -426,7 +436,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 				continue; // Continue, not for this peer.
 			}
 
-			bool confirmed = multiplayer->is_cache_confirmed(from_path, P);
+			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(from_path, P);
 
 			peer->set_target_peer(P); // To this one specifically.
 
@@ -443,22 +453,25 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 	}
 }
 
-void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
+Error SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
-	ERR_FAIL_COND_MSG(!peer.is_valid(), "Trying to call an RPC while no multiplayer peer is active.");
+	ERR_FAIL_COND_V_MSG(!peer.is_valid(), ERR_UNCONFIGURED, "Trying to call an RPC while no multiplayer peer is active.");
 	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND(!node);
-	ERR_FAIL_COND_MSG(!node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
-	ERR_FAIL_COND_MSG(peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a multiplayer peer which is not connected.");
+	ERR_FAIL_COND_V_MSG(!node || !node->is_inside_tree(), ERR_INVALID_PARAMETER, "The object must be a valid Node inside the SceneTree");
+	ERR_FAIL_COND_V_MSG(peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_CONNECTION_ERROR, "Trying to call an RPC via a multiplayer peer which is not connected.");
 
-	int node_id = peer->get_unique_id();
+	int caller_id = multiplayer->get_unique_id();
 	bool call_local_native = false;
 	bool call_local_script = false;
-	uint16_t rpc_id = UINT16_MAX;
-	const Multiplayer::RPCConfig config = _get_rpc_config(node, p_method, rpc_id);
-	ERR_FAIL_COND_MSG(config.name == StringName(),
+	const RPCConfigCache &config_cache = _get_node_config(node);
+	uint16_t rpc_id = config_cache.ids.has(p_method) ? config_cache.ids[p_method] : UINT16_MAX;
+	ERR_FAIL_COND_V_MSG(rpc_id == UINT16_MAX, ERR_INVALID_PARAMETER,
 			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is missing or not marked for RPCs in the local script.", p_method, node->get_path()));
-	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
+	const RPCConfig &config = config_cache.configs[rpc_id];
+
+	ERR_FAIL_COND_V_MSG(p_peer_id == caller_id && !config.call_local, ERR_INVALID_PARAMETER, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+
+	if (p_peer_id == 0 || p_peer_id == caller_id || (p_peer_id < 0 && p_peer_id != -caller_id)) {
 		if (rpc_id & (1 << 15)) {
 			call_local_native = config.call_local;
 		} else {
@@ -466,7 +479,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		}
 	}
 
-	if (p_peer_id != node_id) {
+	if (p_peer_id != caller_id) {
 #ifdef DEBUG_ENABLED
 		_profile_node_data("rpc_out", node->get_instance_id());
 #endif
@@ -477,7 +490,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 	if (call_local_native) {
 		Callable::CallError ce;
 
-		multiplayer->set_remote_sender_override(peer->get_unique_id());
+		multiplayer->set_remote_sender_override(multiplayer->get_unique_id());
 		node->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
@@ -485,7 +498,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 			String error = Variant::get_call_error_text(node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error + ".";
 			ERR_PRINT(error);
-			return;
+			return FAILED;
 		}
 	}
 
@@ -493,7 +506,7 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 		Callable::CallError ce;
 		ce.error = Callable::CallError::CALL_OK;
 
-		multiplayer->set_remote_sender_override(peer->get_unique_id());
+		multiplayer->set_remote_sender_override(multiplayer->get_unique_id());
 		node->get_script_instance()->callp(p_method, p_arg, p_argcount, ce);
 		multiplayer->set_remote_sender_override(0);
 
@@ -501,9 +514,8 @@ void SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 			String error = Variant::get_call_error_text(node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error + ".";
 			ERR_PRINT(error);
-			return;
+			return FAILED;
 		}
 	}
-
-	ERR_FAIL_COND_MSG(p_peer_id == node_id && !config.call_local, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	return OK;
 }

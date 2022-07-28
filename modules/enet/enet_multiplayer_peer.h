@@ -32,7 +32,7 @@
 #define ENET_MULTIPLAYER_PEER_H
 
 #include "core/crypto/crypto.h"
-#include "core/multiplayer/multiplayer_peer.h"
+#include "scene/main/multiplayer_peer.h"
 
 #include "enet_connection.h"
 #include <enet/enet.h>

@@ -34,13 +34,7 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
-MultiplayerCacheInterface *SceneCacheInterface::_create(MultiplayerAPI *p_multiplayer) {
-	return memnew(SceneCacheInterface(p_multiplayer));
-}
-
-void SceneCacheInterface::make_default() {
-	MultiplayerAPI::create_default_cache_interface = _create;
-}
+#include "scene_multiplayer.h"
 
 void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 	if (p_connected) {
@@ -98,7 +92,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	Vector<uint8_t> packet;
 
 	packet.resize(1 + 1 + len);
-	packet.write[0] = MultiplayerAPI::NETWORK_COMMAND_CONFIRM_PATH;
+	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_CONFIRM_PATH;
 	packet.write[1] = valid_rpc_checksum;
 	encode_cstring(pname.get_data(), &packet.write[2]);
 
@@ -110,7 +104,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 #endif
 
 	multiplayer_peer->set_transfer_channel(0);
-	multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	multiplayer_peer->set_target_peer(p_from);
 	multiplayer_peer->put_packet(packet.ptr(), packet.size());
 }
@@ -150,7 +144,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	packet.resize(1 + 4 + path_len + methods_md5_len);
 	int ofs = 0;
 
-	packet.write[ofs] = MultiplayerAPI::NETWORK_COMMAND_SIMPLIFY_PATH;
+	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_SIMPLIFY_PATH;
 	ofs += 1;
 
 	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
@@ -170,7 +164,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	for (int peer_id : p_peers) {
 		multiplayer_peer->set_target_peer(peer_id);
 		multiplayer_peer->set_transfer_channel(0);
-		multiplayer_peer->set_transfer_mode(Multiplayer::TRANSFER_MODE_RELIABLE);
+		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 		err = multiplayer_peer->put_packet(packet.ptr(), packet.size());
 		ERR_FAIL_COND_V(err != OK, err);
 		// Insert into confirmed, but as false since it was not confirmed.

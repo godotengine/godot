@@ -65,8 +65,8 @@
 			<description>
 			</description>
 		</method>
-		<method name="_get_rpc_methods" qualifiers="virtual const">
-			<return type="Dictionary[]" />
+		<method name="_get_rpc_config" qualifiers="virtual const">
+			<return type="Variant" />
 			<description>
 			</description>
 		</method>

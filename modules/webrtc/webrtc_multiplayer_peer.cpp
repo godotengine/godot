@@ -197,14 +197,14 @@ Error WebRTCMultiplayerPeer::initialize(int p_self_id, bool p_server_compat, Arr
 		cfg["ordered"] = true;
 
 		switch (mode) {
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED:
+			case TRANSFER_MODE_UNRELIABLE_ORDERED:
 				cfg["maxPacketLifetime"] = 1;
 				break;
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE:
+			case TRANSFER_MODE_UNRELIABLE:
 				cfg["maxPacketLifetime"] = 1;
 				cfg["ordered"] = false;
 				break;
-			case Multiplayer::TRANSFER_MODE_RELIABLE:
+			case TRANSFER_MODE_RELIABLE:
 				break;
 			default:
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("The 'channels_config' array must contain only enum values from 'MultiplayerPeer.Multiplayer::TransferMode'. Got: %d", mode));
@@ -339,13 +339,13 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 	int ch = get_transfer_channel();
 	if (ch == 0) {
 		switch (get_transfer_mode()) {
-			case Multiplayer::TRANSFER_MODE_RELIABLE:
+			case TRANSFER_MODE_RELIABLE:
 				ch = CH_RELIABLE;
 				break;
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE_ORDERED:
+			case TRANSFER_MODE_UNRELIABLE_ORDERED:
 				ch = CH_ORDERED;
 				break;
-			case Multiplayer::TRANSFER_MODE_UNRELIABLE:
+			case TRANSFER_MODE_UNRELIABLE:
 				ch = CH_UNRELIABLE;
 				break;
 		}

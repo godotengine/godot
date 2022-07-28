@@ -948,7 +948,7 @@ bool VisualScript::are_subnodes_edited() const {
 }
 #endif
 
-const Vector<Multiplayer::RPCConfig> VisualScript::get_rpc_methods() const {
+const Variant VisualScript::get_rpc_config() const {
 	return rpc_functions;
 }
 
@@ -1012,22 +1012,16 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 	for (const KeyValue<StringName, Function> &E : functions) {
 		if (E.value.func_id >= 0 && nodes.has(E.value.func_id)) {
 			Ref<VisualScriptFunction> vsf = nodes[E.value.func_id].node;
-			if (vsf.is_valid()) {
-				if (vsf->get_rpc_mode() != Multiplayer::RPC_MODE_DISABLED) {
-					Multiplayer::RPCConfig nd;
-					nd.name = E.key;
-					nd.rpc_mode = vsf->get_rpc_mode();
-					nd.transfer_mode = Multiplayer::TRANSFER_MODE_RELIABLE; // TODO
-					if (rpc_functions.find(nd) == -1) {
-						rpc_functions.push_back(nd);
-					}
-				}
+			if (!vsf.is_valid() || vsf->get_rpc_mode() == MultiplayerAPI::RPC_MODE_DISABLED) {
+				continue;
 			}
+			Dictionary nd;
+			nd["rpc_mode"] = vsf->get_rpc_mode();
+			nd["transfer_mode"] = MultiplayerPeer::TRANSFER_MODE_RELIABLE; // TODO
+			nd["call_local"] = false; // TODO
+			rpc_functions[E.key] = nd;
 		}
 	}
-
-	// Sort so we are 100% that they are always the same.
-	rpc_functions.sort_custom<Multiplayer::SortRPCConfig>();
 }
 
 Dictionary VisualScript::_get_data() const {
@@ -1811,8 +1805,8 @@ Ref<Script> VisualScriptInstance::get_script() const {
 	return script;
 }
 
-const Vector<Multiplayer::RPCConfig> VisualScriptInstance::get_rpc_methods() const {
-	return script->get_rpc_methods();
+const Variant VisualScriptInstance::get_rpc_config() const {
+	return script->get_rpc_config();
 }
 
 void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_owner) {

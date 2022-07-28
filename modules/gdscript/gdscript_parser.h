@@ -32,7 +32,6 @@
 #define GDSCRIPT_PARSER_H
 
 #include "core/io/resource.h"
-#include "core/multiplayer/multiplayer.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
@@ -750,7 +749,7 @@ public:
 		SuiteNode *body = nullptr;
 		bool is_static = false;
 		bool is_coroutine = false;
-		Multiplayer::RPCConfig rpc_config;
+		Variant rpc_config;
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
@@ -1371,8 +1370,7 @@ private:
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
-	template <Multiplayer::RPCMode t_mode>
-	bool network_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable();

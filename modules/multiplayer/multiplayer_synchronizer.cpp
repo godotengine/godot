@@ -31,7 +31,7 @@
 #include "multiplayer_synchronizer.h"
 
 #include "core/config/engine.h"
-#include "core/multiplayer/multiplayer_api.h"
+#include "scene/main/multiplayer_api.h"
 
 Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {
 	if (p_path.get_name_count() == 0) {
@@ -50,7 +50,7 @@ void MultiplayerSynchronizer::_stop() {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
-		get_multiplayer()->replication_stop(node, this);
+		get_multiplayer()->object_configuration_remove(node, this);
 	}
 }
 
@@ -62,7 +62,7 @@ void MultiplayerSynchronizer::_start() {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
-		get_multiplayer()->replication_start(node, this);
+		get_multiplayer()->object_configuration_add(node, this);
 		_update_process();
 	}
 }
@@ -293,9 +293,9 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 		Node::set_multiplayer_authority(p_peer_id, p_recursive);
 		return;
 	}
-	get_multiplayer()->replication_stop(node, this);
+	get_multiplayer()->object_configuration_remove(node, this);
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
-	get_multiplayer()->replication_start(node, this);
+	get_multiplayer()->object_configuration_add(node, this);
 }
 
 MultiplayerSynchronizer::MultiplayerSynchronizer() {

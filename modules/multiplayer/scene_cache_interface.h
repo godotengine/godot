@@ -31,13 +31,15 @@
 #ifndef SCENE_CACHE_INTERFACE_H
 #define SCENE_CACHE_INTERFACE_H
 
-#include "core/multiplayer/multiplayer_api.h"
+#include "scene/main/multiplayer_api.h"
 
-class SceneCacheInterface : public MultiplayerCacheInterface {
-	GDCLASS(SceneCacheInterface, MultiplayerCacheInterface);
+class SceneMultiplayer;
+
+class SceneCacheInterface : public RefCounted {
+	GDCLASS(SceneCacheInterface, RefCounted);
 
 private:
-	MultiplayerAPI *multiplayer = nullptr;
+	SceneMultiplayer *multiplayer = nullptr;
 
 	//path sent caches
 	struct PathSentCache {
@@ -61,23 +63,20 @@ private:
 
 protected:
 	Error _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, const List<int> &p_peers);
-	static MultiplayerCacheInterface *_create(MultiplayerAPI *p_multiplayer);
 
 public:
-	static void make_default();
-
-	virtual void clear() override;
-	virtual void on_peer_change(int p_id, bool p_connected) override;
-	virtual void process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) override;
-	virtual void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) override;
+	void clear();
+	void on_peer_change(int p_id, bool p_connected);
+	void process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	// Returns true if all peers have cached path.
-	virtual bool send_object_cache(Object *p_obj, int p_target, int &p_id) override;
-	virtual int make_object_cache(Object *p_obj) override;
-	virtual Object *get_cached_object(int p_from, uint32_t p_cache_id) override;
-	virtual bool is_cache_confirmed(NodePath p_path, int p_peer) override;
+	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
+	int make_object_cache(Object *p_obj);
+	Object *get_cached_object(int p_from, uint32_t p_cache_id);
+	bool is_cache_confirmed(NodePath p_path, int p_peer);
 
-	SceneCacheInterface(MultiplayerAPI *p_multiplayer) { multiplayer = p_multiplayer; }
+	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
 };
 
 #endif // SCENE_CACHE_INTERFACE_H

@@ -31,7 +31,7 @@
 #include "multiplayer_spawner.h"
 
 #include "core/io/marshalls.h"
-#include "core/multiplayer/multiplayer_api.h"
+#include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
@@ -190,7 +190,7 @@ void MultiplayerSpawner::_notification(int p_what) {
 				if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready))) {
 					node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready));
 				}
-				get_multiplayer()->despawn(node, this);
+				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
 		} break;
@@ -236,7 +236,7 @@ void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_s
 }
 
 void MultiplayerSpawner::_node_ready(ObjectID p_id) {
-	get_multiplayer()->spawn(ObjectDB::get_instance(p_id), this);
+	get_multiplayer()->object_configuration_add(ObjectDB::get_instance(p_id), this);
 }
 
 void MultiplayerSpawner::_node_exit(ObjectID p_id) {
@@ -244,7 +244,7 @@ void MultiplayerSpawner::_node_exit(ObjectID p_id) {
 	ERR_FAIL_COND(!node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);
-		get_multiplayer()->despawn(node, this);
+		get_multiplayer()->object_configuration_remove(node, this);
 	}
 }
 

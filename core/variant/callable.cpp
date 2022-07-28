@@ -63,17 +63,19 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 	}
 }
 
-void Callable::rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
+Error Callable::rpc(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		r_call_error.argument = 0;
 		r_call_error.expected = 0;
+		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
 		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
 		r_call_error.argument = 0;
 		r_call_error.expected = 0;
+		return ERR_UNCONFIGURED;
 	} else {
-		custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
+		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
 }
 
@@ -316,10 +318,11 @@ StringName CallableCustom::get_method() const {
 	ERR_FAIL_V_MSG(StringName(), vformat("Can't get method on CallableCustom \"%s\".", get_as_text()));
 }
 
-void CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
+Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const {
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	r_call_error.argument = 0;
 	r_call_error.expected = 0;
+	return ERR_UNCONFIGURED;
 }
 
 const Callable *CallableCustom::get_base_comparator() const {

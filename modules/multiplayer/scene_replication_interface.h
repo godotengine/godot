@@ -31,12 +31,14 @@
 #ifndef SCENE_REPLICATION_INTERFACE_H
 #define SCENE_REPLICATION_INTERFACE_H
 
-#include "core/multiplayer/multiplayer_api.h"
+#include "scene/main/multiplayer_api.h"
 
-#include "scene/multiplayer/scene_replication_state.h"
+#include "scene_replication_state.h"
 
-class SceneReplicationInterface : public MultiplayerReplicationInterface {
-	GDCLASS(SceneReplicationInterface, MultiplayerReplicationInterface);
+class SceneMultiplayer;
+
+class SceneReplicationInterface : public RefCounted {
+	GDCLASS(SceneReplicationInterface, RefCounted);
 
 private:
 	void _send_sync(int p_peer, uint64_t p_msec);
@@ -50,7 +52,7 @@ private:
 	void _free_remotes(int p_peer);
 
 	Ref<SceneReplicationState> rep_state;
-	MultiplayerAPI *multiplayer = nullptr;
+	SceneMultiplayer *multiplayer = nullptr;
 	PackedByteArray packet_cache;
 	int sync_mtu = 1350; // Highly dependent on underlying protocol.
 
@@ -59,26 +61,23 @@ private:
 	const uint8_t *pending_buffer = nullptr;
 	int pending_buffer_size = 0;
 
-protected:
-	static MultiplayerReplicationInterface *_create(MultiplayerAPI *p_multiplayer);
-
 public:
 	static void make_default();
 
-	virtual void on_reset() override;
-	virtual void on_peer_change(int p_id, bool p_connected) override;
+	void on_reset();
+	void on_peer_change(int p_id, bool p_connected);
 
-	virtual Error on_spawn(Object *p_obj, Variant p_config) override;
-	virtual Error on_despawn(Object *p_obj, Variant p_config) override;
-	virtual Error on_replication_start(Object *p_obj, Variant p_config) override;
-	virtual Error on_replication_stop(Object *p_obj, Variant p_config) override;
-	virtual void on_network_process() override;
+	Error on_spawn(Object *p_obj, Variant p_config);
+	Error on_despawn(Object *p_obj, Variant p_config);
+	Error on_replication_start(Object *p_obj, Variant p_config);
+	Error on_replication_stop(Object *p_obj, Variant p_config);
+	void on_network_process();
 
-	virtual Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
-	virtual Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
-	virtual Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) override;
+	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
+	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
+	Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 
-	SceneReplicationInterface(MultiplayerAPI *p_multiplayer) {
+	SceneReplicationInterface(SceneMultiplayer *p_multiplayer) {
 		rep_state.instantiate();
 		multiplayer = p_multiplayer;
 	}

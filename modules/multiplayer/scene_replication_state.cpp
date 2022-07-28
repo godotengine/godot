@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/multiplayer/scene_replication_state.h"
+#include "scene_replication_state.h"
 
-#include "core/multiplayer/multiplayer_api.h"
-#include "scene/multiplayer/multiplayer_spawner.h"
-#include "scene/multiplayer/multiplayer_synchronizer.h"
 #include "scene/scene_string_names.h"
+
+#include "multiplayer_spawner.h"
+#include "multiplayer_synchronizer.h"
 
 SceneReplicationState::TrackedNode &SceneReplicationState::_track(const ObjectID &p_id) {
 	if (!tracked_nodes.has(p_id)) {

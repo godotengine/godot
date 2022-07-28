@@ -31,7 +31,7 @@
 #ifndef WEBRTC_MULTIPLAYER_PEER_H
 #define WEBRTC_MULTIPLAYER_PEER_H
 
-#include "core/multiplayer/multiplayer_peer.h"
+#include "scene/main/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
 
 class WebRTCMultiplayerPeer : public MultiplayerPeer {
