@@ -717,7 +717,7 @@ void Skeleton3DEditor::create_editors() {
 	ne->add_control_to_menu_panel(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
-	skeleton_options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
+	skeleton_options->set_icon(EditorNode::get_singleton()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
@@ -920,7 +920,7 @@ void fragment() {
 }
 )");
 	handle_material->set_shader(handle_shader);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
 	handle_material->set_shader_uniform("point_size", handle->get_width());
 	handle_material->set_shader_uniform("texture_albedo", handle);
 

@@ -99,8 +99,8 @@ class VSplitContainer;
 class Window;
 class EditorBuildProfileManager;
 
-class EditorNode : public Node {
-	GDCLASS(EditorNode, Node);
+class EditorNode : public Panel {
+	GDCLASS(EditorNode, Panel);
 
 public:
 	enum DockSlot {
@@ -280,8 +280,6 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 
 	PanelContainer *scene_root_parent = nullptr;
-	Control *theme_base = nullptr;
-	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *rendering_driver = nullptr;
 
@@ -814,9 +812,6 @@ public:
 	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
-
-	Control *get_gui_base() { return gui_base; }
-	Control *get_theme_base() { return gui_base->get_parent_control(); }
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {

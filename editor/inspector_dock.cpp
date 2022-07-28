@@ -422,8 +422,6 @@ void InspectorDock::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
-
 			resource_new_button->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
 			resource_load_button->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			resource_save_button->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
@@ -686,7 +684,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);
+	EditorNode::get_singleton()->add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
 	new_resource_dialog->connect("create", callable_mp(this, &InspectorDock::_resource_created));
 
@@ -737,7 +735,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	unique_resources_confirmation->connect("confirmed", callable_mp(this, &InspectorDock::_menu_confirm_current));
 
 	warning_dialog = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(warning_dialog);
+	EditorNode::get_singleton()->add_child(warning_dialog);
 
 	load_resource_dialog = memnew(EditorFileDialog);
 	add_child(load_resource_dialog);

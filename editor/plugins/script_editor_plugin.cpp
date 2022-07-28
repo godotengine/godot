@@ -1637,7 +1637,7 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			filter_methods->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -3710,7 +3710,7 @@ ScriptEditor::ScriptEditor() {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
@@ -3965,8 +3965,8 @@ ScriptEditor::ScriptEditor() {
 
 	ScriptServer::edit_request_func = _open_script_request;
 
-	add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
-	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
+	add_theme_style_override("panel", EditorNode::get_singleton()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
 }
 
 ScriptEditor::~ScriptEditor() {

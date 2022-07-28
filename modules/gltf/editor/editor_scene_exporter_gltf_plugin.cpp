@@ -56,7 +56,7 @@ bool SceneExporterGLTFPlugin::has_main_screen() const {
 
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	file_export_lib = memnew(EditorFileDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(file_export_lib);
+	EditorNode::get_singleton()->add_child(file_export_lib);
 	file_export_lib->connect("file_selected", callable_mp(this, &SceneExporterGLTFPlugin::_gltf2_dialog_action));
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);

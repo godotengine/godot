@@ -561,7 +561,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> handle = EditorNode::get_singleton()->get_theme_icon(SNAME("Editor3DHandle"), SNAME("EditorIcons"));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);
 

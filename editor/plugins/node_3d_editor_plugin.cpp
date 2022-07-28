@@ -2680,7 +2680,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			view_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			preview_camera->set_icon(get_theme_icon(SNAME("Camera3D"), SNAME("EditorIcons")));
-			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+			Control *gui_base = EditorNode::get_singleton();
 
 			view_menu->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
 			view_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), SNAME("EditorStyles")));
@@ -7926,7 +7926,7 @@ Node3DEditor::Node3DEditor() {
 	p->set_hide_on_checkable_item_selection(false);
 
 	accept = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
+	EditorNode::get_singleton()->add_child(accept);
 
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/1_viewport", TTR("1 Viewport"), KeyModifierMask::CMD + Key::KEY_1), MENU_VIEW_USE_1_VIEWPORT);
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/2_viewports", TTR("2 Viewports"), KeyModifierMask::CMD + Key::KEY_2), MENU_VIEW_USE_2_VIEWPORTS);

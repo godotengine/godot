@@ -152,7 +152,7 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	bake_hb->hide();
 	bake = memnew(Button);
 	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_icon(EditorNode::get_singleton()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
 	bake->set_text(TTR("Bake VoxelGI"));
 	bake->connect("pressed", callable_mp(this, &VoxelGIEditorPlugin::_bake));
 	bake_hb->add_child(bake);

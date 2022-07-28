@@ -865,7 +865,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (tabs->has_theme_stylebox_override("panel")) {
-				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 			}
 
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
@@ -1680,7 +1680,7 @@ bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs = memnew(TabContainer);
-	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+	tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	add_child(tabs);

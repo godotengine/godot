@@ -69,12 +69,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_text(" - ");
 	if (p_err == OK) {
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed with warnings."));
 			has_messages = true;
 		} else {
-			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+			p_log->add_image(EditorNode::get_singleton()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
 			p_log->add_text(TTR("Completed sucessfully."));
 			if (msg_count > 0) {
@@ -82,7 +82,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 			}
 		}
 	} else {
-		p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
+		p_log->add_image(EditorNode::get_singleton()->get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 		p_log->add_text(" ");
 		p_log->add_text(TTR("Failed."));
 		has_messages = true;
@@ -95,20 +95,20 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		p_log->set_table_column_expand(1, true);
 		for (int m = 0; m < msg_count; m++) {
 			EditorExportPlatform::ExportMessage msg = get_message(m);
-			Color color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color color = EditorNode::get_singleton()->get_theme_color(SNAME("font_color"), SNAME("Label"));
 			Ref<Texture> icon;
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+					color = EditorNode::get_singleton()->get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
+					color = EditorNode::get_singleton()->get_theme_color(SNAME("warning_color"), SNAME("Editor"));
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_ERROR: {
-					icon = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-					color = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), SNAME("Editor"));
+					icon = EditorNode::get_singleton()->get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
+					color = EditorNode::get_singleton()->get_theme_color(SNAME("error_color"), SNAME("Editor"));
 				} break;
 				default:
 					break;

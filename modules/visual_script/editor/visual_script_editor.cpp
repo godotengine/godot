@@ -772,7 +772,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		if (node_styles.has(node->get_category())) {
 			Ref<StyleBoxFlat> sbf = node_styles[node->get_category()];
 			if (gnode->is_comment()) {
-				sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox(SNAME("comment"), SNAME("GraphNode"));
+				sbf = EditorNode::get_singleton()->get_theme_stylebox(SNAME("comment"), SNAME("GraphNode"));
 			}
 
 			Color c = sbf->get_border_color();
@@ -887,7 +887,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					}
 
 					Button *rmbtn = memnew(Button);
-					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+					rmbtn->set_icon(EditorNode::get_singleton()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
 					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_input_port).bind(E, i), CONNECT_DEFERRED);
 				} else {
@@ -985,7 +985,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			if (right_ok) {
 				if (is_vslist) {
 					Button *rmbtn = memnew(Button);
-					rmbtn->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+					rmbtn->set_icon(EditorNode::get_singleton()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 					hbc->add_child(rmbtn);
 					rmbtn->connect("pressed", callable_mp(this, &VisualScriptEditor::_remove_output_port).bind(E, i), CONNECT_DEFERRED);
 
@@ -1480,7 +1480,7 @@ void VisualScriptEditor::_add_func_input() {
 	hbox->add_child(type_box);
 
 	Button *delete_button = memnew(Button);
-	delete_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	delete_button->set_icon(EditorNode::get_singleton()->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	delete_button->set_tooltip(vformat(TTR("Delete input port")));
 	hbox->add_child(delete_button);
 
@@ -4045,7 +4045,7 @@ void VisualScriptEditor::_notification(int p_what) {
 			edit_signal_edit->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			func_input_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 
-			Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
+			Ref<Theme> tm = EditorNode::get_singleton()->get_theme();
 
 			bool dark_theme = tm->get_constant("dark_theme", "Editor");
 

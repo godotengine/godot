@@ -188,7 +188,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 			String preset_name = option_name.trim_prefix("Preset");
 			String humanized_name = preset_name.capitalize();
 			String icon_name = "ControlAlign" + preset_name;
-			options->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(icon_name, "EditorIcons"), humanized_name);
+			options->add_icon_item(EditorNode::get_singleton()->get_theme_icon(icon_name, "EditorIcons"), humanized_name);
 		} else {
 			options->add_item(option_name);
 		}
@@ -352,7 +352,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 		flag_checks.append(cb);
 	}
 
-	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	Control *gui_base = EditorNode::get_singleton();
 	String wide_preset_icon = SNAME("ControlAlignHCenterWide");
 	String begin_preset_icon = SNAME("ControlAlignCenterLeft");
 	String end_preset_icon = SNAME("ControlAlignCenterRight");

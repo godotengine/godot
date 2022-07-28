@@ -48,14 +48,14 @@ void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	edit_draw->draw_line(
 			from,
 			to,
-			EditorNode::get_singleton()->get_theme_base()->get_theme_color(SNAME("mono_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5),
+			EditorNode::get_singleton()->get_theme_color(SNAME("mono_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5),
 			Math::round(2 * EDSCALE));
 
 	while (from.distance_squared_to(to) > 200) {
 		edit_draw->draw_line(
 				from,
 				from + line,
-				EditorNode::get_singleton()->get_theme_base()->get_theme_color(SNAME("mono_color"), SNAME("Editor")),
+				EditorNode::get_singleton()->get_theme_color(SNAME("mono_color"), SNAME("Editor")),
 				Math::round(2 * EDSCALE));
 
 		from += line * 2;
@@ -1164,7 +1164,7 @@ bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const 
 
 EditorInspectorPluginTextureRegion::EditorInspectorPluginTextureRegion() {
 	texture_region_editor = memnew(TextureRegionEditor);
-	EditorNode::get_singleton()->get_gui_base()->add_child(texture_region_editor);
+	EditorNode::get_singleton()->add_child(texture_region_editor);
 }
 
 TextureRegionEditorPlugin::TextureRegionEditorPlugin() {

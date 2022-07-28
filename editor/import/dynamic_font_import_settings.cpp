@@ -1140,7 +1140,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "variation_face_index"), 0));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "variation_transform"), Transform2D()));
 
-	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")) : Color(1, 1, 0);
+	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_theme_color(SNAME("warning_color"), SNAME("Editor")) : Color(1, 1, 0);
 
 	// Root layout
 

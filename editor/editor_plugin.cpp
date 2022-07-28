@@ -273,7 +273,7 @@ EditorResourcePreview *EditorInterface::get_resource_previewer() {
 }
 
 Control *EditorInterface::get_base_control() {
-	return EditorNode::get_singleton()->get_gui_base();
+	return EditorNode::get_singleton();
 }
 
 float EditorInterface::get_editor_scale() const {

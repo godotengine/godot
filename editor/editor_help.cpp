@@ -191,7 +191,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	if (display_margin != new_display_margin || p_force_update_theme) {
 		display_margin = new_display_margin;
 
-		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
+		Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_stylebox(SNAME("normal"), SNAME("RichTextLabel"))->duplicate();
 		class_desc_stylebox->set_default_margin(SIDE_LEFT, display_margin);
 		class_desc_stylebox->set_default_margin(SIDE_RIGHT, display_margin);
 		class_desc->add_theme_style_override("normal", class_desc_stylebox);

@@ -278,8 +278,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	if (warnings_panel) {
 		// Warnings panel.
-		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
-		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_theme_font(SNAME("main"), SNAME("EditorFonts")));
+		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts")));
 	}
 }
 
@@ -1077,7 +1077,7 @@ ShaderEditor::ShaderEditor() {
 	hbc->add_child(edit_menu);
 	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
-	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+	hbc->add_theme_style_override("panel", EditorNode::get_singleton()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	main_container->add_child(editor_box);

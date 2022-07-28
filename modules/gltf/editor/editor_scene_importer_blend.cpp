@@ -447,7 +447,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path->connect("text_changed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
 
-		EditorNode::get_singleton()->get_gui_base()->add_child(configure_blender_dialog);
+		EditorNode::get_singleton()->add_child(configure_blender_dialog);
 
 		configure_blender_dialog->set_ok_button_text(TTR("Confirm Path"));
 		configure_blender_dialog->set_cancel_button_text(TTR("Disable '.blend' Import"));
@@ -459,7 +459,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		browse_dialog->connect("dir_selected", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_select_install));
 
-		EditorNode::get_singleton()->get_gui_base()->add_child(browse_dialog);
+		EditorNode::get_singleton()->add_child(browse_dialog);
 	}
 
 	String path = EDITOR_GET("filesystem/import/blender/blender3_path");

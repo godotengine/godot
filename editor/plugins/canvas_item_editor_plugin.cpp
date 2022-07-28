@@ -5893,10 +5893,10 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	preview_node = memnew(Control);
 
 	accept = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(accept);
+	EditorNode::get_singleton()->add_child(accept);
 
 	selector = memnew(AcceptDialog);
-	EditorNode::get_singleton()->get_gui_base()->add_child(selector);
+	EditorNode::get_singleton()->add_child(selector);
 	selector->set_title(TTR("Change Default Type"));
 	selector->connect("confirmed", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_confirmed));
 	selector->connect("cancelled", callable_mp(this, &CanvasItemEditorViewport::_on_change_type_closed));
