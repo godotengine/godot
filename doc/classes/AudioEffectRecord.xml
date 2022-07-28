@@ -14,7 +14,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">
-			<return type="AudioStreamSample" />
+			<return type="AudioStreamWAV" />
 			<description>
 				Returns the recorded sample.
 			</description>
@@ -34,8 +34,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="1">
-			Specifies the format in which the sample will be recorded. See [enum AudioStreamSample.Format] for available formats.
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="1">
+			Specifies the format in which the sample will be recorded. See [enum AudioStreamWAV.Format] for available formats.
 		</member>
 	</members>
 </class>
