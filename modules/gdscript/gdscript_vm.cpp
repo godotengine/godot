@@ -3295,6 +3295,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int globalname_idx = _code_ptr[ip + 2];
 				GD_ERR_BREAK(globalname_idx < 0 || globalname_idx >= _global_names_count);
 				const StringName *globalname = &_global_names_ptr[globalname_idx];
+				GD_ERR_BREAK(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname));
 
 				GET_INSTRUCTION_ARG(dst, 0);
 				*dst = GDScriptLanguage::get_singleton()->get_named_globals_map()[*globalname];
