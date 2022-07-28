@@ -75,9 +75,9 @@
 #include "editor/dependency_editor.h"
 #include "editor/editor_about.h"
 #include "editor/editor_audio_buses.h"
+#include "editor/editor_build_profile.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_data.h"
-#include "editor/editor_export.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
@@ -90,6 +90,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
+#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
@@ -102,8 +103,11 @@
 #include "editor/editor_themes.h"
 #include "editor/editor_toaster.h"
 #include "editor/editor_translation_parser.h"
-#include "editor/export_template_manager.h"
+#include "editor/export/editor_export.h"
+#include "editor/export/export_template_manager.h"
+#include "editor/export/project_export.h"
 #include "editor/filesystem_dock.h"
+#include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/resource_importer_bitmask.h"
@@ -131,7 +135,6 @@
 #include "editor/plugins/animation_state_machine_editor.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
-#include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
 #include "editor/plugins/bit_map_editor_plugin.h"
 #include "editor/plugins/bone_map_editor_plugin.h"
@@ -197,9 +200,7 @@
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/progress_dialog.h"
-#include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
-#include "editor/quick_open.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
 
@@ -923,6 +924,7 @@ void EditorNode::_fs_changed() {
 
 	// FIXME: Move this to a cleaner location, it's hacky to do this in _fs_changed.
 	String export_error;
+	Error err = OK;
 	if (!export_defer.preset.is_empty() && !EditorFileSystem::get_singleton()->is_scanning()) {
 		String preset_name = export_defer.preset;
 		// Ensures export_project does not loop infinitely, because notifications may
@@ -940,6 +942,7 @@ void EditorNode::_fs_changed() {
 		if (export_preset.is_null()) {
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			if (da->file_exists("res://export_presets.cfg")) {
+				err = FAILED;
 				export_error = vformat(
 						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
 						preset_name);
@@ -948,17 +951,19 @@ void EditorNode::_fs_changed() {
 					export_error += vformat("        \"%s\"\n", EditorExport::get_singleton()->get_export_preset(i)->get_name());
 				}
 			} else {
+				err = FAILED;
 				export_error = "This project doesn't have an `export_presets.cfg` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
 			}
 		} else {
 			Ref<EditorExportPlatform> platform = export_preset->get_platform();
 			const String export_path = export_defer.path.is_empty() ? export_preset->get_export_path() : export_defer.path;
 			if (export_path.is_empty()) {
+				err = FAILED;
 				export_error = vformat("Export preset \"%s\" doesn't have a default export path, and none was specified.", preset_name);
 			} else if (platform.is_null()) {
+				err = FAILED;
 				export_error = vformat("Export preset \"%s\" doesn't have a matching platform.", preset_name);
 			} else {
-				Error err = OK;
 				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
@@ -979,17 +984,18 @@ void EditorNode::_fs_changed() {
 				if (err != OK) {
 					export_error = vformat("Project export for preset \"%s\" failed.", preset_name);
 				} else if (platform->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
-					export_error = vformat("Project export for preset \"%s\" completed with errors.", preset_name);
+					export_error = vformat("Project export for preset \"%s\" completed with warnings.", preset_name);
 				}
 			}
 		}
 
-		if (!export_error.is_empty()) {
+		if (err != OK) {
 			ERR_PRINT(export_error);
 			_exit_editor(EXIT_FAILURE);
-		} else {
-			_exit_editor(EXIT_SUCCESS);
+		} else if (!export_error.is_empty()) {
+			WARN_PRINT(export_error);
 		}
+		_exit_editor(EXIT_SUCCESS);
 	}
 }
 
@@ -1794,9 +1800,16 @@ void EditorNode::restart_editor() {
 	_exit_editor(EXIT_SUCCESS);
 
 	List<String> args;
+
 	args.push_back("--path");
 	args.push_back(ProjectSettings::get_singleton()->get_resource_path());
+
 	args.push_back("-e");
+
+	if (OS::get_singleton()->is_disable_crash_handler()) {
+		args.push_back("--disable-crash-handler");
+	}
+
 	if (!to_reopen.is_empty()) {
 		args.push_back(to_reopen);
 	}
@@ -2175,6 +2188,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	Object *prev_inspected_object = InspectorDock::get_inspector_singleton()->get_edited_object();
 
 	bool disable_folding = bool(EDITOR_GET("interface/inspector/disable_folding"));
+	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
@@ -2213,6 +2227,9 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			NodeDock::get_singleton()->set_node(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			InspectorDock::get_singleton()->update(current_node);
+			if (!inspector_only) {
+				inspector_only = stay_in_script_editor_on_node_selected && ScriptEditor::get_singleton()->is_visible_in_tree();
+			}
 		} else {
 			NodeDock::get_singleton()->set_node(nullptr);
 			SceneTreeDock::get_singleton()->set_selected(nullptr);
@@ -2804,6 +2821,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					custom_build_manage_templates->popup_centered();
 				}
 			}
+		} break;
+		case TOOLS_BUILD_PROFILE_MANAGER: {
+			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
 		} break;
 		case RUN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
@@ -3588,6 +3608,13 @@ void EditorNode::set_current_scene(int p_idx) {
 	call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
 }
 
+void EditorNode::setup_color_picker(ColorPicker *picker) {
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
+	picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+}
+
 bool EditorNode::is_scene_open(const String &p_path) {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == p_path) {
@@ -4333,16 +4360,16 @@ void EditorNode::_dock_make_float() {
 	window->set_title(dock->get_name());
 	Panel *p = memnew(Panel);
 	p->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("PanelForeground"), SNAME("EditorStyles")));
-	p->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	p->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	window->add_child(p);
 	MarginContainer *margin = memnew(MarginContainer);
-	margin->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	margin->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	margin->add_theme_constant_override("margin_right", borders.width);
 	margin->add_theme_constant_override("margin_top", borders.height);
 	margin->add_theme_constant_override("margin_left", borders.width);
 	margin->add_theme_constant_override("margin_bottom", borders.height);
 	window->add_child(margin);
-	dock->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	dock->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	margin->add_child(dock);
 	window->set_wrap_controls(true);
 	window->set_size(dock_size);
@@ -5899,6 +5926,8 @@ EditorNode::EditorNode() {
 
 	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 
+	AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
+
 	// No navigation server by default if in editor.
 	NavigationServer3D::get_singleton()->set_active(false);
 
@@ -6142,11 +6171,11 @@ EditorNode::EditorNode() {
 
 	theme_base = memnew(Control);
 	add_child(theme_base);
-	theme_base->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	theme_base->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	gui_base = memnew(Panel);
 	theme_base->add_child(gui_base);
-	gui_base->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	gui_base->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
@@ -6164,7 +6193,7 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8);
+	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	menu_hb = memnew(HBoxContainer);
@@ -6443,6 +6472,9 @@ EditorNode::EditorNode() {
 	scene_import_settings = memnew(SceneImportSettings);
 	gui_base->add_child(scene_import_settings);
 
+	audio_stream_import_settings = memnew(AudioStreamImportSettings);
+	gui_base->add_child(audio_stream_import_settings);
+
 	fontdata_import_settings = memnew(DynamicFontImportSettings);
 	gui_base->add_child(fontdata_import_settings);
 
@@ -6451,6 +6483,10 @@ EditorNode::EditorNode() {
 
 	feature_profile_manager = memnew(EditorFeatureProfileManager);
 	gui_base->add_child(feature_profile_manager);
+
+	build_profile_manager = memnew(EditorBuildProfileManager);
+	gui_base->add_child(build_profile_manager);
+
 	about = memnew(EditorAbout);
 	gui_base->add_child(about);
 	feature_profile_manager->connect("current_feature_profile_changed", callable_mp(this, &EditorNode::_feature_profile_changed));
@@ -6542,6 +6578,10 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
 	p->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
 	p->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
+
+	p->add_separator();
+	p->add_item(TTR("Customize Engine Build Configuration..."), TOOLS_BUILD_PROFILE_MANAGER);
+	p->add_separator();
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", callable_mp(this, &EditorNode::_on_plugin_ready));
@@ -7079,7 +7119,6 @@ EditorNode::EditorNode() {
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	add_editor_plugin(memnew(AnimationTreeEditorPlugin));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
-	add_editor_plugin(memnew(AudioStreamEditorPlugin));
 	add_editor_plugin(memnew(AudioStreamRandomizerEditorPlugin));
 	add_editor_plugin(memnew(BitMapEditorPlugin));
 	add_editor_plugin(memnew(BoneMapEditorPlugin));
@@ -7190,6 +7229,7 @@ EditorNode::EditorNode() {
 		vshader_convert.instantiate();
 		resource_conversion_plugins.push_back(vshader_convert);
 	}
+
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
 	update_spinner_step_frame = Engine::get_singleton()->get_frames_drawn();
 

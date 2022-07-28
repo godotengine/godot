@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_ENVIRONMENT_RD_H
-#define RENDERING_SERVER_SCENE_ENVIRONMENT_RD_H
+#ifndef RENDERER_SCENE_ENVIRONMENT_RD_H
+#define RENDERER_SCENE_ENVIRONMENT_RD_H
 
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -164,4 +164,4 @@ public:
 	void set_ssao(bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect);
 };
 
-#endif /* !RENDERING_SERVER_SCENE_ENVIRONMENT_RD_H */
+#endif // RENDERER_SCENE_ENVIRONMENT_RD_H

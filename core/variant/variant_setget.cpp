@@ -77,6 +77,16 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Vector3i, y);
 	REGISTER_MEMBER(Vector3i, z);
 
+	REGISTER_MEMBER(Vector4, x);
+	REGISTER_MEMBER(Vector4, y);
+	REGISTER_MEMBER(Vector4, z);
+	REGISTER_MEMBER(Vector4, w);
+
+	REGISTER_MEMBER(Vector4i, x);
+	REGISTER_MEMBER(Vector4i, y);
+	REGISTER_MEMBER(Vector4i, z);
+	REGISTER_MEMBER(Vector4i, w);
+
 	REGISTER_MEMBER(Rect2, position);
 	REGISTER_MEMBER(Rect2, size);
 	REGISTER_MEMBER(Rect2, end);
@@ -110,6 +120,11 @@ void register_named_setters_getters() {
 
 	REGISTER_MEMBER(Transform3D, basis);
 	REGISTER_MEMBER(Transform3D, origin);
+
+	REGISTER_MEMBER(Projection, x);
+	REGISTER_MEMBER(Projection, y);
+	REGISTER_MEMBER(Projection, z);
+	REGISTER_MEMBER(Projection, w);
 
 	REGISTER_MEMBER(Color, r);
 	REGISTER_MEMBER(Color, g);
@@ -804,11 +819,14 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2, double, real_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector2i, int64_t, int32_t, 2)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3, double, real_t, 3)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector3i, int64_t, int32_t, 3)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector4, double, real_t, 4)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector4i, int64_t, int32_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Quaternion, double, real_t, 4)
 INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .columns, 3)
 INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_column, get_column, 3)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Projection, Vector4, .matrix, 4)
 
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedByteArray, int64_t, uint8_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt32Array, int64_t, int32_t)
@@ -867,10 +885,13 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(Vector2i);
 	REGISTER_INDEXED_MEMBER(Vector3);
 	REGISTER_INDEXED_MEMBER(Vector3i);
+	REGISTER_INDEXED_MEMBER(Vector4);
+	REGISTER_INDEXED_MEMBER(Vector4i);
 	REGISTER_INDEXED_MEMBER(Quaternion);
 	REGISTER_INDEXED_MEMBER(Color);
 	REGISTER_INDEXED_MEMBER(Transform2D);
 	REGISTER_INDEXED_MEMBER(Basis);
+	REGISTER_INDEXED_MEMBER(Projection);
 
 	REGISTER_INDEXED_MEMBER(PackedByteArray);
 	REGISTER_INDEXED_MEMBER(PackedInt32Array);

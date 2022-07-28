@@ -192,4 +192,4 @@ public:
 	~SceneTreeDialog();
 };
 
-#endif
+#endif // SCENE_TREE_EDITOR_H

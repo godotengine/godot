@@ -240,7 +240,7 @@ void RayCast2D::_draw_debug_shape() {
 
 	Transform2D xf;
 	xf.rotate(target_position.angle());
-	xf.translate(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
+	xf.translate_local(Vector2(no_line ? 0 : target_position.length() - arrow_size, 0));
 
 	Vector<Vector2> pts = {
 		xf.xform(Vector2(arrow_size, 0)),

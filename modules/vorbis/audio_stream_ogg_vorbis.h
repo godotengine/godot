@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_STREAM_LIBVORBIS_H
-#define AUDIO_STREAM_LIBVORBIS_H
+#ifndef AUDIO_STREAM_OGG_VORBIS_H
+#define AUDIO_STREAM_OGG_VORBIS_H
 
 #include "core/variant/variant.h"
 #include "modules/ogg/ogg_packet_sequence.h"
@@ -44,6 +44,12 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
+
+	enum {
+		FADE_SIZE = 256
+	};
+	AudioFrame loop_fade[FADE_SIZE];
+	int loop_fade_remaining = FADE_SIZE;
 
 	vorbis_info info;
 	vorbis_comment comment;
@@ -66,6 +72,7 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlaybackResampled {
 	Ref<OGGPacketSequencePlayback> vorbis_data_playback;
 	Ref<AudioStreamOGGVorbis> vorbis_stream;
 
+	int _mix_frames(AudioFrame *p_buffer, int p_frames);
 	int _mix_frames_vorbis(AudioFrame *p_buffer, int p_frames);
 
 	// Allocates vorbis data structures. Returns true upon success, false on failure.
@@ -84,6 +91,8 @@ public:
 
 	virtual float get_playback_position() const override;
 	virtual void seek(float p_time) override;
+
+	virtual void tag_used_streams() override;
 
 	AudioStreamPlaybackOGGVorbis() {}
 	~AudioStreamPlaybackOGGVorbis();
@@ -107,17 +116,30 @@ class AudioStreamOGGVorbis : public AudioStream {
 
 	Ref<OGGPacketSequence> packet_sequence;
 
+	double bpm = 0;
+	int beat_count = 0;
+	int bar_beats = 4;
+
 protected:
 	static void _bind_methods();
 
 public:
 	void set_loop(bool p_enable);
-	bool has_loop() const;
+	virtual bool has_loop() const override;
 
 	void set_loop_offset(float p_seconds);
 	float get_loop_offset() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	void set_bpm(double p_bpm);
+	virtual double get_bpm() const override;
+
+	void set_beat_count(int p_beat_count);
+	virtual int get_beat_count() const override;
+
+	void set_bar_beats(int p_bar_beats);
+	virtual int get_bar_beats() const override;
+
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
 	void set_packet_sequence(Ref<OGGPacketSequence> p_packet_sequence);
@@ -131,4 +153,4 @@ public:
 	virtual ~AudioStreamOGGVorbis();
 };
 
-#endif // AUDIO_STREAM_LIBVORBIS_H
+#endif // AUDIO_STREAM_OGG_VORBIS_H

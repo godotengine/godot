@@ -48,6 +48,7 @@
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
+#include <dwrite.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <regstr.h>
@@ -621,6 +622,135 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+Vector<String> OS_Windows::get_system_fonts() const {
+	Vector<String> ret;
+	HashSet<String> font_names;
+
+	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
+	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), ret);
+
+	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
+	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
+	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), ret);
+
+	UINT32 family_count = font_collection->GetFontFamilyCount();
+	for (UINT32 i = 0; i < family_count; i++) {
+		ComAutoreleaseRef<IDWriteFontFamily> family;
+		hr = font_collection->GetFontFamily(i, &family.reference);
+		ERR_CONTINUE(FAILED(hr) || family.is_null());
+
+		ComAutoreleaseRef<IDWriteLocalizedStrings> family_names;
+		hr = family->GetFamilyNames(&family_names.reference);
+		ERR_CONTINUE(FAILED(hr) || family_names.is_null());
+
+		UINT32 index = 0;
+		BOOL exists = false;
+		UINT32 length = 0;
+		Char16String name;
+
+		hr = family_names->FindLocaleName(L"en-us", &index, &exists);
+		ERR_CONTINUE(FAILED(hr));
+
+		hr = family_names->GetStringLength(index, &length);
+		ERR_CONTINUE(FAILED(hr));
+
+		name.resize(length + 1);
+		hr = family_names->GetString(index, (WCHAR *)name.ptrw(), length + 1);
+		ERR_CONTINUE(FAILED(hr));
+
+		font_names.insert(String::utf16(name.ptr(), length));
+	}
+
+	for (const String &E : font_names) {
+		ret.push_back(E);
+	}
+	return ret;
+}
+
+String OS_Windows::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	String font_name = p_font_name;
+	if (font_name.to_lower() == "sans-serif") {
+		font_name = "Arial";
+	} else if (font_name.to_lower() == "serif") {
+		font_name = "Times New Roman";
+	} else if (font_name.to_lower() == "monospace") {
+		font_name = "Courier New";
+	} else if (font_name.to_lower() == "cursive") {
+		font_name = "Comic Sans MS";
+	} else if (font_name.to_lower() == "fantasy") {
+		font_name = "Gabriola";
+	}
+
+	ComAutoreleaseRef<IDWriteFactory> dwrite_factory;
+	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory.reference));
+	ERR_FAIL_COND_V(FAILED(hr) || dwrite_factory.is_null(), String());
+
+	ComAutoreleaseRef<IDWriteFontCollection> font_collection;
+	hr = dwrite_factory->GetSystemFontCollection(&font_collection.reference, false);
+	ERR_FAIL_COND_V(FAILED(hr) || font_collection.is_null(), String());
+
+	UINT32 index = 0;
+	BOOL exists = false;
+	font_collection->FindFamilyName((const WCHAR *)font_name.utf16().get_data(), &index, &exists);
+	if (FAILED(hr)) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFontFamily> family;
+	hr = font_collection->GetFontFamily(index, &family.reference);
+	if (FAILED(hr) || family.is_null()) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFont> dwrite_font;
+	hr = family->GetFirstMatchingFont(p_bold ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, p_italic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL, &dwrite_font.reference);
+	if (FAILED(hr) || dwrite_font.is_null()) {
+		return String();
+	}
+
+	ComAutoreleaseRef<IDWriteFontFace> dwrite_face;
+	hr = dwrite_font->CreateFontFace(&dwrite_face.reference);
+	if (FAILED(hr) || dwrite_face.is_null()) {
+		return String();
+	}
+
+	UINT32 number_of_files = 0;
+	hr = dwrite_face->GetFiles(&number_of_files, nullptr);
+	if (FAILED(hr)) {
+		return String();
+	}
+	Vector<ComAutoreleaseRef<IDWriteFontFile>> files;
+	files.resize(number_of_files);
+	hr = dwrite_face->GetFiles(&number_of_files, (IDWriteFontFile **)files.ptrw());
+	if (FAILED(hr)) {
+		return String();
+	}
+
+	for (UINT32 i = 0; i < number_of_files; i++) {
+		void const *reference_key = nullptr;
+		UINT32 reference_key_size = 0;
+		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
+
+		hr = files.write[i]->GetLoader((IDWriteFontFileLoader **)&loader.reference);
+		if (FAILED(hr) || loader.is_null()) {
+			continue;
+		}
+		hr = files.write[i]->GetReferenceKey(&reference_key, &reference_key_size);
+		if (FAILED(hr)) {
+			continue;
+		}
+
+		WCHAR file_path[MAX_PATH];
+		hr = loader->GetFilePathFromKey(reference_key, reference_key_size, &file_path[0], MAX_PATH);
+		if (FAILED(hr)) {
+			continue;
+		}
+		return String::utf16((const char16_t *)&file_path[0]);
+	}
+	return String();
+}
+
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
@@ -951,9 +1081,9 @@ String OS_Windows::get_user_data_dir() const {
 }
 
 String OS_Windows::get_unique_id() const {
-	HW_PROFILE_INFO HwProfInfo;
-	ERR_FAIL_COND_V(!GetCurrentHwProfile(&HwProfInfo), "");
-	return String::utf16((const char16_t *)(HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+	HW_PROFILE_INFOA HwProfInfo;
+	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
+	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {

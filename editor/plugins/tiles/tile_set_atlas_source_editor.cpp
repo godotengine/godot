@@ -1822,7 +1822,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-			xform.translate(position);
+			xform.translate_local(position);
 
 			if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, 0 })) {
 				continue;
@@ -1845,7 +1845,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, 0);
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;
@@ -1989,7 +1989,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				if (tools_button_group->get_pressed_button() == tool_select_button && selection.has({ coords, alternative_tile })) {
 					continue;
@@ -2013,7 +2013,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 				Vector2 position = rect.get_center();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
-				xform.translate(position);
+				xform.translate_local(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;
@@ -2370,7 +2370,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_data_editors_tree = memnew(Tree);
 	tile_data_editors_tree->set_hide_root(true);
-	tile_data_editors_tree->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	tile_data_editors_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_data_editors_tree->set_h_scroll_enabled(false);
 	tile_data_editors_tree->set_v_scroll_enabled(false);
 	tile_data_editors_tree->connect("item_selected", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editors_tree_selected));
@@ -2509,7 +2509,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control);
 
 	tile_atlas_control_unscaled = memnew(Control);
-	tile_atlas_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	tile_atlas_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_atlas_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw));
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control_unscaled, false);
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -2526,7 +2526,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control);
 
 	alternative_tiles_control_unscaled = memnew(Control);
-	alternative_tiles_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	alternative_tiles_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternative_tiles_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw));
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control_unscaled, false);
 	alternative_tiles_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);

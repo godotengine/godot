@@ -376,6 +376,12 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::VECTOR3I:
 				color = Color(0.84, 0.49, 0.93);
 				break;
+			case Variant::VECTOR4:
+				color = Color(0.84, 0.49, 0.94);
+				break;
+			case Variant::VECTOR4I:
+				color = Color(0.84, 0.49, 0.94);
+				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.77, 0.93, 0.41);
 				break;
@@ -1227,7 +1233,7 @@ void VisualScriptEditor::_member_selected() {
 	selected = ti->get_metadata(0);
 
 	if (ti->get_parent() == members->get_root()->get_first_child()) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2208,7 +2214,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 						String(d["type"]) == "files" ||
 						String(d["type"]) == "nodes")) {
 			if (String(d["type"]) == "obj_property") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
@@ -2216,7 +2222,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			}
 
 			if (String(d["type"]) == "nodes") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
@@ -2224,7 +2230,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			}
 
 			if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(Key::META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
@@ -2287,7 +2293,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "visual_script_variable_drag") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_set = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_set = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2396,7 +2402,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (String(d["type"]) == "files") {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_preload = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2459,7 +2465,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return;
 		}
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_node = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_node = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -2524,7 +2530,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Node *node = Object::cast_to<Node>(obj);
 		Vector2 pos = _get_pos_in_graph(p_point);
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		bool use_get = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 		bool use_get = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -3378,7 +3384,7 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 }
 
 void VisualScriptEditor::_selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting) {
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
 #else
 	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
@@ -4628,7 +4634,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph = memnew(GraphEdit);
 	add_child(graph);
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	graph->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_show_zoom_label(true);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
 	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
@@ -4821,12 +4827,15 @@ VisualScriptEditor::VisualScriptEditor() {
 	base_type_map.insert("Rect2i", Variant::RECT2I);
 	base_type_map.insert("Vector3", Variant::VECTOR3);
 	base_type_map.insert("Vector3i", Variant::VECTOR3I);
+	base_type_map.insert("Vector4", Variant::VECTOR4);
+	base_type_map.insert("Vector4i", Variant::VECTOR4I);
 	base_type_map.insert("Transform2D", Variant::TRANSFORM2D);
 	base_type_map.insert("Plane", Variant::PLANE);
 	base_type_map.insert("Quaternion", Variant::QUATERNION);
 	base_type_map.insert("AABB", Variant::AABB);
 	base_type_map.insert("Basis", Variant::BASIS);
 	base_type_map.insert("Transform3D", Variant::TRANSFORM3D);
+	base_type_map.insert("Projection", Variant::PROJECTION);
 	base_type_map.insert("Color", Variant::COLOR);
 	base_type_map.insert("NodePath", Variant::NODE_PATH);
 	base_type_map.insert("RID", Variant::RID);

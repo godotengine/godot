@@ -30,7 +30,7 @@ namespace GodotTools.Ides.MonoDevelop
             {
                 string bundleId = BundleIds[_editorId];
 
-                if (Internal.IsOsxAppBundleInstalled(bundleId))
+                if (Internal.IsMacOSAppBundleInstalled(bundleId))
                 {
                     command = "open";
 

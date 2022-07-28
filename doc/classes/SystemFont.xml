@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SystemFont" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Font loaded from a system font.
+		[b]Note:[/b] This class is implemented on iOS, Linux, macOS and Windows, on other platforms it will fallback to default theme font.
+	</brief_description>
+	<description>
+		[SystemFont] loads a font from a system font with the first matching name from [member font_names].
+		It will attempt to match font style, but it's not guaranteed.
+		The returned font might be part of a font collection or be a variable font with OpenType "weight" and/or "italic" features set.
+		You can create [FontVariation] of the system font for fine control over its features.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
+			If set to [code]true[/code], font 8-bit anitialiased glyph rendering is supported and enabled.
+		</member>
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s.
+		</member>
+		<member name="font_names" type="PackedStringArray" setter="set_font_names" getter="get_font_names" default="PackedStringArray()">
+			Array of font family names to search, first matching font found is used.
+		</member>
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
+			Font style flags, see [enum TextServer.FontStyle].
+		</member>
+		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
+			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting.
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="get_generate_mipmaps" default="false">
+			If set to [code]true[/code], generate mipmaps for the font textures.
+		</member>
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
+			Font hinting mode.
+		</member>
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
+			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead.
+		</member>
+		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
+			Font glyph sub-pixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+		</member>
+	</members>
+</class>

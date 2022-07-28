@@ -209,4 +209,4 @@ public:
 	ActionMapEditor();
 };
 
-#endif
+#endif // ACTION_MAP_EDITOR_H

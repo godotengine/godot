@@ -31,11 +31,11 @@
 #include "editor_plugin.h"
 
 #include "editor/editor_command_palette.h"
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"

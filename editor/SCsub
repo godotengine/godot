@@ -76,7 +76,7 @@ if env["tools"]:
 
     # Editor translations
     to_include = (
-        "ar,bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,th,tr,uk,vi,zh_CN,zh_TW"
+        "ar,bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tr,uk,vi,zh_CN,zh_TW"
     ).split(",")
     tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
     env.Depends("#editor/editor_translations.gen.h", tlist)
@@ -113,6 +113,7 @@ if env["tools"]:
     env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
     SConscript("debugger/SCsub")
+    SConscript("export/SCsub")
     SConscript("fileserver/SCsub")
     SConscript("icons/SCsub")
     SConscript("import/SCsub")

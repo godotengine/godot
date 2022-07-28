@@ -125,4 +125,4 @@ public:
 	CreateDialog();
 };
 
-#endif
+#endif // CREATE_DIALOG_H

@@ -488,7 +488,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".pck"));
@@ -511,8 +511,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 			if (err == OK && !p_ignore_override) {
-				// Load override from location of the executable.
-				// Optional, we don't mind if it fails.
+				// Load overrides from the PCK and the executable location.
+				// Optional, we don't mind if either fails.
+				_load_settings_text("res://override.cfg");
 				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
 			return err;

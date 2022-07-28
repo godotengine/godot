@@ -624,15 +624,15 @@ env.Append(CPPDEFINES=["GDEXTENSION"])
 env.Append(CPPPATH=["../"])
 sources = Glob("../*.cpp")
 
-if env["platform"] == "osx":
-    methods.write_osx_plist(
-        f'./bin/libtextserver_advanced.osx.{env["target"]}.framework',
-        f'libtextserver_advanced.osx.{env["target"]}',
+if env["platform"] == "macos":
+    methods.write_macos_plist(
+        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework',
+        f'libtextserver_advanced.macos.{env["target"]}',
         "org.godotengine.textserver_advanced",
         "ICU / HarfBuzz / Graphite Text Server",
     )
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced.osx.{env["target"]}.framework/libtextserver_advanced.osx.{env["target"]}',
+        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework/libtextserver_advanced.macos.{env["target"]}',
         source=sources,
     )
 else:

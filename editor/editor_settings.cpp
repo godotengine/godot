@@ -414,7 +414,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
 	_initial_set("interface/editor/font_antialiased", true);
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (Light),None,Light,Normal")
@@ -544,6 +544,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/navigation/smooth_scrolling", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/behavior/navigation/v_scroll_speed", 80, "1,10000,1")
 	_initial_set("text_editor/behavior/navigation/drag_and_drop_selection", true);
+	_initial_set("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected", true);
 
 	// Behavior: Indent
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/behavior/indent/type", 0, "Tabs,Spaces")
@@ -1105,8 +1106,8 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 // Editor data and config directories
 // EditorPaths::create() is responsible for the creation of these directories.
 
-String EditorSettings::get_templates_dir() const {
-	return EditorPaths::get_singleton()->get_data_dir().plus_file("templates");
+String EditorSettings::get_export_templates_dir() const {
+	return EditorPaths::get_singleton()->get_data_dir().plus_file("export_templates");
 }
 
 String EditorSettings::get_project_settings_dir() const {
@@ -1370,7 +1371,7 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
-#if defined(OSX_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
@@ -1489,7 +1490,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
@@ -1519,7 +1520,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	for (int i = 0; i < p_keycodes.size(); i++) {
 		Key keycode = (Key)p_keycodes[i];
 
-#ifdef OSX_ENABLED
+#ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
 			keycode = KeyModifierMask::CMD | Key::BACKSPACE;

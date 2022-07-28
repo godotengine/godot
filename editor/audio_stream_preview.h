@@ -43,8 +43,10 @@ class AudioStreamPreview : public RefCounted {
 	float length;
 
 	friend class AudioStreamPreviewGenerator;
+	uint64_t version = 1;
 
 public:
+	uint64_t get_version() const { return version; }
 	float get_length() const;
 	float get_max(float p_time, float p_time_next) const;
 	float get_min(float p_time, float p_time_next) const;

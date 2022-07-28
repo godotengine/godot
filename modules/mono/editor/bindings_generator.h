@@ -590,6 +590,9 @@ class BindingsGenerator {
 		StringName type_Vector2 = StaticCString::create("Vector2");
 		StringName type_Rect2 = StaticCString::create("Rect2");
 		StringName type_Vector3 = StaticCString::create("Vector3");
+		StringName type_Vector3i = StaticCString::create("Vector3i");
+		StringName type_Vector4 = StaticCString::create("Vector4");
+		StringName type_Vector4i = StaticCString::create("Vector4i");
 
 		// Object not included as it must be checked for all derived classes
 		static constexpr int nullable_types_count = 17;

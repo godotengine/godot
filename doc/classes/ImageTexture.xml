@@ -42,9 +42,17 @@
 				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
+		<method name="set_image">
+			<return type="void" />
+			<argument index="0" name="image" type="Image" />
+			<description>
+				Replaces the texture's data with a new [Image]. This will re-allocate new memory for the texture.
+				If you want to update the image, but don't need to change its parameters (format, size), use [method update] instead for better performance.
+			</description>
+		</method>
 		<method name="set_size_override">
 			<return type="void" />
-			<argument index="0" name="size" type="Vector2" />
+			<argument index="0" name="size" type="Vector2i" />
 			<description>
 				Resizes the texture to the specified dimensions.
 			</description>
@@ -54,8 +62,8 @@
 			<argument index="0" name="image" type="Image" />
 			<description>
 				Replaces the texture's data with a new [Image].
-				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
-				Use this method over [method create_from_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
+				[b]Note:[/b] The texture has to be created using [method create_from_image] or initialized first with the [method set_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration.
+				Use this method over [method set_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
 			</description>
 		</method>
 	</methods>

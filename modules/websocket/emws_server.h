@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWSSERVER_H
-#define EMWSSERVER_H
+#ifndef EMWS_SERVER_H
+#define EMWS_SERVER_H
 
 #ifdef JAVASCRIPT_ENABLED
 
@@ -61,4 +61,4 @@ public:
 
 #endif
 
-#endif // LWSSERVER_H
+#endif // EMWS_SERVER_H

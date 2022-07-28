@@ -1420,7 +1420,9 @@ Control *ScriptTextEditor::get_edit_menu() {
 }
 
 void ScriptTextEditor::clear_edit_menu() {
-	memdelete(edit_hb);
+	if (editor_enabled) {
+		memdelete(edit_hb);
+	}
 }
 
 void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
@@ -1821,7 +1823,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
-	editor_box->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	editor_box->add_child(code_editor);
@@ -1860,15 +1862,9 @@ void ScriptTextEditor::_enable_code_editor() {
 	color_picker = memnew(ColorPicker);
 	color_picker->set_deferred_mode(true);
 	color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_color_changed));
+	color_panel->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker), varray(color_picker));
 
 	color_panel->add_child(color_picker);
-
-	// get default color picker mode from editor settings
-	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	color_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
-
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-	color_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
 
 	quick_open = memnew(ScriptEditorQuickOpen);
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
@@ -1958,7 +1954,7 @@ void ScriptTextEditor::_enable_code_editor() {
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->add_theme_constant_override("separation", 2);
-	code_editor->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 

@@ -10,5 +10,7 @@
 	<members>
 		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" overrides="SkeletonProfile" default="56" />
 		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" overrides="SkeletonProfile" default="4" />
+		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" overrides="SkeletonProfile" default="&amp;&quot;Root&quot;" />
+		<member name="scale_base_bone" type="StringName" setter="set_scale_base_bone" getter="get_scale_base_bone" overrides="SkeletonProfile" default="&amp;&quot;Hips&quot;" />
 	</members>
 </class>

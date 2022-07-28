@@ -102,4 +102,4 @@ public:
 
 VARIANT_ENUM_CAST(VisibleOnScreenEnabler2D::EnableMode);
 
-#endif // VISIBILITY_NOTIFIER_2D_H
+#endif // VISIBLE_ON_SCREEN_NOTIFIER_2D_H

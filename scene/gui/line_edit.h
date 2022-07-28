@@ -336,4 +336,4 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 
-#endif
+#endif // LINE_EDIT_H

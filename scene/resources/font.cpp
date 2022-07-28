@@ -79,9 +79,9 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "jst_flags", "direction", "orientation"), &Font::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
 	// Drawing char.
-	ClassDB::bind_method(D_METHOD("get_char_size", "char"), &Font::get_char_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "modulate"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)));
-	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "size", "modulate"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("get_char_size", "char", "font_size"), &Font::get_char_size);
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "font_size", "modulate"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "font_size", "size", "modulate"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
 
 	// Helper functions.
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &Font::has_char);
@@ -2691,5 +2691,376 @@ FontVariation::FontVariation() {
 }
 
 FontVariation::~FontVariation() {
+	reset_state();
+}
+
+/*************************************************************************/
+/*  SystemFont                                                           */
+/*************************************************************************/
+
+void SystemFont::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &SystemFont::set_antialiased);
+	ClassDB::bind_method(D_METHOD("is_antialiased"), &SystemFont::is_antialiased);
+
+	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &SystemFont::set_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &SystemFont::get_generate_mipmaps);
+
+	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &SystemFont::set_force_autohinter);
+	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &SystemFont::is_force_autohinter);
+
+	ClassDB::bind_method(D_METHOD("set_hinting", "hinting"), &SystemFont::set_hinting);
+	ClassDB::bind_method(D_METHOD("get_hinting"), &SystemFont::get_hinting);
+
+	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &SystemFont::set_subpixel_positioning);
+	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &SystemFont::get_subpixel_positioning);
+
+	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
+	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
+
+	ClassDB::bind_method(D_METHOD("get_font_names"), &SystemFont::get_font_names);
+	ClassDB::bind_method(D_METHOD("set_font_names", "names"), &SystemFont::set_font_names);
+
+	ClassDB::bind_method(D_METHOD("set_font_style", "style"), &SystemFont::set_font_style);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "font_names"), "set_font_names", "get_font_names");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic"), "set_font_style", "get_font_style");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "is_antialiased");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, "Font")), "set_fallbacks", "get_fallbacks");
+}
+
+void SystemFont::_update_rids() const {
+	Ref<Font> f = _get_base_font_or_default();
+
+	rids.clear();
+	if (fallbacks.is_empty() && f.is_valid()) {
+		RID rid = _get_rid();
+		if (rid.is_valid()) {
+			rids.push_back(rid);
+		}
+
+		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
+		for (int i = 0; i < base_fallbacks.size(); i++) {
+			_update_rids_fb(base_fallbacks[i], 0);
+		}
+	} else {
+		_update_rids_fb(const_cast<SystemFont *>(this), 0);
+	}
+	dirty_rids = false;
+}
+
+void SystemFont::_update_base_font() {
+	if (base_font.is_valid()) {
+		base_font->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids));
+		base_font.unref();
+	}
+
+	face_indeces.clear();
+	ftr_weight = 0;
+	ftr_italic = 0;
+	for (const String &E : names) {
+		if (E.is_empty()) {
+			continue;
+		}
+
+		String path = OS::get_singleton()->get_system_font_path(E, style & TextServer::FONT_BOLD, style & TextServer::FONT_ITALIC);
+		if (path.is_empty()) {
+			continue;
+		}
+		Ref<FontFile> file;
+		file.instantiate();
+		Error err = file->load_dynamic_font(path);
+		if (err != OK) {
+			continue;
+		}
+
+		// If it's a font collection check all faces to match requested style.
+		for (int i = 0; i < file->get_face_count(); i++) {
+			file->set_face_index(0, i);
+			if (((file->get_font_style() & TextServer::FONT_BOLD) == (style & TextServer::FONT_BOLD)) && ((file->get_font_style() & TextServer::FONT_ITALIC) == (style & TextServer::FONT_ITALIC))) {
+				face_indeces.push_back(i);
+			}
+		}
+		if (face_indeces.is_empty()) {
+			face_indeces.push_back(0);
+		}
+		file->set_face_index(0, face_indeces[0]);
+
+		// If it's a variable font, apply weight and italic coordinates to match requested style.
+		Dictionary ftr = file->get_supported_variation_list();
+		if ((style & TextServer::FONT_BOLD) && ftr.has(TS->name_to_tag("weight"))) {
+			ftr_weight = 700;
+		}
+		if ((style & TextServer::FONT_ITALIC) && ftr.has(TS->name_to_tag("italic"))) {
+			ftr_italic = 1;
+		}
+
+		// Apply font rendering settings.
+		file->set_antialiased(antialiased);
+		file->set_generate_mipmaps(mipmaps);
+		file->set_force_autohinter(force_autohinter);
+		file->set_hinting(hinting);
+		file->set_subpixel_positioning(subpixel_positioning);
+		file->set_oversampling(oversampling);
+
+		base_font = file;
+	}
+
+	if (base_font.is_valid()) {
+		base_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+	}
+
+	_invalidate_rids();
+	notify_property_list_changed();
+}
+
+void SystemFont::reset_state() {
+	if (base_font.is_valid()) {
+		base_font->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids));
+		base_font.unref();
+	}
+
+	if (theme_font.is_valid()) {
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(this), &Font::_invalidate_rids));
+		theme_font.unref();
+	}
+
+	names.clear();
+	face_indeces.clear();
+	ftr_weight = 0;
+	ftr_italic = 0;
+	style = 0;
+	antialiased = true;
+	mipmaps = false;
+	force_autohinter = false;
+	hinting = TextServer::HINTING_LIGHT;
+	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+	oversampling = 0.f;
+
+	Font::reset_state();
+}
+
+Ref<Font> SystemFont::_get_base_font_or_default() const {
+	if (theme_font.is_valid()) {
+		theme_font->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids));
+		theme_font.unref();
+	}
+
+	if (base_font.is_valid()) {
+		return base_font;
+	}
+
+	// Check the project-defined Theme resource.
+	if (Theme::get_project_default().is_valid()) {
+		List<StringName> theme_types;
+		Theme::get_project_default()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+
+		for (const StringName &E : theme_types) {
+			if (Theme::get_project_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
+				Ref<Font> f = Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+				}
+				return f;
+			}
+		}
+	}
+
+	// Lastly, fall back on the items defined in the default Theme, if they exist.
+	if (Theme::get_default().is_valid()) {
+		List<StringName> theme_types;
+		Theme::get_default()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+
+		for (const StringName &E : theme_types) {
+			if (Theme::get_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
+				Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f.is_valid()) {
+					theme_font = f;
+					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+				}
+				return f;
+			}
+		}
+
+		// If they don't exist, use any type to return the default/empty value.
+		Ref<Font> f = Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+		if (f.is_valid()) {
+			theme_font = f;
+			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), varray(), CONNECT_REFERENCE_COUNTED);
+		}
+		return f;
+	}
+
+	return Ref<Font>();
+}
+
+void SystemFont::set_antialiased(bool p_antialiased) {
+	if (antialiased != p_antialiased) {
+		antialiased = p_antialiased;
+		if (base_font.is_valid()) {
+			base_font->set_antialiased(antialiased);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_antialiased() const {
+	return antialiased;
+}
+
+void SystemFont::set_generate_mipmaps(bool p_generate_mipmaps) {
+	if (mipmaps != p_generate_mipmaps) {
+		mipmaps = p_generate_mipmaps;
+		if (base_font.is_valid()) {
+			base_font->set_generate_mipmaps(mipmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_generate_mipmaps() const {
+	return mipmaps;
+}
+
+void SystemFont::set_force_autohinter(bool p_force_autohinter) {
+	if (force_autohinter != p_force_autohinter) {
+		force_autohinter = p_force_autohinter;
+		if (base_font.is_valid()) {
+			base_font->set_force_autohinter(force_autohinter);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::is_force_autohinter() const {
+	return force_autohinter;
+}
+
+void SystemFont::set_hinting(TextServer::Hinting p_hinting) {
+	if (hinting != p_hinting) {
+		hinting = p_hinting;
+		if (base_font.is_valid()) {
+			base_font->set_hinting(hinting);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::Hinting SystemFont::get_hinting() const {
+	return hinting;
+}
+
+void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel) {
+	if (subpixel_positioning != p_subpixel) {
+		subpixel_positioning = p_subpixel;
+		if (base_font.is_valid()) {
+			base_font->set_subpixel_positioning(subpixel_positioning);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::SubpixelPositioning SystemFont::get_subpixel_positioning() const {
+	return subpixel_positioning;
+}
+
+void SystemFont::set_oversampling(real_t p_oversampling) {
+	if (oversampling != p_oversampling) {
+		oversampling = p_oversampling;
+		if (base_font.is_valid()) {
+			base_font->set_oversampling(oversampling);
+		}
+		emit_changed();
+	}
+}
+
+real_t SystemFont::get_oversampling() const {
+	return oversampling;
+}
+
+void SystemFont::set_font_names(const PackedStringArray &p_names) {
+	if (names != p_names) {
+		names = p_names;
+		_update_base_font();
+	}
+}
+
+PackedStringArray SystemFont::get_font_names() const {
+	return names;
+}
+
+void SystemFont::set_font_style(BitField<TextServer::FontStyle> p_style) {
+	if (style != p_style) {
+		style = p_style;
+		_update_base_font();
+	}
+}
+
+BitField<TextServer::FontStyle> SystemFont::get_font_style() const {
+	return style;
+}
+
+int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
+	if (base_font.is_valid()) {
+		return base_font->get_spacing(p_spacing);
+	} else {
+		return 0;
+	}
+}
+
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
+	Ref<Font> f = _get_base_font_or_default();
+	if (f.is_valid()) {
+		Dictionary var = p_variation_coordinates;
+		if (ftr_weight > 0 && !var.has(TS->name_to_tag("weight"))) {
+			var[TS->name_to_tag("weight")] = ftr_weight;
+		}
+		if (ftr_italic > 0 && !var.has(TS->name_to_tag("italic"))) {
+			var[TS->name_to_tag("italic")] = ftr_italic;
+		}
+
+		if (!face_indeces.is_empty()) {
+			int face_index = CLAMP(p_face_index, 0, face_indeces.size() - 1);
+			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform);
+		} else {
+			return f->find_variation(var, 0, p_strength, p_transform);
+		}
+	}
+	return RID();
+}
+
+RID SystemFont::_get_rid() const {
+	Ref<Font> f = _get_base_font_or_default();
+	if (f.is_valid()) {
+		if (!face_indeces.is_empty()) {
+			Dictionary var;
+			if (ftr_weight > 0) {
+				var[TS->name_to_tag("weight")] = ftr_weight;
+			}
+			if (ftr_italic > 0) {
+				var[TS->name_to_tag("italic")] = ftr_italic;
+			}
+			return f->find_variation(var, face_indeces[0]);
+		} else {
+			return f->_get_rid();
+		}
+	}
+	return RID();
+}
+
+int64_t SystemFont::get_face_count() const {
+	return face_indeces.size();
+}
+
+SystemFont::SystemFont() {
+	/* NOP */
+}
+
+SystemFont::~SystemFont() {
 	reset_state();
 }

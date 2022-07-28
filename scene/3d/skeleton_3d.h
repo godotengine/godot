@@ -146,6 +146,7 @@ private:
 	bool rest_dirty = false;
 
 	bool show_rest_only = false;
+	float motion_scale = 1.0;
 
 	uint64_t version = 1;
 
@@ -210,6 +211,9 @@ public:
 	void set_show_rest_only(bool p_enabled);
 	bool is_show_rest_only() const;
 	void clear_bones();
+
+	void set_motion_scale(float p_motion_scale);
+	float get_motion_scale() const;
 
 	// posing api
 
@@ -288,4 +292,4 @@ public:
 	~Skeleton3D();
 };
 
-#endif
+#endif // SKELETON_3D_H

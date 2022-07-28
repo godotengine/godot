@@ -144,4 +144,4 @@ public:
 	~GroupsEditor();
 };
 
-#endif
+#endif // GROUPS_EDITOR_H

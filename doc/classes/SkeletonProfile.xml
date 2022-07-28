@@ -162,12 +162,20 @@
 		</member>
 		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" default="0">
 		</member>
+		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="&amp;&quot;&quot;">
+			A name of bone that will be used as the root bone in [AnimationTree].
+			[b]Note:[/b] In most cases, it is the bone of the parent of the hips that exists at the world origin in the humanoid model.
+		</member>
+		<member name="scale_base_bone" type="StringName" setter="set_scale_base_bone" getter="get_scale_base_bone" default="&amp;&quot;&quot;">
+			A name of bone which height will be used as the coefficient for normalization.
+			[b]Note:[/b] In most cases, it is hips in the humanoid model.
+		</member>
 	</members>
 	<signals>
 		<signal name="profile_updated">
 			<description>
 				This signal is emitted when change the value in profile. This is used to update key name in the [BoneMap] and to redraw the [BoneMap] editor.
-				[b]Note[/b]: This signal is not connected directly to editor to simplify the reference, instead it is passed on to editor through the [BoneMap].
+				[b]Note:[/b] This signal is not connected directly to editor to simplify the reference, instead it is passed on to editor through the [BoneMap].
 			</description>
 		</signal>
 	</signals>

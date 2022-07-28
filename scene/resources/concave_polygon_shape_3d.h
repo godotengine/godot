@@ -77,4 +77,4 @@ public:
 	ConcavePolygonShape3D();
 };
 
-#endif // CONCAVE_POLYGON_SHAPE_H
+#endif // CONCAVE_POLYGON_SHAPE_3D_H

@@ -23,8 +23,8 @@
 		<method name="blend_rect">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
-			<argument index="1" name="src_rect" type="Rect2" />
-			<argument index="2" name="dst" type="Vector2" />
+			<argument index="1" name="src_rect" type="Rect2i" />
+			<argument index="2" name="dst" type="Vector2i" />
 			<description>
 				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
@@ -33,8 +33,8 @@
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
 			<argument index="1" name="mask" type="Image" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="dst" type="Vector2" />
+			<argument index="2" name="src_rect" type="Rect2i" />
+			<argument index="3" name="dst" type="Vector2i" />
 			<description>
 				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code], clipped accordingly to both image bounds. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
@@ -42,8 +42,8 @@
 		<method name="blit_rect">
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
-			<argument index="1" name="src_rect" type="Rect2" />
-			<argument index="2" name="dst" type="Vector2" />
+			<argument index="1" name="src_rect" type="Rect2i" />
+			<argument index="2" name="dst" type="Vector2i" />
 			<description>
 				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code], clipped accordingly to both image bounds. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
@@ -52,8 +52,8 @@
 			<return type="void" />
 			<argument index="0" name="src" type="Image" />
 			<argument index="1" name="mask" type="Image" />
-			<argument index="2" name="src_rect" type="Rect2" />
-			<argument index="3" name="dst" type="Vector2" />
+			<argument index="2" name="src_rect" type="Rect2i" />
+			<argument index="3" name="dst" type="Vector2i" />
 			<description>
 				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code], clipped accordingly to both image bounds. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. This image and [code]src[/code] image [b]must[/b] have the same format. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats. [code]src_rect[/code] with not positive size is treated as empty.
 			</description>
@@ -168,7 +168,7 @@
 		</method>
 		<method name="fill_rect">
 			<return type="void" />
-			<argument index="0" name="rect" type="Rect2" />
+			<argument index="0" name="rect" type="Rect2i" />
 			<argument index="1" name="color" type="Color" />
 			<description>
 				Fills [code]rect[/code] with [code]color[/code].
@@ -244,7 +244,7 @@
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Image" />
-			<argument index="0" name="rect" type="Rect2" />
+			<argument index="0" name="rect" type="Rect2i" />
 			<description>
 				Returns a new image that is a copy of the image's area specified with [code]rect[/code].
 			</description>
@@ -256,9 +256,9 @@
 			</description>
 		</method>
 		<method name="get_used_rect" qualifiers="const">
-			<return type="Rect2" />
+			<return type="Rect2i" />
 			<description>
-				Returns a [Rect2] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
+				Returns a [Rect2i] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -376,6 +376,19 @@
 			<return type="Image" />
 			<description>
 				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
+			</description>
+		</method>
+		<method name="rotate_180">
+			<return type="void" />
+			<description>
+				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
+			</description>
+		</method>
+		<method name="rotate_90">
+			<return type="void" />
+			<argument index="0" name="direction" type="int" enum="ClockDirection" />
+			<description>
+				Rotates the image in the specified [code]direction[/code] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">

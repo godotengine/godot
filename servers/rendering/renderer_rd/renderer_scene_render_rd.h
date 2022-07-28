@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_RD_H
-#define RENDERING_SERVER_SCENE_RENDER_RD_H
+#ifndef RENDERER_SCENE_RENDER_RD_H
+#define RENDERER_SCENE_RENDER_RD_H
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -37,13 +37,13 @@
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
+#include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
+#include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/renderer_scene_environment_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_sky_rd.h"
-#include "servers/rendering/renderer_rd/shaders/volumetric_fog.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
@@ -52,24 +52,24 @@ struct RenderDataRD {
 	RID render_buffers;
 
 	Transform3D cam_transform;
-	CameraMatrix cam_projection;
+	Projection cam_projection;
 	Vector2 taa_jitter;
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
 	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-	CameraMatrix view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+	Projection view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	Transform3D prev_cam_transform;
-	CameraMatrix prev_cam_projection;
+	Projection prev_cam_projection;
 	Vector2 prev_taa_jitter;
-	CameraMatrix prev_view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
+	Projection prev_view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
 
 	float z_near = 0.0;
 	float z_far = 0.0;
 
-	const PagedArray<RendererSceneRender::GeometryInstance *> *instances = nullptr;
+	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
 	const PagedArray<RID> *voxel_gi_instances = nullptr;
@@ -98,7 +98,7 @@ struct RenderDataRD {
 };
 
 class RendererSceneRenderRD : public RendererSceneRender {
-	friend RendererSceneSkyRD;
+	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
 
 protected:
@@ -122,16 +122,16 @@ protected:
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_color) = 0;
 
 	virtual void _render_shadow_begin() = 0;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) = 0;
+	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) = 0;
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
 
-	void _debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const CameraMatrix *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+	void _debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
 	void _debug_draw_cluster(RID p_render_buffers);
 
 	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
@@ -140,10 +140,11 @@ protected:
 	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
 	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) = 0;
 
-	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection);
-	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, RID p_normal_buffer, RID p_specular_buffer, RID p_metallic, const Color &p_metallic_mask, RID p_environment, const CameraMatrix &p_projection, bool p_use_additive);
-	void _process_sss(RID p_render_buffers, const CameraMatrix &p_camera);
-	void _process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const CameraMatrix &p_projection, const Transform3D &p_transform);
+	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection);
+	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
+	void _process_sss(RID p_render_buffers, const Projection &p_camera);
+	void _process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection, const Transform3D &p_transform);
+
 	void _copy_framebuffer_to_ssil(RID p_render_buffers);
 	void _process_taa(RID p_render_buffers, RID p_velocity_buffer, float p_z_near, float p_z_far);
 
@@ -160,11 +161,12 @@ protected:
 	void _disable_clear_request(const RenderDataRD *p_render_data);
 
 	// needed for a single argument calls (material and uv2)
-	PagedArrayPool<GeometryInstance *> cull_argument_pool;
-	PagedArray<GeometryInstance *> cull_argument; //need this to exist
+	PagedArrayPool<RenderGeometryInstance *> cull_argument_pool;
+	PagedArray<RenderGeometryInstance *> cull_argument; //need this to exist
 
+	RendererRD::SSEffects *ss_effects = nullptr;
 	RendererRD::GI gi;
-	RendererSceneSkyRD sky;
+	RendererRD::SkyRD sky;
 
 	RendererSceneEnvironmentRD *get_environment(RID p_environment) {
 		if (p_environment.is_valid()) {
@@ -209,7 +211,7 @@ private:
 
 		struct Reflection {
 			RID owner;
-			RendererSceneSkyRD::ReflectionData data;
+			RendererRD::SkyRD::ReflectionData data;
 			RID fbs[6];
 		};
 
@@ -362,7 +364,7 @@ private:
 
 	struct LightInstance {
 		struct ShadowTransform {
-			CameraMatrix camera;
+			Projection camera;
 			Transform3D transform;
 			float farplane;
 			float split;
@@ -404,21 +406,10 @@ private:
 
 	mutable RID_Owner<LightInstance> light_instance_owner;
 
-	/* FOG VOLUMES */
-
-	struct FogVolumeInstance {
-		RID volume;
-		Transform3D transform;
-		bool active = false;
-	};
-
-	mutable RID_Owner<FogVolumeInstance> fog_volume_instance_owner;
-
 	/* ENVIRONMENT */
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
-	bool ssao_using_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
 	float ssao_fadeout_from = 50.0;
@@ -469,8 +460,6 @@ private:
 	ClusterBuilderSharedDataRD cluster_builder_shared;
 	ClusterBuilderRD *current_cluster_builder = nullptr;
 
-	struct VolumetricFog;
-
 	struct RenderBuffers {
 		RenderBufferData *data = nullptr;
 		int internal_width = 0;
@@ -506,8 +495,8 @@ private:
 		Vector<View> views;
 
 		RendererRD::GI::SDFGI *sdfgi = nullptr;
-		VolumetricFog *volumetric_fog = nullptr;
 		RendererRD::GI::RenderBuffersGI rbgi;
+		RendererRD::Fog::VolumetricFog *volumetric_fog = nullptr;
 
 		ClusterBuilderRD *cluster_builder = nullptr;
 
@@ -561,47 +550,14 @@ private:
 
 			RID downsample_uniform_set;
 
-			RID last_frame;
-			Vector<RID> last_frame_slices;
-
-			CameraMatrix last_frame_projection;
+			Projection last_frame_projection;
 			Transform3D last_frame_transform;
 
-			struct SSAO {
-				RID ao_deinterleaved;
-				Vector<RID> ao_deinterleaved_slices;
-				RID ao_pong;
-				Vector<RID> ao_pong_slices;
-				RID ao_final;
-				RID importance_map[2];
-				RID depth_texture_view;
-
-				RID gather_uniform_set;
-				RID importance_map_uniform_set;
-			} ssao;
-
-			struct SSIL {
-				RID ssil_final;
-				RID deinterleaved;
-				Vector<RID> deinterleaved_slices;
-				RID pong;
-				Vector<RID> pong_slices;
-				RID edges;
-				Vector<RID> edges_slices;
-				RID importance_map[2];
-				RID depth_texture_view;
-
-				RID gather_uniform_set;
-				RID importance_map_uniform_set;
-				RID projection_uniform_set;
-			} ssil;
+			RendererRD::SSEffects::SSAORenderBuffers ssao;
+			RendererRD::SSEffects::SSILRenderBuffers ssil;
 		} ss_effects;
 
-		struct SSR {
-			RID normal_scaled;
-			RID depth_scaled;
-			RID blur_radius[2];
-		} ssr;
+		RendererRD::SSEffects::SSRRenderBuffers ssr;
 
 		struct TAA {
 			RID history;
@@ -780,203 +736,6 @@ private:
 		bool depth_prepass_used; // this does not seem used anywhere...
 	} render_state;
 
-	struct VolumetricFog {
-		enum {
-			MAX_TEMPORAL_FRAMES = 16
-		};
-
-		uint32_t width = 0;
-		uint32_t height = 0;
-		uint32_t depth = 0;
-
-		float length;
-		float spread;
-
-		RID light_density_map;
-		RID prev_light_density_map;
-		RID fog_map;
-		RID density_map;
-		RID light_map;
-		RID emissive_map;
-
-		RID fog_uniform_set;
-		RID copy_uniform_set;
-		RID process_uniform_set_density;
-		RID process_uniform_set;
-		RID process_uniform_set2;
-		RID sdfgi_uniform_set;
-		RID sky_uniform_set;
-
-		int last_shadow_filter = -1;
-	};
-
-	struct VolumetricFogShader {
-		enum FogSet {
-			FOG_SET_BASE,
-			FOG_SET_UNIFORMS,
-			FOG_SET_MATERIAL,
-			FOG_SET_MAX,
-		};
-
-		struct FogPushConstant {
-			float position[3];
-			float pad;
-
-			float extents[3];
-			float pad2;
-
-			int32_t corner[3];
-			uint32_t shape;
-
-			float transform[16];
-		};
-
-		struct VolumeUBO {
-			float fog_frustum_size_begin[2];
-			float fog_frustum_size_end[2];
-
-			float fog_frustum_end;
-			float z_near;
-			float z_far;
-			float time;
-
-			int32_t fog_volume_size[3];
-			uint32_t directional_light_count;
-
-			uint32_t use_temporal_reprojection;
-			uint32_t temporal_frame;
-			float detail_spread;
-			float temporal_blend;
-
-			float to_prev_view[16];
-			float transform[16];
-		};
-
-		ShaderCompiler compiler;
-		VolumetricFogShaderRD shader;
-		FogPushConstant push_constant;
-		RID volume_ubo;
-
-		RID default_shader;
-		RID default_material;
-		RID default_shader_rd;
-
-		RID base_uniform_set;
-
-		RID params_ubo;
-
-		enum {
-			VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY,
-			VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI,
-			VOLUMETRIC_FOG_PROCESS_SHADER_FILTER,
-			VOLUMETRIC_FOG_PROCESS_SHADER_FOG,
-			VOLUMETRIC_FOG_PROCESS_SHADER_COPY,
-			VOLUMETRIC_FOG_PROCESS_SHADER_MAX,
-		};
-
-		struct ParamsUBO {
-			float fog_frustum_size_begin[2];
-			float fog_frustum_size_end[2];
-
-			float fog_frustum_end;
-			float ambient_inject;
-			float z_far;
-			uint32_t filter_axis;
-
-			float ambient_color[3];
-			float sky_contribution;
-
-			int32_t fog_volume_size[3];
-			uint32_t directional_light_count;
-
-			float base_emission[3];
-			float base_density;
-
-			float base_scattering[3];
-			float phase_g;
-
-			float detail_spread;
-			float gi_inject;
-			uint32_t max_voxel_gi_instances;
-			uint32_t cluster_type_size;
-
-			float screen_size[2];
-			uint32_t cluster_shift;
-			uint32_t cluster_width;
-
-			uint32_t max_cluster_element_count_div_32;
-			uint32_t use_temporal_reprojection;
-			uint32_t temporal_frame;
-			float temporal_blend;
-
-			float cam_rotation[12];
-			float to_prev_view[16];
-			float radiance_inverse_xform[12];
-		};
-
-		VolumetricFogProcessShaderRD process_shader;
-
-		RID process_shader_version;
-		RID process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
-
-	} volumetric_fog;
-
-	uint32_t volumetric_fog_depth = 128;
-	uint32_t volumetric_fog_size = 128;
-	bool volumetric_fog_filter_active = true;
-
-	Vector3i _point_get_position_in_froxel_volume(const Vector3 &p_point, float fog_end, const Vector2 &fog_near_size, const Vector2 &fog_far_size, float volumetric_fog_detail_spread, const Vector3 &fog_size, const Transform3D &p_cam_transform);
-	void _volumetric_fog_erase(RenderBuffers *rb);
-	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
-
-	struct FogShaderData : public RendererRD::ShaderData {
-		bool valid = false;
-		RID version;
-
-		RID pipeline;
-		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
-
-		Vector<uint32_t> ubo_offsets;
-		uint32_t ubo_size = 0;
-
-		String path;
-		String code;
-		HashMap<StringName, HashMap<int, RID>> default_texture_params;
-
-		bool uses_time = false;
-
-		virtual void set_code(const String &p_Code);
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture, int p_index);
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-		virtual bool is_param_texture(const StringName &p_param) const;
-		virtual bool is_animated() const;
-		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-
-		FogShaderData() {}
-		virtual ~FogShaderData();
-	};
-
-	struct FogMaterialData : public RendererRD::MaterialData {
-		FogShaderData *shader_data = nullptr;
-		RID uniform_set;
-		bool uniform_set_updated;
-
-		virtual void set_render_priority(int p_priority) {}
-		virtual void set_next_pass(RID p_pass) {}
-		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
-		virtual ~FogMaterialData();
-	};
-
-	RendererRD::ShaderData *_create_fog_shader_func();
-	static RendererRD::ShaderData *_create_fog_shader_funcs();
-
-	RendererRD::MaterialData *_create_fog_material_func(FogShaderData *p_shader);
-	static RendererRD::MaterialData *_create_fog_material_funcs(RendererRD::ShaderData *p_shader);
-
 	RID shadow_sampler;
 
 	uint64_t scene_pass = 0;
@@ -991,12 +750,17 @@ private:
 
 	uint32_t max_cluster_elements = 512;
 
-	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RendererScene::RenderInfo *p_render_info = nullptr);
+	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RendererScene::RenderInfo *p_render_info = nullptr);
+
+	/* Volumetric Fog */
+
+	uint32_t volumetric_fog_size = 128;
+	uint32_t volumetric_fog_depth = 128;
+	bool volumetric_fog_filter_active = true;
+
+	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
 public:
-	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
-	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) = 0;
-
 	/* GI */
 
 	RendererRD::GI *get_gi() { return &gi; }
@@ -1150,7 +914,7 @@ public:
 	virtual RID light_instance_create(RID p_light) override;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
@@ -1199,7 +963,7 @@ public:
 		return Rect2(x / float(shadow_atlas->size), y / float(shadow_atlas->size), width / float(shadow_atlas->size), height / float(shadow_atlas->size));
 	}
 
-	_FORCE_INLINE_ CameraMatrix light_instance_get_shadow_camera(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Projection light_instance_get_shadow_camera(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].camera;
 	}
@@ -1393,7 +1157,7 @@ public:
 	virtual RID voxel_gi_instance_create(RID p_base) override;
 	virtual void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override;
 	virtual bool voxel_gi_needs_update(RID p_probe) const override;
-	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects) override;
+	virtual void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) override;
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
 
 	/* render buffers */
@@ -1436,11 +1200,11 @@ public:
 
 	virtual void update_uniform_sets(){};
 
-	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
-	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 
-	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) override;
+	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 	virtual void set_scene_pass(uint64_t p_pass) override {
 		scene_pass = p_pass;
@@ -1519,4 +1283,4 @@ public:
 	~RendererSceneRenderRD();
 };
 
-#endif // RASTERIZER_SCENE_RD_H
+#endif // RENDERER_SCENE_RENDER_RD_H

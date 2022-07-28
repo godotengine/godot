@@ -231,6 +231,14 @@ void OS::crash(const String &p_message) {
 	CRASH_NOW_MSG(p_message);
 }
 
+Vector<String> OS::get_system_fonts() const {
+	return ::OS::get_singleton()->get_system_fonts();
+}
+
+String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
+}
+
 String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
@@ -589,6 +597,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
@@ -1220,16 +1230,10 @@ Vector<uint8_t> File::get_buffer(int64_t p_length) const {
 String File::get_as_text() const {
 	ERR_FAIL_COND_V_MSG(f.is_null(), String(), "File must be opened before use, or is lacking read-write permission.");
 
-	String text;
 	uint64_t original_pos = f->get_position();
 	const_cast<FileAccess *>(*f)->seek(0);
 
-	String l = get_line();
-	while (!eof_reached()) {
-		text += l + "\n";
-		l = get_line();
-	}
-	text += l;
+	String text = f->get_as_utf8_string();
 
 	const_cast<FileAccess *>(*f)->seek(original_pos);
 
@@ -2286,6 +2290,10 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+String Engine::get_write_movie_path() const {
+	return ::Engine::get_singleton()->get_write_movie_path();
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	::Engine::get_singleton()->set_print_error_messages(p_enabled);
 }
@@ -2334,6 +2342,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+
+	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);

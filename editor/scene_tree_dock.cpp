@@ -72,7 +72,7 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
-		if (mb->is_pressed() && scene_tree->get_rect().has_point(mb->get_position())) {
+		if (mb->is_pressed() && scene_tree->get_rect().has_point(scene_tree->get_local_mouse_position())) {
 			tree_clicked = true;
 		} else if (!mb->is_pressed()) {
 			tree_clicked = false;
@@ -1122,7 +1122,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					case TOOL_CREATE_USER_INTERFACE: {
 						Control *node = memnew(Control);
-						node->set_anchors_and_offsets_preset(PRESET_WIDE); //more useful for resizable UIs.
+						node->set_anchors_and_offsets_preset(PRESET_FULL_RECT); //more useful for resizable UIs.
 						new_node = node;
 
 					} break;
@@ -1337,14 +1337,14 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
-				bool is_unique = p_node->is_unique_name_in_owner() && p_base->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;
-				if (is_unique) {
+				bool disable_unique = p_node->is_unique_name_in_owner() && p_root->get_node_or_null(UNIQUE_NODE_PREFIX + String(p_node->get_name())) != nullptr;
+				if (disable_unique) {
 					// Will create a unique name conflict. Disable before setting owner.
 					undo_redo->add_do_method(p_node, "set_unique_name_in_owner", false);
 				}
 				undo_redo->add_do_method(p_node, "set_owner", p_root);
 				undo_redo->add_undo_method(p_node, "set_owner", p_base);
-				if (is_unique) {
+				if (disable_unique) {
 					// Will create a unique name conflict. Enable after setting owner.
 					undo_redo->add_undo_method(p_node, "set_unique_name_in_owner", true);
 				}

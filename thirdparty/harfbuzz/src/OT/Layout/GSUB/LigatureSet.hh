@@ -6,12 +6,13 @@
 
 namespace OT {
 namespace Layout {
-namespace GSUB {
+namespace GSUB_impl {
 
+template <typename Types>
 struct LigatureSet
 {
   protected:
-  Array16OfOffset16To<Ligature>
+  Array16OfOffset16To<Ligature<Types>>
                 ligature;               /* Array LigatureSet tables
                                          * ordered by preference */
   public:
@@ -28,7 +29,7 @@ struct LigatureSet
     return
     + hb_iter (ligature)
     | hb_map (hb_add (this))
-    | hb_map ([glyphs] (const Ligature &_) { return _.intersects (glyphs); })
+    | hb_map ([glyphs] (const Ligature<Types> &_) { return _.intersects (glyphs); })
     | hb_any
     ;
   }
@@ -37,7 +38,7 @@ struct LigatureSet
   {
     + hb_iter (ligature)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const Ligature &_) { _.closure (c); })
+    | hb_apply ([c] (const Ligature<Types> &_) { _.closure (c); })
     ;
   }
 
@@ -45,7 +46,7 @@ struct LigatureSet
   {
     + hb_iter (ligature)
     | hb_map (hb_add (this))
-    | hb_apply ([c] (const Ligature &_) { _.collect_glyphs (c); })
+    | hb_apply ([c] (const Ligature<Types> &_) { _.collect_glyphs (c); })
     ;
   }
 
@@ -54,7 +55,7 @@ struct LigatureSet
     return
     + hb_iter (ligature)
     | hb_map (hb_add (this))
-    | hb_map ([c] (const Ligature &_) { return _.would_apply (c); })
+    | hb_map ([c] (const Ligature<Types> &_) { return _.would_apply (c); })
     | hb_any
     ;
   }
@@ -65,7 +66,7 @@ struct LigatureSet
     unsigned int num_ligs = ligature.len;
     for (unsigned int i = 0; i < num_ligs; i++)
     {
-      const Ligature &lig = this+ligature[i];
+      const auto &lig = this+ligature[i];
       if (lig.apply (c)) return_trace (true);
     }
 

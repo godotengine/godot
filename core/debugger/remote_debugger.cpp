@@ -452,6 +452,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	msg.push_back(error_str);
 	ERR_FAIL_COND(!script_lang);
 	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
+	if (allow_focus_steal_fn) {
+		allow_focus_steal_fn();
+	}
 	send_message("debug_enter", msg);
 
 	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();

@@ -528,7 +528,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
+						push_constant.flags |= FLAGS_TRANSPOSE_RECT;
 					}
 
 					if (rect->flags & CANVAS_RECT_CLIP_UV) {
@@ -1304,7 +1304,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		Size2i ssize = texture_storage->render_target_get_size(p_to_render_target);
 
 		Transform3D screen_transform;
-		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
+		screen_transform.translate_local(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		screen_transform.scale(Vector3(2.0f / ssize.width, 2.0f / ssize.height, 1.0f));
 		_update_transform_to_mat4(screen_transform, state_buffer.screen_transform);
 		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
@@ -1581,9 +1581,10 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
 
 		Rect2i rect((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+		RD::InitialAction initial_action = i == 0 ? RD::INITIAL_ACTION_CLEAR_REGION : RD::INITIAL_ACTION_CLEAR_REGION_CONTINUE;
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, initial_action, i != 3 ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, initial_action, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
-		CameraMatrix projection;
+		Projection projection;
 		{
 			real_t fov = 90;
 			real_t nearp = p_near;
@@ -1599,7 +1600,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		}
 
 		Vector3 cam_target = Basis(Vector3(0, 0, Math_TAU * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
-		projection = projection * CameraMatrix(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
+		projection = projection * Projection(Transform3D().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
@@ -1670,11 +1671,11 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	cc.push_back(Color(1, 1, 1, 1));
 
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR_REGION, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
 
-	CameraMatrix projection;
+	Projection projection;
 	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
-	projection = projection * CameraMatrix(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
+	projection = projection * Projection(Transform3D().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
 
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
@@ -1742,7 +1743,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc);
 
-	CameraMatrix projection;
+	Projection projection;
 
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
@@ -1967,6 +1968,10 @@ void RendererCanvasRenderRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::
 	oc->cull_mode = p_mode;
 }
 
+void RendererCanvasRenderRD::CanvasShaderData::set_path_hint(const String &p_path) {
+	path = p_path;
+}
+
 void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	//compile
 
@@ -2180,7 +2185,22 @@ void RendererCanvasRenderRD::CanvasShaderData::get_param_list(List<PropertyInfo>
 		}
 	}
 
+	String last_group;
 	for (const KeyValue<int, StringName> &E : order) {
+		String group = uniforms[E.value].group;
+		if (!uniforms[E.value].subgroup.is_empty()) {
+			group += "::" + uniforms[E.value].subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E.value]);
 		pi.name = E.value;
 		p_param_list->push_back(pi);
@@ -2431,6 +2451,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["NORMAL_MAP"] = "#define NORMAL_MAP_USED\n";
 		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
+		actions.usage_defines["SPECULAR_SHININESS"] = "#define SPECULAR_SHININESS_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";

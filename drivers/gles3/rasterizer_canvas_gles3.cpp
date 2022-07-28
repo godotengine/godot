@@ -135,7 +135,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		Size2i ssize = texture_storage->render_target_get_size(p_to_render_target);
 
 		Transform3D screen_transform;
-		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
+		screen_transform.translate_local(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		screen_transform.scale(Vector3(2.0f / ssize.width, 2.0f / ssize.height, 1.0f));
 		_update_transform_to_mat4(screen_transform, state_buffer.screen_transform);
 		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
@@ -1217,7 +1217,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {
 }
 
-void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {
+void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, Projection *p_xform_cache) {
 }
 
 void RasterizerCanvasGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {

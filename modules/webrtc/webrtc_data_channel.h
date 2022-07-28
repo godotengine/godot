@@ -81,4 +81,5 @@ public:
 
 VARIANT_ENUM_CAST(WebRTCDataChannel::WriteMode);
 VARIANT_ENUM_CAST(WebRTCDataChannel::ChannelState);
+
 #endif // WEBRTC_DATA_CHANNEL_H

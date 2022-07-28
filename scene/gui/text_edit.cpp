@@ -443,8 +443,10 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_caches();
-			_update_wrap_at_column(true);
+			if (is_inside_tree()) {
+				_update_caches();
+				_update_wrap_at_column(true);
+			}
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {

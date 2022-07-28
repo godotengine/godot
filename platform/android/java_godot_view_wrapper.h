@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_JAVA_GODOT_VIEW_WRAPPER_H
-#define GODOT_JAVA_GODOT_VIEW_WRAPPER_H
+#ifndef JAVA_GODOT_VIEW_WRAPPER_H
+#define JAVA_GODOT_VIEW_WRAPPER_H
 
 #include <android/log.h>
 #include <jni.h>
@@ -57,4 +57,4 @@ public:
 	~GodotJavaViewWrapper();
 };
 
-#endif // GODOT_JAVA_GODOT_VIEW_WRAPPER_H
+#endif // JAVA_GODOT_VIEW_WRAPPER_H

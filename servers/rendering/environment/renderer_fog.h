@@ -50,4 +50,4 @@ public:
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;
 };
 
-#endif // !RENDERER_FOG_H
+#endif // RENDERER_FOG_H

@@ -171,7 +171,7 @@ Node *SceneCreateDialog::create_scene_root() {
 			break;
 		case ROOT_USER_INTERFACE: {
 			Control *gui = memnew(Control);
-			gui->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+			gui->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 			root = gui;
 		} break;
 		case ROOT_OTHER:

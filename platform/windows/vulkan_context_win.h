@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VULKAN_DEVICE_WIN_H
-#define VULKAN_DEVICE_WIN_H
+#ifndef VULKAN_CONTEXT_WIN_H
+#define VULKAN_CONTEXT_WIN_H
 
 #include "drivers/vulkan/vulkan_context.h"
 
@@ -46,4 +46,4 @@ public:
 	~VulkanContextWindows();
 };
 
-#endif // VULKAN_DEVICE_WIN_H
+#endif // VULKAN_CONTEXT_WIN_H

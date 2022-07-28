@@ -173,7 +173,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 
 	Vector<String> split_after;
 	split_after.append("Custom");
-	split_after.append("PresetWide");
+	split_after.append("PresetFullRect");
 	split_after.append("PresetBottomLeft");
 	split_after.append("PresetCenter");
 
@@ -181,24 +181,18 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		String humanized_name = text_split[0];
-		if (humanized_name.begins_with("Preset")) {
-			if (humanized_name == "PresetWide") {
-				humanized_name = "Full Rect";
-			} else {
-				humanized_name = humanized_name.trim_prefix("Preset");
-				humanized_name = humanized_name.capitalize();
-			}
-
-			String icon_name = text_split[0].trim_prefix("Preset");
-			icon_name = "ControlAlign" + icon_name;
+		String option_name = text_split[0];
+		if (option_name.begins_with("Preset")) {
+			String preset_name = option_name.trim_prefix("Preset");
+			String humanized_name = preset_name.capitalize();
+			String icon_name = "ControlAlign" + preset_name;
 			options->add_icon_item(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(icon_name, "EditorIcons"), humanized_name);
 		} else {
-			options->add_item(humanized_name);
+			options->add_item(option_name);
 		}
 
 		options->set_item_metadata(j, current_val);
-		if (split_after.has(text_split[0])) {
+		if (split_after.has(option_name)) {
 			options->add_separator();
 			j++;
 		}
@@ -479,7 +473,7 @@ void ControlEditorToolbar::_set_anchors_and_offsets_preset(Control::LayoutPreset
 				case PRESET_BOTTOM_WIDE:
 				case PRESET_VCENTER_WIDE:
 				case PRESET_HCENTER_WIDE:
-				case PRESET_WIDE:
+				case PRESET_FULL_RECT:
 					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
 					break;
 			}
@@ -689,8 +683,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE: {
 			_set_anchors_and_offsets_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_AND_OFFSETS_PRESET_WIDE: {
-			_set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+		case ANCHORS_AND_OFFSETS_PRESET_FULL_RECT: {
+			_set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		} break;
 		case ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO: {
 			_set_anchors_and_offsets_to_keep_ratio();
@@ -741,8 +735,8 @@ void ControlEditorToolbar::_popup_callback(int p_op) {
 		case ANCHORS_PRESET_HCENTER_WIDE: {
 			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHORS_PRESET_WIDE: {
-			_set_anchors_preset(Control::PRESET_WIDE);
+		case ANCHORS_PRESET_FULL_RECT: {
+			_set_anchors_preset(Control::PRESET_FULL_RECT);
 		} break;
 
 		case CONTAINERS_H_PRESET_FILL: {
@@ -840,7 +834,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_VCENTER_WIDE);
 			p->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_AND_OFFSETS_PRESET_HCENTER_WIDE);
 			p->add_separator();
-			p->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_WIDE);
+			p->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_AND_OFFSETS_PRESET_FULL_RECT);
 			p->add_icon_item(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")), TTR("Keep Current Ratio"), ANCHORS_AND_OFFSETS_PRESET_KEEP_RATIO);
 			p->set_item_tooltip(19, TTR("Adjust anchors and offsets to match the current rect size."));
 
@@ -867,7 +861,7 @@ void ControlEditorToolbar::_notification(int p_what) {
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignVCenterWide"), SNAME("EditorIcons")), TTR("VCenter Wide"), ANCHORS_PRESET_VCENTER_WIDE);
 			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignHCenterWide"), SNAME("EditorIcons")), TTR("HCenter Wide"), ANCHORS_PRESET_HCENTER_WIDE);
 			anchors_popup->add_separator();
-			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignWide"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_WIDE);
+			anchors_popup->add_icon_item(get_theme_icon(SNAME("ControlAlignFullRect"), SNAME("EditorIcons")), TTR("Full Rect"), ANCHORS_PRESET_FULL_RECT);
 
 			anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
 

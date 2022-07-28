@@ -63,4 +63,4 @@ public:
 	AnimationLibrary();
 };
 
-#endif // ANIMATIONLIBRARY_H
+#endif // ANIMATION_LIBRARY_H

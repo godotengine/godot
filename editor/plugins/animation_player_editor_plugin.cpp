@@ -132,8 +132,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				Size2 icon_size = autoplay_img->get_size();
 				autoplay_reset_img.instantiate();
 				autoplay_reset_img->create(icon_size.x * 2, icon_size.y, false, autoplay_img->get_format());
-				autoplay_reset_img->blit_rect(autoplay_img, Rect2(Point2(), icon_size), Point2());
-				autoplay_reset_img->blit_rect(reset_img, Rect2(Point2(), icon_size), Point2(icon_size.x, 0));
+				autoplay_reset_img->blit_rect(autoplay_img, Rect2i(Point2i(), icon_size), Point2i());
+				autoplay_reset_img->blit_rect(reset_img, Rect2i(Point2i(), icon_size), Point2i(icon_size.x, 0));
 				autoplay_reset_icon.instantiate();
 				autoplay_reset_icon->set_image(autoplay_reset_img);
 			}

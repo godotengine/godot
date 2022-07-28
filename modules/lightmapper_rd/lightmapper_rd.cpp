@@ -271,8 +271,8 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		mi.offset.x = best_atlas_offsets[m_i].x;
 		mi.offset.y = best_atlas_offsets[m_i].y;
 		mi.slice = best_atlas_offsets[m_i].z;
-		albedo_images.write[mi.slice]->blit_rect(mi.data.albedo_on_uv2, Rect2(Vector2(), Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height())), mi.offset);
-		emission_images.write[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2(), Size2i(mi.data.emission_on_uv2->get_width(), mi.data.emission_on_uv2->get_height())), mi.offset);
+		albedo_images.write[mi.slice]->blit_rect(mi.data.albedo_on_uv2, Rect2i(Vector2i(), mi.data.albedo_on_uv2->get_size()), mi.offset);
+		emission_images.write[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2i(), mi.data.emission_on_uv2->get_size()), mi.offset);
 	}
 
 	return BAKE_OK;
@@ -1420,7 +1420,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			img2.instantiate();
 			img2->create(2, 2, false, Image::FORMAT_RGBAF, s);
 			img2->convert(Image::FORMAT_RGB8);
-			img->blit_rect(img2, Rect2(0, 0, 2, 2), Point2((j % 3) * 2, (j / 3) * 2));
+			img->blit_rect(img2, Rect2i(0, 0, 2, 2), Point2i((j % 3) * 2, (j / 3) * 2));
 		}
 		img->save_png("res://3_light_probe_" + itos(i) + ".png");
 	}

@@ -55,7 +55,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_function_args = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
+	bool in_node_ref = false;
 	bool in_annotation = false;
+	bool in_string_name = false;
 	bool is_hex_notation = false;
 	bool is_bin_notation = false;
 	bool expect_type = false;
@@ -164,6 +166,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					Color region_color = color_regions[in_region].color;
 					if (in_node_path && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
 						region_color = node_path_color;
+					}
+					if (in_node_ref && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+						region_color = node_ref_color;
+					}
+					if (in_string_name && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+						region_color = string_name_color;
 					}
 
 					prev_color = region_color;
@@ -387,10 +395,16 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
-		if (!in_node_path && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
+		if (!in_node_path && in_region == -1 && (str[j] == '^')) {
 			in_node_path = true;
 		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
 			in_node_path = false;
+		}
+
+		if (!in_node_ref && in_region == -1 && (str[j] == '$' || str[j] == '%')) {
+			in_node_ref = true;
+		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
+			in_node_ref = false;
 		}
 
 		if (!in_annotation && in_region == -1 && str[j] == '@') {
@@ -399,12 +413,24 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_annotation = false;
 		}
 
+		if (!in_string_name && in_region == -1 && str[j] == '&') {
+			in_string_name = true;
+		} else if (in_region != -1 || is_a_symbol) {
+			in_string_name = false;
+		}
+
 		if (in_node_path) {
 			next_type = NODE_PATH;
 			color = node_path_color;
+		} else if (in_node_ref) {
+			next_type = NODE_REF;
+			color = node_ref_color;
 		} else if (in_annotation) {
 			next_type = ANNOTATION;
 			color = annotation_color;
+		} else if (in_string_name) {
+			next_type = STRING_NAME;
+			color = string_name_color;
 		} else if (in_keyword) {
 			next_type = KEYWORD;
 			color = keyword_color;
@@ -592,17 +618,23 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
-		node_path_color = Color(0.39, 0.76, 0.35);
+		node_path_color = Color(0.72, 0.77, 0.49);
+		node_ref_color = Color(0.39, 0.76, 0.35);
 		annotation_color = Color(1.0, 0.7, 0.45);
+		string_name_color = Color(1.0, 0.66, 0.72);
 	} else {
 		function_definition_color = Color(0.0, 0.65, 0.73);
-		node_path_color = Color(0.32, 0.55, 0.29);
+		node_path_color = Color(0.62, 0.67, 0.39);
+		node_ref_color = Color(0.32, 0.55, 0.29);
 		annotation_color = Color(0.8, 0.5, 0.25);
+		string_name_color = Color(0.9, 0.56, 0.62);
 	}
 
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_path_color", node_path_color);
+	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/annotation_color", annotation_color);
+	EDITOR_DEF("text_editor/theme/highlighting/gdscript/string_name_color", string_name_color);
 	if (text_edit_color_theme == "Default" || godot_2_theme) {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/function_definition_color",
@@ -613,14 +645,24 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				node_path_color,
 				true);
 		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/gdscript/node_reference_color",
+				node_ref_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/annotation_color",
 				annotation_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/gdscript/string_name_color",
+				string_name_color,
 				true);
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");
 	node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
+	node_ref_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_reference_color");
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
+	string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
 	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 }
 

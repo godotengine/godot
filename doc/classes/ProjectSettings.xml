@@ -1986,6 +1986,12 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
+		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
+		</member>
+		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
+		</member>
+		<member name="threading/worker_pool/use_system_threads_for_low_priority_tasks" type="bool" setter="" getter="" default="true">
+		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>

@@ -30,6 +30,7 @@
 
 #include "raycast_occlusion_cull.h"
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
 
 #ifdef __SSE2__
@@ -78,9 +79,9 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
 }
 
-void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool) {
+void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
 	CameraRayThreadData td;
-	td.thread_count = p_thread_work_pool.get_thread_count();
+	td.thread_count = WorkerThreadPool::get_singleton()->get_thread_count();
 
 	td.z_near = p_cam_projection.get_z_near();
 	td.z_far = p_cam_projection.get_z_far() * 1.05f;
@@ -88,7 +89,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 	td.camera_dir = -p_cam_transform.basis.get_column(2);
 	td.camera_orthogonal = p_cam_orthogonal;
 
-	CameraMatrix inv_camera_matrix = p_cam_projection.inverse();
+	Projection inv_camera_matrix = p_cam_projection.inverse();
 	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
 	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
 	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
@@ -106,7 +107,8 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 
 	debug_tex_range = td.z_far;
 
-	p_thread_work_pool.do_work(td.thread_count, this, &RaycastHZBuffer::_camera_rays_threaded, &td);
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RaycastHZBuffer::_camera_rays_threaded, &td, td.thread_count, -1, true, SNAME("RaycastOcclusionCullUpdateCamera"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
 
 void RaycastOcclusionCull::RaycastHZBuffer::_camera_rays_threaded(uint32_t p_thread, const CameraRayThreadData *p_data) {
@@ -331,10 +333,10 @@ void RaycastOcclusionCull::scenario_remove_instance(RID p_scenario, RID p_instan
 }
 
 void RaycastOcclusionCull::Scenario::_update_dirty_instance_thread(int p_idx, RID *p_instances) {
-	_update_dirty_instance(p_idx, p_instances, nullptr);
+	_update_dirty_instance(p_idx, p_instances);
 }
 
-void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_instances, ThreadWorkPool *p_thread_pool) {
+void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_instances) {
 	OccluderInstance *occ_inst = instances.getptr(p_instances[p_idx]);
 
 	if (!occ_inst) {
@@ -355,14 +357,16 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	const Vector3 *read_ptr = occ->vertices.ptr();
 	Vector3 *write_ptr = occ_inst->xformed_vertices.ptr();
 
-	if (p_thread_pool && vertices_size > 1024) {
+	if (vertices_size > 1024) {
 		TransformThreadData td;
 		td.xform = occ_inst->xform;
 		td.read = read_ptr;
 		td.write = write_ptr;
 		td.vertex_count = vertices_size;
-		td.thread_count = p_thread_pool->get_thread_count();
-		p_thread_pool->do_work(td.thread_count, this, &Scenario::_transform_vertices_thread, &td);
+		td.thread_count = WorkerThreadPool::get_singleton()->get_thread_count();
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_transform_vertices_thread, &td, td.thread_count, -1, true, SNAME("RaycastOcclusionCull"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 	} else {
 		_transform_vertices_range(read_ptr, write_ptr, occ_inst->xform, 0, vertices_size);
 	}
@@ -392,7 +396,7 @@ void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {
 	scenario->commit_done = true;
 }
 
-bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
+bool RaycastOcclusionCull::Scenario::update() {
 	ERR_FAIL_COND_V(singleton == nullptr, false);
 
 	if (commit_thread == nullptr) {
@@ -426,13 +430,15 @@ bool RaycastOcclusionCull::Scenario::update(ThreadWorkPool &p_thread_pool) {
 		instances.erase(removed_instances[i]);
 	}
 
-	if (dirty_instances_array.size() / p_thread_pool.get_thread_count() > 128) {
+	if (dirty_instances_array.size() / WorkerThreadPool::get_singleton()->get_thread_count() > 128) {
 		// Lots of instances, use per-instance threading
-		p_thread_pool.do_work(dirty_instances_array.size(), this, &Scenario::_update_dirty_instance_thread, dirty_instances_array.ptr());
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_update_dirty_instance_thread, dirty_instances_array.ptr(), dirty_instances_array.size(), -1, true, SNAME("RaycastOcclusionCullUpdate"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+
 	} else {
 		// Few instances, use threading on the vertex transforms
 		for (unsigned int i = 0; i < dirty_instances_array.size(); i++) {
-			_update_dirty_instance(i, dirty_instances_array.ptr(), &p_thread_pool);
+			_update_dirty_instance(i, dirty_instances_array.ptr());
 		}
 	}
 
@@ -484,7 +490,7 @@ void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThrea
 	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &p_raycast_data->rays[p_idx]);
 }
 
-void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count, ThreadWorkPool &p_thread_pool) const {
+void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
 	ERR_FAIL_COND(singleton == nullptr);
 	if (raycast_singleton->ebr_device == nullptr) {
 		return; // Embree is initialized on demand when there is some scenario with occluders in it.
@@ -498,7 +504,8 @@ void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32
 	td.rays = r_rays;
 	td.masks = p_valid_masks;
 
-	p_thread_pool.do_work(p_tile_count, this, &Scenario::_raycast, &td);
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_raycast, &td, p_tile_count, -1, true, SNAME("RaycastOcclusionCullRaycast"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 }
 
 ////////////////////////////////////////////////////////
@@ -524,7 +531,7 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
-void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {
+void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
 	}
@@ -537,16 +544,16 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 
 	Scenario &scenario = scenarios[buffer.scenario_rid];
 
-	bool removed = scenario.update(p_thread_pool);
+	bool removed = scenario.update();
 
 	if (removed) {
 		scenarios.erase(buffer.scenario_rid);
 		return;
 	}
 
-	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal, p_thread_pool);
+	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal);
 
-	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count, p_thread_pool);
+	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
 	buffer.update_mips();
 }

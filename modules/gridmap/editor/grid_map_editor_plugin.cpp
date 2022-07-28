@@ -545,7 +545,7 @@ void GridMapEditor::_update_paste_indicator() {
 	Basis rot;
 	rot.set_orthogonal_index(paste_indicator.orientation);
 	xf.basis = rot * xf.basis;
-	xf.translate((-center * node->get_cell_size()) / scale);
+	xf.translate_local((-center * node->get_cell_size()) / scale);
 
 	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
@@ -553,7 +553,7 @@ void GridMapEditor::_update_paste_indicator() {
 		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
-		xf.translate(item.grid_offset * node->get_cell_size());
+		xf.translate_local(item.grid_offset * node->get_cell_size());
 
 		Basis item_rot;
 		item_rot.set_orthogonal_index(item.orientation);
@@ -1262,7 +1262,7 @@ GridMapEditor::GridMapEditor() {
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	info_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	info_message->set_anchors_and_offsets_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	info_message->set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
 
 	edit_axis = Vector3::AXIS_Y;

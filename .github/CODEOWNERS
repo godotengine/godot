@@ -139,10 +139,10 @@ doc_classes/*                       @godotengine/documentation
 # Platform
 
 /platform/android/                  @godotengine/android
-/platform/iphone/                   @godotengine/ios
+/platform/ios/                      @godotengine/ios
 /platform/javascript/               @godotengine/html5
 /platform/linuxbsd/                 @godotengine/linux-bsd
-/platform/osx/                      @godotengine/macos
+/platform/macos/                    @godotengine/macos
 /platform/uwp/                      @godotengine/uwp
 /platform/windows/                  @godotengine/windows
 

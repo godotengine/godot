@@ -45,7 +45,7 @@ uint32_t MobileVRInterface::get_capabilities() const {
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
-	// Well it may on Mac OS X because we're getting a calibrated value in the current implementation but Android we're getting raw data.
+	// Well it may on macOS because we're getting a calibrated value in the current implementation but Android we're getting raw data.
 	// This is a fairly simple adjustment we can do to correct for the magnetometer data being elliptical
 
 	Vector3 mag_raw = p_magnetometer;
@@ -452,10 +452,10 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
 
-	CameraMatrix eye;
+	Projection eye;
 
 	aspect = p_aspect;
 	eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);

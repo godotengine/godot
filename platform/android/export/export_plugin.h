@@ -35,7 +35,7 @@
 
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
-#include "editor/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 
 const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">

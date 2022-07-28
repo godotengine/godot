@@ -254,6 +254,9 @@ public:
 	void crop_from_point(int p_x, int p_y, int p_width, int p_height);
 	void crop(int p_width, int p_height);
 
+	void rotate_90(ClockDirection p_direction);
+	void rotate_180();
+
 	void flip_x();
 	void flip_y();
 
@@ -370,15 +373,15 @@ public:
 	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
 	void bump_map_to_normal_map(float bump_scale = 1.0);
 
-	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
-	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
-	void blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
-	void blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
+	void blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
+	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest);
+	void blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
+	void blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest);
 	void fill(const Color &p_color);
-	void fill_rect(const Rect2 &p_rect, const Color &p_color);
+	void fill_rect(const Rect2i &p_rect, const Color &p_color);
 
-	Rect2 get_used_rect() const;
-	Ref<Image> get_rect(const Rect2 &p_area) const;
+	Rect2i get_used_rect() const;
+	Ref<Image> get_rect(const Rect2i &p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels));
 	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels));

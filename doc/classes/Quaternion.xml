@@ -74,16 +74,6 @@
 				[b]Note:[/b] This method has an abnormally high amount of floating-point error, so methods such as [code]is_zero_approx[/code] will not work reliably.
 			</description>
 		</method>
-		<method name="cubic_slerp" qualifiers="const">
-			<return type="Quaternion" />
-			<argument index="0" name="b" type="Quaternion" />
-			<argument index="1" name="pre_a" type="Quaternion" />
-			<argument index="2" name="post_b" type="Quaternion" />
-			<argument index="3" name="weight" type="float" />
-			<description>
-				Performs a cubic spherical interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
-			</description>
-		</method>
 		<method name="dot" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="with" type="Quaternion" />
@@ -169,6 +159,16 @@
 			<argument index="1" name="weight" type="float" />
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.
+			</description>
+		</method>
+		<method name="spherical_cubic_interpolate" qualifiers="const">
+			<return type="Quaternion" />
+			<argument index="0" name="b" type="Quaternion" />
+			<argument index="1" name="pre_a" type="Quaternion" />
+			<argument index="2" name="post_b" type="Quaternion" />
+			<argument index="3" name="weight" type="float" />
+			<description>
+				Performs a spherical cubic interpolation between quaternions [code]pre_a[/code], this vector, [code]b[/code], and [code]post_b[/code], by the given amount [code]weight[/code].
 			</description>
 		</method>
 	</methods>

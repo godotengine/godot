@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
-
 #ifndef TEST_TEXT_SERVER_H
 #define TEST_TEXT_SERVER_H
+
+#ifdef TOOLS_ENABLED
 
 #include "editor/builtin_fonts.gen.h"
 #include "servers/text_server.h"
@@ -561,5 +561,6 @@ TEST_SUITE("[[TextServer]") {
 }
 }; // namespace TestTextServer
 
-#endif // TEST_TEXT_SERVER_H
 #endif // TOOLS_ENABLED
+
+#endif // TEST_TEXT_SERVER_H

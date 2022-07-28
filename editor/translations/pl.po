@@ -2176,14 +2176,15 @@ msgstr "Ulubione:"
 msgid "Recent:"
 msgstr "Ostatnie:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Szukaj:"
 
-#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/editor_quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Pasujące:"
@@ -2243,8 +2244,8 @@ msgstr "Szukaj zastępczego zasobu:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/editor_quick_open.cpp editor/filesystem_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
@@ -5627,6 +5628,10 @@ msgstr ""
 #, fuzzy
 msgid "Drag And Drop Selection"
 msgstr "Wybór GridMap"
+
+#: editor/editor_settings.cpp
+msgid "Stay In Script Editor On Node Selected"
+msgstr ""
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -11900,6 +11905,11 @@ msgstr "Animacje:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "New Animation"
 msgstr "Nowa animacja"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "Filter animations"
+msgstr "Filtruj metody"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"

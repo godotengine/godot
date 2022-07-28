@@ -342,4 +342,4 @@ public:
 	~FileSystemDock();
 };
 
-#endif // SCENES_DOCK_H
+#endif // FILESYSTEM_DOCK_H

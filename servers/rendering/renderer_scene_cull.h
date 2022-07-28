@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_CULL_H
-#define RENDERING_SERVER_SCENE_CULL_H
+#ifndef RENDERER_SCENE_CULL_H
+#define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/bin_sorted_array.h"
@@ -272,7 +272,7 @@ public:
 		RID base_rid;
 		union {
 			uint64_t instance_data_rid;
-			RendererSceneRender::GeometryInstance *instance_geometry;
+			RenderGeometryInstance *instance_geometry;
 			InstanceVisibilityNotifierData *visibility_notifier = nullptr;
 		};
 		Instance *instance = nullptr;
@@ -578,7 +578,7 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
+		RenderGeometryInstance *geometry_instance = nullptr;
 		HashSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
@@ -782,14 +782,14 @@ public:
 	HashSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
-	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
+	PagedArrayPool<RenderGeometryInstance *> geometry_instance_cull_page_pool;
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<Instance *> instance_shadow_cull_result;
 
 	struct InstanceCullResult {
-		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
+		PagedArray<RenderGeometryInstance *> geometry_instances;
 		PagedArray<Instance *> lights;
 		PagedArray<RID> light_instances;
 		PagedArray<RID> lightmaps;
@@ -800,10 +800,10 @@ public:
 		PagedArray<RID> fog_volumes;
 
 		struct DirectionalShadow {
-			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+			PagedArray<RenderGeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
 		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		PagedArray<RendererSceneRender::GeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RenderGeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
 		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
 
 		void clear() {
@@ -882,7 +882,7 @@ public:
 			}
 		}
 
-		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RendererSceneRender::GeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
+		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RenderGeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
 			geometry_instances.set_page_pool(p_geometry_instance_pool);
 			light_instances.set_page_pool(p_rid_pool);
 			lights.set_page_pool(p_instance_pool);
@@ -980,9 +980,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -992,7 +992,7 @@ public:
 			struct Cascade {
 				Frustum frustum;
 
-				CameraMatrix projection;
+				Projection projection;
 				Transform3D transform;
 				real_t zfar;
 				real_t split;
@@ -1045,7 +1045,7 @@ public:
 		uint32_t visible_layers;
 		Instance *render_reflection_probe = nullptr;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
-		const CameraMatrix *camera_matrix;
+		const Projection *camera_matrix;
 		uint64_t visibility_viewport_mask;
 	};
 
@@ -1183,4 +1183,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // RENDERING_SERVER_SCENE_CULL_H
+#endif // RENDERER_SCENE_CULL_H

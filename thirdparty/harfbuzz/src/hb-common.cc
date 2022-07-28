@@ -108,7 +108,7 @@ _hb_options_init ()
 /**
  * hb_tag_from_string:
  * @str: (array length=len) (element-type uint8_t): String to convert
- * @len: Length of @str, or -1 if it is %NULL-terminated
+ * @len: Length of @str, or -1 if it is `NULL`-terminated
  *
  * Converts a string into an #hb_tag_t. Valid tags
  * are four characters. Shorter input strings will be
@@ -170,7 +170,7 @@ static const char direction_strings[][4] = {
 /**
  * hb_direction_from_string:
  * @str: (array length=len) (element-type uint8_t): String to convert
- * @len: Length of @str, or -1 if it is %NULL-terminated
+ * @len: Length of @str, or -1 if it is `NULL`-terminated
  *
  * Converts a string to an #hb_direction_t.
  *
@@ -357,7 +357,7 @@ retry:
  * hb_language_from_string:
  * @str: (array length=len) (element-type uint8_t): a string representing
  *       a BCP 47 language tag
- * @len: length of the @str, or -1 if it is %NULL-terminated.
+ * @len: length of the @str, or -1 if it is `NULL`-terminated.
  *
  * Converts @str representing a BCP 47 language tag to the corresponding
  * #hb_language_t.
@@ -396,7 +396,7 @@ hb_language_from_string (const char *str, int len)
  * Converts an #hb_language_t to a string.
  *
  * Return value: (transfer none):
- * A %NULL-terminated string representing the @language. Must not be freed by
+ * A `NULL`-terminated string representing the @language. Must not be freed by
  * the caller.
  *
  * Since: 0.9.2
@@ -439,6 +439,38 @@ hb_language_get_default ()
   }
 
   return language;
+}
+
+/**
+ * hb_language_matches:
+ * @language: The #hb_language_t to work on
+ * @specific: Another #hb_language_t
+ *
+ * Check whether a second language tag is the same or a more
+ * specific version of the provided language tag.  For example,
+ * "fa_IR.utf8" is a more specific tag for "fa" or for "fa_IR".
+ *
+ * Return value: `true` if languages match, `false` otherwise.
+ *
+ * Since: 5.0.0
+ **/
+hb_bool_t
+hb_language_matches (hb_language_t language,
+		     hb_language_t specific)
+{
+  if (language == specific) return true;
+  if (!language || !specific) return false;
+
+  const char *l = language->s;
+  const char *s = specific->s;
+  unsigned ll = strlen (l);
+  unsigned sl = strlen (s);
+
+  if (ll > sl)
+    return false;
+
+  return strncmp (l, s, ll) == 0 &&
+	 (s[ll] == '\0' || s[ll] == '-');
 }
 
 
@@ -498,7 +530,7 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
  * hb_script_from_string:
  * @str: (array length=len) (element-type uint8_t): a string representing an
  *       ISO 15924 tag.
- * @len: length of the @str, or -1 if it is %NULL-terminated.
+ * @len: length of the @str, or -1 if it is `NULL`-terminated.
  *
  * Converts a string @str representing an ISO 15924 script tag to a
  * corresponding #hb_script_t. Shorthand for hb_tag_from_string() then
@@ -693,8 +725,8 @@ hb_version_string ()
  * Tests the library version against a minimum value,
  * as three integer components.
  *
- * Return value: %true if the library is equal to or greater than
- * the test value, %false otherwise
+ * Return value: `true` if the library is equal to or greater than
+ * the test value, `false` otherwise
  *
  * Since: 0.9.30
  **/
@@ -881,7 +913,7 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature)
 /**
  * hb_feature_from_string:
  * @str: (array length=len) (element-type uint8_t): a string to parse
- * @len: length of @str, or -1 if string is %NULL terminated
+ * @len: length of @str, or -1 if string is `NULL` terminated
  * @feature: (out): the #hb_feature_t to initialize with the parsed values
  *
  * Parses a string into a #hb_feature_t.
@@ -923,7 +955,7 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature)
  * </informaltable>
  *
  * Return value:
- * %true if @str is successfully parsed, %false otherwise
+ * `true` if @str is successfully parsed, `false` otherwise
  *
  * Since: 0.9.5
  **/
@@ -954,7 +986,7 @@ hb_feature_from_string (const char *str, int len,
  * @buf: (array length=size) (out): output string
  * @size: the allocated size of @buf
  *
- * Converts a #hb_feature_t into a %NULL-terminated string in the format
+ * Converts a #hb_feature_t into a `NULL`-terminated string in the format
  * understood by hb_feature_from_string(). The client in responsible for
  * allocating big enough size for @buf, 128 bytes is more than enough.
  *
@@ -1022,7 +1054,7 @@ parse_one_variation (const char **pp, const char *end, hb_variation_t *variation
 /**
  * hb_variation_from_string:
  * @str: (array length=len) (element-type uint8_t): a string to parse
- * @len: length of @str, or -1 if string is %NULL terminated
+ * @len: length of @str, or -1 if string is `NULL` terminated
  * @variation: (out): the #hb_variation_t to initialize with the parsed values
  *
  * Parses a string into a #hb_variation_t.
@@ -1035,7 +1067,7 @@ parse_one_variation (const char **pp, const char *end, hb_variation_t *variation
  * number. For example `wght=500`, or `slnt=-7.5`.
  *
  * Return value:
- * %true if @str is successfully parsed, %false otherwise
+ * `true` if @str is successfully parsed, `false` otherwise
  *
  * Since: 1.4.2
  */
@@ -1107,7 +1139,7 @@ get_C_locale ()
  * @buf: (array length=size) (out): output string
  * @size: the allocated size of @buf
  *
- * Converts an #hb_variation_t into a %NULL-terminated string in the format
+ * Converts an #hb_variation_t into a `NULL`-terminated string in the format
  * understood by hb_variation_from_string(). The client in responsible for
  * allocating big enough size for @buf, 128 bytes is more than enough.
  *

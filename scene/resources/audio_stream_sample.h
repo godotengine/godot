@@ -75,6 +75,8 @@ public:
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
+	virtual void tag_used_streams() override;
+
 	AudioStreamPlaybackSample();
 };
 
@@ -144,7 +146,7 @@ public:
 
 	Error save_to_wav(const String &p_path);
 
-	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 
 	AudioStreamSample();

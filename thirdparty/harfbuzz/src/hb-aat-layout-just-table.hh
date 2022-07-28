@@ -48,7 +48,7 @@ struct ActionSubrecordHeader
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   HBUINT16	actionClass;	/* The JustClass value associated with this
@@ -65,7 +65,7 @@ struct DecompositionAction
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   ActionSubrecordHeader
@@ -112,7 +112,7 @@ struct ConditionalAddGlyphAction
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -137,7 +137,7 @@ struct DuctileGlyphAction
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -163,7 +163,7 @@ struct RepeatedAddGlyphAction
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -294,7 +294,7 @@ struct WidthDeltaPair
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:

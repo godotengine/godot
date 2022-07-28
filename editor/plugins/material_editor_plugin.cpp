@@ -130,7 +130,7 @@ MaterialEditor::MaterialEditor() {
 	layout_2d = memnew(HBoxContainer);
 	layout_2d->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	add_child(layout_2d);
-	layout_2d->set_anchors_and_offsets_preset(PRESET_WIDE);
+	layout_2d->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	rect_instance = memnew(ColorRect);
 	layout_2d->add_child(rect_instance);
@@ -143,7 +143,7 @@ MaterialEditor::MaterialEditor() {
 	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
-	vc->set_anchors_and_offsets_preset(PRESET_WIDE);
+	vc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
 	world_3d.instantiate();
@@ -155,7 +155,9 @@ MaterialEditor::MaterialEditor() {
 
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 3)));
-	camera->set_perspective(45, 0.1, 10);
+	// Use low field of view so the sphere/box is fully encompassed within the preview,
+	// without much distortion.
+	camera->set_perspective(20, 0.1, 10);
 	camera->make_current();
 	viewport->add_child(camera);
 
@@ -177,8 +179,8 @@ MaterialEditor::MaterialEditor() {
 	Transform3D box_xform;
 	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(25.0));
 	box_xform.basis = box_xform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg2rad(-25.0));
-	box_xform.basis.scale(Vector3(0.8, 0.8, 0.8));
-	box_xform.origin.y = 0.2;
+	box_xform.basis.scale(Vector3(0.7, 0.7, 0.7));
+	box_xform.origin.y = 0.05;
 	box_instance->set_transform(box_xform);
 
 	sphere_mesh.instantiate();
@@ -190,7 +192,7 @@ MaterialEditor::MaterialEditor() {
 
 	layout_3d = memnew(HBoxContainer);
 	add_child(layout_3d);
-	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
+	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
 	layout_3d->add_child(vb_shape);

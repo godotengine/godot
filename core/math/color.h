@@ -215,12 +215,12 @@ struct _NO_DISCARD_ Color {
 	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(Math::round(a * 255.0f), 0.0f, 255.0f)); }
 
-	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
-	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v()); }
-	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v); }
-	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l()); }
-	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l()); }
-	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l); }
+	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v(), a); }
+	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v(), a); }
+	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v, a); }
+	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l(), a); }
+	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
+	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
 
 	_FORCE_INLINE_ Color() {}
 

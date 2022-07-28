@@ -154,16 +154,28 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {
-						if (anim->track_get_path(i).get_subname_count() != 1 || !(anim->track_get_type(i) == Animation::TYPE_POSITION_3D || anim->track_get_type(i) == Animation::TYPE_ROTATION_3D || anim->track_get_type(i) == Animation::TYPE_SCALE_3D)) {
-							continue;
-						}
 						String track_path = String(anim->track_get_path(i).get_concatenated_names());
+						Node *orig_node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
 						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-						if (node) {
+						while (node) {
 							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
 							if (track_skeleton && track_skeleton == skeleton) {
-								anim->track_set_path(i, String("%") + unique_name + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+								if (node == orig_node) {
+									if (anim->track_get_path(i).get_subname_count() > 0) {
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+									} else {
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name);
+									}
+								} else {
+									if (anim->track_get_path(i).get_subname_count() > 0) {
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node) + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+									} else {
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node));
+									}
+								}
+								break;
 							}
+							node = node->get_parent();
 						}
 					}
 				}

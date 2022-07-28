@@ -63,7 +63,7 @@ public:
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const override;
 	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) override;
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
-	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, CameraMatrix &r_camera_matrix) override;
+	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual bool copy_render_target_to_image(RID p_from_render_target, void *p_swapchain_graphics_data, int p_image_index) override;
 
 private:
@@ -90,4 +90,4 @@ private:
 	XrResult xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result);
 };
 
-#endif // !OPENXR_VULKAN_EXTENSION_H
+#endif // OPENXR_VULKAN_EXTENSION_H

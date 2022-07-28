@@ -824,12 +824,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
 				_zoom_out();
+				accept_event();
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_reset_zoom();
+				accept_event();
 			}
 		}
 	}
@@ -1592,6 +1595,10 @@ void CodeTextEditor::set_error(const String &p_error) {
 void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 	error_line = p_line;
 	error_column = p_column;
+}
+
+Point2i CodeTextEditor::get_error_pos() const {
+	return Point2i(error_line, error_column);
 }
 
 void CodeTextEditor::goto_error() {

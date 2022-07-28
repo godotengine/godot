@@ -1268,7 +1268,7 @@ void GI::SDFGI::update_light() {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, RendererSceneSkyRD::Sky *p_sky) {
+void GI::SDFGI::update_probes(RendererSceneEnvironmentRD *p_env, SkyRD::Sky *p_sky) {
 	RD::get_singleton()->draw_command_begin_label("SDFGI Update Probes");
 
 	SDFGIShader::IntegratePushConstant push_constant;
@@ -1482,7 +1482,7 @@ void GI::SDFGI::update_cascades() {
 	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, RD::BARRIER_MASK_COMPUTE);
 }
 
-void GI::SDFGI::debug_draw(uint32_t p_view_count, const CameraMatrix *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
+void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
@@ -1615,7 +1615,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const CameraMatrix *p_projecti
 		push_constant.cam_transform[15] = 1;
 
 		// need to properly unproject for asymmetric projection matrices in stereo..
-		CameraMatrix inv_projection = p_projections[v].inverse();
+		Projection inv_projection = p_projections[v].inverse();
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				push_constant.inv_projection[i * 4 + j] = inv_projection.matrix[i][j];
@@ -1632,7 +1632,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const CameraMatrix *p_projecti
 	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true, false, false, false, RID(), p_view_count > 1);
 }
 
-void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const CameraMatrix *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	// setup scene data
@@ -1947,7 +1947,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 	}
 }
 
-void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RendererSceneRender::GeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
+void GI::SDFGI::render_region(RID p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, RendererSceneRenderRD *p_scene_render) {
 	//print_line("rendering region " + itos(p_region));
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.get_or_null(p_render_buffers);
 	ERR_FAIL_COND(!rb); // we wouldn't be here if this failed but...
@@ -2428,7 +2428,7 @@ void GI::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_co
 ////////////////////////////////////////////////////////////////////////////////
 // VoxelGIInstance
 
-void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
+void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	uint32_t data_version = gi->voxel_gi_get_data_version(probe);
@@ -2951,10 +2951,10 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 		//this could probably be better parallelized in compute..
 		for (int i = 0; i < (int)p_dynamic_objects.size(); i++) {
-			RendererSceneRender::GeometryInstance *instance = p_dynamic_objects[i];
+			RenderGeometryInstance *instance = p_dynamic_objects[i];
 
 			//transform aabb to voxel_gi
-			AABB aabb = (to_probe_xform * p_scene_render->geometry_instance_get_transform(instance)).xform(p_scene_render->geometry_instance_get_aabb(instance));
+			AABB aabb = (to_probe_xform * instance->get_transform()).xform(instance->get_aabb());
 
 			//this needs to wrap to grid resolution to avoid jitter
 			//also extend margin a bit just in case
@@ -3015,7 +3015,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(1)) < 0);
 				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_column(2)) > 0);
 
-				CameraMatrix cm;
+				Projection cm;
 				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
 
 				if (p_scene_render->cull_argument.size() == 0) {
@@ -3140,14 +3140,14 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 	last_probe_version = gi->voxel_gi_get_version(probe);
 }
 
-void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
+void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	if (mipmaps.size() == 0) {
 		return;
 	}
 
-	CameraMatrix cam_transform = (p_camera_with_transform * CameraMatrix(transform)) * CameraMatrix(gi->voxel_gi_get_to_cell_xform(probe).affine_inverse());
+	Projection cam_transform = (p_camera_with_transform * Projection(transform)) * Projection(gi->voxel_gi_get_to_cell_xform(probe).affine_inverse());
 
 	int level = 0;
 	Vector3i octree_size = gi->voxel_gi_get_octree_size(probe);
@@ -3233,7 +3233,7 @@ GI::~GI() {
 	singleton = nullptr;
 }
 
-void GI::init(RendererSceneSkyRD *p_sky) {
+void GI::init(SkyRD *p_sky) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3352,7 +3352,11 @@ void GI::init(RendererSceneSkyRD *p_sky) {
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
+				if (p_sky->sky_use_cubemap_array) {
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE));
+				} else {
+					u.append_id(texture_storage->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
+				}
 				uniforms.push_back(u);
 			}
 			{
@@ -3617,7 +3621,7 @@ void GI::RenderBuffersGI::free() {
 	}
 }
 
-void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const CameraMatrix *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
+void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -3706,7 +3710,7 @@ void GI::process_gi(RID p_render_buffers, const RID *p_normal_roughness_slices, 
 	// Now compute the contents of our buffers.
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin(true);
 
-	// Render each eye seperately.
+	// Render each eye separately.
 	// We need to look into whether we can make our compute shader use Multiview but not sure that works or makes a difference..
 
 	// setup our push constant
@@ -3956,14 +3960,14 @@ bool GI::voxel_gi_needs_update(RID p_probe) const {
 	return voxel_gi->last_probe_version != voxel_gi_get_version(voxel_gi->probe);
 }
 
-void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
+void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects, RendererSceneRenderRD *p_scene_render) {
 	VoxelGIInstance *voxel_gi = get_probe_instance(p_probe);
 	ERR_FAIL_COND(!voxel_gi);
 
 	voxel_gi->update(p_update_light_instances, p_light_instances, p_dynamic_objects, p_scene_render);
 }
 
-void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
+void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_COND(!voxel_gi);
 

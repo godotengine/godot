@@ -39,6 +39,12 @@
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
+			<argument index="0" name="from" type="Projection" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Transform3D">
+			<return type="Transform3D" />
 			<argument index="0" name="x_axis" type="Vector3" />
 			<argument index="1" name="y_axis" type="Vector3" />
 			<argument index="2" name="z_axis" type="Vector3" />
@@ -106,7 +112,7 @@
 				Returns a copy of the transform with its basis and origin scaled by the given [code]scale[/code] factor, using matrix multiplication.
 			</description>
 		</method>
-		<method name="sphere_interpolate_with" qualifiers="const">
+		<method name="spherical_interpolate_with" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="xform" type="Transform3D" />
 			<argument index="1" name="weight" type="float" />
@@ -114,7 +120,7 @@
 				Returns a transform spherically interpolated between this transform and another by a given [code]weight[/code] (on the range of 0.0 to 1.0).
 			</description>
 		</method>
-		<method name="translated" qualifiers="const">
+		<method name="translated_local" qualifiers="const">
 			<return type="Transform3D" />
 			<argument index="0" name="offset" type="Vector3" />
 			<description>

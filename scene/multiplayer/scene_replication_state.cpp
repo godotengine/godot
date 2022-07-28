@@ -56,7 +56,8 @@ void SceneReplicationState::_untrack(const ObjectID &p_id) {
 		// If we spawned or synced it, we need to remove it from any peer it was sent to.
 		if (net_id || peer == 0) {
 			for (KeyValue<int, PeerInfo> &E : peers_info) {
-				E.value.known_nodes.erase(p_id);
+				E.value.sync_nodes.erase(p_id);
+				E.value.spawn_nodes.erase(p_id);
 			}
 		}
 	}
@@ -91,11 +92,6 @@ bool SceneReplicationState::update_sync_time(const ObjectID &p_id, uint64_t p_ms
 		return true;
 	}
 	return false;
-}
-
-const HashSet<ObjectID> SceneReplicationState::get_known_nodes(int p_peer) {
-	ERR_FAIL_COND_V(!peers_info.has(p_peer), HashSet<ObjectID>());
-	return peers_info[p_peer].known_nodes;
 }
 
 uint32_t SceneReplicationState::get_net_id(const ObjectID &p_id) const {
@@ -147,8 +143,6 @@ Error SceneReplicationState::config_add_spawn(Node *p_node, MultiplayerSpawner *
 	ERR_FAIL_COND_V(tobj.spawner != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.spawner = p_spawner->get_instance_id();
 	spawned_nodes.insert(oid);
-	// The spawner may be notified after the synchronizer.
-	path_only_nodes.erase(oid);
 	return OK;
 }
 
@@ -159,6 +153,9 @@ Error SceneReplicationState::config_del_spawn(Node *p_node, MultiplayerSpawner *
 	ERR_FAIL_COND_V(tobj.spawner != p_spawner->get_instance_id(), ERR_INVALID_PARAMETER);
 	tobj.spawner = ObjectID();
 	spawned_nodes.erase(oid);
+	for (KeyValue<int, PeerInfo> &E : peers_info) {
+		E.value.spawn_nodes.erase(oid);
+	}
 	return OK;
 }
 
@@ -167,10 +164,7 @@ Error SceneReplicationState::config_add_sync(Node *p_node, MultiplayerSynchroniz
 	TrackedNode &tobj = _track(oid);
 	ERR_FAIL_COND_V(tobj.synchronizer != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.synchronizer = p_sync->get_instance_id();
-	// If it doesn't have a spawner, we might need to assign ID for this node using it's path.
-	if (tobj.spawner.is_null()) {
-		path_only_nodes.insert(oid);
-	}
+	synced_nodes.insert(oid);
 	return OK;
 }
 
@@ -180,36 +174,55 @@ Error SceneReplicationState::config_del_sync(Node *p_node, MultiplayerSynchroniz
 	TrackedNode &tobj = _track(oid);
 	ERR_FAIL_COND_V(tobj.synchronizer != p_sync->get_instance_id(), ERR_INVALID_PARAMETER);
 	tobj.synchronizer = ObjectID();
-	if (path_only_nodes.has(oid)) {
-		p_node->disconnect(SceneStringNames::get_singleton()->tree_exited, callable_mp(this, &SceneReplicationState::_untrack));
-		_untrack(oid);
-		path_only_nodes.erase(oid);
+	synced_nodes.erase(oid);
+	for (KeyValue<int, PeerInfo> &E : peers_info) {
+		E.value.sync_nodes.erase(oid);
 	}
 	return OK;
 }
 
-Error SceneReplicationState::peer_add_node(int p_peer, const ObjectID &p_id) {
-	if (p_peer) {
-		ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
-		peers_info[p_peer].known_nodes.insert(p_id);
-	} else {
-		for (KeyValue<int, PeerInfo> &E : peers_info) {
-			E.value.known_nodes.insert(p_id);
-		}
-	}
+Error SceneReplicationState::peer_add_sync(int p_peer, const ObjectID &p_id) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
+	peers_info[p_peer].sync_nodes.insert(p_id);
 	return OK;
 }
 
-Error SceneReplicationState::peer_del_node(int p_peer, const ObjectID &p_id) {
-	if (p_peer) {
-		ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
-		peers_info[p_peer].known_nodes.erase(p_id);
-	} else {
-		for (KeyValue<int, PeerInfo> &E : peers_info) {
-			E.value.known_nodes.erase(p_id);
-		}
-	}
+Error SceneReplicationState::peer_del_sync(int p_peer, const ObjectID &p_id) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
+	peers_info[p_peer].sync_nodes.erase(p_id);
 	return OK;
+}
+
+const HashSet<ObjectID> SceneReplicationState::get_peer_sync_nodes(int p_peer) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), HashSet<ObjectID>());
+	return peers_info[p_peer].sync_nodes;
+}
+
+bool SceneReplicationState::is_peer_sync(int p_peer, const ObjectID &p_id) const {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), false);
+	return peers_info[p_peer].sync_nodes.has(p_id);
+}
+
+Error SceneReplicationState::peer_add_spawn(int p_peer, const ObjectID &p_id) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
+	peers_info[p_peer].spawn_nodes.insert(p_id);
+	return OK;
+}
+
+Error SceneReplicationState::peer_del_spawn(int p_peer, const ObjectID &p_id) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), ERR_INVALID_PARAMETER);
+	peers_info[p_peer].spawn_nodes.erase(p_id);
+	return OK;
+}
+
+const HashSet<ObjectID> SceneReplicationState::get_peer_spawn_nodes(int p_peer) {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), HashSet<ObjectID>());
+	return peers_info[p_peer].spawn_nodes;
+}
+
+bool SceneReplicationState::is_peer_spawn(int p_peer, const ObjectID &p_id) const {
+	ERR_FAIL_COND_V(!peers_info.has(p_peer), false);
+	return peers_info[p_peer].spawn_nodes.has(p_id);
 }
 
 Node *SceneReplicationState::peer_get_remote(int p_peer, uint32_t p_net_id) {

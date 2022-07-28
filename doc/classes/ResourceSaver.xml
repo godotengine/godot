@@ -16,7 +16,7 @@
 			<argument index="1" name="at_front" type="bool" default="false" />
 			<description>
 				Registers a new [ResourceFormatSaver]. The ResourceSaver will use the ResourceFormatSaver as described in [method save].
-				This method is performed implictly for ResourceFormatSavers written in GDScript (see [ResourceFormatSaver] for more information).
+				This method is performed implicitly for ResourceFormatSavers written in GDScript (see [ResourceFormatSaver] for more information).
 			</description>
 		</method>
 		<method name="get_recognized_extensions">

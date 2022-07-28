@@ -50,5 +50,10 @@
 			<description>
 			</description>
 		</method>
+		<method name="_tag_used_streams" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 	</methods>
 </class>

@@ -121,4 +121,4 @@ public:
 	static PackedStringArray get_interaction_profile_paths();
 };
 
-#endif // !OPENXR_DEFS_H
+#endif // OPENXR_DEFS_H

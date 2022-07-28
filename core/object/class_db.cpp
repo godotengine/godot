@@ -305,6 +305,13 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
+StringName ClassDB::get_compatibility_class(const StringName &p_class) {
+	if (compat_classes.has(p_class)) {
+		return compat_classes[p_class];
+	}
+	return StringName();
+}
+
 Object *ClassDB::instantiate(const StringName &p_class) {
 	ClassInfo *ti;
 	{

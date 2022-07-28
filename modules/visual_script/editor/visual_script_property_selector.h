@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
-#define VISUALSCRIPT_PROPERTYSELECTOR_H
+#ifndef VISUAL_SCRIPT_PROPERTY_SELECTOR_H
+#define VISUAL_SCRIPT_PROPERTY_SELECTOR_H
 
 #include "../visual_script.h"
 #include "editor/editor_help.h"
@@ -226,4 +226,4 @@ public:
 	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree);
 };
 
-#endif // VISUALSCRIPT_PROPERTYSELECTOR_H
+#endif // VISUAL_SCRIPT_PROPERTY_SELECTOR_H

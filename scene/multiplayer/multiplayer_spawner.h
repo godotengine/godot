@@ -69,7 +69,6 @@ private:
 
 	ObjectID spawn_node;
 	HashMap<ObjectID, SpawnInfo> tracked_nodes;
-	bool auto_spawn = false;
 	uint32_t spawn_limit = 0;
 
 	void _update_spawn_node();
@@ -102,8 +101,6 @@ public:
 	void set_spawn_path(const NodePath &p_path);
 	uint32_t get_spawn_limit() const { return spawn_limit; }
 	void set_spawn_limit(uint32_t p_limit) { spawn_limit = p_limit; }
-	bool is_auto_spawning() const;
-	void set_auto_spawning(bool p_enabled);
 
 	const Variant get_spawn_argument(const ObjectID &p_id) const;
 	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;

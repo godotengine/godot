@@ -630,7 +630,7 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
-			bool ret = exp->execute(Array(), tree_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
+			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
 			if (!exp->has_execute_failed()) {
 				if (ret) {
 					return true;

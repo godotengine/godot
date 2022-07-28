@@ -136,11 +136,11 @@ void Transform2D::scale_basis(const Size2 &p_scale) {
 	columns[1][1] *= p_scale.y;
 }
 
-void Transform2D::translate(const real_t p_tx, const real_t p_ty) {
-	translate(Vector2(p_tx, p_ty));
+void Transform2D::translate_local(const real_t p_tx, const real_t p_ty) {
+	translate_local(Vector2(p_tx, p_ty));
 }
 
-void Transform2D::translate(const Vector2 &p_translation) {
+void Transform2D::translate_local(const Vector2 &p_translation) {
 	columns[2] += basis_xform(p_translation);
 }
 
@@ -235,9 +235,9 @@ Transform2D Transform2D::untranslated() const {
 	return copy;
 }
 
-Transform2D Transform2D::translated(const Vector2 &p_offset) const {
+Transform2D Transform2D::translated_local(const Vector2 &p_offset) const {
 	Transform2D copy = *this;
-	copy.translate(p_offset);
+	copy.translate_local(p_offset);
 	return copy;
 }
 

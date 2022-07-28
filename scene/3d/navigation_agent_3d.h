@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_AGENT_H
-#define NAVIGATION_AGENT_H
+#ifndef NAVIGATION_AGENT_3D_H
+#define NAVIGATION_AGENT_3D_H
 
 #include "scene/main/node.h"
 
@@ -175,4 +175,4 @@ private:
 	void _check_distance_to_target();
 };
 
-#endif
+#endif // NAVIGATION_AGENT_3D_H

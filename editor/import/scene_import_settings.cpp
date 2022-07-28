@@ -502,7 +502,7 @@ void SceneImportSettings::_update_camera() {
 	Transform3D xf;
 	xf.basis = Basis(Vector3(1, 0, 0), rot_x) * Basis(Vector3(0, 1, 0), rot_y);
 	xf.origin = center;
-	xf.translate(0, 0, camera_size);
+	xf.translate_local(0, 0, camera_size);
 
 	camera->set_transform(xf);
 }

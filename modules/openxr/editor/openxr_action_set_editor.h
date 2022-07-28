@@ -85,4 +85,4 @@ public:
 	OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set);
 };
 
-#endif // !OPENXR_ACTION_SET_EDITOR_H
+#endif // OPENXR_ACTION_SET_EDITOR_H

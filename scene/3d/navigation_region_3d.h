@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_REGION_H
-#define NAVIGATION_REGION_H
+#ifndef NAVIGATION_REGION_3D_H
+#define NAVIGATION_REGION_3D_H
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -85,4 +85,4 @@ public:
 	~NavigationRegion3D();
 };
 
-#endif // NAVIGATION_REGION_H
+#endif // NAVIGATION_REGION_3D_H

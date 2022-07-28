@@ -498,53 +498,7 @@ void DocTools::generate(bool p_basic_types) {
 			}
 
 			DocData::MethodDoc method;
-
-			method.name = E.name;
-
-			if (E.flags & METHOD_FLAG_VIRTUAL) {
-				method.qualifiers = "virtual";
-			}
-
-			if (E.flags & METHOD_FLAG_CONST) {
-				if (!method.qualifiers.is_empty()) {
-					method.qualifiers += " ";
-				}
-				method.qualifiers += "const";
-			}
-
-			if (E.flags & METHOD_FLAG_VARARG) {
-				if (!method.qualifiers.is_empty()) {
-					method.qualifiers += " ";
-				}
-				method.qualifiers += "vararg";
-			}
-
-			if (E.flags & METHOD_FLAG_STATIC) {
-				if (!method.qualifiers.is_empty()) {
-					method.qualifiers += " ";
-				}
-				method.qualifiers += "static";
-			}
-
-			for (int i = -1; i < E.arguments.size(); i++) {
-				if (i == -1) {
-#ifdef DEBUG_METHODS_ENABLED
-					DocData::return_doc_from_retinfo(method, E.return_val);
-#endif
-				} else {
-					const PropertyInfo &arginfo = E.arguments[i];
-					DocData::ArgumentDoc argument;
-					DocData::argument_doc_from_arginfo(argument, arginfo);
-
-					int darg_idx = i - (E.arguments.size() - E.default_arguments.size());
-					if (darg_idx >= 0) {
-						Variant default_arg = E.default_arguments[darg_idx];
-						argument.default_value = default_arg.get_construct_string().replace("\n", " ");
-					}
-
-					method.arguments.push_back(argument);
-				}
-			}
+			DocData::method_doc_from_methodinfo(method, E, "");
 
 			Vector<Error> errs = ClassDB::get_method_error_return_values(name, E.name);
 			if (errs.size()) {

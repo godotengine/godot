@@ -39,9 +39,9 @@
 #include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 #include "core/version.h"
-#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/export/editor_export_platform.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -446,4 +446,4 @@ public:
 	EditorExportPlatformUWP();
 };
 
-#endif
+#endif // UWP_EXPORT_PLUGIN_H

@@ -2026,8 +2026,8 @@ void EditorInspectorArray::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), SNAME("Editor"));
-			odd_style->set_bg_color(color.lightened(0.15));
-			even_style->set_bg_color(color.darkened(0.15));
+			odd_style->set_bg_color(color.darkened(-0.08));
+			even_style->set_bg_color(color.darkened(0.08));
 
 			for (int i = 0; i < (int)array_elements.size(); i++) {
 				ArrayElement &ae = array_elements[i];
@@ -3558,7 +3558,7 @@ void EditorInspector::_notification(int p_what) {
 				if (refresh_countdown <= 0) {
 					for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
 						for (EditorProperty *E : F.value) {
-							if (!E->is_cache_valid()) {
+							if (E && !E->is_cache_valid()) {
 								E->update_property();
 								E->update_revert_and_pin_status();
 								E->update_cache();
@@ -3704,20 +3704,25 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 			added.insert(pi.name);
 
 			r_list.insert_before(insert_here, pi);
+
+			List<PropertyInfo>::Element *prop_below = bottom->next();
+			while (prop_below) {
+				if (prop_below->get() == pi) {
+					List<PropertyInfo>::Element *to_delete = prop_below;
+					prop_below = prop_below->next();
+					r_list.erase(to_delete);
+				} else {
+					prop_below = prop_below->next();
+				}
+			}
 		}
 
 		// Script Variables -> NodeA (insert_here) -> A props... -> bottom
 		insert_here = category;
 	}
 
-	// NodeC -> C props... -> NodeB..C..
 	if (script_variables) {
 		r_list.erase(script_variables);
-		List<PropertyInfo>::Element *to_delete = bottom->next();
-		while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
-			r_list.erase(to_delete);
-			to_delete = bottom->next();
-		}
 		r_list.erase(bottom);
 	}
 }

@@ -97,4 +97,4 @@ public:
 	~PipelineCacheRD();
 };
 
-#endif // RENDER_PIPELINE_CACHE_RD_H
+#endif // PIPELINE_CACHE_RD_H

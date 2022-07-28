@@ -48,6 +48,7 @@ enum DefaultRDTexture {
 	DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
 	DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 	DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
+	DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE,
 	DEFAULT_RD_TEXTURE_3D_WHITE,
 	DEFAULT_RD_TEXTURE_3D_BLACK,
 	DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
@@ -190,8 +191,8 @@ struct Decal {
 	float upper_fade = 0.3;
 	float lower_fade = 0.3;
 	bool distance_fade = false;
-	float distance_fade_begin = 10;
-	float distance_fade_length = 1;
+	float distance_fade_begin = 40.0;
+	float distance_fade_length = 10.0;
 	float normal_fade = 0.0;
 
 	Dependency dependency;
@@ -575,4 +576,4 @@ public:
 
 } // namespace RendererRD
 
-#endif // !_TEXTURE_STORAGE_RD_H
+#endif // TEXTURE_STORAGE_RD_H

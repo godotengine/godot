@@ -599,7 +599,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 	uint8_t *imgdata = img.ptrw();
 	uint8_t *imgw = imgdata;
 
-	Ref<AudioStreamPlayback> playback = stream->instance_playback();
+	Ref<AudioStreamPlayback> playback = stream->instantiate_playback();
 	ERR_FAIL_COND_V(playback.is_null(), Ref<Texture2D>());
 
 	real_t len_s = stream->get_length();

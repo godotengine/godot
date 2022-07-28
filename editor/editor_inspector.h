@@ -602,4 +602,4 @@ public:
 	EditorInspector();
 };
 
-#endif // INSPECTOR_H
+#endif // EDITOR_INSPECTOR_H
