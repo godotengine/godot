@@ -38,22 +38,22 @@ class RendererMaterialStorage {
 public:
 	virtual ~RendererMaterialStorage(){};
 
-	/* GLOBAL VARIABLE API */
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
-	virtual void global_variable_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_variable_get_list() const = 0;
+	/* GLOBAL SHADER UNIFORM API */
+	virtual void global_shader_uniform_add(const StringName &p_name, RS::GlobalShaderUniformType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_shader_uniform_get_list() const = 0;
 
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
-	virtual Variant global_variable_get(const StringName &p_name) const = 0;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual Variant global_shader_uniform_get(const StringName &p_name) const = 0;
+	virtual RS::GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const = 0;
 
-	virtual void global_variables_load_settings(bool p_load_textures = true) = 0;
-	virtual void global_variables_clear() = 0;
+	virtual void global_shader_uniforms_load_settings(bool p_load_textures = true) = 0;
+	virtual void global_shader_uniforms_clear() = 0;
 
-	virtual int32_t global_variables_instance_allocate(RID p_instance) = 0;
-	virtual void global_variables_instance_free(RID p_instance) = 0;
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
+	virtual int32_t global_shader_uniforms_instance_allocate(RID p_instance) = 0;
+	virtual void global_shader_uniforms_instance_free(RID p_instance) = 0;
+	virtual void global_shader_uniforms_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
 
 	/* SHADER API */
 	virtual RID shader_allocate() = 0;

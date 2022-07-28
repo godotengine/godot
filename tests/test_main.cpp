@@ -257,7 +257,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		if (RenderingServer::get_singleton()) {
 			RenderingServer::get_singleton()->sync();
-			RenderingServer::get_singleton()->global_variables_clear();
+			RenderingServer::get_singleton()->global_shader_uniforms_clear();
 			RenderingServer::get_singleton()->finish();
 			memdelete(RenderingServer::get_singleton());
 		}

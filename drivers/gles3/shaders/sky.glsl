@@ -42,8 +42,8 @@ uniform sampler2D half_res; //texunit:-2
 uniform sampler2D quarter_res; //texunit:-3
 #endif
 
-layout(std140) uniform GlobalVariableData { //ubo:1
-	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
 struct DirectionalLightData {

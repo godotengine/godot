@@ -967,7 +967,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 
 		if (E.value.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 			//this is a global variable, get the index to it
-			GlobalVariables::Variable *gv = material_storage->global_variables.variables.getptr(E.key);
+			GlobalShaderUniforms::Variable *gv = material_storage->global_shader_uniforms.variables.getptr(E.key);
 			uint32_t index = 0;
 			if (gv) {
 				index = gv->buffer_index;
@@ -1023,9 +1023,9 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 
 	if (uses_global_buffer != (global_buffer_E != nullptr)) {
 		if (uses_global_buffer) {
-			global_buffer_E = material_storage->global_variables.materials_using_buffer.push_back(self);
+			global_buffer_E = material_storage->global_shader_uniforms.materials_using_buffer.push_back(self);
 		} else {
-			material_storage->global_variables.materials_using_buffer.erase(global_buffer_E);
+			material_storage->global_shader_uniforms.materials_using_buffer.erase(global_buffer_E);
 			global_buffer_E = nullptr;
 		}
 	}
@@ -1036,20 +1036,20 @@ MaterialData::~MaterialData() {
 
 	if (global_buffer_E) {
 		//unregister global buffers
-		material_storage->global_variables.materials_using_buffer.erase(global_buffer_E);
+		material_storage->global_shader_uniforms.materials_using_buffer.erase(global_buffer_E);
 	}
 
 	if (global_texture_E) {
 		//unregister global textures
 
 		for (const KeyValue<StringName, uint64_t> &E : used_global_textures) {
-			GlobalVariables::Variable *v = material_storage->global_variables.variables.getptr(E.key);
+			GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(E.key);
 			if (v) {
 				v->texture_materials.erase(self);
 			}
 		}
 		//unregister material from those using global textures
-		material_storage->global_variables.materials_using_texture.erase(global_texture_E);
+		material_storage->global_shader_uniforms.materials_using_texture.erase(global_texture_E);
 	}
 
 	if (uniform_buffer.is_valid()) {
@@ -1079,7 +1079,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 		if (p_texture_uniforms[i].global) {
 			uses_global_textures = true;
 
-			GlobalVariables::Variable *v = material_storage->global_variables.variables.getptr(uniform_name);
+			GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(uniform_name);
 			if (v) {
 				if (v->buffer_index >= 0) {
 					WARN_PRINT("Shader uses global uniform texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!.");
@@ -1249,7 +1249,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 			if (E.value != global_textures_pass) {
 				to_delete.push_back(E.key);
 
-				GlobalVariables::Variable *v = material_storage->global_variables.variables.getptr(E.key);
+				GlobalShaderUniforms::Variable *v = material_storage->global_shader_uniforms.variables.getptr(E.key);
 				if (v) {
 					v->texture_materials.erase(self);
 				}
@@ -1263,9 +1263,9 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 		//handle registering/unregistering global textures
 		if (uses_global_textures != (global_texture_E != nullptr)) {
 			if (uses_global_textures) {
-				global_texture_E = material_storage->global_variables.materials_using_texture.push_back(self);
+				global_texture_E = material_storage->global_shader_uniforms.materials_using_texture.push_back(self);
 			} else {
-				material_storage->global_variables.materials_using_texture.erase(global_texture_E);
+				material_storage->global_shader_uniforms.materials_using_texture.erase(global_texture_E);
 				global_texture_E = nullptr;
 			}
 		}
@@ -1497,22 +1497,22 @@ MaterialStorage::MaterialStorage() {
 		shader_data_request_func[i] = nullptr;
 	}
 
-	static_assert(sizeof(GlobalVariables::Value) == 16);
+	static_assert(sizeof(GlobalShaderUniforms::Value) == 16);
 
-	global_variables.buffer_size = MAX(4096, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
-	global_variables.buffer_values = memnew_arr(GlobalVariables::Value, global_variables.buffer_size);
-	memset(global_variables.buffer_values, 0, sizeof(GlobalVariables::Value) * global_variables.buffer_size);
-	global_variables.buffer_usage = memnew_arr(GlobalVariables::ValueUsage, global_variables.buffer_size);
-	global_variables.buffer_dirty_regions = memnew_arr(bool, global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
-	memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
-	global_variables.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalVariables::Value) * global_variables.buffer_size);
+	global_shader_uniforms.buffer_size = MAX(4096, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
+	global_shader_uniforms.buffer_values = memnew_arr(GlobalShaderUniforms::Value, global_shader_uniforms.buffer_size);
+	memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
+	global_shader_uniforms.buffer_usage = memnew_arr(GlobalShaderUniforms::ValueUsage, global_shader_uniforms.buffer_size);
+	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+	global_shader_uniforms.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 }
 
 MaterialStorage::~MaterialStorage() {
-	memdelete_arr(global_variables.buffer_values);
-	memdelete_arr(global_variables.buffer_usage);
-	memdelete_arr(global_variables.buffer_dirty_regions);
-	RD::get_singleton()->free(global_variables.buffer);
+	memdelete_arr(global_shader_uniforms.buffer_values);
+	memdelete_arr(global_shader_uniforms.buffer_usage);
+	memdelete_arr(global_shader_uniforms.buffer_dirty_regions);
+	RD::get_singleton()->free(global_shader_uniforms.buffer);
 
 	// buffers
 
@@ -1633,17 +1633,17 @@ void MaterialStorage::sampler_rd_configure_custom(float p_mipmap_bias) {
 	}
 }
 
-/* GLOBAL VARIABLE API */
+/* GLOBAL SHADER UNIFORM API */
 
-int32_t MaterialStorage::_global_variable_allocate(uint32_t p_elements) {
+int32_t MaterialStorage::_global_shader_uniform_allocate(uint32_t p_elements) {
 	int32_t idx = 0;
-	while (idx + p_elements <= global_variables.buffer_size) {
-		if (global_variables.buffer_usage[idx].elements == 0) {
+	while (idx + p_elements <= global_shader_uniforms.buffer_size) {
+		if (global_shader_uniforms.buffer_usage[idx].elements == 0) {
 			bool valid = true;
 			for (uint32_t i = 1; i < p_elements; i++) {
-				if (global_variables.buffer_usage[idx + i].elements > 0) {
+				if (global_shader_uniforms.buffer_usage[idx + i].elements > 0) {
 					valid = false;
-					idx += i + global_variables.buffer_usage[idx + i].elements;
+					idx += i + global_shader_uniforms.buffer_usage[idx + i].elements;
 					break;
 				}
 			}
@@ -1654,17 +1654,17 @@ int32_t MaterialStorage::_global_variable_allocate(uint32_t p_elements) {
 
 			return idx;
 		} else {
-			idx += global_variables.buffer_usage[idx].elements;
+			idx += global_shader_uniforms.buffer_usage[idx].elements;
 		}
 	}
 
 	return -1;
 }
 
-void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value) {
+void MaterialStorage::_global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderUniformType p_type, const Variant &p_value) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			bool b = p_value;
 			bv.x = b ? 1.0 : 0.0;
 			bv.y = 0.0;
@@ -1673,7 +1673,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_BVEC2: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
 			bv.y = (bvec & 2) ? 1.0 : 0.0;
@@ -1681,7 +1681,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0.0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_BVEC3: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
 			bv.y = (bvec & 2) ? 1.0 : 0.0;
@@ -1689,7 +1689,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0.0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_BVEC4: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			uint32_t bvec = p_value;
 			bv.x = (bvec & 1) ? 1.0 : 0.0;
 			bv.y = (bvec & 2) ? 1.0 : 0.0;
@@ -1697,7 +1697,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = (bvec & 8) ? 1.0 : 0.0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_INT: {
-			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			int32_t v = p_value;
 			bv.x = v;
 			bv.y = 0;
@@ -1705,7 +1705,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC2: {
-			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector2i v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1713,7 +1713,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC3: {
-			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector3i v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1721,7 +1721,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_IVEC4: {
-			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector<int32_t> v = p_value;
 			bv.x = v.size() >= 1 ? v[0] : 0;
 			bv.y = v.size() >= 2 ? v[1] : 0;
@@ -1729,7 +1729,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.size() >= 4 ? v[3] : 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_RECT2I: {
-			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueInt &bv = *(GlobalShaderUniforms::ValueInt *)&global_shader_uniforms.buffer_values[p_index];
 			Rect2i v = p_value;
 			bv.x = v.position.x;
 			bv.y = v.position.y;
@@ -1737,7 +1737,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.size.y;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UINT: {
-			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			uint32_t v = p_value;
 			bv.x = v;
 			bv.y = 0;
@@ -1745,7 +1745,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC2: {
-			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector2i v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1753,7 +1753,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC3: {
-			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector3i v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1761,7 +1761,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
-			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::ValueUInt &bv = *(GlobalShaderUniforms::ValueUInt *)&global_shader_uniforms.buffer_values[p_index];
 			Vector<int32_t> v = p_value;
 			bv.x = v.size() >= 1 ? v[0] : 0;
 			bv.y = v.size() >= 2 ? v[1] : 0;
@@ -1769,7 +1769,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.size() >= 4 ? v[3] : 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			float v = p_value;
 			bv.x = v;
 			bv.y = 0;
@@ -1777,7 +1777,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC2: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Vector2 v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1785,7 +1785,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC3: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Vector3 v = p_value;
 			bv.x = v.x;
 			bv.y = v.y;
@@ -1793,7 +1793,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = 0;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Plane v = p_value;
 			bv.x = v.normal.x;
 			bv.y = v.normal.y;
@@ -1801,14 +1801,14 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.d;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_COLOR: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Color v = p_value;
 			bv.x = v.r;
 			bv.y = v.g;
 			bv.z = v.b;
 			bv.w = v.a;
 
-			GlobalVariables::Value &bv_linear = global_variables.buffer_values[p_index + 1];
+			GlobalShaderUniforms::Value &bv_linear = global_shader_uniforms.buffer_values[p_index + 1];
 			v = v.srgb_to_linear();
 			bv_linear.x = v.r;
 			bv_linear.y = v.g;
@@ -1817,7 +1817,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_RECT2: {
-			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value &bv = global_shader_uniforms.buffer_values[p_index];
 			Rect2 v = p_value;
 			bv.x = v.position.x;
 			bv.y = v.position.y;
@@ -1825,7 +1825,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 			bv.w = v.size.y;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_MAT2: {
-			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Vector<float> m2 = p_value;
 			if (m2.size() < 4) {
 				m2.resize(4);
@@ -1842,7 +1842,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_MAT3: {
-			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Basis v = p_value;
 			bv[0].x = v.rows[0][0];
 			bv[0].y = v.rows[1][0];
@@ -1861,7 +1861,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
-			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 
 			Vector<float> m2 = p_value;
 			if (m2.size() < 16) {
@@ -1890,7 +1890,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
-			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform2D v = p_value;
 			bv[0].x = v.columns[0][0];
 			bv[0].y = v.columns[0][1];
@@ -1909,7 +1909,7 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			GlobalShaderUniforms::Value *bv = &global_shader_uniforms.buffer_values[p_index];
 			Transform3D v = p_value;
 			bv[0].x = v.basis.rows[0][0];
 			bv[0].y = v.basis.rows[1][0];
@@ -1938,15 +1938,15 @@ void MaterialStorage::_global_variable_store_in_buffer(int32_t p_index, RS::Glob
 	}
 }
 
-void MaterialStorage::_global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements) {
+void MaterialStorage::_global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements) {
 	int32_t prev_chunk = -1;
 
 	for (int32_t i = 0; i < p_elements; i++) {
-		int32_t chunk = (p_index + i) / GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
+		int32_t chunk = (p_index + i) / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
 		if (chunk != prev_chunk) {
-			if (!global_variables.buffer_dirty_regions[chunk]) {
-				global_variables.buffer_dirty_regions[chunk] = true;
-				global_variables.buffer_dirty_region_count++;
+			if (!global_shader_uniforms.buffer_dirty_regions[chunk]) {
+				global_shader_uniforms.buffer_dirty_regions[chunk] = true;
+				global_shader_uniforms.buffer_dirty_region_count++;
 			}
 		}
 
@@ -1954,16 +1954,16 @@ void MaterialStorage::_global_variable_mark_buffer_dirty(int32_t p_index, int32_
 	}
 }
 
-void MaterialStorage::global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {
-	ERR_FAIL_COND(global_variables.variables.has(p_name));
-	GlobalVariables::Variable gv;
+void MaterialStorage::global_shader_uniform_add(const StringName &p_name, RS::GlobalShaderUniformType p_type, const Variant &p_value) {
+	ERR_FAIL_COND(global_shader_uniforms.variables.has(p_name));
+	GlobalShaderUniforms::Variable gv;
 	gv.type = p_type;
 	gv.value = p_value;
 	gv.buffer_index = -1;
 
 	if (p_type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
 		//is texture
-		global_variables.must_update_texture_materials = true; //normally there are none
+		global_shader_uniforms.must_update_texture_materials = true; //normally there are none
 	} else {
 		gv.buffer_elements = 1;
 		if (p_type == RS::GLOBAL_VAR_TYPE_COLOR || p_type == RS::GLOBAL_VAR_TYPE_MAT2) {
@@ -1980,56 +1980,56 @@ void MaterialStorage::global_variable_add(const StringName &p_name, RS::GlobalVa
 		}
 
 		//is vector, allocate in buffer and update index
-		gv.buffer_index = _global_variable_allocate(gv.buffer_elements);
+		gv.buffer_index = _global_shader_uniform_allocate(gv.buffer_elements);
 		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing it in the Project Settings.", String(p_name)));
-		global_variables.buffer_usage[gv.buffer_index].elements = gv.buffer_elements;
-		_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
-		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+		global_shader_uniforms.buffer_usage[gv.buffer_index].elements = gv.buffer_elements;
+		_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+		_global_shader_uniform_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 
-		global_variables.must_update_buffer_materials = true; //normally there are none
+		global_shader_uniforms.must_update_buffer_materials = true; //normally there are none
 	}
 
-	global_variables.variables[p_name] = gv;
+	global_shader_uniforms.variables[p_name] = gv;
 }
 
-void MaterialStorage::global_variable_remove(const StringName &p_name) {
-	if (!global_variables.variables.has(p_name)) {
+void MaterialStorage::global_shader_uniform_remove(const StringName &p_name) {
+	if (!global_shader_uniforms.variables.has(p_name)) {
 		return;
 	}
-	const GlobalVariables::Variable &gv = global_variables.variables[p_name];
+	const GlobalShaderUniforms::Variable &gv = global_shader_uniforms.variables[p_name];
 
 	if (gv.buffer_index >= 0) {
-		global_variables.buffer_usage[gv.buffer_index].elements = 0;
-		global_variables.must_update_buffer_materials = true;
+		global_shader_uniforms.buffer_usage[gv.buffer_index].elements = 0;
+		global_shader_uniforms.must_update_buffer_materials = true;
 	} else {
-		global_variables.must_update_texture_materials = true;
+		global_shader_uniforms.must_update_texture_materials = true;
 	}
 
-	global_variables.variables.erase(p_name);
+	global_shader_uniforms.variables.erase(p_name);
 }
 
-Vector<StringName> MaterialStorage::global_variable_get_list() const {
+Vector<StringName> MaterialStorage::global_shader_uniform_get_list() const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
 	Vector<StringName> names;
-	for (const KeyValue<StringName, GlobalVariables::Variable> &E : global_variables.variables) {
+	for (const KeyValue<StringName, GlobalShaderUniforms::Variable> &E : global_shader_uniforms.variables) {
 		names.push_back(E.key);
 	}
 	names.sort_custom<StringName::AlphCompare>();
 	return names;
 }
 
-void MaterialStorage::global_variable_set(const StringName &p_name, const Variant &p_value) {
-	ERR_FAIL_COND(!global_variables.variables.has(p_name));
-	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+void MaterialStorage::global_shader_uniform_set(const StringName &p_name, const Variant &p_value) {
+	ERR_FAIL_COND(!global_shader_uniforms.variables.has(p_name));
+	GlobalShaderUniforms::Variable &gv = global_shader_uniforms.variables[p_name];
 	gv.value = p_value;
 	if (gv.override.get_type() == Variant::NIL) {
 		if (gv.buffer_index >= 0) {
 			//buffer
-			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
-			_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+			_global_shader_uniform_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 		} else {
 			//texture
 			MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -2042,26 +2042,26 @@ void MaterialStorage::global_variable_set(const StringName &p_name, const Varian
 	}
 }
 
-void MaterialStorage::global_variable_set_override(const StringName &p_name, const Variant &p_value) {
-	if (!global_variables.variables.has(p_name)) {
+void MaterialStorage::global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) {
+	if (!global_shader_uniforms.variables.has(p_name)) {
 		return; //variable may not exist
 	}
 
 	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
 
-	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+	GlobalShaderUniforms::Variable &gv = global_shader_uniforms.variables[p_name];
 
 	gv.override = p_value;
 
 	if (gv.buffer_index >= 0) {
 		//buffer
 		if (gv.override.get_type() == Variant::NIL) {
-			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
 		} else {
-			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.override);
+			_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.override);
 		}
 
-		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+		_global_shader_uniform_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 	} else {
 		//texture
 		MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -2073,35 +2073,35 @@ void MaterialStorage::global_variable_set_override(const StringName &p_name, con
 	}
 }
 
-Variant MaterialStorage::global_variable_get(const StringName &p_name) const {
+Variant MaterialStorage::global_shader_uniform_get(const StringName &p_name) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(Variant(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
-	if (!global_variables.variables.has(p_name)) {
+	if (!global_shader_uniforms.variables.has(p_name)) {
 		return Variant();
 	}
 
-	return global_variables.variables[p_name].value;
+	return global_shader_uniforms.variables[p_name].value;
 }
 
-RS::GlobalVariableType MaterialStorage::global_variable_get_type_internal(const StringName &p_name) const {
-	if (!global_variables.variables.has(p_name)) {
+RS::GlobalShaderUniformType MaterialStorage::global_shader_uniform_get_type_internal(const StringName &p_name) const {
+	if (!global_shader_uniforms.variables.has(p_name)) {
 		return RS::GLOBAL_VAR_TYPE_MAX;
 	}
 
-	return global_variables.variables[p_name].type;
+	return global_shader_uniforms.variables[p_name].type;
 }
 
-RS::GlobalVariableType MaterialStorage::global_variable_get_type(const StringName &p_name) const {
+RS::GlobalShaderUniformType MaterialStorage::global_shader_uniform_get_type(const StringName &p_name) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_V_MSG(RS::GLOBAL_VAR_TYPE_MAX, "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
-	return global_variable_get_type_internal(p_name);
+	return global_shader_uniform_get_type_internal(p_name);
 }
 
-void MaterialStorage::global_variables_load_settings(bool p_load_textures) {
+void MaterialStorage::global_shader_uniforms_load_settings(bool p_load_textures) {
 	List<PropertyInfo> settings;
 	ProjectSettings::get_singleton()->get_property_list(&settings);
 
@@ -2146,11 +2146,11 @@ void MaterialStorage::global_variables_load_settings(bool p_load_textures) {
 				"samplerCube",
 			};
 
-			RS::GlobalVariableType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
+			RS::GlobalShaderUniformType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
 
 			for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
 				if (global_var_type_names[i] == type) {
-					gvtype = RS::GlobalVariableType(i);
+					gvtype = RS::GlobalShaderUniformType(i);
 					break;
 				}
 			}
@@ -2172,47 +2172,47 @@ void MaterialStorage::global_variables_load_settings(bool p_load_textures) {
 				value = resource;
 			}
 
-			if (global_variables.variables.has(name)) {
+			if (global_shader_uniforms.variables.has(name)) {
 				//has it, update it
-				global_variable_set(name, value);
+				global_shader_uniform_set(name, value);
 			} else {
-				global_variable_add(name, gvtype, value);
+				global_shader_uniform_add(name, gvtype, value);
 			}
 		}
 	}
 }
 
-void MaterialStorage::global_variables_clear() {
-	global_variables.variables.clear(); //not right but for now enough
+void MaterialStorage::global_shader_uniforms_clear() {
+	global_shader_uniforms.variables.clear(); //not right but for now enough
 }
 
-RID MaterialStorage::global_variables_get_storage_buffer() const {
-	return global_variables.buffer;
+RID MaterialStorage::global_shader_uniforms_get_storage_buffer() const {
+	return global_shader_uniforms.buffer;
 }
 
-int32_t MaterialStorage::global_variables_instance_allocate(RID p_instance) {
-	ERR_FAIL_COND_V(global_variables.instance_buffer_pos.has(p_instance), -1);
-	int32_t pos = _global_variable_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
-	global_variables.instance_buffer_pos[p_instance] = pos; //save anyway
+int32_t MaterialStorage::global_shader_uniforms_instance_allocate(RID p_instance) {
+	ERR_FAIL_COND_V(global_shader_uniforms.instance_buffer_pos.has(p_instance), -1);
+	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
+	global_shader_uniforms.instance_buffer_pos[p_instance] = pos; //save anyway
 	ERR_FAIL_COND_V_MSG(pos < 0, -1, "Too many instances using shader instance variables. Increase buffer size in Project Settings.");
-	global_variables.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
+	global_shader_uniforms.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
 	return pos;
 }
 
-void MaterialStorage::global_variables_instance_free(RID p_instance) {
-	ERR_FAIL_COND(!global_variables.instance_buffer_pos.has(p_instance));
-	int32_t pos = global_variables.instance_buffer_pos[p_instance];
+void MaterialStorage::global_shader_uniforms_instance_free(RID p_instance) {
+	ERR_FAIL_COND(!global_shader_uniforms.instance_buffer_pos.has(p_instance));
+	int32_t pos = global_shader_uniforms.instance_buffer_pos[p_instance];
 	if (pos >= 0) {
-		global_variables.buffer_usage[pos].elements = 0;
+		global_shader_uniforms.buffer_usage[pos].elements = 0;
 	}
-	global_variables.instance_buffer_pos.erase(p_instance);
+	global_shader_uniforms.instance_buffer_pos.erase(p_instance);
 }
 
-void MaterialStorage::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
-	if (!global_variables.instance_buffer_pos.has(p_instance)) {
+void MaterialStorage::global_shader_uniforms_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+	if (!global_shader_uniforms.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
-	int32_t pos = global_variables.instance_buffer_pos[p_instance];
+	int32_t pos = global_shader_uniforms.instance_buffer_pos[p_instance];
 
 	if (pos < 0) {
 		return; //again, not allocated, ignore
@@ -2247,57 +2247,57 @@ void MaterialStorage::global_variables_instance_update(RID p_instance, int p_ind
 
 	pos += p_index;
 
-	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_variables.buffer_values[pos], true); //instances always use linear color in this renderer
-	_global_variable_mark_buffer_dirty(pos, 1);
+	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[pos], true); //instances always use linear color in this renderer
+	_global_shader_uniform_mark_buffer_dirty(pos, 1);
 }
 
-void MaterialStorage::_update_global_variables() {
+void MaterialStorage::_update_global_shader_uniforms() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
-	if (global_variables.buffer_dirty_region_count > 0) {
-		uint32_t total_regions = global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
-		if (total_regions / global_variables.buffer_dirty_region_count <= 4) {
+	if (global_shader_uniforms.buffer_dirty_region_count > 0) {
+		uint32_t total_regions = global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
+		if (total_regions / global_shader_uniforms.buffer_dirty_region_count <= 4) {
 			// 25% of regions dirty, just update all buffer
-			RD::get_singleton()->buffer_update(global_variables.buffer, 0, sizeof(GlobalVariables::Value) * global_variables.buffer_size, global_variables.buffer_values);
-			memset(global_variables.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
+			RD::get_singleton()->buffer_update(global_shader_uniforms.buffer, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, global_shader_uniforms.buffer_values);
+			memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
 		} else {
-			uint32_t region_byte_size = sizeof(GlobalVariables::Value) * GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
+			uint32_t region_byte_size = sizeof(GlobalShaderUniforms::Value) * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
 
 			for (uint32_t i = 0; i < total_regions; i++) {
-				if (global_variables.buffer_dirty_regions[i]) {
-					RD::get_singleton()->buffer_update(global_variables.buffer, i * region_byte_size, region_byte_size, &global_variables.buffer_values[i * GlobalVariables::BUFFER_DIRTY_REGION_SIZE]);
+				if (global_shader_uniforms.buffer_dirty_regions[i]) {
+					RD::get_singleton()->buffer_update(global_shader_uniforms.buffer, i * region_byte_size, region_byte_size, &global_shader_uniforms.buffer_values[i * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE]);
 
-					global_variables.buffer_dirty_regions[i] = false;
+					global_shader_uniforms.buffer_dirty_regions[i] = false;
 				}
 			}
 		}
 
-		global_variables.buffer_dirty_region_count = 0;
+		global_shader_uniforms.buffer_dirty_region_count = 0;
 	}
 
-	if (global_variables.must_update_buffer_materials) {
+	if (global_shader_uniforms.must_update_buffer_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (const RID &E : global_variables.materials_using_buffer) {
+		for (const RID &E : global_shader_uniforms.materials_using_buffer) {
 			Material *material = material_storage->get_material(E);
 			ERR_CONTINUE(!material); //wtf
 
 			material_storage->_material_queue_update(material, true, false);
 		}
 
-		global_variables.must_update_buffer_materials = false;
+		global_shader_uniforms.must_update_buffer_materials = false;
 	}
 
-	if (global_variables.must_update_texture_materials) {
+	if (global_shader_uniforms.must_update_texture_materials) {
 		// only happens in the case of a buffer variable added or removed,
 		// so not often.
-		for (const RID &E : global_variables.materials_using_texture) {
+		for (const RID &E : global_shader_uniforms.materials_using_texture) {
 			Material *material = material_storage->get_material(E);
 			ERR_CONTINUE(!material); //wtf
 
 			material_storage->_material_queue_update(material, false, true);
 		}
 
-		global_variables.must_update_texture_materials = false;
+		global_shader_uniforms.must_update_texture_materials = false;
 	}
 }
 

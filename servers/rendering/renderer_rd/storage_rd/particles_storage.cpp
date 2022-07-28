@@ -112,7 +112,7 @@ ParticlesStorage::ParticlesStorage() {
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
-		actions.global_buffer_array_variable = "global_variables.data";
+		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 
 		particles_shader.compiler.initialize(actions);
 	}
@@ -164,7 +164,7 @@ void process() {
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
-			u.append_id(material_storage->global_variables_get_storage_buffer());
+			u.append_id(material_storage->global_shader_uniforms_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 

@@ -104,8 +104,8 @@ layout(location = 14) in highp vec4 instance_xform2;
 layout(location = 15) in highp uvec4 instance_color_custom_data; // Color packed into xy, Custom data into zw.
 #endif
 
-layout(std140) uniform GlobalVariableData { //ubo:1
-	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
 layout(std140) uniform SceneData { // ubo:2
@@ -399,8 +399,8 @@ uniform samplerCube radiance_map; // texunit:-2
 
 #endif
 
-layout(std140) uniform GlobalVariableData { //ubo:1
-	vec4 global_variables[MAX_GLOBAL_VARIABLES];
+layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
 	/* Material Uniforms */

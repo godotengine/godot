@@ -1441,7 +1441,7 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 		E->value.value = p_value;
 		if (E->value.index >= 0 && instance->instance_allocated_shader_parameters) {
 			//update directly
-			RSG::material_storage->global_variables_instance_update(p_instance, E->value.index, p_value);
+			RSG::material_storage->global_shader_uniforms_instance_update(p_instance, E->value.index, p_value);
 		}
 	}
 }
@@ -3850,16 +3850,16 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			if (p_instance->instance_allocated_shader_parameters != (p_instance->instance_shader_parameters.size() > 0)) {
 				p_instance->instance_allocated_shader_parameters = (p_instance->instance_shader_parameters.size() > 0);
 				if (p_instance->instance_allocated_shader_parameters) {
-					p_instance->instance_allocated_shader_parameters_offset = RSG::material_storage->global_variables_instance_allocate(p_instance->self);
+					p_instance->instance_allocated_shader_parameters_offset = RSG::material_storage->global_shader_uniforms_instance_allocate(p_instance->self);
 					geom->geometry_instance->set_instance_shader_parameters_offset(p_instance->instance_allocated_shader_parameters_offset);
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_parameters) {
 						if (E.value.value.get_type() != Variant::NIL) {
-							RSG::material_storage->global_variables_instance_update(p_instance->self, E.value.index, E.value.value);
+							RSG::material_storage->global_shader_uniforms_instance_update(p_instance->self, E.value.index, E.value.value);
 						}
 					}
 				} else {
-					RSG::material_storage->global_variables_instance_free(p_instance->self);
+					RSG::material_storage->global_shader_uniforms_instance_free(p_instance->self);
 					p_instance->instance_allocated_shader_parameters_offset = -1;
 					geom->geometry_instance->set_instance_shader_parameters_offset(-1);
 				}
@@ -3955,7 +3955,7 @@ bool RendererSceneCull::free(RID p_rid) {
 
 		if (instance->instance_allocated_shader_parameters) {
 			//free the used shader parameters
-			RSG::material_storage->global_variables_instance_free(instance->self);
+			RSG::material_storage->global_shader_uniforms_instance_free(instance->self);
 		}
 		update_dirty_instances(); //in case something changed this
 

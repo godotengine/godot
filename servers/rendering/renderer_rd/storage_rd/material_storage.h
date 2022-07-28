@@ -135,15 +135,15 @@ struct Material {
 			update_element(this) {}
 };
 
-/* Global variable structs */
-struct GlobalVariables {
+/* Global shader uniform structs */
+struct GlobalShaderUniforms {
 	enum {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {
 		HashSet<RID> texture_materials; // materials using this
 
-		RS::GlobalVariableType type;
+		RS::GlobalShaderUniformType type;
 		Variant value;
 		Variant override;
 		int32_t buffer_index; //for vectors
@@ -209,13 +209,13 @@ private:
 	RID quad_index_buffer;
 	RID quad_index_array;
 
-	/* GLOBAL VARIABLE API */
+	/* GLOBAL SHADER UNIFORM API */
 
-	GlobalVariables global_variables;
+	GlobalShaderUniforms global_shader_uniforms;
 
-	int32_t _global_variable_allocate(uint32_t p_elements);
-	void _global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value);
-	void _global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
+	int32_t _global_shader_uniform_allocate(uint32_t p_elements);
+	void _global_shader_uniform_store_in_buffer(int32_t p_index, RS::GlobalShaderUniformType p_type, const Variant &p_value);
+	void _global_shader_uniform_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
 
 	/* SHADER API */
 
@@ -333,28 +333,28 @@ public:
 
 	RID get_quad_index_array() { return quad_index_array; }
 
-	/* GLOBAL VARIABLE API */
+	/* GLOBAL SHADER UNIFORM API */
 
-	void _update_global_variables();
+	void _update_global_shader_uniforms();
 
-	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) override;
-	virtual void global_variable_remove(const StringName &p_name) override;
-	virtual Vector<StringName> global_variable_get_list() const override;
+	virtual void global_shader_uniform_add(const StringName &p_name, RS::GlobalShaderUniformType p_type, const Variant &p_value) override;
+	virtual void global_shader_uniform_remove(const StringName &p_name) override;
+	virtual Vector<StringName> global_shader_uniform_get_list() const override;
 
-	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) override;
-	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) override;
-	virtual Variant global_variable_get(const StringName &p_name) const override;
-	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const override;
-	RS::GlobalVariableType global_variable_get_type_internal(const StringName &p_name) const;
+	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) override;
+	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) override;
+	virtual Variant global_shader_uniform_get(const StringName &p_name) const override;
+	virtual RS::GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const override;
+	RS::GlobalShaderUniformType global_shader_uniform_get_type_internal(const StringName &p_name) const;
 
-	virtual void global_variables_load_settings(bool p_load_textures = true) override;
-	virtual void global_variables_clear() override;
+	virtual void global_shader_uniforms_load_settings(bool p_load_textures = true) override;
+	virtual void global_shader_uniforms_clear() override;
 
-	virtual int32_t global_variables_instance_allocate(RID p_instance) override;
-	virtual void global_variables_instance_free(RID p_instance) override;
-	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) override;
+	virtual int32_t global_shader_uniforms_instance_allocate(RID p_instance) override;
+	virtual void global_shader_uniforms_instance_free(RID p_instance) override;
+	virtual void global_shader_uniforms_instance_update(RID p_instance, int p_index, const Variant &p_value) override;
 
-	RID global_variables_get_storage_buffer() const;
+	RID global_shader_uniforms_get_storage_buffer() const;
 
 	/* SHADER API */
 
