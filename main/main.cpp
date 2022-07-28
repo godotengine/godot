@@ -719,6 +719,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			} else {
 				quiet_header = true;
 			}
+		} else if (I->get() == "-qq") {
+			quiet_header = true;
+			quiet_stdout = true;
 
 		} else if (I->get() == "--audio-driver") { // audio driver
 
