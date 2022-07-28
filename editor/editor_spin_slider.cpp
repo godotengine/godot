@@ -91,10 +91,24 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_attempt = false;
 				}
 			}
-		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-			if (grabber->is_visible()) {
-				call_deferred(SNAME("update"));
+		} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
+			if (mb->is_command_pressed()) {
+				set_value(Math::ceil(get_value() + 0.1 * get_step()));
+			} else {
+				const double step = static_cast<double>(mb->get_factor()) * get_step() * (mb->is_shift_pressed() ? 1. : 5.);
+				set_value(get_value() + step);
 			}
+
+			call_deferred(SNAME("update"));
+		} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			if (mb->is_command_pressed()) {
+				set_value(Math::floor(get_value() - 0.1 * get_step()));
+			} else {
+				const double step = static_cast<double>(mb->get_factor()) * get_step() * (mb->is_shift_pressed() ? 1. : 5.);
+				set_value(get_value() - step);
+			}
+
+			call_deferred(SNAME("update"));
 		}
 	}
 
@@ -151,37 +165,20 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (grabbing_grabber) {
-		if (mb.is_valid()) {
-			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
-				set_value(get_value() + get_step());
-				mousewheel_over_grabber = true;
-			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				set_value(get_value() - get_step());
-				mousewheel_over_grabber = true;
-			}
-		}
-	}
-
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
-		if (mb->is_pressed()) {
-			grabbing_grabber = true;
-			if (!mousewheel_over_grabber) {
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				grabbing_grabber = true;
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
+			} else {
+				grabbing_grabber = false;
 			}
-		} else {
-			grabbing_grabber = false;
-			mousewheel_over_grabber = false;
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && grabbing_grabber) {
-		if (mousewheel_over_grabber) {
-			return;
-		}
-
 		float scale_x = get_global_transform_with_canvas().get_scale().x;
 		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
@@ -415,10 +412,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 			grabber->set_scale(scale);
 			grabber->reset_size();
 			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
-
-			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
-			}
 
 			grabber_range = width;
 		}

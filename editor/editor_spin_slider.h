@@ -49,7 +49,6 @@ class EditorSpinSlider : public Range {
 
 	bool mouse_over_spin = false;
 	bool mouse_over_grabber = false;
-	bool mousewheel_over_grabber = false;
 
 	bool grabbing_grabber = false;
 	int grabbing_from = 0;
