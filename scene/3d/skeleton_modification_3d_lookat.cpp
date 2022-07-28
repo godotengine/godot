@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/resources/skeleton_modification_3d_lookat.h"
+#include "scene/3d/skeleton_modification_3d_lookat.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/3d/skeleton_modification_3d.h"
 
 bool SkeletonModification3DLookAt::_set(const StringName &p_path, const Variant &p_value) {
 	if (p_path == "lock_rotation_to_plane") {
@@ -72,81 +72,10 @@ void SkeletonModification3DLookAt::_get_property_list(List<PropertyInfo> *p_list
 	p_list->push_back(PropertyInfo(Variant::VECTOR3, "additional_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 }
 
-void SkeletonModification3DLookAt::_execute(real_t p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-
-	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
-		update_cache();
-		return;
-	}
-
-	if (bone_idx <= -2) {
-		bone_idx = stack->skeleton->find_bone(bone_name);
-	}
-
-	Node3D *target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
-	if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
-		return;
-	}
-	if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
-		return;
-	}
-	Transform3D new_bone_trans = stack->skeleton->get_bone_local_pose_override(bone_idx);
-	if (new_bone_trans == Transform3D()) {
-		new_bone_trans = stack->skeleton->get_bone_pose(bone_idx);
-	}
-	Vector3 target_pos = stack->skeleton->global_pose_to_local_pose(bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform())).origin;
-
-	// Lock the rotation to a plane relative to the bone by changing the target position
-	if (lock_rotation_to_plane) {
-		if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_X) {
-			target_pos.x = new_bone_trans.origin.x;
-		} else if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_Y) {
-			target_pos.y = new_bone_trans.origin.y;
-		} else if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_Z) {
-			target_pos.z = new_bone_trans.origin.z;
-		}
-	}
-
-	// Look at the target!
-	new_bone_trans = new_bone_trans.looking_at(target_pos, Vector3(0, 1, 0));
-	// Convert from Z-forward to whatever direction the bone faces.
-	stack->skeleton->update_bone_rest_forward_vector(bone_idx);
-	new_bone_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(bone_idx, new_bone_trans.basis);
-
-	// Apply additional rotation
-	new_bone_trans.basis.rotate_local(Vector3(1, 0, 0), additional_rotation.x);
-	new_bone_trans.basis.rotate_local(Vector3(0, 1, 0), additional_rotation.y);
-	new_bone_trans.basis.rotate_local(Vector3(0, 0, 1), additional_rotation.z);
-
-	stack->skeleton->set_bone_local_pose_override(bone_idx, new_bone_trans, stack->strength, true);
-	stack->skeleton->force_update_bone_children_transforms(bone_idx);
-
-	// If we completed it successfully, then we can set execution_error_found to false
-	execution_error_found = false;
-}
-
-void SkeletonModification3DLookAt::_setup_modification(SkeletonModificationStack3D *p_stack) {
-	stack = p_stack;
-
-	if (stack != nullptr) {
-		is_setup = true;
-		execution_error_found = false;
-		update_cache();
-	}
-}
-
 void SkeletonModification3DLookAt::set_bone_name(String p_name) {
 	bone_name = p_name;
-	if (stack) {
-		if (stack->skeleton) {
-			bone_idx = stack->skeleton->find_bone(bone_name);
-		}
+	if (skeleton) {
+		bone_idx = skeleton->find_bone(bone_name);
 	}
 	execution_error_found = false;
 	notify_property_list_changed();
@@ -164,34 +93,30 @@ void SkeletonModification3DLookAt::set_bone_index(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 	bone_idx = p_bone_idx;
 
-	if (stack) {
-		if (stack->skeleton) {
-			bone_name = stack->skeleton->get_bone_name(p_bone_idx);
-		}
+	if (skeleton) {
+		bone_name = skeleton->get_bone_name(p_bone_idx);
 	}
 	execution_error_found = false;
 	notify_property_list_changed();
 }
 
 void SkeletonModification3DLookAt::update_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update target cache: Node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update target cache: Node is not in the scene tree!");
-				target_node_cache = node->get_instance_id();
+	if (is_inside_tree()) {
+		if (has_node(target_node)) {
+			Node *node = get_node(target_node);
+			ERR_FAIL_COND_MSG(!node || skeleton == node,
+					"Cannot update target cache: node is this modification's skeleton or cannot be found!");
+			ERR_FAIL_COND_MSG(!node->is_inside_tree(),
+					"Cannot update target cache: Node is not in the scene tree!");
+			target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
-			}
+			execution_error_found = false;
 		}
 	}
 }
@@ -253,15 +178,87 @@ void SkeletonModification3DLookAt::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_target_node", "get_target_node");
 }
 
-SkeletonModification3DLookAt::SkeletonModification3DLookAt() {
-	stack = nullptr;
-	is_setup = false;
-	bone_name = "";
-	bone_idx = -2;
-	additional_rotation = Vector3();
-	lock_rotation_to_plane = false;
-	enabled = true;
-}
+void SkeletonModification3DLookAt::_notification(int32_t p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			execution_error_found = false;
+			update_cache();
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			skeleton = cast_to<Skeleton3D>(get_node_or_null(get_skeleton_path()));
+			is_setup = true;
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (!is_setup) {
+				ERR_PRINT_ONCE("Modification is not setup.");
+				return;
+			}
+			if (!skeleton) {
+				ERR_PRINT_ONCE("Modification does not have a skeleton.");
+				return;
+			}
+			if (!enabled) {
+				return;
+			}
 
-SkeletonModification3DLookAt::~SkeletonModification3DLookAt() {
+			if (target_node_cache.is_null()) {
+				_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+				update_cache();
+				return;
+			}
+
+			if (bone_idx <= -2) {
+				bone_idx = skeleton->find_bone(bone_name);
+			}
+
+			Node3D *target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
+			if (_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!")) {
+				return;
+			}
+			if (_print_execution_error(bone_idx <= -1, "Bone index is invalid. Cannot execute modification!")) {
+				return;
+			}
+			Transform3D new_bone_trans = skeleton->get_bone_local_pose_override(bone_idx);
+			if (new_bone_trans == Transform3D()) {
+				new_bone_trans = skeleton->get_bone_pose(bone_idx);
+			}
+			Vector3 target_pos = skeleton->global_pose_to_local_pose(bone_idx, skeleton->world_transform_to_global_pose(target->get_global_transform())).origin;
+
+			// Lock the rotation to a plane relative to the bone by changing the target position
+			if (lock_rotation_to_plane) {
+				if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_X) {
+					target_pos.x = new_bone_trans.origin.x;
+				} else if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_Y) {
+					target_pos.y = new_bone_trans.origin.y;
+				} else if (lock_rotation_plane == ROTATION_PLANE::ROTATION_PLANE_Z) {
+					target_pos.z = new_bone_trans.origin.z;
+				}
+			}
+
+			// Look at the target!
+			new_bone_trans = new_bone_trans.looking_at(target_pos, Vector3(0, 1, 0));
+			// Convert from Z-forward to whatever direction the bone faces.
+			skeleton->update_bone_rest_forward_vector(bone_idx);
+			new_bone_trans.basis = skeleton->global_pose_z_forward_to_bone_forward(bone_idx, new_bone_trans.basis);
+
+			// Apply additional rotation
+			new_bone_trans.basis.rotate_local(Vector3(1, 0, 0), additional_rotation.x);
+			new_bone_trans.basis.rotate_local(Vector3(0, 1, 0), additional_rotation.y);
+			new_bone_trans.basis.rotate_local(Vector3(0, 0, 1), additional_rotation.z);
+			skeleton->set_bone_pose_position(bone_idx, new_bone_trans.origin);
+			skeleton->set_bone_pose_rotation(bone_idx, new_bone_trans.basis.get_rotation_quaternion());
+			skeleton->set_bone_pose_scale(bone_idx, new_bone_trans.basis.get_scale());
+			skeleton->force_update_bone_children_transforms(bone_idx);
+
+			// If we completed it successfully, then we can set execution_error_found to false
+			execution_error_found = false;
+		}
+	}
 }

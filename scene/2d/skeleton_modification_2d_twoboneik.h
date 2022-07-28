@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_3d_stackholder.h                               */
+/*  skeleton_modification_2d_twoboneik.h                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_3D_STACKHOLDER_H
-#define SKELETON_MODIFICATION_3D_STACKHOLDER_H
+#ifndef SKELETON_MODIFICATION_2D_TWOBONEIK_H
+#define SKELETON_MODIFICATION_2D_TWOBONEIK_H
 
-#include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/2d/skeleton_modification_2d.h"
 
-class SkeletonModification3DStackHolder : public SkeletonModification3D {
-	GDCLASS(SkeletonModification3DStackHolder, SkeletonModification3D);
+///////////////////////////////////////
+// SkeletonModification2DJIGGLE
+///////////////////////////////////////
+
+class SkeletonModification2DTwoBoneIK : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DTwoBoneIK, SkeletonModification2D);
+
+private:
+	NodePath target_node;
+	ObjectID target_node_cache;
+	float target_minimum_distance = 0;
+	float target_maximum_distance = 0;
+	bool flip_bend_direction = false;
+
+	NodePath joint_one_bone2d_node;
+	ObjectID joint_one_bone2d_node_cache;
+	int joint_one_bone_idx = -1;
+
+	NodePath joint_two_bone2d_node;
+	ObjectID joint_two_bone2d_node_cache;
+	int joint_two_bone_idx = -1;
+
+#ifdef TOOLS_ENABLED
+	bool editor_draw_min_max = false;
+#endif // TOOLS_ENABLED
+
+	void update_target_cache();
+	void update_joint_one_bone2d_cache();
+	void update_joint_two_bone2d_cache();
 
 protected:
 	static void _bind_methods();
@@ -44,16 +71,36 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	Ref<SkeletonModificationStack3D> held_modification_stack;
+	void _notification(int p_what);
+	void _draw_editor_gizmo() override;
 
-	virtual void _execute(real_t p_delta) override;
-	virtual void _setup_modification(SkeletonModificationStack3D *p_stack) override;
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	void set_held_modification_stack(Ref<SkeletonModificationStack3D> p_held_stack);
-	Ref<SkeletonModificationStack3D> get_held_modification_stack() const;
+	void set_target_minimum_distance(float p_minimum_distance);
+	float get_target_minimum_distance() const;
+	void set_target_maximum_distance(float p_maximum_distance);
+	float get_target_maximum_distance() const;
+	void set_flip_bend_direction(bool p_flip_direction);
+	bool get_flip_bend_direction() const;
 
-	SkeletonModification3DStackHolder();
-	~SkeletonModification3DStackHolder();
+	void set_joint_one_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_one_bone2d_node() const;
+	void set_joint_one_bone_idx(int p_bone_idx);
+	int get_joint_one_bone_idx() const;
+
+	void set_joint_two_bone2d_node(const NodePath &p_node);
+	NodePath get_joint_two_bone2d_node() const;
+	void set_joint_two_bone_idx(int p_bone_idx);
+	int get_joint_two_bone_idx() const;
+
+#ifdef TOOLS_ENABLED
+	void set_editor_draw_min_max(bool p_draw);
+	bool get_editor_draw_min_max() const;
+#endif // TOOLS_ENABLED
+
+	SkeletonModification2DTwoBoneIK();
+	~SkeletonModification2DTwoBoneIK();
 };
 
-#endif // SKELETON_MODIFICATION_3D_STACKHOLDER_H
+#endif // SKELETON_MODIFICATION_2D_TWOBONEIK_H

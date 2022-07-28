@@ -95,120 +95,6 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification2DFABRIK::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-
-	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
-		update_target_cache();
-		return;
-	}
-
-	if (fabrik_data_chain.size() <= 1) {
-		ERR_PRINT_ONCE("FABRIK requires at least two joints to operate! Cannot execute modification!");
-		return;
-	}
-
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (!target || !target->is_inside_tree()) {
-		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-	target_global_pose = target->get_global_transform();
-
-	if (fabrik_data_chain[0].bone2d_node_cache.is_null() && !fabrik_data_chain[0].bone2d_node.is_empty()) {
-		fabrik_joint_update_bone2d_cache(0);
-		WARN_PRINT("Bone2D cache for origin joint is out of date. Updating...");
-	}
-
-	Bone2D *origin_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[0].bone2d_node_cache));
-	if (!origin_bone2d_node || !origin_bone2d_node->is_inside_tree()) {
-		ERR_PRINT_ONCE("Origin joint's Bone2D node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-
-	origin_global_pose = origin_bone2d_node->get_global_transform();
-
-	if (fabrik_transform_chain.size() != fabrik_data_chain.size()) {
-		fabrik_transform_chain.resize(fabrik_data_chain.size());
-	}
-
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
-		// Update the transform chain
-		if (fabrik_data_chain[i].bone2d_node_cache.is_null() && !fabrik_data_chain[i].bone2d_node.is_empty()) {
-			WARN_PRINT_ONCE("Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
-			fabrik_joint_update_bone2d_cache(i);
-		}
-		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
-		if (!joint_bone2d_node) {
-			ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set! Cannot execute modification!");
-			return;
-		}
-		fabrik_transform_chain.write[i] = joint_bone2d_node->get_global_transform();
-	}
-
-	Bone2D *final_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[fabrik_data_chain.size() - 1].bone2d_node_cache));
-	float final_bone2d_angle = final_bone2d_node->get_global_rotation();
-	if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
-		final_bone2d_angle = target_global_pose.get_rotation();
-	}
-	Vector2 final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
-	float final_bone2d_length = final_bone2d_node->get_length() * MIN(final_bone2d_node->get_global_scale().x, final_bone2d_node->get_global_scale().y);
-	float target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
-	chain_iterations = 0;
-
-	while (target_distance > chain_tolarance) {
-		chain_backwards();
-		chain_forwards();
-
-		final_bone2d_angle = final_bone2d_node->get_global_rotation();
-		if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
-			final_bone2d_angle = target_global_pose.get_rotation();
-		}
-		final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
-		target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
-
-		chain_iterations += 1;
-		if (chain_iterations >= chain_max_iterations) {
-			break;
-		}
-	}
-
-	// Apply all of the saved transforms to the Bone2D nodes
-	for (int i = 0; i < fabrik_data_chain.size(); i++) {
-		Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
-		if (!joint_bone2d_node) {
-			ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set!");
-			continue;
-		}
-		Transform2D chain_trans = fabrik_transform_chain[i];
-
-		// Apply rotation
-		if (i + 1 < fabrik_data_chain.size()) {
-			chain_trans = chain_trans.looking_at(fabrik_transform_chain[i + 1].get_origin());
-		} else {
-			if (fabrik_data_chain[i].use_target_rotation) {
-				chain_trans.set_rotation(target_global_pose.get_rotation());
-			} else {
-				chain_trans = chain_trans.looking_at(target_global_pose.get_origin());
-			}
-		}
-		// Adjust for the bone angle
-		chain_trans.set_rotation(chain_trans.get_rotation() - joint_bone2d_node->get_bone_angle());
-
-		// Reset scale
-		chain_trans.set_scale(joint_bone2d_node->get_global_scale());
-
-		// Apply to the bone, and to the override
-		joint_bone2d_node->set_global_transform(chain_trans);
-		stack->skeleton->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), stack->strength, true);
-	}
-}
-
 void SkeletonModification2DFABRIK::chain_backwards() {
 	int final_joint_index = fabrik_data_chain.size() - 1;
 	Bone2D *final_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[final_joint_index].bone2d_node_cache));
@@ -277,27 +163,19 @@ void SkeletonModification2DFABRIK::chain_forwards() {
 	}
 }
 
-void SkeletonModification2DFABRIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
-	stack = p_stack;
-
-	if (stack != nullptr) {
-		is_setup = true;
-		update_target_cache();
-	}
-}
 
 void SkeletonModification2DFABRIK::update_target_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(target_node)) {
+				Node *node = skeleton->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in scene tree!");
@@ -309,17 +187,17 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 
 void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update FABRIK Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
 	fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(fabrik_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(fabrik_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(fabrik_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = skeleton->get_node(fabrik_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update FABRIK joint " + itos(p_joint_idx) + " Bone2D cache: node is not in scene tree!");
@@ -372,11 +250,11 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
 			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			fabrik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			fabrik_data_chain.write[p_joint_idx].bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
+			fabrik_data_chain.write[p_joint_idx].bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the FABRIK joint " + itos(p_joint_idx) + " bone index for this modification...");
 			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
@@ -435,11 +313,144 @@ void SkeletonModification2DFABRIK::_bind_methods() {
 }
 
 SkeletonModification2DFABRIK::SkeletonModification2DFABRIK() {
-	stack = nullptr;
 	is_setup = false;
 	enabled = true;
 	editor_draw_gizmo = false;
 }
 
 SkeletonModification2DFABRIK::~SkeletonModification2DFABRIK() {
+}
+
+void SkeletonModification2DFABRIK::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			skeleton = cast_to<Skeleton2D>(get_node_or_null(get_skeleton_path()));
+			is_setup = true;
+			update_target_cache();
+
+			update_target_cache();
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr,
+					"Modification is not setup and therefore cannot execute!");
+			if (!enabled) {
+				return;
+			}
+
+			if (target_node_cache.is_null()) {
+				WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
+				update_target_cache();
+				return;
+			}
+
+			if (fabrik_data_chain.size() <= 1) {
+				ERR_PRINT_ONCE("FABRIK requires at least two joints to operate! Cannot execute modification!");
+				return;
+			}
+
+			Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+			if (!target || !target->is_inside_tree()) {
+				ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+			target_global_pose = target->get_global_transform();
+
+			if (fabrik_data_chain[0].bone2d_node_cache.is_null() && !fabrik_data_chain[0].bone2d_node.is_empty()) {
+				fabrik_joint_update_bone2d_cache(0);
+				WARN_PRINT("Bone2D cache for origin joint is out of date. Updating...");
+			}
+
+			Bone2D *origin_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[0].bone2d_node_cache));
+			if (!origin_bone2d_node || !origin_bone2d_node->is_inside_tree()) {
+				ERR_PRINT_ONCE("Origin joint's Bone2D node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+
+			origin_global_pose = origin_bone2d_node->get_global_transform();
+
+			if (fabrik_transform_chain.size() != fabrik_data_chain.size()) {
+				fabrik_transform_chain.resize(fabrik_data_chain.size());
+			}
+
+			for (int i = 0; i < fabrik_data_chain.size(); i++) {
+				// Update the transform chain
+				if (fabrik_data_chain[i].bone2d_node_cache.is_null() && !fabrik_data_chain[i].bone2d_node.is_empty()) {
+					WARN_PRINT_ONCE("Bone2D cache for joint " + itos(i) + " is out of date.. Attempting to update...");
+					fabrik_joint_update_bone2d_cache(i);
+				}
+				Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
+				if (!joint_bone2d_node) {
+					ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set! Cannot execute modification!");
+					return;
+				}
+				fabrik_transform_chain.write[i] = joint_bone2d_node->get_global_transform();
+			}
+
+			Bone2D *final_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[fabrik_data_chain.size() - 1].bone2d_node_cache));
+			float final_bone2d_angle = final_bone2d_node->get_global_rotation();
+			if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
+				final_bone2d_angle = target_global_pose.get_rotation();
+			}
+			Vector2 final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
+			float final_bone2d_length = final_bone2d_node->get_length() * MIN(final_bone2d_node->get_global_scale().x, final_bone2d_node->get_global_scale().y);
+			float target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
+			chain_iterations = 0;
+
+			while (target_distance > chain_tolarance) {
+				chain_backwards();
+				chain_forwards();
+
+				final_bone2d_angle = final_bone2d_node->get_global_rotation();
+				if (fabrik_data_chain[fabrik_data_chain.size() - 1].use_target_rotation) {
+					final_bone2d_angle = target_global_pose.get_rotation();
+				}
+				final_bone2d_direction = Vector2(Math::cos(final_bone2d_angle), Math::sin(final_bone2d_angle));
+				target_distance = (final_bone2d_node->get_global_position() + (final_bone2d_direction * final_bone2d_length)).distance_to(target->get_global_position());
+
+				chain_iterations += 1;
+				if (chain_iterations >= chain_max_iterations) {
+					break;
+				}
+			}
+
+			// Apply all of the saved transforms to the Bone2D nodes
+			for (int i = 0; i < fabrik_data_chain.size(); i++) {
+				Bone2D *joint_bone2d_node = Object::cast_to<Bone2D>(ObjectDB::get_instance(fabrik_data_chain[i].bone2d_node_cache));
+				if (!joint_bone2d_node) {
+					ERR_PRINT_ONCE("FABRIK Joint " + itos(i) + " does not have a Bone2D node set!");
+					continue;
+				}
+				Transform2D chain_trans = fabrik_transform_chain[i];
+
+				// Apply rotation
+				if (i + 1 < fabrik_data_chain.size()) {
+					chain_trans = chain_trans.looking_at(fabrik_transform_chain[i + 1].get_origin());
+				} else {
+					if (fabrik_data_chain[i].use_target_rotation) {
+						chain_trans.set_rotation(target_global_pose.get_rotation());
+					} else {
+						chain_trans = chain_trans.looking_at(target_global_pose.get_origin());
+					}
+				}
+				// Adjust for the bone angle
+				chain_trans.set_rotation(chain_trans.get_rotation() - joint_bone2d_node->get_bone_angle());
+
+				// Reset scale
+				chain_trans.set_scale(joint_bone2d_node->get_global_scale());
+
+				// Apply to the bone, and to the override
+				joint_bone2d_node->set_global_transform(chain_trans);
+				skeleton->set_bone_local_pose_override(fabrik_data_chain[i].bone_idx, joint_bone2d_node->get_transform(), 1.0, true);
+			}
+		} break;
+	}
 }

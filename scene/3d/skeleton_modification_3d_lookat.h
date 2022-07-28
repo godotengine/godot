@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_2d.h                                           */
+/*  skeleton_modification_3d_lookat.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_H
-#define SKELETON_MODIFICATION_2D_H
+#ifndef SKELETON_MODIFICATION_3D_LOOKAT_H
+#define SKELETON_MODIFICATION_3D_LOOKAT_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/3d/skeleton_modification_3d.h"
 
-///////////////////////////////////////
-// SkeletonModification2D
-///////////////////////////////////////
+class SkeletonModification3DLookAt : public SkeletonModification3D {
+	GDCLASS(SkeletonModification3DLookAt, SkeletonModification3D);
 
-class SkeletonModificationStack2D;
-class Bone2D;
+private:
+	String bone_name = "";
+	int bone_idx = -1;
+	NodePath target_node;
+	ObjectID target_node_cache;
 
-class SkeletonModification2D : public Resource {
-	GDCLASS(SkeletonModification2D, Resource);
-	friend class Skeleton2D;
-	friend class Bone2D;
+	Vector3 additional_rotation = Vector3();
+	bool lock_rotation_to_plane = false;
+	int lock_rotation_plane = ROTATION_PLANE_X;
+
+	void update_cache();
 
 protected:
 	static void _bind_methods();
-
-	SkeletonModificationStack2D *stack = nullptr;
-	int execution_mode = 0; // 0 = process
-
-	bool enabled = true;
-	bool is_setup = false;
-
-	bool _print_execution_error(bool p_condition, String p_message);
-
-	GDVIRTUAL1(_execute, double)
-	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack2D>)
-	GDVIRTUAL0(_draw_editor_gizmo)
-
+	void _notification(int32_t p_what);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 public:
-	virtual void _execute(float _delta);
-	virtual void _setup_modification(SkeletonModificationStack2D *p_stack);
-	virtual void _draw_editor_gizmo();
+	enum ROTATION_PLANE {
+		ROTATION_PLANE_X,
+		ROTATION_PLANE_Y,
+		ROTATION_PLANE_Z
+	};
+	void set_bone_name(String p_name);
+	String get_bone_name() const;
 
-	bool editor_draw_gizmo = false;
-	void set_editor_draw_gizmo(bool p_draw_gizmo);
-	bool get_editor_draw_gizmo() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
 
-	Ref<SkeletonModificationStack2D> get_modification_stack();
-	void set_is_setup(bool p_setup);
-	bool get_is_setup() const;
+	void set_additional_rotation(Vector3 p_offset);
+	Vector3 get_additional_rotation() const;
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
+	void set_lock_rotation_to_plane(bool p_lock_to_plane);
+	bool get_lock_rotation_to_plane() const;
+	void set_lock_rotation_plane(int p_plane);
+	int get_lock_rotation_plane() const;
 
-	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert_clamp = false);
-	void editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound, bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted);
-
-	SkeletonModification2D();
+	SkeletonModification3DLookAt() {}
+	~SkeletonModification3DLookAt() {}
 };
 
-#endif // SKELETON_MODIFICATION_2D_H
+#endif // SKELETON_MODIFICATION_3D_LOOKAT_H

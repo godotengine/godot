@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_3d.h                                           */
+/*  skeleton_modification_2d.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_3D_H
-#define SKELETON_MODIFICATION_3D_H
+#ifndef SKELETON_MODIFICATION_2D_H
+#define SKELETON_MODIFICATION_2D_H
 
-#include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_stack_3d.h"
+#include "scene/2d/skeleton_2d.h"
 
-class SkeletonModificationStack3D;
+///////////////////////////////////////
+// SkeletonModification2D
+///////////////////////////////////////
 
-class SkeletonModification3D : public Resource {
-	GDCLASS(SkeletonModification3D, Resource);
-	friend class Skeleton3D;
-	friend class SkeletonModificationStack3D;
+class Bone2D;
+
+class SkeletonModification2D : public Node2D {
+	GDCLASS(SkeletonModification2D, Node2D);
 
 protected:
 	static void _bind_methods();
 
-	SkeletonModificationStack3D *stack = nullptr;
 	int execution_mode = 0; // 0 = process
 
 	bool enabled = true;
 	bool is_setup = false;
-	bool execution_error_found = false;
+	Skeleton2D *skeleton = nullptr;
+	NodePath skeleton_node = NodePath("..");
 
 	bool _print_execution_error(bool p_condition, String p_message);
 
 	GDVIRTUAL1(_execute, double)
-	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack3D>)
+	GDVIRTUAL0(_draw_editor_gizmo)
 
 public:
-	virtual void _execute(real_t p_delta);
-	virtual void _setup_modification(SkeletonModificationStack3D *p_stack);
+	NodePath get_skeleton_path() const {
+		return skeleton_node;
+	}
 
-	real_t clamp_angle(real_t p_angle, real_t p_min_bound, real_t p_max_bound, bool p_invert);
+	void set_skeleton_path(NodePath p_path) {
+		skeleton_node = p_path;
+	}
+	virtual void _draw_editor_gizmo();
+
+	bool editor_draw_gizmo = false;
+	void set_editor_draw_gizmo(bool p_draw_gizmo);
+	bool get_editor_draw_gizmo() const;
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
 
-	void set_execution_mode(int p_mode);
-	int get_execution_mode() const;
-
-	Ref<SkeletonModificationStack3D> get_modification_stack();
-
 	void set_is_setup(bool p_setup);
 	bool get_is_setup() const;
 
-	SkeletonModification3D();
+	void set_execution_mode(int p_mode);
+	int get_execution_mode() const;
+
+	float clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert_clamp = false);
+	void editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound, bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted);
+
+	SkeletonModification2D() {}
 };
 
-#endif // SKELETON_MODIFICATION_3D_H
+#endif // SKELETON_MODIFICATION_2D_H

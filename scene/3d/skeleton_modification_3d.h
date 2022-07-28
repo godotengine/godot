@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_modification_stack_3d.h                                     */
+/*  skeleton_modification_3d.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,64 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_STACK_3D_H
-#define SKELETON_MODIFICATION_STACK_3D_H
+#ifndef SKELETON_MODIFICATION_3D_H
+#define SKELETON_MODIFICATION_3D_H
 
-#include "core/templates/local_vector.h"
+#include "core/string/node_path.h"
 #include "scene/3d/skeleton_3d.h"
 
-class Skeleton3D;
-class SkeletonModification3D;
-
-class SkeletonModificationStack3D : public Resource {
-	GDCLASS(SkeletonModificationStack3D, Resource);
-	friend class Skeleton3D;
-	friend class SkeletonModification3D;
+class SkeletonModification3D : public Node3D {
+	GDCLASS(SkeletonModification3D, Node3D);
 
 protected:
 	static void _bind_methods();
-	virtual void _get_property_list(List<PropertyInfo> *p_list) const;
-	virtual bool _set(const StringName &p_path, const Variant &p_value);
-	virtual bool _get(const StringName &p_path, Variant &r_ret) const;
+
+	int execution_mode = 0; // 0 = process
+
+	bool enabled = true;
+	bool is_setup = false;
+	bool execution_error_found = false;
+	Skeleton3D *skeleton = nullptr;
+	NodePath skeleton_path = NodePath("..");
+
+	bool _print_execution_error(bool p_condition, String p_message);
 
 public:
-	Skeleton3D *skeleton = nullptr;
-	bool is_setup = false;
-	bool enabled = false;
-	real_t strength = 1.0;
-
-	enum EXECUTION_MODE {
-		execution_mode_process,
-		execution_mode_physics_process,
-	};
-
-	LocalVector<Ref<SkeletonModification3D>> modifications = LocalVector<Ref<SkeletonModification3D>>();
-	int modifications_count = 0;
-
-	virtual void setup();
-	virtual void execute(real_t p_delta, int p_execution_mode);
-
-	void enable_all_modifications(bool p_enable);
-	Ref<SkeletonModification3D> get_modification(int p_mod_idx) const;
-	void add_modification(Ref<SkeletonModification3D> p_mod);
-	void delete_modification(int p_mod_idx);
-	void set_modification(int p_mod_idx, Ref<SkeletonModification3D> p_mod);
-
-	void set_modification_count(int p_count);
-	int get_modification_count() const;
-
-	void set_skeleton(Skeleton3D *p_skeleton);
-	Skeleton3D *get_skeleton() const;
-
-	bool get_is_setup() const;
+	real_t clamp_angle(real_t p_angle, real_t p_min_bound, real_t p_max_bound, bool p_invert);
 
 	void set_enabled(bool p_enabled);
-	bool get_enabled() const;
+	bool get_enabled();
 
-	void set_strength(real_t p_strength);
-	real_t get_strength() const;
+	void set_execution_mode(int p_mode);
+	int get_execution_mode() const;
 
-	SkeletonModificationStack3D();
+	void set_is_setup(bool p_setup);
+	bool get_is_setup() const;
+
+	NodePath get_skeleton_path() const;
+	void set_skeleton_path(NodePath p_path);
+
+	SkeletonModification3D() {}
 };
 
-#endif // SKELETON_MODIFICATION_STACK_3D_H
+#endif // SKELETON_MODIFICATION_3D_H

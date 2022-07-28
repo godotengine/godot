@@ -104,123 +104,41 @@ void SkeletonModification2DLookAt::_get_property_list(List<PropertyInfo> *p_list
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DLookAt::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-
-	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
-		update_target_cache();
-		return;
-	}
-
-	if (bone2d_node_cache.is_null() && !bone2d_node.is_empty()) {
-		update_bone2d_cache();
-		WARN_PRINT_ONCE("Bone2D node cache is out of date. Attempting to update...");
-		return;
-	}
-
-	if (target_node_reference == nullptr) {
-		target_node_reference = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	}
-	if (!target_node_reference || !target_node_reference->is_inside_tree()) {
-		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-	if (bone_idx <= -1) {
-		ERR_PRINT_ONCE("Bone index is invalid. Cannot execute modification!");
-		return;
-	}
-
-	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
-	if (operation_bone == nullptr) {
-		ERR_PRINT_ONCE("bone_idx for modification does not point to a valid bone! Cannot execute modification");
-		return;
-	}
-
-	Transform2D operation_transform = operation_bone->get_global_transform();
-	Transform2D target_trans = target_node_reference->get_global_transform();
-
-	// Look at the target!
-	operation_transform = operation_transform.looking_at(target_trans.get_origin());
-	// Apply whatever scale it had prior to looking_at
-	operation_transform.set_scale(operation_bone->get_global_scale());
-
-	// Account for the direction the bone faces in:
-	operation_transform.set_rotation(operation_transform.get_rotation() - operation_bone->get_bone_angle());
-
-	// Apply additional rotation
-	operation_transform.set_rotation(operation_transform.get_rotation() + additional_rotation);
-
-	// Apply constraints in globalspace:
-	if (enable_constraint && !constraint_in_localspace) {
-		operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
-	}
-
-	// Convert from a global transform to a local transform via the Bone2D node
-	operation_bone->set_global_transform(operation_transform);
-	operation_transform = operation_bone->get_transform();
-
-	// Apply constraints in localspace:
-	if (enable_constraint && constraint_in_localspace) {
-		operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
-	}
-
-	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
-	stack->skeleton->set_bone_local_pose_override(bone_idx, operation_transform, stack->strength, true);
-	operation_bone->set_transform(operation_transform);
-}
-
-void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack2D *p_stack) {
-	stack = p_stack;
-
-	if (stack != nullptr) {
-		is_setup = true;
-		update_target_cache();
-		update_bone2d_cache();
-	}
-}
-
 void SkeletonModification2DLookAt::_draw_editor_gizmo() {
 	if (!enabled || !is_setup) {
 		return;
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
+	Bone2D *operation_bone = skeleton->get_bone(bone_idx);
 	editor_draw_angle_constraints(operation_bone, constraint_angle_min, constraint_angle_max,
 			enable_constraint, constraint_in_localspace, constraint_angle_invert);
 }
 
 void SkeletonModification2DLookAt::update_bone2d_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
 	bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(bone2d_node)) {
-				Node *node = stack->skeleton->get_node(bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update Bone2D cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update Bone2D cache: node is not in the scene tree!");
-				bone2d_node_cache = node->get_instance_id();
+	if (is_inside_tree()) {
+		if (has_node(bone2d_node)) {
+			Node *node = get_node_or_null(bone2d_node);
+			ERR_FAIL_COND_MSG(!node || skeleton == node,
+					"Cannot update Bone2D cache: node is this modification's skeleton or cannot be found!");
+			ERR_FAIL_COND_MSG(!node->is_inside_tree(),
+					"Cannot update Bone2D cache: node is not in the scene tree!");
+			bone2d_node_cache = node->get_instance_id();
 
-				Bone2D *bone = Object::cast_to<Bone2D>(node);
-				if (bone) {
-					bone_idx = bone->get_index_in_skeleton();
-				} else {
-					ERR_FAIL_MSG("Error Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
-				}
-
-				// Set this to null so we update it
-				target_node_reference = nullptr;
+			Bone2D *bone = Object::cast_to<Bone2D>(node);
+			if (bone) {
+				bone_idx = bone->get_index_in_skeleton();
+			} else {
+				ERR_FAIL_MSG("Error Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
 			}
+
+			// Set this to null so we update it
+			target_node_reference = nullptr;
 		}
 	}
 }
@@ -241,12 +159,12 @@ int SkeletonModification2DLookAt::get_bone_index() const {
 void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup && stack) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+	if (is_setup) {
+		if (skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
 			bone_idx = p_bone_idx;
-			bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
+			bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the bone index for this modification...");
 			bone_idx = p_bone_idx;
@@ -260,22 +178,20 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 }
 
 void SkeletonModification2DLookAt::update_target_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update target cache: node is not in the scene tree!");
-				target_node_cache = node->get_instance_id();
-			}
+	if (is_inside_tree()) {
+		if (has_node(target_node)) {
+			Node *node = get_node_or_null(target_node);
+			ERR_FAIL_COND_MSG(!node || skeleton == node,
+					"Cannot update target cache: node is this modification's skeleton or cannot be found!");
+			ERR_FAIL_COND_MSG(!node->is_inside_tree(),
+					"Cannot update target cache: node is not in the scene tree!");
+			target_node_cache = node->get_instance_id();
 		}
 	}
 }
@@ -300,11 +216,6 @@ void SkeletonModification2DLookAt::set_additional_rotation(float p_rotation) {
 void SkeletonModification2DLookAt::set_enable_constraint(bool p_constraint) {
 	enable_constraint = p_constraint;
 	notify_property_list_changed();
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_enable_constraint() const {
@@ -313,11 +224,6 @@ bool SkeletonModification2DLookAt::get_enable_constraint() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_min(float p_angle_min) {
 	constraint_angle_min = p_angle_min;
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DLookAt::get_constraint_angle_min() const {
@@ -326,11 +232,6 @@ float SkeletonModification2DLookAt::get_constraint_angle_min() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_max(float p_angle_max) {
 	constraint_angle_max = p_angle_max;
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DLookAt::get_constraint_angle_max() const {
@@ -339,11 +240,6 @@ float SkeletonModification2DLookAt::get_constraint_angle_max() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_invert(bool p_invert) {
 	constraint_angle_invert = p_invert;
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_constraint_angle_invert() const {
@@ -352,11 +248,6 @@ bool SkeletonModification2DLookAt::get_constraint_angle_invert() const {
 
 void SkeletonModification2DLookAt::set_constraint_in_localspace(bool p_constraint_in_localspace) {
 	constraint_in_localspace = p_constraint_in_localspace;
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_constraint_in_localspace() const {
@@ -390,7 +281,6 @@ void SkeletonModification2DLookAt::_bind_methods() {
 }
 
 SkeletonModification2DLookAt::SkeletonModification2DLookAt() {
-	stack = nullptr;
 	is_setup = false;
 	bone_idx = -1;
 	additional_rotation = 0;
@@ -404,4 +294,92 @@ SkeletonModification2DLookAt::SkeletonModification2DLookAt() {
 }
 
 SkeletonModification2DLookAt::~SkeletonModification2DLookAt() {
+}
+void SkeletonModification2DLookAt::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			skeleton = cast_to<Skeleton2D>(get_node_or_null(get_skeleton_path()));
+			is_setup = true;
+			update_target_cache();
+			update_bone2d_cache();
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr,
+					"Modification is not setup and therefore cannot execute!");
+			if (!enabled) {
+				return;
+			}
+
+			if (target_node_cache.is_null()) {
+				WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
+				update_target_cache();
+				return;
+			}
+
+			if (bone2d_node_cache.is_null() && !bone2d_node.is_empty()) {
+				update_bone2d_cache();
+				WARN_PRINT_ONCE("Bone2D node cache is out of date. Attempting to update...");
+				return;
+			}
+
+			if (target_node_reference == nullptr) {
+				target_node_reference = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+			}
+			if (!target_node_reference || !target_node_reference->is_inside_tree()) {
+				ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+			if (bone_idx <= -1) {
+				ERR_PRINT_ONCE("Bone index is invalid. Cannot execute modification!");
+				return;
+			}
+
+			Bone2D *operation_bone = skeleton->get_bone(bone_idx);
+			if (operation_bone == nullptr) {
+				ERR_PRINT_ONCE("bone_idx for modification does not point to a valid bone! Cannot execute modification");
+				return;
+			}
+
+			Transform2D operation_transform = operation_bone->get_global_transform();
+			Transform2D target_trans = target_node_reference->get_global_transform();
+
+			// Look at the target!
+			operation_transform = operation_transform.looking_at(target_trans.get_origin());
+			// Apply whatever scale it had prior to looking_at
+			operation_transform.set_scale(operation_bone->get_global_scale());
+
+			// Account for the direction the bone faces in:
+			operation_transform.set_rotation(operation_transform.get_rotation() - operation_bone->get_bone_angle());
+
+			// Apply additional rotation
+			operation_transform.set_rotation(operation_transform.get_rotation() + additional_rotation);
+
+			// Apply constraints in globalspace:
+			if (enable_constraint && !constraint_in_localspace) {
+				operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
+			}
+
+			// Convert from a global transform to a local transform via the Bone2D node
+			operation_bone->set_global_transform(operation_transform);
+			operation_transform = operation_bone->get_transform();
+
+			// Apply constraints in localspace:
+			if (enable_constraint && constraint_in_localspace) {
+				operation_transform.set_rotation(clamp_angle(operation_transform.get_rotation(), constraint_angle_min, constraint_angle_max, constraint_angle_invert));
+			}
+
+			// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
+			skeleton->set_bone_local_pose_override(bone_idx, operation_transform, 1.0, true);
+			operation_bone->set_transform(operation_transform);
+		} break;
+	}
 }

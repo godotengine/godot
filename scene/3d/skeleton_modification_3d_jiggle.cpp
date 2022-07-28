@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/resources/skeleton_modification_3d_jiggle.h"
+#include "scene/3d/skeleton_modification_3d_jiggle.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/3d/skeleton_modification_3d.h"
 
 bool SkeletonModification3DJiggle::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
@@ -138,47 +138,20 @@ void SkeletonModification3DJiggle::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification3DJiggle::_execute(real_t p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-	if (target_node_cache.is_null()) {
-		_print_execution_error(true, "Target cache is out of date. Attempting to update...");
-		update_cache();
-		return;
-	}
-	Node3D *target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
-	_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!");
-
-	for (uint32_t i = 0; i < jiggle_data_chain.size(); i++) {
-		_execute_jiggle_joint(i, target, p_delta);
-	}
-
-	execution_error_found = false;
-}
-
 void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D *p_target, real_t p_delta) {
 	// Adopted from: https://wiki.unity3d.com/index.php/JiggleBone
 	// With modifications by TwistedTwigleg.
 
 	if (jiggle_data_chain[p_joint_idx].bone_idx <= -2) {
-		jiggle_data_chain[p_joint_idx].bone_idx = stack->skeleton->find_bone(jiggle_data_chain[p_joint_idx].bone_name);
+		jiggle_data_chain[p_joint_idx].bone_idx = skeleton->find_bone(jiggle_data_chain[p_joint_idx].bone_name);
 	}
 	if (_print_execution_error(
-				jiggle_data_chain[p_joint_idx].bone_idx < 0 || jiggle_data_chain[p_joint_idx].bone_idx > stack->skeleton->get_bone_count(),
+				jiggle_data_chain[p_joint_idx].bone_idx < 0 || jiggle_data_chain[p_joint_idx].bone_idx > skeleton->get_bone_count(),
 				"Jiggle joint " + itos(p_joint_idx) + " bone index is invalid. Cannot execute modification!")) {
 		return;
 	}
-
-	Transform3D bone_local_pos = stack->skeleton->get_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx);
-	if (bone_local_pos == Transform3D()) {
-		bone_local_pos = stack->skeleton->get_bone_pose(jiggle_data_chain[p_joint_idx].bone_idx);
-	}
-
-	Transform3D new_bone_trans = stack->skeleton->local_pose_to_global_pose(jiggle_data_chain[p_joint_idx].bone_idx, bone_local_pos);
-	Vector3 target_position = stack->skeleton->world_transform_to_global_pose(p_target->get_global_transform()).origin;
+	Transform3D new_bone_trans = skeleton->get_bone_global_pose(jiggle_data_chain[p_joint_idx].bone_idx);
+	Vector3 target_position = skeleton->world_transform_to_global_pose(p_target->get_global_transform()).origin;
 
 	jiggle_data_chain[p_joint_idx].force = (target_position - jiggle_data_chain[p_joint_idx].dynamic_position) * jiggle_data_chain[p_joint_idx].stiffness * p_delta;
 
@@ -196,15 +169,15 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 
 	// Collision detection/response
 	if (use_colliders) {
-		if (execution_mode == SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process) {
-			Ref<World3D> world_3d = stack->skeleton->get_world_3d();
+		if (is_physics_processing() || is_physics_processing_internal()) {
+			Ref<World3D> world_3d = skeleton->get_world_3d();
 			ERR_FAIL_COND(world_3d.is_null());
 			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 			PhysicsDirectSpaceState3D::RayResult ray_result;
 
 			// Convert to world transforms, which is what the physics server needs
-			Transform3D new_bone_trans_world = stack->skeleton->global_pose_to_world_transform(new_bone_trans);
-			Transform3D dynamic_position_world = stack->skeleton->global_pose_to_world_transform(Transform3D(Basis(), jiggle_data_chain[p_joint_idx].dynamic_position));
+			Transform3D new_bone_trans_world = skeleton->global_pose_to_world_transform(new_bone_trans);
+			Transform3D dynamic_position_world = skeleton->global_pose_to_world_transform(Transform3D(Basis(), jiggle_data_chain[p_joint_idx].dynamic_position));
 
 			PhysicsDirectSpaceState3D::RayParameters ray_params;
 			ray_params.from = new_bone_trans_world.origin;
@@ -227,8 +200,8 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 	}
 
 	// Get the forward direction that the basis is facing in right now.
-	stack->skeleton->update_bone_rest_forward_vector(jiggle_data_chain[p_joint_idx].bone_idx);
-	Vector3 forward_vector = stack->skeleton->get_bone_axis_forward_vector(jiggle_data_chain[p_joint_idx].bone_idx);
+	skeleton->update_bone_rest_forward_vector(jiggle_data_chain[p_joint_idx].bone_idx);
+	Vector3 forward_vector = skeleton->get_bone_axis_forward_vector(jiggle_data_chain[p_joint_idx].bone_idx);
 
 	// Rotate the bone using the dynamic position!
 	new_bone_trans.basis.rotate_to_align(forward_vector, new_bone_trans.origin.direction_to(jiggle_data_chain[p_joint_idx].dynamic_position));
@@ -236,9 +209,11 @@ void SkeletonModification3DJiggle::_execute_jiggle_joint(int p_joint_idx, Node3D
 	// Roll
 	new_bone_trans.basis.rotate_local(forward_vector, jiggle_data_chain[p_joint_idx].roll);
 
-	new_bone_trans = stack->skeleton->global_pose_to_local_pose(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans);
-	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans, stack->strength, true);
-	stack->skeleton->force_update_bone_children_transforms(jiggle_data_chain[p_joint_idx].bone_idx);
+	new_bone_trans = skeleton->global_pose_to_local_pose(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans);
+	skeleton->set_bone_pose_position(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans.origin);
+	skeleton->set_bone_pose_rotation(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans.basis.get_rotation_quaternion());
+	skeleton->set_bone_pose_scale(jiggle_data_chain[p_joint_idx].bone_idx, new_bone_trans.basis.get_scale());
+	skeleton->force_update_bone_children_transforms(jiggle_data_chain[p_joint_idx].bone_idx);
 }
 
 void SkeletonModification3DJiggle::_update_jiggle_joint_data() {
@@ -253,45 +228,23 @@ void SkeletonModification3DJiggle::_update_jiggle_joint_data() {
 	}
 }
 
-void SkeletonModification3DJiggle::_setup_modification(SkeletonModificationStack3D *p_stack) {
-	stack = p_stack;
-
-	if (stack) {
-		is_setup = true;
-		execution_error_found = false;
-
-		if (stack->skeleton) {
-			for (uint32_t i = 0; i < jiggle_data_chain.size(); i++) {
-				int bone_idx = jiggle_data_chain[i].bone_idx;
-				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
-					jiggle_data_chain[i].dynamic_position = stack->skeleton->local_pose_to_global_pose(bone_idx, stack->skeleton->get_bone_local_pose_override(bone_idx)).origin;
-				}
-			}
-		}
-
-		update_cache();
-	}
-}
-
 void SkeletonModification3DJiggle::update_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update target cache: node is not in the scene tree!");
-				target_node_cache = node->get_instance_id();
+	if (is_inside_tree()) {
+		if (has_node(target_node)) {
+			Node *node = get_node_or_null(target_node);
+			ERR_FAIL_COND_MSG(!node || skeleton == node,
+					"Cannot update target cache: node is this modification's skeleton or cannot be found!");
+			ERR_FAIL_COND_MSG(!node->is_inside_tree(),
+					"Cannot update target cache: node is not in the scene tree!");
+			target_node_cache = node->get_instance_id();
 
-				execution_error_found = false;
-			}
+			execution_error_found = false;
 		}
 	}
 }
@@ -388,8 +341,8 @@ void SkeletonModification3DJiggle::set_jiggle_joint_bone_name(int p_joint_idx, S
 	ERR_FAIL_INDEX(p_joint_idx, bone_chain_size);
 
 	jiggle_data_chain[p_joint_idx].bone_name = p_name;
-	if (stack && stack->skeleton) {
-		jiggle_data_chain[p_joint_idx].bone_idx = stack->skeleton->find_bone(p_name);
+	if (skeleton) {
+		jiggle_data_chain[p_joint_idx].bone_idx = skeleton->find_bone(p_name);
 	}
 	execution_error_found = false;
 	notify_property_list_changed();
@@ -413,10 +366,8 @@ void SkeletonModification3DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 	jiggle_data_chain[p_joint_idx].bone_idx = p_bone_idx;
 
-	if (stack) {
-		if (stack->skeleton) {
-			jiggle_data_chain[p_joint_idx].bone_name = stack->skeleton->get_bone_name(p_bone_idx);
-		}
+	if (skeleton) {
+		jiggle_data_chain[p_joint_idx].bone_name = skeleton->get_bone_name(p_bone_idx);
 	}
 	execution_error_found = false;
 	notify_property_list_changed();
@@ -567,7 +518,6 @@ void SkeletonModification3DJiggle::_bind_methods() {
 }
 
 SkeletonModification3DJiggle::SkeletonModification3DJiggle() {
-	stack = nullptr;
 	is_setup = false;
 	jiggle_data_chain = Vector<Jiggle_Joint_Data>();
 	stiffness = 3;
@@ -579,4 +529,60 @@ SkeletonModification3DJiggle::SkeletonModification3DJiggle() {
 }
 
 SkeletonModification3DJiggle::~SkeletonModification3DJiggle() {
+}
+
+void SkeletonModification3DJiggle::_notification(int32_t p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			execution_error_found = false;
+			skeleton = cast_to<Skeleton3D>(get_node_or_null(get_skeleton_path()));
+			if (skeleton) {
+				for (uint32_t i = 0; i < jiggle_data_chain.size(); i++) {
+					int bone_idx = jiggle_data_chain[i].bone_idx;
+					if (bone_idx > 0 && bone_idx < skeleton->get_bone_count()) {
+						jiggle_data_chain[i].dynamic_position = skeleton->local_pose_to_global_pose(bone_idx, skeleton->get_bone_local_pose_override(bone_idx)).origin;
+					}
+				}
+			}
+
+			update_cache();
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			is_setup = true;
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (!is_setup || skeleton == nullptr) {
+				ERR_PRINT_ONCE("Modification is not setup and therefore cannot execute!");
+				return;
+			}
+			if (!enabled) {
+				return;
+			}
+			if (target_node_cache.is_null()) {
+				_print_execution_error(true, "Target cache is out of date. Attempting to update...");
+				update_cache();
+				return;
+			}
+			Node3D *target = Object::cast_to<Node3D>(ObjectDB::get_instance(target_node_cache));
+			_print_execution_error(!target || !target->is_inside_tree(), "Target node is not in the scene tree. Cannot execute modification!");
+			real_t delta = 0.0f;
+			if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+				delta = get_physics_process_delta_time();
+			} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+				delta = get_process_delta_time();
+			}
+			for (uint32_t i = 0; i < jiggle_data_chain.size(); i++) {
+				_execute_jiggle_joint(i, target, delta);
+			}
+
+			execution_error_found = false;
+		}
+	}
 }

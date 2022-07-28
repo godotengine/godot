@@ -130,33 +130,11 @@ void SkeletonModification2DJiggle::_get_property_list(List<PropertyInfo> *p_list
 	}
 }
 
-void SkeletonModification2DJiggle::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
-		update_target_cache();
-		return;
-	}
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (!target || !target->is_inside_tree()) {
-		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-
-	for (int i = 0; i < jiggle_data_chain.size(); i++) {
-		_execute_jiggle_joint(i, target, p_delta);
-	}
-}
-
 void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D *p_target, float p_delta) {
 	// Adopted from: https://wiki.unity3d.com/index.php/JiggleBone
 	// With modifications by TwistedTwigleg.
 
-	if (jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > stack->skeleton->get_bone_count()) {
+	if (jiggle_data_chain[p_joint_idx].bone_idx <= -1 || jiggle_data_chain[p_joint_idx].bone_idx > skeleton->get_bone_count()) {
 		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " bone index is invalid. Cannot execute modification on joint...");
 		return;
 	}
@@ -166,7 +144,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 		jiggle_joint_update_bone2d_cache(p_joint_idx);
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
+	Bone2D *operation_bone = skeleton->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
 	if (!operation_bone) {
 		ERR_PRINT_ONCE("Jiggle joint " + itos(p_joint_idx) + " does not have a Bone2D node or it cannot be found!");
 		return;
@@ -190,8 +168,8 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 
 	// Collision detection/response
 	if (use_colliders) {
-		if (execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process) {
-			Ref<World2D> world_2d = stack->skeleton->get_world_2d();
+		if (is_physics_processing() || is_physics_processing_internal()) {
+			Ref<World2D> world_2d = skeleton->get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 			PhysicsDirectSpaceState2D::RayResult ray_result;
@@ -212,7 +190,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 				jiggle_data_chain.write[p_joint_idx].last_noncollision_position = jiggle_data_chain[p_joint_idx].dynamic_position;
 			}
 		} else {
-			WARN_PRINT_ONCE("Jiggle 2D modifier: You cannot detect colliders without the stack mode being set to _physics_process!");
+			WARN_PRINT_ONCE("Jiggle 2D modifier: You cannot detect colliders without the process mode being set to _physics_process!");
 		}
 	}
 
@@ -224,7 +202,7 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	operation_bone_trans.set_scale(operation_bone->get_global_scale());
 
 	operation_bone->set_global_transform(operation_bone_trans);
-	stack->skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), stack->strength, true);
+	skeleton->set_bone_local_pose_override(jiggle_data_chain[p_joint_idx].bone_idx, operation_bone->get_transform(), 1.0, true);
 }
 
 void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
@@ -239,60 +217,38 @@ void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
 	}
 }
 
-void SkeletonModification2DJiggle::_setup_modification(SkeletonModificationStack2D *p_stack) {
-	stack = p_stack;
-
-	if (stack) {
-		is_setup = true;
-
-		if (stack->skeleton) {
-			for (int i = 0; i < jiggle_data_chain.size(); i++) {
-				int bone_idx = jiggle_data_chain[i].bone_idx;
-				if (bone_idx > 0 && bone_idx < stack->skeleton->get_bone_count()) {
-					Bone2D *bone2d_node = stack->skeleton->get_bone(bone_idx);
-					jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_position();
-				}
-			}
-		}
-
-		update_target_cache();
-	}
-}
-
 void SkeletonModification2DJiggle::update_target_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
-						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update target cache: node is not in scene tree!");
-				target_node_cache = node->get_instance_id();
-			}
+	if (is_inside_tree()) {
+		if (has_node(target_node)) {
+			Node *node = get_node_or_null(target_node);
+			ERR_FAIL_COND_MSG(!node || skeleton == node,
+					"Cannot update target cache: node is this modification's skeleton or cannot be found!");
+			ERR_FAIL_COND_MSG(!node->is_inside_tree(),
+					"Cannot update target cache: node is not in scene tree!");
+			target_node_cache = node->get_instance_id();
 		}
 	}
 }
 
 void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update Jiggle " + itos(p_joint_idx) + " Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
 	jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(jiggle_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(jiggle_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(jiggle_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = skeleton->get_node(jiggle_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update Jiggle joint " + itos(p_joint_idx) + " Bone2D cache: node is not in scene tree!");
@@ -413,11 +369,11 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
 			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
+			jiggle_data_chain.write[p_joint_idx].bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
 			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
@@ -554,7 +510,6 @@ void SkeletonModification2DJiggle::_bind_methods() {
 }
 
 SkeletonModification2DJiggle::SkeletonModification2DJiggle() {
-	stack = nullptr;
 	is_setup = false;
 	jiggle_data_chain = Vector<Jiggle_Joint_Data2D>();
 	stiffness = 3;
@@ -567,4 +522,59 @@ SkeletonModification2DJiggle::SkeletonModification2DJiggle() {
 }
 
 SkeletonModification2DJiggle::~SkeletonModification2DJiggle() {
+}
+
+void SkeletonModification2DJiggle::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			skeleton = cast_to<Skeleton2D>(get_node_or_null(get_skeleton_path()));
+			is_setup = true;
+			if (skeleton) {
+				for (int i = 0; i < jiggle_data_chain.size(); i++) {
+					int bone_idx = jiggle_data_chain[i].bone_idx;
+					if (bone_idx > 0 && bone_idx < skeleton->get_bone_count()) {
+						Bone2D *bone2d_node = skeleton->get_bone(bone_idx);
+						jiggle_data_chain.write[i].dynamic_position = bone2d_node->get_global_position();
+					}
+				}
+			}
+
+			update_target_cache();
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr,
+					"Modification is not setup and therefore cannot execute!");
+			if (!enabled) {
+				return;
+			}
+			if (target_node_cache.is_null()) {
+				WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
+				update_target_cache();
+				return;
+			}
+			Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+			if (!target || !target->is_inside_tree()) {
+				ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+			double delta = 0.0;
+			if (get_execution_mode() == 0) {
+				delta = get_process_delta_time();
+			} else if (get_execution_mode() == 1) {
+				delta = get_physics_process_delta_time();
+			}
+			for (int i = 0; i < jiggle_data_chain.size(); i++) {
+				_execute_jiggle_joint(i, target, delta);
+			}
+		} break;
+	}
 }

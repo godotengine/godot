@@ -32,7 +32,7 @@
 #define SKELETON_MODIFICATION_2D_CCDIK_H
 
 #include "scene/2d/skeleton_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/2d/skeleton_modification_2d.h"
 
 ///////////////////////////////////////
 // SkeletonModification2DCCDIK
@@ -77,8 +77,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void _execute(float p_delta) override;
-	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void _notification(int p_what);
 	void _draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);

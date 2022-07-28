@@ -33,7 +33,7 @@
 #include "core/object/message_queue.h"
 #include "core/variant/type_info.h"
 #include "scene/3d/physics_body_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
+#include "scene/3d/skeleton_modification_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
@@ -71,13 +71,6 @@ SkinReference::~SkinReference() {
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
-#ifndef _3D_DISABLED
-	if (path.begins_with("modification_stack")) {
-		set_modification_stack(p_value);
-		return true;
-	}
-#endif //_3D_DISABLED
-
 	if (!path.begins_with("bones/")) {
 		return false;
 	}
@@ -113,13 +106,6 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 
 bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
-
-#ifndef _3D_DISABLED
-	if (path.begins_with("modification_stack")) {
-		r_ret = modification_stack;
-		return true;
-	}
-#endif //_3D_DISABLED
 
 	if (!path.begins_with("bones/")) {
 		return false;
@@ -162,14 +148,6 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + PNAME("rotation"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("scale"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
-
-#ifndef _3D_DISABLED
-	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, "modification_stack",
-					PROPERTY_HINT_RESOURCE_TYPE,
-					"SkeletonModificationStack3D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-#endif //_3D_DISABLED
 
 	for (PropertyInfo &E : *p_list) {
 		_validate_property(E);
@@ -332,24 +310,11 @@ void Skeleton3D::_notification(int p_what) {
 				}
 			}
 
-			if (modification_stack.is_valid()) {
-				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_physics_process);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (modification_stack.is_valid()) {
-				execute_modifications(get_process_delta_time(), SkeletonModificationStack3D::EXECUTION_MODE::execution_mode_process);
-			}
 		} break;
 
 		case NOTIFICATION_READY: {
 			set_physics_process_internal(true);
 			set_process_internal(true);
-
-			if (modification_stack.is_valid()) {
-				set_modification_stack(modification_stack);
-			}
 		} break;
 #endif // _3D_DISABLED
 	}
@@ -1158,41 +1123,6 @@ Basis Skeleton3D::global_pose_z_forward_to_bone_forward(int p_bone_idx, Basis p_
 	return return_basis;
 }
 
-// Modifications
-
-#ifndef _3D_DISABLED
-
-void Skeleton3D::set_modification_stack(Ref<SkeletonModificationStack3D> p_stack) {
-	if (modification_stack.is_valid()) {
-		modification_stack->is_setup = false;
-		modification_stack->set_skeleton(nullptr);
-	}
-
-	modification_stack = p_stack;
-	if (modification_stack.is_valid()) {
-		modification_stack->set_skeleton(this);
-		modification_stack->setup();
-	}
-}
-Ref<SkeletonModificationStack3D> Skeleton3D::get_modification_stack() {
-	return modification_stack;
-}
-
-void Skeleton3D::execute_modifications(real_t p_delta, int p_execution_mode) {
-	if (!modification_stack.is_valid()) {
-		return;
-	}
-
-	// Needed to avoid the issue where the stack looses reference to the skeleton when the scene is saved.
-	if (modification_stack->skeleton != this) {
-		modification_stack->set_skeleton(this);
-	}
-
-	modification_stack->execute(p_delta, p_execution_mode);
-}
-
-#endif // _3D_DISABLED
-
 void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton3D::add_bone);
 	ClassDB::bind_method(D_METHOD("find_bone", "name"), &Skeleton3D::find_bone);
@@ -1269,11 +1199,6 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_start_simulation", "bones"), &Skeleton3D::physical_bones_start_simulation_on, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("physical_bones_add_collision_exception", "exception"), &Skeleton3D::physical_bones_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton3D::physical_bones_remove_collision_exception);
-
-	// Modifications
-	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton3D::set_modification_stack);
-	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton3D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton3D::execute_modifications);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");

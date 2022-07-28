@@ -153,49 +153,14 @@ void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 #endif // TOOLS_ENABLED
 }
 
-void SkeletonModification2DCCDIK::_execute(float p_delta) {
-	ERR_FAIL_COND_MSG(!stack || !is_setup || stack->skeleton == nullptr,
-			"Modification is not setup and therefore cannot execute!");
-	if (!enabled) {
-		return;
-	}
-
-	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
-		update_target_cache();
-		return;
-	}
-	if (tip_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Tip cache is out of date. Attempting to update...");
-		update_tip_cache();
-		return;
-	}
-
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-	if (!target || !target->is_inside_tree()) {
-		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-
-	Node2D *tip = Object::cast_to<Node2D>(ObjectDB::get_instance(tip_node_cache));
-	if (!tip || !tip->is_inside_tree()) {
-		ERR_PRINT_ONCE("Tip node is not in the scene tree. Cannot execute modification!");
-		return;
-	}
-
-	for (int i = 0; i < ccdik_data_chain.size(); i++) {
-		_execute_ccdik_joint(i, target, tip);
-	}
-}
-
 void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *p_target, Node2D *p_tip) {
 	CCDIK_Joint_Data2D ccdik_data = ccdik_data_chain[p_joint_idx];
-	if (ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > stack->skeleton->get_bone_count()) {
+	if (ccdik_data.bone_idx < 0 || ccdik_data.bone_idx > skeleton->get_bone_count()) {
 		ERR_PRINT_ONCE("2D CCDIK joint: bone index not found!");
 		return;
 	}
 
-	Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data.bone_idx);
+	Bone2D *operation_bone = skeleton->get_bone(ccdik_data.bone_idx);
 	Transform2D operation_transform = operation_bone->get_global_transform();
 
 	if (ccdik_data.rotate_from_joint) {
@@ -229,19 +194,9 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	}
 
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
-	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, operation_transform, stack->strength, true);
+	skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, operation_transform, 1.0, true);
 	operation_bone->set_transform(operation_transform);
 	operation_bone->notification(operation_bone->NOTIFICATION_TRANSFORM_CHANGED);
-}
-
-void SkeletonModification2DCCDIK::_setup_modification(SkeletonModificationStack2D *p_stack) {
-	stack = p_stack;
-
-	if (stack != nullptr) {
-		is_setup = true;
-		update_target_cache();
-		update_tip_cache();
-	}
 }
 
 void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
@@ -254,24 +209,24 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 			continue;
 		}
 
-		Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data_chain[i].bone_idx);
+		Bone2D *operation_bone = skeleton->get_bone(ccdik_data_chain[i].bone_idx);
 		editor_draw_angle_constraints(operation_bone, ccdik_data_chain[i].constraint_angle_min, ccdik_data_chain[i].constraint_angle_max,
 				ccdik_data_chain[i].enable_constraint, ccdik_data_chain[i].constraint_in_localspace, ccdik_data_chain[i].constraint_angle_invert);
 	}
 }
 
 void SkeletonModification2DCCDIK::update_target_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
 	target_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(target_node)) {
-				Node *node = stack->skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(target_node)) {
+				Node *node = skeleton->get_node(target_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update target cache: node is not in the scene tree!");
@@ -282,17 +237,17 @@ void SkeletonModification2DCCDIK::update_target_cache() {
 }
 
 void SkeletonModification2DCCDIK::update_tip_cache() {
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update tip cache: modification is not properly setup!");
 		return;
 	}
 
 	tip_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(tip_node)) {
-				Node *node = stack->skeleton->get_node(tip_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(tip_node)) {
+				Node *node = skeleton->get_node(tip_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update tip cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update tip cache: node is not in the scene tree!");
@@ -304,17 +259,17 @@ void SkeletonModification2DCCDIK::update_tip_cache() {
 
 void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
-	if (!is_setup || !stack) {
+	if (!is_setup) {
 		ERR_PRINT_ONCE("Cannot update CCDIK Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
 	ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = ObjectID();
-	if (stack->skeleton) {
-		if (stack->skeleton->is_inside_tree()) {
-			if (stack->skeleton->has_node(ccdik_data_chain[p_joint_idx].bone2d_node)) {
-				Node *node = stack->skeleton->get_node(ccdik_data_chain[p_joint_idx].bone2d_node);
-				ERR_FAIL_COND_MSG(!node || stack->skeleton == node,
+	if (skeleton) {
+		if (skeleton->is_inside_tree()) {
+			if (skeleton->has_node(ccdik_data_chain[p_joint_idx].bone2d_node)) {
+				Node *node = skeleton->get_node(ccdik_data_chain[p_joint_idx].bone2d_node);
+				ERR_FAIL_COND_MSG(!node || skeleton == node,
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is this modification's skeleton or cannot be found!");
 				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
 						"Cannot update CCDIK joint " + itos(p_joint_idx) + " Bone2D cache: node is not in the scene tree!");
@@ -376,11 +331,11 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
 	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		if (skeleton) {
+			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
 			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
+			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
+			ccdik_data_chain.write[p_joint_idx].bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
 		} else {
 			WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
 			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
@@ -412,12 +367,6 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_enable_constraint(int p_joint_
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
 	notify_property_list_changed();
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_idx) const {
@@ -428,12 +377,6 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_min(int p_joint_idx) const {
@@ -444,12 +387,6 @@ float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_min(int p_jo
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_max(int p_joint_idx) const {
@@ -460,12 +397,6 @@ float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_max(int p_jo
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_invert(int p_joint_idx) const {
@@ -476,12 +407,6 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_invert(int p_
 void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_in_localspace(int p_joint_idx) const {
@@ -492,12 +417,6 @@ bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_in_localspace(int p
 void SkeletonModification2DCCDIK::set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
-
-#ifdef TOOLS_ENABLED
-	if (stack && is_setup) {
-		stack->set_editor_gizmos_dirty(true);
-	}
-#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::get_ccdik_joint_editor_draw_gizmo(int p_joint_idx) const {
@@ -535,11 +454,63 @@ void SkeletonModification2DCCDIK::_bind_methods() {
 }
 
 SkeletonModification2DCCDIK::SkeletonModification2DCCDIK() {
-	stack = nullptr;
 	is_setup = false;
 	enabled = true;
 	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DCCDIK::~SkeletonModification2DCCDIK() {
+}
+void SkeletonModification2DCCDIK::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(false);
+			set_physics_process_internal(false);
+			if (get_execution_mode() == 0) {
+				set_process_internal(true);
+			} else if (get_execution_mode() == 1) {
+				set_physics_process_internal(true);
+			}
+			skeleton = cast_to<Skeleton2D>(get_node_or_null(get_skeleton_path()));
+			is_setup = true;
+			update_target_cache();
+			update_tip_cache();
+		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+			[[fallthrough]];
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			ERR_FAIL_COND_MSG(!is_setup || skeleton == nullptr,
+					"Modification is not setup and therefore cannot execute!");
+			if (!enabled) {
+				return;
+			}
+
+			if (target_node_cache.is_null()) {
+				WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
+				update_target_cache();
+				return;
+			}
+			if (tip_node_cache.is_null()) {
+				WARN_PRINT_ONCE("Tip cache is out of date. Attempting to update...");
+				update_tip_cache();
+				return;
+			}
+
+			Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+			if (!target || !target->is_inside_tree()) {
+				ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+
+			Node2D *tip = Object::cast_to<Node2D>(ObjectDB::get_instance(tip_node_cache));
+			if (!tip || !tip->is_inside_tree()) {
+				ERR_PRINT_ONCE("Tip node is not in the scene tree. Cannot execute modification!");
+				return;
+			}
+
+			for (int i = 0; i < ccdik_data_chain.size(); i++) {
+				_execute_ccdik_joint(i, target, tip);
+			}
+		} break;
+	}
 }

@@ -31,8 +31,8 @@
 #ifndef SKELETON_3D_H
 #define SKELETON_3D_H
 
+#include "core/object/ref_counted.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
 #include "scene/resources/skin.h"
 
 typedef int BoneId;
@@ -61,8 +61,6 @@ public:
 	Ref<Skin> get_skin() const;
 	~SkinReference();
 };
-
-class SkeletonModificationStack3D;
 
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
@@ -160,10 +158,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-#ifndef _3D_DISABLED
-	Ref<SkeletonModificationStack3D> modification_stack;
-#endif // _3D_DISABLED
-
 public:
 	enum Bone_Forward_Axis {
 		BONE_AXIS_X_FORWARD = 0,
@@ -257,13 +251,6 @@ public:
 	Transform3D local_pose_to_global_pose(int p_bone_idx, Transform3D p_local_pose);
 
 	Basis global_pose_z_forward_to_bone_forward(int p_bone_idx, Basis p_basis);
-
-	// Modifications
-#ifndef _3D_DISABLED
-	Ref<SkeletonModificationStack3D> get_modification_stack();
-	void set_modification_stack(Ref<SkeletonModificationStack3D> p_stack);
-	void execute_modifications(real_t p_delta, int p_execution_mode);
-#endif // _3D_DISABLED
 
 	// Physical bone API
 

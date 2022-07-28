@@ -31,25 +31,6 @@
 #include "skeleton_modification_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
-void SkeletonModification3D::_execute(real_t p_delta) {
-	GDVIRTUAL_CALL(_execute, p_delta);
-
-	if (!enabled) {
-		return;
-	}
-}
-
-void SkeletonModification3D::_setup_modification(SkeletonModificationStack3D *p_stack) {
-	stack = p_stack;
-	if (stack) {
-		is_setup = true;
-	} else {
-		WARN_PRINT("Could not setup modification with name " + this->get_name());
-	}
-
-	GDVIRTUAL_CALL(_setup_modification, Ref<SkeletonModificationStack3D>(p_stack));
-}
-
 void SkeletonModification3D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 }
@@ -108,10 +89,6 @@ bool SkeletonModification3D::_print_execution_error(bool p_condition, String p_m
 	return p_condition;
 }
 
-Ref<SkeletonModificationStack3D> SkeletonModification3D::get_modification_stack() {
-	return stack;
-}
-
 void SkeletonModification3D::set_is_setup(bool p_is_setup) {
 	is_setup = p_is_setup;
 }
@@ -129,12 +106,10 @@ int SkeletonModification3D::get_execution_mode() const {
 }
 
 void SkeletonModification3D::_bind_methods() {
-	GDVIRTUAL_BIND(_execute, "delta");
-	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
-
+	ClassDB::bind_method(D_METHOD("set_skeleton_path", "path"), &SkeletonModification3D::set_skeleton_path);
+	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &SkeletonModification3D::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification3D::get_enabled);
-	ClassDB::bind_method(D_METHOD("get_modification_stack"), &SkeletonModification3D::get_modification_stack);
 	ClassDB::bind_method(D_METHOD("set_is_setup", "is_setup"), &SkeletonModification3D::set_is_setup);
 	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModification3D::get_is_setup);
 	ClassDB::bind_method(D_METHOD("set_execution_mode", "execution_mode"), &SkeletonModification3D::set_execution_mode);
@@ -142,10 +117,15 @@ void SkeletonModification3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clamp_angle", "angle", "min", "max", "invert"), &SkeletonModification3D::clamp_angle);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_path"), "set_skeleton_path", "get_skeleton_path");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
 }
 
-SkeletonModification3D::SkeletonModification3D() {
-	stack = nullptr;
-	is_setup = false;
+NodePath SkeletonModification3D::get_skeleton_path() const {
+	return skeleton_path;
+}
+
+void SkeletonModification3D::set_skeleton_path(NodePath p_path) {
+	skeleton_path = p_path;
+	skeleton = cast_to<Skeleton3D>(get_node_or_null(p_path));
 }

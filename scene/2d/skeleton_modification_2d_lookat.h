@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  skeleton_ik_3d_editor_plugin.h                                       */
+/*  skeleton_modification_2d_lookat.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,34 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKELETON_IK_3D_EDITOR_PLUGIN_H
-#define SKELETON_IK_3D_EDITOR_PLUGIN_H
+#ifndef SKELETON_MODIFICATION_2D_LOOKAT_H
+#define SKELETON_MODIFICATION_2D_LOOKAT_H
 
-#include "editor/editor_plugin.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/2d/skeleton_modification_2d.h"
 
-class SkeletonIK3D;
+///////////////////////////////////////
+// SkeletonModification2DLookAt
+///////////////////////////////////////
 
-class SkeletonIK3DEditorPlugin : public EditorPlugin {
-	GDCLASS(SkeletonIK3DEditorPlugin, EditorPlugin);
+class SkeletonModification2DLookAt : public SkeletonModification2D {
+	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
 
-	SkeletonIK3D *skeleton_ik = nullptr;
+private:
+	int bone_idx = -1;
+	NodePath bone2d_node;
+	ObjectID bone2d_node_cache;
 
-	Button *play_btn = nullptr;
+	NodePath target_node;
+	ObjectID target_node_cache;
+	Node2D *target_node_reference = nullptr;
 
-	void _play();
+	float additional_rotation = 0;
+	bool enable_constraint = false;
+	float constraint_angle_min = 0;
+	float constraint_angle_max = (2.0 * Math_PI);
+	bool constraint_angle_invert = false;
+	bool constraint_in_localspace = true;
+
+	void update_bone2d_cache();
+	void update_target_cache();
 
 protected:
 	static void _bind_methods();
+	bool _set(const StringName &p_path, const Variant &p_value);
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	virtual String get_name() const override { return "SkeletonIK3D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	void _notification(int p_what);
+	void _draw_editor_gizmo() override;
 
-	SkeletonIK3DEditorPlugin();
-	~SkeletonIK3DEditorPlugin();
+	void set_bone2d_node(const NodePath &p_target_node);
+	NodePath get_bone2d_node() const;
+	void set_bone_index(int p_idx);
+	int get_bone_index() const;
+
+	void set_target_node(const NodePath &p_target_node);
+	NodePath get_target_node() const;
+
+	void set_additional_rotation(float p_rotation);
+	float get_additional_rotation() const;
+
+	void set_enable_constraint(bool p_constraint);
+	bool get_enable_constraint() const;
+	void set_constraint_angle_min(float p_angle_min);
+	float get_constraint_angle_min() const;
+	void set_constraint_angle_max(float p_angle_max);
+	float get_constraint_angle_max() const;
+	void set_constraint_angle_invert(bool p_invert);
+	bool get_constraint_angle_invert() const;
+	void set_constraint_in_localspace(bool p_constraint_in_localspace);
+	bool get_constraint_in_localspace() const;
+
+	SkeletonModification2DLookAt();
+	~SkeletonModification2DLookAt();
 };
 
-#endif // SKELETON_IK_3D_EDITOR_PLUGIN_H
+#endif // SKELETON_MODIFICATION_2D_LOOKAT_H
